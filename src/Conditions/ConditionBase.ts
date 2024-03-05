@@ -1,11 +1,11 @@
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IConditionDescriptor, IConditionCore, ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { IGatherValueHostIds, IValueHost } from "../Interfaces/ValueHost";
+import { type IConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
+import type { IInputValueHost } from "../Interfaces/InputValueHost";
+import type { IGatherValueHostIds, IValueHost } from "../Interfaces/ValueHost";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import { IMessageTokenSource, ITokenLabelAndValue } from "../ValueHosts/MessageTokenResolver";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
+import type { IMessageTokenSource, ITokenLabelAndValue } from "../Interfaces/InputValidator";
+import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 
 /**
  * Base implementation of ICondition.

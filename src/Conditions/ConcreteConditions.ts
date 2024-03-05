@@ -1,7 +1,7 @@
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ComparersResult } from "./Comparers";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
-import type { ITokenLabelAndValue } from "../ValueHosts/MessageTokenResolver";
+import type { ITokenLabelAndValue } from "../Interfaces/InputValidator";
 import { CodingError } from "../Utilities/ErrorHandling";
 
 import { type IValueHost } from "../Interfaces/ValueHost";

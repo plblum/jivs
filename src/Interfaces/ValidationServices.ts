@@ -1,4 +1,4 @@
-import { IConditionFactory } from "../Conditions/ConditionFactory";
+import { IConditionFactory } from "./Conditions";
 import { IDataTypeResolver } from "./DataTypes";
 import { IMessageTokenResolver } from "./InputValidator";
 import { ILogger } from "./Logger";

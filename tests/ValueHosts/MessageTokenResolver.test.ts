@@ -1,10 +1,11 @@
 import { LoggingLevel, FormattingCategory, ConfigurationCategory, TypeMismatchCategory } from "../../src/Interfaces/Logger";
 import { AbbrevDateLookupKey, CapitalizeStringLookupKey, DateTimeLookupKey, LongDOWDateLookupKey, LowercaseStringLookupKey, NumberLookupKey, UppercaseStringLookupKey } from "../../src/DataTypes/LookupKeys";
-import { type IMessageTokenSource, type ITokenLabelAndValue, MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
+import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { CreateMockValidationManagerForMessageTokenResolver, MockCapturingLogger } from "../Mocks";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IInputValueHost } from "../../src/Interfaces/InputValueHost";
+import { IMessageTokenSource, ITokenLabelAndValue } from "../../src/Interfaces/InputValidator";
 
 
 // ResolveTokens(message: string, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string

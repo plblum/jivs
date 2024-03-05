@@ -1,37 +1,10 @@
 import { BusinessLogicInputValueHostGenerator } from "./BusinessLogicInputValueHost";
 import { InputValueHostGenerator } from "./InputValueHost";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import type { IValueHostState, IValueHost, IValueHostDescriptor } from "../Interfaces/ValueHost";
-import { IValueHostsManager } from "../Interfaces/ValueHostResolver";
+import type { IValueHostState, IValueHost, IValueHostDescriptor, IValueHostFactory } from "../Interfaces/ValueHost";
+import type { IValueHostsManager } from "../Interfaces/ValueHostResolver";
 
-/**
- * Factory for generating classes that implement IValueHost that use IValueHostDescriptor.
- * IValueHostDescriptor identifies the desired ValueHost class.
- * Most apps will use the standard InputValueHost class.
- * This interface targets unit testing with mocks.
- */
-export interface IValueHostFactory {
-    /**
-     * Creates the instance.
-     * @param valueHostsManager 
-     * @param descriptor - determines the class. All classes supported here must IValueHostDescriptor to get their setup.
-     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.CreateState() to create an initial value.
-     */
-    Create(valueHostsManager: IValueHostsManager, descriptor: IValueHostDescriptor, state: IValueHostState): IValueHost;
-    /**
-     * Adjusts the state from a previous time to conform to the Descriptor.
-     * For example, if the Descriptor had a rule change, some data in the state may
-     * be obsolete and can be discarded.
-     * @param state 
-     * @param descriptor 
-     */
-    CleanupState(state: IValueHostState, descriptor: IValueHostDescriptor): void;
-    /**
-     * Creates an initialized State object
-     * @param descriptor 
-     */
-    CreateState(descriptor: IValueHostDescriptor): IValueHostState;
-}
+
 /**
  * Supports creating and working with various ValueHost implementations.
  */
