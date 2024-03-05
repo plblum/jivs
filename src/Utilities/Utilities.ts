@@ -1,0 +1,78 @@
+
+/**
+ * Determines if the supplied group or group(s) are found in both parameters.
+ * When either parameter is '', '*', empty array, null or undefined, it means to match
+ * everything and this function returns true.
+ * Otherwise, it returns true only when a group name is found amongst both group parameters.
+ * @param group 
+ */
+export function ValidationGroupsMatch(group1: string | Array<string> | undefined | null,
+    group2: string | Array<string>| undefined | null): boolean
+{
+    function AlwaysMatch(source: any): boolean
+    {
+        return (source == null) // supports both null and undefined
+            || (source === '') || (source === '*') ||
+            (Array.isArray(source) && source.length === 0);
+    }
+    function AsArray(source: any): Array<string>
+    {
+        if (typeof source === 'string')
+            return [source.toLowerCase()];
+        if (Array.isArray(source))
+            return source.map((value) => value.toLowerCase());
+        return [];  // should not get here
+    }
+
+    if (AlwaysMatch(group1) || AlwaysMatch(group2))
+        return true;
+    let requestedGroups = AsArray(group1);
+    let hasGroups = AsArray(group2);
+    // just need to find one match between the two arrays, case insensitive
+    for (let i = 0; i < requestedGroups.length; i++)
+        if (hasGroups.includes(requestedGroups[i]) ||
+            AlwaysMatch(requestedGroups[i]))    // [''], [null], etc
+            return true;
+
+    return false;
+}
+
+
+export function DeepEquals(obj1: any, obj2: any): boolean
+{
+    if (obj1 === null || obj2 === null)
+        return Object.is(obj1, obj2);
+    if (obj1 === undefined || obj2 === undefined)
+        return Object.is(obj1, obj2);
+    // primitives, null, undefined...
+    if (typeof obj1 !== 'object' || typeof obj2 !== 'object')
+        return Object.is(obj1, obj2);
+    // adapted from https://stackoverflow.com/questions/22266826/how-can-i-do-a-shallow-comparison-of-the-properties-of-two-objects-with-javascri
+    let keys1 = Object.keys(obj1);
+    if (keys1.length !== Object.keys(obj2).length)
+        return false;
+    return keys1.every(key => 
+        obj2.hasOwnProperty(key) && DeepEquals(obj1[key], obj2[key])
+    );  
+}
+
+export function DeepClone(value: any): any {
+    if (typeof value !== "object" || value === null) {
+      return value;
+    }
+    if (value instanceof Date)
+        return new Date(value.getTime());
+    let clone = new value.constructor();
+
+    for (const key in value) {
+        clone[key] = DeepClone(value[key]);
+    }
+
+    return clone;
+    
+  }
+
+export function ObjectKeysCount(object: Object | null): number
+{
+    return object ? Object.keys(object).length : 0;
+}
