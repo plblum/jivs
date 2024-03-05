@@ -206,7 +206,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IValidateResu
      * whose DataType=Date, meaning the Value property must be a Date object.
      * Will be 'undefined' if the value has not been retrieved.
      */
-    WidgetValue: any;
+    WidgetValue?: any;
 
 
     /**

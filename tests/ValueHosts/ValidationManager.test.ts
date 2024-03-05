@@ -7,13 +7,15 @@ import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IModelCallbacks, ModelStateChangedHandler, ValidationManager } from "../../src/ValueHosts/ValidationManager";
 import { IValueHost, IValueHostDescriptor, IValueHostState } from "../../src/Interfaces/ValueHost";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationServices, NeverMatchesConditionType, RegisterPredictableConditions } from "../Mocks";
-import { InputValueHostType, InputValueHost } from '../../src/ValueHosts/InputValueHost';
+import { InputValueHostType, InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
 import { BusinessLogicInputValueHost, BusinessLogicValueHostId } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { ValueHostId } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, IInputValueHostDescriptor, IInputValueHostState } from '../../src/Interfaces/InputValueHost';
 import { IValidateResult, ValidationResult, IIssueFound, ValidationSeverity, IIssueSnapshot } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import { IModelState, IValidationManager } from '../../src/Interfaces/ValidationManager';
+import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
+import { DeepClone } from '../../src/Utilities/Utilities';
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<IModelState> {
@@ -213,21 +215,26 @@ describe('constructor and initial property values', () => {
     });
 
 });
-function TestInitialValueHostState(testItem: PublicifiedValidationManager, valueHostId: ValueHostId): void
+function TestValueHostState(testItem: PublicifiedValidationManager, valueHostId: ValueHostId,
+    valueHostState: Partial<IInputValueHostState> | null): void
 {
     let valueHost = testItem.ExposedValueHosts[valueHostId] as InputValueHost;
     expect(valueHost).toBeDefined();
     expect(valueHost).toBeInstanceOf(InputValueHost);
 
+    if (!valueHostState)
+        valueHostState = {};
+    // fill in missing properties from factory CreateState defaults
+    let factory = new ValueHostFactory();
+    factory.Register(new InputValueHostGenerator());
+    let descriptor = testItem.ExposedValueHostDescriptors[valueHostId] as IInputValueHostDescriptor;
+    let defaultState = factory.CreateState(descriptor) as IInputValueHostState;    
+
+    let stateToCompare: IInputValueHostState = { ...defaultState, ...valueHostState, };
+
     // ensure ValueHost has an initial state. Use UpdateState because it is the only time we can see the real state
     valueHost.UpdateState((stateToUpdate) => {
-        expect(stateToUpdate).not.toBeNull();
-        expect(stateToUpdate.ChangeCounter).toBeUndefined();
-        expect(stateToUpdate.Id).toBe(valueHost.GetId());
-        expect(stateToUpdate.Value).toBeUndefined();
-        expect(stateToUpdate.WidgetValue).toBeUndefined();
-        expect(stateToUpdate.ValidationResult).toBe(ValidationResult.NotAttempted);
-        expect(stateToUpdate.IssuesFound).toBeNull();
+        expect(stateToUpdate).toEqual(stateToCompare);
         return stateToUpdate;
     }, valueHost);        
 }
@@ -243,7 +250,7 @@ describe('ValidationManager.AddValueHost', () => {
             Type: InputValueHostType,
             Label: 'Field 1'
         };
-        expect(() => testItem.AddValueHost(descriptor)).not.toThrow();
+        expect(() => testItem.AddValueHost(descriptor, null)).not.toThrow();
 
         expect(testItem.ExposedValueHosts).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHosts).length).toBe(1);
@@ -256,7 +263,7 @@ describe('ValidationManager.AddValueHost', () => {
         expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor);
 
         // Check the valueHosts type and initial state
-        TestInitialValueHostState(testItem, 'Field1');
+        TestValueHostState(testItem, 'Field1', null);
     });
     test('Second ValueHost with same Id throws', () => {
         let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
@@ -266,13 +273,13 @@ describe('ValidationManager.AddValueHost', () => {
             Type: InputValueHostType,
             Label: 'Field 1'
         };
-        expect(() => testItem.AddValueHost(descriptor1)).not.toThrow();
+        expect(() => testItem.AddValueHost(descriptor1, null)).not.toThrow();
         let descriptor2: IValueHostDescriptor = {
             Id: 'Field1',
             Type: InputValueHostType,
             Label: 'Field 1'
         };
-        expect(() => testItem.AddValueHost(descriptor1)).toThrow();
+        expect(() => testItem.AddValueHost(descriptor1, null)).toThrow();
     });
     test('Add2 Descriptors. ValueHosts and states are generated for both.', () => {
         let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
@@ -283,14 +290,14 @@ describe('ValidationManager.AddValueHost', () => {
             Label: 'Field 1',
             ValidatorDescriptors: null,
         };
-        let initialValueHost1 = testItem.AddValueHost(descriptor1);
+        let initialValueHost1 = testItem.AddValueHost(descriptor1, null);
         let descriptor2: IInputValueHostDescriptor = {
             Id: 'Field2',
             Type: InputValueHostType,
             Label: 'Field 2',
             ValidatorDescriptors: null,
         };
-        let initialValueHost2 = testItem.AddValueHost(descriptor2);
+        let initialValueHost2 = testItem.AddValueHost(descriptor2, null);
 
         expect(testItem.ExposedValueHosts).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHosts).length).toBe(2);
@@ -301,16 +308,120 @@ describe('ValidationManager.AddValueHost', () => {
         expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor1);
         expect(testItem.ExposedValueHostDescriptors['Field2']).toBe(descriptor2);
         expect(testItem.ExposedModelState).not.toBeNull();
+        expect(testItem.ExposedModelState.StateChangeCounter).toBe(0);
+        
         // Check the valueHosts type and initial state
-        TestInitialValueHostState(testItem, 'Field1');
+        TestValueHostState(testItem, 'Field1', null);
         // Check the valueHosts type and initial state
-        TestInitialValueHostState(testItem, 'Field2');
+        TestValueHostState(testItem, 'Field2', null);
     });
-    test('State already exists for the ValueHostDescriptor being added. State is retained', () => {
+    test('New ValueHostDescriptor with provided state creates ValueHost, adds Descriptor, and uses the provided state', () => {
+        let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
+            null!, null!, null!, null!);
         let descriptor: IValueHostDescriptor = {
             Id: 'Field1',
             Type: InputValueHostType,
             Label: 'Field 1'
+        };
+        let state: IValueHostState = {
+            Id: 'Field1',
+            Value: 'ABC'
+        };
+        expect(() => testItem.AddValueHost(descriptor, state)).not.toThrow();
+
+        expect(testItem.ExposedValueHosts).not.toBeNull();
+        expect(Object.keys(testItem.ExposedValueHosts).length).toBe(1);
+        expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
+        expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(1);
+        expect(testItem.ExposedModelState).not.toBeNull();
+        expect(testItem.ExposedModelState.StateChangeCounter).toBe(0);
+
+        // ensure the stored Descriptor is the same as the one supplied
+        expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor);
+
+        // Check the valueHosts type and initial state
+        TestValueHostState(testItem, 'Field1', {
+            Value: 'ABC'
+        });
+    });    
+    test('State with ValidationResult=Valid already exists for the ValueHostDescriptor being added. That state is used', () => {
+
+        let state: IModelState = {};
+
+        let lastState: IInputValueHostState = {
+            Id: 'Field1',
+            ValidationResult: ValidationResult.Valid, // something we can return
+            Value: 10,   // something we can return,
+            IssuesFound: null
+        };
+        let lastValueHostStates: Array<IValueHostState> = [lastState];
+        let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
+            null!, state, lastValueHostStates, null!);
+        let descriptor: IInputValueHostDescriptor = {
+            Id: 'Field1',
+            Type: InputValueHostType,
+            Label: 'Field 1',
+            ValidatorDescriptors: [
+                {
+                    ConditionDescriptor: {
+                        Type: RequiredTextConditionType,
+                    },
+                    ErrorMessage: 'msg'
+                }
+            ]
+        };
+        testItem.AddValueHost(descriptor, null);
+
+        TestValueHostState(testItem, 'Field1', lastState);        
+    });
+    test('State with ValidationResult=Invalid already exists for the ValueHostDescriptor being added.', () => {
+
+        let state: IModelState = {};
+        let lastValueHostStates: Array<IValueHostState> = [];
+        let lastState: IInputValueHostState = {
+            Id: 'Field1',
+            ValidationResult: ValidationResult.Invalid, // something we can return
+            Value: 10,   // something we can return,
+            IssuesFound: [{
+                ErrorMessage: 'msg',
+                ValueHostId: 'Field1',
+                ConditionType: RequiredTextConditionType,
+                Severity: ValidationSeverity.Error
+            }]
+        };
+        lastValueHostStates.push(lastState);
+        let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
+            null!, state, lastValueHostStates, null!);
+        let descriptor: IInputValueHostDescriptor = {
+            Id: 'Field1',
+            Type: InputValueHostType,
+            Label: 'Field 1',
+            ValidatorDescriptors: [
+                {
+                    ConditionDescriptor: {
+                        Type: RequiredTextConditionType,
+                    },
+                    ErrorMessage: 'msg'
+                }
+            ]
+        };
+        testItem.AddValueHost(descriptor, null);
+
+        TestValueHostState(testItem, 'Field1', lastState);        
+    });    
+    test('State already exists in two places: lastValueHostState and as parameter for AddValueHost. State is sourced from AddValueHost.', () => {
+        let descriptor: IInputValueHostDescriptor = {
+            Id: 'Field1',
+            Type: InputValueHostType,
+            Label: 'Field 1',
+            ValidatorDescriptors: [
+                {
+                    ConditionDescriptor: {
+                        Type: RequiredTextConditionType,
+                    },
+                    ErrorMessage: 'msg'
+                }
+            ]
         };
         let state: IModelState = {};
         let lastValueHostStates: Array<IValueHostState> = [];
@@ -321,31 +432,58 @@ describe('ValidationManager.AddValueHost', () => {
         });
         let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
             null!, state, lastValueHostStates, null!);
-        expect(() => testItem.AddValueHost(descriptor)).not.toThrow();
+        let addState: IInputValueHostState = {
+            Id: 'Field1',
+            Value: 20,
+            ValidationResult: ValidationResult.Invalid,
+            IssuesFound: [{
+                ErrorMessage: 'msg',
+                ValueHostId: 'Field1',
+                ConditionType: RequiredTextConditionType,
+                Severity: ValidationSeverity.Error
+            }]
+        };
+        testItem.AddValueHost(descriptor, addState);
 
-        expect(testItem.ExposedValueHosts).not.toBeNull();
-        expect(Object.keys(testItem.ExposedValueHosts).length).toBe(1);
-        expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
-        expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(1);
-        expect(testItem.ExposedModelState).not.toBeNull();
+        TestValueHostState(testItem, 'Field1', addState);        
+    });    
+    test('State instance is changed after passing in has no impact on stored state', () => {
 
-        // ensure ValueHost is supporting the Descriptor and a Value of 10 from State
-        expect(testItem.ExposedValueHosts['Field1']).toBeInstanceOf(InputValueHost);
+        let state: IModelState = {};
 
-        // ensure the stored Descriptor is the same as the one supplied
-        expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor);
+        let lastState: IInputValueHostState = {
+            Id: 'Field1',
+            ValidationResult: ValidationResult.Valid, // something we can return
+            Value: 10,   // something we can return,
+            IssuesFound: null
+        };
+        let lastValueHostStates: Array<IValueHostState> = [lastState];
+        let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
+            null!, state, lastValueHostStates, null!);
+        let descriptor: IInputValueHostDescriptor = {
+            Id: 'Field1',
+            Type: InputValueHostType,
+            Label: 'Field 1',
+            ValidatorDescriptors: [
+                {
+                    ConditionDescriptor: {
+                        Type: RequiredTextConditionType,
+                    },
+                    ErrorMessage: 'msg'
+                }
+            ]
+        };
+        testItem.AddValueHost(descriptor, null);
+        let copiedLastState = DeepClone(lastState) as IInputValueHostState;
+        lastState.Value = 20;
 
-        // both values on ivh get values from the state
-        let ivh = testItem.ExposedValueHosts['Field1'] as InputValueHost;
-        expect(ivh).not.toBeNull();
-        expect(ivh.GetValue()).toBe(10);
-        expect(ivh.ValidationResult).toBe(ValidationResult.Valid);
-    });
+        TestValueHostState(testItem, 'Field1', copiedLastState);        
+    });    
     test('Null Descriptor throws', () => {
         let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
             null!, null!, null!);
 
-        expect(() => testItem.AddValueHost(null!)).toThrow();
+        expect(() => testItem.AddValueHost(null!, null)).toThrow();
 
     });
 });
@@ -361,7 +499,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
             Label: 'Field 1',
             ValidatorDescriptors: null,
         };
-        let initialValueHost = testItem.AddValueHost(descriptor);
+        let initialValueHost = testItem.AddValueHost(descriptor, null);
 
         let replacementDescriptor = { ...descriptor };
         replacementDescriptor.ValidatorDescriptors = [
@@ -375,7 +513,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         let replacementValidatorDescriptor = replacementDescriptor.ValidatorDescriptors[0];
 
         let replacementValueHost: IValueHost | null = null;
-        expect(() => replacementValueHost = testItem.UpdateValueHost(replacementDescriptor)).not.toThrow();
+        expect(() => replacementValueHost = testItem.UpdateValueHost(replacementDescriptor, null)).not.toThrow();
         expect(replacementValueHost).not.toBeNull();
         expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
 
@@ -395,7 +533,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         expect(replacementDescriptor.ValidatorDescriptors[0]).toBe(replacementValidatorDescriptor);  // no side effects
 
         // ensure ValueHost is InputValueHost and has an initial state
-        TestInitialValueHostState(testItem, 'Field1');
+        TestValueHostState(testItem, 'Field1', null);
     });
     test('UpdateValueHost works like AddValueHost with unknown ValueHostDescriptor', () => {
         let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
@@ -405,7 +543,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
             Type: InputValueHostType,
             Label: 'Field 1'
         };
-        expect(() => testItem.UpdateValueHost(descriptor)).not.toThrow();
+        expect(() => testItem.UpdateValueHost(descriptor, null)).not.toThrow();
 
         expect(testItem.ExposedValueHosts).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHosts).length).toBe(1);
@@ -417,7 +555,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor);
 
         // ensure ValueHost is InputValueHost and has an initial state
-        TestInitialValueHostState(testItem, 'Field1');
+        TestValueHostState(testItem, 'Field1', null);
     });
 
     test('Replace the descriptor with existing ValueHostState.ValidationResult of Invalid retains state when replacement is the same type', () => {
@@ -429,7 +567,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
             Label: 'Field 1',
             ValidatorDescriptors: null,
         };
-        let initialValueHost = testItem.AddValueHost(descriptor);
+        let initialValueHost = testItem.AddValueHost(descriptor, null);
 
         let replacementDescriptor = { ...descriptor };
         replacementDescriptor.ValidatorDescriptors = [
@@ -443,7 +581,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         let replacementValidatorDescriptor = replacementDescriptor.ValidatorDescriptors[0];
 
         let replacementValueHost: IValueHost | null = null;
-        expect(() => replacementValueHost = testItem.UpdateValueHost(replacementDescriptor)).not.toThrow();
+        expect(() => replacementValueHost = testItem.UpdateValueHost(replacementDescriptor, null)).not.toThrow();
         expect(replacementValueHost).not.toBeNull();
         expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
 
@@ -466,8 +604,76 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         expect(replacementDescriptor.ValidatorDescriptors[0]).toBe(replacementValidatorDescriptor);  // no side effects
 
         // ensure ValueHost is InputValueHost and has an initial state
-        TestInitialValueHostState(testItem, 'Field1');
+        TestValueHostState(testItem, 'Field1', null);
     });
+    test('Replace the state, keeping the same descriptor. Confirm the state and descriptor', () => {
+        let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
+            null!, null!, null!);
+        let descriptor: IInputValueHostDescriptor = {
+            Id: 'Field1',
+            Type: InputValueHostType,
+            Label: 'Field 1',
+            ValidatorDescriptors: [
+                {
+                    ConditionDescriptor: {
+                        Type: AlwaysMatchesConditionType,
+                    },
+                    ErrorMessage: 'Error'
+                }
+            ]
+        };
+        let initialValueHost = testItem.AddValueHost(descriptor, null);
+
+
+        let updateState: IInputValueHostState = {
+            Id: 'Field1',
+            Value: 40,
+            IssuesFound: null,
+            ValidationResult: ValidationResult.NotAttempted
+        };
+        let replacementValueHost: IValueHost | null = null;
+        expect(() => replacementValueHost = testItem.UpdateValueHost(descriptor, updateState)).not.toThrow();
+        expect(replacementValueHost).not.toBeNull();
+        expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
+
+        // ensure the stored Descriptor is the same as the one supplied
+        expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor);
+     
+        // ensure ValueHost is InputValueHost and has an initial state
+        TestValueHostState(testItem, 'Field1', updateState);
+    });    
+    test('Edit state instance after UpdateValueHost has no impact on state in ValueHost', () => {
+        let testItem = new PublicifiedValidationManager(new MockValidationServices(false, false),
+            null!, null!, null!);
+        let descriptor: IInputValueHostDescriptor = {
+            Id: 'Field1',
+            Type: InputValueHostType,
+            Label: 'Field 1',
+            ValidatorDescriptors: [
+                {
+                    ConditionDescriptor: {
+                        Type: AlwaysMatchesConditionType,
+                    },
+                    ErrorMessage: 'Error'
+                }
+            ]
+        };
+        let initialValueHost = testItem.AddValueHost(descriptor, null);
+
+        let updateState: IInputValueHostState = {
+            Id: 'Field1',
+            Value: 40,
+            IssuesFound: null,
+            ValidationResult: ValidationResult.NotAttempted
+        };
+        testItem.UpdateValueHost(descriptor, updateState);
+
+        let savedState = DeepClone(updateState);
+        updateState.Value = 100;
+     
+        // ensure ValueHost is InputValueHost and has an initial state
+        TestValueHostState(testItem, 'Field1', savedState);
+    });        
 });
 describe('ValidationManager.DiscardValueHost completely removes ValueHost, its state and descriptor', () => {
     test('Discard the only one leaves empty valueHosts, descriptors, and state', () => {
@@ -479,7 +685,7 @@ describe('ValidationManager.DiscardValueHost completely removes ValueHost, its s
             Label: 'Field 1',
             ValidatorDescriptors: null,
         };
-        let initialValueHost = testItem.AddValueHost(descriptor);
+        let initialValueHost = testItem.AddValueHost(descriptor, null);
 
         expect(() => testItem.DiscardValueHost(descriptor)).not.toThrow();
 
@@ -500,14 +706,14 @@ describe('ValidationManager.DiscardValueHost completely removes ValueHost, its s
             Label: 'Field 1',
             ValidatorDescriptors: null,
         };
-        let initialValueHost1 = testItem.AddValueHost(descriptor1);
+        let initialValueHost1 = testItem.AddValueHost(descriptor1, null);
         let descriptor2: IInputValueHostDescriptor = {
             Id: 'Field2',
             Type: InputValueHostType,
             Label: 'Field 2',
             ValidatorDescriptors: null,
         };
-        let initialValueHost2 = testItem.AddValueHost(descriptor2);
+        let initialValueHost2 = testItem.AddValueHost(descriptor2, null);
 
         expect(() => testItem.DiscardValueHost(descriptor2)).not.toThrow();
 

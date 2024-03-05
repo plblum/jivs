@@ -69,7 +69,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
         this._modelCallbacks = callbacks || {};
         if (descriptors)
             for (let key in descriptors) {
-                this.AddValueHost(descriptors[key]);
+                this.AddValueHost(descriptors[key], null);
             }
     }
 
@@ -144,11 +144,16 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * Does not trigger any notifications.
      * Exception when the same ValueHostDescriptor.Id already exists.
      * @param descriptor 
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.CleanupState first.
+     * When null, the state supplied in the ValidationManager constructor will be used if available.
+     * When neither state was supplied, a default state is created.
      */
-    public AddValueHost(descriptor: IValueHostDescriptor): IValueHost {
+    public AddValueHost(descriptor: IValueHostDescriptor, initialState: IValueHostState | null): IValueHost {
         AssertNotNull(descriptor, 'descriptor');
         if (!this._valueHostDescriptors[descriptor.Id])
-            return this.ApplyDescriptor(descriptor);
+            return this.ApplyDescriptor(descriptor, initialState);
 
         throw new Error(`Property ${descriptor.Id} already assigned.`);
     }
@@ -157,13 +162,16 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * Does not trigger any notifications.
      * If the id isn't found, it will be added.
      * @param descriptor 
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.CleanupState first.
      */
-    public UpdateValueHost(descriptor: IValueHostDescriptor): IValueHost {
+    public UpdateValueHost(descriptor: IValueHostDescriptor, initialState: IValueHostState | null): IValueHost {
         AssertNotNull(descriptor, 'descriptor');
         if (this._valueHostDescriptors[descriptor.Id])
-            return this.ApplyDescriptor(descriptor);
+            return this.ApplyDescriptor(descriptor, initialState);
 
-        return this.AddValueHost(descriptor);
+        return this.AddValueHost(descriptor, initialState);
     }
     /**
      * Discards a ValueHost. 
@@ -188,20 +196,30 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * ValidationManager has correct and corresponding instances of ValueHost,
      * ValueHostDescriptor and ValueHostState.
      * @param descriptor 
+     * @param initialState - When not null, this ValueHost state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.CleanupState first.
      * @returns 
      */
-    protected ApplyDescriptor(descriptor: IValueHostDescriptor): IValueHost {
+    protected ApplyDescriptor(descriptor: IValueHostDescriptor, initialState: IValueHostState | null): IValueHost {
         let factory = valGlobals.GetValueHostFactory(); // functions in here throw exceptions if descriptor is unsupported
         let state: IValueHostState;
-        let existingState: IValueHostState | null = null;
-        if (this._lastValueHostStates)
+        let existingState = initialState;
+        let defaultState = factory.CreateState(descriptor);
+
+        if (!existingState && this._lastValueHostStates)
             existingState = this._lastValueHostStates.find((state) => state.Id === descriptor.Id) ?? null;
         if (existingState) {
-            state = DeepClone(existingState);  // clone to allow changes during Cleanup
-            factory.CleanupState(state, descriptor);
+            let cleanedState = DeepClone(existingState) as IValueHostState;  // clone to allow changes during Cleanup
+            factory.CleanupState(cleanedState, descriptor);
+            // User may have supplied the state without
+            // all of the properties we normally use.
+            // Ensure all properties defined by CreateState exist, even if their value is undefined
+            // so that we have consistency. 
+            state = { ...defaultState, ...cleanedState };
         }
         else
-            state = factory.CreateState(descriptor);
+            state = defaultState;
         let vh = factory.Create(this, descriptor, state);
 
         this._valueHosts[descriptor.Id] = vh;
@@ -321,7 +339,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
                         Type: BusinessLogicInputValueHostType,
                         Label: '*',
                         Id: BusinessLogicValueHostId
-                    });
+                    }, null);
                 }
                 if (vh instanceof InputValueHostBase)
                     vh.SetBusinessLogicError(error);
