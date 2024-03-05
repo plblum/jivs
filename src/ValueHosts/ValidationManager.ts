@@ -3,75 +3,113 @@ import { DeepClone, DeepEquals } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
 import { valGlobals } from "../Services/ValidationGlobals";
 import type { IValueHost, IValueHostDescriptor, IValueHostState } from "../Interfaces/ValueHost";
-import {  IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "./ValueHostBase";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "../Interfaces/Validation";
+import type { IInputValueHost } from "../Interfaces/InputValueHost";
+import type { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "../Interfaces/Validation";
 import { InputValueHostBase, ValueHostValidatedHandler, WidgetValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import { IModelState, IValidationManager } from "../Interfaces/ValidationManager";
+import type { IModelState, IValidationManager } from "../Interfaces/ValidationManager";
+import { ValidationServices } from "../Services/ValidationServices";
 
 
 /**
  * The central object for using this system.
- * It is where you describe the shape of your inputs and their validation
- * through the Descriptor classes.
- * Once setup, it has a list of ValueHost objects, one for each
- * descriptor that was supplied. Those that are InputValueHosts
+ * It is where you describe the shape of your inputs and their validation rules.
+ * Once setup, it has a list of ValueHost objects. Those that are InputValueHosts
  * contain validators.
  * 
- * Business logic is intended to manipulate the Descriptors found here.
- * Each time a InputValueHostDescriptor is created or replaced,
- * a corresponding entry is added or replaced in a dictionary of InputValueHost instances.
- * The InputValueHostDescriptors are considered immutable, only 
- * to be updated by business logic.
+ * Descriptors are interfaces you use with plain objects to fashion them into 
+ * ValidationManager's configuration. IValueHostDescriptor describes a ValueHost.
+ * IInputValueHostDescriptor describes an InputValueHost (which supports validation).
+ * An InputValueHost takes InputValidatorDescriptors to fashion its list of Validators.
+ * An InputValidator takes various ConditionDescriptors to fashion the specific 
+ * validation rule.
+ * 
+ * ValidationManager's constructor takes a single parameter, but its a potent one:
+ * it's Configuration object (type=ValidationManagerConfig). By the time you 
+ * create the ValidationManager, you have provided all of those descriptors to
+ * the Configuration object. It also supplies the ValidationServices object,
+ * state data, and callbacks. See the constructor's documentation for a sample of 
+ * the Configuration object.
+ * 
+ * We recommend using your business logic to host the validation rules.
+ * For that, you will need code that translates those rules into InputValidatorDescriptors.
+ * Try to keep validation rules separate from your UI's code.
+ * 
+ * All Descriptors are considered immutable. If you need to make a change, you can
+ * create a new instance of ValidationManager, or call its AddValueHost, UpdateValueHost,
+ * or DiscardValueHost methods to keep the existing instance.
+ * 
  * ValidationManager's job is:
- * - Maintain the ValueHostDescriptors
- * - Create and replace their associated ValueHost instances
- * - Provide access to all ValueHost instances so validators (specifically Conditions)
- *   can look up the data needed for evaluation.
- * - Retain a State object that reflects the states of all ValueHost instances.
- * - Provide a way to transfer values between the consuming system
- *   and the state.
- *   Notice that this class does not know anything about consuming system.
- *   It depends on the consuming system to transfer values.
+ * - Create and retain all ValueHosts.
+ * - Provide access to all ValueHosts with its GetValueHost function.
+ * - Retain State objects that reflects the states of all ValueHost instances.
+ *   This system can operate in a stateless way, so long as you keep
+ *   these objects and pass them back via the Configuration object.
+ *   Its OnModelStateChanged and OnValueHostStateChanged properties are callbacks
+ *   provide the latest State objects to you.
  * - Execute validation on demand to the consuming system, going
- *   through all InputValueHosts, although individual ValueHosts may be configured
- *   to opt out, or will be ignored when a validation group requested
- *   isn't a match to that InputValueHost.
+ *   through all eligible InputValueHosts.
+ * - Report a list of Issues Found for an individual UI element.
+ * - Report a list of Issues Found for the entire system for a UI 
+ *   element often known as "Validation Summary".
+ * 
+ * Notice that this class does not know anything about consuming system.
+ * As a result depends on the consuming system to transfer values between
+ * the UI and the ValueHosts. Auxillary Jivs libraries may handle this.
  */
 
 export class ValidationManager<TState extends IModelState> implements IValidationManager, IModelCallbacks {
     /**
      * Constructor
-     * @param descriptors - initialize with these descriptors.
-     * It will internally generate implementations of IValueHost from them.
-     * @param lastModelState - If supplied, restores the state that was retained by the caller.
-     * If null or an empty object, it will be correctly setup.
-     * @param stateChangedCallback - If supplied, notifies the caller of
-     * a state change.
+     * @param config - Provides ValidationManager with numerous configuration settings.
+     * It is just a simple object that you may initialize like this:
+     * {
+     *   Services: new ValidationServices();
+     *   ValueHostDescriptors: [
+     *     // see elsewhere for details on ValueHostDescriptors as they are the heavy lifting in this system.
+     *     // Just know that you need one object for each value that you want to connect
+     *     // to the Validation Manager
+     *      ],
+     *   SavedModelState: null, // or the state object previously returned with OnModelStateChanged
+     *   SavedValueHostStates: null, // or an array of the state objects previously returned with OnValueHostStateChanged
+     *   OnModelStateChanged: (validationManager, state)=> { },
+     *   OnValueHostStateChanged: (valueHost, state) => { },
+     *   OnModelValidated: (validationManager, validationResults)=> { },
+     *   OnValueHostValidated: (valueHost, validationResult) => { },
+     *   OnValueChanged: (valueHost, oldValue) => { },
+     *   OnWidgetValueChanged: (valueHost, oldValue) => { }
+     * }
      */
-    constructor(services: IValidationServices,
-        descriptors?: Array<IValueHostDescriptor>,
-        lastModelState?: IModelState,
-        lastValueHostStates?: Array<IValueHostState>,
-        callbacks?: IModelCallbacks) {
-        AssertNotNull(services, 'services');
-        this._services = services;
+    constructor(config: ValidationManagerConfig) {
+        AssertNotNull(config, 'config');
+        // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
+        let savedServices = config.Services ?? null;
+        config.Services = null; // to ignore during DeepClone
+        let internalConfig = DeepClone(config) as ValidationManagerConfig;
+        config.Services = savedServices;
+        internalConfig.Services = savedServices;
+
+        this._config = internalConfig;
+        if (!internalConfig.Services)
+            internalConfig.Services = new ValidationServices();
         this._valueHostDescriptors = {};
         this._valueHosts = {};
-        this._modelState = lastModelState ?? {};
-        this._lastValueHostStates = lastValueHostStates ?? [];
+        this._modelState = internalConfig.SavedModelState ?? {};
         if (typeof this._modelState.StateChangeCounter !== 'number')
             this._modelState.StateChangeCounter = 0;
-
-        this._modelCallbacks = callbacks || {};
-        if (descriptors)
-            for (let key in descriptors) {
-                this.AddValueHost(descriptors[key], null);
-            }
+        this._lastValueHostStates = internalConfig.SavedValueHostStates ?? [];
+        let descriptors = internalConfig.ValueHostDescriptors ?? [];
+        for (let key in descriptors) {
+            this.AddValueHost(descriptors[key], null);
+        }
     }
+    protected get Config(): ValidationManagerConfig
+    {
+        return this._config;
+    }
+    private _config: ValidationManagerConfig;
 
     /**
      * The ValidationManager and IValidationServices are crosslinked.
@@ -79,10 +117,9 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * and that constructor sets this property.
      */
     public get Services(): IValidationServices {
-        return this._services;
+        return this._config.Services!;
     }
 
-    private _services: IValidationServices;
 
     /**
      * ValueHosts for all ValueHostDescriptors.
@@ -384,14 +421,13 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
         return list;
     }
     //#region IModelCallbacks
-    private _modelCallbacks: IModelCallbacks;
     /**
      * Called when the ValidationManager's state has changed.
      * React example: React component useState feature retains this value
      * and needs to know when to call the setModelState() with the stateToRetain
      */
     public get OnModelStateChanged(): ModelStateChangedHandler | null {
-        return this._modelCallbacks.OnModelStateChanged ?? null;
+        return this.Config.OnModelStateChanged ?? null;
     }
     /**
      * Called when ValidationManager's Validate method has returned.
@@ -400,7 +436,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * Use to change the disabled state of the submit button based on validity.
      */
     public get OnModelValidated(): ModelValidatedHandler | null {
-        return this._modelCallbacks.OnModelValidated ?? null;
+        return this.Config.OnModelValidated ?? null;
     }
     /**
      * Called when any ValueHost had its IValueHostState changed.
@@ -410,7 +446,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * Here, it aggregates all ValueHost notifications.
      */
     public get OnValueHostStateChanged(): ValueHostStateChangedHandler | null {
-        return this._modelCallbacks.OnValueHostStateChanged ?? null;
+        return this.Config.OnValueHostStateChanged ?? null;
     }
     /**
      * Called when ValueHost's Validate method has returned.
@@ -422,7 +458,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * Here, it aggregates all ValueHost notifications.
      */
     public get OnValueHostValidated(): ValueHostValidatedHandler | null {
-        return this._modelCallbacks.OnValueHostValidated ?? null;
+        return this.Config.OnValueHostValidated ?? null;
     }
     /**
      * Called when the ValueHost's Value property has changed.
@@ -432,7 +468,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * Here, it aggregates all ValueHost notifications.
      */
     public get OnValueChanged(): ValueChangedHandler | null {
-        return this._modelCallbacks.OnValueChanged ?? null;
+        return this.Config.OnValueChanged ?? null;
     }
     /**
      * Called when the InputValueHost's WidgetValue property has changed.
@@ -442,11 +478,53 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * Here, it aggregates all InputValueHost notifications.
      */
     public get OnWidgetValueChanged(): WidgetValueChangedHandler | null {
-        return this._modelCallbacks.OnWidgetValueChanged ?? null;
+        return this.Config.OnWidgetValueChanged ?? null;
     }
     //#endregion IModelCallbacks
 }
 
+/**
+ * Provides the configuration for the ValidationManager constructor
+ */
+export interface ValidationManagerConfig extends IModelCallbacks
+{
+    /**
+     * Provides services into the system. Dependency Injection and factories.
+     * If null, one is created using defaults found in ValidationGlobals.
+     */
+    Services?: IValidationServices | null;
+    /**
+     * Initial list of ValueHostDescriptors. Here's where all of the action is!
+     * Each ValueHostDescriptor describes one ValueHost (which is info about one value in your app),
+     * plus its validation rules.
+     * If rules need to be changed later, either create a new instance of ValidationManager
+     * or use its AddValueHost, UpdateValueHost, DiscardValueHost methods.
+     */
+    ValueHostDescriptors: Array<IValueHostDescriptor>;
+    /**
+     * The state for the ValidationManager itself.
+     * Its up to you to retain stateful information so that the service works statelessly.
+     * It will supply you with the changes to states through the OnModelStateChanged property.
+     * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
+     * the correct state.
+     * If you don't have any state, leave this null or undefined and ValidationManager will
+     * initialize its state.
+     */
+    SavedModelState?: IModelState | null;
+    /**
+     * The state for each ValueHost. The array may not have the same states for all the ValueHostDescriptors
+     * you are supplying. It will create defaults for those missing and discard those no longer in use.
+     * 
+     * Its up to you to retain stateful information so that the service works statelessly.
+     * It will supply you with the changes to states through the OnValueHostStateChanged property.
+     * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
+     * the correct state. You can also supply the state of an individual ValueHost when using
+     * the AddValueHost or UpdateValueHost methods.
+     * If you don't have any state, leave this null or undefined and ValidationManager will
+     * initialize its state.
+     */
+    SavedValueHostStates?: Array<IValueHostState> | null;
+}
 
 /**
  * All ValueHostDescriptors for this ValidationManager.

@@ -1,4 +1,4 @@
-import { type IConditionFactory, ConditionFactory, RegisterStandardConditions } from "../src/Conditions/ConditionFactory";
+import { ConditionFactory, RegisterStandardConditions } from "../src/Conditions/ConditionFactory";
 import { DataTypeResolver, RegisterComparerHandlerWithDataTypeResolver } from "../src/DataTypes/DataTypeResolver";
 import { IntlLocalizationAdapter } from "../src/DataTypes/IntlLocalizationAdapter";
 
@@ -12,7 +12,7 @@ import { commonBuiltInToStringLookupKeys } from "../src/DataTypes/LookupKeys";
 import { IValueHostResolver, IValueHostsManager } from "../src/Interfaces/ValueHostResolver";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "../src/ValueHosts/ValueHostBase";
 import { ConditionBase } from "../src/Conditions/ConditionBase";
-import { IConditionDescriptor, ConditionEvaluateResult, ConditionCategory } from "../src/Interfaces/Conditions";
+import { IConditionDescriptor, ConditionEvaluateResult, ConditionCategory, IConditionFactory } from "../src/Interfaces/Conditions";
 import { IInputValueHost } from "../src/Interfaces/InputValueHost";
 import { IValidateOptions, IValidateResult, ValidationResult, IBusinessLogicError, IIssueFound, IIssueSnapshot } from "../src/Interfaces/Validation";
 import { InputValueHostBase, ValueHostValidatedHandler, WidgetValueChangedHandler } from "../src/ValueHosts/InputValueHostBase";

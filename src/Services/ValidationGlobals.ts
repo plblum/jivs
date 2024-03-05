@@ -1,13 +1,15 @@
-import { type IConditionFactory, ConditionFactory, RegisterStandardConditions } from "../Conditions/ConditionFactory";
+import { ConditionFactory, RegisterStandardConditions } from "../Conditions/ConditionFactory";
 import { DataTypeResolver } from "../DataTypes/DataTypeResolver";
 import { InputValidatorFactory } from "../ValueHosts/InputValidator";
 import { ConsoleLogger } from "./ConsoleLogger";
 import { MessageTokenResolver } from "../ValueHosts/MessageTokenResolver";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import { type IValueHostFactory, ValueHostFactory, RegisterDefaultValueHostGenerators } from "../ValueHosts/ValueHostFactory";
-import { IInputValidatorFactory, IMessageTokenResolver } from "../Interfaces/InputValidator";
-import { ILogger } from "../Interfaces/Logger";
-import { IDataTypeResolver } from "../Interfaces/DataTypes";
+import { ValueHostFactory, RegisterDefaultValueHostGenerators } from "../ValueHosts/ValueHostFactory";
+import type { IInputValidatorFactory, IMessageTokenResolver } from "../Interfaces/InputValidator";
+import type { ILogger } from "../Interfaces/Logger";
+import type { IDataTypeResolver } from "../Interfaces/DataTypes";
+import type { IConditionFactory } from "../Interfaces/Conditions";
+import type { IValueHostFactory } from "../Interfaces/ValueHost";
 
 
 /**
