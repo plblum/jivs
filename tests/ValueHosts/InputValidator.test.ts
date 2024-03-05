@@ -11,7 +11,7 @@ import {
 
 import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
 import { LoggingLevel } from "../../src/Interfaces/Logger";
-import type { ITokenLabelAndValue } from "../../src/ValueHosts/MessageTokenResolver";
+import type { ITokenLabelAndValue } from "../../src/Interfaces/InputValidator";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger, ThrowsExceptionConditionType, NeverMatchesConditionType } from "../Mocks";
 import { StringLookupKey } from '../../src/DataTypes/LookupKeys';

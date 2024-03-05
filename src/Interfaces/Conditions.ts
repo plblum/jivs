@@ -188,3 +188,16 @@ export enum ConditionCategory {
      */
     Undetermined
 }
+
+/**
+ * Creates instances of Conditions given an IConditionDescriptor.
+ * IConditionDescriptor.Type is used to determine the Condition class to create.
+ */
+export interface IConditionFactory {
+    /**
+     * Create an instance of a Condition from the IConditionDescriptor.
+     * @param descriptor 
+     * @returns 
+     */
+    Create(descriptor: IConditionDescriptor): ICondition;
+}

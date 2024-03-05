@@ -38,12 +38,20 @@ supporting libraries are well-informed on those matters.
 As a service, you need to know about its API. The primary pieces for
 building a UI are:
 
--   ValueHost classes -- Identifies a single value can be validated
-    and/or contributes to the rules of your validation.
+-   ValueHost classes -- Identifies a single value to be validated
+    and/or contributes to the rules of your validation. It has a unique
+    identifier that you use to match it to a specific input, such as the
+    ID of the HTML input tag (\"TextBox1\"), or even better, a path
+    where it is found in a Model (\"Customer/Address/Street\").
 
     -   ValueHost class -- For values that are not validated, such as a
         field from your Model that isn't editable, or a global value of
-        your app, as both can contribute to your validation logic.
+        your app, as both can contribute to your validation logic. Take
+        a postal code as an example. You might use a regular expression
+        to evaluate it. But that expression depends on the country of
+        delivery. So you would use a ValueHost to pass in a country
+        code, and let the validation internally select the right
+        expression.
 
 > Some members of this class are:
 
@@ -105,7 +113,7 @@ ConditionCategory
     handle the validation process and deliver the error messages to the
     list of issues found.
 
-Some members of this class is:
+Some members of this class are:
 
 Validate
 
@@ -121,3 +129,5 @@ This documentation is unfinished. Plenty to write about:
 
 -   Supporting custom data types (your own classes that reflect a value,
     like how the JavaScript Date object handles a DateTime value)
+
+-   Relating this to other input validation libraries
