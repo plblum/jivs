@@ -2,7 +2,7 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ValidationCategory } from "../Interfaces/Logger";
 import { ObjectKeysCount } from "../Utilities/Utilities";
 import { valGlobals } from "../Services/ValidationGlobals";
-import { ToIModelCallbacks } from "./ValidationManager";
+import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
 import { IInputValueHostDescriptor, IInputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
@@ -15,10 +15,10 @@ import { AssertNotNull } from "../Utilities/ErrorHandling";
 /**
  * Standard implementation of IInputValueHost. It owns a list of InputValidators
  * which support its Validate method.
-* Each instance depends on a few things, all passed into the constructor
-* and treated as immutable.
-* - valueHostsManager - Contains all ValueHosts. 
-*   It is the owner of all state and provides group validation.
+ * Use ValueHostDescriptor.Type = "Input" for the ValidationManager to use this class.
+ * 
+* Each instance depends on a few things, all passed into the constructor:
+* - valueHostsManager - Typically this is the ValidationManager.
 * - IInputValueHostDescriptor - The business logic supplies these rules
 *   to implement a ValueHost's Id, label, data type, validation rules,
 *   and other business logic metadata.
@@ -114,7 +114,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                         (result.IssuesFound ? JSON.stringify(result.IssuesFound) : 'none')
                 }
             });
-            ToIModelCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
+            ToIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
         }
         function LogInfo(self: InputValueHost,
             fn: () => { message: string, source?: string })
@@ -190,11 +190,37 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                 validator.GatherValueHostIds(collection, valueHostResolver);
     }
 }
+/**
+ * Determines if the object implements IInputValueHost.
+ * @param source 
+ * @returns source typecasted to IInputValueHost if appropriate or null if not.
+ */
+export function ToIInputValueHost(source: any): IInputValueHost | null
+{
+    if (source instanceof InputValueHostBase)
+        return source as IInputValueHost;
+    if (source && typeof source === 'object')
+    {
+        let test = source as IInputValueHost;    
+        // some select members of IInputValueHost
+        if (test.GetInputValue !== undefined && 
+            test.SetInputValue !== undefined &&
+            test.Validate !== undefined &&
+            test.GetIssuesForInput !== undefined)
+            return test;
+    }
+    return null;
+}
 
 export const InputValueHostType = 'Input';
 export class InputValueHostGenerator extends InputValueHostBaseGenerator {
     public CanCreate(descriptor: IInputValueHostDescriptor): boolean {
-        return descriptor.Type === InputValueHostType;
+        if (descriptor.Type != null)    // null/undefined
+            return descriptor.Type === InputValueHostType;
+
+        if (descriptor.ValidatorDescriptors === undefined)
+            return false;
+        return true;
     }
     public Create(valueHostsManager: IValueHostsManager, descriptor: IInputValueHostDescriptor, state: IInputValueHostState): IInputValueHost {
         return new InputValueHost(valueHostsManager, descriptor, state);

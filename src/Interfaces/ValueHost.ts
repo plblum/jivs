@@ -2,7 +2,7 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
 
 /**
- * Exposes values to the validation engine.
+ * Exposes values from the consuming system to the validation engine.
  * Each instance represents a single value from the consuming system.
  * Each also has an Id, used to lookup the ValueHost,
  * and a Label, which is a UI friendly way to tell the user the source of a validation error.
@@ -11,7 +11,7 @@ import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
  *   These have validation capability.
  * - NonInputValueHosts - reflects values that are needed by validation
  *   but are not editable by the user. Often these are properties from the same
- *   model being edited.
+ *   Model being edited.
  * - HTMLElementValueHost - Its value is an HTML Element in the DOM which it gets
  *   by a queryselector.
  *   Conditions are expected to use its data in a read-only fashion. 
@@ -22,33 +22,25 @@ import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
  *   a disabled field.
  * 
  * There are two types of values associated with an input:
- * - widget - the value supplied by the widget.
+ * - input - the value supplied by the input field/element.
  *   It is often a string representation of the native data
  *   and may contain errors preventing its conversion into that native data.
- *   Only a few conditions evaluate the widget value, but they are important:
+ *   Only a few conditions evaluate the input value, but they are important:
  *   RequiredCondition and ValidNativeCondition.
- * - native - the value that will be stored in the model.
+ * - native - the value that will be stored in the Model.
  *   Date object, number, boolean, and your own object are examples.
- *   String itself is often both from the widget and to be stored.
- *   The string may remain unchanged between the two but often
- *   it has been cleaned up, trimmed, reformatted, etc.
+ *   When the native type is a string, it is often similar in both input and native values.
+ *   The string in the native value may be cleaned up, trimmed, reformatted, etc.
  *   Most Conditions evaluate the native value.
  * Its up to the system consumer to manage both.
- * - When a widget has its value set or changed, also assign it here with SetWidgetValue.
- * - RequiredConditions and DataTypeCondition look at the WidgetValue via GetWidgetValue.
+ * - When an input has its value set or changed, also assign it here with SetInputValue.
+ * - RequiredConditions and DataTypeCondition look at the InputValue via GetInputValue.
  * - The initial native value is assigned with SetNativeValue.
- *   The consumer handles converting the widget value into its native value
+ *   The consumer handles converting the input field/element value into its native value
  *   and supplies it with SetNativeValue or NativeValueUndetermined.
  * - Most Conditions look at the NativeValue via GetNativeValue.
  */
 export interface IValueHost {
-    // /**
-    //  * Reference to the ValueHostsManager that hosts it.
-    //  * It is normally ValidationManager itself.
-    //  * Provides access to IValidationServices.
-    //  */
-    // ValueHostsManager: IValueHostsManager;
-
     /**
      * Provides a unique identity for this ValueHost.
      * Consuming systems use this ID to locate the ValueHost
@@ -67,7 +59,7 @@ export interface IValueHost {
      * capable of being stored or used without conversion by the caller.
      * For example, a Date object or Number type.
      * Returns undefined if the native value could not be resolved
-     * from the widget.
+     * from the input value.
      */
     GetValue(): any;
 
@@ -75,7 +67,7 @@ export interface IValueHost {
      * Replaces the value and optionally validates.
      * Call when the value was changed in the system consumer.
      * @param value - Can be undefined to indicate the value could not be resolved
-    * from the widget's value, such as inability to convert a string to a date.
+    * from the input field/element's value, such as inability to convert a string to a date.
     * All other values, including null and the empty string, are considered real data.
     * When undefined, IsChanged will still be changed to true unless options.Reset = true.
     * @param options - 
@@ -125,7 +117,7 @@ export interface IValueHost {
     /**
      * Determines how the validation system sees the Value in terms of editing.
      * When true, it was changed. When false, it was not.
-     * The SetValue/SetWidgetValue/SetValues functions are the only ones to change this flag.
+     * The SetValue/SetInputValue/SetValues functions are the only ones to change this flag.
      * They all set it to true automatically except set it to false when the option.Reset is true.
      * The ValueHost.Validate function may skip validation of an InputValueHost when IsChanged is false,
      * depending on the options for Validate. For example, calling validate immediately after loading
@@ -152,7 +144,7 @@ export interface ISetValueOptions {
     Reset?: boolean;
 
     /**
-     * When converting the widget value to native and there is an error
+     * When converting the input field/element value to native and there is an error
      * it should be supplied here. Only meaningful when State.Value is undefined.
      * It can be displayed as part of the DataTypeCheckCondition's
      * error message token {ConversionError}.
@@ -186,12 +178,12 @@ export interface IValueHostState {
      * capable of being stored or used without conversion by the caller.
      * For example, a Date object or Number type.
      * Value of undefined is valid. Use undefined if the native value could not be resolved
-     * from the widget or is otherwise unknown.
+     * from the input field/element or is otherwise unknown.
      */
     Value: any;
 
     /**
-     * Counts the number of changes made to the Value thru SetValue/SetValues/SetWidgetValue.
+     * Counts the number of changes made to the Value thru SetValue/SetValues/SetInputValue.
      * Increments with each call or sets it back to 0 when their option.Reset is true.
      * When 0 or undefined, it means no changes have been made. 
      */
@@ -214,18 +206,20 @@ interface CustomItems {
  * child implementation.
  * This provides the business rules and other non-state values for each ValueHost.
  * The server side could in fact supply this object via JSON,
- * allowing the server's model to dictate this, except values are converted to their native forms
+ * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
  */
 export interface IValueHostDescriptor {
     /**
-     * Required. Identifies the type of ValueHost that will be created to 
+     * Identifies the type of ValueHost that will be created to 
      * support the Descriptor.
      * InputValueHost - 'Input'
      * NonInputValueHost - 'Noninput'
      * HTMLElementValueHost - 'HTMLElement'
+     * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
+     * by checking for inclusion of the IInputValueHostDescriptor.ValidationDescriptors property.
      */
-    Type: string;
+    Type?: string;
     /**
      * Provides a unique "name" for this ValueHost, within the scope of one
      * ValueHostsManager instance.

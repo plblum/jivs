@@ -3,11 +3,12 @@ import { valGlobals } from "../../src/Services/ValidationGlobals";
 import {
     type IValueHostState, type IValueHost, IValueHostDescriptor
 } from "../../src/Interfaces/ValueHost";
-import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
-import { IValueHostGenerator, ValueHostFactory, RegisterDefaultValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
+import { IValueHostCallbacks, ToIValueHostCallbacks, ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
+import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { MockValidationServices, MockValidationManager } from "../Mocks";
 import { StringLookupKey } from "../../src/DataTypes/LookupKeys";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
+import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 
 
 interface IPublicifiedValueHostState extends IValueHostState
@@ -66,7 +67,7 @@ beforeEach(() => {
 });
 afterEach(() => {
     let factory = new ValueHostFactory();
-    RegisterDefaultValueHostGenerators(factory);
+    RegisterStandardValueHostGenerators(factory);
     valGlobals.SetValueHostFactory(factory);
 });
 /**
@@ -501,5 +502,27 @@ describe('ValueHostBase.SaveIntoStore and GetFromStore', () => {
         expect(changes[2].Items!['KEY2']).toBeUndefined();
         expect(testItem.GetFromState('KEY1')).toBe(10);        
         expect(testItem.GetFromState('KEY2')).toBeUndefined();
+    });        
+});
+
+describe('ToIValueHostCallbacks function', () => {
+    test('Matches interface returns strongly typed object.', () => {
+        let testItem: IValueHostCallbacks = {
+            OnValueChanged: null,
+            OnValueHostStateChanged: null
+        };
+        expect(ToIValueHostCallbacks(testItem)).toBe(testItem);
+    });
+    test('Non-matching interface returns null.', () => {
+        let testItem: IValueHostCallbacks = {
+
+        };
+        expect(ToIValueHostCallbacks(testItem)).toBeNull();
+    });    
+    test('null returns null.', () => {
+        expect(ToIValueHostCallbacks(null)).toBeNull();
+    });        
+    test('Non-object returns null.', () => {
+        expect(ToIValueHostCallbacks(100)).toBeNull();
     });        
 });

@@ -7,9 +7,9 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "./ValueHostBase";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
 import type { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "../Interfaces/Validation";
-import { InputValueHostBase, ValueHostValidatedHandler, WidgetValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
+import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import type { IModelState, IValidationManager } from "../Interfaces/ValidationManager";
+import type { IValidationManagerState, IValidationManager } from "../Interfaces/ValidationManager";
 import { ValidationServices } from "../Services/ValidationServices";
 
 
@@ -47,7 +47,7 @@ import { ValidationServices } from "../Services/ValidationServices";
  * - Retain State objects that reflects the states of all ValueHost instances.
  *   This system can operate in a stateless way, so long as you keep
  *   these objects and pass them back via the Configuration object.
- *   Its OnModelStateChanged and OnValueHostStateChanged properties are callbacks
+ *   Its OnStateChanged and OnValueHostStateChanged properties are callbacks
  *   provide the latest State objects to you.
  * - Execute validation on demand to the consuming system, going
  *   through all eligible InputValueHosts.
@@ -60,7 +60,7 @@ import { ValidationServices } from "../Services/ValidationServices";
  * the UI and the ValueHosts. Auxillary Jivs libraries may handle this.
  */
 
-export class ValidationManager<TState extends IModelState> implements IValidationManager, IModelCallbacks {
+export class ValidationManager<TState extends IValidationManagerState> implements IValidationManager, IValidationManagerCallbacks {
     /**
      * Constructor
      * @param config - Provides ValidationManager with numerous configuration settings.
@@ -72,14 +72,14 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      *     // Just know that you need one object for each value that you want to connect
      *     // to the Validation Manager
      *      ],
-     *   SavedModelState: null, // or the state object previously returned with OnModelStateChanged
+     *   SavedState: null, // or the state object previously returned with OnStateChanged
      *   SavedValueHostStates: null, // or an array of the state objects previously returned with OnValueHostStateChanged
-     *   OnModelStateChanged: (validationManager, state)=> { },
+     *   OnStateChanged: (validationManager, state)=> { },
      *   OnValueHostStateChanged: (valueHost, state) => { },
-     *   OnModelValidated: (validationManager, validationResults)=> { },
+     *   OnValidated: (validationManager, validationResults)=> { },
      *   OnValueHostValidated: (valueHost, validationResult) => { },
      *   OnValueChanged: (valueHost, oldValue) => { },
-     *   OnWidgetValueChanged: (valueHost, oldValue) => { }
+     *   OnInputValueChanged: (valueHost, oldValue) => { }
      * }
      */
     constructor(config: ValidationManagerConfig) {
@@ -96,9 +96,9 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
             internalConfig.Services = new ValidationServices();
         this._valueHostDescriptors = {};
         this._valueHosts = {};
-        this._modelState = internalConfig.SavedModelState ?? {};
-        if (typeof this._modelState.StateChangeCounter !== 'number')
-            this._modelState.StateChangeCounter = 0;
+        this._state = internalConfig.SavedState ?? {};
+        if (typeof this._state.StateChangeCounter !== 'number')
+            this._state.StateChangeCounter = 0;
         this._lastValueHostStates = internalConfig.SavedValueHostStates ?? [];
         let descriptors = internalConfig.ValueHostDescriptors ?? [];
         for (let key in descriptors) {
@@ -144,10 +144,10 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * A copy of this is expected to be retained (redux/localstorage/etc)
      * by the caller to support recreating the ValidationManager in a stateless situation.
      */
-    protected get ModelState(): IModelState {
-        return this._modelState;
+    protected get State(): IValidationManagerState {
+        return this._state;
     }
-    private _modelState: IModelState;
+    private _state: IValidationManagerState;
 
     /**
      * Value retained from the constructor to share with calls to AddValueHost,
@@ -156,22 +156,22 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
     private _lastValueHostStates: Array<IValueHostState>;
 
     /**
-     * Use to change anything in IModelState without impacting the immutability 
+     * Use to change anything in IValidationManagerState without impacting the immutability 
      * of the current instance.
      * Your callback will be passed a cloned instance. Change any desired properties
      * and return that instance. It will become the new immutable value of
-     * the ModelState property.
+     * the State property.
      * @param updater - Your function to change and return a state instance.
      * @returns the state option that resulted from the work.
      * If there were changes, it is a new instance.
      */
     public UpdateState(updater: (stateToUpdate: TState) => TState): TState {
         AssertNotNull(updater, 'updater');
-        let toUpdate = DeepClone(this.ModelState);
+        let toUpdate = DeepClone(this.State);
         let updated = updater(toUpdate);
-        if (!DeepEquals(this.ModelState, updated)) {
-            this._modelState = updated;
-            this.OnModelStateChanged?.(this, updated);
+        if (!DeepEquals(this.State, updated)) {
+            this._state = updated;
+            this.OnStateChanged?.(this, updated);
         }
         return updated;
     }
@@ -301,7 +301,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * @param options - Provides guidance on which validators to include.
      * @returns Array of IValidateResult with empty array if all are valid
      */
-    public Validate(options?: IValidateOptions): Array<IValidateResult> //!!!PENDING change this to IModelValidateResults with IsValid and DoNotSave in addition to this array
+    public Validate(options?: IValidateOptions): Array<IValidateResult> //!!!PENDING change this to IValidateResults with IsValid and DoNotSave in addition to this array
     {
         if (!options)
             options = {};
@@ -311,7 +311,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
             list.push(vh.Validate(options));
         }
         if (!options || !options.OmitCallback)
-            this.OnModelValidated?.(this, list);
+            this.OnValidated?.(this, list);
         return list;
     }
 
@@ -383,22 +383,22 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
             }
     }
     /**
-     * Lists all error messages and supporting info about each validator
-     * for use by a widget that shows the local error messages (IInputValueHostState.ErrorMessage)
+     * Lists all issues found (error messages and supporting info) about each validator
+     * so the input field/element can show error messages and adjust its appearance.
      * @param valueHostId - identifies the ValueHost whose issues you want.
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
-     *   that scrolls the associated widget into view and sets focus.
+     *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    public GetIssuesForWidget(valueHostId: ValueHostId): Array<IIssueSnapshot> {
+    public GetIssuesForInput(valueHostId: ValueHostId): Array<IIssueSnapshot> {
         let vh = this.GetValueHost(valueHostId);
         if (vh && vh instanceof InputValueHostBase)
-            return vh.GetIssuesForWidget();
+            return vh.GetIssuesForInput();
         return [];
     }
     /**
@@ -406,7 +406,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * @param group 
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
-     *   that scrolls the associated widget into view and sets focus.
+     *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
@@ -420,14 +420,14 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
         }
         return list;
     }
-    //#region IModelCallbacks
+    //#region IValidationManagerCallbacks
     /**
      * Called when the ValidationManager's state has changed.
      * React example: React component useState feature retains this value
-     * and needs to know when to call the setModelState() with the stateToRetain
+     * and needs to know when to call its setState function with the stateToRetain
      */
-    public get OnModelStateChanged(): ModelStateChangedHandler | null {
-        return this.Config.OnModelStateChanged ?? null;
+    public get OnStateChanged(): ValidationManagerStateChangedHandler | null {
+        return this.Config.OnStateChanged ?? null;
     }
     /**
      * Called when ValidationManager's Validate method has returned.
@@ -435,8 +435,8 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
      * Use to change the disabled state of the submit button based on validity.
      */
-    public get OnModelValidated(): ModelValidatedHandler | null {
-        return this.Config.OnModelValidated ?? null;
+    public get OnValidated(): ValidationManagerValidatedHandler | null {
+        return this.Config.OnValidated ?? null;
     }
     /**
      * Called when any ValueHost had its IValueHostState changed.
@@ -471,22 +471,22 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
         return this.Config.OnValueChanged ?? null;
     }
     /**
-     * Called when the InputValueHost's WidgetValue property has changed.
+     * Called when the InputValueHost's InputValue property has changed.
      * If setup, you can prevent it from being fired with the options parameter of SetValue
      * to avoid round trips where you already know the details.
      * You can setup the same callback on individual InputValueHosts.
      * Here, it aggregates all InputValueHost notifications.
      */
-    public get OnWidgetValueChanged(): WidgetValueChangedHandler | null {
-        return this.Config.OnWidgetValueChanged ?? null;
+    public get OnInputValueChanged(): InputValueChangedHandler | null {
+        return this.Config.OnInputValueChanged ?? null;
     }
-    //#endregion IModelCallbacks
+    //#endregion IValidationManagerCallbacks
 }
 
 /**
  * Provides the configuration for the ValidationManager constructor
  */
-export interface ValidationManagerConfig extends IModelCallbacks
+export interface ValidationManagerConfig extends IValidationManagerCallbacks
 {
     /**
      * Provides services into the system. Dependency Injection and factories.
@@ -504,13 +504,13 @@ export interface ValidationManagerConfig extends IModelCallbacks
     /**
      * The state for the ValidationManager itself.
      * Its up to you to retain stateful information so that the service works statelessly.
-     * It will supply you with the changes to states through the OnModelStateChanged property.
+     * It will supply you with the changes to states through the OnStateChanged property.
      * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
      * the correct state.
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */
-    SavedModelState?: IModelState | null;
+    SavedState?: IValidationManagerState | null;
     /**
      * The state for each ValueHost. The array may not have the same states for all the ValueHostDescriptors
      * you are supplying. It will create defaults for those missing and discard those no longer in use.
@@ -538,7 +538,7 @@ interface IValueHostDescriptorsMap {
 }
 
 /**
- * All InputValueHosts for the model.
+ * All InputValueHosts for the Model.
  * Each entry must have a companion in InputValueDescriptors and ValueHostState
  * in this ValidationManager.
  */
@@ -546,42 +546,42 @@ interface IValueHostsMap {
     [valueHostId: ValueHostId]: IValueHost
 }
 
-export type ModelStateChangedHandler = (validationManager: IValidationManager, stateToRetain: IModelState) => void;
-export type ModelValidatedHandler = (validationManager: IValidationManager, validateResults: Array<IValidateResult>) => void;
+export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: IValidationManagerState) => void;
+export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<IValidateResult>) => void;
 
 
 /**
  * Provides callback hooks for the consuming system to supply to ValidationManager.
  * This instance is supplied in the constructor of ValidationManager.
  */
-export interface IModelCallbacks extends IInputValueHostCallbacks {
+export interface IValidationManagerCallbacks extends IInputValueHostCallbacks {
     /**
      * Called when the ValidationManager's state has changed.
      * React example: React component useState feature retains this value
-     * and needs to know when to call the setModelState() with the stateToRetain
+     * and needs to know when to call the setState function with the stateToRetain
      */
-    OnModelStateChanged?: ModelStateChangedHandler | null;
+    OnStateChanged?: ValidationManagerStateChangedHandler | null;
     /**
      * Called when ValidationManager's Validate method has returned.
      * Supplies the result to the callback.
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
      * Use to change the disabled state of the submit button based on validity.
      */
-    OnModelValidated?: ModelValidatedHandler | null;
+    OnValidated?: ValidationManagerValidatedHandler | null;
 }
 
 /**
- * Determines if the object implements IModelCallbacks.
+ * Determines if the object implements IValidationManagerCallbacks.
  * @param source 
- * @returns source typecasted to IModelCallbacks if appropriate or null if not.
+ * @returns source typecasted to IValidationManagerCallbacks if appropriate or null if not.
  */
-export function ToIModelCallbacks(source: any): IModelCallbacks | null
+export function ToIValidationManagerCallbacks(source: any): IValidationManagerCallbacks | null
 {
     if (ToIInputValueHostCallbacks(source))
     {
-        let test = source as IModelCallbacks;     
-        if (test.OnModelStateChanged !== undefined &&
-            test.OnModelValidated !== undefined)
+        let test = source as IValidationManagerCallbacks;     
+        if (test.OnStateChanged !== undefined &&
+            test.OnValidated !== undefined)
             return test;
     }
     return null;

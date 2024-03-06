@@ -45,7 +45,7 @@ export interface ICondition {
      * Evaluate something against the rules defined in the implementation. Return whether
      * the data was consistent or violates the rules, or the data couldn't be used to run the rule. 
      * @param valueHost - Most values are found amongst the ValueHosts in the ValueHostsManager.
-     * Conditions can look them up using ValueHostsManager.GetValueHost().GetValue or GetWidgetValue.
+     * Conditions can look them up using ValueHostsManager.GetValueHost().GetValue or GetInputValue.
      * This parameter is used as an optimization, both to avoid that lookup and to avoid
      * the user typing in a ValueHostId when creating the Condition instance.
      * InputValidator.Validate knows to pass the ValueHostId that hosts the InputValidator.
@@ -83,7 +83,7 @@ export interface ICondition {
  * When placed into the ICondition, it is treated as immutable
  * and can be used as state in React.
  * The server side could in fact supply this object via JSON,
- * allowing the server's model to dictate this. However, there are sometimes
+ * allowing the server's Model to dictate this. However, there are sometimes
  * cases a business rule is client side only (parser error converting "abc" to number)
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)

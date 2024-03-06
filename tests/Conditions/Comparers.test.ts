@@ -1,4 +1,4 @@
-import { DefaultComparer, ComparersResult, BooleanComparer, CaseInsensitiveComparer, DateTimeComparer, DateOnlyComparer, DateAsMonthYearComparer, DateAsAnniversaryComparer } from "../../src/Conditions/Comparers";
+import { DefaultComparer, ComparersResult, BooleanComparer, CaseInsensitiveComparer, DateTimeComparer, DateOnlyComparer, DateAsMonthYearComparer, DateAsAnniversaryComparer } from "../../src/DataTypes/Comparers";
 
 // function DefaultComparer(value1: any, value2: any): ComparersResult
 describe('Comparers.DefaultComparer', () => {

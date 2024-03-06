@@ -12,7 +12,7 @@ export abstract class StringConditionBase<TConditionDescriptor extends IStringCo
 {
     /**
      * Evaluate a value using its business rule and configuration in the Descriptor.
-     * @param valueHost - contains both the value from widget and the native value resolved by data type.
+     * @param valueHost - contains both the value from input field/element and the native value resolved by data type.
      * This function checks both in valueHost to determine a string source.
      * @param valueHostResolver 
      */
@@ -53,7 +53,7 @@ export abstract class StringConditionBase<TConditionDescriptor extends IStringCo
 export interface IStringConditionDescriptor extends IOneValueConditionDescriptor {
     /**
      * Indicates that validation is applied only after trimming a string value
-     * that is returned by a widget whose native datatype is string.
+     * that is returned by a input field/element whose native datatype is string.
      */
     Trim?: boolean;
 }

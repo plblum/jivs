@@ -8,19 +8,19 @@ import type { IValueHost, ISetValueOptions, IValueHostDescriptor, IValueHostStat
 
 /**
 * Manages a value that may use input validation.
-* This level is associated with the data entry widget itself.
+* This level is associated with the input field/element itself.
 */
 export interface IInputValueHost extends IValueHost {
     /**
-     * Exposes the latest value retrieved from the widget
-     * exactly as supplied by the widget. For example,
+     * Exposes the latest value retrieved from the input field/element
+     * exactly as supplied by the input. For example,
      * an <input type="date"> returns a string, not a date.
      * Strings are not cleaned up, no trimming applied.
      */
-    GetWidgetValue(): any;
+    GetInputValue(): any;
 
     /**
-     * System consumer assigns the value it also assigns to the widget.
+     * System consumer assigns the value it also assigns to the input field/element.
      * Its used with RequiredCondition and DataTypeCondition.
     * @param options - 
     * Validate - Invoke validation after setting the value.
@@ -29,17 +29,17 @@ export interface IInputValueHost extends IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetWidgetValue(value: any, options?: ISetValueOptions): void;
+    SetInputValue(value: any, options?: ISetValueOptions): void;
 
     /**
-     * Sets both (native data type) Value and Widget Value at the same time
+     * Sets both (native data type) Value and Input Value at the same time
      * and optionally invokes validation.
-     * Use when the consuming system resolves both widget and native values
+     * Use when the consuming system resolves both input field/element and native values
      * at the same time so there is one state change and attempt to validate.
      * @param nativeValue - Can be undefined to indicate the value could not be resolved
-     * from the widget's value, such as inability to convert a string to a date.
+     * from the inputs's value, such as inability to convert a string to a date.
      * All other values, including null and the empty string, are considered real data.
-     * @param widgetValue - Can be undefined to indicate there is no value.
+     * @param inputValue - Can be undefined to indicate there is no value.
      * All other values, including null and the empty string, are considered real data.
     * @param options - 
     * Validate - Invoke validation after setting the value.
@@ -48,10 +48,10 @@ export interface IInputValueHost extends IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetValues(nativeValue: any, widgetValue: any, options?: ISetValueOptions): void;
+    SetValues(nativeValue: any, inputValue: any, options?: ISetValueOptions): void;
 
     /**
-     * When SetValue, SetValues, SetWidgetValue, or SetToUndefined occurs,
+     * When SetValue, SetValues, SetInputValue, or SetToUndefined occurs,
      * all other InputValueHosts get notified here so they can rerun validation
      * when any of their Conditions specify the ValueHostID that changed.
      * @param valueHostIdThatChanged 
@@ -123,17 +123,17 @@ export interface IInputValueHost extends IValueHost {
 
     /**
      * Lists all error messages and supporting info about each validator
-     * for use by a widget that shows its own error messages (IInputValueHostState.ErrorMessage)
+     * for use by a input field/element that shows its own error messages (IInputValueHostState.ErrorMessage)
      * @returns 
      */
-    GetIssuesForWidget(): Array<IIssueSnapshot>;
+    GetIssuesForInput(): Array<IIssueSnapshot>;
 
     /**
      * A list of all issues to show in a Validation Summary widget for a giving validation group.
      * @param group 
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
-     *   that scrolls the associated widget into view and sets focus.
+     *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
@@ -156,25 +156,6 @@ export interface IInputValueHost extends IValueHost {
     RequiresInput: boolean;
 }
 
-/**
- * Determines if the object implements IInputValueHost.
- * @param source 
- * @returns source typecasted to IInputValueHost if appropriate or null if not.
- */
-export function ToIInputValueHost(source: any): IInputValueHost | null
-{
-    if (source && typeof source === 'object')
-    {
-        let test = source as IInputValueHost;    
-        // some select members of IInputValueHost
-        if (test.GetWidgetValue !== undefined && 
-            test.SetWidgetValue !== undefined &&
-            test.Validate !== undefined &&
-            test.GetIssuesForWidget !== undefined)
-            return test;
-    }
-    return null;
-}
 
 /**
  * Just the data that is used to describe this input value.
@@ -182,7 +163,7 @@ export function ToIInputValueHost(source: any): IInputValueHost | null
  * It should be generatable from JSON, and simply gets typed to IInputValueHostDescriptor.
  * This provides the backing data for each InputValueHost.
  * The server side could in fact supply this object via JSON,
- * allowing the server's model to dictate this, except values are converted to their native forms
+ * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
  * However, there are sometimes
  * cases a business rule is client side only (parser error converting "abc" to number)
@@ -200,13 +181,13 @@ export interface IInputValueHostBaseDescriptor extends IValueHostDescriptor {
 export interface IInputValueHostBaseState extends IValueHostState, IValidateResult {
 
     /**
-     * The value from the widget, even if invalid.
+     * The value from the input field/element, even if invalid.
      * The value may not be the native data type.
      * For example, it could be a string from an <input>
      * whose DataType=Date, meaning the Value property must be a Date object.
      * Will be 'undefined' if the value has not been retrieved.
      */
-    WidgetValue?: any;
+    InputValue?: any;
 
 
     /**
@@ -216,7 +197,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IValidateResu
     Group?: string;
 
     /**
-     * When converting the widget value to native and there is an error
+     * When converting the input field/element value to native and there is an error
      * it should be saved here. It can be displayed as part of the DataTypeCheckCondition's
      * error message token {ConversionError}.
      * Cleared when setting the value without an error.
@@ -236,7 +217,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IValidateResu
  * It should be generatable from JSON, and simply gets typed to IInputValueHostDescriptor.
  * This provides the backing data for each InputValueHost.
  * The server side could in fact supply this object via JSON,
- * allowing the server's model to dictate this, except values are converted to their native forms
+ * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
  * However, there are sometimes
  * cases a business rule is client side only (parser error converting "abc" to number)
