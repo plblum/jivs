@@ -4,10 +4,11 @@ import { InputValidatorFactory } from "../ValueHosts/InputValidator";
 import { ConsoleLogger } from "./ConsoleLogger";
 import { MessageTokenResolver } from "../ValueHosts/MessageTokenResolver";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import { type IValueHostFactory, ValueHostFactory, RegisterDefaultValueHostGenerators } from "../ValueHosts/ValueHostFactory";
-import { IInputValidatorFactory, IMessageTokenResolver } from "../Interfaces/InputValidator";
-import { ILogger } from "../Interfaces/Logger";
-import { IDataTypeResolver } from "../Interfaces/DataTypes";
+import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../ValueHosts/ValueHostFactory";
+import type { IInputValidatorFactory, IMessageTokenResolver } from "../Interfaces/InputValidator";
+import type { ILogger } from "../Interfaces/Logger";
+import type { IDataTypeResolver } from "../Interfaces/DataTypes";
+import type { IValueHostFactory } from "../Interfaces/ValueHostFactory";
 
 
 /**
@@ -32,7 +33,7 @@ export class ValidationGlobals
     public GetValueHostFactory(): IValueHostFactory {
         if (!this._valueHostFactory) {
             let factory = new ValueHostFactory();
-            RegisterDefaultValueHostGenerators(factory);
+            RegisterStandardValueHostGenerators(factory);
             this._valueHostFactory = factory;
         }
         return this._valueHostFactory;

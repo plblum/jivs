@@ -2,7 +2,7 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { DeepEquals, ValidationGroupsMatch } from "../Utilities/Utilities";
 import { type ISetValueOptions} from "../Interfaces/ValueHost";
 import { IValueHostCallbacks, ToIValueHostCallbacks, ValueHostBase } from "./ValueHostBase";
-import { type IValueHostGenerator } from "./ValueHostFactory";
+import { type IValueHostGenerator } from "../Interfaces/ValueHostFactory";
 import { IValueHostResolver, IValueHostsManager, ToIValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { IInputValueHost, IInputValueHostBaseDescriptor, IInputValueHostBaseState } from "../Interfaces/InputValueHost";
 import { IBusinessLogicError, IIssueFound, IIssueSnapshot, IValidateOptions, IValidateResult, ValidationResult, ValidationSeverity } from "../Interfaces/Validation";

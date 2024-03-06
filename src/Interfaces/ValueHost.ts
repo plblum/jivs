@@ -42,13 +42,6 @@ import { IValueHostResolver } from "./ValueHostResolver";
  * - Most Conditions look at the NativeValue via GetNativeValue.
  */
 export interface IValueHost {
-    // /**
-    //  * Reference to the ValueHostsManager that hosts it.
-    //  * It is normally ValidationManager itself.
-    //  * Provides access to IValidationServices.
-    //  */
-    // ValueHostsManager: IValueHostsManager;
-
     /**
      * Provides a unique identity for this ValueHost.
      * Consuming systems use this ID to locate the ValueHost

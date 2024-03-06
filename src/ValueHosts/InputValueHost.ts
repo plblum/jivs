@@ -15,10 +15,10 @@ import { AssertNotNull } from "../Utilities/ErrorHandling";
 /**
  * Standard implementation of IInputValueHost. It owns a list of InputValidators
  * which support its Validate method.
-* Each instance depends on a few things, all passed into the constructor
-* and treated as immutable.
-* - valueHostsManager - Contains all ValueHosts. 
-*   It is the owner of all state and provides group validation.
+ * Use ValueHostDescriptor.Type = "Input" for the ValidationManager to use this class.
+ * 
+* Each instance depends on a few things, all passed into the constructor:
+* - valueHostsManager - Typically this is the ValidationManager.
 * - IInputValueHostDescriptor - The business logic supplies these rules
 *   to implement a ValueHost's Id, label, data type, validation rules,
 *   and other business logic metadata.
