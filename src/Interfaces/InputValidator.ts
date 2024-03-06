@@ -40,7 +40,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostId
  * When placed into the InputValidatorInfo, it is treated as immutable
  * and can be used as state in React.
  * The server side could in fact supply this object via JSON,
- * allowing the server's model to dictate this. However, there are sometimes
+ * allowing the server's Model to dictate this. However, there are sometimes
  * cases a business rule is client side only (parser error converting "abc" to number)
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
@@ -116,7 +116,7 @@ export interface IInputValidatorDescriptor {
 
     /**
      * Validators can be part of one or more named groups.
-     * Groups are part of validating the complete model.
+     * Groups are part of validating the complete Model.
      * All validators on the page may be asked to validate.
      * Often fields are used for different aspects of the page, like 
      * a login or search field in the header is a different feature
@@ -223,7 +223,7 @@ export interface ITokenLabelAndValue
  * Values are:
  * 'label' - the target of the message, such as the ValueHost's label. {Label} is an example
  * 'parameter' - configuration data, such as a ConditionDescriptor's rules. {Minimum} is an example
- * 'value' - some live data, such as the widget's current value. {Value} is an example
+ * 'value' - some live data, such as the ValueHost's current value. {Value} is an example
  * 'message' - text just augments the error message, like {ConversionError} of DataTypeCheckCondition
  */
     Purpose?: 'label' | 'parameter' | 'value' | 'message';

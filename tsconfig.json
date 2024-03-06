@@ -40,5 +40,5 @@
 
   },
   "include": [ "src", "types"], 
-  "exclude": ["tests"]
+  "exclude": ["tests", "examples"]
 }

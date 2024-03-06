@@ -4,7 +4,7 @@ import { IMessageTokenResolver } from "./InputValidator";
 import { ILogger } from "./Logger";
 
 /**
- * Provides a dependency injection model to this library.
+ * Provides a dependency injection approach to this library.
  */
 
 /**

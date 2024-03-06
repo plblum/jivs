@@ -1,54 +1,19 @@
 import { ValueHostId } from "../DataTypes/BasicTypes";
+import { AssertNotNull } from "../Utilities/ErrorHandling";
 import { DeepEquals, DeepClone } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
-import { type IValueHost, type ISetValueOptions, IValueHostState, IValueHostDescriptor } from "../Interfaces/ValueHost";
-import { IValueHostsManager, IValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
+import type { IValueHost, ISetValueOptions, IValueHostState, IValueHostDescriptor } from "../Interfaces/ValueHost";
+import type { IValueHostsManager, IValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
+import { IValueHostGenerator } from "../Interfaces/ValueHostFactory";
 
 
-
-export type ValueChangedHandler = (valueHost: IValueHost, oldValue: any) => void;
-export type ValueHostStateChangedHandler = (valueHost: IValueHost, stateToRetain: IValueHostState) => void;
 /**
- * Provides callback hooks for the consuming system to get feedback from ValueHosts.
+ * Exposes values to the validation engine.
+ * Please see ../Interfaces/ValueHost for an overview of ValueHosts
  */
-export interface IValueHostCallbacks {
-    /**
-     * Called when any ValueHost had its IValueHostState changed.
-     * React example: React component useState feature retains this value
-     * and needs to know when to call the setValueHostState() with the stateToRetain.
-     * You can setup the same callback on individual ValueHosts.
-     * Here, it aggregates all ValueHost notifications.
-     */
-    OnValueHostStateChanged?: ValueHostStateChangedHandler | null;
 
-    /**
-     * Called when the ValueHost's Value property has changed.
-     * If setup, you can prevent it from being fired with the options parameter of SetValue
-     * to avoid round trips where you already know the details.
-     * You can setup the same callback on individual ValueHosts.
-     * Here, it aggregates all ValueHost notifications.
-     */
-    OnValueChanged?: ValueChangedHandler | null;
-}
 /**
- * Determines if the object implements IValueHostCallbacks.
- * @param source 
- * @returns source typecasted to IValueHostCallbacks if appropriate or null if not.
- */
-export function ToIValueHostCallbacks(source: any): IValueHostCallbacks | null
-{
-    if (source && typeof source === 'object')
-    {
-        let test = source as IValueHostCallbacks;     
-        if (test.OnValueHostStateChanged !== undefined && 
-            test.OnValueChanged !== undefined)
-            return test;
-    }
-    return null;
-}
-/**
- * Standard implementation of IInputValueHost
+ * Standard implementation of IValueHost
  */
 export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TState extends IValueHostState>
     implements IValueHost, IValueHostsManagerAccessor {
@@ -60,12 +25,14 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
         this._descriptor = descriptor;
         this._state = state;
     }
-
+//#region IValueHostsManagerAccessor
     public get ValueHostsManager(): IValueHostsManager {
         return this._valueHostsManager;
     }
     private _valueHostsManager: IValueHostsManager;
 
+    //#endregion IValueHostsManagerAccessor
+    
     protected get Services(): IValidationServices
     {
         return this.ValueHostsManager.Services;
@@ -85,8 +52,6 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
      * Provides a unique identity for this ValueHost.
      * Consuming systems use this ID to locate the ValueHost
      * for which they will transfer a value, via ValueHostsManager.GetValueHost(this id)
-     * !!! Perhaps widgets should assign this to an HTML tag's attribute, like:
-     * <input data-inputvaluehost="{this value}" />
      */
     public GetId(): ValueHostId {
         return this._descriptor.Id;
@@ -102,9 +67,9 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     }
 
     /**
-     * Gets the native value, which is what can be written to the model.
+     * Gets the native value, which is what can be written to the Model.
      * Returns undefined if the native value could not be resolved
-     * from the widget.
+     * from the input field/element.
      */
     public GetValue(): any {
         return this.State.Value;
@@ -114,7 +79,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
      * System consumer assigns the native value to make it available
      * to most Conditions during validation.
     * @param value - Can be undefined to indicate the value could not be resolved
-    * from the widget's value, such as inability to convert a string to a date.
+    * from the input field/element's value, such as inability to convert a string to a date.
     * All other values, including null and the empty string, are considered real data.
     * When undefined, IsChanged will still be changed to true unless options.Reset = true.
     * @param options - 
@@ -143,8 +108,8 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     
 
     /**
-     * System consumer calls this when it attempts to resolve
-     * the widget value but cannot. It identifies that the native value
+     * Consuming system calls this when it attempts to resolve
+     * the input field/element value but cannot. It identifies that the native value
      * is undefined.
      * Note this does not reset IsChanged to false without explicitly 
      * specifying options.Reset = true;
@@ -184,7 +149,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     /**
      * Determines how the validation system sees the Value in terms of editing.
      * When true, it was changed. When false, it was not.
-     * The SetValue/SetWidgetValue/SetValues functions are the only ones to change this flag.
+     * The SetValue/SetInputValue/SetValues functions are the only ones to change this flag.
      * They all set it to true automatically except set it to false when the option.Reset is true.
      * The ValueHost.Validate function may skip validation of an InputValueHost when IsChanged is false,
      * depending on the options for Validate. For example, calling validate immediately after loading
@@ -263,4 +228,67 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     {
         return this.State.Items ? this.State.Items[key] : undefined;
     }
+}
+
+export type ValueChangedHandler = (valueHost: IValueHost, oldValue: any) => void;
+export type ValueHostStateChangedHandler = (valueHost: IValueHost, stateToRetain: IValueHostState) => void;
+/**
+ * Provides callback hooks for the consuming system to get feedback from ValueHosts.
+ */
+export interface IValueHostCallbacks {
+    /**
+     * Called when any ValueHost had its IValueHostState changed.
+     * React example: React component useState feature retains this value
+     * and needs to know when to call the setValueHostState() with the stateToRetain.
+     * You can setup the same callback on individual ValueHosts.
+     * Here, it aggregates all ValueHost notifications.
+     */
+    OnValueHostStateChanged?: ValueHostStateChangedHandler | null;
+
+    /**
+     * Called when the ValueHost's Value property has changed.
+     * If setup, you can prevent it from being fired with the options parameter of SetValue
+     * to avoid round trips where you already know the details.
+     * You can setup the same callback on individual ValueHosts.
+     * Here, it aggregates all ValueHost notifications.
+     */
+    OnValueChanged?: ValueChangedHandler | null;
+}
+/**
+ * Determines if the object implements IValueHostCallbacks.
+ * @param source 
+ * @returns source typecasted to IValueHostCallbacks if appropriate or null if not.
+ */
+export function ToIValueHostCallbacks(source: any): IValueHostCallbacks | null
+{
+    if (source && typeof source === 'object')
+    {
+        let test = source as IValueHostCallbacks;     
+        if (test.OnValueHostStateChanged !== undefined && 
+            test.OnValueChanged !== undefined)
+            return test;
+    }
+    return null;
+}
+
+export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
+    public abstract CanCreate(descriptor: IValueHostDescriptor): boolean;
+
+    public abstract Create(valueHostsManager: IValueHostsManager, descriptor: IValueHostDescriptor, state: IValueHostState): IValueHost;
+
+    /**
+     * Looking for changes to the ValidationDescriptors to impact IssuesFound.
+     * If IssuesFound did change, fix ValidationResult for when Invalid to 
+     * review IssuesFound in case it is only a Warning, which makes ValidationResult Valid.
+     * @param state 
+     * @param descriptor 
+     */
+    public abstract CleanupState(state: IValueHostState, descriptor: IValueHostDescriptor): void;
+    public CreateState(descriptor: IValueHostDescriptor): IValueHostState {
+        return {
+            Id: descriptor.Id,
+            Value: descriptor.InitialValue
+        };
+    }
+
 }

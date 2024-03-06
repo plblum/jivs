@@ -5,7 +5,7 @@ import { IntlLocalizationAdapter } from "../src/DataTypes/IntlLocalizationAdapte
 import { type ILogger, LoggingLevel } from "../src/Interfaces/Logger";
 import { MessageTokenResolver  } from "../src/ValueHosts/MessageTokenResolver";
 import type { IValidationServices } from "../src/Interfaces/ValidationServices";
-import type { IModelCallbacks, ModelStateChangedHandler, ModelValidatedHandler } from "../src/ValueHosts/ValidationManager";
+import type { IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../src/ValueHosts/ValidationManager";
 import type { IValueHost, ISetValueOptions, IValueHostState } from "../src/Interfaces/ValueHost";
 import { CreateDataTypeResolverWithManyLAs } from "./DataTypes/DataTypeResolver.test";
 import { commonBuiltInToStringLookupKeys } from "../src/DataTypes/LookupKeys";
@@ -15,7 +15,7 @@ import { ConditionBase } from "../src/Conditions/ConditionBase";
 import { IConditionDescriptor, ConditionEvaluateResult, ConditionCategory, IConditionFactory } from "../src/Interfaces/Conditions";
 import { IInputValueHost } from "../src/Interfaces/InputValueHost";
 import { IValidateOptions, IValidateResult, ValidationResult, IBusinessLogicError, IIssueFound, IIssueSnapshot } from "../src/Interfaces/Validation";
-import { InputValueHostBase, ValueHostValidatedHandler, WidgetValueChangedHandler } from "../src/ValueHosts/InputValueHostBase";
+import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler } from "../src/ValueHosts/InputValueHostBase";
 import { IMessageTokenResolver } from "../src/Interfaces/InputValidator";
 import { IDataTypeResolver } from "../src/Interfaces/DataTypes";
 import { IValidationManager } from "../src/Interfaces/ValidationManager";
@@ -94,7 +94,7 @@ export class MockValueHost implements IValueHost
 export class MockInputValueHost extends MockValueHost
     implements IInputValueHost
 {
-    _widgetValue: any = undefined;
+    _inputValue: any = undefined;
     _conversionErrorMessage: string | undefined;
 
     public override SetValue(value: any, options?: ISetValueOptions | undefined): void {
@@ -105,16 +105,16 @@ export class MockInputValueHost extends MockValueHost
             this._conversionErrorMessage = undefined;        
     }
 
-    public GetWidgetValue() {
-        return this._widgetValue;
+    public GetInputValue() {
+        return this._inputValue;
     }
-    SetWidgetValue(value: any, options?: ISetValueOptions | undefined): void {
-        this._widgetValue = value;
+    SetInputValue(value: any, options?: ISetValueOptions | undefined): void {
+        this._inputValue = value;
         this._conversionErrorMessage = undefined;
     }
-    SetValues(nativeValue: any, widgetValue: any, options?: ISetValueOptions | undefined): void {
+    SetValues(nativeValue: any, inputValue: any, options?: ISetValueOptions | undefined): void {
         this.SetValue(nativeValue);
-        this.SetWidgetValue(widgetValue);
+        this.SetInputValue(inputValue);
         if (nativeValue === undefined && options && options.ConversionErrorTokenValue)
             this._conversionErrorMessage = options.ConversionErrorTokenValue;
         else
@@ -145,7 +145,7 @@ export class MockInputValueHost extends MockValueHost
     GetIssuesFound(): Array<IIssueFound> | null {
         throw new Error("Method not implemented.");
     }    
-    GetIssuesForWidget(): IIssueSnapshot[] {
+    GetIssuesForInput(): IIssueSnapshot[] {
         throw new Error("Method not implemented.");
     }
     GetIssuesForSummary(group?: string | undefined): IIssueSnapshot[] {
@@ -248,7 +248,7 @@ export class MockValidationServices implements IValidationServices
  * MockValidationManager limited to implementing support for 
  * child ValueHosts.
  */
-export class MockValidationManager implements IValidationManager, IModelCallbacks
+export class MockValidationManager implements IValidationManager, IValidationManagerCallbacks
 {
     constructor(services: IValidationServices)
     {
@@ -275,11 +275,11 @@ export class MockValidationManager implements IValidationManager, IModelCallback
         return vh;
     }
 
-    public AddInputValueHost(id: string, dataTypeLookupKey: string, label: string, widgetValue?: any, nativeValue?: any): MockInputValueHost
+    public AddInputValueHost(id: string, dataTypeLookupKey: string, label: string, inputValue?: any, nativeValue?: any): MockInputValueHost
     {
         let vh = new MockInputValueHost(this, id, dataTypeLookupKey, label);
         this._valueHosts.set(id, vh);
-        vh._widgetValue = widgetValue;
+        vh._inputValue = inputValue;
         vh._value = nativeValue;
         return vh;
     }
@@ -319,28 +319,28 @@ export class MockValidationManager implements IValidationManager, IModelCallback
     {
         throw new Error("Method not implemented.");        
     }        
-    GetIssuesForWidget(valueHostId: string): IIssueSnapshot[] {
+    GetIssuesForInput(valueHostId: string): IIssueSnapshot[] {
         throw new Error("Method not implemented.");
     }
     GetIssuesForSummary(group?: string | undefined): IIssueSnapshot[] {
         throw new Error("Method not implemented.");
     }
 
-    public get OnModelStateChanged(): ModelStateChangedHandler | null {
-        return this._onModelStateChanged;
+    public get OnStateChanged(): ValidationManagerStateChangedHandler | null {
+        return this._onStateChanged;
     }
-    public set OnModelStateChanged(fn: ModelStateChangedHandler) {
-        this._onModelStateChanged = fn;
+    public set OnStateChanged(fn: ValidationManagerStateChangedHandler) {
+        this._onStateChanged = fn;
     }
-    private _onModelStateChanged: ModelStateChangedHandler | null = null;
+    private _onStateChanged: ValidationManagerStateChangedHandler | null = null;
 
-    public get OnModelValidated(): ModelValidatedHandler | null {
-        return this._onModelValidated;
+    public get OnValidated(): ValidationManagerValidatedHandler | null {
+        return this._onValidated;
     }
-    public set OnModelValidated(fn: ModelValidatedHandler) {
-        this._onModelValidated = fn;
+    public set OnValidated(fn: ValidationManagerValidatedHandler) {
+        this._onValidated = fn;
     }
-    private _onModelValidated: ModelValidatedHandler | null = null;
+    private _onValidated: ValidationManagerValidatedHandler | null = null;
 
     public get OnValueHostStateChanged(): ValueHostStateChangedHandler | null {
         return this._onValueHostStateChanged;
@@ -366,13 +366,13 @@ export class MockValidationManager implements IValidationManager, IModelCallback
     }
     private _onValueChanged: ValueChangedHandler | null = null;
 
-    public get OnWidgetValueChanged(): WidgetValueChangedHandler | null {
-        return this._onWidgetValueChanged;
+    public get OnInputValueChanged(): InputValueChangedHandler | null {
+        return this._onInputValueChanged;
     }    
-    public set OnWidgetValueChanged(fn: WidgetValueChangedHandler) {
-        this._onWidgetValueChanged = fn;
+    public set OnInputValueChanged(fn: InputValueChangedHandler) {
+        this._onInputValueChanged = fn;
     }    
-    private _onWidgetValueChanged: WidgetValueChangedHandler | null = null;
+    private _onInputValueChanged: InputValueChangedHandler | null = null;
 }
 
 export class MockCapturingLogger implements ILogger

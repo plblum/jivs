@@ -42,6 +42,21 @@ export interface IValueHostsManager extends IValueHostResolver
     NotifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void;
     
 }
+/**
+ * Determines if the object implements IValueHostResolver.
+ * @param source 
+ * @returns source typecasted to IValueHostResolver if appropriate or null if not.
+ */
+export function ToIValueHostResolver(source: any): IValueHostResolver | null
+{
+    if (source && typeof source === 'object') {
+        let test = source as IValueHostResolver;    
+        if (test.GetValueHost !== undefined &&
+            test.Services !== undefined)
+            return test;
+    }
+    return null;
+}
 
 /**
  * Determines if the object implements IValueHostsManager.
@@ -50,7 +65,7 @@ export interface IValueHostsManager extends IValueHostResolver
  */
 export function ToIValueHostsManager(source: any): IValueHostsManager | null
 {
-    if (source && typeof source === 'object') {
+    if (ToIValueHostResolver(source)) {
         let test = source as IValueHostsManager;    
         if (test.NotifyOtherValueHostsOfValueChange !== undefined)
             return test;

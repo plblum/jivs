@@ -490,7 +490,7 @@ describe('InputValidator.Validate', () => {
 
     test('No issue found. Returns ConditionEvaluateResult.Match', () => {
         let config = SetupWithField1AndField2();
-        config.valueHost1.SetWidgetValue('valid');
+        config.valueHost1.SetInputValue('valid');
 
         let vrResult: IInputValidateResult | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
@@ -502,7 +502,7 @@ describe('InputValidator.Validate', () => {
         let config = SetupWithField1AndField2({
             Severity: severity
         });
-        config.valueHost1.SetWidgetValue('');   // will be invalid
+        config.valueHost1.SetInputValue('');   // will be invalid
         let vrResult: IInputValidateResult | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -527,7 +527,7 @@ describe('InputValidator.Validate', () => {
             ErrorMessage: errorMessage,
             SummaryErrorMessage: summaryErrorMessage,
         });
-        config.valueHost1.SetWidgetValue('');   // will be an issue
+        config.valueHost1.SetInputValue('');   // will be an issue
         let vrResult: IInputValidateResult | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -551,8 +551,8 @@ describe('InputValidator.Validate', () => {
         let config = SetupWithField1AndField2(descriptorChanges);
         let logger = config.services.LoggerService as MockCapturingLogger;
         logger.MinLevel = LoggingLevel.Info;  // to confirm logged condition result        
-        config.valueHost1.SetWidgetValue('');   // will be invalid
-        config.valueHost2.SetWidgetValue('');   // for use by Enabler to be invalid
+        config.valueHost1.SetInputValue('');   // will be invalid
+        config.valueHost2.SetInputValue('');   // for use by Enabler to be invalid
         let vrResult: IInputValidateResult | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -577,7 +577,7 @@ describe('InputValidator.Validate', () => {
     test('Issue exists. Enabler = Undetermined. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
             EnablerDescriptor: <IRangeConditionDescriptor>{
-                // the Widget value is '', which causes this condition to return Undetermined
+                // the input value is '', which causes this condition to return Undetermined
                 Type: RangeConditionType, ValueHostId: 'Field2',
                 Minimum: 0, Maximum: 10
             }
@@ -588,8 +588,8 @@ describe('InputValidator.Validate', () => {
         let config = SetupWithField1AndField2(descriptorChanges);
         let logger = config.services.LoggerService as MockCapturingLogger;
         logger.MinLevel = LoggingLevel.Info;  // to confirm logged condition result
-        config.valueHost1.SetWidgetValue('');   // will be invalid
-        config.valueHost2.SetWidgetValue('ABC');   // for use by Enabler to enable the condition
+        config.valueHost1.SetInputValue('');   // will be invalid
+        config.valueHost2.SetInputValue('ABC');   // for use by Enabler to enable the condition
         let vrResult: IInputValidateResult | null = null;
         expect(() => vrResult = config.inputValidator.Validate(validateOptions)).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -603,7 +603,7 @@ describe('InputValidator.Validate', () => {
     test('Issue exists. Enabler = Match. Returns Issue with correct error messages', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             EnablerDescriptor: <IRequiredTextConditionDescriptor>{
-                // the Widget value is 'ABC', which causes this condition to return Match
+                // the input value is 'ABC', which causes this condition to return Match
                 Type: RequiredTextConditionType, ValueHostId: 'Field2'
             }
         }, {}, 2);
@@ -714,7 +714,7 @@ describe('GetValuesForTokens', () => {
                 ValueHostId: null
             }
         });
-        config.valueHost1.SetWidgetValue('Value1');
+        config.valueHost1.SetInputValue('Value1');
         let tlvs: Array<ITokenLabelAndValue> | null = null;
         expect(() => tlvs = config.inputValidator.GetValuesForTokens(config.valueHost1, config.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();
@@ -739,7 +739,7 @@ describe('GetValuesForTokens', () => {
                 Maximum: 'Z'
             }
         });
-        config.valueHost1.SetWidgetValue('C');
+        config.valueHost1.SetInputValue('C');
         let tlvs: Array<ITokenLabelAndValue> | null = null;
         expect(() => tlvs = config.inputValidator.GetValuesForTokens(config.valueHost1, config.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();
