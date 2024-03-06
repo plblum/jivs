@@ -3,9 +3,9 @@ import { ConditionFactory, RegisterStandardConditions } from "../../src/Conditio
 import { DataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { ValidationServices } from "../../src/Services/ValidationServices";
-import { IModelCallbacks, ModelStateChangedHandler, ValidationManager, ValidationManagerConfig } from "../../src/ValueHosts/ValidationManager";
+import { IModelCallbacks, ModelStateChangedHandler, ToIModelCallbacks, ValidationManager, ValidationManagerConfig } from "../../src/ValueHosts/ValidationManager";
 import { IValueHost, IValueHostDescriptor, IValueHostState } from "../../src/Interfaces/ValueHost";
-import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationServices, NeverMatchesConditionType, RegisterPredictableConditions } from "../Mocks";
+import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationManager, MockValidationServices, NeverMatchesConditionType, RegisterPredictableConditions } from "../Mocks";
 import { InputValueHostType, InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
 import { BusinessLogicInputValueHost, BusinessLogicValueHostId } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { ValueHostId } from '../../src/DataTypes/BasicTypes';
@@ -15,6 +15,8 @@ import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import { IModelState, IValidationManager } from '../../src/Interfaces/ValidationManager';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { DeepClone } from '../../src/Utilities/Utilities';
+import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, ToIValueHostResolver, ToIValueHostsManager, ToIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
+import { ValueHost } from '../../src/ValueHosts/ValueHost';
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<IModelState> {
@@ -639,6 +641,37 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
     });        
 });
 describe('ValidationManager.DiscardValueHost completely removes ValueHost, its state and descriptor', () => {
+    test('After adding in the VM Config, discard the only one leaves empty valueHosts, descriptors, and state', () => {
+        let descriptor: IInputValueHostDescriptor = {
+            Id: 'Field1',
+            Type: InputValueHostType,
+            Label: 'Field 1',
+            ValidatorDescriptors: null,
+        };
+        let config: ValidationManagerConfig = {
+            Services: new MockValidationServices(false, false),
+            ValueHostDescriptors: [descriptor],
+            SavedValueHostStates: [{
+                Id: descriptor.Id,
+                Value: 10
+            }]
+        };
+        let testItem = new PublicifiedValidationManager(config);
+        expect(testItem.GetValueHost(descriptor.Id)!.GetValue()).toBe(10);  // to prove later this is deleted
+
+        expect(() => testItem.DiscardValueHost(descriptor)).not.toThrow();
+
+        expect(testItem.ExposedValueHosts).not.toBeNull();
+        expect(Object.keys(testItem.ExposedValueHosts).length).toBe(0);
+        expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
+        expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(0);
+        expect(testItem.ExposedModelState).not.toBeNull();
+
+        // add back the descriptor to confirm the original state (value=10) was discarded
+        let addedVH = testItem.AddValueHost(descriptor, null);
+        expect(addedVH.GetValue()).toBeUndefined();
+
+    });    
     test('Discard the only one leaves empty valueHosts, descriptors, and state', () => {
         let testItem = new PublicifiedValidationManager({ Services: new MockValidationServices(false, false), ValueHostDescriptors: [] });
         let descriptor: IInputValueHostDescriptor = {
@@ -1312,4 +1345,121 @@ describe('ValidationManager.UpdateState', () => {
             let testItem = setup.validationManager as ValidationManager<ITestExtendedModelState>;
             expect(() => testItem.UpdateState(null!)).toThrow(/updater/);
         });
+});
+describe('ToIValueHostResolverfunction', () => {
+    test('Matches interface returns strongly typed object.', () => {
+        let testItem: IValueHostResolver = {
+            GetValueHost: (id) => { return <any>{} },
+            Services: new MockValidationServices(false, false),
+        };
+        expect(ToIValueHostResolver(testItem)).toBe(testItem);
+    });
+    test('ValidationManager matches and returns itself.', () => {
+        let testItem = new ValidationManager({
+            Services: null,
+            ValueHostDescriptors: []
+        });
+        expect(ToIValueHostResolver(testItem)).toBe(testItem);
+    });    
+    test('Non-matching interface returns null.', () => {
+        let testItem = {};
+        expect(ToIValueHostResolver(testItem)).toBeNull();
+    });    
+    test('null returns null.', () => {
+        expect(ToIValueHostResolver(null)).toBeNull();
+    });        
+    test('Non-object returns null.', () => {
+        expect(ToIValueHostResolver(100)).toBeNull();
+    });        
+});
+describe('ToIValueHostsManager function', () => {
+    test('Matches interface returns strongly typed object.', () => {
+        let testItem: IValueHostsManager = {
+            GetValueHost: (id) => { return <any>{} },
+            Services: new MockValidationServices(false, false),
+            NotifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
+        };
+        expect(ToIValueHostsManager(testItem)).toBe(testItem);
+    });
+    test('ValidationManager matches and returns itself.', () => {
+        let testItem = new ValidationManager({
+            Services: null,
+            ValueHostDescriptors: []
+        });
+        expect(ToIValueHostsManager(testItem)).toBe(testItem);
+    });    
+    test('Non-matching interface returns null.', () => {
+        let testItem = {};
+        expect(ToIValueHostsManager(testItem)).toBeNull();
+    });    
+    test('null returns null.', () => {
+        expect(ToIValueHostsManager(null)).toBeNull();
+    });        
+    test('Non-object returns null.', () => {
+        expect(ToIValueHostsManager(100)).toBeNull();
+    });        
+});
+describe('ToIValueHostsManagerAccessor function', () => {
+    test('Matches interface returns strongly typed object.', () => {
+        let testItem: IValueHostsManagerAccessor = {
+            ValueHostsManager :{
+                GetValueHost: (id) => { return <any>{} },
+                Services: new MockValidationServices(false, false),
+                NotifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
+            }
+        };
+        expect(ToIValueHostsManagerAccessor(testItem)).toBe(testItem);
+    });
+    test('ValueHost matches and returns itself.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new ValueHost(vm, {
+            Id: 'Field1',
+            Label: 'Label1',
+        },
+        {
+                Id: 'Field1',
+                Value: undefined
+        });
+        expect(ToIValueHostsManagerAccessor(testItem)).toBe(testItem);
+    });    
+    test('Non-matching interface returns null.', () => {
+        let testItem = {};
+        expect(ToIValueHostsManagerAccessor(testItem)).toBeNull();
+    });    
+    test('null returns null.', () => {
+        expect(ToIValueHostsManagerAccessor(null)).toBeNull();
+    });        
+    test('Non-object returns null.', () => {
+        expect(ToIValueHostsManagerAccessor(100)).toBeNull();
+    });        
+});
+describe('ToIModelCallbacks function', () => {
+    test('Matches interface returns strongly typed object.', () => {
+        let testItem: IModelCallbacks = {
+            OnValueChanged: (vh: IValueHost, old: any) => {},
+            OnValueHostStateChanged: (vh: IValueHost, state: IValueHostState) => {},
+            OnWidgetValueChanged: (vh: IInputValueHost, old: any)  => {},
+            OnValueHostValidated: (vh: IInputValueHost, validationResult: IValidateResult) => { },
+            OnModelStateChanged: (vm, state) => { },
+            OnModelValidated: (vm, results) => { }
+        };
+        expect(ToIModelCallbacks(testItem)).toBe(testItem);
+    });
+    test('ValidationManager matches and returns itself.', () => {
+        let testItem = new ValidationManager({
+            Services: null,
+            ValueHostDescriptors: []
+        });
+        expect(ToIModelCallbacks(testItem)).toBe(testItem);
+    });    
+    test('Non-matching interface returns null.', () => {
+        let testItem = {};
+        expect(ToIModelCallbacks(testItem)).toBeNull();
+    });    
+    test('null returns null.', () => {
+        expect(ToIModelCallbacks(null)).toBeNull();
+    });        
+    test('Non-object returns null.', () => {
+        expect(ToIModelCallbacks(100)).toBeNull();
+    });        
 });

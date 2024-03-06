@@ -468,7 +468,7 @@ export function ToIInputValueHostCallbacks(source: any): IInputValueHostCallback
     if (ToIValueHostCallbacks(source))
     {
         let test = source as IInputValueHostCallbacks;
-        if (typeof test.OnWidgetValueChanged !== undefined &&
+        if (test.OnWidgetValueChanged !== undefined &&
             test.OnValueHostValidated !== undefined)
             return test;
     }

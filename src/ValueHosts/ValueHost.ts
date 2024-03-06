@@ -7,7 +7,7 @@ import { ValueHostBase, ValueHostBaseGenerator } from "./ValueHostBase";
 
 /**
  * ValueHost implementation that does not handle validation. (See InputValueHost for validation)
- * Use ValueHostDescriptor.Type = "ValueHost" for the ValidationManager to use this class.
+ * Use ValueHostDescriptor.Type = "NotInput" for the ValidationManager to use this class.
  * 
  * Generally create these when:
  * - Expose a value from the UI that doesn't need validation, but its value is used by 
@@ -30,11 +30,21 @@ export class ValueHost extends ValueHostBase<IValueHostDescriptor, IValueHostSta
     }
 }
 
-export const ValueHostType = 'ValueHost';
+export const ValueHostType = 'NotInput';
+/**
+ * Supports ValueHost class. Used when the Descriptor.Type = ValueHostType
+ * or when the Type property is null/undefined and there are no InputValueHost specific
+ * properties, like ValidationDescriptors or WidgetValue.
+ */
 export class ValueHostGenerator extends ValueHostBaseGenerator {
 
     public CanCreate(descriptor: IValueHostDescriptor): boolean {
-        return descriptor.Type === ValueHostType;
+        if (descriptor.Type != null)    // null/undefined
+            return descriptor.Type === ValueHostType;
+        let test = descriptor as unknown as IInputValueHostDescriptor;
+        if (test.ValidatorDescriptors === undefined)
+            return true;
+        return false;
     }
     public Create(valueHostsManager: IValueHostsManager, descriptor: IValueHostDescriptor, state: IValueHostState): IValueHost {
         return new ValueHost(valueHostsManager, descriptor, state);

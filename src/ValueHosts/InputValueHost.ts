@@ -190,11 +190,37 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                 validator.GatherValueHostIds(collection, valueHostResolver);
     }
 }
+/**
+ * Determines if the object implements IInputValueHost.
+ * @param source 
+ * @returns source typecasted to IInputValueHost if appropriate or null if not.
+ */
+export function ToIInputValueHost(source: any): IInputValueHost | null
+{
+    if (source instanceof InputValueHostBase)
+        return source as IInputValueHost;
+    if (source && typeof source === 'object')
+    {
+        let test = source as IInputValueHost;    
+        // some select members of IInputValueHost
+        if (test.GetWidgetValue !== undefined && 
+            test.SetWidgetValue !== undefined &&
+            test.Validate !== undefined &&
+            test.GetIssuesForWidget !== undefined)
+            return test;
+    }
+    return null;
+}
 
 export const InputValueHostType = 'Input';
 export class InputValueHostGenerator extends InputValueHostBaseGenerator {
     public CanCreate(descriptor: IInputValueHostDescriptor): boolean {
-        return descriptor.Type === InputValueHostType;
+        if (descriptor.Type != null)    // null/undefined
+            return descriptor.Type === InputValueHostType;
+
+        if (descriptor.ValidatorDescriptors === undefined)
+            return false;
+        return true;
     }
     public Create(valueHostsManager: IValueHostsManager, descriptor: IInputValueHostDescriptor, state: IInputValueHostState): IInputValueHost {
         return new InputValueHost(valueHostsManager, descriptor, state);

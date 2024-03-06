@@ -212,13 +212,15 @@ interface CustomItems {
  */
 export interface IValueHostDescriptor {
     /**
-     * Required. Identifies the type of ValueHost that will be created to 
+     * Identifies the type of ValueHost that will be created to 
      * support the Descriptor.
      * InputValueHost - 'Input'
      * NonInputValueHost - 'Noninput'
      * HTMLElementValueHost - 'HTMLElement'
+     * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
+     * by checking for inclusion of the IInputValueHostDescriptor.ValidationDescriptors property.
      */
-    Type: string;
+    Type?: string;
     /**
      * Provides a unique "name" for this ValueHost, within the scope of one
      * ValueHostsManager instance.

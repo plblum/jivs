@@ -156,25 +156,6 @@ export interface IInputValueHost extends IValueHost {
     RequiresInput: boolean;
 }
 
-/**
- * Determines if the object implements IInputValueHost.
- * @param source 
- * @returns source typecasted to IInputValueHost if appropriate or null if not.
- */
-export function ToIInputValueHost(source: any): IInputValueHost | null
-{
-    if (source && typeof source === 'object')
-    {
-        let test = source as IInputValueHost;    
-        // some select members of IInputValueHost
-        if (test.GetWidgetValue !== undefined && 
-            test.SetWidgetValue !== undefined &&
-            test.Validate !== undefined &&
-            test.GetIssuesForWidget !== undefined)
-            return test;
-    }
-    return null;
-}
 
 /**
  * Just the data that is used to describe this input value.

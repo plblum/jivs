@@ -1,10 +1,11 @@
 import { ConditionEvaluateResult } from "../Interfaces/Conditions";
-import { IInputValueHost, ToIInputValueHost } from "../Interfaces/InputValueHost";
+import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { IOneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
+import { ToIInputValueHost } from "../ValueHosts/InputValueHost";
 
 /**
  * Abstract class for developing Conditions that use the value from ValueHost.GetWidgetValue.
@@ -21,7 +22,7 @@ export abstract class WidgetConditionBase<TDescriptor extends IOneValueCondition
      */
     public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
-        if (!valueHost || !ToIInputValueHost(valueHost)) {
+        if (!ToIInputValueHost(valueHost)) {
             valueHostResolver.Services.LoggerService.Log('Invalid ValueHost used. Must be an InputValueHost',
                 LoggingLevel.Error, ConfigurationCategory, 'WidgetConditionBase.Evaluate');
             throw new CodingError('Invalid ValueHost used. Must be an InputValueHost');

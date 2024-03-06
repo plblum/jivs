@@ -1,4 +1,4 @@
-import { type IConditionFactory, ConditionFactory, RegisterStandardConditions } from "../Conditions/ConditionFactory";
+import { ConditionFactory, RegisterStandardConditions } from "../Conditions/ConditionFactory";
 import { DataTypeResolver } from "../DataTypes/DataTypeResolver";
 import { InputValidatorFactory } from "../ValueHosts/InputValidator";
 import { ConsoleLogger } from "./ConsoleLogger";
@@ -9,6 +9,7 @@ import type { IInputValidatorFactory, IMessageTokenResolver } from "../Interface
 import type { ILogger } from "../Interfaces/Logger";
 import type { IDataTypeResolver } from "../Interfaces/DataTypes";
 import type { IValueHostFactory } from "../Interfaces/ValueHostFactory";
+import { IConditionFactory } from "../Interfaces/Conditions";
 
 
 /**
