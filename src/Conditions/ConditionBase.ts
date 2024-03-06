@@ -38,7 +38,7 @@ export abstract class ConditionBase<TConditionDescriptor extends IConditionDescr
 
     /**
      * Evaluate a value using its business rule and configuration in the Descriptor.
-     * @param valueHost - contains both the raw value from widget and the value resolved by data type.
+     * @param valueHost - contains both the raw value from input field/element and the value resolved by data type.
      * The evaluate function can use either. It should always return Undetermined if the value it gets
      * is 'undefined' or no compatible with its requirements (like wrong data type).
      * If the ConditionDescriptor.ValueHostId is assigned, it will be used to retrieve

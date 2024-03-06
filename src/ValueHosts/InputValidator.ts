@@ -27,7 +27,7 @@ import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
  * Standard implementation of IInputValidator
  * Each instance depends on a few things, all passed into the constructor
  * and treated as immutable.
- * - IValueHost - ID, label, and data-values associated with the widget.
+ * - IInputValueHost - ID, label, and values from the consuming system.
  * - IInputValidatorDescriptor - The business logic supplies these rules
  *   to implement validation including Condition, Enabler, and error messages
  * If the caller changes any of these, discard the instance
@@ -359,7 +359,7 @@ export class InputValidator implements IInputValidator {
             },
             {
                 TokenLabel: 'Value',
-                AssociatedValue: valueHost.GetValue() ?? this._valueHost.GetWidgetValue(),
+                AssociatedValue: valueHost.GetValue() ?? this._valueHost.GetInputValue(),
                 Purpose: 'value'
             }
         ];

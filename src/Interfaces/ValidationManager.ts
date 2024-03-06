@@ -77,24 +77,24 @@ export interface IValidationManager extends IValueHostsManager {
     SetBusinessLogicErrors(errors: Array<IBusinessLogicError> | null): void;
 
     /**
-     * Lists all error messages and supporting info about each validator
-     * for use by a widget that shows the local error messages (IInputValueHostState.ErrorMessage)
+     * Lists all issues found (error messages and supporting info) about each validator
+     * so the input field/element can show error messages and adjust its appearance.
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
-     *   that scrolls the associated widget into view and sets focus.
+     *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    GetIssuesForWidget(valueHostId: ValueHostId): Array<IIssueSnapshot>;
+    GetIssuesForInput(valueHostId: ValueHostId): Array<IIssueSnapshot>;
     /**
      * A list of all issues to show in a Validation Summary widget for a giving validation group.
      * @param group 
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
-     *   that scrolls the associated widget into view and sets focus.
+     *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.

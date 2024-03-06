@@ -8,15 +8,15 @@ import { IOneValueConditionDescriptor, OneValueConditionBase } from "./OneValueC
 import { ToIInputValueHost } from "../ValueHosts/InputValueHost";
 
 /**
- * Abstract class for developing Conditions that use the value from ValueHost.GetWidgetValue.
+ * Abstract class for developing Conditions that use the value from ValueHost.GetInputValue.
  * Most classes use ValueHost.GetValue (the native value).
  */
-export abstract class WidgetConditionBase<TDescriptor extends IOneValueConditionDescriptor>
+export abstract class InputValueConditionBase<TDescriptor extends IOneValueConditionDescriptor>
     extends OneValueConditionBase<TDescriptor>
 {
     /**
      * Evaluate a value using its business rule and configuration in the Descriptor.
-     * @param valueHost - contains both the value from widget and the native value resolved by data type.
+     * @param valueHost - contains both the value from input field/element and the native value resolved by data type.
      * This function checks both in valueHost to determine a string source.
      * @param valueHostResolver 
      */
@@ -24,15 +24,15 @@ export abstract class WidgetConditionBase<TDescriptor extends IOneValueCondition
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
         if (!ToIInputValueHost(valueHost)) {
             valueHostResolver.Services.LoggerService.Log('Invalid ValueHost used. Must be an InputValueHost',
-                LoggingLevel.Error, ConfigurationCategory, 'WidgetConditionBase.Evaluate');
+                LoggingLevel.Error, ConfigurationCategory, 'InputValueConditionBase.Evaluate');
             throw new CodingError('Invalid ValueHost used. Must be an InputValueHost');
         }
         let iValueHost = valueHost as unknown as IInputValueHost;
-        let value = iValueHost.GetWidgetValue();
+        let value = iValueHost.GetInputValue();
         if (value === undefined)
             return ConditionEvaluateResult.Undetermined;
 
-        return this.EvaluateWidgetValue(value, iValueHost, valueHostResolver);
+        return this.EvaluateInputValue(value, iValueHost, valueHostResolver);
     }
-    protected abstract EvaluateWidgetValue(value: any, valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
+    protected abstract EvaluateInputValue(value: any, valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
 }

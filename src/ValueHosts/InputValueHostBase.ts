@@ -63,17 +63,17 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     }
 
     /**
-     * Exposes the latest value retrieved from the widget
-     * exactly as supplied by the widget. For example,
+     * Exposes the latest value retrieved from the input field/element
+     * exactly as supplied by that input. For example,
      * an <input type="date"> returns a string, not a date.
      * Strings are not cleaned up, no trimming applied.
      */
-    public GetWidgetValue(): any {
-        return this.State.WidgetValue;
+    public GetInputValue(): any {
+        return this.State.InputValue;
     }
 
     /**
-    * System consumer assigns the value it also assigns to the widget.
+    * Consuming system assigns the same value it assigns to the input field/element.
     * Its used with RequiredCondition and DataTypeCondition.
     * @param value
     * @param options - 
@@ -83,15 +83,15 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
     */
-    public SetWidgetValue(value: any, options?: ISetValueOptions): void {
+    public SetInputValue(value: any, options?: ISetValueOptions): void {
         if (!options)
             options = {};        
-        let oldValue: any = this.State.WidgetValue;
+        let oldValue: any = this.State.InputValue;
         let changed = !DeepEquals(value, oldValue);
         this.UpdateState((stateToUpdate) => {
             if (changed) {
                 stateToUpdate.ValidationResult = ValidationResult.ValueChangedButUnvalidated;
-                stateToUpdate.WidgetValue = value;
+                stateToUpdate.InputValue = value;
             }
             this.UpdateChangeCounterInState(stateToUpdate, changed, options!);
             this.UpdateConversionErrorMessage(stateToUpdate, undefined, {});
@@ -103,14 +103,14 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     }
 
     /**
-     * Sets both (native data type) Value and Widget Value at the same time
+     * Sets both (native data type) Value and input field/element Value at the same time
      * and optionally invokes validation.
-     * Use when the consuming system resolves both widget and native values
+     * Use when the consuming system resolves both input and native values
      * at the same time so there is one state change and attempt to validate.
      * @param nativeValue - Can be undefined to indicate the value could not be resolved
-     * from the widget's value, such as inability to convert a string to a date.
+     * from the input field/element's value, such as inability to convert a string to a date.
      * All other values, including null and the empty string, are considered real data.
-     * @param widgetValue - Can be undefined to indicate there is no value.
+     * @param inputValue - Can be undefined to indicate there is no value.
      * All other values, including null and the empty string, are considered real data.
     * @param options - 
     * Validate - Invoke validation after setting the value.
@@ -119,14 +119,14 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    public SetValues(nativeValue: any, widgetValue: any, options?: ISetValueOptions): void {
+    public SetValues(nativeValue: any, inputValue: any, options?: ISetValueOptions): void {
         if (!options)
             options = options ?? {};
         let oldNative: any = this.State.Value;
         let nativeChanged = !DeepEquals(nativeValue, oldNative);
-        let oldWidget: any = this.State.WidgetValue;
-        let widgetChanged = !DeepEquals(widgetValue, oldWidget);
-        let changed = nativeChanged || widgetChanged;
+        let oldInput: any = this.State.InputValue;
+        let inputChanged = !DeepEquals(inputValue, oldInput);
+        let changed = nativeChanged || inputChanged;
         this.UpdateState((stateToUpdate) => {
             if (changed) {
                 // effectively clear past validation
@@ -134,7 +134,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
                 stateToUpdate.IssuesFound = null;
 
                 stateToUpdate.Value = nativeValue;
-                stateToUpdate.WidgetValue = widgetValue;
+                stateToUpdate.InputValue = inputValue;
             }
             this.UpdateChangeCounterInState(stateToUpdate, changed, options!);
             this.UpdateConversionErrorMessage(stateToUpdate, nativeValue, options!);
@@ -144,7 +144,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
         this.ProcessValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
         this.NotifyOthersOfChange(options);
         this.UseOnValueChanged(nativeChanged, oldNative, options);
-        this.UseOnValueChanged(widgetChanged, oldWidget, options);
+        this.UseOnValueChanged(inputChanged, oldInput, options);
     }
 
     protected UpdateConversionErrorMessage(stateToUpdate: IInputValueHostBaseState,
@@ -169,7 +169,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
             this.GetId(), options.Validate === true);
     }
     /**
-     * When SetValue, SetValues, SetWidgetValue, or SetToUndefined occurs,
+     * When SetValue, SetValues, SetInputValue, or SetToUndefined occurs,
      * all other InputValueHosts get notified here so they can rerun validation
      * when any of their Conditions specify the ValueHostID that changed.
      * @param valueHostIdThatChanged 
@@ -351,10 +351,10 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
 
     /**
      * Lists all error messages and supporting info about each validator
-     * for use by a widget that shows its own error messages (IInputValueHostState.ErrorMessage)
+     * for use by a input field/element that shows its own error messages (IInputValueHostState.ErrorMessage)
      * @returns 
      */
-    public GetIssuesForWidget(): Array<IIssueSnapshot> {
+    public GetIssuesForInput(): Array<IIssueSnapshot> {
         let id = this.GetId();
         let list: Array<IIssueSnapshot> = [];
 
@@ -378,7 +378,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
      * @param group 
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
-     *   that scrolls the associated widget into view and sets focus.
+     *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
@@ -433,7 +433,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
 
 
 export type ValueHostValidatedHandler = (valueHost: IInputValueHost, validateResult: IValidateResult) => void;
-export type WidgetValueChangedHandler = (valueHost: IInputValueHost, oldValue: any) => void;
+export type InputValueChangedHandler = (valueHost: IInputValueHost, oldValue: any) => void;
 
 /**
  * Provides callback hooks for the consuming system to supply to IInputValueHosts.
@@ -450,13 +450,13 @@ export interface IInputValueHostCallbacks extends IValueHostCallbacks {
      */
     OnValueHostValidated?: ValueHostValidatedHandler | null;
     /**
-     * Called when the InputValueHost's WidgetValue property has changed.
+     * Called when the InputValueHost's InputValue property has changed.
      * If setup, you can prevent it from being fired with the options parameter of SetValue
      * to avoid round trips where you already know the details.
      * You can setup the same callback on individual InputValueHosts.
      * Here, it aggregates all InputValueHost notifications.
      */
-    OnWidgetValueChanged?: WidgetValueChangedHandler | null;
+    OnInputValueChanged?: InputValueChangedHandler | null;
 }
 /**
  * Determines if the object implements IInputValueHostCallbacks.
@@ -468,7 +468,7 @@ export function ToIInputValueHostCallbacks(source: any): IInputValueHostCallback
     if (ToIValueHostCallbacks(source))
     {
         let test = source as IInputValueHostCallbacks;
-        if (test.OnWidgetValueChanged !== undefined &&
+        if (test.OnInputValueChanged !== undefined &&
             test.OnValueHostValidated !== undefined)
             return test;
     }
@@ -494,7 +494,7 @@ export abstract class InputValueHostBaseGenerator implements IValueHostGenerator
             Id: descriptor.Id,
             Value: descriptor.InitialValue,
             ValidationResult: ValidationResult.NotAttempted,
-            WidgetValue: undefined,
+            InputValue: undefined,
             IssuesFound: null,
         };
     }

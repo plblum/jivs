@@ -67,7 +67,7 @@ export enum ValidationResult {
     // Indicates that Validate has yet to be attempted
     // Once attempted, it will always be one of the other results
     NotAttempted,
-    // Indicates that either Value or WidgetValue was changed
+    // Indicates that either Value or InputValue was changed
     // but has yet to be validated.
     ValueChangedButUnvalidated,
     // Validation was not run, including when the InputValidator.Severity is Off.
@@ -139,14 +139,14 @@ export interface IIssueFound {
     Severity: ValidationSeverity;
 
     /**
-     * The error message nearby the widget, ready to display in the UI.
+     * The error message nearby the input field/element, ready to display in the UI.
      * With all of the processing for tokens and added formatting 
      * (for example, HTML tags around some tokens if the platform supports HTML).
      */
     ErrorMessage: string;
     /**
      * The error message shown in a validation summary. It often contains a
-     * user friendly name of the ValueHost due to being a distance from the widget.
+     * user friendly name of the ValueHost due to being a distance from the input field/element.
      * With all of the processing for tokens and added formatting 
      * (for example, HTML tags around some tokens if the platform supports HTML).
      * If null/undefined, summary viewer should use ErrorMessage.
@@ -182,7 +182,7 @@ export interface IBusinessLogicError {
      * If the message is associated with a ValueHost, assign the ValueHostId.
      * That makes the message available to the ValueHost's validation.
      * The Summary can take advantage of it to establish a hyperlink on the message
-     * that jumps to the ValueHost's widget.
+     * that jumps to the ValueHost's input field/element.
      */
     AssociatedValueHostId?: string;
 

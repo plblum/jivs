@@ -19,7 +19,7 @@ import { ValueHostBase, ValueHostBaseGenerator } from "./ValueHostBase";
  *   your ---Single Source of Truth (SSOT)--- for that model.
  *   When working with a Model, you will need to write code that transfers the Model's property values
  *   into the UI elements. Since ValidationManager needs those same values, you can build
- *   your widgets to get their value from ValidationManager and upon change, provide
+ *   your input fields/elements to get their value from ValidationManager and upon change, provide
  *   the new values back.
  */
 export class ValueHost extends ValueHostBase<IValueHostDescriptor, IValueHostState>
@@ -34,7 +34,7 @@ export const ValueHostType = 'NotInput';
 /**
  * Supports ValueHost class. Used when the Descriptor.Type = ValueHostType
  * or when the Type property is null/undefined and there are no InputValueHost specific
- * properties, like ValidationDescriptors or WidgetValue.
+ * properties, like ValidationDescriptors or InputValue.
  */
 export class ValueHostGenerator extends ValueHostBaseGenerator {
 

@@ -23,7 +23,7 @@ export interface IEvaluateChildConditionResultsDescriptor extends IConditionDesc
 
 /**
  * Framework for evaluating the results from a list of conditions, where a rule determines what to
- * do with their results. In this case, the value of the current widget passed into 
+ * do with their results. In this case, the value of the current input field/element passed into 
  * Evaluate(vh) is ignored. All child conditions must specify their ValueHost sources explicitly.
  */
 export abstract class EvaluateChildConditionResultsBase<TDescriptor extends IEvaluateChildConditionResultsDescriptor>

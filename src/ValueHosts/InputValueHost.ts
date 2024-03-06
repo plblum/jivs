@@ -203,10 +203,10 @@ export function ToIInputValueHost(source: any): IInputValueHost | null
     {
         let test = source as IInputValueHost;    
         // some select members of IInputValueHost
-        if (test.GetWidgetValue !== undefined && 
-            test.SetWidgetValue !== undefined &&
+        if (test.GetInputValue !== undefined && 
+            test.SetInputValue !== undefined &&
             test.Validate !== undefined &&
-            test.GetIssuesForWidget !== undefined)
+            test.GetIssuesForInput !== undefined)
             return test;
     }
     return null;

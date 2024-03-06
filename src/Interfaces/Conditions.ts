@@ -45,7 +45,7 @@ export interface ICondition {
      * Evaluate something against the rules defined in the implementation. Return whether
      * the data was consistent or violates the rules, or the data couldn't be used to run the rule. 
      * @param valueHost - Most values are found amongst the ValueHosts in the ValueHostsManager.
-     * Conditions can look them up using ValueHostsManager.GetValueHost().GetValue or GetWidgetValue.
+     * Conditions can look them up using ValueHostsManager.GetValueHost().GetValue or GetInputValue.
      * This parameter is used as an optimization, both to avoid that lookup and to avoid
      * the user typing in a ValueHostId when creating the Condition instance.
      * InputValidator.Validate knows to pass the ValueHostId that hosts the InputValidator.

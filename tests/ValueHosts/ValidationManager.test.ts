@@ -56,7 +56,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.OnValueHostStateChanged).toBeNull();
         expect(testItem!.OnValueHostValidated).toBeNull();
         expect(testItem!.OnValueChanged).toBeNull();
-        expect(testItem!.OnWidgetValueChanged).toBeNull();
+        expect(testItem!.OnInputValueChanged).toBeNull();
     });
     test('null config parameter throws', () => {
         let testItem: PublicifiedValidationManager | null = null;
@@ -91,7 +91,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.OnValueHostStateChanged).toBeNull();
         expect(testItem!.OnValueHostValidated).toBeNull();
         expect(testItem!.OnValueChanged).toBeNull();
-        expect(testItem!.OnWidgetValueChanged).toBeNull();
+        expect(testItem!.OnInputValueChanged).toBeNull();
 
 
         // ensure ValueHost is supporting the Descriptor
@@ -119,7 +119,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.OnValueHostStateChanged).toBeNull();
         expect(testItem!.OnValueHostValidated).toBeNull();
         expect(testItem!.OnValueChanged).toBeNull();
-        expect(testItem!.OnWidgetValueChanged).toBeNull();
+        expect(testItem!.OnInputValueChanged).toBeNull();
     });
     test('Descriptor and ValueHostState for 1 ValueHost supplied. Other parameters are null', () => {
         let descriptors: Array<IValueHostDescriptor> = [{
@@ -153,7 +153,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.OnValueHostStateChanged).toBeNull();
         expect(testItem!.OnValueHostValidated).toBeNull();
         expect(testItem!.OnValueChanged).toBeNull();
-        expect(testItem!.OnWidgetValueChanged).toBeNull();
+        expect(testItem!.OnInputValueChanged).toBeNull();
 
 
         // ensure ValueHost is supporting the Descriptor and a Value of 10 from State
@@ -173,7 +173,7 @@ describe('constructor and initial property values', () => {
             OnValueHostStateChanged: (valueHost: IValueHost, state: IValueHostState) => { },
             OnValueHostValidated: (valueHost: IInputValueHost, validateResult: IValidateResult) => { },
             OnValueChanged: (valueHost: IValueHost, oldValue: any) => { },
-            OnWidgetValueChanged: (valueHost: IInputValueHost, oldValue: any) => { }
+            OnInputValueChanged: (valueHost: IInputValueHost, oldValue: any) => { }
         };
 
         let testItem: PublicifiedValidationManager | null = null;
@@ -185,7 +185,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.OnValueHostStateChanged).not.toBeNull();
         expect(testItem!.OnValueHostValidated).not.toBeNull();
         expect(testItem!.OnValueChanged).not.toBeNull();
-        expect(testItem!.OnWidgetValueChanged).not.toBeNull();
+        expect(testItem!.OnInputValueChanged).not.toBeNull();
     });
 
 });
@@ -860,14 +860,14 @@ function SetupInputValueHostDescriptor(fieldIndex: number,
 // Validate(group?: string): Array<IValidateResult>
 // get IsValid(): boolean
 // DoNotSaveNativeValue(): boolean
-// GetIssuesForWidget(valueHostId: ValueHostId): Array<IIssueSnapshot>
+// GetIssuesForInput(valueHostId: ValueHostId): Array<IIssueSnapshot>
 // GetIssuesForSummary(group?: string): Array<IIssueSnapshot>
-describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssuesForWidget, GetIssuesForSummary based on the results', () => {
-    test('Before calling Validate with 0 inputValueHosts, IsValid=true, DoNotSave=false, GetIssuesNearWidget=[], GetIssuesInSummary=[]', () => {
+describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssuesForInput, GetIssuesForSummary based on the results', () => {
+    test('Before calling Validate with 0 inputValueHosts, IsValid=true, DoNotSave=false, GetIssuesForInput=[], GetIssuesForSummary=[]', () => {
         let setup = SetupValidationManager();
         expect(setup.validationManager.IsValid).toBe(true);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.GetIssuesForWidget('Anything')).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput('Anything')).toEqual([]);
         expect(setup.validationManager.GetIssuesForSummary()).toEqual([]);
     });
     test('IsValid is true and DoNotSaveNativeValue is false before calling Validate with 1 inputValueHosts', () => {
@@ -875,7 +875,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         let setup = SetupValidationManager([descriptor]);
         expect(setup.validationManager.IsValid).toBe(true);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor.Id)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor.Id)).toEqual([]);
         expect(setup.validationManager.GetIssuesForSummary()).toEqual([]);
     });
     test('With 1 inputValueHost that is ValidationResult.Valid, returns 1 IValidateResult', () => {
@@ -888,7 +888,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
         expect(setup.validationManager.IsValid).toBe(true);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor.Id)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor.Id)).toEqual([]);
         expect(setup.validationManager.GetIssuesForSummary()).toEqual([]);
     });
     test('With 1 inputValueHost that is ValidationResult.Invalid, returns 1 IValidateResult', () => {
@@ -910,12 +910,12 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
 
         expect(setup.validationManager.IsValid).toBe(false);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(true);
-        let widgetSnapshot: IIssueSnapshot = {
+        let inputSnapshot: IIssueSnapshot = {
             Id: descriptor.Id,
             Severity: ValidationSeverity.Error,
             ErrorMessage: 'Error 1: ' + NeverMatchesConditionType,
         };
-        expect(setup.validationManager.GetIssuesForWidget(descriptor.Id)).toEqual([widgetSnapshot]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor.Id)).toEqual([inputSnapshot]);
         let summarySnapshot: IIssueSnapshot = {
             Id: descriptor.Id,
             Severity: ValidationSeverity.Error,
@@ -944,12 +944,12 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         expect(setup.validationManager.IsValid).toBe(false);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(true);
 
-        let widgetSnapshot: IIssueSnapshot = {
+        let inputSnapshot: IIssueSnapshot = {
             Id: descriptor.Id,
             Severity: ValidationSeverity.Error,
             ErrorMessage: 'Error 1: ' + NeverMatchesConditionType,
         };
-        expect(setup.validationManager.GetIssuesForWidget(descriptor.Id)).toEqual([widgetSnapshot]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor.Id)).toEqual([inputSnapshot]);
         let summarySnapshot: IIssueSnapshot = {
             Id: descriptor.Id,
             Severity: ValidationSeverity.Error,
@@ -972,8 +972,8 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         expect(setup.validationManager.IsValid).toBe(true);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(false);
 
-        expect(setup.validationManager.GetIssuesForWidget(descriptor1.Id)).toEqual([]);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor2.Id)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor1.Id)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor2.Id)).toEqual([]);
         expect(setup.validationManager.GetIssuesForSummary()).toEqual([]);
     });
     test('With 2 inputValueHost that are both undetermined, returns 2 IValidateResults without issues found. IsValid=true. DoNotSave=false', () => {
@@ -990,8 +990,8 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         TestIssueFoundFromValidateResults(validateResults, 1, ValidationResult.Undetermined, null);
         expect(setup.validationManager.IsValid).toBe(true);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor1.Id)).toEqual([]);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor2.Id)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor1.Id)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor2.Id)).toEqual([]);
         expect(setup.validationManager.GetIssuesForSummary()).toEqual([]);
     });
     test('With 2 inputValueHost that are both Invalid, returns 2 IValidateResults each with 1 issue found. IsValid=false. DoNotSave=true', () => {
@@ -1025,18 +1025,18 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         expect(setup.validationManager.IsValid).toBe(false);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(true);
 
-        let widgetSnapshot1: IIssueSnapshot = {
+        let inputSnapshot1: IIssueSnapshot = {
             Id: descriptor1.Id,
             Severity: ValidationSeverity.Error,
             ErrorMessage: 'Error 1: ' + NeverMatchesConditionType,
         };
-        expect(setup.validationManager.GetIssuesForWidget(descriptor1.Id)).toEqual([widgetSnapshot1]);
-        let widgetSnapshot2: IIssueSnapshot = {
+        expect(setup.validationManager.GetIssuesForInput(descriptor1.Id)).toEqual([inputSnapshot1]);
+        let inputSnapshot2: IIssueSnapshot = {
             Id: descriptor2.Id,
             Severity: ValidationSeverity.Error,
             ErrorMessage: 'Error 2: ' + NeverMatchesConditionType,
         };
-        expect(setup.validationManager.GetIssuesForWidget(descriptor2.Id)).toEqual([widgetSnapshot2]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor2.Id)).toEqual([inputSnapshot2]);
         let summarySnapshot1: IIssueSnapshot = {
             Id: descriptor1.Id,
             Severity: ValidationSeverity.Error,
@@ -1065,7 +1065,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         }]);
         expect(setup.validationManager.GetValueHost(BusinessLogicValueHostId)).toBeInstanceOf(BusinessLogicInputValueHost);
 
-        expect(setup.validationManager.GetIssuesForWidget(BusinessLogicValueHostId)).toEqual([<IIssueSnapshot>{
+        expect(setup.validationManager.GetIssuesForInput(BusinessLogicValueHostId)).toEqual([<IIssueSnapshot>{
             ErrorMessage: 'BL_ERROR',
             Severity: ValidationSeverity.Error,
             Id: BusinessLogicValueHostId
@@ -1088,14 +1088,14 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
             Severity: ValidationSeverity.Error,
             Id: descriptor.Id
         }]);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor.Id)).toEqual([<IIssueSnapshot>{
+        expect(setup.validationManager.GetIssuesForInput(descriptor.Id)).toEqual([<IIssueSnapshot>{
             ErrorMessage: 'BL_ERROR',
             Severity: ValidationSeverity.Error,
             Id: descriptor.Id
         }]);
 
         expect(setup.validationManager.GetValueHost(BusinessLogicValueHostId)).toBeNull();
-        expect(setup.validationManager.GetIssuesForWidget(BusinessLogicValueHostId)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(BusinessLogicValueHostId)).toEqual([]);
     });
     test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 BusinessLogicError not associated with a ValueHost, IsValid=false, DoNotSave=true, GetIssuesForSummary has both errors businesslogicerror, BLValueHost has the BLError, InputValueHost has its own error', () => {
 
@@ -1122,14 +1122,14 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
                 Severity: ValidationSeverity.Error,
                 Id: BusinessLogicValueHostId
             }]);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor.Id)).toEqual([<IIssueSnapshot>{
+        expect(setup.validationManager.GetIssuesForInput(descriptor.Id)).toEqual([<IIssueSnapshot>{
             ErrorMessage: 'CONDITION ERROR',
             Severity: ValidationSeverity.Error,
             Id: descriptor.Id
         }]);
 
         expect(setup.validationManager.GetValueHost(BusinessLogicValueHostId)).toBeInstanceOf(BusinessLogicInputValueHost);
-        expect(setup.validationManager.GetIssuesForWidget(BusinessLogicValueHostId)).toEqual(
+        expect(setup.validationManager.GetIssuesForInput(BusinessLogicValueHostId)).toEqual(
             [<IIssueSnapshot>{
                 ErrorMessage: 'BL_ERROR',
                 Severity: ValidationSeverity.Error,
@@ -1141,13 +1141,13 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];
-        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetWidgetValue('');
+        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetInputValue('');
         expect(() => validateResults = setup.validationManager.Validate({ Preliminary: true })).not.toThrow();
 
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
         expect(setup.validationManager.IsValid).toBe(true);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor.Id)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor.Id)).toEqual([]);
         expect(setup.validationManager.GetIssuesForSummary()).toEqual([]);
     });
     test('With 1 inputValueHost and a Required condition that will evaluate as NoMatch, use option Preliminary=false, expect ValidationResult.Invalid because Preliminary is off', () => {
@@ -1155,7 +1155,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];
-        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetWidgetValue('');
+        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetInputValue('');
         expect(() => validateResults = setup.validationManager.Validate({ Preliminary: false })).not.toThrow();
 
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
@@ -1168,12 +1168,12 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         ]);
         expect(setup.validationManager.IsValid).toBe(false);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(true);
-        let widgetSnapshot: IIssueSnapshot = {
+        let inputSnapshot: IIssueSnapshot = {
             Id: descriptor.Id,
             Severity: ValidationSeverity.Severe, // only because Required conditions default to Severe
             ErrorMessage: 'Error 1: ' + RequiredTextConditionType,
         };
-        expect(setup.validationManager.GetIssuesForWidget(descriptor.Id)).toEqual([widgetSnapshot]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor.Id)).toEqual([inputSnapshot]);
         let summarySnapshot: IIssueSnapshot = {
             Id: descriptor.Id,
             Severity: ValidationSeverity.Severe, // only because Required conditions default to Severe
@@ -1186,7 +1186,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];
-        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetWidgetValue('');
+        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetInputValue('');
         expect(() => validateResults = setup.validationManager.Validate({ DuringEdit: true })).not.toThrow();
 
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, null);
@@ -1196,7 +1196,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];
-        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetWidgetValue('');
+        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetInputValue('');
         expect(() => validateResults = setup.validationManager.Validate({ DuringEdit: false })).not.toThrow();
 
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, null);
@@ -1206,7 +1206,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];
-        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetWidgetValue('');
+        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetInputValue('');
         expect(() => validateResults = setup.validationManager.Validate({ DuringEdit: true })).not.toThrow();
 
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
@@ -1216,7 +1216,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];
-        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetWidgetValue('');
+        (setup.validationManager.GetValueHost('Field1')! as IInputValueHost).SetInputValue('');
         expect(() => validateResults = setup.validationManager.Validate({ DuringEdit: false })).not.toThrow();
 
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, null);
@@ -1249,8 +1249,8 @@ describe('ValidationManager.ClearValidator', () => {
         expect(() => setup.validationManager.ClearValidation()).not.toThrow();
         expect(setup.validationManager.IsValid).toBe(true);
         expect(setup.validationManager.DoNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor1.Id)).toEqual([]);
-        expect(setup.validationManager.GetIssuesForWidget(descriptor2.Id)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor1.Id)).toEqual([]);
+        expect(setup.validationManager.GetIssuesForInput(descriptor2.Id)).toEqual([]);
         expect(setup.validationManager.GetIssuesForSummary()).toEqual([]);
     });
 });
@@ -1438,7 +1438,7 @@ describe('ToIModelCallbacks function', () => {
         let testItem: IModelCallbacks = {
             OnValueChanged: (vh: IValueHost, old: any) => {},
             OnValueHostStateChanged: (vh: IValueHost, state: IValueHostState) => {},
-            OnWidgetValueChanged: (vh: IInputValueHost, old: any)  => {},
+            OnInputValueChanged: (vh: IInputValueHost, old: any)  => {},
             OnValueHostValidated: (vh: IInputValueHost, validationResult: IValidateResult) => { },
             OnModelStateChanged: (vm, state) => { },
             OnModelValidated: (vm, results) => { }

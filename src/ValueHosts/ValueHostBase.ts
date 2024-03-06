@@ -52,8 +52,6 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
      * Provides a unique identity for this ValueHost.
      * Consuming systems use this ID to locate the ValueHost
      * for which they will transfer a value, via ValueHostsManager.GetValueHost(this id)
-     * !!! Perhaps widgets should assign this to an HTML tag's attribute, like:
-     * <input data-inputvaluehost="{this value}" />
      */
     public GetId(): ValueHostId {
         return this._descriptor.Id;
@@ -71,7 +69,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     /**
      * Gets the native value, which is what can be written to the model.
      * Returns undefined if the native value could not be resolved
-     * from the widget.
+     * from the input field/element.
      */
     public GetValue(): any {
         return this.State.Value;
@@ -81,7 +79,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
      * System consumer assigns the native value to make it available
      * to most Conditions during validation.
     * @param value - Can be undefined to indicate the value could not be resolved
-    * from the widget's value, such as inability to convert a string to a date.
+    * from the input field/element's value, such as inability to convert a string to a date.
     * All other values, including null and the empty string, are considered real data.
     * When undefined, IsChanged will still be changed to true unless options.Reset = true.
     * @param options - 
@@ -110,8 +108,8 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     
 
     /**
-     * System consumer calls this when it attempts to resolve
-     * the widget value but cannot. It identifies that the native value
+     * Consuming system calls this when it attempts to resolve
+     * the input field/element value but cannot. It identifies that the native value
      * is undefined.
      * Note this does not reset IsChanged to false without explicitly 
      * specifying options.Reset = true;
@@ -151,7 +149,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     /**
      * Determines how the validation system sees the Value in terms of editing.
      * When true, it was changed. When false, it was not.
-     * The SetValue/SetWidgetValue/SetValues functions are the only ones to change this flag.
+     * The SetValue/SetInputValue/SetValues functions are the only ones to change this flag.
      * They all set it to true automatically except set it to false when the option.Reset is true.
      * The ValueHost.Validate function may skip validation of an InputValueHost when IsChanged is false,
      * depending on the options for Validate. For example, calling validate immediately after loading

@@ -31,7 +31,7 @@ function SetupInputValueHost(
     let defaultState: IInputValueHostBaseState = {
         Id: 'Field1',
         Value: undefined,
-        WidgetValue: undefined,
+        InputValue: undefined,
         IssuesFound: null,
         ValidationResult: ValidationResult.NotAttempted
     };
@@ -251,7 +251,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             IssuesFound: null,
             ValidationResult: ValidationResult.NotAttempted,
             Value: undefined,
-            WidgetValue: 'TEST'
+            InputValue: 'TEST'
         };
         let testItem = new BusinessLogicInputValueHostGenerator();
         let vh: IInputValueHost | null = null;
@@ -259,14 +259,14 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(BusinessLogicInputValueHost);
         expect(vh!.GetId()).toBe(descriptor.Id);    // check Descriptor value
-        expect(vh!.GetWidgetValue()).toBe('TEST');  // check State value
+        expect(vh!.GetInputValue()).toBe('TEST');  // check State value
     });
     test('CleanupState existing state has no IssuesFound. Returns the same data', () => {
         let originalState: IInputValueHostBaseState = {
             Id: 'Field1',
             IssuesFound: null,
             ValidationResult: ValidationResult.Valid,
-            WidgetValue: 'ABC',
+            InputValue: 'ABC',
             Value: 10
         };
         let state = { ...originalState };
@@ -293,7 +293,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(state).not.toBeNull();
         expect(state!.Id).toBe(descriptor.Id);
         expect(state!.ValidationResult).toBe(ValidationResult.NotAttempted);
-        expect(state!.WidgetValue).toBeUndefined();
+        expect(state!.InputValue).toBeUndefined();
         expect(state!.Group).toBeUndefined();
         expect(state!.Value).toBe(descriptor.InitialValue);
         expect(state!.IssuesFound).toBeNull();

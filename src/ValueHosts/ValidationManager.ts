@@ -7,7 +7,7 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "./ValueHostBase";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
 import type { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "../Interfaces/Validation";
-import { InputValueHostBase, ValueHostValidatedHandler, WidgetValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
+import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 import type { IModelState, IValidationManager } from "../Interfaces/ValidationManager";
 import { ValidationServices } from "../Services/ValidationServices";
@@ -79,7 +79,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      *   OnModelValidated: (validationManager, validationResults)=> { },
      *   OnValueHostValidated: (valueHost, validationResult) => { },
      *   OnValueChanged: (valueHost, oldValue) => { },
-     *   OnWidgetValueChanged: (valueHost, oldValue) => { }
+     *   OnInputValueChanged: (valueHost, oldValue) => { }
      * }
      */
     constructor(config: ValidationManagerConfig) {
@@ -383,22 +383,22 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
             }
     }
     /**
-     * Lists all error messages and supporting info about each validator
-     * for use by a widget that shows the local error messages (IInputValueHostState.ErrorMessage)
+     * Lists all issues found (error messages and supporting info) about each validator
+     * so the input field/element can show error messages and adjust its appearance.
      * @param valueHostId - identifies the ValueHost whose issues you want.
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
-     *   that scrolls the associated widget into view and sets focus.
+     *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    public GetIssuesForWidget(valueHostId: ValueHostId): Array<IIssueSnapshot> {
+    public GetIssuesForInput(valueHostId: ValueHostId): Array<IIssueSnapshot> {
         let vh = this.GetValueHost(valueHostId);
         if (vh && vh instanceof InputValueHostBase)
-            return vh.GetIssuesForWidget();
+            return vh.GetIssuesForInput();
         return [];
     }
     /**
@@ -406,7 +406,7 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
      * @param group 
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
-     *   that scrolls the associated widget into view and sets focus.
+     *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
@@ -471,14 +471,14 @@ export class ValidationManager<TState extends IModelState> implements IValidatio
         return this.Config.OnValueChanged ?? null;
     }
     /**
-     * Called when the InputValueHost's WidgetValue property has changed.
+     * Called when the InputValueHost's InputValue property has changed.
      * If setup, you can prevent it from being fired with the options parameter of SetValue
      * to avoid round trips where you already know the details.
      * You can setup the same callback on individual InputValueHosts.
      * Here, it aggregates all InputValueHost notifications.
      */
-    public get OnWidgetValueChanged(): WidgetValueChangedHandler | null {
-        return this.Config.OnWidgetValueChanged ?? null;
+    public get OnInputValueChanged(): InputValueChangedHandler | null {
+        return this.Config.OnInputValueChanged ?? null;
     }
     //#endregion IModelCallbacks
 }

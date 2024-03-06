@@ -71,9 +71,9 @@ SetValue
 > Some members of this class are (in addition to the inherited from
 > ValueHost):
 
-GetWidgetValue
+GetInputValue
 
-SetWidgetValue
+SetInputValue
 
 Validate
 
@@ -91,7 +91,7 @@ Validate
 
 SetBusinessLogicErrors
 
-GetIssuesForWidget
+GetIssuesForInput
 
 GetIssuesForSummary
 

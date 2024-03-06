@@ -82,13 +82,13 @@ describe('ConditionBase class additional cases', () => {
         };
         let testItem = new RequiredTextCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue('');
+        vh.SetInputValue('');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
 });
 
 describe('class DataTypeCheckCondition', () => {
-    test('Evaluate returns Match when WidgetValue is not undefined and native Value is not undefined', () => {
+    test('Evaluate returns Match when InputValue is not undefined and native Value is not undefined', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
@@ -107,7 +107,7 @@ describe('class DataTypeCheckCondition', () => {
         vh.SetValues(false, 'NO');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
-    test('Evaluate returns NoMatch when WidgetValue is not undefined but native Value is undefined', () => {
+    test('Evaluate returns NoMatch when InputValue is not undefined but native Value is undefined', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
@@ -117,12 +117,12 @@ describe('class DataTypeCheckCondition', () => {
             ValueHostId: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
-        vh.SetWidgetValue('A');    // at this moment, setValue is undefined
+        vh.SetInputValue('A');    // at this moment, setValue is undefined
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValues(undefined, '10');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
-    test('Evaluate returns Undetermined when WidgetValue is undefined', () => {
+    test('Evaluate returns Undetermined when InputValue is undefined', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
@@ -134,7 +134,7 @@ describe('class DataTypeCheckCondition', () => {
         let testItem = new DataTypeCheckCondition(descriptor);
         // at this moment, setValue is undefined
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetValue(10);    // doesn't change WidgetValue...
+        vh.SetValue(10);    // doesn't change InputValue...
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('GetTokenValues where ConversionErrorTokenValue is setup shows that token', () => {
@@ -235,9 +235,9 @@ describe('class RequiredTextCondition', () => {
             Trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.SetWidgetValue('A');
+        vh.SetInputValue('A');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.SetWidgetValue(' A');
+        vh.SetInputValue(' A');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('Evaluate returns NoMatch', () => {
@@ -251,9 +251,9 @@ describe('class RequiredTextCondition', () => {
             Trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.SetWidgetValue('');
+        vh.SetInputValue('');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.SetWidgetValue(' ');
+        vh.SetInputValue(' ');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('Evaluate influenced by Descriptor.EmptyString value', () => {
@@ -268,17 +268,17 @@ describe('class RequiredTextCondition', () => {
             EmptyValue: 'EMPTY'
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.SetWidgetValue('A');
+        vh.SetInputValue('A');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.SetWidgetValue(' A');
+        vh.SetInputValue(' A');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.SetWidgetValue('');
+        vh.SetInputValue('');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.SetWidgetValue(' ');
+        vh.SetInputValue(' ');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.SetWidgetValue('EMPTY');
+        vh.SetInputValue('EMPTY');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.SetWidgetValue(' EMPTY');
+        vh.SetInputValue(' EMPTY');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('Evaluate influenced by Descriptor.Trim=false', () => {
@@ -293,17 +293,17 @@ describe('class RequiredTextCondition', () => {
             EmptyValue: 'EMPTY'
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.SetWidgetValue('A');
+        vh.SetInputValue('A');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.SetWidgetValue(' A');
+        vh.SetInputValue(' A');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.SetWidgetValue('');
+        vh.SetInputValue('');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.SetWidgetValue(' ');
+        vh.SetInputValue(' ');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.SetWidgetValue('EMPTY');
+        vh.SetInputValue('EMPTY');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.SetWidgetValue(' EMPTY');
+        vh.SetInputValue(' EMPTY');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('Descriptor.Trim undefined works like Trim=true', () => {
@@ -316,9 +316,9 @@ describe('class RequiredTextCondition', () => {
             ValueHostId: 'Property1',
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.SetWidgetValue('A');
+        vh.SetInputValue('A');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.SetWidgetValue(' A');
+        vh.SetInputValue(' A');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('Evaluate returns Undetermined for null, undefined, and non-string types', () => {
@@ -332,13 +332,13 @@ describe('class RequiredTextCondition', () => {
             Trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.SetWidgetValue(null);
+        vh.SetInputValue(null);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue(undefined);
+        vh.SetInputValue(undefined);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue(10);
+        vh.SetInputValue(10);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue(false);
+        vh.SetInputValue(false);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
 
@@ -417,9 +417,9 @@ describe('class RequiredIndexCondition', () => {
             ValueHostId: 'Property1'
         };
         let testItem = new RequiredIndexCondition(descriptor);
-        vh.SetWidgetValue(1);
+        vh.SetInputValue(1);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.SetWidgetValue(2);
+        vh.SetInputValue(2);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('Evaluate returns NoMatch', () => {
@@ -432,7 +432,7 @@ describe('class RequiredIndexCondition', () => {
             ValueHostId: 'Property1',
         };
         let testItem = new RequiredIndexCondition(descriptor);
-        vh.SetWidgetValue(0);
+        vh.SetInputValue(0);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('Evaluate influenced by Descriptor.UnselectedIndexValue value', () => {
@@ -446,9 +446,9 @@ describe('class RequiredIndexCondition', () => {
             UnselectedIndexValue: -1
         };
         let testItem = new RequiredIndexCondition(descriptor);
-        vh.SetWidgetValue(0);
+        vh.SetInputValue(0);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.SetWidgetValue(-1);
+        vh.SetInputValue(-1);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
 
@@ -462,13 +462,13 @@ describe('class RequiredIndexCondition', () => {
             ValueHostId: 'Property1'
         };
         let testItem = new RequiredIndexCondition(descriptor);
-        vh.SetWidgetValue(null);
+        vh.SetInputValue(null);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue(undefined);
+        vh.SetInputValue(undefined);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue('string');
+        vh.SetInputValue('string');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue(false);
+        vh.SetInputValue(false);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('Category is Required', () => {
@@ -671,13 +671,13 @@ describe('class RegExpCondition', () => {
             ExpressionAsString: 'ABC'
         };
         let testItem = new RegExpCondition(descriptor);
-        vh.SetWidgetValue(null);
+        vh.SetInputValue(null);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue(undefined);
+        vh.SetInputValue(undefined);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue(10);
+        vh.SetInputValue(10);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.SetWidgetValue(false);
+        vh.SetInputValue(false);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('Descriptor lacks both Expression and ExpressionAsString. Throws', () => {
@@ -752,7 +752,7 @@ describe('class RangeCondition', () => {
             Maximum: 'G'
         };
         let testItem = new RangeCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue('B');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue('C');
@@ -783,7 +783,7 @@ describe('class RangeCondition', () => {
             Maximum: 25
         };
         let testItem = new RangeCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(0);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.SetValue(-9);
@@ -812,7 +812,7 @@ describe('class RangeCondition', () => {
             Maximum: new Date(Date.UTC(2000, 5, 30))
         };
         let testItem = new RangeCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(new Date(Date.UTC(2000, 4, 31)));
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue(new Date(Date.UTC(2000, 5, 1)));
@@ -838,7 +838,7 @@ describe('class RangeCondition', () => {
             Maximum: 'G'
         };
         let testItem = new RangeCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue('.');   // some ascii before A
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.SetValue('B');
@@ -866,7 +866,7 @@ describe('class RangeCondition', () => {
             Maximum: null   // should work like undefined
         };
         let testItem = new RangeCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue('.');   // some ascii before A
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue('B');
@@ -1102,7 +1102,7 @@ describe('class ValuesEqualCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValuesEqualCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(101);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue(100);
@@ -1123,7 +1123,7 @@ describe('class ValuesEqualCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValuesEqualCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(true);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue(false);
@@ -1142,8 +1142,8 @@ describe('class ValuesEqualCondition', () => {
             SecondValueHostId: 'Property2'
         };
         let testItem = new ValuesEqualCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
-        vh2.SetWidgetValue('---- Second does not matter ---');
+        vh.SetInputValue('---- does not matter ----');
+        vh2.SetInputValue('---- Second does not matter ---');
         vh2.SetValue(100);  // property value to match to the rest
 
         vh.SetValue(101);
@@ -1285,7 +1285,7 @@ describe('class ValuesNotEqualCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValuesNotEqualCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(101);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.SetValue(100);
@@ -1306,7 +1306,7 @@ describe('class ValuesNotEqualCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValuesNotEqualCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(true);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.SetValue(false);
@@ -1325,8 +1325,8 @@ describe('class ValuesNotEqualCondition', () => {
             SecondValueHostId: 'Property2'
         };
         let testItem = new ValuesNotEqualCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
-        vh2.SetWidgetValue('---- Second does not matter ---');
+        vh.SetInputValue('---- does not matter ----');
+        vh2.SetInputValue('---- Second does not matter ---');
         vh2.SetValue(100);  // property value to match to the rest
 
         vh.SetValue(101);
@@ -1493,7 +1493,7 @@ describe('class ValueGTSecondValueCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValueGTSecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(101);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.SetValue(100);
@@ -1514,7 +1514,7 @@ describe('class ValueGTSecondValueCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValueGTSecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(true);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.SetValue(false); // SecondValue == this value. So NoMatch because operator is GT
@@ -1533,8 +1533,8 @@ describe('class ValueGTSecondValueCondition', () => {
             SecondValueHostId: 'Property2'
         };
         let testItem = new ValueGTSecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
-        vh2.SetWidgetValue('---- Second does not matter ---');
+        vh.SetInputValue('---- does not matter ----');
+        vh2.SetInputValue('---- Second does not matter ---');
         vh2.SetValue(100);  // property value to match to the rest
 
         vh.SetValue(101);
@@ -1676,7 +1676,7 @@ describe('class ValueGTESecondValueCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValueGTESecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(101);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.SetValue(100);
@@ -1697,7 +1697,7 @@ describe('class ValueGTESecondValueCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValueGTESecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(true);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.SetValue(false); // SecondValue == this value. So Match because operator is GTE
@@ -1716,8 +1716,8 @@ describe('class ValueGTESecondValueCondition', () => {
             SecondValueHostId: 'Property2'
         };
         let testItem = new ValueGTESecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
-        vh2.SetWidgetValue('---- Second does not matter ---');
+        vh.SetInputValue('---- does not matter ----');
+        vh2.SetInputValue('---- Second does not matter ---');
         vh2.SetValue(100);  // property value to match to the rest
 
         vh.SetValue(101);
@@ -1860,7 +1860,7 @@ describe('class ValueLTSecondValueCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValueLTSecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(101);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue(100);
@@ -1881,7 +1881,7 @@ describe('class ValueLTSecondValueCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValueLTSecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(true);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.SetValue(false); // SecondValue == this value. So NoMatch because operator is LT
@@ -1900,8 +1900,8 @@ describe('class ValueLTSecondValueCondition', () => {
             SecondValueHostId: 'Property2'
         };
         let testItem = new ValueLTSecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
-        vh2.SetWidgetValue('---- Second does not matter ---');
+        vh.SetInputValue('---- does not matter ----');
+        vh2.SetInputValue('---- Second does not matter ---');
         vh2.SetValue(100);  // property value to match to the rest
 
         vh.SetValue(101);
@@ -2043,7 +2043,7 @@ describe('class ValueLTESecondValueCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValueLTESecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(101);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue(100);
@@ -2064,7 +2064,7 @@ describe('class ValueLTESecondValueCondition', () => {
             SecondValueHostId: null
         };
         let testItem = new ValueLTESecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(true);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.SetValue(false); // SecondValue == this value. So Match because operator is LTE
@@ -2083,8 +2083,8 @@ describe('class ValueLTESecondValueCondition', () => {
             SecondValueHostId: 'Property2'
         };
         let testItem = new ValueLTESecondValueCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
-        vh2.SetWidgetValue('---- Second does not matter ---');
+        vh.SetInputValue('---- does not matter ----');
+        vh2.SetInputValue('---- Second does not matter ---');
         vh2.SetValue(100);  // property value to match to the rest
 
         vh.SetValue(101);
@@ -2228,7 +2228,7 @@ describe('class StringLengthCondition', () => {
             Maximum: 5
         };
         let testItem = new StringLengthCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue('');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue('1');
@@ -2254,7 +2254,7 @@ describe('class StringLengthCondition', () => {
             Maximum: null
         };
         let testItem = new StringLengthCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue('');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue('1');
@@ -2278,7 +2278,7 @@ describe('class StringLengthCondition', () => {
             Maximum: 5
         };
         let testItem = new StringLengthCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue('');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.SetValue('1');
@@ -2329,7 +2329,7 @@ describe('class StringLengthCondition', () => {
             Trim: false
         };
         let testItem = new StringLengthCondition(descriptor);
-        vh.SetWidgetValue('---- does not matter ----');
+        vh.SetInputValue('---- does not matter ----');
         vh.SetValue(' ');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.SetValue(' 1');

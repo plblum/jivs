@@ -12,7 +12,7 @@ import {
 } from "../Interfaces/Conditions";
 import { IOneValueConditionDescriptor, OneValueConditionBase, ITwoValueConditionDescriptor } from "./OneValueConditionBase";
 import { IStringConditionDescriptor, StringConditionBase } from "./StringConditionBase";
-import { WidgetConditionBase } from "./WidgetConditionBase";
+import { InputValueConditionBase } from "./InputValueConditionBase";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { EvaluateChildConditionResultsBase, IEvaluateChildConditionResultsDescriptor } from "./EvaluateChildConditionResultsBase";
 import { IRegExpConditionBaseDescriptor, RegExpConditionBase } from "./RegExpConditionBase";
@@ -33,18 +33,18 @@ export interface IDataTypeCheckConditionDescriptor extends IOneValueConditionDes
 export const DataTypeCheckConditionType = 'DataTypeCheck';
 
 /**
- * Determines if the value of WidgetValue can be successfully converted to its native data type.
+ * Determines if the value of InputValue can be successfully converted to its native data type.
  * Since the actual work of conversion occurs by the consuming system, this really just looks
- * at both values. When WidgetValue is not undefined while Value is undefined, it reports an error
+ * at both values. When InputValue is not undefined while Value is undefined, it reports an error
  * as the converter could not get a valid value to store in the Value.
  * Supports these tokens:
  * {ConversionError} - Uses the value from IInputValueHost.GetConversionErrorMessage()
  */
-export class DataTypeCheckCondition extends WidgetConditionBase<IDataTypeCheckConditionDescriptor>
+export class DataTypeCheckCondition extends InputValueConditionBase<IDataTypeCheckConditionDescriptor>
 {
     public static get DefaultConditionType(): string { return DataTypeCheckConditionType; }
     
-    protected EvaluateWidgetValue(value: any, valueHost: IInputValueHost,
+    protected EvaluateInputValue(value: any, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         // value has already been proven to be something other than undefined...
         return valueHost.GetValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
@@ -69,7 +69,7 @@ export class DataTypeCheckCondition extends WidgetConditionBase<IDataTypeCheckCo
 }
 
 /**
- * Descriptor for RequiredTextCondition, which uses the WidgetValue
+ * Descriptor for RequiredTextCondition, which uses the InputValue
  */
 export interface IRequiredTextConditionDescriptor extends IStringConditionDescriptor {
     /**
@@ -83,14 +83,14 @@ export interface IRequiredTextConditionDescriptor extends IStringConditionDescri
 export const RequiredTextConditionType = 'Required';
 
 /**
- * For any widget whose native data is textual, including <select> elements,
+ * For any input field/element whose native data is textual, including HTML's <select> elements,
  * which also have an index. That can be evaluated by RequiredIndexValidator
  */
-export class RequiredTextCondition extends WidgetConditionBase<IRequiredTextConditionDescriptor>
+export class RequiredTextCondition extends InputValueConditionBase<IRequiredTextConditionDescriptor>
 {
     public static get DefaultConditionType(): string { return RequiredTextConditionType; }    
 
-    protected EvaluateWidgetValue(value: any, valueHost: IInputValueHost,
+    protected EvaluateInputValue(value: any, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         // value of undefined has been rejected already, but still need to be sure we have a string
         if (typeof value !== 'string')
@@ -125,11 +125,11 @@ export const RequiredIndexConditionType = 'RequiredIndex';
  * For single selection lists to have a selected value. Values are expected 
  * to be an index.
  */
-export class RequiredIndexCondition extends WidgetConditionBase<IRequiredIndexConditionDescriptor>
+export class RequiredIndexCondition extends InputValueConditionBase<IRequiredIndexConditionDescriptor>
 {
     public static get DefaultConditionType(): string { return RequiredIndexConditionType; }    
 
-    protected EvaluateWidgetValue(value: any, valueHost: IInputValueHost,
+    protected EvaluateInputValue(value: any, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         // value of undefined has been rejected already, but still need to be sure we have a number
         if (typeof value !== 'number')
