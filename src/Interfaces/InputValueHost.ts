@@ -163,7 +163,7 @@ export interface IInputValueHost extends IValueHost {
  * It should be generatable from JSON, and simply gets typed to IInputValueHostDescriptor.
  * This provides the backing data for each InputValueHost.
  * The server side could in fact supply this object via JSON,
- * allowing the server's model to dictate this, except values are converted to their native forms
+ * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
  * However, there are sometimes
  * cases a business rule is client side only (parser error converting "abc" to number)
@@ -217,7 +217,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IValidateResu
  * It should be generatable from JSON, and simply gets typed to IInputValueHostDescriptor.
  * This provides the backing data for each InputValueHost.
  * The server side could in fact supply this object via JSON,
- * allowing the server's model to dictate this, except values are converted to their native forms
+ * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
  * However, there are sometimes
  * cases a business rule is client side only (parser error converting "abc" to number)

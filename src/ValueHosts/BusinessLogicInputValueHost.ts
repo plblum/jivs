@@ -2,7 +2,7 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IInputValueHostBaseDescriptor, IInputValueHostBaseState, IInputValueHost } from "../Interfaces/InputValueHost";
 import { IValidateOptions, IValidateResult, ValidationResult, IIssueFound, ValidationSeverity } from "../Interfaces/Validation";
 import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
-import { ToIModelCallbacks } from "./ValidationManager";
+import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
 
 
@@ -49,7 +49,7 @@ export class BusinessLogicInputValueHost extends InputValueHostBase<IInputValueH
                 result.ValidationResult = errorFound ? ValidationResult.Invalid : ValidationResult.Valid;
             };
         }
-        ToIModelCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
+        ToIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
         return result;
     }
     public get RequiresInput(): boolean

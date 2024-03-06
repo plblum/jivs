@@ -42,7 +42,7 @@ export abstract class ConditionBase<TConditionDescriptor extends IConditionDescr
      * The evaluate function can use either. It should always return Undetermined if the value it gets
      * is 'undefined' or no compatible with its requirements (like wrong data type).
      * If the ConditionDescriptor.ValueHostId is assigned, it will be used to retrieve
-     * the ValueInfo from the model, and this parameter is ignored.
+     * the ValueHost from the Model, and this parameter is ignored.
      * This parameter can be null, but the ConditionDescriptor will need to supply a ValueHostId
      * to a value host instead.
      * @param valueHostResolver 

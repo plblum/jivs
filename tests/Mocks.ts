@@ -5,7 +5,7 @@ import { IntlLocalizationAdapter } from "../src/DataTypes/IntlLocalizationAdapte
 import { type ILogger, LoggingLevel } from "../src/Interfaces/Logger";
 import { MessageTokenResolver  } from "../src/ValueHosts/MessageTokenResolver";
 import type { IValidationServices } from "../src/Interfaces/ValidationServices";
-import type { IModelCallbacks, ModelStateChangedHandler, ModelValidatedHandler } from "../src/ValueHosts/ValidationManager";
+import type { IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../src/ValueHosts/ValidationManager";
 import type { IValueHost, ISetValueOptions, IValueHostState } from "../src/Interfaces/ValueHost";
 import { CreateDataTypeResolverWithManyLAs } from "./DataTypes/DataTypeResolver.test";
 import { commonBuiltInToStringLookupKeys } from "../src/DataTypes/LookupKeys";
@@ -248,7 +248,7 @@ export class MockValidationServices implements IValidationServices
  * MockValidationManager limited to implementing support for 
  * child ValueHosts.
  */
-export class MockValidationManager implements IValidationManager, IModelCallbacks
+export class MockValidationManager implements IValidationManager, IValidationManagerCallbacks
 {
     constructor(services: IValidationServices)
     {
@@ -326,21 +326,21 @@ export class MockValidationManager implements IValidationManager, IModelCallback
         throw new Error("Method not implemented.");
     }
 
-    public get OnModelStateChanged(): ModelStateChangedHandler | null {
-        return this._onModelStateChanged;
+    public get OnStateChanged(): ValidationManagerStateChangedHandler | null {
+        return this._onStateChanged;
     }
-    public set OnModelStateChanged(fn: ModelStateChangedHandler) {
-        this._onModelStateChanged = fn;
+    public set OnStateChanged(fn: ValidationManagerStateChangedHandler) {
+        this._onStateChanged = fn;
     }
-    private _onModelStateChanged: ModelStateChangedHandler | null = null;
+    private _onStateChanged: ValidationManagerStateChangedHandler | null = null;
 
-    public get OnModelValidated(): ModelValidatedHandler | null {
-        return this._onModelValidated;
+    public get OnValidated(): ValidationManagerValidatedHandler | null {
+        return this._onValidated;
     }
-    public set OnModelValidated(fn: ModelValidatedHandler) {
-        this._onModelValidated = fn;
+    public set OnValidated(fn: ValidationManagerValidatedHandler) {
+        this._onValidated = fn;
     }
-    private _onModelValidated: ModelValidatedHandler | null = null;
+    private _onValidated: ValidationManagerValidatedHandler | null = null;
 
     public get OnValueHostStateChanged(): ValueHostStateChangedHandler | null {
         return this._onValueHostStateChanged;

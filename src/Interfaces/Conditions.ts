@@ -83,7 +83,7 @@ export interface ICondition {
  * When placed into the ICondition, it is treated as immutable
  * and can be used as state in React.
  * The server side could in fact supply this object via JSON,
- * allowing the server's model to dictate this. However, there are sometimes
+ * allowing the server's Model to dictate this. However, there are sometimes
  * cases a business rule is client side only (parser error converting "abc" to number)
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)

@@ -3,7 +3,7 @@ import { ConditionFactory, RegisterStandardConditions } from "../../src/Conditio
 import { DataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { ValidationServices } from "../../src/Services/ValidationServices";
-import { IModelCallbacks, ModelStateChangedHandler, ToIModelCallbacks, ValidationManager, ValidationManagerConfig } from "../../src/ValueHosts/ValidationManager";
+import { IValidationManagerCallbacks, ToIValidationManagerCallbacks, ValidationManager, ValidationManagerConfig, ValidationManagerStateChangedHandler } from "../../src/ValueHosts/ValidationManager";
 import { IValueHost, IValueHostDescriptor, IValueHostState } from "../../src/Interfaces/ValueHost";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationManager, MockValidationServices, NeverMatchesConditionType, RegisterPredictableConditions } from "../Mocks";
 import { InputValueHostType, InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
@@ -12,14 +12,14 @@ import { ValueHostId } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, IInputValueHostDescriptor, IInputValueHostState } from '../../src/Interfaces/InputValueHost';
 import { IValidateResult, ValidationResult, IIssueFound, ValidationSeverity, IIssueSnapshot } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
-import { IModelState, IValidationManager } from '../../src/Interfaces/ValidationManager';
+import { IValidationManager, IValidationManagerState } from '../../src/Interfaces/ValidationManager';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { DeepClone } from '../../src/Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, ToIValueHostResolver, ToIValueHostsManager, ToIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHost } from '../../src/ValueHosts/ValueHost';
 
 // Subclass of what we want to test to expose internals to tests
-class PublicifiedValidationManager extends ValidationManager<IModelState> {
+class PublicifiedValidationManager extends ValidationManager<IValidationManagerState> {
     constructor(setup: ValidationManagerConfig) {
         super(setup);
     }
@@ -30,15 +30,13 @@ class PublicifiedValidationManager extends ValidationManager<IModelState> {
     public get ExposedValueHostDescriptors(): { [id: string]: IValueHostDescriptor } {
         return this.ValueHostDescriptors;
     }
-    public get ExposedModelState(): IModelState {
-        return this.ModelState;
+    public get ExposedState(): IValidationManagerState {
+        return this.State;
     }
 
 }
 
-//  constructor(descriptors?: IValueHostDescriptorsMap,
-// lastModelState?: IModelState,
-// callbacks?:IModelState
+//  constructor(config: ValidationManagerConfig)
 describe('constructor and initial property values', () => {
     test('No descriptors (empty array), an empty state and no callback', () => {
         let testItem: PublicifiedValidationManager | null = null;
@@ -49,10 +47,10 @@ describe('constructor and initial property values', () => {
         expect(Object.keys(testItem!.ExposedValueHosts).length).toBe(0);
         expect(testItem!.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem!.ExposedValueHostDescriptors).length).toBe(0);
-        expect(testItem!.ExposedModelState).not.toBeNull();
-        expect(testItem!.ExposedModelState.StateChangeCounter).toBe(0);
-        expect(testItem!.OnModelStateChanged).toBeNull();
-        expect(testItem!.OnModelValidated).toBeNull();
+        expect(testItem!.ExposedState).not.toBeNull();
+        expect(testItem!.ExposedState.StateChangeCounter).toBe(0);
+        expect(testItem!.OnStateChanged).toBeNull();
+        expect(testItem!.OnValidated).toBeNull();
         expect(testItem!.OnValueHostStateChanged).toBeNull();
         expect(testItem!.OnValueHostValidated).toBeNull();
         expect(testItem!.OnValueChanged).toBeNull();
@@ -84,10 +82,10 @@ describe('constructor and initial property values', () => {
         expect(Object.keys(testItem!.ExposedValueHosts).length).toBe(1);
         expect(testItem!.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem!.ExposedValueHostDescriptors).length).toBe(1);
-        expect(testItem!.ExposedModelState).not.toBeNull();
-        expect(testItem!.ExposedModelState.StateChangeCounter).toBe(0);
-        expect(testItem!.OnModelStateChanged).toBeNull();
-        expect(testItem!.OnModelValidated).toBeNull();
+        expect(testItem!.ExposedState).not.toBeNull();
+        expect(testItem!.ExposedState.StateChangeCounter).toBe(0);
+        expect(testItem!.OnStateChanged).toBeNull();
+        expect(testItem!.OnValidated).toBeNull();
         expect(testItem!.OnValueHostStateChanged).toBeNull();
         expect(testItem!.OnValueHostValidated).toBeNull();
         expect(testItem!.OnValueChanged).toBeNull();
@@ -101,21 +99,21 @@ describe('constructor and initial property values', () => {
         expect(testItem!.ExposedValueHostDescriptors['Field1']).not.toBe(descriptors[0]);
         expect(testItem!.ExposedValueHostDescriptors['Field1']).toEqual(descriptors[0]);
     });
-    test('Empty ModelState object. Other parameters are null', () => {
-        let state: IModelState = {};
+    test('Empty State object. Other parameters are null', () => {
+        let state: IValidationManagerState = {};
         let testItem: PublicifiedValidationManager | null = null;
         let services = new MockValidationServices(false, false);
         expect(() => testItem = new PublicifiedValidationManager(
-            { Services: services, ValueHostDescriptors: [], SavedModelState: state })).not.toThrow();
+            { Services: services, ValueHostDescriptors: [], SavedState: state })).not.toThrow();
         expect(testItem!.ExposedValueHosts).not.toBeNull();
         expect(Object.keys(testItem!.ExposedValueHosts).length).toBe(0);
         expect(testItem!.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem!.ExposedValueHostDescriptors).length).toBe(0);
-        expect(testItem!.ExposedModelState).not.toBeNull();
-        expect(testItem!.ExposedModelState.StateChangeCounter).toBe(0);
+        expect(testItem!.ExposedState).not.toBeNull();
+        expect(testItem!.ExposedState.StateChangeCounter).toBe(0);
 
-        expect(testItem!.OnModelStateChanged).toBeNull();
-        expect(testItem!.OnModelValidated).toBeNull();
+        expect(testItem!.OnStateChanged).toBeNull();
+        expect(testItem!.OnValidated).toBeNull();
         expect(testItem!.OnValueHostStateChanged).toBeNull();
         expect(testItem!.OnValueHostValidated).toBeNull();
         expect(testItem!.OnValueChanged).toBeNull();
@@ -127,7 +125,7 @@ describe('constructor and initial property values', () => {
             Type: InputValueHostType,
             Label: 'Field 1'
         }];
-        let savedModelState: IModelState = {};
+        let savedState: IValidationManagerState = {};
         let savedValueHostStates: Array<IValueHostState> = [];
         savedValueHostStates.push({
             Id: 'Field1',
@@ -137,7 +135,7 @@ describe('constructor and initial property values', () => {
         let services = new MockValidationServices(false, false);
         expect(() => testItem = new PublicifiedValidationManager({
             Services: services, ValueHostDescriptors: descriptors,
-            SavedModelState: savedModelState, SavedValueHostStates: savedValueHostStates
+            SavedState: savedState, SavedValueHostStates: savedValueHostStates
         })).not.toThrow();
         expect(testItem!.Services).toBe(services);
 
@@ -145,11 +143,11 @@ describe('constructor and initial property values', () => {
         expect(Object.keys(testItem!.ExposedValueHosts).length).toBe(1);
         expect(testItem!.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem!.ExposedValueHostDescriptors).length).toBe(1);
-        expect(testItem!.ExposedModelState).not.toBeNull();
-        expect(testItem!.ExposedModelState.StateChangeCounter).toBe(0);
+        expect(testItem!.ExposedState).not.toBeNull();
+        expect(testItem!.ExposedState.StateChangeCounter).toBe(0);
 
-        expect(testItem!.OnModelStateChanged).toBeNull();
-        expect(testItem!.OnModelValidated).toBeNull();
+        expect(testItem!.OnStateChanged).toBeNull();
+        expect(testItem!.OnValidated).toBeNull();
         expect(testItem!.OnValueHostStateChanged).toBeNull();
         expect(testItem!.OnValueHostValidated).toBeNull();
         expect(testItem!.OnValueChanged).toBeNull();
@@ -168,8 +166,8 @@ describe('constructor and initial property values', () => {
         let config: ValidationManagerConfig = {
             Services: new MockValidationServices(false, false),
             ValueHostDescriptors: [],
-            OnModelStateChanged: (validationManager: IValidationManager, state: IModelState) => { },
-            OnModelValidated: (validationManager: IValidationManager, validateResults: Array<IValidateResult>) => { },
+            OnStateChanged: (validationManager: IValidationManager, state: IValidationManagerState) => { },
+            OnValidated: (validationManager: IValidationManager, validateResults: Array<IValidateResult>) => { },
             OnValueHostStateChanged: (valueHost: IValueHost, state: IValueHostState) => { },
             OnValueHostValidated: (valueHost: IInputValueHost, validateResult: IValidateResult) => { },
             OnValueChanged: (valueHost: IValueHost, oldValue: any) => { },
@@ -180,8 +178,8 @@ describe('constructor and initial property values', () => {
         expect(() => testItem = new PublicifiedValidationManager(config)).not.toThrow();
 
         // other tests will confirm that the function correctly runs
-        expect(testItem!.OnModelStateChanged).not.toBeNull();
-        expect(testItem!.OnModelValidated).not.toBeNull();
+        expect(testItem!.OnStateChanged).not.toBeNull();
+        expect(testItem!.OnValidated).not.toBeNull();
         expect(testItem!.OnValueHostStateChanged).not.toBeNull();
         expect(testItem!.OnValueHostValidated).not.toBeNull();
         expect(testItem!.OnValueChanged).not.toBeNull();
@@ -229,8 +227,8 @@ describe('ValidationManager.AddValueHost', () => {
         expect(Object.keys(testItem.ExposedValueHosts).length).toBe(1);
         expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(1);
-        expect(testItem.ExposedModelState).not.toBeNull();
-        expect(testItem.ExposedModelState.StateChangeCounter).toBe(0);
+        expect(testItem.ExposedState).not.toBeNull();
+        expect(testItem.ExposedState.StateChangeCounter).toBe(0);
 
         // ensure the stored Descriptor is the same as the one supplied
         expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor);
@@ -278,8 +276,8 @@ describe('ValidationManager.AddValueHost', () => {
         expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(2);
         expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor1);
         expect(testItem.ExposedValueHostDescriptors['Field2']).toBe(descriptor2);
-        expect(testItem.ExposedModelState).not.toBeNull();
-        expect(testItem.ExposedModelState.StateChangeCounter).toBe(0);
+        expect(testItem.ExposedState).not.toBeNull();
+        expect(testItem.ExposedState.StateChangeCounter).toBe(0);
         
         // Check the valueHosts type and initial state
         TestValueHostState(testItem, 'Field1', null);
@@ -303,8 +301,8 @@ describe('ValidationManager.AddValueHost', () => {
         expect(Object.keys(testItem.ExposedValueHosts).length).toBe(1);
         expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(1);
-        expect(testItem.ExposedModelState).not.toBeNull();
-        expect(testItem.ExposedModelState.StateChangeCounter).toBe(0);
+        expect(testItem.ExposedState).not.toBeNull();
+        expect(testItem.ExposedState.StateChangeCounter).toBe(0);
 
         // ensure the stored Descriptor is the same as the one supplied
         expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor);
@@ -316,7 +314,7 @@ describe('ValidationManager.AddValueHost', () => {
     });    
     test('State with ValidationResult=Valid already exists for the ValueHostDescriptor being added. That state is used', () => {
 
-        let savedModelState: IModelState = {};
+        let savedState: IValidationManagerState = {};
 
         let savedValueHostState: IInputValueHostState = {
             Id: 'Field1',
@@ -327,7 +325,7 @@ describe('ValidationManager.AddValueHost', () => {
         let savedValueHostStates: Array<IValueHostState> = [savedValueHostState];
         let testItem = new PublicifiedValidationManager({
             Services: new MockValidationServices(false, false), ValueHostDescriptors: [],
-            SavedModelState: savedModelState, SavedValueHostStates: savedValueHostStates
+            SavedState: savedState, SavedValueHostStates: savedValueHostStates
         });
         let descriptor: IInputValueHostDescriptor = {
             Id: 'Field1',
@@ -348,7 +346,7 @@ describe('ValidationManager.AddValueHost', () => {
     });
     test('State with ValidationResult=Invalid already exists for the ValueHostDescriptor being added.', () => {
 
-        let savedModelState: IModelState = {};
+        let savedState: IValidationManagerState = {};
 
         let savedValueHostState: IInputValueHostState = {
             Id: 'Field1',
@@ -364,7 +362,7 @@ describe('ValidationManager.AddValueHost', () => {
         let savedValueHostStates: Array<IValueHostState> = [savedValueHostState];      
         let testItem = new PublicifiedValidationManager({
             Services: new MockValidationServices(false, false), ValueHostDescriptors: [],
-            SavedModelState: savedModelState, SavedValueHostStates: savedValueHostStates
+            SavedState: savedState, SavedValueHostStates: savedValueHostStates
         });
         let descriptor: IInputValueHostDescriptor = {
             Id: 'Field1',
@@ -397,7 +395,7 @@ describe('ValidationManager.AddValueHost', () => {
                 }
             ]
         };
-        let savedModelState: IModelState = {};
+        let savedState: IValidationManagerState = {};
         let savedValueHostStates: Array<IValueHostState> = [];
         savedValueHostStates.push(<IInputValueHostState>{
             Id: 'Field1',
@@ -406,7 +404,7 @@ describe('ValidationManager.AddValueHost', () => {
         });
         let testItem = new PublicifiedValidationManager({
             Services: new MockValidationServices(false, false), ValueHostDescriptors: [],
-            SavedModelState: savedModelState, SavedValueHostStates: savedValueHostStates
+            SavedState: savedState, SavedValueHostStates: savedValueHostStates
         });
         let addState: IInputValueHostState = {
             Id: 'Field1',
@@ -425,7 +423,7 @@ describe('ValidationManager.AddValueHost', () => {
     });    
     test('State instance is changed after passing in has no impact on stored state', () => {
 
-        let lastModelState: IModelState = {};
+        let lastState: IValidationManagerState = {};
 
         let savedValueHostState: IInputValueHostState = {
             Id: 'Field1',
@@ -436,7 +434,7 @@ describe('ValidationManager.AddValueHost', () => {
         let savedValueHostStates: Array<IValueHostState> = [savedValueHostState];
         let testItem = new PublicifiedValidationManager({
             Services: new MockValidationServices(false, false), ValueHostDescriptors: [],
-            SavedModelState: lastModelState, SavedValueHostStates: savedValueHostStates
+            SavedState: lastState, SavedValueHostStates: savedValueHostStates
         });
         let descriptor: IInputValueHostDescriptor = {
             Id: 'Field1',
@@ -492,7 +490,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         expect(testItem.ExposedValueHosts['Field1']).toBe(replacementValueHost);
         expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(1);
-        expect(testItem.ExposedModelState).not.toBeNull();
+        expect(testItem.ExposedState).not.toBeNull();
 
         // no side effects of the originals
         expect(testItem.ExposedValueHostDescriptors['Field1']).not.toBe(descriptor);
@@ -518,7 +516,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         expect(Object.keys(testItem.ExposedValueHosts).length).toBe(1);
         expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(1);
-        expect(testItem.ExposedModelState).not.toBeNull();
+        expect(testItem.ExposedState).not.toBeNull();
 
         // ensure the stored Descriptor is the same as the one supplied
         expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor);
@@ -558,7 +556,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         expect(testItem.ExposedValueHosts['Field1']).toBe(replacementValueHost);
         expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(1);
-        expect(testItem.ExposedModelState).not.toBeNull();
+        expect(testItem.ExposedState).not.toBeNull();
 
         // no side effects of the originals
         expect(testItem.ExposedValueHostDescriptors['Field1']).not.toBe(descriptor);
@@ -665,7 +663,7 @@ describe('ValidationManager.DiscardValueHost completely removes ValueHost, its s
         expect(Object.keys(testItem.ExposedValueHosts).length).toBe(0);
         expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(0);
-        expect(testItem.ExposedModelState).not.toBeNull();
+        expect(testItem.ExposedState).not.toBeNull();
 
         // add back the descriptor to confirm the original state (value=10) was discarded
         let addedVH = testItem.AddValueHost(descriptor, null);
@@ -688,7 +686,7 @@ describe('ValidationManager.DiscardValueHost completely removes ValueHost, its s
         expect(Object.keys(testItem.ExposedValueHosts).length).toBe(0);
         expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(0);
-        expect(testItem.ExposedModelState).not.toBeNull();
+        expect(testItem.ExposedState).not.toBeNull();
 
     });
 
@@ -717,7 +715,7 @@ describe('ValidationManager.DiscardValueHost completely removes ValueHost, its s
         expect(testItem.ExposedValueHostDescriptors).not.toBeNull();
         expect(Object.keys(testItem.ExposedValueHostDescriptors).length).toBe(1);
         expect(testItem.ExposedValueHostDescriptors['Field1']).toBe(descriptor1);
-        expect(testItem.ExposedModelState).not.toBeNull();
+        expect(testItem.ExposedState).not.toBeNull();
 
     });
 });
@@ -770,8 +768,8 @@ describe('ValidationManager.GetValueHost', () => {
 });
 
 function SetupValidationManager(descriptors?: Array<IInputValueHostDescriptor> | null,
-    savedModelState?: IModelState | null,
-    callbacks?: IModelCallbacks): {
+    savedState?: IValidationManagerState | null,
+    callbacks?: IValidationManagerCallbacks): {
         services: IValidationServices,
         validationManager: IValidationManager
     } {
@@ -787,7 +785,7 @@ function SetupValidationManager(descriptors?: Array<IInputValueHostDescriptor> |
     let config: ValidationManagerConfig = {
         Services: services,
         ValueHostDescriptors: descriptors!,
-        SavedModelState: savedModelState!,
+        SavedState: savedState!,
         SavedValueHostStates: []
     };
     if (callbacks)
@@ -1221,14 +1219,14 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
 
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, null);
     });
-    test('OnModelValidated callback test', () => {
+    test('OnValidated callback test', () => {
         let changeMe = false;
         let callback = (vm: IValidationManager, validateResults: Array<IValidateResult>) => {
             changeMe = true;
         }
         let descriptor = SetupInputValueHostDescriptor(0, [NeverMatchesConditionType]);
         let setup = SetupValidationManager([descriptor], null, {
-            OnModelValidated: callback
+            OnValidated: callback
         });
 
         let validateResults: Array<IValidateResult> = [];
@@ -1256,21 +1254,21 @@ describe('ValidationManager.ClearValidator', () => {
 });
 // UpdateState(updater: (stateToUpdate: TState) => TState): TState
 describe('ValidationManager.UpdateState', () => {
-    interface ITestExtendedModelState extends IModelState {
+    interface ITestExtendedState extends IValidationManagerState {
         Value: number;
     }
-    function testUpdateState(initialValue: number, testCallback: (stateToUpdate: ITestExtendedModelState) => ITestExtendedModelState, callback: ModelStateChangedHandler | null): Array<ITestExtendedModelState> {
+    function testUpdateState(initialValue: number, testCallback: (stateToUpdate: ITestExtendedState) => ITestExtendedState, callback: ValidationManagerStateChangedHandler | null): Array<ITestExtendedState> {
 
         let descriptor = SetupInputValueHostDescriptor(0, [NeverMatchesConditionType]);
-        let state: ITestExtendedModelState = {
+        let state: ITestExtendedState = {
             Value: initialValue
         }
         let setup = SetupValidationManager([descriptor], state, {
-            OnModelStateChanged: callback
+            OnStateChanged: callback
         });
-        let testItem = setup.validationManager as ValidationManager<ITestExtendedModelState>;
-        let changes: Array<ITestExtendedModelState> = [];
-        let fn = (stateToUpdate: ITestExtendedModelState): ITestExtendedModelState => {
+        let testItem = setup.validationManager as ValidationManager<ITestExtendedState>;
+        let changes: Array<ITestExtendedState> = [];
+        let fn = (stateToUpdate: ITestExtendedState): ITestExtendedState => {
             let lastValue = stateToUpdate.Value;
             stateToUpdate = testCallback(stateToUpdate);
             if (lastValue !== stateToUpdate.Value)
@@ -1286,7 +1284,7 @@ describe('ValidationManager.UpdateState', () => {
     }
     test('Update value with +1 results in new instance of State',
         () => {
-            let testCallback = (stateToUpdate: ITestExtendedModelState): ITestExtendedModelState => {
+            let testCallback = (stateToUpdate: ITestExtendedState): ITestExtendedState => {
                 stateToUpdate.Value = stateToUpdate.Value + 1;
                 return stateToUpdate;
             };
@@ -1300,49 +1298,49 @@ describe('ValidationManager.UpdateState', () => {
         });
     test('Update value with +0 results in no change to the state instance',
         () => {
-            let testCallback = (stateToUpdate: ITestExtendedModelState): ITestExtendedModelState => {
+            let testCallback = (stateToUpdate: ITestExtendedState): ITestExtendedState => {
                 return stateToUpdate;
             };
             const initialValue = 100;
             let changes = testUpdateState(initialValue, testCallback, null);
             expect(changes.length).toBe(0);
         });
-    test('Update value with +1 results in new instance of State and report thru OnModelChanged',
+    test('Update value with +1 results in new instance of State and report thru UpdateState',
         () => {
-            let testCallback = (stateToUpdate: ITestExtendedModelState): ITestExtendedModelState => {
+            let testCallback = (stateToUpdate: ITestExtendedState): ITestExtendedState => {
                 stateToUpdate.Value = stateToUpdate.Value + 1;
                 return stateToUpdate;
             };
             const initialValue = 100;
-            let onModelChanges: Array<ITestExtendedModelState> = [];
+            let onStateChanges: Array<ITestExtendedState> = [];
             let changes = testUpdateState(initialValue, testCallback, (vm, state) => {
-                onModelChanges.push(state as ITestExtendedModelState);
+                onStateChanges.push(state as ITestExtendedState);
             });
             expect(changes.length).toBe(3);
             for (let i = 1; i <= 3; i++) {
                 expect(changes[i - 1].Value).toBe(initialValue + i);
             }
-            expect(onModelChanges.length).toBe(3);
+            expect(onStateChanges.length).toBe(3);
             for (let i = 1; i <= 3; i++) {
-                expect(onModelChanges[i - 1].Value).toBe(initialValue + i);
+                expect(onStateChanges[i - 1].Value).toBe(initialValue + i);
             }
         });
-    test('Update value with +0 results in no change to the state instance nor reported to OnModelChanged callback',
+    test('Update value with +0 results in no change to the state instance nor seen in UpdateState',
         () => {
-            let testCallback = (stateToUpdate: ITestExtendedModelState): ITestExtendedModelState => {
+            let testCallback = (stateToUpdate: ITestExtendedState): ITestExtendedState => {
                 return stateToUpdate;
             };
             const initialValue = 100;
-            let onModelChanges: Array<ITestExtendedModelState> = [];
+            let onStateChanges: Array<ITestExtendedState> = [];
             let changes = testUpdateState(initialValue, testCallback, (vm, state) => {
-                onModelChanges.push(state as ITestExtendedModelState);
+                onStateChanges.push(state as ITestExtendedState);
             });
             expect(changes.length).toBe(0);
         });
     test('Updater function is null throws',
         () => {
             let setup = SetupValidationManager();
-            let testItem = setup.validationManager as ValidationManager<ITestExtendedModelState>;
+            let testItem = setup.validationManager as ValidationManager<ITestExtendedState>;
             expect(() => testItem.UpdateState(null!)).toThrow(/updater/);
         });
 });
@@ -1433,33 +1431,33 @@ describe('ToIValueHostsManagerAccessor function', () => {
         expect(ToIValueHostsManagerAccessor(100)).toBeNull();
     });        
 });
-describe('ToIModelCallbacks function', () => {
+describe('ToIValidationManagerCallbacks function', () => {
     test('Matches interface returns strongly typed object.', () => {
-        let testItem: IModelCallbacks = {
+        let testItem: IValidationManagerCallbacks = {
             OnValueChanged: (vh: IValueHost, old: any) => {},
             OnValueHostStateChanged: (vh: IValueHost, state: IValueHostState) => {},
             OnInputValueChanged: (vh: IInputValueHost, old: any)  => {},
             OnValueHostValidated: (vh: IInputValueHost, validationResult: IValidateResult) => { },
-            OnModelStateChanged: (vm, state) => { },
-            OnModelValidated: (vm, results) => { }
+            OnStateChanged: (vm, state) => { },
+            OnValidated: (vm, results) => { }
         };
-        expect(ToIModelCallbacks(testItem)).toBe(testItem);
+        expect(ToIValidationManagerCallbacks(testItem)).toBe(testItem);
     });
     test('ValidationManager matches and returns itself.', () => {
         let testItem = new ValidationManager({
             Services: null,
             ValueHostDescriptors: []
         });
-        expect(ToIModelCallbacks(testItem)).toBe(testItem);
+        expect(ToIValidationManagerCallbacks(testItem)).toBe(testItem);
     });    
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(ToIModelCallbacks(testItem)).toBeNull();
+        expect(ToIValidationManagerCallbacks(testItem)).toBeNull();
     });    
     test('null returns null.', () => {
-        expect(ToIModelCallbacks(null)).toBeNull();
+        expect(ToIValidationManagerCallbacks(null)).toBeNull();
     });        
     test('Non-object returns null.', () => {
-        expect(ToIModelCallbacks(100)).toBeNull();
+        expect(ToIValidationManagerCallbacks(100)).toBeNull();
     });        
 });

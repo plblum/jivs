@@ -2,7 +2,7 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ValidationCategory } from "../Interfaces/Logger";
 import { ObjectKeysCount } from "../Utilities/Utilities";
 import { valGlobals } from "../Services/ValidationGlobals";
-import { ToIModelCallbacks } from "./ValidationManager";
+import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
 import { IInputValueHostDescriptor, IInputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
@@ -114,7 +114,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                         (result.IssuesFound ? JSON.stringify(result.IssuesFound) : 'none')
                 }
             });
-            ToIModelCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
+            ToIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
         }
         function LogInfo(self: InputValueHost,
             fn: () => { message: string, source?: string })

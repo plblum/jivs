@@ -11,7 +11,7 @@ import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
  *   These have validation capability.
  * - NonInputValueHosts - reflects values that are needed by validation
  *   but are not editable by the user. Often these are properties from the same
- *   model being edited.
+ *   Model being edited.
  * - HTMLElementValueHost - Its value is an HTML Element in the DOM which it gets
  *   by a queryselector.
  *   Conditions are expected to use its data in a read-only fashion. 
@@ -27,7 +27,7 @@ import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
  *   and may contain errors preventing its conversion into that native data.
  *   Only a few conditions evaluate the input value, but they are important:
  *   RequiredCondition and ValidNativeCondition.
- * - native - the value that will be stored in the model.
+ * - native - the value that will be stored in the Model.
  *   Date object, number, boolean, and your own object are examples.
  *   When the native type is a string, it is often similar in both input and native values.
  *   The string in the native value may be cleaned up, trimmed, reformatted, etc.
@@ -206,7 +206,7 @@ interface CustomItems {
  * child implementation.
  * This provides the business rules and other non-state values for each ValueHost.
  * The server side could in fact supply this object via JSON,
- * allowing the server's model to dictate this, except values are converted to their native forms
+ * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
  */
 export interface IValueHostDescriptor {

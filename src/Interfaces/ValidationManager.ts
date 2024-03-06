@@ -113,7 +113,7 @@ export interface IValidationManager extends IValueHostsManager {
  * The SPA may keep an instance of ValidationManager for the duration needed.
  * Each entry in ValueHostStates must have a companion in ValueHosts and ValueHostDescriptors.
  */
-export interface IModelState {
+export interface IValidationManagerState {
     StateChangeCounter?: number;
 }
 

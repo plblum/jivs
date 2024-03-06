@@ -67,7 +67,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     }
 
     /**
-     * Gets the native value, which is what can be written to the model.
+     * Gets the native value, which is what can be written to the Model.
      * Returns undefined if the native value could not be resolved
      * from the input field/element.
      */

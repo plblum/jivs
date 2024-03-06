@@ -15,8 +15,8 @@ import { ValueHostBase, ValueHostBaseGenerator } from "./ValueHostBase";
  * - Expose a global value - something not part of the form - that can be used by your
  *   Conditions, such as the current Country code used to select the right regular expression
  *   for postal codes, phone numbers, etc.
- * - Store all of the remaining members of your model. Makes ValidationManager's ValueHosts
- *   your ---Single Source of Truth (SSOT)--- for that model.
+ * - Store all of the remaining members of your Model. Makes ValidationManager's ValueHosts
+ *   your ---Single Source of Truth (SSOT)--- for that Model.
  *   When working with a Model, you will need to write code that transfers the Model's property values
  *   into the UI elements. Since ValidationManager needs those same values, you can build
  *   your input fields/elements to get their value from ValidationManager and upon change, provide
