@@ -1,7 +1,8 @@
-import { ComparersResult } from "../../src/DataTypes/Comparers";
+import { ComparersResult, DateOnlyComparer } from "../../src/DataTypes/Comparers";
 import { DataTypeResolver, RegisterComparerHandlerWithDataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
 import { IntlLocalizationAdapter } from "../../src/DataTypes/IntlLocalizationAdapter";
-import { StringLookupKey, NumberLookupKey, BooleanLookupKey, DateLookupKey, allBuiltInToStringLookupKeys } from "../../src/DataTypes/LookupKeys";
+import { StringLookupKey, NumberLookupKey, BooleanLookupKey, allBuiltInToStringLookupKeys, DateLookupKey } from "../../src/DataTypes/LookupKeys";
+import { IDataTypeConverter, IDataTypeIdentifier } from "../../src/Interfaces/DataTypes";
 
 
 describe('DataTypeResolver constructor and properties', () => {
@@ -240,6 +241,41 @@ describe('DataTypeResolver.CompareValues', () => {
         expect(testItem.CompareValues(1, 0)).toBe(ComparersResult.GreaterThan);
         expect(testItem.CompareValues(0, 1)).toBe(ComparersResult.LessThan);        
     });
+    test('Number value compares to custom class that has a IDataTypeConverter', () => {
+        class TestDataType {
+            constructor(quantity: number)
+            {
+                this.Quantity = quantity;
+            }
+            Quantity: number;
+        }
+        class SupportTestDataType implements IDataTypeIdentifier
+        {
+            DataTypeLookupKey: string = "TEST";
+            IsMatch(value: any): boolean {
+                return value instanceof TestDataType;
+            }
+        }
+        class TestConverter implements IDataTypeConverter
+        {
+            SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+                return value instanceof TestDataType;
+            }
+            Convert(value: TestDataType, dataTypeLookupKey: string): string | number | Date | null | undefined {
+                return value.Quantity;
+            }
+        }
+        let testItem = new DataTypeResolver();
+        testItem.RegisterDataTypeIdentifier(new SupportTestDataType());
+        testItem.RegisterDataTypeConverter(new TestConverter());        
+
+        RegisterComparerHandlerWithDataTypeResolver(testItem);
+        expect(testItem.CompareValues(new TestDataType(0), 0)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(new TestDataType(10), 0)).toBe(ComparersResult.GreaterThan);
+        expect(testItem.CompareValues(new TestDataType(undefined!), 0)).toBe(ComparersResult.Undetermined);        
+    });
+
+    
     test('String value resolves lookupKey and correctly handles comparisons', () => {
         let testItem = new DataTypeResolver();
         RegisterComparerHandlerWithDataTypeResolver(testItem);
@@ -268,7 +304,47 @@ describe('DataTypeResolver.CompareValues', () => {
         expect(testItem.CompareValues(date1, date1, undefined)).toBe(ComparersResult.Equals);
         expect(testItem.CompareValues(date2, date1)).toBe(ComparersResult.LessThan);
         expect(testItem.CompareValues(date1, date2)).toBe(ComparersResult.GreaterThan);        
-    });            
+    });           
+    test('value compares to custom class that has a IDataTypeConverter', () => {
+        class TestDataType {
+            constructor(dateValue: Date)
+            {
+                this.DateValue = dateValue;
+            }
+            DateValue: Date;
+        }
+        class SupportTestDataType implements IDataTypeIdentifier
+        {
+            DataTypeLookupKey: string = "TEST";
+            IsMatch(value: any): boolean {
+                return value instanceof TestDataType;
+            }
+        }
+        class TestConverter implements IDataTypeConverter
+        {
+            SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+                return value instanceof TestDataType;
+            }
+            Convert(value: TestDataType, dataTypeLookupKey: string): string | number | Date | null | undefined {
+                return value.DateValue;
+            }
+        }
+        let testItem = new DataTypeResolver();
+        testItem.RegisterDataTypeIdentifier(new SupportTestDataType());
+        testItem.RegisterDataTypeConverter(new TestConverter());   
+        testItem.RegisterComparerHandler("TEST", DateOnlyComparer);
+        
+        let date1 = new TestDataType(new Date(2000, 5, 31));
+        let date2 = new Date(2000, 5, 30);
+
+        RegisterComparerHandlerWithDataTypeResolver(testItem);
+        expect(testItem.CompareValues(date1, date1)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(date1, date1, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(date1, date1, undefined)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(date2, date1)).toBe(ComparersResult.LessThan);
+        expect(testItem.CompareValues(date1, date2)).toBe(ComparersResult.GreaterThan);        
+    });               
+    
     test('Custom function to compare two strings case insensitively for Equals, NotEquals', () => {
         let testItem = new DataTypeResolver();
         expect(testItem.RegisterComparerHandler("Key1",
@@ -307,8 +383,154 @@ describe('DataTypeResolver utility methods', () => {
         expect(testItem.MapNativeTypeToLookupKey('abc')).toBe(StringLookupKey);
         expect(testItem.MapNativeTypeToLookupKey(false)).toBe(BooleanLookupKey);
         expect(testItem.MapNativeTypeToLookupKey(new Date())).toBe(DateLookupKey);
-        expect(testItem.MapNativeTypeToLookupKey({})).toBe(testItem.Unsupported);
-        expect(testItem.MapNativeTypeToLookupKey([])).toBe(testItem.Unsupported);
+        expect(testItem.MapNativeTypeToLookupKey({})).toBeNull();
+        expect(testItem.MapNativeTypeToLookupKey([])).toBeNull();
     });
+    test('RegisterDataTypeIdentifier adds new item', () => {
+        class TestDataType {}
+        class TestIdentifier implements IDataTypeIdentifier
+        {
+            DataTypeLookupKey: string = 'TEST';
+            IsMatch(value: any): boolean {
+                return value instanceof TestDataType;
+            }
+
+        }
+        let testItem = new DataTypeResolver();
+        testItem.RegisterDataTypeIdentifier(new TestIdentifier());
+        expect(testItem.MapNativeTypeToLookupKey(new TestDataType())).toBe('TEST');
+        // confirm we didn't clobber the built in ones
+        expect(testItem.MapNativeTypeToLookupKey(0)).toBe(NumberLookupKey);
+        expect(testItem.MapNativeTypeToLookupKey('abc')).toBe(StringLookupKey);
+        expect(testItem.MapNativeTypeToLookupKey(false)).toBe(BooleanLookupKey);
+        expect(testItem.MapNativeTypeToLookupKey(new Date())).toBe(DateLookupKey);        
+    });
+    test('RegisterDataTypeIdentifier replaces existing item', () => {
+        class TestDataType {}
+        class TestIdentifier implements IDataTypeIdentifier
+        {
+            DataTypeLookupKey: string = DateLookupKey;  // will replace Dates...
+            IsMatch(value: any): boolean {
+                return value instanceof TestDataType;
+            }
+
+        }
+        let testItem = new DataTypeResolver();
+        testItem.RegisterDataTypeIdentifier(new TestIdentifier());
+        expect(testItem.MapNativeTypeToLookupKey(new TestDataType())).toBe(DateLookupKey);
+        expect(testItem.MapNativeTypeToLookupKey(new Date())).toBeNull();
+        // confirm we didn't clobber the built in ones
+        expect(testItem.MapNativeTypeToLookupKey(0)).toBe(NumberLookupKey);
+        expect(testItem.MapNativeTypeToLookupKey('abc')).toBe(StringLookupKey);
+        expect(testItem.MapNativeTypeToLookupKey(false)).toBe(BooleanLookupKey);
+
+    });
+    test('RegisterDataTypeIdentifier adds new item', () => {
+        class TestDataType {
+            constructor(quantity: number)
+            {
+                this.Quantity = quantity;
+            }
+            Quantity: number;
+        }
+        class TestConverter implements IDataTypeConverter
+        {
+            SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+                return value instanceof TestDataType;
+            }
+            Convert(value: TestDataType, dataTypeLookupKey: string): string | number | Date | null | undefined {
+                return value.Quantity;
+            }
+        }
+        let testItem = new DataTypeResolver();
+        testItem.RegisterDataTypeConverter(new TestConverter());
+        let result = testItem.GetDataTypeConverter(new TestDataType(10), null);
+        expect(result).not.toBeNull();
+        expect(result).toBeInstanceOf(TestConverter);
+        expect(result?.Convert(new TestDataType(500), "")).toBe(500);
   
+    });
+    test('GetDataTypeConverter returns null when nothing is registered', () => {
+        class TestDataType {
+            constructor(quantity: number)
+            {
+                this.Quantity = quantity;
+            }
+            Quantity: number;
+        }
+
+        let testItem = new DataTypeResolver();
+
+        let result = testItem.GetDataTypeConverter(new TestDataType(10), null);
+        expect(result).toBeNull();
+  
+    });    
+    test('GetDataTypeConverter returns null when there is a registration', () => {
+        class TestDataType {
+            constructor(quantity: number)
+            {
+                this.Quantity = quantity;
+            }
+            Quantity: number;
+        }
+        class TestDataType2 { }
+        class TestConverter implements IDataTypeConverter
+        {
+            SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+                return value instanceof TestDataType;
+            }
+            Convert(value: TestDataType, dataTypeLookupKey: string): string | number | Date | null | undefined {
+                return value.Quantity;
+            }
+        }
+        let testItem = new DataTypeResolver();
+        testItem.RegisterDataTypeConverter(new TestConverter());
+        let result = testItem.GetDataTypeConverter(new TestDataType2(), null);
+        expect(result).toBeNull();
+    });    
+    test('GetDataTypeConverter returns correct Converter with two registered and both are tried', () => {
+        class TestDataType {
+            constructor(quantity: number)
+            {
+                this.Quantity = quantity;
+            }
+            Quantity: number;
+        }
+        class TestDataType2 {
+            constructor(message: string)
+            {
+                this.Message = message;
+            }
+            Message: string;
+        }
+        class TestConverter implements IDataTypeConverter
+        {
+            SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+                return value instanceof TestDataType;
+            }
+            Convert(value: TestDataType, dataTypeLookupKey: string): string | number | Date | null | undefined {
+                return value.Quantity;
+            }
+        }
+        class TestConverter2 implements IDataTypeConverter
+        {
+            SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+                return value instanceof TestDataType2;
+            }
+            Convert(value: TestDataType2, dataTypeLookupKey: string): string | number | Date | null | undefined {
+                return value.Message;
+            }
+        }
+        let testItem = new DataTypeResolver();
+        testItem.RegisterDataTypeConverter(new TestConverter());
+        testItem.RegisterDataTypeConverter(new TestConverter2());
+        let result = testItem.GetDataTypeConverter(new TestDataType(10), null);
+        expect(result).not.toBeNull();
+        expect(result).toBeInstanceOf(TestConverter);
+        expect(result!.Convert(new TestDataType(500), "")).toBe(500);
+        let result2 = testItem.GetDataTypeConverter(new TestDataType2("ABC"), null);
+        expect(result2).not.toBeNull();
+        expect(result2).toBeInstanceOf(TestConverter2);
+        expect(result2!.Convert(new TestDataType2("ZYX"), "")).toBe("ZYX");        
+    });        
 });

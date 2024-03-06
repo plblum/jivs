@@ -2,7 +2,8 @@ import { BooleanComparer, CaseInsensitiveComparer, ComparersResult, DateAsAnnive
 import { StringLookupKey, NumberLookupKey, BooleanLookupKey, AnniversaryLookupKey, CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, MonthYearLookupKey } from "./LookupKeys";
 import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import { IDataTypeResolution, IDataTypeResolver, ILocalizationAdapter } from "../Interfaces/DataTypes";
+import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, ILocalizationAdapter, IDataTypeConverter } from "../Interfaces/DataTypes";
+import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, NumberDataTypeIdentifier, StringDataTypeIdentifier } from "./DataTypeIdentifiers";
 
 /**
  * DataTypeResolver handles various data types of the values.
@@ -38,6 +39,7 @@ export class DataTypeResolver implements IDataTypeResolver
             localizationAdapters.forEach((la) => {
                 this._localizationAdapters.set(la.CultureID, la);
             });
+        this.RegisterStandardDataTypeIdentifiers();
     }
 /**
  * The culture shown to the user in the app. Its the ISO language-region format.
@@ -70,11 +72,11 @@ export class DataTypeResolver implements IDataTypeResolver
     * @returns successfully converted value
     * or validation error information.
     */    
-    public ToString(value: any, lookupKey?: string): IDataTypeResolution<string>
+    public ToString(value: any, lookupKey?: string | null): IDataTypeResolution<string>
     {
         if (!lookupKey)
             lookupKey = this.MapNativeTypeToLookupKey(value);
-        if (lookupKey === this.Unsupported)
+        if (lookupKey === null)
             throw new Error('Value type requires a LookupKey');
         let nextCultureID: string | null = this._activeCultureID;
         while (nextCultureID)
@@ -127,17 +129,26 @@ export class DataTypeResolver implements IDataTypeResolver
     {
         if (!lookupKey)
             lookupKey = this.MapNativeTypeToLookupKey(value1);
-        if (!lookupKey || lookupKey === this.Unsupported)
+        if (!lookupKey)
             throw new Error(`Unsupported lookupKey`);
+        let cleanedUpValue1 = this.CleanupComparableValue(value1, lookupKey);
+        let cleanedUpValue2 = this.CleanupComparableValue(value2, lookupKey);        
         if (this._additionalCompareValuesFunctions) {
             let fn = this._additionalCompareValuesFunctions.Get(lookupKey);
             if (fn) {
-                return fn(value1, value2);  // may throw an exception
+                return fn(cleanedUpValue1, cleanedUpValue2);  // may throw an exception
             }
         }
-        return DefaultComparer(value1, value2);
+        return DefaultComparer(cleanedUpValue1, cleanedUpValue2);
     }
- 
+
+    protected CleanupComparableValue(value: any, lookupKey: string | null): any
+    {
+        let dtc = this.GetDataTypeConverter(value, lookupKey);
+        if (dtc)
+            return dtc.Convert(value, lookupKey!);
+        return value;
+    }
     /**
      * Extends the lookupKeys available to ToString.
      * Adds or replaces a LookupKey that is not associated with localization
@@ -170,6 +181,85 @@ export class DataTypeResolver implements IDataTypeResolver
         this._additionalCompareValuesFunctions.Register(lookupKey, fn);
     }
     
+
+//#region DataTypeIdentifiers
+
+    /**
+     * When a value is supplied without a DataType Lookup Key, this resolves the
+     * DataType Lookup Key. By default, it supports values of type number, boolean,
+     * string and Date object.
+     * You can add your own data types by implementing IIdentifyDataType
+     * and registered you class with the DataTypeResolver.
+     * @param value 
+     * @returns the found Lookup Key or "Unsupported".
+     */
+    public MapNativeTypeToLookupKey(value: any): string | null
+    {
+        let idt = this.GetDataTypeIdentifier(value);
+        return idt ? idt.DataTypeLookupKey : null;
+    }
+
+    /**
+     * Registers an implementation of IIdentityDataType.
+     * The built-in implementations are preregistered.
+     * @param identifier - If its DataTypeLookupKey matches an existing one (case insensitive),
+     * the existing one is replaced.
+     */
+    public RegisterDataTypeIdentifier(identifier: IDataTypeIdentifier): void
+    {
+        AssertNotNull(identifier, 'identifier');
+        let existingPos = this._dataTypeIdentifiers.findIndex((idt) => idt.DataTypeLookupKey.toLowerCase() === identifier.DataTypeLookupKey.toLowerCase());
+        if (existingPos < 0)
+            this._dataTypeIdentifiers.push(identifier);
+        else
+            this._dataTypeIdentifiers[existingPos] = identifier;
+    }
+    private _dataTypeIdentifiers: Array<IDataTypeIdentifier> = [];
+    
+    /**
+     * Returns the matching DataType LookupKey for the given value or null if not supported.
+     * @param value 
+     * @returns 
+     */
+    protected GetDataTypeIdentifier(value: any): IDataTypeIdentifier | null
+    {
+        return this._dataTypeIdentifiers.find((idt) => idt.IsMatch(value)) ?? null;
+    }
+    protected RegisterStandardDataTypeIdentifiers(): void
+    {
+        this.RegisterDataTypeIdentifier(new NumberDataTypeIdentifier());
+        this.RegisterDataTypeIdentifier(new StringDataTypeIdentifier());
+        this.RegisterDataTypeIdentifier(new BooleanDataTypeIdentifier());
+        this.RegisterDataTypeIdentifier(new DateDataTypeIdentifier());
+    }
+    //#endregion IDataTypeIdentifiers
+
+    //#region IConvertTo
+
+    /**
+     * Registers a IDataTypeConverter. Always adds, never replaces.
+     * @param converter 
+     */
+    public RegisterDataTypeConverter(converter: IDataTypeConverter): void
+    {
+        AssertNotNull(converter, 'converter');
+        this._converters.push(converter);
+    }
+    private _converters: Array<IDataTypeConverter> = [];
+
+    /**
+     * Gets the first IDataTypeConverter that supports the value, or null if none are found.
+     * @param value 
+     * @param dataTypeLookupKey 
+     * @returns 
+     */
+    public GetDataTypeConverter(value: any, dataTypeLookupKey: string | null): IDataTypeConverter | null
+    {
+        return this._converters.find((dtc) => dtc.SupportsValue(value, dataTypeLookupKey)) ?? null;
+    }
+
+    //#endregion IConvertTo
+    
 //#region utilities    
 /**
  * Add or replace a LocalizationAdapter for a specific CultureID.
@@ -179,32 +269,6 @@ export class DataTypeResolver implements IDataTypeResolver
     {
         this._localizationAdapters.set(la.CultureID, la);
     }
-
-    public readonly Unsupported = 'Unsupported';
-
-    /**
-     * So long as the value is a primitive or object, this can return its LookupKey
-     * to use with the DataTypeResolverService.
-     * Expected results: 'Date', 'String', 'Number', 'Boolean', 'Unknown'
-     * @param value 
-     */
-    public MapNativeTypeToLookupKey(value: any): string
-    {
-        switch (typeof value)
-        {
-            case 'string':
-                return StringLookupKey;
-            case 'number':
-                return NumberLookupKey;    // handles both integers and decimals
-            case 'boolean':
-                return BooleanLookupKey;
-            default:
-                if (value instanceof Date)
-                    return 'Date';  // not "DateTime" because the time part is less frequently used
-                return this.Unsupported;
-        }
-    }
-
 
     /**
      * Utility to check for the presence of a localization adapter

@@ -36,6 +36,7 @@ export interface ICoreDataTypeResolver
  *   when String, Number, Boolean, or Date object.
  */    
     CompareValues(value1: any, value2: any, lookupKey: string | null): ComparersResult;
+
 }
 
 export interface IDataTypeResolver extends ICoreDataTypeResolver
@@ -47,6 +48,15 @@ export interface IDataTypeResolver extends ICoreDataTypeResolver
  */    
     ActiveCultureID: string;
 
+/**
+ * When a value is supplied without a DataType Lookup Key, this resolves the
+ * DataType Lookup Key. By default, it supports values of type number, boolean,
+ * string and Date object.
+ * You can add your own data types by implementing IIdentifyDataType
+ * and registered you class with the DataTypeResolver.
+ * @param value 
+ */
+    MapNativeTypeToLookupKey(value: any): string | null;    
 }
 
 export interface IDataTypeResolution<T>
@@ -111,4 +121,65 @@ export interface ILocalizationAdapter extends ICoreDataTypeResolver {
      */
     ToString(value: any, lookupKey: string): IDataTypeResolution<string>;
 
+}
+
+
+/**
+ * Provides a way to associate any data type with a datatype lookupkey.
+ * This interface is implemented for number as "Number", Date as "Date",
+ * Boolean as "Boolean", and String as "String".
+ * Each instance is registered with the DataTypeResolver using the 
+ * RegisterDataType.
+ */
+export interface IDataTypeIdentifier
+{
+/**
+ * The unique lookup key you will use to identify this native data type.
+ */    
+    DataTypeLookupKey: string;
+/**
+ * Determines if the value is identified as a match and maps to DataTypeLookupKey.
+ * @param value 
+ */
+    IsMatch(value: any): boolean;
+}
+
+/**
+ * Provides a way to include non-standard types in comparison Conditions
+ * by taking the value in its non-standard type form and returning
+ * another value that is either a primitive type or Date that already
+ * has support by Conditions.
+ * Consider these cases:
+ * - A TimeSpan class represents a duration in days, hours, minutes and seconds.
+ *   Use a Converter to return the total number of seconds.
+ * - A RelativeDate class represents a Date calculated offset from Today
+ *   by a number of days, weeks, months, and years. 
+ *   Use a Converter to return a Date object with the realized date.
+ * You can have several converters for the same non-standard type.
+ * The Data Type Lookup key supplied on the ValueHost can be used to pick a specific one.
+ */
+export interface IDataTypeConverter
+{
+/**
+ * Will be called to see if the value and DataType Lookup Key should be handled
+ * by this class.
+ * If the dataTypeLookupKey is null or '', evaluate the value itself,
+ * such as checking its class (using 'instanceof') or for properties of an interface
+ * that you are using.
+ * Don't look for valid data within the object. The Convert function is responsible
+ * for reporting invalid data in supported values.
+ * @param value
+ * @param dataTypeLookupKey
+ * @returns true when its own Convert method should handle the value.
+  */
+    SupportsValue(value: any, dataTypeLookupKey: string | null): boolean;
+/**
+ * Return the value representing the original value, but in the new data type,
+ * specified by the generic T.
+ * Return null if the value represents null.
+ * Return undefined if the value was unconvertable.
+ * @param value 
+ * @param dataTypeLookupKey 
+ */
+    Convert(value: any, dataTypeLookupKey: string): number | Date | string | null | undefined;
 }
