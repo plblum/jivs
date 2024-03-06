@@ -1,5 +1,5 @@
 import type { IDataTypeResolution } from "../Interfaces/DataTypes";
-import { IMessageTokenResolver } from "../Interfaces/InputValidator";
+import { IMessageTokenResolver, IMessageTokenSource, ITokenLabelAndValue } from "../Interfaces/InputValidator";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { LoggingLevel, ConfigurationCategory, TypeMismatchCategory, FormattingCategory } from "../Interfaces/Logger";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
@@ -181,46 +181,3 @@ class CapturedToken
         return valueHostResolver.Services.DataTypeResolverService.ToString(replacementValue, this.formatterKey ?? undefined);
     }
 }
-
-export interface IMessageTokenSource
-{
-    /**
-     * Returns an array of 0 or more tokens supported by this MessageTokenSource.
-     * Each returned has the token supported (omitting {} so {Label} is "Label")
-     * and the value in its native data type (such as Date, number, or string).
-     * Caller will search the message for each token supplied. If found,
-     * it converts the value to a string using localization rules and replaces the token.
-     * The TokenLabel doesn't provide {} because we may support additional
-     * attributes within the token, like {Value:AbbrevDateFormat}
-     */
-    GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver):
-        Array<ITokenLabelAndValue>;
-}
-/**
- * Result from IMessageTokenSource.GetValuesForTokens
- */
-export interface ITokenLabelAndValue
-{
-/**
- * The text within the {} of the token. Used to match tokens.
- */    
-    TokenLabel: string,
-/**
- * The value to be used as a replacement. When the value isn't a string,
- * it is converted to a string through ILocalizationAdapter.
- */    
-    AssociatedValue: any,
-/**
- * Provides additional guidance about the token's purpose so the
- * IMessageTokenResolver can apply additional formatting to the token,
- * such as in HTML, a span tag with a specific classname.
- * When null, no additional guidance is offered.
- * Values are:
- * 'label' - the target of the message, such as the ValueHost's label. {Label} is an example
- * 'parameter' - configuration data, such as a ConditionDescriptor's rules. {Minimum} is an example
- * 'value' - some live data, such as the widget's current value. {Value} is an example
- * 'message' - text just augments the error message, like {ConversionError} of DataTypeCheckCondition
- */
-    Purpose?: 'label' | 'parameter' | 'value' | 'message';
-}
-

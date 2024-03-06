@@ -8,6 +8,7 @@
     ],
     "outDir": "./lib", /* Redirect output structure to the directory. */    
     "declaration": true, /* Generates corresponding '.d.ts' file. */
+    "declarationDir": "./lib/types",
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -38,5 +39,6 @@
     "allowUnreachableCode": true,
 
   },
-  "include": [ "src", "types", "tests"]
+  "include": [ "src", "types"], 
+  "exclude": ["tests"]
 }

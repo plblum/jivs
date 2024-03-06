@@ -1,10 +1,10 @@
-import type { IConditionFactory } from "../Conditions/ConditionFactory";
-import type { ILogger } from "../Interfaces/Logger";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 import { valGlobals } from "./ValidationGlobals";
-import { IMessageTokenResolver } from "../Interfaces/InputValidator";
-import { IValidationServices } from "../Interfaces/ValidationServices";
-import { IDataTypeResolver } from "../Interfaces/DataTypes";
+import type { ILogger } from "../Interfaces/Logger";
+import type { IMessageTokenResolver } from "../Interfaces/InputValidator";
+import type { IValidationServices } from "../Interfaces/ValidationServices";
+import type { IDataTypeResolver } from "../Interfaces/DataTypes";
+import type { IConditionFactory } from "../Interfaces/Conditions";
 
 
 

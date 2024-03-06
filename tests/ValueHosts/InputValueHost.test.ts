@@ -2394,7 +2394,7 @@ describe('InputValueHost.OtherValueHostChangedNotification and SetValues trigger
             }            
         ];
         let services = new ValidationServices();
-        let vm = new ValidationManager(services, vhDescriptors);   // the real thing so we use real InputValueHosts
+        let vm = new ValidationManager({ Services: services, ValueHostDescriptors: vhDescriptors });   // the real thing so we use real InputValueHosts
 
 
         return {

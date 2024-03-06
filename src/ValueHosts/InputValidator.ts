@@ -1,13 +1,12 @@
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import type { IMessageTokenSource, ITokenLabelAndValue } from "./MessageTokenResolver";
 import { ValidationGroupsMatch } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
 import { ToIGatherValueHostIds, type IValueHost } from "../Interfaces/ValueHost";
-import { IValueHostResolver, IValueHostsManager, ToIValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
+import { type IValueHostResolver, type IValueHostsManager, ToIValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings } from "../Interfaces/Conditions";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { IValidateOptions, ValidationSeverity, IIssueFound } from "../Interfaces/Validation";
-import { IInputValidateResult, IInputValidator, IInputValidatorDescriptor, IInputValidatorFactory } from "../Interfaces/InputValidator";
+import type { IInputValueHost } from "../Interfaces/InputValueHost";
+import { type IValidateOptions, ValidationSeverity, type IIssueFound } from "../Interfaces/Validation";
+import type { IInputValidateResult, IInputValidator, IInputValidatorDescriptor, IInputValidatorFactory, IMessageTokenSource, ITokenLabelAndValue  } from "../Interfaces/InputValidator";
 import { LoggingLevel, ConfigurationCategory, ValidationCategory } from "../Interfaces/Logger";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 
