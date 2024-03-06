@@ -1,4 +1,4 @@
-import { BooleanComparer, CaseInsensitiveComparer, ComparersResult, DateAsAnniversaryComparer, DateAsMonthYearComparer, DateOnlyComparer, DateTimeComparer, DefaultComparer } from "../Conditions/Comparers";
+import { BooleanComparer, CaseInsensitiveComparer, ComparersResult, DateAsAnniversaryComparer, DateAsMonthYearComparer, DateOnlyComparer, DateTimeComparer, DefaultComparer } from "./Comparers";
 import { StringLookupKey, NumberLookupKey, BooleanLookupKey, AnniversaryLookupKey, CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, MonthYearLookupKey } from "./LookupKeys";
 import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
 import { AssertNotNull } from "../Utilities/ErrorHandling";

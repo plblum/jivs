@@ -1,5 +1,5 @@
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { ComparersResult } from "./Comparers";
+import { ComparersResult } from "../DataTypes/Comparers";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import type { ITokenLabelAndValue } from "../Interfaces/InputValidator";
 import { CodingError } from "../Utilities/ErrorHandling";

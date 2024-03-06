@@ -1,4 +1,4 @@
-import { ComparersResult } from "../Conditions/Comparers";
+import { ComparersResult } from "../DataTypes/Comparers";
 
 /**
  * DataTypeResolver handles various data types of the values.

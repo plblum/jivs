@@ -1,4 +1,4 @@
-import { ComparersResult } from "../../src/Conditions/Comparers";
+import { ComparersResult } from "../../src/DataTypes/Comparers";
 import { DataTypeResolver, RegisterComparerHandlerWithDataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
 import { IntlLocalizationAdapter } from "../../src/DataTypes/IntlLocalizationAdapter";
 import { StringLookupKey, NumberLookupKey, BooleanLookupKey, DateLookupKey, allBuiltInToStringLookupKeys } from "../../src/DataTypes/LookupKeys";
