@@ -1,9 +1,9 @@
-import { BooleanComparer, CaseInsensitiveComparer, ComparersResult, DateAsAnniversaryComparer, DateAsMonthYearComparer, DateOnlyComparer, DateTimeComparer, DefaultComparer } from "./Comparers";
-import { StringLookupKey, NumberLookupKey, BooleanLookupKey, AnniversaryLookupKey, CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, MonthYearLookupKey } from "./LookupKeys";
+import { BooleanComparer, DefaultComparer } from "./DataTypeComparers";
 import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
-import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, ILocalizationAdapter, IDataTypeConverter } from "../Interfaces/DataTypes";
+import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
+import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, ILocalizationAdapter, IDataTypeConverter, ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, NumberDataTypeIdentifier, StringDataTypeIdentifier } from "./DataTypeIdentifiers";
+import { UTCDateOnlyConverter, DateTimeConverter, LowercaseStringConverter, LocalDateOnlyConverter } from "./DataTypeConverters";
 
 /**
  * DataTypeResolver handles various data types of the values.
@@ -29,10 +29,8 @@ import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, NumberDataTypeIdenti
  * It supports converting a native value into a comparable value, such as a 
  * native Date object is converted into a number via Date.getTime().
  */
-export class DataTypeResolver implements IDataTypeResolver
-{
-    constructor(activeCultureID: string = 'en', ...localizationAdapters: Array<ILocalizationAdapter>)
-    {
+export class DataTypeResolver implements IDataTypeResolver {
+    constructor(activeCultureID: string = 'en', ...localizationAdapters: Array<ILocalizationAdapter>) {
         this._activeCultureID = activeCultureID;
         this._localizationAdapters = new Map<string, ILocalizationAdapter>();
         if (localizationAdapters)
@@ -40,18 +38,18 @@ export class DataTypeResolver implements IDataTypeResolver
                 this._localizationAdapters.set(la.CultureID, la);
             });
         this.RegisterStandardDataTypeIdentifiers();
+        this.RegisterStandardDataTypeConverters();
+        this.RegisterStandardComparers();
     }
-/**
- * The culture shown to the user in the app. Its the ISO language-region format.
-   This value is the starting point to search through LocalizationAdapters.
-   Those have their own FallbackCultureID to continue the search.
- */    
-    public get ActiveCultureID(): string
-    {
+    /**
+     * The culture shown to the user in the app. Its the ISO language-region format.
+       This value is the starting point to search through LocalizationAdapters.
+       Those have their own FallbackCultureID to continue the search.
+     */
+    public get ActiveCultureID(): string {
         return this._activeCultureID;
     }
-    public set ActiveCultureID(cultureID: string)
-    {
+    public set ActiveCultureID(cultureID: string) {
         this._activeCultureID = cultureID;
     }
     private _activeCultureID: string;
@@ -63,7 +61,7 @@ export class DataTypeResolver implements IDataTypeResolver
 
     // these will be created only if needed
     private _additionalToStringFunctions: NameToFunctionMapper<any, IDataTypeResolution<string>> | null = null;
-    private _additionalCompareValuesFunctions: NameToFunctionMapper<any, ComparersResult> | null = null;    
+    private _comparers: Array<IDataTypeComparer> | null = null;
 
     /**
     * Converts the value to a string representation. Use a lookup Key to specify formatting rules.
@@ -71,16 +69,14 @@ export class DataTypeResolver implements IDataTypeResolver
     * @param lookupKey  - If not supplied, a lookup key is created based on the native value type if possible.
     * @returns successfully converted value
     * or validation error information.
-    */    
-    public ToString(value: any, lookupKey?: string | null): IDataTypeResolution<string>
-    {
+    */
+    public ToString(value: any, lookupKey?: string | null): IDataTypeResolution<string> {
         if (!lookupKey)
             lookupKey = this.MapNativeTypeToLookupKey(value);
         if (lookupKey === null)
             throw new Error('Value type requires a LookupKey');
         let nextCultureID: string | null = this._activeCultureID;
-        while (nextCultureID)
-        {
+        while (nextCultureID) {
             let la = this._localizationAdapters.get(nextCultureID);
             if (!la)
                 break;  // hand off to additionalstrings
@@ -89,8 +85,7 @@ export class DataTypeResolver implements IDataTypeResolver
                 if (!result.NotFound)   // NotFound indicates no match to the lookupKey. We'll look elsewhere
                     return result;
             }
-            catch (e)
-            {
+            catch (e) {
                 return { ErrorMessage: (e as Error).message };
             }
             nextCultureID = la.FallbackCultureID;
@@ -112,41 +107,91 @@ export class DataTypeResolver implements IDataTypeResolver
         throw new Error(`Unsupported LookupKey ${lookupKey}`);
     }
 
-/**
- * Compares two same-type values to see if they are equal or not.
- * It can return Equals and NotEquals for types that make no sense
- * to support greater than and less than.
- * Otherwise it returns Equals, LessThan, or GreaterThan.
- * Expect exceptions when invalid values are supplied.
- * It identifies the ComparerHandler function
- * @param value1 
- * @param value2 
- * @param lookupKey - Identifies the ComparerHandler function. If null,
- *   the native data type of the value will be converted to a lookupKey
- *   when String, Number, Boolean, or Date object.
- */    
-    public CompareValues(value1: any, value2: any, lookupKey?: string | null): ComparersResult
-    {
-        if (!lookupKey)
-            lookupKey = this.MapNativeTypeToLookupKey(value1);
-        if (!lookupKey)
-            throw new Error(`Unsupported lookupKey`);
-        let cleanedUpValue1 = this.CleanupComparableValue(value1, lookupKey);
-        let cleanedUpValue2 = this.CleanupComparableValue(value2, lookupKey);        
-        if (this._additionalCompareValuesFunctions) {
-            let fn = this._additionalCompareValuesFunctions.Get(lookupKey);
-            if (fn) {
-                return fn(cleanedUpValue1, cleanedUpValue2);  // may throw an exception
+    /**
+     * Compares two same-type values to see if they are equal or not.
+     * It can return Equals and NotEquals for types that make no sense
+     * to support greater than and less than.
+     * Otherwise it returns Equals, LessThan, or GreaterThan.
+     * Expect exceptions when invalid values are supplied.
+     * It identifies the ComparerHandler function.
+     * If either value is null, it will either return Equals (both null)
+     * or Undetermined.
+     * @param value1 
+     * @param value2 
+     * @param lookupKey1 - Identifies the IDataTypeConverter and/or ComparerHandler function to use
+     *   together with value1. If null, the native data type of the value will be converted to a lookupKey
+     *   when String, Number, Boolean, Date object, or any IDataTypeIdentifier that you have registered
+     *   with the DataTypeResolver.
+     * @param lookupKey2 - Same idea as lookupKey1 but for value2. This value will not be used
+     * to find a ComparerHandler.
+     */
+    public CompareValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult {
+        function resolveLookupKey(v: any, key: string | null, part: string): string | null {
+            if (v != null) // null/undefined
+            {
+                if (!key)
+                    key = self.MapNativeTypeToLookupKey(v);
+                if (!key)
+                    throw new Error(`${part} operand value has an unknown datatype. Supply the appropriate DataTypeLookupKey and/or register an IDataTypeConverter`);
             }
+            return key;
         }
+        function handleNullsAndUndefined(v1: any, v2: any): ComparersResult | null
+        {
+            if (v1 === null || v2 === null)
+                return v1 === v2 ? ComparersResult.Equals : ComparersResult.Undetermined;
+            if (v1 === undefined || v2 === undefined)
+                return ComparersResult.Undetermined;
+            return null;    // not handled. Continue processing
+        }
+
+        let testNullsResult = handleNullsAndUndefined(value1, value2);
+        if (testNullsResult != null)
+            return testNullsResult;
+
+        let self = this;
+        lookupKey1 = resolveLookupKey(value1, lookupKey1, 'Left');
+        lookupKey2 = resolveLookupKey(value2, lookupKey2, 'Right');
+
+        let comparer = this.GetDataTypeComparer(value1, value2);
+        if (comparer)
+            return comparer.Compare(value1, value2);
+
+        let cleanedUpValue1 = this.CleanupComparableValue(value1, lookupKey1);
+        let cleanedUpValue2 = this.CleanupComparableValue(value2, lookupKey2);
+
+        let testNullsResultCU = handleNullsAndUndefined(cleanedUpValue1, cleanedUpValue2);
+        if (testNullsResultCU != null)
+            return testNullsResultCU;
+
+        let comparerCU = this.GetDataTypeComparer(cleanedUpValue1, cleanedUpValue2);
+        if (comparerCU)
+            return comparerCU.Compare(cleanedUpValue1, cleanedUpValue2);
+        
         return DefaultComparer(cleanedUpValue1, cleanedUpValue2);
     }
 
-    protected CleanupComparableValue(value: any, lookupKey: string | null): any
-    {
+    protected CleanupComparableValue(value: any, lookupKey: string | null): any {
         let dtc = this.GetDataTypeConverter(value, lookupKey);
-        if (dtc)
-            return dtc.Convert(value, lookupKey!);
+        if (dtc) {
+            value = dtc.Convert(value, lookupKey!);
+            switch (typeof value)
+            {
+                case 'number':
+                case 'string':
+                case 'boolean':
+                case 'bigint':
+                case 'undefined':
+                    break;
+                case 'object':  // try again. For example, we got a date. Need it to be a number
+                    if (value === null)
+                        return value;
+                    value = this.CleanupComparableValue(value, null);
+                    break;
+                default:
+                    throw new CodingError('Type converted to unsupported value.');
+            }
+        }
         return value;
     }
     /**
@@ -157,8 +202,7 @@ export class DataTypeResolver implements IDataTypeResolver
      * @param lookupKey 
      * @param fn 
      */
-    public RegisterAdditionalToString(lookupKey: string, fn: (value: string)=> IDataTypeResolution<string>): void
-    {
+    public RegisterAdditionalToString(lookupKey: string, fn: (value: string) => IDataTypeResolution<string>): void {
         AssertNotNull(lookupKey, 'lookupKey');
         AssertNotNull(fn, 'fn');
         if (!this._additionalToStringFunctions)
@@ -172,17 +216,31 @@ export class DataTypeResolver implements IDataTypeResolver
      * @param lookupKey
      * @param fn 
      */
-    public RegisterComparerHandler(lookupKey: string, fn: (value1: any, value2: any)=> ComparersResult): void
-    {
-        AssertNotNull(lookupKey, 'lookupKey');
-        AssertNotNull(fn, 'fn');
-        if (!this._additionalCompareValuesFunctions)
-            this._additionalCompareValuesFunctions = new NameToFunctionMapper<any, ComparersResult>();        
-        this._additionalCompareValuesFunctions.Register(lookupKey, fn);
-    }
-    
+    public RegisterDataTypeComparer(comparer: IDataTypeComparer): void {
+        AssertNotNull(comparer, 'comparer');
 
-//#region DataTypeIdentifiers
+        if (!this._comparers)
+            this._comparers = [];
+        this._comparers.push(comparer);
+    }
+    protected RegisterStandardComparers(): void {
+        this.RegisterDataTypeComparer(new BooleanComparer());
+    }
+
+    /**
+     * Returns a comparer that supports both values or null if not.
+     * @param value1 
+     * @param value2 
+     * @returns 
+     */
+    protected GetDataTypeComparer(value1: any, value2: any): IDataTypeComparer | null
+    {
+        if (!this._comparers)
+            return null;
+        return this._comparers.find((dtc) => dtc.SupportsValues(value1, value2)) ?? null;
+    }
+
+    //#region DataTypeIdentifiers
 
     /**
      * When a value is supplied without a DataType Lookup Key, this resolves the
@@ -193,8 +251,7 @@ export class DataTypeResolver implements IDataTypeResolver
      * @param value 
      * @returns the found Lookup Key or "Unsupported".
      */
-    public MapNativeTypeToLookupKey(value: any): string | null
-    {
+    public MapNativeTypeToLookupKey(value: any): string | null {
         let idt = this.GetDataTypeIdentifier(value);
         return idt ? idt.DataTypeLookupKey : null;
     }
@@ -205,8 +262,7 @@ export class DataTypeResolver implements IDataTypeResolver
      * @param identifier - If its DataTypeLookupKey matches an existing one (case insensitive),
      * the existing one is replaced.
      */
-    public RegisterDataTypeIdentifier(identifier: IDataTypeIdentifier): void
-    {
+    public RegisterDataTypeIdentifier(identifier: IDataTypeIdentifier): void {
         AssertNotNull(identifier, 'identifier');
         let existingPos = this._dataTypeIdentifiers.findIndex((idt) => idt.DataTypeLookupKey.toLowerCase() === identifier.DataTypeLookupKey.toLowerCase());
         if (existingPos < 0)
@@ -215,18 +271,16 @@ export class DataTypeResolver implements IDataTypeResolver
             this._dataTypeIdentifiers[existingPos] = identifier;
     }
     private _dataTypeIdentifiers: Array<IDataTypeIdentifier> = [];
-    
+
     /**
      * Returns the matching DataType LookupKey for the given value or null if not supported.
      * @param value 
      * @returns 
      */
-    protected GetDataTypeIdentifier(value: any): IDataTypeIdentifier | null
-    {
+    protected GetDataTypeIdentifier(value: any): IDataTypeIdentifier | null {
         return this._dataTypeIdentifiers.find((idt) => idt.IsMatch(value)) ?? null;
     }
-    protected RegisterStandardDataTypeIdentifiers(): void
-    {
+    protected RegisterStandardDataTypeIdentifiers(): void {
         this.RegisterDataTypeIdentifier(new NumberDataTypeIdentifier());
         this.RegisterDataTypeIdentifier(new StringDataTypeIdentifier());
         this.RegisterDataTypeIdentifier(new BooleanDataTypeIdentifier());
@@ -240,8 +294,7 @@ export class DataTypeResolver implements IDataTypeResolver
      * Registers a IDataTypeConverter. Always adds, never replaces.
      * @param converter 
      */
-    public RegisterDataTypeConverter(converter: IDataTypeConverter): void
-    {
+    public RegisterDataTypeConverter(converter: IDataTypeConverter): void {
         AssertNotNull(converter, 'converter');
         this._converters.push(converter);
     }
@@ -253,20 +306,24 @@ export class DataTypeResolver implements IDataTypeResolver
      * @param dataTypeLookupKey 
      * @returns 
      */
-    public GetDataTypeConverter(value: any, dataTypeLookupKey: string | null): IDataTypeConverter | null
-    {
+    public GetDataTypeConverter(value: any, dataTypeLookupKey: string | null): IDataTypeConverter | null {
         return this._converters.find((dtc) => dtc.SupportsValue(value, dataTypeLookupKey)) ?? null;
     }
 
+    protected RegisterStandardDataTypeConverters(): void {
+        this.RegisterDataTypeConverter(new LowercaseStringConverter());
+        this.RegisterDataTypeConverter(new UTCDateOnlyConverter());
+        this.RegisterDataTypeConverter(new DateTimeConverter());
+        this.RegisterDataTypeConverter(new LocalDateOnlyConverter());
+    }
     //#endregion IConvertTo
-    
-//#region utilities    
-/**
- * Add or replace a LocalizationAdapter for a specific CultureID.
- * @param la 
- */    
-    public RegisterLocalizationAdapter(la: ILocalizationAdapter): void
-    {
+
+    //#region utilities    
+    /**
+     * Add or replace a LocalizationAdapter for a specific CultureID.
+     * @param la 
+     */
+    public RegisterLocalizationAdapter(la: ILocalizationAdapter): void {
         this._localizationAdapters.set(la.CultureID, la);
     }
 
@@ -276,8 +333,7 @@ export class DataTypeResolver implements IDataTypeResolver
      * Will fallback to language only check if language-country
      * cultureID doesn't find a match.
      */
-    public HasLocalizationFor(cultureID: string): boolean
-    {
+    public HasLocalizationFor(cultureID: string): boolean {
         return this.GetMatchingLocalizationAdapter(cultureID) !== null;
     }
     /**
@@ -288,8 +344,7 @@ export class DataTypeResolver implements IDataTypeResolver
      * @returns adapter found or null
      */
     protected GetMatchingLocalizationAdapter(cultureID: string):
-        ILocalizationAdapter | null
-    {
+        ILocalizationAdapter | null {
         let la = this._localizationAdapters.get(cultureID);
         if (!la) {
             let pos = cultureID.indexOf('-');
@@ -298,30 +353,14 @@ export class DataTypeResolver implements IDataTypeResolver
         }
         return la ?? null;
     }
-    public GetLocalizationAdapter(cultureID: string): ILocalizationAdapter | null
-    {
+    public GetLocalizationAdapter(cultureID: string): ILocalizationAdapter | null {
         return this._localizationAdapters.get(cultureID) ?? null;
     }
-    public HasAdditionalToStringLookupKey(lookupKey: string): boolean
-    {
+    public HasAdditionalToStringLookupKey(lookupKey: string): boolean {
         return (this._additionalToStringFunctions != null &&
             this._additionalToStringFunctions.Get(lookupKey.toString()) != null);
-    }
-    public HasRegisterComparerHandlerLookupKey(lookupKey: string): boolean
-    {
-        return (this._additionalCompareValuesFunctions != null &&
-            this._additionalCompareValuesFunctions.Get(lookupKey.toString()) != null);
     }
 
     //#endregion utilities
 }
-export function RegisterComparerHandlerWithDataTypeResolver(resolver: DataTypeResolver): void {
-    resolver.RegisterComparerHandler(StringLookupKey, DefaultComparer);
-    resolver.RegisterComparerHandler(CaseInsensitiveStringLookupKey, CaseInsensitiveComparer);
-    resolver.RegisterComparerHandler(NumberLookupKey, DefaultComparer);
-    resolver.RegisterComparerHandler(BooleanLookupKey, BooleanComparer);
-    resolver.RegisterComparerHandler(DateTimeLookupKey, DateTimeComparer);
-    resolver.RegisterComparerHandler(DateLookupKey, DateOnlyComparer);
-    resolver.RegisterComparerHandler(MonthYearLookupKey, DateAsMonthYearComparer);
-    resolver.RegisterComparerHandler(AnniversaryLookupKey, DateAsAnniversaryComparer);
-}
+
