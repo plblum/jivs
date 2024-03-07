@@ -1,13 +1,9 @@
 import { BooleanComparer, DefaultComparer } from "./DataTypeComparers";
-import {
-    StringLookupKey, NumberLookupKey, BooleanLookupKey, AnniversaryLookupKey, DateLookupKey,
-    DateTimeLookupKey, MonthYearLookupKey
-} from "./LookupKeys";
 import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, ILocalizationAdapter, IDataTypeConverter, ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, NumberDataTypeIdentifier, StringDataTypeIdentifier } from "./DataTypeIdentifiers";
-import { UTCDateOnlyConverter, DateTimeConverter, LowercaseStringConverter, LocalDateOnlyConverter, UTCMonthYearConverter, UTCAnniversaryConverter } from "./DataTypeConverters";
+import { UTCDateOnlyConverter, DateTimeConverter, LowercaseStringConverter, LocalDateOnlyConverter } from "./DataTypeConverters";
 
 /**
  * DataTypeResolver handles various data types of the values.
@@ -319,8 +315,6 @@ export class DataTypeResolver implements IDataTypeResolver {
         this.RegisterDataTypeConverter(new UTCDateOnlyConverter());
         this.RegisterDataTypeConverter(new DateTimeConverter());
         this.RegisterDataTypeConverter(new LocalDateOnlyConverter());
-        this.RegisterDataTypeConverter(new UTCMonthYearConverter());
-        this.RegisterDataTypeConverter(new UTCAnniversaryConverter());
     }
     //#endregion IConvertTo
 

@@ -9,7 +9,7 @@
  */
 
 import { IDataTypeConverter } from "../Interfaces/DataTypes";
-import { AnniversaryLookupKey, CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, LocalDateLookupKey, MonthYearLookupKey } from "./LookupKeys";
+import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, LocalDateLookupKey } from "./LookupKeys";
 
 /**
  * For string values to convert them into lowercase.
@@ -95,42 +95,3 @@ export class LocalDateOnlyConverter implements IDataTypeConverter
     }
 }
 
-/**
- * For JavaScript Date objects that represent just the month and year.
- * Effectively, the Date.getUTCDate() is treated as 1 here even if
- * that's not what was supplied.
- * DataType LookupKey: "MonthYear".
- */
-export class UTCMonthYearConverter implements IDataTypeConverter
-{
-    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === MonthYearLookupKey) &&
-            value instanceof Date;
-    }
-    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        if (isNaN(value.getTime()))
-            return undefined;        
-        let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), 1));
-        return dateOnly.getTime();
-    }
-}
-
-/**
- * For JavaScript Date objects that represent just the month and day.
- * Effectively, the Date.getUTCFullYear() is treated as 2004 here (a leap year) 
- * even if that's not what was supplied.
- * DataType LookupKey: "Anniversary".
- */
-export class UTCAnniversaryConverter implements IDataTypeConverter
-{
-    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === AnniversaryLookupKey) &&
-            value instanceof Date;
-    }
-    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        if (isNaN(value.getTime()))
-            return undefined;        
-        let dateOnly = new Date(Date.UTC(2004, value.getUTCMonth(), value.getUTCDate()));
-        return dateOnly.getTime();
-    }
-}
