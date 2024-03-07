@@ -1,0 +1,97 @@
+/**
+ * Concrete implementations of IDataTypeConverter, which assists comparisons to 
+ * convert the native value into a number, date or string that is better
+ * suited for comparison.
+ * See IDataTypeConverter for an overview.
+ * In these cases, we are handling standard data types of Date, string, and number
+ * to reshape them. For example, there is a string conversion to a lowercase string
+ * that is for case insensitive comparisons.
+ */
+
+import { IDataTypeConverter } from "../Interfaces/DataTypes";
+import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, LocalDateLookupKey } from "./LookupKeys";
+
+/**
+ * For string values to convert them into lowercase.
+ * Supports case insensitive matching.
+ * DataTypeLookupKey = "CaseInsensitive"
+ */
+export class LowercaseStringConverter implements IDataTypeConverter
+{
+    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+        return (dataTypeLookupKey === CaseInsensitiveStringLookupKey) &&
+            typeof value === 'string';
+    }
+    public Convert(value: string, dataTypeLookupKey: string): string | number | Date | null | undefined {
+        return value.toLowerCase();
+    }
+}
+
+/**
+ * For JavaScript Date objects to convert them into a number of milliseconds
+ * using Date.getTime().
+ * Date comparison doesn't work by using == and != in JavaScript.
+ * Officially, you compare with getTime() results.
+ * When this library compares Date objects, it expects this converter
+ * to get involved so its DefaultComparer function has two numbers 
+ * from which to work.
+ * DataType LookupKey: "DateTime"
+ */
+export class DateTimeConverter implements IDataTypeConverter
+{
+    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+        return (dataTypeLookupKey === DateTimeLookupKey) &&
+            value instanceof Date;
+    }
+    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+        if (isNaN(value.getTime()))
+            return undefined;
+        return value.getTime();
+    }
+}
+/**
+ * For JavaScript Date objects to convert them into a number of milliseconds
+ * using Date.getTime(), without the time of day part (its always set to 0:00:00).
+ * It assumes the Date object is in UTC and returns a UTC date.
+ * Date comparison doesn't work by using == and != in JavaScript.
+ * Officially, you compare with getTime() results.
+ * When this library compares Date objects, it expects this converter
+ * to get involved so its DefaultComparer function has two numbers 
+ * from which to work.
+ * DataType LookupKey: "Date".
+ * This is automatically used when there is no dataTypeLookup key specified
+ * and the value is a date.
+ */
+export class UTCDateOnlyConverter implements IDataTypeConverter
+{
+    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+        return (!dataTypeLookupKey || (dataTypeLookupKey === DateLookupKey)) &&
+            value instanceof Date;
+    }
+    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+        if (isNaN(value.getTime()))
+            return undefined;        
+        let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+        return dateOnly.getTime();
+    }
+}
+/**
+ * For JavaScript Date objects to convert them into a number of milliseconds
+ * using Date.getTime(), without the time of day part (its always set to 0:00:00).
+ * It assumes the Date object is in local time and returns a local date.
+ * DataType Lookup Key: "LocalDate"
+ */
+export class LocalDateOnlyConverter implements IDataTypeConverter
+{
+    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+        return (dataTypeLookupKey === LocalDateLookupKey) &&
+            value instanceof Date;
+    }
+    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+        if (isNaN(value.getTime()))
+            return undefined;        
+        let dateOnly = new Date(value.getFullYear(), value.getMonth(), value.getDate());
+        return dateOnly.getTime();
+    }
+}
+

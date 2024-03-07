@@ -97,8 +97,10 @@ export class ValidationGlobals
     }
     public GetDefaultDataTypeResolver() : IDataTypeResolver
     {
-        if (!this._defaultDataTypeResolver)
-            this._defaultDataTypeResolver =  new DataTypeResolver('en');
+        if (!this._defaultDataTypeResolver) {
+            let dtr = new DataTypeResolver('en');
+            this._defaultDataTypeResolver = dtr;
+        }
         return this._defaultDataTypeResolver;
     }    
     //#endregion DataTypeResolver

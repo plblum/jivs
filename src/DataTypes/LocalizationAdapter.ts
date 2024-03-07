@@ -1,7 +1,6 @@
-import { ComparersResult } from "./Comparers";
 import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import { IDataTypeResolution, ILocalizationAdapter } from "../Interfaces/DataTypes";
+import { ComparersResult, IDataTypeResolution, ILocalizationAdapter } from "../Interfaces/DataTypes";
 
 
 

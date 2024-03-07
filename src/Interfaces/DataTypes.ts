@@ -1,5 +1,3 @@
-import { ComparersResult } from "../DataTypes/Comparers";
-
 /**
  * DataTypeResolver handles various data types of the values.
  * It provides:
@@ -31,11 +29,13 @@ export interface ICoreDataTypeResolver
  * It identifies the ComparerHandler function
  * @param value1 
  * @param value2 
- * @param lookupKey - Identifies the ComparerHandler function. If null,
- *   the native data type of the value will be converted to a lookupKey
- *   when String, Number, Boolean, or Date object.
+ * @param lookupKey1 - Identifies the IDataTypeConverter and/or ComparerHandler function to use
+ *   together with value1. If null, the native data type of the value will be converted to a lookupKey
+ *   when String, Number, Boolean, Date object, or any IDataTypeIdentifier that you have registered
+ *   with the DataTypeResolver.
+ * @param lookupKey2 - Same idea as lookupKey1 but for value2.
  */    
-    CompareValues(value1: any, value2: any, lookupKey: string | null): ComparersResult;
+    CompareValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult;
 
 }
 
@@ -182,4 +182,29 @@ export interface IDataTypeConverter
  * @param dataTypeLookupKey 
  */
     Convert(value: any, dataTypeLookupKey: string): number | Date | string | null | undefined;
+}
+
+/**
+ * Class that compares two values to determine equality, less than, greater than.
+ * Create classes for each data type that doesn't support the
+ * ==, !=, <, > operators the desired way.
+ * However, first consider using an IDataTypeConverter to convert
+ * your data type into an integer, string, or date. Those will
+ * be supported by the default comparer.
+ * 
+ * Register your class with the DataTypeResolver.
+ */
+export interface IDataTypeComparer
+{
+    SupportsValues(value1: any, value2: any): boolean;
+
+    Compare(value1: any, value2: any): ComparersResult;
+}
+
+export enum ComparersResult {
+    Equals,
+    NotEquals,
+    LessThan,
+    GreaterThan,
+    Undetermined
 }

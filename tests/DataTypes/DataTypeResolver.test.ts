@@ -1,8 +1,7 @@
-import { ComparersResult, DateOnlyComparer } from "../../src/DataTypes/Comparers";
-import { DataTypeResolver, RegisterComparerHandlerWithDataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
+import { DataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
 import { IntlLocalizationAdapter } from "../../src/DataTypes/IntlLocalizationAdapter";
 import { StringLookupKey, NumberLookupKey, BooleanLookupKey, allBuiltInToStringLookupKeys, DateLookupKey } from "../../src/DataTypes/LookupKeys";
-import { IDataTypeConverter, IDataTypeIdentifier } from "../../src/Interfaces/DataTypes";
+import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier } from "../../src/Interfaces/DataTypes";
 
 
 describe('DataTypeResolver constructor and properties', () => {
@@ -197,49 +196,97 @@ describe('DataTypeResolver.ToString', () => {
         expect(testItem.ToString('10', NumberLookupKey).ErrorMessage).not.toBeUndefined();
     });         
 });
-// RegisterComparerHandler(lookupKey: string, fn: (value1: any, value2: any)=> any): void
-describe('DataTypeResolver.RegisterComparerHandler', () => {
+// RegisterDataTypeComparer(comparer: IDataTypeComparer): void
+describe('DataTypeResolver.RegisterDataTypeComparer', () => {
+    class TestDataType
+    {
+        constructor(firstName: string, lastName: string)
+        {
+            this.FirstName = firstName;
+            this.LastName = lastName;
+        }
+        FirstName: string;
+        LastName: string;
+    }
+    class TestIdentifier implements IDataTypeIdentifier
+    {
+        DataTypeLookupKey: string = "TEST";
+        IsMatch(value: any): boolean {
+            return value instanceof TestDataType;
+        }
+        
+    }
+    class TestComparer implements IDataTypeComparer
+    {
+        SupportsValues(value1: any, value2: any): boolean {
+            return value1 instanceof TestDataType ||
+                value2 instanceof TestDataType;
+        }
+        Compare(value1: any, value2: any): ComparersResult {
+            if (value1 instanceof TestDataType &&
+                value2 instanceof TestDataType)
+            {
+                let fullName1 = (value1.FirstName + ' ' + value1.LastName).toLowerCase();
+                let fullName2 = (value2.FirstName + ' ' + value2.LastName).toLowerCase();
+                if (fullName1 === fullName2)
+                    return ComparersResult.Equals;
+                if (fullName1 < fullName2)
+                    return ComparersResult.LessThan;
+                return ComparersResult.GreaterThan;
+            }
+            return ComparersResult.NotEquals;
+        }
+    }    
     test('Invalid parameters', () => {
         let testItem = new DataTypeResolver();
-        expect(() => testItem.RegisterComparerHandler(null!, (val1: any, val2: any) => { return 0 })).toThrow(/lookupKey/);
-        expect(() => testItem.RegisterComparerHandler(undefined!, (val1: any, val2: any) => { return 0 })).toThrow(/lookupKey/);
-        expect(() => testItem.RegisterComparerHandler('LookupKey', null!)).toThrow(/fn/);
-        expect(() => testItem.RegisterComparerHandler('LookupKey', undefined!)).toThrow(/fn/);
+        expect(() => testItem.RegisterDataTypeComparer(null!)).toThrow(/comparer/);
     });
-    test('Add unique keys', () => {
-        let testItem = new DataTypeResolver();
-        expect(testItem.HasRegisterComparerHandlerLookupKey("Key1")).toBe(false);
-        expect(testItem.HasRegisterComparerHandlerLookupKey("Key2")).toBe(false);
-        expect(testItem.RegisterComparerHandler("Key1",
-            (val1: any, val2: any) => ComparersResult.Equals));
-        expect(testItem.RegisterComparerHandler("Key2",
-            (val1: any, val2: any) => ComparersResult.Equals));
-        expect(testItem.HasRegisterComparerHandlerLookupKey("Key1")).toBe(true);
-        expect(testItem.HasRegisterComparerHandlerLookupKey("Key2")).toBe(true);
-    });
-    test('Add same keys replaces earlier function', () => {
-        let testItem = new DataTypeResolver();
-        expect(testItem.HasRegisterComparerHandlerLookupKey("Key1")).toBe(false);
-        expect(testItem.RegisterComparerHandler("Key1",
-            (val1: any, val2: any) => ComparersResult.Equals));
-        expect(testItem.CompareValues('', '', 'Key1')).toBe(ComparersResult.Equals);
+    test('New comparer that handles numbers with custom type and datatype lookup resolved by IDataTypeIdentifier', () => {
 
-        expect(testItem.RegisterComparerHandler("Key1",
-            (val1: any, val2: any) => ComparersResult.NotEquals));
-        expect(testItem.HasRegisterComparerHandlerLookupKey("Key1")).toBe(true);
-        expect(testItem.CompareValues('', '', 'Key1')).toBe(ComparersResult.NotEquals);
-    });    
+        let testItem = new DataTypeResolver();
+        testItem.RegisterDataTypeIdentifier(new TestIdentifier());
+        expect(() => testItem.RegisterDataTypeComparer(new TestComparer())).not.toThrow();
+
+        let test1 = new TestDataType("A", "B");
+        let test2 = new TestDataType("A", "C");
+        let test3 = new TestDataType("a", "c");        
+        let test4 = new TestDataType("z", "y");
+
+        expect(testItem.CompareValues(test1, test1, null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(test2, test3, null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(test3, test2, null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(test1, test2, null, null)).toBe(ComparersResult.LessThan);
+        expect(testItem.CompareValues(test2, test1, null, null)).toBe(ComparersResult.GreaterThan);
+        expect(testItem.CompareValues(test1, test4, null, null)).toBe(ComparersResult.LessThan);
+    });
+
+    test('New comparer that handles numbers with custom type and datatype lookup resolved by LookupKey', () => {
+
+        let testItem = new DataTypeResolver();
+        testItem.RegisterDataTypeIdentifier(new TestIdentifier());
+        expect(() => testItem.RegisterDataTypeComparer(new TestComparer())).not.toThrow();
+
+        let test1 = new TestDataType("A", "B");
+        let test2 = new TestDataType("A", "C");
+        let test3 = new TestDataType("a", "c");        
+        let test4 = new TestDataType("z", "y");
+
+        expect(testItem.CompareValues(test1, test1, "TEST", "TEST")).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(test2, test3, "TEST", "TEST")).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(test3, test2, "TEST", "TEST")).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(test1, test2, "TEST", "TEST")).toBe(ComparersResult.LessThan);
+        expect(testItem.CompareValues(test2, test1, "TEST", "TEST")).toBe(ComparersResult.GreaterThan);
+        expect(testItem.CompareValues(test1, test4, "TEST", "TEST")).toBe(ComparersResult.LessThan);
+    });
 });
 // CompareValues(value1: any, value2: any, lookupKey: string | null): ComparersResult
 describe('DataTypeResolver.CompareValues', () => {
     test('Number value resolves lookupKey and correctly handles comparisons', () => {
         let testItem = new DataTypeResolver();
-        RegisterComparerHandlerWithDataTypeResolver(testItem);
-        expect(testItem.CompareValues(0, 0)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(0, 0, null)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(0, 0, undefined)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(1, 0)).toBe(ComparersResult.GreaterThan);
-        expect(testItem.CompareValues(0, 1)).toBe(ComparersResult.LessThan);        
+        expect(testItem.CompareValues(0, 0, null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(0, 0, null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(1, 0, null, null)).toBe(ComparersResult.GreaterThan);
+        expect(testItem.CompareValues(0, 1, null, null)).toBe(ComparersResult.LessThan);        
     });
     test('Number value compares to custom class that has a IDataTypeConverter', () => {
         class TestDataType {
@@ -269,41 +316,34 @@ describe('DataTypeResolver.CompareValues', () => {
         testItem.RegisterDataTypeIdentifier(new SupportTestDataType());
         testItem.RegisterDataTypeConverter(new TestConverter());        
 
-        RegisterComparerHandlerWithDataTypeResolver(testItem);
-        expect(testItem.CompareValues(new TestDataType(0), 0)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(new TestDataType(10), 0)).toBe(ComparersResult.GreaterThan);
-        expect(testItem.CompareValues(new TestDataType(undefined!), 0)).toBe(ComparersResult.Undetermined);        
+        expect(testItem.CompareValues(new TestDataType(0), 0, null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(new TestDataType(10), 0, null, null)).toBe(ComparersResult.GreaterThan);
+        expect(testItem.CompareValues(new TestDataType(undefined!), 0, null, null)).toBe(ComparersResult.Undetermined);        
     });
 
     
     test('String value resolves lookupKey and correctly handles comparisons', () => {
         let testItem = new DataTypeResolver();
-        RegisterComparerHandlerWithDataTypeResolver(testItem);
-        expect(testItem.CompareValues('A', 'A')).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues('A', 'A', null)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues('A', 'A', undefined)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues('B', 'A')).toBe(ComparersResult.GreaterThan);
-        expect(testItem.CompareValues('A', 'B')).toBe(ComparersResult.LessThan);        
+
+        expect(testItem.CompareValues('A', 'A', null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues('B', 'A', null, null)).toBe(ComparersResult.GreaterThan);
+        expect(testItem.CompareValues('A', 'B', null, null)).toBe(ComparersResult.LessThan);        
     });    
     test('Boolean value resolves lookupKey and correctly handles comparisons', () => {
         let testItem = new DataTypeResolver();
-        RegisterComparerHandlerWithDataTypeResolver(testItem);
-        expect(testItem.CompareValues(true, true)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(true, true, null)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(true, true, undefined)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(false, true)).toBe(ComparersResult.NotEquals);
-        expect(testItem.CompareValues(true, false)).toBe(ComparersResult.NotEquals);        
+
+        expect(testItem.CompareValues(true, true, null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(false, true, null, null)).toBe(ComparersResult.NotEquals);
+        expect(testItem.CompareValues(true, false, null, null)).toBe(ComparersResult.NotEquals);        
     });       
     test('Date value resolves lookupKey and correctly handles comparisons', () => {
         let date1 = new Date(2000, 5, 31);
         let date2 = new Date(2000, 5, 30);
         let testItem = new DataTypeResolver();
-        RegisterComparerHandlerWithDataTypeResolver(testItem);
-        expect(testItem.CompareValues(date1, date1)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date1, date1, null)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date1, date1, undefined)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date2, date1)).toBe(ComparersResult.LessThan);
-        expect(testItem.CompareValues(date1, date2)).toBe(ComparersResult.GreaterThan);        
+
+        expect(testItem.CompareValues(date1, date1, null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(date2, date1, null, null)).toBe(ComparersResult.LessThan);
+        expect(testItem.CompareValues(date1, date2, null, null)).toBe(ComparersResult.GreaterThan);        
     });           
     test('value compares to custom class that has a IDataTypeConverter', () => {
         class TestDataType {
@@ -331,39 +371,25 @@ describe('DataTypeResolver.CompareValues', () => {
         }
         let testItem = new DataTypeResolver();
         testItem.RegisterDataTypeIdentifier(new SupportTestDataType());
-        testItem.RegisterDataTypeConverter(new TestConverter());   
-        testItem.RegisterComparerHandler("TEST", DateOnlyComparer);
+        testItem.RegisterDataTypeConverter(new TestConverter()); 
         
         let date1 = new TestDataType(new Date(2000, 5, 31));
         let date2 = new Date(2000, 5, 30);
 
-        RegisterComparerHandlerWithDataTypeResolver(testItem);
-        expect(testItem.CompareValues(date1, date1)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date1, date1, null)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date1, date1, undefined)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date2, date1)).toBe(ComparersResult.LessThan);
-        expect(testItem.CompareValues(date1, date2)).toBe(ComparersResult.GreaterThan);        
+        expect(testItem.CompareValues(date1, date1, null, null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues(date2, date1, null, null)).toBe(ComparersResult.LessThan);
+        expect(testItem.CompareValues(date1, date2, null, null)).toBe(ComparersResult.GreaterThan);        
     });               
     
-    test('Custom function to compare two strings case insensitively for Equals, NotEquals', () => {
-        let testItem = new DataTypeResolver();
-        expect(testItem.RegisterComparerHandler("Key1",
-            (val1: any, val2: any) => val1.toString().toLowerCase() ==
-                val2.toString().toLowerCase() ? ComparersResult.Equals : ComparersResult.NotEquals));
-        expect(testItem.CompareValues('A', 'A', 'Key1')).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues('A', 'a', 'Key1')).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues('a', 'A', 'Key1')).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues('A', 'B', 'Key1')).toBe(ComparersResult.NotEquals);
-    });        
     test('Unsupported data type for lookupKey assignment error', () => {
         let testItem = new DataTypeResolver();
-        expect(() => testItem.CompareValues({}, 'A')).toThrow(/Unsupported/);
-        expect(() => testItem.CompareValues(null, 'A')).toThrow(/Unsupported/);
+        expect(() => testItem.CompareValues({}, 'A', null, null)).toThrow(/operand/);
+        expect(() => testItem.CompareValues(testItem /* some class */, 'A', null, null)).toThrow(/operand/);
     });    
     test('Fallback to DefaultComparer for unsupported lookupKey', () => {
         let testItem = new DataTypeResolver();
-        expect(testItem.CompareValues('A', 'A', 'Key1')).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues('A', 'a', 'Key1')).toBe(ComparersResult.LessThan);
+        expect(testItem.CompareValues('A', 'A', 'Key1', null)).toBe(ComparersResult.Equals);
+        expect(testItem.CompareValues('A', 'a', 'Key1', null)).toBe(ComparersResult.LessThan);
     });                
 });
 
