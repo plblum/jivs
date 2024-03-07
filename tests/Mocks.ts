@@ -1,5 +1,5 @@
 import { ConditionFactory, RegisterStandardConditions } from "../src/Conditions/ConditionFactory";
-import { DataTypeResolver, RegisterComparerHandlerWithDataTypeResolver } from "../src/DataTypes/DataTypeResolver";
+import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
 import { IntlLocalizationAdapter } from "../src/DataTypes/IntlLocalizationAdapter";
 
 import { type ILogger, LoggingLevel } from "../src/Interfaces/Logger";
@@ -190,7 +190,6 @@ export class MockValidationServices implements IValidationServices
             this._dataTypeResolverService.RegisterLocalizationAdapter(
                 la
             );
-            RegisterComparerHandlerWithDataTypeResolver(this._dataTypeResolverService);
         }
 
     }

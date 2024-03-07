@@ -64,9 +64,12 @@ export class TimeSpan
     }
 }
 
+export const TimeSpanLookupKey = "TimeSpan";
+export const TimeSpanAsSecondsLookupKey = "TimeSpanAsSeconds";
+
 export class TimeSpanIdentifier implements IDataTypeIdentifier
 {
-    public get DataTypeLookupKey(): string { return "TimeSpan" }
+    public get DataTypeLookupKey(): string { return TimeSpanLookupKey}
     public IsMatch(value: any): boolean {
         return value instanceof TimeSpan;
     }
@@ -76,7 +79,7 @@ export class TimeSpanToHoursConverter implements IDataTypeConverter
 {
     SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return value instanceof TimeSpan &&
-            (!dataTypeLookupKey || dataTypeLookupKey === "TimeSpan");
+            (!dataTypeLookupKey || dataTypeLookupKey === TimeSpanLookupKey);
     }
     Convert(value: TimeSpan, dataTypeLookupKey: string): string | number | Date | null | undefined {
         return value.TotalHours;
@@ -87,7 +90,7 @@ export class TimeSpanToSecondsConverter implements IDataTypeConverter
 {
     SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return value instanceof TimeSpan &&
-            (dataTypeLookupKey === "TimeSpanAsSeconds");
+            (dataTypeLookupKey === TimeSpanAsSecondsLookupKey);
     }
     Convert(value: TimeSpan, dataTypeLookupKey: string): string | number | Date | null | undefined {
         return value.TotalSeconds;

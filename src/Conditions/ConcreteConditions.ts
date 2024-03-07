@@ -1,5 +1,4 @@
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { ComparersResult } from "../DataTypes/Comparers";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import type { ITokenLabelAndValue } from "../Interfaces/InputValidator";
 import { CodingError } from "../Utilities/ErrorHandling";
@@ -16,6 +15,7 @@ import { InputValueConditionBase } from "./InputValueConditionBase";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { EvaluateChildConditionResultsBase, IEvaluateChildConditionResultsDescriptor } from "./EvaluateChildConditionResultsBase";
 import { IRegExpConditionBaseDescriptor, RegExpConditionBase } from "./RegExpConditionBase";
+import { ComparersResult } from "../Interfaces/DataTypes";
 
 /**
  * Concrete implementations of Conditions, and their companion ConditionDescriptors.
@@ -249,7 +249,7 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
 
         let services = valueHostResolver.Services;
         let lower = this.Descriptor.Minimum != null ?  // null/undefined
-            services.DataTypeResolverService.CompareValues(this.Descriptor.Minimum, value, valueHost.GetDataType()) :
+            services.DataTypeResolverService.CompareValues(this.Descriptor.Minimum, value, valueHost.GetDataType(), null) :
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
             services.LoggerService.Log(`Type mismatch. Value cannot be compared to Minimum`,
@@ -257,7 +257,7 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
             return ConditionEvaluateResult.Undetermined;
         }
         let upper = this.Descriptor.Maximum != null ?  // null/undefined
-            services.DataTypeResolverService.CompareValues(this.Descriptor.Maximum, value, valueHost.GetDataType()) :
+            services.DataTypeResolverService.CompareValues(this.Descriptor.Maximum, value, valueHost.GetDataType(), null) :
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
             services.LoggerService.Log(`Type mismatch. Value cannot be compared to Maximum`,
@@ -319,6 +319,7 @@ export abstract class CompareToConditionBase extends OneValueConditionBase<IComp
         if (value == null)  // null/undefined
             return ConditionEvaluateResult.Undetermined;
         let secondValue: any;
+        let secondValueLookupKey: string | null = null;
         if (this.Descriptor.SecondValueHostId) {
             let vh = this.GetValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
             if (!vh) {
@@ -327,6 +328,7 @@ export abstract class CompareToConditionBase extends OneValueConditionBase<IComp
                 throw new Error(msg);
             }
             secondValue = vh.GetValue();
+            secondValueLookupKey = vh.GetDataType();
         }
         if (secondValue == null)  // null/undefined
         {
@@ -339,7 +341,8 @@ export abstract class CompareToConditionBase extends OneValueConditionBase<IComp
             secondValue = this.Descriptor.SecondValue;
         }
 
-        let comparison = valueHostResolver.Services.DataTypeResolverService.CompareValues(value, secondValue, valueHost.GetDataType());
+        let comparison = valueHostResolver.Services.DataTypeResolverService.CompareValues(
+            value, secondValue, valueHost.GetDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
             valueHostResolver.Services.LoggerService.Log(`Type mismatch. Value cannot be compared to SecondValue`,
                 LoggingLevel.Warn, ConfigurationCategory, `${this.constructor.name} for ${valueHost.GetId()}`);

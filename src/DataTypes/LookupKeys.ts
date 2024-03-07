@@ -7,12 +7,12 @@ export const StringLookupKey = 'String'; // string as is.
 export const CaseInsensitiveStringLookupKey = 'CaseInsensitive'; // string compares using lowercase
 export const NumberLookupKey = 'Number'; // Number data type
 export const BooleanLookupKey = 'Boolean'; // Boolean data type. Compares with Equals and NotEquals
-export const DateLookupKey = 'Date';   // Just the date part of a Date object. This is the default for when no LookupKey is supplied
+export const DateLookupKey = 'Date';   // Just the date part of a Date object. Assumes UTC. This is the default for when no LookupKey is supplied
             // because its a much more common case to use just dates.
 export const DateTimeLookupKey = 'DateTime';    // The date and time parts of the Date object.
-export const MonthYearLookupKey = 'MonthYear'; // "expiry" when using a Date object and only need month and year.
-export const AnniversaryLookupKey = 'Anniversary';  // when using a Date object for same day and month each year
-
+export const MonthYearLookupKey = 'MonthYear'; // "expiry" when using a Date object and only need month and year. Assumes UTC
+export const AnniversaryLookupKey = 'Anniversary';  // when using a Date object for same day and month each year. Assumes UTC
+export const LocalDateLookupKey = "LocalDate";  // Just the date part of the Date object. Assumes Local time.
 /**
  * Formatters for data types.
  */
