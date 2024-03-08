@@ -4,7 +4,8 @@
  * When either parameter is '', '*', empty array, null or undefined, it means to match
  * everything and this function returns true.
  * Otherwise, it returns true only when a group name is found amongst both group parameters.
- * @param group 
+ * @param group1 - group name(s) to compare against group2
+ * @param group2
  */
 export function ValidationGroupsMatch(group1: string | Array<string> | undefined | null,
     group2: string | Array<string>| undefined | null): boolean

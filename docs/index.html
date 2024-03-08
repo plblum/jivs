@@ -1,0 +1,124 @@
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>javascript_input_validation_service</title><meta name="description" content="Documentation for javascript_input_validation_service"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="assets/icons.svg#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div><div class="field"><div id="tsd-toolbar-links"></div></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">javascript_input_validation_service</a></div><div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><h2>javascript_input_validation_service</h2></div><div class="tsd-panel tsd-typography"><a id="md:jivs---javascript-input-validation-service" class="tsd-anchor"></a><h1><a href="#md:jivs---javascript-input-validation-service">Jivs - JavaScript Input Validation Service</a></h1><p>Back in the day (2002-2013), I created a successful suite of Web
+Controls for ASP.NET WebForms which featured a complete replacement to
+its built-in input validation. I really learned a lot about what website
+developers wanted on-screen. In the 10+ years that followed, I&#39;ve
+learned much more in terms of OOP patterns programming, plus TypeScript
+came out and JavaScript introduced Classes. Wonderful stuff that I now
+use here, in <strong>Jivs</strong>.</p>
+<p>Jivs itself is just the tooling to evaluate values and return a list of
+issues found. </p>
+<blockquote>
+<p>That is the essence of validation! </p>
+</blockquote>
+<p>Jivs is a &quot;service&quot;,
+doing that job well, and not trying to provide the actual UI. For that,
+you will be able to add companion libraries to match your environment,
+such as working in the browser&#39;s DOM or React&#39;s components. Being a
+UI-independent service, you can build your own UI around it, and it can
+run both in the browser and NodeJS.</p>
+<p>Jivs&#39; philosophy involves strong separation of concerns.</p>
+<ul>
+<li>UI is strongly separated from the validation work</li>
+<li>Business logic code is where your validation rules generally are
+found, not in the UI input forms.</li>
+</ul>
+<p>The result is that the UI knows almost nothing about what needs to be
+validated. The UI just posts its current values into Jivs and asks: what
+are the result of validation? It gets back a Validation Result, such as
+&quot;Valid&quot;, &quot;Invalid&quot;, or even &quot;Undetermined&quot;, and any issues found. An
+issue found includes error messages, an id to the field associated with
+the validation rule, and its severity.</p>
+<p>The UI uses that information to change the visuals: show those errors in
+some way and perhaps change the appearance of the input and its
+surroundings. Jivs knows nothing about that stuff, although its
+supporting libraries (pending) are well-informed on those matters.</p>
+<a id="md:quick-terminology-overview" class="tsd-anchor"></a><h2><a href="#md:quick-terminology-overview">Quick terminology overview</a></h2><p>Here are a few terms used.</p>
+<ul>
+<li><strong>Validator</strong> - Combines a single rule that must be validated along with the error message(s) it may return when an issue is found.</li>
+<li><strong>Input</strong> - Refers to the editor, widget, component where the user edits the data. In HTML, &lt;input&gt;, &lt;select&gt;, and &lt;textarea&gt; tags are examples.</li>
+<li><strong>ValueHost</strong> - References to a Jivs object that you setup for each Input, and for any other values you want to expose to the validators. Any ValueHosts associated with an Input may have Validators. Other ValueHosts hold data like global values and fields from the Model/Entity/Class/Record that won&#39;t be edited.<blockquote>
+<p>In fact, you can use Jivs and its ValueHost as your form&#39;s <strong>Single Source of Truth</strong> as you convert between the Model/Entity and the UI.</p>
+</blockquote>
+</li>
+<li><strong>Form</strong> - A group of Inputs that is gathering data from the user. It often has buttons to submit the work when completed (but first, it should use validation!)</li>
+<li><strong>Summary</strong> - A UI-specific area that shows error messages found throughout your form.</li>
+<li><strong>ValidationManager</strong> - The main class you interact with in Jivs. It contains a complete configuration of your form&#39;s inputs through ValueHosts. You will use it to send data changes from your Inputs, to invoke validation before submitting the Form, to retrieve a list of issues for a single Input to display, and another list for a Summary to display.</li>
+<li><strong>Input Value</strong> - The raw data from the Input. Often this is a string representing the actual data, but needs to be cleaned up or converted before it can be stored.</li>
+<li><strong>Native Value</strong> - The actual data that you will store. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value.</li>
+<li><strong>Business Logic</strong> - The code dedicated to describing your Model/Entity. It provides the validation rules for individual fields and to run before saving. It should be separate from the UI, and Jivs is designed for that approach.</li>
+</ul>
+<a id="md:quick-api-overview" class="tsd-anchor"></a><h2><a href="#md:quick-api-overview">Quick API overview</a></h2><p>As a service, you need to know about its API. The primary pieces for
+building a UI are:</p>
+<ul>
+<li><p><code>ValueHost</code> classes -- Identifies a single value to be validated
+and/or contributes data into the rules of your validation. Each has a unique
+identifier that you use to match it to a specific input, such as the
+ID of the HTML input tag (&quot;TextBox1&quot;), or even better, a path
+where it is found in a Model (&quot;Customer/Address/Street&quot;).</p>
+<ul>
+<li><p><code>NonInputValueHost</code> class -- For values that are not validated, such as a
+field from your Model that isn&#39;t editable, or a global value of
+your app, as both can contribute to your validation logic. </p>
+<blockquote>
+<p>Take a postal code as an example. You might use a regular expression
+to evaluate it. But that expression depends on the country of
+delivery. So you would use a ValueHost to pass in a country
+code, and let the validation internally select the right
+expression.</p>
+</blockquote>
+<p>Some members of this class are:</p>
+<pre><code><span class="hl-0">GetId</span><br/><span class="hl-0">GetLabel</span><br/><span class="hl-0">GetValue</span><br/><span class="hl-0">SetValue</span>
+</code><button>Copy</button></pre>
+</li>
+<li><p><code>InputValueHost</code> class - For Input values optionally with validators. In fact, they have all of the features of NonInputValueHost, just validation capability and know of a second value from the input.		</p>
+<p>  Some members of this class are (in addition to the inherited from NonInputValueHost):</p>
+<pre><code><span class="hl-0">GetInputValue</span><br/><span class="hl-0">SetInputValue</span><br/><span class="hl-0">Validate</span><br/><span class="hl-0">IsValid</span>
+</code><button>Copy</button></pre>
+</li>
+</ul>
+</li>
+<li><p><code>ValidationManager</code> class -- The front-end of this API. It&#39;s where you
+configure the ValueHosts, get access to a ValueHost, validate, and get the validation results.</p>
+<p>Some members of this class are:</p>
+<pre><code><span class="hl-0">GetValueHost</span><br/><span class="hl-0">Validate</span><br/><span class="hl-0">SetBusinessLogicErrors</span><br/><span class="hl-0">GetIssuesForInput</span><br/><span class="hl-0">GetIssuesForSummary</span>
+</code><button>Copy</button></pre>
+</li>
+<li><p><code>Condition</code> classes -- Classes that evaluate value(s) against a rule
+to see if those values conform. Condition classes exist for each
+business rule pattern, such as <em>required</em> or <em>compare two values are
+not identical</em>. While there are many standard rules for which there
+are Conditions included in this library, you are often going to need
+to build your own.</p>
+<blockquote>
+<p>In fact, you can substitute your own business logic code, so long as you wrap it in a Condition class.</p>
+</blockquote>
+<p>Some members of these classes are:</p>
+<pre><code><span class="hl-0">Evaluate</span><br/><span class="hl-0">ConditionCategory</span>
+</code><button>Copy</button></pre>
+</li>
+<li><p><code>InputValidator</code> class -- Handles a single rule, by assigning it to a
+Condition. The Condition does the actual evaluation of the rule. InputValidator&#39;s job is to handle the validation process and deliver the error messages to the
+list of issues found.</p>
+<p>Some members of this class are:</p>
+<pre><code><span class="hl-0">Validate</span>
+</code><button>Copy</button></pre>
+</li>
+</ul>
+<hr>
+<p><strong>This documentation is unfinished.</strong> Plenty still to write about:</p>
+<ul>
+<li><p>How to configure, including how to work with your business logic</p>
+</li>
+<li><p>Each class and its members</p>
+</li>
+<li><p>How to create your own Conditions</p>
+</li>
+<li><p>Maintaining state</p>
+</li>
+<li><p>Supporting custom data types (your own classes that reflect a value,
+like how the JavaScript Date object handles a DateTime value)</p>
+</li>
+<li><p>Relating this to other input validation libraries</p>
+</li>
+</ul>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-index-accordion"><summary class="tsd-accordion-summary"><h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="assets/icons.svg#icon-chevronDown"></use></svg>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><h4 class="uppercase">Member Visibility</h4><form><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-private" name="private"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Private</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></form></div><div class="tsd-theme-toggle"><h4 class="uppercase">Theme</h4><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-index-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="assets/icons.svg#icon-chevronDown"></use></svg>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#md:jivs---javascript-input-validation-service"><span>Jivs -<wbr/> <wbr/>Java<wbr/>Script <wbr/>Input <wbr/>Validation <wbr/>Service</span></a><ul><li><a href="#md:quick-terminology-overview"><span>Quick terminology overview</span></a></li><li><a href="#md:quick-api-overview"><span>Quick API overview</span></a></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="index.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="assets/icons.svg#icon-1"></use></svg><span>javascript_input_validation_service</span></a><ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="."><li>Loading...</li></ul></nav></div></div></div><div class="tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div></body></html>

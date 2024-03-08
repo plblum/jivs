@@ -213,8 +213,7 @@ export class DataTypeResolver implements IDataTypeResolver {
     /**
      * Supports CompareValues function.
      * Adds or replaces a LookupKey and associated CompareValues function.
-     * @param lookupKey
-     * @param fn 
+     * @param comparer
      */
     public RegisterDataTypeComparer(comparer: IDataTypeComparer): void {
         AssertNotNull(comparer, 'comparer');
