@@ -5,6 +5,7 @@ import { ILogger } from "./Logger";
 
 /**
  * Provides a dependency injection approach to this library.
+ * @module ValidationServices
  */
 
 /**
