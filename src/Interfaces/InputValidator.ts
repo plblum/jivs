@@ -264,7 +264,7 @@ export interface IMessageTokenResolver
      * Replaces tokens in the message with user friendly values
      * @param message 
      * @param valueHost - makes stateful info available to IMessageTokenSources.
-     * @param resolver
+     * @param valueHostResolver
      * @param hosts 
      * @returns the message with formatting resolved
      */

@@ -99,7 +99,7 @@ export interface IInputValueHost extends IValueHost {
      * the Validation Summary (GetIssuesForSummary) and optionally for an individual ValueHostId,
      * by specifying that ValueHostID in AssociatedValueHostId.
      * Each time called, it adds to the existing list. Use ClearBusinessLogicErrors first if starting a fresh list.
-     * @param errors - An error to show.
+     * @param error - An error to show.
      */
     SetBusinessLogicError(error: IBusinessLogicError): void;
 

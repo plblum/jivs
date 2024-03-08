@@ -1,6 +1,14 @@
 /**
+ * Provide a logging service for this library to report into.
+ * It provides one such logger class, ConsoleLogger, which works with the JavaScript console object.
+ * Use your own logger by implementating the ILogger interface.
+ * Assign your class to {@link ValidationServices.ValidationServices.LoggerService }
+ * @module Logger
+ */
+
+/**
  * Provide a logging service for this system to report into.
- * Attach an instance to ValidationServices.LoggingService.
+ * Attach an instance to ValidationServices.LoggerService.
  */
 export interface ILogger
 {
