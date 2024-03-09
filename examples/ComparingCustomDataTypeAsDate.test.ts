@@ -40,7 +40,7 @@ test('Register and test values against the RelativeDateIdentifier', () => {
     let dataTypeResolver = new DataTypeResolver();
     dataTypeResolver.RegisterDataTypeIdentifier(new RelativeDateIdentifier());
 
-    expect(dataTypeResolver.MapNativeTypeToLookupKey(new RelativeDate(0, 1, 0))).toBe(RelativeDataLookupKey);
+    expect(dataTypeResolver.IdentifyLookupKey(new RelativeDate(0, 1, 0))).toBe(RelativeDataLookupKey);
 });
 
 test('Register and test values against RelativeDateConverter', () => {

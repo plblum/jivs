@@ -30,13 +30,8 @@ export interface INameToFunctionMapper<TValue, TResult>
 export class NameToFunctionMapper<TValue, TResult> implements INameToFunctionMapper<TValue, TResult> {
 
     /**
-     * Map to lookup a function for use by ToString based on the data type of the value
-     * or the formatter. When ToString has only a value, convert its datatype
-     * via DefaultDataTypeLabel. If it has a formatter, use that alone as the key in the dictionary.
-     * The value is a function with the code to convert the value to a string.
-     * The function must handle unexpected values like null or invalid source data type.
-     * It can throw exceptions for invalid data.
-     * Note: String matching is case insensitive. Expect all strings stored in this dictionary
+     * Map to lookup a function based on a string.
+     * String matching is case insensitive. Expect all strings stored in this dictionary
      * to be lowercase.
      */
     private _map = new Map<string, (...args: TValue[]) => TResult>();

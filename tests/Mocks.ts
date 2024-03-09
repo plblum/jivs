@@ -8,7 +8,7 @@ import type { IValidationServices } from "../src/Interfaces/ValidationServices";
 import type { IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../src/ValueHosts/ValidationManager";
 import type { IValueHost, ISetValueOptions, IValueHostState } from "../src/Interfaces/ValueHost";
 import { CreateDataTypeResolverWithManyLAs } from "./DataTypes/DataTypeResolver.test";
-import { commonBuiltInToStringLookupKeys } from "../src/DataTypes/LookupKeys";
+import { commonBuiltInFormatLookupKeys } from "../src/DataTypes/LookupKeys";
 import { IValueHostResolver, IValueHostsManager } from "../src/Interfaces/ValueHostResolver";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "../src/ValueHosts/ValueHostBase";
 import { ConditionBase } from "../src/Conditions/ConditionBase";
@@ -186,7 +186,7 @@ export class MockValidationServices implements IValidationServices
         if (registerStandardDataTypes &&
             this._dataTypeResolverService instanceof DataTypeResolver) {    // used as a typecast
             let la = new IntlLocalizationAdapter('en');
-            la.RegisterBuiltInLookupKeyFunctions(commonBuiltInToStringLookupKeys);
+            la.RegisterBuiltInLookupKeyFunctions(commonBuiltInFormatLookupKeys);
             this._dataTypeResolverService.RegisterLocalizationAdapter(
                 la
             );
@@ -198,7 +198,7 @@ export class MockValidationServices implements IValidationServices
     {
         function RegisterLookupKeys(la: IntlLocalizationAdapter): IntlLocalizationAdapter
         {
-            la.RegisterBuiltInLookupKeyFunctions(commonBuiltInToStringLookupKeys);
+            la.RegisterBuiltInLookupKeyFunctions(commonBuiltInFormatLookupKeys);
             return la;
         }
 

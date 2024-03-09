@@ -1,7 +1,12 @@
 
 /**
  * Predefined lookup keys that identify data types and associated formatters.
- * These are the basics.
+ * @module LookupKeys
+ */
+
+/**
+ * Native data types. They usually have associated Identifiers and Formatters.
+ * Some have Converters and Comparers.
  */
 export const StringLookupKey = 'String'; // string as is.
 export const CaseInsensitiveStringLookupKey = 'CaseInsensitive'; // string compares using lowercase
@@ -12,8 +17,9 @@ export const DateLookupKey = 'Date';   // Just the date part of a Date object. A
 export const DateTimeLookupKey = 'DateTime';    // The date and time parts of the Date object.
 
 export const LocalDateLookupKey = "LocalDate";  // Just the date part of the Date object. Assumes Local time.
+
 /**
- * Formatters for data types.
+ * Formatters and converters for data types.
  */
 export const CapitalizeStringLookupKey = 'Capitalize';  // string with first letter uppercase
 export const UppercaseStringLookupKey = 'Uppercase';    // string with all letters uppercase
@@ -42,7 +48,7 @@ export const YesNoBooleanLookupKey = 'YesNoBoolean';    // From string, supports
      * Intended as a parameter for RegisterBuiltInLookupKeyFunctions
      * and includes all builtin lookup key functions.
      */
-export const allBuiltInToStringLookupKeys = [
+export const allBuiltInFormatLookupKeys = [
     StringLookupKey,
     CaseInsensitiveStringLookupKey,
     UppercaseStringLookupKey,
@@ -69,7 +75,7 @@ export const allBuiltInToStringLookupKeys = [
  * to typical applications:
  * String, Number, Integer, Date.
  */
-export const commonBuiltInToStringLookupKeys = [
+export const commonBuiltInFormatLookupKeys = [
     StringLookupKey,
     NumberLookupKey,
     IntegerLookupKey,

@@ -4,7 +4,7 @@ import {
 
 /**
  * To test the base class features alone as our default subclass,
- * IntlLocalizationAdapter depends on working RegisterForToString
+ * IntlLocalizationAdapter depends on working RegisterForFormat
  */
 class TestImplementationOfLocalizationAdapterBase extends LocalizationAdapterBase
 {
@@ -12,65 +12,65 @@ class TestImplementationOfLocalizationAdapterBase extends LocalizationAdapterBas
         super(cultureID, fallbackCultureID);
     }
 }
-describe('LocalizationAdapter.LocalizationAdapterBase.RegisterForToString', () => {
+describe('LocalizationAdapter.LocalizationAdapterBase.RegisterFormatter', () => {
     test('Register with function and new key gives no errors', () => {
         let testItem = new TestImplementationOfLocalizationAdapterBase('en');
-        expect(() => testItem.RegisterForToString('A', (val: any) => { 
+        expect(() => testItem.RegisterFormatter('A', (val: any) => { 
             return {};
         })).not.toThrow();
-        expect(() => testItem.RegisterForToString('B', (val: any) => {
+        expect(() => testItem.RegisterFormatter('B', (val: any) => {
             return {};
         })).not.toThrow();
     });
     test('Register with function and same key gives no errors', () => {
         let testItem = new TestImplementationOfLocalizationAdapterBase('en');
-        expect(() => testItem.RegisterForToString('A', (val: any) => { 
+        expect(() => testItem.RegisterFormatter('A', (val: any) => { 
             return {};
         })).not.toThrow();
-        expect(() => testItem.RegisterForToString('A', (val: any) => {
+        expect(() => testItem.RegisterFormatter('A', (val: any) => {
             return {};
         })).not.toThrow();
     });    
     test('Register with alias key gives no errors', () => {
         let testItem = new TestImplementationOfLocalizationAdapterBase('en');
-        expect(() => testItem.RegisterForToString('A', (val: any) => { 
+        expect(() => testItem.RegisterFormatter('A', (val: any) => { 
             return {};
         })).not.toThrow();
-        expect(() => testItem.RegisterForToString('B', 'A')).not.toThrow();
+        expect(() => testItem.RegisterFormatter('B', 'A')).not.toThrow();
     
     });    
     test('Register with alias key to unknown registration throws', () => {
         let testItem = new TestImplementationOfLocalizationAdapterBase('en');
-        expect(() => testItem.RegisterForToString('A', (val: any) => { 
+        expect(() => testItem.RegisterFormatter('A', (val: any) => { 
             return {};
         })).not.toThrow();
-        expect(() => testItem.RegisterForToString('B', 'D')).toThrow();        
+        expect(() => testItem.RegisterFormatter('B', 'D')).toThrow();        
     });          
 });
-describe('LocalizationAdapter.LocalizationAdapterBase.ToString', () => {
+describe('LocalizationAdapter.LocalizationAdapterBase.Format', () => {
     test('Valid lookup key and string value returns same string value', () => {
         let testItem = new TestImplementationOfLocalizationAdapterBase('en');
-        testItem.RegisterForToString('LookupKey', (val: any) => { 
+        testItem.RegisterFormatter('LookupKey', (val: any) => { 
             return { Value: val };
         });
-        let dtr = testItem.ToString('Text', 'LookupKey');
+        let dtr = testItem.Format('Text', 'LookupKey');
         expect(dtr).not.toBeNull();
         expect(dtr.Value).toBe('Text');
     }); 
     test('Invalid lookup key and string value returns NotFound', () => {
         let testItem = new TestImplementationOfLocalizationAdapterBase('en');
-        testItem.RegisterForToString('LookupKey', (val: any) => { 
+        testItem.RegisterFormatter('LookupKey', (val: any) => { 
             return { Value: val };
         });
-        let dtr = testItem.ToString('Text', 'NotLookupKey');
+        let dtr = testItem.Format('Text', 'NotLookupKey');
         expect(dtr).not.toBeNull();
         expect(dtr.NotFound).toBe(true);
     });        
     test('Null lookupKey throws', () => {
         let testItem = new TestImplementationOfLocalizationAdapterBase('en');
-        testItem.RegisterForToString('LookupKey', (val: any) => { 
+        testItem.RegisterFormatter('LookupKey', (val: any) => { 
             return { Value: val };
         });
-        expect(() => testItem.ToString('Text', null!)).toThrow();
+        expect(() => testItem.Format('Text', null!)).toThrow();
     });        
 });

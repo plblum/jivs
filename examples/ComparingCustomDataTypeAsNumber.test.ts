@@ -53,7 +53,7 @@ test('Register and test values against the TimeSpanIdentifier', () => {
     let dataTypeResolver = new DataTypeResolver();
     dataTypeResolver.RegisterDataTypeIdentifier(new TimeSpanIdentifier());
 
-    expect(dataTypeResolver.MapNativeTypeToLookupKey(new TimeSpan(0, 1, 0))).toBe(TimeSpanLookupKey);
+    expect(dataTypeResolver.IdentifyLookupKey(new TimeSpan(0, 1, 0))).toBe(TimeSpanLookupKey);
 });
 
 test('Register and test values against TimeSpanToHoursConverter', () => {
