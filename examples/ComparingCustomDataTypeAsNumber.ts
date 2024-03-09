@@ -71,7 +71,7 @@ export const TimeSpanAsSecondsLookupKey = "TimeSpanAsSeconds";
 export class TimeSpanIdentifier implements IDataTypeIdentifier
 {
     public get DataTypeLookupKey(): string { return TimeSpanLookupKey}
-    public IsMatch(value: any): boolean {
+    public SupportsValue(value: any): boolean {
         return value instanceof TimeSpan;
     }
 }

@@ -178,6 +178,6 @@ class CapturedToken
  */    
     public Replacement(replacementValue: any, valueHostResolver: IValueHostResolver): IDataTypeResolution<string>
     {
-        return valueHostResolver.Services.DataTypeResolverService.ToString(replacementValue, this.formatterKey ?? undefined);
+        return valueHostResolver.Services.DataTypeResolverService.Format(replacementValue, this.formatterKey ?? undefined);
     }
 }

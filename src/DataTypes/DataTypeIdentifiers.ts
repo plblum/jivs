@@ -10,7 +10,7 @@ export class StringDataTypeIdentifier implements IDataTypeIdentifier
     {
         return StringLookupKey;
     }
-    public IsMatch(value: any): boolean {
+    public SupportsValue(value: any): boolean {
         return typeof value === 'string';
     }
     
@@ -24,7 +24,7 @@ export class NumberDataTypeIdentifier implements IDataTypeIdentifier
     {
         return NumberLookupKey;
     }
-    public IsMatch(value: any): boolean {
+    public SupportsValue(value: any): boolean {
         return typeof value === 'number';
     }
     
@@ -39,7 +39,7 @@ export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
     {
         return BooleanLookupKey;
     }
-    public IsMatch(value: any): boolean {
+    public SupportsValue(value: any): boolean {
         return typeof value === 'boolean';
     }
     
@@ -57,7 +57,7 @@ export class DateDataTypeIdentifier implements IDataTypeIdentifier
     {
         return DateLookupKey;
     }
-    public IsMatch(value: any): boolean {
+    public SupportsValue(value: any): boolean {
         return value instanceof Date;
     }
     

@@ -13,7 +13,7 @@ import {
 } from "../../src/Conditions/ConcreteConditions";
 
 import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
-import { StringLookupKey, NumberLookupKey, DateLookupKey, BooleanLookupKey } from "../../src/DataTypes/LookupKeys";
+import { StringLookupKey, NumberLookupKey, DateLookupKey, BooleanLookupKey, RoundToWholeLookupKey } from "../../src/DataTypes/LookupKeys";
 
 import {
     MockValidationServices, MockValidationManager, MockCapturingLogger,
@@ -941,6 +941,31 @@ describe('class RangeCondition', () => {
         expect(logger.GetLatest()!.Message).toMatch(/mismatch.*Maximum/);
         expect(logger.GetLatest()!.Level).toBe(LoggingLevel.Warn);
     });
+    test('Using RoundToWholeConverter, evaluate to show that ConversionLookupKey is applied correctly.', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost(
+            'Property1', NumberLookupKey, 'Label');
+        let descriptor: IRangeConditionDescriptor = {
+            Type: RangeConditionType,
+            ValueHostId: 'Property1',
+            Minimum: 1.6,
+            Maximum: 6.1,
+            ConversionLookupKey: RoundToWholeLookupKey
+        };
+        let testItem = new RangeCondition(descriptor);
+        vh.SetInputValue('---- does not matter ----');
+        vh.SetValue(1.51);  // this will round up to 2, above the minimum
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.SetValue(1.49);  // will round down to 1, below the minimum
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.SetValue(6.1);   // will round down to 6, below the maximum
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.SetValue(6.2);   // will round down to 6, below the maximum
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.SetValue(6.6);   // will round up to 7, above the maximum
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });    
     test('GetTokenValues with non-null values for parameters', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -1067,6 +1092,7 @@ describe('CompareToConditionBase class additional cases', () => {
         expect(logger.EntryCount()).toBe(1);
         expect(logger.GetLatest()?.Message).toMatch(/SecondValueHostId/);
     });
+    
     test('Descriptor.SecondValueHostID and SecondValue both with null logs and throws', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -1176,6 +1202,58 @@ describe('class ValuesEqualCondition', () => {
         vh.SetValue(false);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
+    
+    test('Using ConversionLookupKey = RoundToWhole, show ValueHost(but not Second) is impacted by conversion', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost(
+            'Property1', NumberLookupKey, 'Label');
+        let descriptor: ICompareToConditionDescriptor = {
+            Type: ValuesEqualConditionType,
+            ValueHostId: 'Property1',
+            ConversionLookupKey: RoundToWholeLookupKey,
+            SecondValue: 100,
+            SecondValueHostId: null
+        };
+        let testItem = new ValuesEqualCondition(descriptor);
+        vh.SetInputValue('---- does not matter ----');
+        vh.SetValue(99.1);
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.SetValue(99.9);
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.SetValue(100.1);
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.SetValue(100.6);
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+    test('Using SecondConversionLookupKey = RoundToWhole, show SecondValueHost(but not ValueHost) is impacted by conversion', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh1 = vm.AddInputValueHost(
+            'Property1', NumberLookupKey, 'Label');
+        let vh2 = vm.AddInputValueHost(
+            'Property2', NumberLookupKey, 'Label');
+        let descriptor: ICompareToConditionDescriptor = {
+            Type: ValuesEqualConditionType,
+            ValueHostId: 'Property1',
+            ConversionLookupKey: RoundToWholeLookupKey,
+            SecondValueHostId: 'Property2',
+            SecondConversionLookupKey: RoundToWholeLookupKey
+        };
+        let testItem = new ValuesEqualCondition(descriptor);
+        vh1.SetInputValue('---- does not matter ----');
+        vh1.SetValue(100);
+        
+        vh2.SetValue(99.1);
+        expect(testItem.Evaluate(vh1, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh2.SetValue(99.9);
+        expect(testItem.Evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
+        vh2.SetValue(100.1);
+        expect(testItem.Evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
+        vh2.SetValue(100.6);
+        expect(testItem.Evaluate(vh1, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });    
+
     test('GetTokenValues with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);

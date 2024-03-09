@@ -3,10 +3,10 @@ import {
     LocalizationAdapterBase
 } from "./LocalizationAdapter";
 import {
-    StringLookupKey, CaseInsensitiveStringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
+    StringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
     NumberLookupKey, IntegerLookupKey, CurrencyLookupKey, PercentageLookupKey, BooleanLookupKey, YesNoBooleanLookupKey, DateTimeLookupKey,
     DateLookupKey, AbbrevDateLookupKey, AbbrevDOWDateLookupKey, LongDateLookupKey, LongDOWDateLookupKey, TimeOfDayLookupKey,
-    TimeOfDayHMSLookupKey, allBuiltInToStringLookupKeys
+    TimeOfDayHMSLookupKey, allBuiltInFormatLookupKeys
 } from "./LookupKeys";
 
 /**
@@ -33,16 +33,16 @@ export class IntlLocalizationAdapter extends LocalizationAdapterBase {
     private _currency: string;
     /**
      * Registers any of the built in lookupKeys and their functions
-     * for the ToString method to use.
+     * for the Format method to use.
      * @param lookupKeys - Pass null to register all built ins.
      */
     public RegisterBuiltInLookupKeyFunctions(lookupKeys?: Array<string>): void {
         if (!lookupKeys)
-            lookupKeys = allBuiltInToStringLookupKeys;
+            lookupKeys = allBuiltInFormatLookupKeys;
         lookupKeys.forEach((lookupKey) => {
             let fn = this.GetBuiltInLookupFunction(lookupKey);
             if (fn)
-                this.RegisterForToString(lookupKey, fn);
+                this.RegisterFormatter(lookupKey, fn);
         });
     }
     
@@ -52,8 +52,6 @@ export class IntlLocalizationAdapter extends LocalizationAdapterBase {
             case StringLookupKey:
                 return (val: any, adapter: ILocalizationAdapter) => this.prepString(val);
 
-            case CaseInsensitiveStringLookupKey:
-                return StringLookupKey;
             case CapitalizeStringLookupKey:
                 return (val: any, adapter: ILocalizationAdapter) => {
                     let result = this.prepString(val);
