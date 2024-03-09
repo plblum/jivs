@@ -16,7 +16,7 @@ import { IValidationManager, IValidationManagerState } from '../../src/Interface
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { DeepClone } from '../../src/Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, ToIValueHostResolver, ToIValueHostsManager, ToIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
-import { ValueHost } from '../../src/ValueHosts/ValueHost';
+import { NonInputValueHost } from '../../src/ValueHosts/NonInputValueHost';
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<IValidationManagerState> {
@@ -1410,13 +1410,13 @@ describe('ToIValueHostsManagerAccessor function', () => {
     });
     test('ValueHost matches and returns itself.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new ValueHost(vm, {
+        let testItem = new NonInputValueHost(vm, {
             Id: 'Field1',
             Label: 'Label1',
         },
         {
-                Id: 'Field1',
-                Value: undefined
+            Id: 'Field1',
+            Value: undefined
         });
         expect(ToIValueHostsManagerAccessor(testItem)).toBe(testItem);
     });    

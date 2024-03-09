@@ -7,5 +7,6 @@ module.exports = {
     modulePaths: ["/src/", "/examples/"],
     moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
     collectCoverage: true,
-    verbose: false
+    verbose: false,
+    coveragePathIgnorePatterns: ["/examples/"]
 };
