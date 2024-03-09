@@ -297,7 +297,7 @@ export class DataTypeResolver implements IDataTypeResolver {
      * @returns 
      */
     protected GetDataTypeIdentifier(value: any): IDataTypeIdentifier | null {
-        return this._dataTypeIdentifiers.find((idt) => idt.IsMatch(value)) ?? null;
+        return this._dataTypeIdentifiers.find((idt) => idt.SupportsValue(value)) ?? null;
     }
     protected RegisterStandardDataTypeIdentifiers(): void {
         this.RegisterDataTypeIdentifier(new NumberDataTypeIdentifier());

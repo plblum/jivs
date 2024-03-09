@@ -27,8 +27,8 @@ test('The TimeSpan class itself', () => {
 test('Test TimeSpanIdentifier class members for expected results', () => {
     let dti = new TimeSpanIdentifier();
     expect(dti.DataTypeLookupKey).toBe(TimeSpanLookupKey);
-    expect(dti.IsMatch(new TimeSpan(1, 0))).toBe(true);
-    expect(dti.IsMatch(1)).toBe(false);
+    expect(dti.SupportsValue(new TimeSpan(1, 0))).toBe(true);
+    expect(dti.SupportsValue(1)).toBe(false);
 });
 test('Test TimeSpanToHoursConverter class members for expected results', () => {
     let dtc = new TimeSpanToHoursConverter();

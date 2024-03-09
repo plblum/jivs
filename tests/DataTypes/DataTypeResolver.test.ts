@@ -211,7 +211,7 @@ describe('DataTypeResolver.RegisterDataTypeComparer', () => {
     class TestIdentifier implements IDataTypeIdentifier
     {
         DataTypeLookupKey: string = "TEST";
-        IsMatch(value: any): boolean {
+        SupportsValue(value: any): boolean {
             return value instanceof TestDataType;
         }
         
@@ -299,7 +299,7 @@ describe('DataTypeResolver.CompareValues', () => {
         class SupportTestDataType implements IDataTypeIdentifier
         {
             DataTypeLookupKey: string = "TEST";
-            IsMatch(value: any): boolean {
+            SupportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }
         }
@@ -356,7 +356,7 @@ describe('DataTypeResolver.CompareValues', () => {
         class SupportTestDataType implements IDataTypeIdentifier
         {
             DataTypeLookupKey: string = "TEST";
-            IsMatch(value: any): boolean {
+            SupportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }
         }
@@ -417,7 +417,7 @@ describe('DataTypeResolver utility methods', () => {
         class TestIdentifier implements IDataTypeIdentifier
         {
             DataTypeLookupKey: string = 'TEST';
-            IsMatch(value: any): boolean {
+            SupportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }
 
@@ -436,7 +436,7 @@ describe('DataTypeResolver utility methods', () => {
         class TestIdentifier implements IDataTypeIdentifier
         {
             DataTypeLookupKey: string = DateLookupKey;  // will replace Dates...
-            IsMatch(value: any): boolean {
+            SupportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }
 

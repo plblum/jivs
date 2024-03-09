@@ -134,7 +134,7 @@ export interface IDataTypeIdentifier
  * Determines if the value is identified as a match and maps to DataTypeLookupKey.
  * @param value 
  */
-    IsMatch(value: any): boolean;
+    SupportsValue(value: any): boolean;
 }
 
 /**
