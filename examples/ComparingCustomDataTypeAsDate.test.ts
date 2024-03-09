@@ -25,8 +25,8 @@ test('The RelativeDate class itself', () => {
 test('Test RelativeDateIdentifier class members for expected results', () => {
     let dti = new RelativeDateIdentifier();
     expect(dti.DataTypeLookupKey).toBe(RelativeDataLookupKey);
-    expect(dti.IsMatch(new RelativeDate(1, 0))).toBe(true);
-    expect(dti.IsMatch(new Date())).toBe(false);
+    expect(dti.SupportsValue(new RelativeDate(1, 0))).toBe(true);
+    expect(dti.SupportsValue(new Date())).toBe(false);
 });
 test('Test RelativeDateConverter class members for expected results', () => {
     let dtc = new RelativeDateConverter();
@@ -40,7 +40,7 @@ test('Register and test values against the RelativeDateIdentifier', () => {
     let dataTypeResolver = new DataTypeResolver();
     dataTypeResolver.RegisterDataTypeIdentifier(new RelativeDateIdentifier());
 
-    expect(dataTypeResolver.MapNativeTypeToLookupKey(new RelativeDate(0, 1, 0))).toBe(RelativeDataLookupKey);
+    expect(dataTypeResolver.IdentifyLookupKey(new RelativeDate(0, 1, 0))).toBe(RelativeDataLookupKey);
 });
 
 test('Register and test values against RelativeDateConverter', () => {

@@ -3,7 +3,7 @@ import { InputValueHostGenerator } from "./InputValueHost";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 import type { IValueHostState, IValueHost, IValueHostDescriptor } from "../Interfaces/ValueHost";
 import type { IValueHostsManager } from "../Interfaces/ValueHostResolver";
-import { ValueHostGenerator } from "./ValueHost";
+import { NonInputValueHostGenerator } from "./NonInputValueHost";
 import type { IValueHostFactory, IValueHostGenerator } from "../Interfaces/ValueHostFactory";
 
 /**
@@ -99,6 +99,6 @@ export class ValueHostFactory implements IValueHostFactory {
 
 export function RegisterStandardValueHostGenerators(factory: ValueHostFactory): void {
     factory.Register(new InputValueHostGenerator());
-    factory.Register(new ValueHostGenerator());
+    factory.Register(new NonInputValueHostGenerator());
     factory.Register(new BusinessLogicInputValueHostGenerator());
 }

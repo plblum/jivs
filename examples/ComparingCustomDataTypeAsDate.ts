@@ -82,7 +82,7 @@ export const RelativeDataLookupKey = "RelativeDate";
 export class RelativeDateIdentifier implements IDataTypeIdentifier
 {
     public get DataTypeLookupKey(): string { return RelativeDataLookupKey }
-    public IsMatch(value: any): boolean {
+    public SupportsValue(value: any): boolean {
         return value instanceof RelativeDate;
     }
 }
@@ -90,11 +90,11 @@ export class RelativeDateIdentifier implements IDataTypeIdentifier
 export class RelativeDateConverter implements IDataTypeConverter
 {
     // handles the value without any lookup key or with "RelativeDate"
-    SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return value instanceof RelativeDate &&
             (!dataTypeLookupKey || (dataTypeLookupKey === RelativeDataLookupKey));
     }
-    Convert(value: RelativeDate, dataTypeLookupKey: string): string | number | Date | null | undefined {
+    public Convert(value: RelativeDate, dataTypeLookupKey: string): string | number | Date | null | undefined {
         return value.ResolvedDate;
     }
 }

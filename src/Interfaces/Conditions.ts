@@ -190,6 +190,30 @@ export enum ConditionCategory {
 }
 
 /**
+ * Conditions that compare values using DataTypeResolver.CompareValues
+ * will provide LookupKeys from the ValueHost.DataType. 
+ * Often the comparison needs a little more work done to the value.
+ * Examples:
+ * - Case insensitive comparison needs to convert the strings to lowercase
+ * - Dates may be compared to each other as the difference between two in days, months, or years.
+ *   Conversion would get the total days/months/years (instead of milliseconds).
+ * Implement this interface to provide ConversionLookupKey to
+ * the ConditionDescriptor. If ConversionLookupKey is assigned, pass it
+ * to CompareValues instead of ValueHost.DataType.
+ * Some LookupKeys that might be offered: CaseInsensitive, RoundToWhole, TotalDays
+ */
+export interface ISupportsDataTypeConverter extends IConditionDescriptor
+{
+    /**
+     * Assign to a LookupKey that is associated with a DataTypeConverter.
+     * Use it to convert the value prior to comparing, to handle special cases like
+     * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Round"),
+     * just the Day or Month or any other number in a Date object ("Day", "Month").
+     */
+    ConversionLookupKey?: string | null;
+}
+
+/**
  * Creates instances of Conditions given an IConditionDescriptor.
  * IConditionDescriptor.Type is used to determine the Condition class to create.
  */

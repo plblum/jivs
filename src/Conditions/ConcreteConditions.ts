@@ -7,7 +7,7 @@ import { type IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import {
     type ICondition,
-    ConditionCategory, ConditionEvaluateResult
+    ConditionCategory, ConditionEvaluateResult, ISupportsDataTypeConverter
 } from "../Interfaces/Conditions";
 import { IOneValueConditionDescriptor, OneValueConditionBase, ITwoValueConditionDescriptor } from "./OneValueConditionBase";
 import { IStringConditionDescriptor, StringConditionBase } from "./StringConditionBase";
@@ -215,7 +215,7 @@ export class RegExpCondition extends RegExpConditionBase<IRegExpConditionDescrip
 /**
  * Descriptor for RangeCondition
  */
-export interface IRangeConditionDescriptor extends IOneValueConditionDescriptor {
+export interface IRangeConditionDescriptor extends IOneValueConditionDescriptor, ISupportsDataTypeConverter {
     /**
      * Native data type representing the minimum of the range.
      * When undefined or null, no minimum, like ValueLTESecondValueConditon.
@@ -236,6 +236,7 @@ export const RangeConditionType = 'Range';
  * in the range.
  * Supports these tokens: {Minimum} and {Maximum}
  * When data types differ or don't support GreaterThan/LessThan evaluate as Undetermined.
+ * Supports Descriptor.ConversionLookupKey, but its only applied to the incoming value, not Min/Max.
  */
 export class RangeCondition extends OneValueConditionBase<IRangeConditionDescriptor>
 {
@@ -248,8 +249,10 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
             return ConditionEvaluateResult.Undetermined;
 
         let services = valueHostResolver.Services;
+        let lookupKey = this.Descriptor.ConversionLookupKey ?? valueHost.GetDataType();
         let lower = this.Descriptor.Minimum != null ?  // null/undefined
-            services.DataTypeResolverService.CompareValues(this.Descriptor.Minimum, value, valueHost.GetDataType(), null) :
+            services.DataTypeResolverService.CompareValues(this.Descriptor.Minimum, value,
+                null, lookupKey) :
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
             services.LoggerService.Log(`Type mismatch. Value cannot be compared to Minimum`,
@@ -257,7 +260,8 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
             return ConditionEvaluateResult.Undetermined;
         }
         let upper = this.Descriptor.Maximum != null ?  // null/undefined
-            services.DataTypeResolverService.CompareValues(this.Descriptor.Maximum, value, valueHost.GetDataType(), null) :
+            services.DataTypeResolverService.CompareValues(this.Descriptor.Maximum, value,
+                null, lookupKey) :
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
             services.LoggerService.Log(`Type mismatch. Value cannot be compared to Maximum`,
@@ -295,12 +299,19 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
 /**
  * Descriptor for CompareToConditionBase.
  */
-export interface ICompareToConditionDescriptor extends ITwoValueConditionDescriptor {
+export interface ICompareToConditionDescriptor extends ITwoValueConditionDescriptor, ISupportsDataTypeConverter {
     /**
      * Native data type representing the minimum of the range.
      */
     SecondValue?: any;
-
+    /**
+     * Associated with SecondValue/SecondValueHostId only.
+     * Assign to a LookupKey that is associated with a DataTypeConverter.
+     * Use it to convert the value prior to comparing, to handle special cases like
+     * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Round"),
+     * just the Day or Month or any other number in a Date object ("Day", "Month").
+     */
+    SecondConversionLookupKey?: string | null;
 }
 export const CompareToConditionType = 'Range';
 
@@ -321,14 +332,14 @@ export abstract class CompareToConditionBase extends OneValueConditionBase<IComp
         let secondValue: any;
         let secondValueLookupKey: string | null = null;
         if (this.Descriptor.SecondValueHostId) {
-            let vh = this.GetValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
-            if (!vh) {
+            let vh2 = this.GetValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
+            if (!vh2) {
                 const msg = 'SecondValueHostId is unknown';
                 this.LogInvalidPropertyData('SecondValueHostId', msg, valueHostResolver);
                 throw new Error(msg);
             }
-            secondValue = vh.GetValue();
-            secondValueLookupKey = vh.GetDataType();
+            secondValue = vh2.GetValue();
+            secondValueLookupKey = this.Descriptor.SecondConversionLookupKey ?? vh2.GetDataType();
         }
         if (secondValue == null)  // null/undefined
         {
@@ -342,7 +353,8 @@ export abstract class CompareToConditionBase extends OneValueConditionBase<IComp
         }
 
         let comparison = valueHostResolver.Services.DataTypeResolverService.CompareValues(
-            value, secondValue, valueHost.GetDataType(), secondValueLookupKey);
+            value, secondValue,
+            this.Descriptor.ConversionLookupKey ?? valueHost.GetDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
             valueHostResolver.Services.LoggerService.Log(`Type mismatch. Value cannot be compared to SecondValue`,
                 LoggingLevel.Warn, ConfigurationCategory, `${this.constructor.name} for ${valueHost.GetId()}`);
