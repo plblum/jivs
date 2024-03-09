@@ -41,6 +41,18 @@ export abstract class LocalizationAdapterBase implements ILocalizationAdapter {
     // these will be created only if needed
     private _formatFunctions: NameToFunctionMapper<any, IDataTypeResolution<string>> | null = null;
 
+
+    /**
+     * Determines if the lookup has a supporting formatting registered.
+     * Always call prior to Format, and only use Format when it returns true.
+     * @param lookupKey 
+     */
+    public CanFormat(lookupKey: string): boolean
+    {
+        AssertNotNull(lookupKey, 'lookupKey');
+        return this._formatFunctions?.Get(lookupKey.toLowerCase()) !== undefined;
+    }
+    
     /**
      * While this function formats a native value into a string, the LocalizationAdapter's culture
      * may defer the work to a less-specific culture to handle it.
@@ -60,7 +72,7 @@ export abstract class LocalizationAdapterBase implements ILocalizationAdapter {
         let fn = this._formatFunctions?.Get(lookupKey.toLowerCase());
         if (fn)
             return fn(value, this);
-        return { NotFound: true };
+        return {  };
     }
 
     /**

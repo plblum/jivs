@@ -19,7 +19,7 @@ export interface ICoreDataTypeResolver
  * always pass in the associated lookup key. They can be found in the LookupKeys module.
  * @returns successfully converted value or validation error information.
  */    
-    Format(value: any, lookupKey?: string): IDataTypeResolution<string>;
+    Format(value: any, lookupKey?: string | null): IDataTypeResolution<string>;
 }
 
 export interface IDataTypeResolver extends ICoreDataTypeResolver
@@ -62,12 +62,6 @@ export interface IDataTypeResolver extends ICoreDataTypeResolver
 export interface IDataTypeResolution<T>
 {
     /**
-     * When true, the lookupKey was not found amongst the supporting functions.
-     * The Value and ErrorMessage properties are undefined.
-     * When false, Value or ErrorMessage are defined.
-     */
-    NotFound?: boolean;
-    /**
      * If assigned, it is the resolved value.
      * If undefined, the value failed to resolve and the ErrorMessage is setup.
      */
@@ -106,6 +100,20 @@ export interface ILocalizationAdapter extends ICoreDataTypeResolver {
      * Caller should find another LocalizationAdapter for that culture.
      */
     FallbackCultureID: string | null;
+
+    /**
+     * Determines if the lookup has a supporting formatting registered.
+     * Always call prior to Format, and only use Format when it returns true.
+     * @param lookupKey 
+     */
+    CanFormat(lookupKey: string): boolean;    
+
+    /**
+     * Already declared, but we're changing the lookupKey parameter to be required and not null.
+     * @param value 
+     * @param lookupKey 
+     */
+    Format(value: any, lookupKey: string): IDataTypeResolution<string>;
 }
 
 

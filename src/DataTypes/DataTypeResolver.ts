@@ -103,23 +103,20 @@ export class DataTypeResolver implements IDataTypeResolver {
             let la = this._localizationAdapters.get(nextCultureID);
             if (!la)
                 break;  // hand off to additionalstrings
-            try {
-                let result = la.Format(value, lookupKey);
-                if (!result.NotFound)   // NotFound indicates no match to the lookupKey. We'll look elsewhere
-                    return result;
-            }
-            catch (e) {
-                return { ErrorMessage: (e as Error).message };
-            }
+            if (la.CanFormat(lookupKey))
+                try {
+                    return la.Format(value, lookupKey);
+                }
+                catch (e) {
+                    return { ErrorMessage: (e as Error).message };
+                }
             nextCultureID = la.FallbackCultureID;
         }
         if (this._additionalFormatFunctions) {
             let addl = this._additionalFormatFunctions.Get(lookupKey);
             if (addl) {
                 try {
-                    let result = addl(value);
-                    if (!result.NotFound)
-                        return result;
+                    return addl(value);
                 }
                 catch (e) {
                     return { ErrorMessage: (e as Error).message };

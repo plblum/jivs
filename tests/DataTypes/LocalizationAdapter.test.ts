@@ -57,14 +57,15 @@ describe('LocalizationAdapter.LocalizationAdapterBase.Format', () => {
         expect(dtr).not.toBeNull();
         expect(dtr.Value).toBe('Text');
     }); 
-    test('Invalid lookup key and string value returns NotFound', () => {
+    test('Invalid lookup key and string value returns empty object.', () => {
         let testItem = new TestImplementationOfLocalizationAdapterBase('en');
         testItem.RegisterFormatter('LookupKey', (val: any) => { 
             return { Value: val };
         });
         let dtr = testItem.Format('Text', 'NotLookupKey');
         expect(dtr).not.toBeNull();
-        expect(dtr.NotFound).toBe(true);
+        expect(dtr.ErrorMessage).toBeUndefined();
+        expect(dtr.Value).toBeUndefined();
     });        
     test('Null lookupKey throws', () => {
         let testItem = new TestImplementationOfLocalizationAdapterBase('en');
