@@ -1,6 +1,6 @@
 import { IntlLocalizationAdapter } from "../../src/DataTypes/IntlLocalizationAdapter";
 import {
-    StringLookupKey, CaseInsensitiveStringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
+    StringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
     NumberLookupKey, CurrencyLookupKey, PercentageLookupKey, BooleanLookupKey, YesNoBooleanLookupKey, DateTimeLookupKey, DateLookupKey,
     AbbrevDateLookupKey, AbbrevDOWDateLookupKey, LongDateLookupKey, LongDOWDateLookupKey, TimeOfDayLookupKey, TimeOfDayHMSLookupKey
 } from "../../src/DataTypes/LookupKeys";
@@ -78,19 +78,6 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBeUndefined();
         expect(dtr.ErrorMessage).toBe('Not a string or primitive');
         
-    });    
-    test('CaseInsensitiveLookupKey with string returns the string verbatim', () => {
-        //!!!OBSOLETE
-        let la = new IntlLocalizationAdapter('en');
-        la.RegisterBuiltInLookupKeyFunctions();
-        let dtr = la.Format('A', CaseInsensitiveStringLookupKey);
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        expect(dtr.ErrorMessage).toBeUndefined();
-        
-        dtr = la.Format('a', CaseInsensitiveStringLookupKey);
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('a');
     });    
     test('CanFormat CapitalizeStringLookupKey is true', () => {
         let la = new IntlLocalizationAdapter('en');

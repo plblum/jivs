@@ -9,17 +9,19 @@
  */
 
 import { IDataTypeConverter } from "../Interfaces/DataTypes";
-import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, LocalDateLookupKey } from "./LookupKeys";
+import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, LocalDateLookupKey, LowercaseStringLookupKey, RoundToWholeLookupKey, TotalDaysLookupKey } from "./LookupKeys";
 
 /**
- * For string values to convert them into lowercase.
- * Supports case insensitive matching.
- * DataTypeLookupKey = "CaseInsensitive"
+ * For string values to convert them into lowercase for case insensitive comparisons.
+ * DataTypeLookupKey = "CaseInsensitive" or "Lowercase"
+ * Use in Conditions that offer the ConversionLookupKey property, assigned
+ * to ConversionLookupKey and/or SecondValueConversionLookupKey.
  */
-export class LowercaseStringConverter implements IDataTypeConverter
+export class CaseInsensitiveStringConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === CaseInsensitiveStringLookupKey) &&
+        return (dataTypeLookupKey === CaseInsensitiveStringLookupKey ||
+            dataTypeLookupKey === LowercaseStringLookupKey) &&
             typeof value === 'string';
     }
     public Convert(value: string, dataTypeLookupKey: string): string | number | Date | null | undefined {
@@ -95,3 +97,39 @@ export class LocalDateOnlyConverter implements IDataTypeConverter
     }
 }
 
+/**
+ * For number values to be compared as a whole number, using Math.round.
+ * DataTypeLookupKey = "RoundToWhole"
+ * Use in Conditions that offer the ConversionLookupKey property, assigned
+ * to ConversionLookupKey and/or SecondValueConversionLookupKey.
+ */
+export class RoundToWholeConverter implements IDataTypeConverter
+{
+    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+        return (dataTypeLookupKey === RoundToWholeLookupKey) &&
+            typeof value === 'number';
+    }
+    public Convert(value: number, dataTypeLookupKey: string): string | number | Date | null | undefined {
+        return Math.round(value);
+    }
+}
+
+/**
+ * For Dates values to be compared by their total years since Jan 1, 1970
+ * DataTypeLookupKey = "TotalDays"
+ * Use in Conditions that offer the ConversionLookupKey property, assigned
+ * to ConversionLookupKey and/or SecondValueConversionLookupKey.
+ */
+export class TotalDaysConverter implements IDataTypeConverter
+{
+    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+        return (dataTypeLookupKey === TotalDaysLookupKey) &&
+            value instanceof Date;
+    }
+    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+        if (isNaN(value.getTime()))
+            return undefined;        
+        let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+        return Math.floor(dateOnly.getTime() / 86400000);
+    }
+}

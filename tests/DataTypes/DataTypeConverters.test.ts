@@ -1,11 +1,11 @@
 import { DataTypeResolver } from './../../src/DataTypes/DataTypeResolver';
-import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, LocalDateLookupKey, StringLookupKey } from '../../src/DataTypes/LookupKeys';
-import { UTCDateOnlyConverter, LowercaseStringConverter, DateTimeConverter, LocalDateOnlyConverter } from './../../src/DataTypes/DataTypeConverters';
+import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, LocalDateLookupKey, RoundToWholeLookupKey, StringLookupKey, TotalDaysLookupKey } from '../../src/DataTypes/LookupKeys';
+import { UTCDateOnlyConverter, DateTimeConverter, LocalDateOnlyConverter, CaseInsensitiveStringConverter, RoundToWholeConverter, TotalDaysConverter } from './../../src/DataTypes/DataTypeConverters';
 import { ComparersResult } from '../../src/Interfaces/DataTypes';
 describe('DataTypeConverter concrete classes', () => {
-    describe('LowercaseStringConverter', () => {
+    describe('CaseInsensitiveStringConverter', () => {
         test('SupportsValue', () => {
-            let testItem = new LowercaseStringConverter();
+            let testItem = new CaseInsensitiveStringConverter();
             expect(testItem.SupportsValue("Test", CaseInsensitiveStringLookupKey)).toBe(true);
             expect(testItem.SupportsValue("", CaseInsensitiveStringLookupKey)).toBe(true);
             expect(testItem.SupportsValue("Test", StringLookupKey)).toBe(false);
@@ -13,7 +13,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.SupportsValue(null, CaseInsensitiveStringLookupKey)).toBe(false);
         })
         test('Convert', () => {
-            let testItem = new LowercaseStringConverter();
+            let testItem = new CaseInsensitiveStringConverter();
             // Convert expects to be called after SupportsValue is true.
             // So no illegal values as parameters tested
             expect(testItem.Convert("Test", CaseInsensitiveStringLookupKey)).toBe("test");
@@ -22,7 +22,7 @@ describe('DataTypeConverter concrete classes', () => {
         });
         test('Within DataTypeResolver', () => {
             let testItem = new DataTypeResolver('en'); 
-            testItem.RegisterDataTypeConverter(new LowercaseStringConverter());
+            testItem.RegisterDataTypeConverter(new CaseInsensitiveStringConverter());
             expect(testItem.CompareValues("ABC", "ABC", CaseInsensitiveStringLookupKey, CaseInsensitiveStringLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues("ABC", "abc", CaseInsensitiveStringLookupKey, CaseInsensitiveStringLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues("abc", "ABC", CaseInsensitiveStringLookupKey, CaseInsensitiveStringLookupKey)).toBe(ComparersResult.Equals);
@@ -160,5 +160,65 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.CompareValues(date1, null, LocalDateLookupKey, LocalDateLookupKey)).toBe(ComparersResult.Undetermined);
             expect(testItem.CompareValues(null, date2, LocalDateLookupKey, LocalDateLookupKey)).toBe(ComparersResult.Undetermined);
         });
-    });          
+    });         
+    
+    describe('RoundToWholeConverter', () => {
+        test('SupportsValue', () => {
+            let testItem = new RoundToWholeConverter();
+            expect(testItem.SupportsValue(5, RoundToWholeLookupKey)).toBe(true);
+            expect(testItem.SupportsValue(-5.3, RoundToWholeLookupKey)).toBe(true);
+            expect(testItem.SupportsValue("", RoundToWholeLookupKey)).toBe(false);
+            expect(testItem.SupportsValue(5, StringLookupKey)).toBe(false);
+            expect(testItem.SupportsValue(null, RoundToWholeLookupKey)).toBe(false);
+        })
+        test('Convert', () => {
+            let testItem = new RoundToWholeConverter();
+            // Convert expects to be called after SupportsValue is true.
+            // So no illegal values as parameters tested
+            expect(testItem.Convert(5, RoundToWholeLookupKey)).toBe(5);
+            expect(testItem.Convert(5.3, RoundToWholeLookupKey)).toBe(5);
+            expect(testItem.Convert(1.9999, RoundToWholeLookupKey)).toBe(2);
+            expect(testItem.Convert(-1.9999, RoundToWholeLookupKey)).toBe(-2);
+        });
+        test('Within DataTypeResolver', () => {
+            let testItem = new DataTypeResolver('en'); 
+            testItem.RegisterDataTypeConverter(new RoundToWholeConverter());
+            expect(testItem.CompareValues(10, 10, RoundToWholeLookupKey, RoundToWholeLookupKey)).toBe(ComparersResult.Equals);
+            expect(testItem.CompareValues(4.2, 4, RoundToWholeLookupKey, RoundToWholeLookupKey)).toBe(ComparersResult.Equals);
+            expect(testItem.CompareValues(-6.3, -6, RoundToWholeLookupKey, RoundToWholeLookupKey)).toBe(ComparersResult.Equals);
+            expect(testItem.CompareValues(4, 5, RoundToWholeLookupKey, RoundToWholeLookupKey)).toBe(ComparersResult.LessThan);
+        });
+    });    
+    describe('TotalDaysConverter', () => {
+        test('SupportsValue', () => {
+            let testItem = new TotalDaysConverter();
+            expect(testItem.SupportsValue(new Date(), TotalDaysLookupKey)).toBe(true);
+            expect(testItem.SupportsValue("", TotalDaysLookupKey)).toBe(false);
+            expect(testItem.SupportsValue("Test", StringLookupKey)).toBe(false);
+            expect(testItem.SupportsValue(0, TotalDaysLookupKey)).toBe(false);
+            expect(testItem.SupportsValue(null, TotalDaysLookupKey)).toBe(false);
+        })
+        test('Convert', () => {
+            let testItem = new TotalDaysConverter();
+            // Convert expects to be called after SupportsValue is true.
+            // So no illegal values as parameters tested
+            let date1 = new Date(Date.UTC(2000, 10, 2));
+            let date2 = new Date(Date.UTC(2000, 10, 2, 5, 4, 3));         
+            let expected = Math.floor(date1.getTime() / 86400000);
+            expect(testItem.Convert(date1, TotalDaysLookupKey)).toBe(expected);
+            expect(testItem.Convert(date2, TotalDaysLookupKey)).toBe(expected);
+        });
+        test('Within DataTypeResolver', () => {
+            let date1 = new Date(Date.UTC(2000, 10, 2));
+            let date2 = new Date(Date.UTC(2000, 10, 2, 5, 4, 3));         
+            let date3 = new Date(Date.UTC(2001, 10, 2));
+            let testItem = new DataTypeResolver('en'); 
+            testItem.RegisterDataTypeConverter(new TotalDaysConverter());
+            expect(testItem.CompareValues(date1, date1, TotalDaysLookupKey, TotalDaysLookupKey)).toBe(ComparersResult.Equals);
+            expect(testItem.CompareValues(date1, date2, TotalDaysLookupKey, TotalDaysLookupKey)).toBe(ComparersResult.Equals);
+            expect(testItem.CompareValues(date2, date1, TotalDaysLookupKey, TotalDaysLookupKey)).toBe(ComparersResult.Equals);
+            expect(testItem.CompareValues(date2, date3, TotalDaysLookupKey, TotalDaysLookupKey)).toBe(ComparersResult.LessThan);
+            expect(testItem.CompareValues(date3, date2, TotalDaysLookupKey, TotalDaysLookupKey)).toBe(ComparersResult.GreaterThan);
+        });
+    });    
 });

@@ -3,7 +3,7 @@ import {
     LocalizationAdapterBase
 } from "./LocalizationAdapter";
 import {
-    StringLookupKey, CaseInsensitiveStringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
+    StringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
     NumberLookupKey, IntegerLookupKey, CurrencyLookupKey, PercentageLookupKey, BooleanLookupKey, YesNoBooleanLookupKey, DateTimeLookupKey,
     DateLookupKey, AbbrevDateLookupKey, AbbrevDOWDateLookupKey, LongDateLookupKey, LongDOWDateLookupKey, TimeOfDayLookupKey,
     TimeOfDayHMSLookupKey, allBuiltInFormatLookupKeys
@@ -52,8 +52,6 @@ export class IntlLocalizationAdapter extends LocalizationAdapterBase {
             case StringLookupKey:
                 return (val: any, adapter: ILocalizationAdapter) => this.prepString(val);
 
-            case CaseInsensitiveStringLookupKey:
-                return StringLookupKey;
             case CapitalizeStringLookupKey:
                 return (val: any, adapter: ILocalizationAdapter) => {
                     let result = this.prepString(val);

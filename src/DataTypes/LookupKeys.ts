@@ -9,7 +9,6 @@
  * Some have Converters and Comparers.
  */
 export const StringLookupKey = 'String'; // string as is.
-export const CaseInsensitiveStringLookupKey = 'CaseInsensitive'; // string compares using lowercase
 export const NumberLookupKey = 'Number'; // Number data type
 export const BooleanLookupKey = 'Boolean'; // Boolean data type. Compares with Equals and NotEquals
 export const DateLookupKey = 'Date';   // Just the date part of a Date object. Assumes UTC. This is the default for when no LookupKey is supplied
@@ -44,13 +43,17 @@ export const YesNoBooleanLookupKey = 'YesNoBoolean';    // From string, supports
 // To string, always "yes" and "no" with localization applied.
 // This LookupKey is a model for the user to create more language specific boolean values.
 
+// The following are not currently planned for formatters, but are available as Converters.
+export const RoundToWholeLookupKey = 'RoundToWhole';    // for Number to be rounded using Math.round. used as a DataTypeConverter although formatter may make sense too
+export const TotalDaysLookupKey = 'TotalDays';  // Convert the Date into a number of days since Jan 1 1970.
+export const CaseInsensitiveStringLookupKey = 'CaseInsensitive'; // for string compares using lowercase. Strictly used as a DataTypeConverter
+
 /**
-     * Intended as a parameter for RegisterBuiltInLookupKeyFunctions
-     * and includes all builtin lookup key functions.
-     */
+ * Intended as a parameter for RegisterBuiltInLookupKeyFunctions
+ * and includes all builtin lookup key functions.
+ */
 export const allBuiltInFormatLookupKeys = [
     StringLookupKey,
-    CaseInsensitiveStringLookupKey,
     UppercaseStringLookupKey,
     LowercaseStringLookupKey,
     CapitalizeStringLookupKey,

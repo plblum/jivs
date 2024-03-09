@@ -4,7 +4,7 @@ import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, ILocalizationAdapter, IDataTypeConverter, ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, NumberDataTypeIdentifier, StringDataTypeIdentifier } from "./DataTypeIdentifiers";
-import { UTCDateOnlyConverter, DateTimeConverter, LowercaseStringConverter, LocalDateOnlyConverter } from "./DataTypeConverters";
+import { UTCDateOnlyConverter, DateTimeConverter, CaseInsensitiveStringConverter, LocalDateOnlyConverter, RoundToWholeConverter, TotalDaysConverter } from "./DataTypeConverters";
 
 /**
  * {@Link DataTypeResolver} handles various data types of the values.
@@ -330,10 +330,12 @@ export class DataTypeResolver implements IDataTypeResolver {
     }
 
     protected RegisterStandardDataTypeConverters(): void {
-        this.RegisterDataTypeConverter(new LowercaseStringConverter());
+        this.RegisterDataTypeConverter(new CaseInsensitiveStringConverter());
         this.RegisterDataTypeConverter(new UTCDateOnlyConverter());
         this.RegisterDataTypeConverter(new DateTimeConverter());
         this.RegisterDataTypeConverter(new LocalDateOnlyConverter());
+        this.RegisterDataTypeConverter(new TotalDaysConverter());
+        this.RegisterDataTypeConverter(new RoundToWholeConverter());
     }
     //#endregion IConvertTo
 
