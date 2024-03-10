@@ -1,16 +1,16 @@
 import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import { ComparersResult, IDataTypeResolution, ILocalizationAdapter } from "../Interfaces/DataTypes";
+import { ComparersResult, IDataTypeResolution, IDataTypeLocalization } from "../Interfaces/DataTypes";
 
 
 
 /**
- * Abstract implementation of ILocalizationAdapter.
+ * Abstract implementation of IDataTypeLocalization.
  * Provides maps to find a function based on the lookupKey.
  * Requires user to create the functions and register them with 
  * the supplied Register functions.
  */
-export abstract class LocalizationAdapterBase implements ILocalizationAdapter {
+export abstract class DataTypeLocalizationBase implements IDataTypeLocalization {
     constructor(cultureID: string, fallbackCultureID?: string | null) {
         this._cultureID = cultureID;
         this._fallbackCultureID = fallbackCultureID ?? null;
@@ -30,7 +30,7 @@ export abstract class LocalizationAdapterBase implements ILocalizationAdapter {
 
     /**
      * Identifies another culture to check if a lookup key cannot be resolved.
-     * Caller should find another LocalizationAdapter for that culture.
+     * Caller should find another DataTypeLocalization for that culture.
      */
     public get FallbackCultureID(): string | null {
         return this._fallbackCultureID;
@@ -54,10 +54,10 @@ export abstract class LocalizationAdapterBase implements ILocalizationAdapter {
     }
     
     /**
-     * While this function formats a native value into a string, the LocalizationAdapter's culture
+     * While this function formats a native value into a string, the DataTypeLocalization's culture
      * may defer the work to a less-specific culture to handle it.
      * As a result, this function may return a value of NotFound.
-     * The caller continues requesting formatting from less-specific culture LocalizationAdapters
+     * The caller continues requesting formatting from less-specific culture DataTypeLocalizations
      * until either one supports it or none support it. 
      * @param value 
      * @param lookupKey - Identifies the specific function that should handle the conversion.
@@ -78,12 +78,12 @@ export abstract class LocalizationAdapterBase implements ILocalizationAdapter {
     /**
      * Extends the lookupKeys available to Format.
      * Adds or replaces a LookupKey that is not associated with localization
-     * or is used as a fallback when no LocalizationAdapter supported the key.
+     * or is used as a fallback when no DataTypeLocalization supported the key.
      * If the LookupKey was previously registered, its function is replaced.
      * @param lookupKey 
      * @param fnOrKey - the function or the lookupKey to an already registered function
      */
-    public RegisterFormatter(lookupKey: string, fnOrKey: ((value: any, adapter: ILocalizationAdapter) => IDataTypeResolution<string>) | string): void {
+    public RegisterFormatter(lookupKey: string, fnOrKey: ((value: any, dtl: IDataTypeLocalization) => IDataTypeResolution<string>) | string): void {
         AssertNotNull(lookupKey, 'lookupKey');
         AssertNotNull(fnOrKey, 'fnOrKey');
         if (!this._formatFunctions)

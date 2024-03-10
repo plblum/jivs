@@ -1,5 +1,5 @@
 import { DataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
-import { IntlLocalizationAdapter } from "../../src/DataTypes/DataTypeLocalizedFormatters";
+import { IntlDataTypeLocalization } from "../../src/DataTypes/DataTypeLocalizedFormatters";
 import { StringLookupKey, NumberLookupKey, BooleanLookupKey, allBuiltInFormatLookupKeys, DateLookupKey } from "../../src/DataTypes/LookupKeys";
 import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier } from "../../src/Interfaces/DataTypes";
 
@@ -15,10 +15,10 @@ describe('DataTypeResolver constructor and properties', () => {
         expect(testItem.ActiveCultureID).toBe('fr');
         expect(testItem.HasLocalizationFor('fr')).toBe(false);
     });
-    test('Constructor with cultureID of fr and LocalizationAdapter for en and fr', () => {
-        let testItem = new DataTypeResolver('fr', new IntlLocalizationAdapter('en'),
-            new IntlLocalizationAdapter('fr', 'en', 'EUR'),
-            new IntlLocalizationAdapter('fr-FR', 'fr', 'EUR'));
+    test('Constructor with cultureID of fr and DataTypeLocalization for en and fr', () => {
+        let testItem = new DataTypeResolver('fr', new IntlDataTypeLocalization('en'),
+            new IntlDataTypeLocalization('fr', 'en', 'EUR'),
+            new IntlDataTypeLocalization('fr-FR', 'fr', 'EUR'));
         expect(testItem.ActiveCultureID).toBe('fr');
         expect(testItem.HasLocalizationFor('en')).toBe(true);
         expect(testItem.HasLocalizationFor('fr')).toBe(true);
@@ -61,18 +61,18 @@ describe('DataTypeResolver.RegisterAdditionalFormatters', () => {
 
 export function CreateDataTypeResolverWithManyLAs(registerLookupKeys: boolean = false): DataTypeResolver
 {
-    function RegisterLookupKeys(la: IntlLocalizationAdapter): IntlLocalizationAdapter
+    function RegisterLookupKeys(la: IntlDataTypeLocalization): IntlDataTypeLocalization
     {
         if (registerLookupKeys)
             la.RegisterBuiltInLookupKeyFunctions(allBuiltInFormatLookupKeys);
         return la;
     }
     return new DataTypeResolver('en',
-        RegisterLookupKeys(new IntlLocalizationAdapter('en')),
-        RegisterLookupKeys(new IntlLocalizationAdapter('fr', 'en', 'EUR')),
-        RegisterLookupKeys(new IntlLocalizationAdapter('en-GB', 'en-US', 'GBP')),
-        RegisterLookupKeys(new IntlLocalizationAdapter('en-US', 'en', 'USD')),
-        RegisterLookupKeys(new IntlLocalizationAdapter('fr-FR', 'fr', 'EUR')),
+        RegisterLookupKeys(new IntlDataTypeLocalization('en')),
+        RegisterLookupKeys(new IntlDataTypeLocalization('fr', 'en', 'EUR')),
+        RegisterLookupKeys(new IntlDataTypeLocalization('en-GB', 'en-US', 'GBP')),
+        RegisterLookupKeys(new IntlDataTypeLocalization('en-US', 'en', 'USD')),
+        RegisterLookupKeys(new IntlDataTypeLocalization('fr-FR', 'fr', 'EUR')),
     );
 }
 // Format(value: any, lookupKey?: string): IDataTypeResolution<string>
@@ -127,31 +127,31 @@ describe('DataTypeResolver.Format', () => {
         });
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'Value of TestKey' });
     });         
-    test('Lookup Key in Localization Adapter en', () => {
+    test('Lookup Key in DataTypeLocalization en', () => {
         let testItem = CreateDataTypeResolverWithManyLAs(true);
-        let la = testItem.GetLocalizationAdapter('en') as IntlLocalizationAdapter;
+        let la = testItem.GetDataTypeLocalization('en') as IntlDataTypeLocalization;
         la.RegisterFormatter('TestKey', (val: any) => {
             return { Value: 'EN TestKey' }
         });
         testItem.ActiveCultureID = 'en';
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'EN TestKey' });
     });     
-    test('Lookup Key in Localization Adapter en using fallback from en-GB', () => {
+    test('Lookup Key in DataTypeLocalization en using fallback from en-GB', () => {
         let testItem = CreateDataTypeResolverWithManyLAs(true);
-        let la = testItem.GetLocalizationAdapter('en') as IntlLocalizationAdapter;
+        let la = testItem.GetDataTypeLocalization('en') as IntlDataTypeLocalization;
         la.RegisterFormatter('TestKey', (val: any) => {
             return { Value: 'EN TestKey' }
         });
         testItem.ActiveCultureID = 'en-GB';
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'EN TestKey' });
     });        
-    test('Lookup Key in Localization Adapter en and en-GB gets from en-GB', () => {
+    test('Lookup Key in DataTypeLocalization en and en-GB gets from en-GB', () => {
         let testItem = CreateDataTypeResolverWithManyLAs(true);
-        let laEN = testItem.GetLocalizationAdapter('en') as IntlLocalizationAdapter;
+        let laEN = testItem.GetDataTypeLocalization('en') as IntlDataTypeLocalization;
         laEN.RegisterFormatter('TestKey', (val: any) => {
             return { Value: 'EN TestKey' }
         });
-        let laENGB = testItem.GetLocalizationAdapter('en') as IntlLocalizationAdapter;
+        let laENGB = testItem.GetDataTypeLocalization('en') as IntlDataTypeLocalization;
         laENGB.RegisterFormatter('TestKey', (val: any) => {
             return { Value: 'EN-GB TestKey' }
         });        
@@ -394,11 +394,11 @@ describe('DataTypeResolver.CompareValues', () => {
 });
 
 describe('DataTypeResolver utility methods', () => {
-    // RegisterLocalizationAdapter(la: ILocalizationAdapter): void
-    test('RegisterLocalizationAdapter added', () => {
+    // RegisterDataTypeLocalization(la: IDataTypeLocalization): void
+    test('RegisterDataTypeLocalization added', () => {
         let testItem = new DataTypeResolver();
-        let la = new IntlLocalizationAdapter('sp-SP');
-        expect(() => testItem.RegisterLocalizationAdapter(la)).not.toThrow();
+        let la = new IntlDataTypeLocalization('sp-SP');
+        expect(() => testItem.RegisterDataTypeLocalization(la)).not.toThrow();
         expect(testItem.HasLocalizationFor('sp-SP')).toBe(true);
         expect(testItem.HasLocalizationFor('sp')).toBe(false);
     });

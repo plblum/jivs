@@ -212,7 +212,7 @@ export interface ITokenLabelAndValue
     TokenLabel: string,
 /**
  * The value to be used as a replacement. When the value isn't a string,
- * it is converted to a string through ILocalizationAdapter.
+ * it is converted to a string through IDataTypeLocalization.
  */    
     AssociatedValue: any,
 /**
@@ -255,7 +255,7 @@ export interface IInputValidatorFactory {
  * a javascript Date into "May 20, 2001". This function uses the 
  * Services.DataTypeResolver to handle conversion and localization.
  * The "formatterkey" in {token:formatterkey} is actually the same
- * as a LookupKey in the DataTypeResolver and its LocalizationAdapters.
+ * as a LookupKey in the DataTypeResolver and its DataTypeLocalizations.
  * Tokens are supplied by implementers of IMessageTokenSource.
  */
 export interface IMessageTokenResolver

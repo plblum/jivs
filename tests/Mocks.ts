@@ -1,6 +1,6 @@
 import { ConditionFactory, RegisterStandardConditions } from "../src/Conditions/ConditionFactory";
 import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
-import { IntlLocalizationAdapter } from "../src/DataTypes/DataTypeLocalizedFormatters";
+import { IntlDataTypeLocalization } from "../src/DataTypes/DataTypeLocalizedFormatters";
 
 import { type ILogger, LoggingLevel } from "../src/Interfaces/Logger";
 import { MessageTokenResolver  } from "../src/ValueHosts/MessageTokenResolver";
@@ -185,9 +185,9 @@ export class MockValidationServices implements IValidationServices
         }
         if (registerStandardDataTypes &&
             this._dataTypeResolverService instanceof DataTypeResolver) {    // used as a typecast
-            let la = new IntlLocalizationAdapter('en');
+            let la = new IntlDataTypeLocalization('en');
             la.RegisterBuiltInLookupKeyFunctions(commonBuiltInFormatLookupKeys);
-            this._dataTypeResolverService.RegisterLocalizationAdapter(
+            this._dataTypeResolverService.RegisterDataTypeLocalization(
                 la
             );
         }
@@ -196,23 +196,23 @@ export class MockValidationServices implements IValidationServices
 
     public RegisterMoreCultures(dataTypeResolver: DataTypeResolver): void
     {
-        function RegisterLookupKeys(la: IntlLocalizationAdapter): IntlLocalizationAdapter
+        function RegisterLookupKeys(la: IntlDataTypeLocalization): IntlDataTypeLocalization
         {
             la.RegisterBuiltInLookupKeyFunctions(commonBuiltInFormatLookupKeys);
             return la;
         }
 
         if (!dataTypeResolver.HasLocalizationFor('en'))
-            dataTypeResolver.RegisterLocalizationAdapter(RegisterLookupKeys(
-                new IntlLocalizationAdapter('en')));
-        dataTypeResolver.RegisterLocalizationAdapter(RegisterLookupKeys(
-            new IntlLocalizationAdapter('fr', 'en', 'EUR')));
-        dataTypeResolver.RegisterLocalizationAdapter(RegisterLookupKeys(
-            new IntlLocalizationAdapter('en-GB', 'en-US', 'GBP')));
-        dataTypeResolver.RegisterLocalizationAdapter(RegisterLookupKeys(
-            new IntlLocalizationAdapter('en-US', 'en', 'USD')));
-        dataTypeResolver.RegisterLocalizationAdapter(RegisterLookupKeys(
-            new IntlLocalizationAdapter('fr-FR', 'fr', 'EUR')));
+            dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
+                new IntlDataTypeLocalization('en')));
+        dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
+            new IntlDataTypeLocalization('fr', 'en', 'EUR')));
+        dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
+            new IntlDataTypeLocalization('en-GB', 'en-US', 'GBP')));
+        dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
+            new IntlDataTypeLocalization('en-US', 'en', 'USD')));
+        dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
+            new IntlDataTypeLocalization('fr-FR', 'fr', 'EUR')));
 
     }
 

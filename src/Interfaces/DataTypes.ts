@@ -2,7 +2,7 @@
  * DataTypeResolver handles various data types of the values.
  * It provides:
  * - Conversion to formatted string for displaying a value to the user.
- *   Uses LocalizationAdapters to localizing the formatted string.
+ *   Uses DataTypeLocalizations to localizing the formatted string.
  * - Comparing two same-type values for equals, not equals, less than, greater than.
  * This class is available on ValidationServices.DataTypeResolverService.
  */
@@ -26,7 +26,7 @@ export interface IDataTypeResolver extends ICoreDataTypeResolver
 {
 /**
  * The culture shown to the user in the app. Its the ISO language-region format.
-   This value is the starting point to search through LocalizationAdapters.
+   This value is the starting point to search through DataTypeLocalizations.
    Those have their own FallbackCultureID to continue the search.
  */    
     ActiveCultureID: string;
@@ -80,11 +80,11 @@ export interface IDataTypeResolution<T>
  * specific to the culture. With ToNative, "Date" will tell the string parser
  * to understand the ##/##/## pattern specific to the culture.
  * DataTypeResolver may have many instances of this, for each culture
- * supported by the App. Each LocalizationAdapter may not need to support any particular
+ * supported by the App. Each DataTypeLocalization may not need to support any particular
  * lookup Key. When not supported, the function lets the caller know and the caller
- * can try another LocalizationAdapter, using FallbackCultureID.
+ * can try another DataTypeLocalization, using FallbackCultureID.
  */
-export interface ILocalizationAdapter extends ICoreDataTypeResolver {
+export interface IDataTypeLocalization extends ICoreDataTypeResolver {
     /**
      * The ISO culture name pattern in use:
      * languagecode
@@ -97,7 +97,7 @@ export interface ILocalizationAdapter extends ICoreDataTypeResolver {
 
     /**
      * Identifies another culture to check if a lookup key cannot be resolved.
-     * Caller should find another LocalizationAdapter for that culture.
+     * Caller should find another DataTypeLocalization for that culture.
      */
     FallbackCultureID: string | null;
 

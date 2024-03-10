@@ -84,9 +84,9 @@ export class ValidationGlobals
     //#region DataTypeResolver
     /**
      * The default DataTypeResolverService on ValidationServices. 
-     * If you don't set it, it uses DataTypeResolver without any LocalizationAdapters
+     * If you don't set it, it uses DataTypeResolver without any DataTypeLocalizations
      * or registered data.
-     * Generally used to register localization adapters and additional rules 
+     * Generally used to register IDataTypeLocalization implementations and additional rules 
      * on a singleton so that it isn't done each time a services is created.
      */
     private _defaultDataTypeResolver: IDataTypeResolver | null = null;

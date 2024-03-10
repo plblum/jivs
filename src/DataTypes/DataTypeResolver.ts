@@ -2,7 +2,7 @@ import { StringLookupKey } from './LookupKeys';
 import { BooleanComparer, DefaultComparer } from "./DataTypeComparers";
 import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, ILocalizationAdapter, IDataTypeConverter, ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
+import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, IDataTypeLocalization, IDataTypeConverter, ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, NumberDataTypeIdentifier, StringDataTypeIdentifier } from "./DataTypeIdentifiers";
 import { UTCDateOnlyConverter, DateTimeConverter, CaseInsensitiveStringConverter, LocalDateOnlyConverter, RoundToWholeConverter, TotalDaysConverter } from "./DataTypeConverters";
 
@@ -16,7 +16,7 @@ import { UTCDateOnlyConverter, DateTimeConverter, CaseInsensitiveStringConverter
  * - Formatter - These functions change the native value into something you can display to the user.
  *   They are associated with the error message tokens, such as "You entered {Value}." where the value
  *   is a Date object and needs to be shown in a localized format of short, abbreviated, or full.
- *   Uses LocalizationAdapters to localizing the formatted string.
+ *   Uses DataTypeLocalizations to localizing the formatted string.
  *   Their function definition is fn(value: any) : IDataTypeResolution<string>.
  * - Converter - Change the native value into somethat used by a Condition.Evaluate function.
  *   This is essential for comparison Conditions. Comparison works automatically
@@ -39,23 +39,23 @@ import { UTCDateOnlyConverter, DateTimeConverter, CaseInsensitiveStringConverter
  * - Comparing them
  * It works in conjunction with the DataType Lookup Keys @see {@link StringLookupKey }.
  * 
- * Formatting supports localization, keeping a list of one or more LocalizationAdapters,
+ * Formatting supports localization, keeping a list of one or more DataTypeLocalizations,
  * for various cultures.
- * Each LocalizationAdapter has its own list of lookup keys registered.
+ * Each DataTypeLocalization has its own list of lookup keys registered.
  * If you supply it with a lookup key that it doesn't handle,
  * fallback rules apply:
- * - Thru fallback LocalizationAdapters. So first try "en-FR", then "en-US", then "en"
- * (where each has its own LocalizationAdapter)
+ * - Thru fallback DataTypeLocalizations. So first try "en-FR", then "en-US", then "en"
+ * (where each has its own DataTypeLocalization)
  * - Thru any additional lookup keys defined in the service itself.
  * Those additional lookup keys are intended to cover cases that are not localizable.
  */
 export class DataTypeResolver implements IDataTypeResolver {
-    constructor(activeCultureID: string = 'en', ...localizationAdapters: Array<ILocalizationAdapter>) {
+    constructor(activeCultureID: string = 'en', ...dataTypeLocalizations: Array<IDataTypeLocalization>) {
         this._activeCultureID = activeCultureID;
-        this._localizationAdapters = new Map<string, ILocalizationAdapter>();
-        if (localizationAdapters)
-            localizationAdapters.forEach((la) => {
-                this._localizationAdapters.set(la.CultureID, la);
+        this._dataTypeLocalizations = new Map<string, IDataTypeLocalization>();
+        if (dataTypeLocalizations)
+            dataTypeLocalizations.forEach((la) => {
+                this._dataTypeLocalizations.set(la.CultureID, la);
             });
         this.RegisterStandardDataTypeIdentifiers();
         this.RegisterStandardDataTypeConverters();
@@ -63,7 +63,7 @@ export class DataTypeResolver implements IDataTypeResolver {
     }
     /**
      * The culture shown to the user in the app. Its the ISO language-region format.
-       This value is the starting point to search through LocalizationAdapters.
+       This value is the starting point to search through DataTypeLocalizations.
        Those have their own FallbackCultureID to continue the search.
      */
     public get ActiveCultureID(): string {
@@ -75,9 +75,9 @@ export class DataTypeResolver implements IDataTypeResolver {
     private _activeCultureID: string;
 
     /**
-     * All localization adapters, where the key is the CultureID
+     * All IDataTypeLocalizations, where the key is the CultureID
      */
-    private _localizationAdapters: Map<string, ILocalizationAdapter>;
+    private _dataTypeLocalizations: Map<string, IDataTypeLocalization>;
 
     // these will be created only if needed
     private _additionalFormatFunctions: NameToFunctionMapper<any, IDataTypeResolution<string>> | null = null;
@@ -100,7 +100,7 @@ export class DataTypeResolver implements IDataTypeResolver {
             throw new Error('Value type requires a LookupKey');
         let nextCultureID: string | null = this._activeCultureID;
         while (nextCultureID) {
-            let la = this._localizationAdapters.get(nextCultureID);
+            let la = this._dataTypeLocalizations.get(nextCultureID);
             if (!la)
                 break;  // hand off to additionalstrings
             if (la.CanFormat(lookupKey))
@@ -217,7 +217,7 @@ export class DataTypeResolver implements IDataTypeResolver {
     /**
      * Extends the lookupKeys available to Format.
      * Adds or replaces a LookupKey that is not associated with localization
-     * or is used as a fallback when no LocalizationAdapter supported the key.
+     * or is used as a fallback when no DataTypeLocalization supported the key.
      * If the LookupKey was previously registered, its function is replaced.
      * @param lookupKey 
      * @param fn 
@@ -341,41 +341,41 @@ export class DataTypeResolver implements IDataTypeResolver {
 
     //#region utilities    
     /**
-     * Add or replace a LocalizationAdapter for a specific CultureID.
+     * Add or replace a DataTypeLocalization for a specific CultureID.
      * @param la 
      */
-    public RegisterLocalizationAdapter(la: ILocalizationAdapter): void {
-        this._localizationAdapters.set(la.CultureID, la);
+    public RegisterDataTypeLocalization(la: IDataTypeLocalization): void {
+        this._dataTypeLocalizations.set(la.CultureID, la);
     }
 
     /**
-     * Utility to check for the presence of a localization adapter
+     * Utility to check for the presence of a IDataTypeLocalization
      * based on a cultureID.
      * Will fallback to language only check if language-country
      * cultureID doesn't find a match.
      */
     public HasLocalizationFor(cultureID: string): boolean {
-        return this.GetMatchingLocalizationAdapter(cultureID) !== null;
+        return this.GetMatchingDataTypeLocalization(cultureID) !== null;
     }
     /**
-     * Gets a localization adapter matching the cultureID.
-     * If not found, it tries for an adapter with just 
+     * Gets an IDataTypeLocalization matching the cultureID.
+     * If not found, it tries for an IDataTypeLocalization with just 
      * the languageCode. So if 'en-US' is not found, it will try 'en'
      * @param cultureID 
-     * @returns adapter found or null
+     * @returns instance found or null
      */
-    protected GetMatchingLocalizationAdapter(cultureID: string):
-        ILocalizationAdapter | null {
-        let la = this._localizationAdapters.get(cultureID);
+    protected GetMatchingDataTypeLocalization(cultureID: string):
+        IDataTypeLocalization | null {
+        let la = this._dataTypeLocalizations.get(cultureID);
         if (!la) {
             let pos = cultureID.indexOf('-');
             if (pos > 0)
-                la = this._localizationAdapters.get(cultureID.substring(0, pos));
+                la = this._dataTypeLocalizations.get(cultureID.substring(0, pos));
         }
         return la ?? null;
     }
-    public GetLocalizationAdapter(cultureID: string): ILocalizationAdapter | null {
-        return this._localizationAdapters.get(cultureID) ?? null;
+    public GetDataTypeLocalization(cultureID: string): IDataTypeLocalization | null {
+        return this._dataTypeLocalizations.get(cultureID) ?? null;
     }
     public HasAdditionalFormatLookupKey(lookupKey: string): boolean {
         return (this._additionalFormatFunctions != null &&

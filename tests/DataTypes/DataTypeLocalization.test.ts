@@ -1,20 +1,20 @@
 import {
-    LocalizationAdapterBase
+    DataTypeLocalizationBase
 } from "../../src/DataTypes/DataTypeLocalization";
 
 /**
  * To test the base class features alone as our default subclass,
- * IntlLocalizationAdapter depends on working RegisterForFormat
+ * IntlDataTypeLocalization depends on working RegisterForFormat
  */
-class TestImplementationOfLocalizationAdapterBase extends LocalizationAdapterBase
+class TestImplementationOfDataTypeLocalizationBase extends DataTypeLocalizationBase
 {
     constructor(cultureID: string, fallbackCultureID?: string, currency?: string) {
         super(cultureID, fallbackCultureID);
     }
 }
-describe('LocalizationAdapter.LocalizationAdapterBase.RegisterFormatter', () => {
+describe('DataTypeLocalization.DataTypeLocalizationBase.RegisterFormatter', () => {
     test('Register with function and new key gives no errors', () => {
-        let testItem = new TestImplementationOfLocalizationAdapterBase('en');
+        let testItem = new TestImplementationOfDataTypeLocalizationBase('en');
         expect(() => testItem.RegisterFormatter('A', (val: any) => { 
             return {};
         })).not.toThrow();
@@ -23,7 +23,7 @@ describe('LocalizationAdapter.LocalizationAdapterBase.RegisterFormatter', () => 
         })).not.toThrow();
     });
     test('Register with function and same key gives no errors', () => {
-        let testItem = new TestImplementationOfLocalizationAdapterBase('en');
+        let testItem = new TestImplementationOfDataTypeLocalizationBase('en');
         expect(() => testItem.RegisterFormatter('A', (val: any) => { 
             return {};
         })).not.toThrow();
@@ -32,7 +32,7 @@ describe('LocalizationAdapter.LocalizationAdapterBase.RegisterFormatter', () => 
         })).not.toThrow();
     });    
     test('Register with alias key gives no errors', () => {
-        let testItem = new TestImplementationOfLocalizationAdapterBase('en');
+        let testItem = new TestImplementationOfDataTypeLocalizationBase('en');
         expect(() => testItem.RegisterFormatter('A', (val: any) => { 
             return {};
         })).not.toThrow();
@@ -40,16 +40,16 @@ describe('LocalizationAdapter.LocalizationAdapterBase.RegisterFormatter', () => 
     
     });    
     test('Register with alias key to unknown registration throws', () => {
-        let testItem = new TestImplementationOfLocalizationAdapterBase('en');
+        let testItem = new TestImplementationOfDataTypeLocalizationBase('en');
         expect(() => testItem.RegisterFormatter('A', (val: any) => { 
             return {};
         })).not.toThrow();
         expect(() => testItem.RegisterFormatter('B', 'D')).toThrow();        
     });          
 });
-describe('LocalizationAdapter.LocalizationAdapterBase.Format', () => {
+describe('DataTypeLocalization.DataTypeLocalizationBase.Format', () => {
     test('Valid lookup key and string value returns same string value', () => {
-        let testItem = new TestImplementationOfLocalizationAdapterBase('en');
+        let testItem = new TestImplementationOfDataTypeLocalizationBase('en');
         testItem.RegisterFormatter('LookupKey', (val: any) => { 
             return { Value: val };
         });
@@ -58,7 +58,7 @@ describe('LocalizationAdapter.LocalizationAdapterBase.Format', () => {
         expect(dtr.Value).toBe('Text');
     }); 
     test('Invalid lookup key and string value returns empty object.', () => {
-        let testItem = new TestImplementationOfLocalizationAdapterBase('en');
+        let testItem = new TestImplementationOfDataTypeLocalizationBase('en');
         testItem.RegisterFormatter('LookupKey', (val: any) => { 
             return { Value: val };
         });
@@ -68,7 +68,7 @@ describe('LocalizationAdapter.LocalizationAdapterBase.Format', () => {
         expect(dtr.Value).toBeUndefined();
     });        
     test('Null lookupKey throws', () => {
-        let testItem = new TestImplementationOfLocalizationAdapterBase('en');
+        let testItem = new TestImplementationOfDataTypeLocalizationBase('en');
         testItem.RegisterFormatter('LookupKey', (val: any) => { 
             return { Value: val };
         });

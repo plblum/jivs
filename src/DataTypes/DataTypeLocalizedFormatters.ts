@@ -1,6 +1,6 @@
-import { ILocalizationAdapter, IDataTypeResolution } from "../Interfaces/DataTypes";
+import { IDataTypeLocalization, IDataTypeResolution } from "../Interfaces/DataTypes";
 import {
-    LocalizationAdapterBase
+    DataTypeLocalizationBase
 } from "./DataTypeLocalization";
 import {
     StringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
@@ -14,7 +14,7 @@ import {
  * Upon instantiation, call RegisterBuiltInLookupKeyFunctions to 
  * register the built in functions for most lookupKeys.
  */
-export class IntlLocalizationAdapter extends LocalizationAdapterBase {
+export class IntlDataTypeLocalization extends DataTypeLocalizationBase {
     constructor(cultureID: string, fallbackCultureID?: string | null, currency?: string | null) {
         super(cultureID, fallbackCultureID);
         this._currency = currency ?? 'USD';
@@ -46,14 +46,14 @@ export class IntlLocalizationAdapter extends LocalizationAdapterBase {
         });
     }
     
-    protected GetBuiltInLookupFunction(lookupKey: string): ((val: any, adapter: ILocalizationAdapter) =>
+    protected GetBuiltInLookupFunction(lookupKey: string): ((val: any, dtl: IDataTypeLocalization) =>
         IDataTypeResolution<string>) | string | null {
         switch (lookupKey) {
             case StringLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.prepString(val);
+                return (val: any, dtl: IDataTypeLocalization) => this.prepString(val);
 
             case CapitalizeStringLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => {
+                return (val: any, dtl: IDataTypeLocalization) => {
                     let result = this.prepString(val);
                     if (result.Value && result.Value.length > 0)
                         // Intl lacks helpers for this.
@@ -62,7 +62,7 @@ export class IntlLocalizationAdapter extends LocalizationAdapterBase {
                     return result;
                 };
             case UppercaseStringLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => {
+                return (val: any, dtl: IDataTypeLocalization) => {
                     let result = this.prepString(val);
                     if (result.Value && result.Value.length > 0)
                         // Intl lacks helpers for this.
@@ -70,7 +70,7 @@ export class IntlLocalizationAdapter extends LocalizationAdapterBase {
                     return result;
                 };
             case LowercaseStringLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => {
+                return (val: any, dtl: IDataTypeLocalization) => {
                     let result = this.prepString(val);
                     if (result.Value && result.Value.length > 0)
                         // Intl lacks helpers for this.
@@ -78,29 +78,29 @@ export class IntlLocalizationAdapter extends LocalizationAdapterBase {
                     return result;
                 };
             case NumberLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatNumber(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatNumber(val, {
                     signDisplay: "auto",
                 });
             case IntegerLookupKey:
                 return NumberLookupKey;   //!!! Needs improvement, like stripping decimal
             case CurrencyLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatNumber(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatNumber(val, {
                     style: "currency",
                     currency: this.Currency
                 });
             // treats 1 as 100%
             case PercentageLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatNumber(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatNumber(val, {
                     style: "percent"
                 });
             case BooleanLookupKey:
                 //!!! needs localized strings
-                return (val: any, adapter: ILocalizationAdapter) => this.formatBoolean(val, 'true', 'false');
+                return (val: any, dtl: IDataTypeLocalization) => this.formatBoolean(val, 'true', 'false');
             case YesNoBooleanLookupKey:
                 //!!! needs localized strings
-                return (val: any, adapter: ILocalizationAdapter) => this.formatBoolean(val, 'yes', 'no');
+                return (val: any, dtl: IDataTypeLocalization) => this.formatBoolean(val, 'yes', 'no');
             case DateTimeLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatDate(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatDate(val, {
                     year: "numeric",
                     month: "numeric",
                     day: "numeric",
@@ -108,44 +108,44 @@ export class IntlLocalizationAdapter extends LocalizationAdapterBase {
                     minute: "numeric",
                 });
             case DateLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatDate(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatDate(val, {
                     year: "numeric",
                     month: "numeric",
                     day: "numeric"
                 });
             case AbbrevDateLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatDate(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatDate(val, {
                     year: "numeric",
                     month: "short",
                     day: "numeric",
                 });
             case AbbrevDOWDateLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatDate(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatDate(val, {
                     year: "numeric",
                     month: "short",
                     day: "numeric",
                     weekday: "short"
                 });
             case LongDateLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatDate(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatDate(val, {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                 });
             case LongDOWDateLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatDate(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatDate(val, {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                     weekday: "long"
                 });
             case TimeOfDayLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatDate(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatDate(val, {
                     hour: "numeric",
                     minute: "numeric",
                 });
             case TimeOfDayHMSLookupKey:
-                return (val: any, adapter: ILocalizationAdapter) => this.formatDate(val, {
+                return (val: any, dtl: IDataTypeLocalization) => this.formatDate(val, {
                     hour: "numeric",
                     minute: "numeric",
                     second: "numeric"

@@ -1,42 +1,42 @@
-import { IntlLocalizationAdapter } from "../../src/DataTypes/DataTypeLocalizedFormatters";
+import { IntlDataTypeLocalization } from "../../src/DataTypes/DataTypeLocalizedFormatters";
 import {
     StringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
     NumberLookupKey, CurrencyLookupKey, PercentageLookupKey, BooleanLookupKey, YesNoBooleanLookupKey, DateTimeLookupKey, DateLookupKey,
     AbbrevDateLookupKey, AbbrevDOWDateLookupKey, LongDateLookupKey, LongDOWDateLookupKey, TimeOfDayLookupKey, TimeOfDayHMSLookupKey
 } from "../../src/DataTypes/LookupKeys";
-describe('LocalizationAdapter.IntlLocalizationAdapter CultureID and fallbackCultureIDs functions', () => {
+describe('DataTypeLocalization.IntlDataTypeLocalization CultureID and fallbackCultureIDs functions', () => {
     test('EN CultureID, no fallback', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         expect(la.CultureID).toBe('en');
         expect(la.FallbackCultureID).toBeNull();
         expect(la.Currency).toBe('USD');
     });
     test('en-GB CultureID, en fallback', () => {
-        let la = new IntlLocalizationAdapter('en-GB', 'en');
+        let la = new IntlDataTypeLocalization('en-GB', 'en');
         expect(la.CultureID).toBe('en-GB');
         expect(la.FallbackCultureID).toBe('en');
         expect(la.Currency).toBe('USD');
     });    
     test('Currency set', () => {
-        let la = new IntlLocalizationAdapter('en-GB', 'en', 'GBP');
+        let la = new IntlDataTypeLocalization('en-GB', 'en', 'GBP');
         expect(la.Currency).toBe('GBP');
     });        
 });
 
-describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format functions', () => {
+describe('DataTypeLocalization.IntlDataTypeLocalization class preregistered Format functions', () => {
     test('CanFormat Unknown LookupKey is false', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat("*Unknown*")).toBe(false);        
     });
 
     test('CanFormat StringLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(StringLookupKey)).toBe(true);        
     });
     test('StringLookupKey with string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format('A', StringLookupKey);
         expect(dtr).not.toBeNull();
@@ -44,7 +44,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.ErrorMessage).toBeUndefined();
     });
     test('StringLookupKey with number is converted to string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(15, StringLookupKey);
         expect(dtr).not.toBeNull();
@@ -53,7 +53,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });    
     test('StringLookupKey with null is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, StringLookupKey);
         expect(dtr).not.toBeNull();
@@ -62,7 +62,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });    
     test('StringLookupKey with undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(undefined, StringLookupKey);
         expect(dtr).not.toBeNull();
@@ -71,7 +71,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('StringLookupKey with object is an error', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format({}, StringLookupKey);
         expect(dtr).not.toBeNull();
@@ -80,13 +80,13 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });    
     test('CanFormat CapitalizeStringLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(CapitalizeStringLookupKey)).toBe(true);        
     });
 
     test('CapitalizeStringLookupKey with string returns the string with first letter capitalized', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format('A', CapitalizeStringLookupKey);
         expect(dtr).not.toBeNull();
@@ -104,13 +104,13 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('');        
     });        
     test('CanFormat UppercaseStringLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(UppercaseStringLookupKey)).toBe(true);        
     });
 
     test('UppercaseStringLookupKey with string returns the string in uppercase', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
 
         let dtr = la.Format('A', UppercaseStringLookupKey);
@@ -129,13 +129,13 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('');        
     });            
     test('CanFormat LowercaseStringLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(LowercaseStringLookupKey)).toBe(true);        
     });
 
     test('LowercaseStringLookupKey with string returns the string in lowercase', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
 
         let dtr = la.Format('A', LowercaseStringLookupKey);
@@ -157,17 +157,17 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('');        
     });            
     test('en: CanFormat NumberLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(NumberLookupKey)).toBe(true);        
     });
     test('fr: CanFormat NumberLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(NumberLookupKey)).toBe(true);        
     });
     test('NumberLookupKey in en culture with various valid numbers', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
 
         let dtr = la.Format(1, NumberLookupKey);
@@ -187,7 +187,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('NumberLookupKey in fr culture with various valid numbers', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
 
         let dtr = la.Format(1, NumberLookupKey);
@@ -206,7 +206,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('-9,501');
     });    
     test('NumberLookupKey in en culture with ways to output empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
 
         let dtr = la.Format(null, NumberLookupKey);
@@ -219,7 +219,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('');
     });
     test('NumberLookupKey with invalid type returns ErrorMessage', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
 
         let dtr = la.Format('A', NumberLookupKey);
@@ -233,18 +233,18 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('en: CanFormat CurrencyLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(CurrencyLookupKey)).toBe(true);        
     });
     test('fr: CanFormat CurrencyLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(CurrencyLookupKey)).toBe(true);        
     });
 
     test('CurrencyLookupKey in en culture with various valid numbers', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(1, CurrencyLookupKey);
         expect(dtr).not.toBeNull();
@@ -263,7 +263,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('CurrencyLookupKey in fr culture with various valid numbers', () => {
-        let la = new IntlLocalizationAdapter('fr', null, 'EUR');
+        let la = new IntlDataTypeLocalization('fr', null, 'EUR');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(1, CurrencyLookupKey);
         expect(dtr).not.toBeNull();
@@ -281,7 +281,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('-9,50\xA0€');
     });    
     test('CurrencyLookupKey in en culture with ways to output empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, CurrencyLookupKey);
         expect(dtr).not.toBeNull();
@@ -293,7 +293,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('');
     });    
     test('CurrencyLookupKey with invalid type returns ErrorMessage', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format('A', CurrencyLookupKey);
         expect(dtr).not.toBeNull();
@@ -306,18 +306,18 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });    
     test('en: CanFormat PercentageLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(PercentageLookupKey)).toBe(true);        
     });
     test('fr: CanFormat PercentageLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(PercentageLookupKey)).toBe(true);        
     });
 
     test('PercentageLookupKey in en culture with various valid numbers', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(1, PercentageLookupKey);
         expect(dtr).not.toBeNull();
@@ -336,7 +336,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('PercentageLookupKey in fr culture with various valid numbers', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(1, PercentageLookupKey);
         expect(dtr).not.toBeNull();
@@ -354,7 +354,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('-9\xA0%');
     });    
     test('PercentageLookupKey in en culture with ways to output empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, PercentageLookupKey);
         expect(dtr).not.toBeNull();
@@ -366,7 +366,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('');
     });
     test('PercentageLookupKey with invalid type returns ErrorMessage', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format('A', PercentageLookupKey);
         expect(dtr).not.toBeNull();
@@ -379,13 +379,13 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('CanFormat BooleanLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(BooleanLookupKey)).toBe(true);        
     });
 
     test('BooleanLookupKey with true or false is "true" or "false"', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(true, BooleanLookupKey);
         expect(dtr).not.toBeNull();
@@ -397,7 +397,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('false');
     });
     test('BooleanLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, BooleanLookupKey);
         expect(dtr).not.toBeNull();
@@ -409,7 +409,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('');
     });    
     test('BooleanLookupKey with invalid type returns ErrorMessage', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format('A', BooleanLookupKey);
         expect(dtr).not.toBeNull();
@@ -422,13 +422,13 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('CanFormat YesNoBooleanLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(YesNoBooleanLookupKey)).toBe(true);        
     });
 
     test('YesNoBooleanLookupKey with true or false is "yes" or "no"', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(true, YesNoBooleanLookupKey);
         expect(dtr).not.toBeNull();
@@ -440,7 +440,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('no');
     });
     test('YesNoBooleanLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, YesNoBooleanLookupKey);
         expect(dtr).not.toBeNull();
@@ -452,7 +452,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('');
     });    
     test('YesNoBooleanLookupKey with invalid type returns ErrorMessage', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format('A', YesNoBooleanLookupKey);
         expect(dtr).not.toBeNull();
@@ -465,18 +465,18 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });    
     test('en: CanFormat DateTimeLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(DateTimeLookupKey)).toBe(true);        
     });
     test('fr: CanFormat DateTimeLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(DateTimeLookupKey)).toBe(true);        
     });
 
     test('DateTimeLookupKey in en culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, DateTimeLookupKey);
@@ -495,7 +495,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('DateTimeLookupKey in fr culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, DateTimeLookupKey);
@@ -513,7 +513,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('15/01/1980 16:04');
     });    
     test('DateTimeLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, DateTimeLookupKey);
         expect(dtr).not.toBeNull();
@@ -527,7 +527,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('DateTimeLookupKey with values other than Date, null or undefined are errors', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format({}, DateTimeLookupKey);
         expect(dtr).not.toBeNull();
@@ -551,18 +551,18 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
                 
     });
     test('en: CanFormat DateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(DateLookupKey)).toBe(true);        
     });
     test('fr: CanFormat DateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(DateLookupKey)).toBe(true);        
     });
 
     test('DateLookupKey in en culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, DateLookupKey);
@@ -581,7 +581,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('DateLookupKey in fr culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, DateLookupKey);
@@ -599,7 +599,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('15/01/1980');
     });    
     test('DateLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, DateLookupKey);
         expect(dtr).not.toBeNull();
@@ -613,7 +613,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('DateLookupKey with values other than Date, null or undefined are errors', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format({}, DateLookupKey);
         expect(dtr).not.toBeNull();
@@ -638,17 +638,17 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('en: CanFormat AbbrevDateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(AbbrevDateLookupKey)).toBe(true);        
     });
     test('fr: CanFormat AbbrevDateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(AbbrevDateLookupKey)).toBe(true);        
     });
     test('AbbrevDateLookupKey in en culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, AbbrevDateLookupKey);
@@ -667,7 +667,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('AbbrevDateLookupKey in fr culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, AbbrevDateLookupKey);
@@ -685,7 +685,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('15 janv. 1980');
     });    
     test('AbbrevDateLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, AbbrevDateLookupKey);
         expect(dtr).not.toBeNull();
@@ -699,7 +699,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('AbbrevDateLookupKey with values other than Date, null or undefined are errors', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format({}, AbbrevDateLookupKey);
         expect(dtr).not.toBeNull();
@@ -723,18 +723,18 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
                 
     });
     test('en: CanFormat AbbrevDOWDateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(AbbrevDOWDateLookupKey)).toBe(true);        
     });
     test('fr: CanFormat AbbrevDOWDateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(AbbrevDOWDateLookupKey)).toBe(true);        
     });
 
     test('AbbrevDOWDateLookupKey in en culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, AbbrevDOWDateLookupKey);
@@ -753,7 +753,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('AbbrevDOWDateLookupKey in fr culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, AbbrevDOWDateLookupKey);
@@ -771,7 +771,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('ven. 18 janv. 1980');
     });    
     test('AbbrevDOWDateLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, AbbrevDOWDateLookupKey);
         expect(dtr).not.toBeNull();
@@ -785,7 +785,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('AbbrevDOWDateLookupKey with values other than Date, null or undefined are errors', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format({}, AbbrevDOWDateLookupKey);
         expect(dtr).not.toBeNull();
@@ -809,17 +809,17 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
                 
     });    
     test('en: CanFormat LongDateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(LongDateLookupKey)).toBe(true);        
     });
     test('fr: CanFormat LongDateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(LongDateLookupKey)).toBe(true);        
     });
     test('LongDateLookupKey in en culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, LongDateLookupKey);
@@ -838,7 +838,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('LongDateLookupKey in fr culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, LongDateLookupKey);
@@ -856,7 +856,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('15 janvier 1980');
     });    
     test('LongDateLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, LongDateLookupKey);
         expect(dtr).not.toBeNull();
@@ -870,7 +870,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('LongDateLookupKey with values other than Date, null or undefined are errors', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format({}, LongDateLookupKey);
         expect(dtr).not.toBeNull();
@@ -894,18 +894,18 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
                 
     });
     test('en: CanFormat LongDOWDateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(LongDOWDateLookupKey)).toBe(true);        
     });
     test('fr: CanFormat LongDOWDateLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(LongDOWDateLookupKey)).toBe(true);        
     });
 
     test('LongDOWDateLookupKey in en culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, LongDOWDateLookupKey);
@@ -924,7 +924,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('LongDOWDateLookupKey in fr culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, LongDOWDateLookupKey);
@@ -942,7 +942,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('vendredi 18 janvier 1980');
     });    
     test('LongDOWDateLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, LongDOWDateLookupKey);
         expect(dtr).not.toBeNull();
@@ -956,7 +956,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('LongDOWDateLookupKey with values other than Date, null or undefined are errors', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format({}, LongDOWDateLookupKey);
         expect(dtr).not.toBeNull();
@@ -980,17 +980,17 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
                 
     });        
     test('en: CanFormat TimeOfDayLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(TimeOfDayLookupKey)).toBe(true);        
     });
     test('fr: CanFormat TimeOfDayLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(TimeOfDayLookupKey)).toBe(true);        
     });
     test('TimeOfDayLookupKey in en culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, TimeOfDayLookupKey);
@@ -1009,7 +1009,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
     });
 
     test('TimeOfDayLookupKey in fr culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, TimeOfDayLookupKey);
@@ -1027,7 +1027,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('16:04');
     });    
     test('TimeOfDayLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, TimeOfDayLookupKey);
         expect(dtr).not.toBeNull();
@@ -1041,7 +1041,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('TimeOfDayLookupKey with values other than Date, null or undefined are errors', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format({}, TimeOfDayLookupKey);
         expect(dtr).not.toBeNull();
@@ -1065,7 +1065,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
                 
     });    
     test('TimeOfDayLookupKey in en culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, TimeOfDayHMSLookupKey);
@@ -1083,18 +1083,18 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('4:04:00 PM');
     });
     test('en: CanFormat TimeOfDayHMSLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(TimeOfDayHMSLookupKey)).toBe(true);        
     });
     test('fr: CanFormat TimeOfDayHMSLookupKey is true', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         expect(la.CanFormat(TimeOfDayHMSLookupKey)).toBe(true);        
     });
 
     test('TimeOfDayHMSLookupKey in fr culture with various valid dates', () => {
-        let la = new IntlLocalizationAdapter('fr');
+        let la = new IntlDataTypeLocalization('fr');
         la.RegisterBuiltInLookupKeyFunctions();
         let date1 = new Date(2000, 9, 31);
         let dtr = la.Format(date1, TimeOfDayHMSLookupKey);
@@ -1112,7 +1112,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         expect(dtr.Value).toBe('16:04:00');
     });    
     test('TimeOfDayHMSLookupKey with null or undefined is empty string', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format(null, TimeOfDayHMSLookupKey);
         expect(dtr).not.toBeNull();
@@ -1126,7 +1126,7 @@ describe('LocalizationAdapter.IntlLocalizationAdapter class preregistered Format
         
     });
     test('TimeOfDayHMSLookupKey with values other than Date, null or undefined are errors', () => {
-        let la = new IntlLocalizationAdapter('en');
+        let la = new IntlDataTypeLocalization('en');
         la.RegisterBuiltInLookupKeyFunctions();
         let dtr = la.Format({}, TimeOfDayHMSLookupKey);
         expect(dtr).not.toBeNull();
