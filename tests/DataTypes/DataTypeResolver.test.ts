@@ -1,5 +1,5 @@
 import { DataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
-import { IntlLocalizationAdapter } from "../../src/DataTypes/IntlLocalizationAdapter";
+import { IntlLocalizationAdapter } from "../../src/DataTypes/DataTypeLocalizedFormatters";
 import { StringLookupKey, NumberLookupKey, BooleanLookupKey, allBuiltInFormatLookupKeys, DateLookupKey } from "../../src/DataTypes/LookupKeys";
 import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier } from "../../src/Interfaces/DataTypes";
 

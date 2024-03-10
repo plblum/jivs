@@ -1,4 +1,4 @@
-import { IntlLocalizationAdapter } from "../../src/DataTypes/IntlLocalizationAdapter";
+import { IntlLocalizationAdapter } from "../../src/DataTypes/DataTypeLocalizedFormatters";
 import {
     StringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
     NumberLookupKey, CurrencyLookupKey, PercentageLookupKey, BooleanLookupKey, YesNoBooleanLookupKey, DateTimeLookupKey, DateLookupKey,

@@ -1,6 +1,6 @@
 import { ConditionFactory, RegisterStandardConditions } from "../src/Conditions/ConditionFactory";
 import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
-import { IntlLocalizationAdapter } from "../src/DataTypes/IntlLocalizationAdapter";
+import { IntlLocalizationAdapter } from "../src/DataTypes/DataTypeLocalizedFormatters";
 
 import { type ILogger, LoggingLevel } from "../src/Interfaces/Logger";
 import { MessageTokenResolver  } from "../src/ValueHosts/MessageTokenResolver";

@@ -1,7 +1,7 @@
 import { ILocalizationAdapter, IDataTypeResolution } from "../Interfaces/DataTypes";
 import {
     LocalizationAdapterBase
-} from "./LocalizationAdapter";
+} from "./DataTypeLocalization";
 import {
     StringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
     NumberLookupKey, IntegerLookupKey, CurrencyLookupKey, PercentageLookupKey, BooleanLookupKey, YesNoBooleanLookupKey, DateTimeLookupKey,

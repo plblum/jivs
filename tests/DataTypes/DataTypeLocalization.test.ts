@@ -1,6 +1,6 @@
 import {
     LocalizationAdapterBase
-} from "../../src/DataTypes/LocalizationAdapter";
+} from "../../src/DataTypes/DataTypeLocalization";
 
 /**
  * To test the base class features alone as our default subclass,
