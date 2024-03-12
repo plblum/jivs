@@ -21,7 +21,6 @@ import {
 import { CultureConfig, DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { LoggingLevel } from "../src/Interfaces/Logger";
 import { ConsoleLogger } from "../src/Services/ConsoleLogger";
-import { valGlobals } from "../src/Services/ValidationGlobals";
 import { ValidationServices } from "../src/Services/ValidationServices";
 import { MessageTokenResolver } from './../src/ValueHosts/MessageTokenResolver';
 
@@ -137,10 +136,10 @@ export function RegisterConditions(cf: ConditionFactory): void
  * @param cultureConfig 
  */
 export function CreateDataTypeServices(activeCultureID?: string | null, cultureConfig?: Array<CultureConfig> | null): DataTypeServices {
-     valGlobals.DefaultCultureId = activeCultureID ?? 'en';
     let cc: Array<CultureConfig> = cultureConfig ?? ConfigureCultures();
 
-    let dts = new DataTypeServices(valGlobals.DefaultCultureId, cc);
+    let dts = new DataTypeServices(activeCultureID ?? 'en', // feel free to change 'en' to your default culture
+        cc);
     PopulateDataTypeServices(dts);
     return dts;
 }
@@ -214,7 +213,9 @@ export function RegisterDataTypeLocalizedFormatters(dts: DataTypeServices): void
     dts.RegisterLocalizedFormatter(new LongDOWDateLocalizedFormatter());    // options?: Intl.DateTimeFormatOptions
     dts.RegisterLocalizedFormatter(new TimeofDayLocalizedFormatter());      // options?: Intl.DateTimeFormatOptions
     dts.RegisterLocalizedFormatter(new TimeofDayHMSLocalizedFormatter());   // options?: Intl.DateTimeFormatOptions
-    dts.RegisterLocalizedFormatter(new CurrencyLocalizedFormatter());       // options?: Intl.NumberFormatOptions, cultureToCurrencyCode? { 'en-US' : 'USD', 'es-SP': 'EUR' }
+    dts.RegisterLocalizedFormatter(new CurrencyLocalizedFormatter('USD'));  // feel free to change the default currency code
+    // defaultCurrencyCode: 'USD', options?: Intl.NumberFormatOptions, cultureToCurrencyCode? { 'en-US' : 'USD', 'es-SP': 'EUR' }
+
     dts.RegisterLocalizedFormatter(new PercentageLocalizedFormatter());     // options?: Intl.NumberFormatOptions
     dts.RegisterLocalizedFormatter(new Percentage100LocalizedFormatter());  // options?: Intl.NumberFormatOptions
     dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter());        // cultureToLabels?: Array<CultureToBooleanLabels>

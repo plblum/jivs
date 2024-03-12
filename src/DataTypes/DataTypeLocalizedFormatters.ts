@@ -1,5 +1,4 @@
 import { IDataTypeLocalizedFormatter, IDataTypeResolution } from "../Interfaces/DataTypes";
-import { valGlobals } from "../Services/ValidationGlobals";
 import { CultureCountryCode } from "../Utilities/Utilities";
 import { AbbrevDOWDateLookupKey, AbbrevDateLookupKey, BooleanLookupKey, CapitalizeStringLookupKey, CurrencyLookupKey, DateLookupKey, DateTimeLookupKey, IntegerLookupKey, LongDOWDateLookupKey, LongDateLookupKey, LowercaseStringLookupKey, NumberLookupKey, Percentage100LookupKey, PercentageLookupKey, StringLookupKey, TimeOfDayHMSLookupKey, TimeOfDayLookupKey, UppercaseStringLookupKey, YesNoBooleanLookupKey } from "./LookupKeys";
 
@@ -278,17 +277,19 @@ export class IntegerLocalizedFormatter extends NumberLocalizedFormatterBase
  * which is not actually built into the Intl library.
  * Thus we need to support it by letting you supply
  * a CurrencyCode into the constructor, along with a list of
- * cultures that support the code. If not supplied, it uses 
- * valGlobals.DefaultCurrencyCode (which itself defaults to USD).
+ * cultures that support the code.
  */
 export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
 {
-    constructor(options?: Intl.NumberFormatOptions | null,
+    constructor(defaultCurrencyCode: string,
+        options?: Intl.NumberFormatOptions | null,
         cultureToCurrencyCode?: { [cultureId: string]: string })
     {
         super(options);
         this._cultureToCurrencyCode = cultureToCurrencyCode ?? null;
+        this._defaultCurrencyCode = defaultCurrencyCode;
     }
+    private _defaultCurrencyCode: string;
     protected GetDefaultOptions(): Intl.NumberFormatOptions {
         return {
             style: "currency",
@@ -317,11 +318,11 @@ export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
     }    
     protected ResolveCurrencyCode(cultureId: string): string
     {
-        let currencyCode = valGlobals.DefaultCurrencyCode;
+        let currencyCode = this._defaultCurrencyCode;
         if (this._cultureToCurrencyCode)
             currencyCode = this._cultureToCurrencyCode[cultureId] ??
                 this._cultureToCurrencyCode[CultureCountryCode(cultureId)] ??
-                valGlobals.DefaultCurrencyCode;
+                this._defaultCurrencyCode;
         return currencyCode;
     }
 }

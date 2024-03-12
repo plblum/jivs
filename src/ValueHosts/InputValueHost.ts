@@ -1,7 +1,6 @@
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ValidationCategory } from "../Interfaces/Logger";
 import { ObjectKeysCount } from "../Utilities/Utilities";
-import { valGlobals } from "../Services/ValidationGlobals";
 import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
@@ -149,7 +148,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
      * @returns 
      */
     protected GenerateValidators(): Array<IInputValidator> {
-        let factory = valGlobals.GetInputValidatorFactory();
+        let factory = this.Services.InputValidatorFactory;
         let validators: Array<IInputValidator> = [];
         this.Descriptor.ValidatorDescriptors?.forEach((valDesc) => {
             let pv = factory.Create(this, valDesc);

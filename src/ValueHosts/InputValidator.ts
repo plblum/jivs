@@ -389,8 +389,7 @@ export function CreateIssueFound(valueHost: IValueHost,
 //#region Factory
 
 /**
- * InputvalidatorFactory is a system-wide singleton declared in
- * valGlobals with SetInputValidatorFactory.
+ * InputValidatorFactory creates the appropriate IInputValidator class
  */
 export class InputValidatorFactory implements IInputValidatorFactory {
     public Create(valueHost: IInputValueHost, descriptor: IInputValidatorDescriptor): IInputValidator {

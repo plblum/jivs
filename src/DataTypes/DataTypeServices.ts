@@ -2,7 +2,6 @@ import { StringLookupKey } from './LookupKeys';
 import { DefaultComparer } from "./DataTypeComparers";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { IDataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
-import { valGlobals } from '../Services/ValidationGlobals';
 import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
 
 
@@ -48,12 +47,12 @@ import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
 export class DataTypeServices implements IDataTypeServices {
     /**
      * Constructor
-     * @param activeCultureID - If not supplied, it uses valGlobals.DefaultCultureId, which itself
-     * defaults to 'en'
+     * @param activeCultureId - Required. Can be just a language code like 'en', or complete like 'en-US'
      * @param cultureConfig - All of the cultures that you intend to support, along with fallback Cultures
      */
-    constructor(activeCultureID?: string | null, cultureConfig?: Array<CultureConfig> | null) {
-        this._activeCultureID = activeCultureID ?? valGlobals.DefaultCultureId;
+    constructor(activeCultureId: string, cultureConfig?: Array<CultureConfig> | null) {
+        AssertNotNull(activeCultureId, 'activeCultureId')
+        this._activeCultureID = activeCultureId;
         if (!cultureConfig || cultureConfig.length === 0)
             this._cultureConfig = [{ CultureId: this._activeCultureID }];
         else
@@ -64,10 +63,10 @@ export class DataTypeServices implements IDataTypeServices {
        This value is the starting point to search through DataTypeLocalizations.
        Those have their own FallbackCultureID to continue the search.
      */
-    public get ActiveCultureID(): string {
+    public get ActiveCultureId(): string {
         return this._activeCultureID;
     }
-    public set ActiveCultureID(cultureID: string) {
+    public set ActiveCultureId(cultureID: string) {
         this._activeCultureID = cultureID;
     }
     private _activeCultureID: string;

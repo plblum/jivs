@@ -27,7 +27,6 @@
 import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { IDataTypeConverter, IDataTypeIdentifier } from "../src/Interfaces/DataTypes";
 import { IValidationServices } from "../src/Interfaces/ValidationServices"
-import { valGlobals } from "../src/Services/ValidationGlobals";
 
 export class TimeSpan
 {
@@ -108,12 +107,4 @@ export function RegisterTimeSpan(validationServices: IValidationServices): void
     // now whenever a Condition's value is TimeSpan, it gets identified as LookupKey="TimeSpan"
     // When its time to compare, the TimeSpanToHoursConverters are asked if they support the value.
     // When they do, the comparision immediately calls Convert and now has a number value.
-}
-
-// Register BEFORE you have a ValidationService: set up a global default
-export function RegisterRelativeDateInDefaultDataTypeServices(): void {
-    let dataTypeServices = valGlobals.GetDefaultDataTypeServices() as DataTypeServices;
-    dataTypeServices.RegisterDataTypeIdentifier(new TimeSpanIdentifier());
-    dataTypeServices.RegisterDataTypeConverter(new TimeSpanToHoursConverter());
-    dataTypeServices.RegisterDataTypeConverter(new TimeSpanToSecondsConverter());
 }

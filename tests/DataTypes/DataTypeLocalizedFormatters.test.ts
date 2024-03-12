@@ -4,14 +4,6 @@ import {
     NumberLookupKey, CurrencyLookupKey, PercentageLookupKey, BooleanLookupKey, YesNoBooleanLookupKey, DateTimeLookupKey, DateLookupKey,
     AbbrevDateLookupKey, AbbrevDOWDateLookupKey, LongDateLookupKey, LongDOWDateLookupKey, TimeOfDayLookupKey, TimeOfDayHMSLookupKey, Percentage100LookupKey
 } from "../../src/DataTypes/LookupKeys";
-import { ResetValGlobals, valGlobals } from '../../src/Services/ValidationGlobals';
-
-beforeEach(() => {
-    ResetValGlobals(); 
-});
-afterEach(() => {
-    ResetValGlobals(); 
-});
 
 describe('StringLocalizedFormatter', () => {
 
@@ -404,20 +396,20 @@ describe('NumberLocalizedFormatter', () => {
 });
 describe('CurrencyLocalizedFormatter', () => {
     test('en: Supports CurrencyLookupKey is true. All others are false', () => {
-        let testItem = new CurrencyLocalizedFormatter();
+        let testItem = new CurrencyLocalizedFormatter('USD');
         
         expect(testItem.Supports(CurrencyLookupKey, 'en')).toBe(true);       
         expect(testItem.Supports('anythingelse', 'en')).toBe(false);             
     });
     test('Supports CurrencyLookupKey is true in all cultures', () => {
-        let testItem = new CurrencyLocalizedFormatter();
+        let testItem = new CurrencyLocalizedFormatter('USD');
         
         expect(testItem.Supports(CurrencyLookupKey, 'fr')).toBe(true);        
         expect(testItem.Supports('anythingelse', 'fr')).toBe(false);
     });
 
     test('en culture with various valid numbers, using currencycode USD from global default', () => {
-        let testItem = new CurrencyLocalizedFormatter();
+        let testItem = new CurrencyLocalizedFormatter('USD');
         
         let dts = testItem.Format(1, CurrencyLookupKey, 'en');
         expect(dts).not.toBeNull();
@@ -436,7 +428,7 @@ describe('CurrencyLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid numbers', () => {
-        let testItem = new CurrencyLocalizedFormatter(null,
+        let testItem = new CurrencyLocalizedFormatter('USD', null,
             {
                 'fr': 'EUR',
             });
@@ -457,7 +449,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.Value).toBe('-9,50\xA0€');
     });    
     test('fr-FR culture with various valid numbers', () => {
-        let testItem = new CurrencyLocalizedFormatter(null,
+        let testItem = new CurrencyLocalizedFormatter('USD', null,
             {
                 'fr-FR': 'EUR',
             });
@@ -478,7 +470,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.Value).toBe('-9,50\xA0€');
     });        
     test('When full culture is missing in constructor, fallback to countrycode culture', () => {
-        let testItem = new CurrencyLocalizedFormatter(null,
+        let testItem = new CurrencyLocalizedFormatter('EUR', null,
             {
                 'fr': 'EUR',
             });
@@ -489,7 +481,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.ErrorMessage).toBeUndefined();
     });       
     test('With global default currency code of USD and currencycode is missing in constructor, use default currency code', () => {
-        let testItem = new CurrencyLocalizedFormatter(null);
+        let testItem = new CurrencyLocalizedFormatter('USD', null);
         
         let dts = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
         expect(dts).not.toBeNull();
@@ -498,8 +490,7 @@ describe('CurrencyLocalizedFormatter', () => {
 
     });         
     test('With EUR as default currency code, CurrencyLookupKey uses EUR when currencycode is missing in constructor', () => {
-        valGlobals.DefaultCurrencyCode = 'EUR';
-        let testItem = new CurrencyLocalizedFormatter(null);
+        let testItem = new CurrencyLocalizedFormatter('EUR', null);
         
         let dts = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
         expect(dts).not.toBeNull();
@@ -512,7 +503,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.ErrorMessage).toBeUndefined();        
     });                    
     test('null and undefined input results in empty string', () => {
-        let testItem = new CurrencyLocalizedFormatter();
+        let testItem = new CurrencyLocalizedFormatter('USD');
         
         let dts = testItem.Format(null, CurrencyLookupKey, 'en');
         expect(dts).not.toBeNull();
@@ -524,7 +515,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.Value).toBe('');
     });    
     test('Invalid type returns ErrorMessage', () => {
-        let testItem = new CurrencyLocalizedFormatter();
+        let testItem = new CurrencyLocalizedFormatter('USD');
         
         let dts = testItem.Format('A', CurrencyLookupKey, 'en');
         expect(dts).not.toBeNull();

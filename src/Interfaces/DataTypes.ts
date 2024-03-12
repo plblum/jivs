@@ -29,7 +29,7 @@ export interface IDataTypeServices extends ICoreDataTypeServices
    This value is the starting point to search through DataTypeLocalizations.
    Those have their own FallbackCultureID to continue the search.
  */    
-    ActiveCultureID: string;
+    ActiveCultureId: string;
 
 /**
  * Compares two same-type values to see if they are equal or not.

@@ -1,5 +1,4 @@
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { valGlobals } from "../../src/Services/ValidationGlobals";
 import {
     type IValueHostState, type IValueHost, IValueHostDescriptor
 } from "../../src/Interfaces/ValueHost";
@@ -60,16 +59,16 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
 
 }
 
-beforeEach(() => {
-    let factory = new ValueHostFactory();
-    factory.Register(new PublicifiedValueHostBaseGenerator());
-    valGlobals.SetValueHostFactory(factory);
-});
-afterEach(() => {
-    let factory = new ValueHostFactory();
-    RegisterStandardValueHostGenerators(factory);
-    valGlobals.SetValueHostFactory(factory);
-});
+// beforeEach(() => {
+//     let factory = new ValueHostFactory();
+//     factory.Register(new PublicifiedValueHostBaseGenerator());
+//     valGlobals.SetValueHostFactory(factory);
+// });
+// afterEach(() => {
+//     let factory = new ValueHostFactory();
+//     RegisterStandardValueHostGenerators(factory);
+//     valGlobals.SetValueHostFactory(factory);
+// });
 /**
  * Returns an ValueHost (PublicifiedValueHost subclass) ready for testing.
  * @param descriptor - Provide just the properties that you want to test.
@@ -91,6 +90,9 @@ function SetupValueHost(descriptor?: Partial<IValueHostDescriptor>, initialValue
     valueHost: PublicifiedValueHostBase
 } {
     let services = new MockValidationServices(false, false);
+    let factory = new ValueHostFactory();
+    factory.Register(new PublicifiedValueHostBaseGenerator());
+    services.ValueHostFactory = factory;
     let vm = new MockValidationManager(services);
 
     let defaultDescriptor: IValueHostDescriptor = {

@@ -6,7 +6,6 @@ import {
 import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
 import { InputValueHost, InputValueHostGenerator, InputValueHostType, ToIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { LoggingLevel } from "../../src/Interfaces/Logger";
-import { valGlobals } from "../../src/Services/ValidationGlobals";
 import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationServices, MockValidationManager, NeverMatchesConditionType, NeverMatchesConditionType2, NeverMatchesCondition } from "../Mocks";
 import { ValidationServices } from '../../src/Services/ValidationServices';
@@ -1222,14 +1221,7 @@ class TestInputValidatorFactory implements IInputValidatorFactory {
     }
 }
 describe('Validate handles exception from custom InputValidator class', () => {
-    beforeEach(() => {
-        let factory = new TestInputValidatorFactory();
-        valGlobals.SetInputValidatorFactory(factory);
-    });
-    afterEach(() => {
-        let factory = new InputValidatorFactory();
-        valGlobals.SetInputValidatorFactory(factory);
-    });
+
     test('Expect an exception from the custom InputValidator to be logged and cause InputValueHost.Validator result to be Undetermined', () => {
         let ivDescriptors: Array<Partial<IInputValidatorDescriptor>> = [
             {
@@ -1240,6 +1232,7 @@ describe('Validate handles exception from custom InputValidator class', () => {
         ];
         let state: Partial<IInputValueHostState> = {};
         let config = SetupInputValueHostForValidate(ivDescriptors, state);
+        config.services.InputValidatorFactory = new TestInputValidatorFactory();
         let logger = config.services.LoggerService as MockCapturingLogger;
         logger.MinLevel = LoggingLevel.Info;
         expect(() => config.valueHost.Validate()).not.toThrow();

@@ -1,7 +1,7 @@
 import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { IDataTypeConverter } from "../src/Interfaces/DataTypes";
 import { IValidationServices } from "../src/Interfaces/ValidationServices";
-import { valGlobals } from "../src/Services/ValidationGlobals";
+
 
 // Example: Supporting a Date object in a different way than it was intended by
 // implementing IDataTypeConverter. This uses just the Day and Month.
@@ -42,9 +42,3 @@ export function RegisterRelativeDate(validationServices: IValidationServices): v
     // default converter (DefaultConverter function supports comparing numbers)
 }
 
-// Register BEFORE you have a ValidationService: set up a global default
-export function RegisterRelativeDateInDefaultDataTypeServices(): void
-{
-    let dataTypeServices = valGlobals.GetDefaultDataTypeServices() as DataTypeServices;
-    dataTypeServices.RegisterDataTypeConverter(new UTCAnniversaryConverter()); 
-}

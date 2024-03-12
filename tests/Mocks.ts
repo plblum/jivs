@@ -5,7 +5,7 @@ import { type ILogger, LoggingLevel } from "../src/Interfaces/Logger";
 import { MessageTokenResolver  } from "../src/ValueHosts/MessageTokenResolver";
 import type { IValidationServices } from "../src/Interfaces/ValidationServices";
 import type { IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../src/ValueHosts/ValidationManager";
-import type { IValueHost, ISetValueOptions, IValueHostState } from "../src/Interfaces/ValueHost";
+import type { IValueHost, ISetValueOptions, IValueHostState, IValueHostFactory } from "../src/Interfaces/ValueHost";
 import { commonBuiltInFormatLookupKeys } from "../src/DataTypes/LookupKeys";
 import { IValueHostResolver, IValueHostsManager } from "../src/Interfaces/ValueHostResolver";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "../src/ValueHosts/ValueHostBase";
@@ -14,11 +14,13 @@ import { IConditionDescriptor, ConditionEvaluateResult, ConditionCategory, ICond
 import { IInputValueHost } from "../src/Interfaces/InputValueHost";
 import { IValidateOptions, IValidateResult, ValidationResult, IBusinessLogicError, IIssueFound, IIssueSnapshot } from "../src/Interfaces/Validation";
 import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler } from "../src/ValueHosts/InputValueHostBase";
-import { IMessageTokenResolver } from "../src/Interfaces/InputValidator";
+import { IInputValidatorFactory, IMessageTokenResolver } from "../src/Interfaces/InputValidator";
 import { IDataTypeServices } from "../src/Interfaces/DataTypes";
 import { IValidationManager } from "../src/Interfaces/ValidationManager";
 import { CreateDataTypeServicesWithManyCultures } from "./DataTypes/DataTypeServices.test";
 import { RegisterConditions, PopulateDataTypeServices } from "../starter_code/create_services";
+import { RegisterStandardValueHostGenerators, ValueHostFactory } from "../src/ValueHosts/ValueHostFactory";
+import { InputValidatorFactory } from "../src/ValueHosts/InputValidator";
 
 
 export function CreateMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -173,8 +175,13 @@ export class MockValidationServices implements IValidationServices
     constructor(registerStandardConditions: boolean,
         registerStandardDataTypes: boolean)
     {
+        let factory = new ValueHostFactory();
+        RegisterStandardValueHostGenerators(factory);
+        this._valueHostFactory = factory;
+        this._inputValidatorFactory = new InputValidatorFactory();
+
         this._conditionFactory = new ConditionFactory();
-        this._DataTypeServices = new DataTypeServices();
+        this._DataTypeServices = new DataTypeServices('en');
         this._messageTokenResolverService = new MessageTokenResolver();
         this._loggerService = new MockCapturingLogger();
 
@@ -211,6 +218,24 @@ export class MockValidationServices implements IValidationServices
     }
     private _loggerService!: ILogger;
 
+    public get ValueHostFactory(): IValueHostFactory
+    {
+        return this._valueHostFactory;
+    }
+    public set ValueHostFactory(factory: IValueHostFactory)
+    {
+        this._valueHostFactory = factory;
+    }
+    private _valueHostFactory: IValueHostFactory;
+    public get InputValidatorFactory(): IInputValidatorFactory
+    {
+        return this._inputValidatorFactory;
+    }
+    public set InputValidatorFactory(factory: IInputValidatorFactory)
+    {
+        this._inputValidatorFactory = factory;
+    }
+    private _inputValidatorFactory: IInputValidatorFactory;
 }
 
 /**

@@ -1,4 +1,3 @@
-import { valGlobals } from './../src/Services/ValidationGlobals';
 
 /**
  * class RelativeDate example
@@ -114,10 +113,3 @@ export function RegisterRelativeDate(validationServices: IValidationServices): v
     // default converter (DefaultConverter function supports comparing numbers)
 }
 
-// Register BEFORE you have a ValidationService: set up a global default
-export function RegisterRelativeDateInDefaultDataTypeServices(): void
-{
-    let dataTypeServices = valGlobals.GetDefaultDataTypeServices() as DataTypeServices;
-    dataTypeServices.RegisterDataTypeIdentifier(new RelativeDateIdentifier());
-    dataTypeServices.RegisterDataTypeConverter(new RelativeDateConverter()); 
-}

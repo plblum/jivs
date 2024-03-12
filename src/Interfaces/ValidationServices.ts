@@ -1,7 +1,8 @@
 import { IConditionFactory } from "./Conditions";
 import { IDataTypeServices } from "./DataTypes";
-import { IMessageTokenResolver } from "./InputValidator";
+import { IInputValidatorFactory, IMessageTokenResolver } from "./InputValidator";
 import { ILogger } from "./Logger";
+import { IValueHostFactory } from "./ValueHost";
 
 /**
  * Provides a dependency injection approach to this library.
@@ -13,8 +14,7 @@ import { ILogger } from "./Logger";
  * exposure where consumers need only its features.
  * Helps for mocking and testing.
  */
-export interface IBasicValidationServices
-{
+export interface IBasicValidationServices {
     /**
      * Service to get the ILogger instance that replaces
      * tokens in messages.
@@ -27,8 +27,7 @@ export interface IBasicValidationServices
 /**
  * Full interface representation of ValidationServices.
  */
-export interface IValidationServices extends IBasicValidationServices
-{
+export interface IValidationServices extends IBasicValidationServices {
 
     /**
      * Factory to create Condition objects.
@@ -41,12 +40,22 @@ export interface IValidationServices extends IBasicValidationServices
      * Defaults to using the global defaultDataTypeServices.
      */
     DataTypeServices: IDataTypeServices;
-    
+
     /**
      * Service to get the IMessageTokenResolver instance that replaces
      * tokens in messages.
      * Defaults to using the global defaultMessageTokenResolverService
      */
     MessageTokenResolverService: IMessageTokenResolver;
+
+    /**
+     * Factory for generating classes that implement IValueHost that use IValueHostDescriptor.
+     */
+    ValueHostFactory: IValueHostFactory;
+
+    /**
+     * Factory for generating InputValidator.
+     */
+    InputValidatorFactory: IInputValidatorFactory;
 
 }

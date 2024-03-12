@@ -1,7 +1,6 @@
 import { BusinessLogicInputValueHostType, BusinessLogicValueHostId } from "./BusinessLogicInputValueHost";
 import { DeepClone, DeepEquals } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
-import { valGlobals } from "../Services/ValidationGlobals";
 import type { IValueHost, IValueHostDescriptor, IValueHostState } from "../Interfaces/ValueHost";
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "./ValueHostBase";
@@ -10,7 +9,6 @@ import type { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnap
 import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 import type { IValidationManagerState, IValidationManager } from "../Interfaces/ValidationManager";
-import { ValidationServices } from "../Services/ValidationServices";
 
 
 /**
@@ -238,7 +236,7 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * @returns 
      */
     protected ApplyDescriptor(descriptor: IValueHostDescriptor, initialState: IValueHostState | null): IValueHost {
-        let factory = valGlobals.GetValueHostFactory(); // functions in here throw exceptions if descriptor is unsupported
+        let factory = this.Services.ValueHostFactory; // functions in here throw exceptions if descriptor is unsupported
         let state: IValueHostState;
         let existingState = initialState;
         let defaultState = factory.CreateState(descriptor);
