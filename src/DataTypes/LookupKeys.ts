@@ -26,7 +26,9 @@ export const LowercaseStringLookupKey = 'Lowercase';    // string with all lette
 
 export const IntegerLookupKey = 'Integer';  // integer only. negative, thousands separator supported
 export const CurrencyLookupKey = 'Currency';    // number with currency formatting, including negatives.
-export const PercentageLookupKey = 'Percentage';    // number treated as a percentage, with optional Percent formatting, including negatives.
+export const PercentageLookupKey = 'Percentage';    // number treated as a percentage where 1.0 = 100%, with optional Percent formatting, including negatives.
+export const Percentage100LookupKey = 'Percentage100';  // number treated as a percentage where 100=100%, with optional Percent formatting, including negatives.
+
 // Flexible conversion from strings.
 // When converting to a string, it uses the short date pattern.
 export const ShortDateLookupKey = 'ShortDate'; // Strings in short date pattern, 1 or 2 digit month and day, 4 digit year.

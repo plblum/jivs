@@ -1,13 +1,11 @@
-import { ConditionFactory, RegisterStandardConditions } from "../src/Conditions/ConditionFactory";
+import { ConditionFactory } from "../src/Conditions/ConditionFactory";
 import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
-import { IntlDataTypeLocalization } from "../src/DataTypes/DataTypeLocalizedFormatters";
 
 import { type ILogger, LoggingLevel } from "../src/Interfaces/Logger";
 import { MessageTokenResolver  } from "../src/ValueHosts/MessageTokenResolver";
 import type { IValidationServices } from "../src/Interfaces/ValidationServices";
 import type { IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../src/ValueHosts/ValidationManager";
 import type { IValueHost, ISetValueOptions, IValueHostState } from "../src/Interfaces/ValueHost";
-import { CreateDataTypeResolverWithManyLAs } from "./DataTypes/DataTypeResolver.test";
 import { commonBuiltInFormatLookupKeys } from "../src/DataTypes/LookupKeys";
 import { IValueHostResolver, IValueHostsManager } from "../src/Interfaces/ValueHostResolver";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "../src/ValueHosts/ValueHostBase";
@@ -19,12 +17,14 @@ import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler
 import { IMessageTokenResolver } from "../src/Interfaces/InputValidator";
 import { IDataTypeResolver } from "../src/Interfaces/DataTypes";
 import { IValidationManager } from "../src/Interfaces/ValidationManager";
+import { CreateDataTypeResolverWithManyCultures } from "./DataTypes/DataTypeResolver.test";
+import { RegisterConditions, PopulateDataTypeResolver } from "../starter_code/create_services";
 
 
 export function CreateMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
 {
     let services = new MockValidationServices(false, false);
-    services.DataTypeResolverService = CreateDataTypeResolverWithManyLAs(registerLookupKeys);
+    services.DataTypeResolverService = CreateDataTypeResolverWithManyCultures(registerLookupKeys);
     return new MockValidationManager(services);
 }
 
@@ -167,7 +167,6 @@ export class MockInputValueHost extends MockValueHost
 /**
  * Flexible Mock ValidationServices with MockCapturingLogger.
  * Optionally populated with standard Conditions and data types.
- * Call its RegisterMoreCultures to support more than just 'en' culture.
  */
 export class MockValidationServices implements IValidationServices
 {
@@ -180,40 +179,11 @@ export class MockValidationServices implements IValidationServices
         this._loggerService = new MockCapturingLogger();
 
         if (registerStandardConditions) {
-            RegisterStandardConditions(this._conditionFactory as ConditionFactory);
-            RegisterPredictableConditions(this._conditionFactory as ConditionFactory);
+            RegisterConditions(this._conditionFactory as ConditionFactory);
+            RegisterTestingOnlyConditions(this._conditionFactory as ConditionFactory);
         }
-        if (registerStandardDataTypes &&
-            this._dataTypeResolverService instanceof DataTypeResolver) {    // used as a typecast
-            let la = new IntlDataTypeLocalization('en');
-            la.RegisterBuiltInLookupKeyFunctions(commonBuiltInFormatLookupKeys);
-            this._dataTypeResolverService.RegisterDataTypeLocalization(
-                la
-            );
-        }
-
-    }
-
-    public RegisterMoreCultures(dataTypeResolver: DataTypeResolver): void
-    {
-        function RegisterLookupKeys(la: IntlDataTypeLocalization): IntlDataTypeLocalization
-        {
-            la.RegisterBuiltInLookupKeyFunctions(commonBuiltInFormatLookupKeys);
-            return la;
-        }
-
-        if (!dataTypeResolver.HasLocalizationFor('en'))
-            dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
-                new IntlDataTypeLocalization('en')));
-        dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
-            new IntlDataTypeLocalization('fr', 'en', 'EUR')));
-        dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
-            new IntlDataTypeLocalization('en-GB', 'en-US', 'GBP')));
-        dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
-            new IntlDataTypeLocalization('en-US', 'en', 'USD')));
-        dataTypeResolver.RegisterDataTypeLocalization(RegisterLookupKeys(
-            new IntlDataTypeLocalization('fr-FR', 'fr', 'EUR')));
-
+        if (registerStandardDataTypes)
+            PopulateDataTypeResolver(this._dataTypeResolverService as DataTypeResolver);
     }
 
     public get ConditionFactory(): IConditionFactory
@@ -471,7 +441,7 @@ export class ThrowsExceptionCondition extends ConditionBase<IConditionDescriptor
         // does nothing
     }    
 }
-export function RegisterPredictableConditions(factory: ConditionFactory): void
+export function RegisterTestingOnlyConditions(factory: ConditionFactory): void
 {
     factory.Register(AlwaysMatchesConditionType, (descriptor) => new AlwaysMatchesCondition(descriptor));
     factory.Register(NeverMatchesConditionType, (descriptor) => new NeverMatchesCondition(descriptor));

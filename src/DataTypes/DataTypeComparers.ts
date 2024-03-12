@@ -57,7 +57,7 @@ function AssertPrimitive(value: any): void {
  * or when one is boolean and the other is null (for nullable booleans).
  * The rest are Undetermined
  */
-export class BooleanComparer implements IDataTypeComparer
+export class BooleanDataTypeComparer implements IDataTypeComparer
 {
     public SupportsValues(value1: any, value2: any): boolean {
         let isBool1 = typeof value1 === 'boolean';

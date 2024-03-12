@@ -77,3 +77,17 @@ export function ObjectKeysCount(object: Object | null): number
 {
     return object ? Object.keys(object).length : 0;
 }
+
+/**
+ * Returns the country code part of the cultureId.
+ * If cultureId is only that already, it gets returned.
+ * @param cultureId 
+ * @returns 
+ */
+export function CultureCountryCode(cultureId: string): string
+{
+    let pos = cultureId.indexOf('-');
+    if (pos > 0)
+        return cultureId.substring(0, pos);
+    return cultureId;
+}

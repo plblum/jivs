@@ -1,10 +1,10 @@
 import { StringLookupKey } from './LookupKeys';
-import { BooleanComparer, DefaultComparer } from "./DataTypeComparers";
-import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
+import { DefaultComparer } from "./DataTypeComparers";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, IDataTypeLocalization, IDataTypeConverter, ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
-import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, NumberDataTypeIdentifier, StringDataTypeIdentifier } from "./DataTypeIdentifiers";
-import { UTCDateOnlyConverter, DateTimeConverter, CaseInsensitiveStringConverter, LocalDateOnlyConverter, RoundToWholeConverter, TotalDaysConverter } from "./DataTypeConverters";
+import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
+import { valGlobals } from '../Services/ValidationGlobals';
+import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
+
 
 /**
  * {@Link DataTypeResolver} handles various data types of the values.
@@ -39,27 +39,25 @@ import { UTCDateOnlyConverter, DateTimeConverter, CaseInsensitiveStringConverter
  * - Comparing them
  * It works in conjunction with the DataType Lookup Keys @see {@link StringLookupKey }.
  * 
- * Formatting supports localization, keeping a list of one or more DataTypeLocalizations,
- * for various cultures.
- * Each DataTypeLocalization has its own list of lookup keys registered.
- * If you supply it with a lookup key that it doesn't handle,
- * fallback rules apply:
- * - Thru fallback DataTypeLocalizations. So first try "en-FR", then "en-US", then "en"
- * (where each has its own DataTypeLocalization)
- * - Thru any additional lookup keys defined in the service itself.
- * Those additional lookup keys are intended to cover cases that are not localizable.
+ * Formatting supports localization, keeping a list of one or more IDataTypeLocalizedFormatters,
+ * for all supported cultures.
+ * As you set it up, you must supply a list of one or more CultureConfig objects.
+ * Each identifies a culture that you support and a fallback culture when the desired culture
+ * didn't support the Format.
  */
 export class DataTypeResolver implements IDataTypeResolver {
-    constructor(activeCultureID: string = 'en', ...dataTypeLocalizations: Array<IDataTypeLocalization>) {
-        this._activeCultureID = activeCultureID;
-        this._dataTypeLocalizations = new Map<string, IDataTypeLocalization>();
-        if (dataTypeLocalizations)
-            dataTypeLocalizations.forEach((la) => {
-                this._dataTypeLocalizations.set(la.CultureID, la);
-            });
-        this.RegisterStandardDataTypeIdentifiers();
-        this.RegisterStandardDataTypeConverters();
-        this.RegisterStandardDataTypeComparers();
+    /**
+     * Constructor
+     * @param activeCultureID - If not supplied, it uses valGlobals.DefaultCultureId, which itself
+     * defaults to 'en'
+     * @param cultureConfig - All of the cultures that you intend to support, along with fallback Cultures
+     */
+    constructor(activeCultureID?: string | null, cultureConfig?: Array<CultureConfig> | null) {
+        this._activeCultureID = activeCultureID ?? valGlobals.DefaultCultureId;
+        if (!cultureConfig || cultureConfig.length === 0)
+            this._cultureConfig = [{ CultureId: this._activeCultureID }];
+        else
+            this._cultureConfig = DeepClone(cultureConfig) as Array<CultureConfig>;
     }
     /**
      * The culture shown to the user in the app. Its the ISO language-region format.
@@ -74,15 +72,42 @@ export class DataTypeResolver implements IDataTypeResolver {
     }
     private _activeCultureID: string;
 
+    protected get CultureConfig(): Array<CultureConfig> {
+        return this._cultureConfig;
+    }
+    private _cultureConfig: Array<CultureConfig>;
+
     /**
-     * All IDataTypeLocalizations, where the key is the CultureID
+     * Utility to check for the presence of a Culture.
+     * Will fallback to language only check if language-country
+     * cultureID doesn't find a match. In other words, if 'en-US' isn't found,
+     * it tries 'en'.
+     * @returns the found cultureID, so you know if it exactly matched or just 
+     * got the language. If no match, returns null.
      */
-    private _dataTypeLocalizations: Map<string, IDataTypeLocalization>;
+    public GetClosestCultureId(cultureId: string): string | null {
+        let cc = this.GetClosestCultureConfig(cultureId);
+        if (cc)
+            return cc.CultureId;
+        return null;
+    }
+    protected GetClosestCultureConfig(cultureId: string): CultureConfig | null {
+        let cc = this.GetCultureConfig(cultureId);
+        if (!cc) {
+            let lang = CultureCountryCode(cultureId);
+            if (lang !== cultureId) {
+                cc = this.GetCultureConfig(lang);
+            }
+        }
+        return cc ?? null;
+    }    
+    protected GetCultureConfig(cultureId: string): CultureConfig | null
+    {
+        return this._cultureConfig.find((cc) => cc.CultureId === cultureId) ?? null;
+    }
 
-    // these will be created only if needed
-    private _additionalFormatFunctions: NameToFunctionMapper<any, IDataTypeResolution<string>> | null = null;
-    private _comparers: Array<IDataTypeComparer> | null = null;
 
+    //#region Format, IDataTypeLocalizedFormatter and AdditionalFormatters.    
     /**
      * Converts the native value to a string that can be shown to the user.
      * Result includes the successfully converted value
@@ -98,35 +123,83 @@ export class DataTypeResolver implements IDataTypeResolver {
             lookupKey = this.IdentifyLookupKey(value);
         if (lookupKey === null)
             throw new Error('Value type requires a LookupKey');
-        let nextCultureID: string | null = this._activeCultureID;
-        while (nextCultureID) {
-            let la = this._dataTypeLocalizations.get(nextCultureID);
-            if (!la)
-                break;  // hand off to additionalstrings
-            if (la.CanFormat(lookupKey))
+        let cultureId: string | null = this._activeCultureID;
+        while (cultureId) {
+            let cc = this.GetCultureConfig(cultureId);
+            if (!cc)
+                break;  // hand off to additionalFormatters
+            let dtlf = this.GetLocalizedFormatter(lookupKey, cultureId);
+            if (dtlf)
                 try {
-                    return la.Format(value, lookupKey);
+                    return dtlf.Format(value, lookupKey, cultureId);
                 }
                 catch (e) {
                     return { ErrorMessage: (e as Error).message };
                 }
-            nextCultureID = la.FallbackCultureID;
+            cultureId = cc.FallbackCultureId ?? null;
         }
-        if (this._additionalFormatFunctions) {
-            let addl = this._additionalFormatFunctions.Get(lookupKey);
-            if (addl) {
-                try {
-                    return addl(value);
-                }
-                catch (e) {
-                    return { ErrorMessage: (e as Error).message };
-                }
 
-            }
-        }
+        //!!! change this to logging error.
         throw new Error(`Unsupported LookupKey ${lookupKey}`);
     }
 
+    /**
+      * Registers an IDataTypeLocalizedFormatter for use by the Format function.
+      * If the LookupKey was previously registered, its instance is replaced.
+      * @param lookupKey 
+      * @param dtlf
+      */
+    public RegisterLocalizedFormatter(dtlf: IDataTypeLocalizedFormatter): void {
+        AssertNotNull(dtlf, 'dtlf');
+        if (!this._dataTypeLocalizedFormatters)
+            this._dataTypeLocalizedFormatters = [];
+        this._dataTypeLocalizedFormatters.push(dtlf);
+    }
+    /**
+     * Removes the first IDataTypeLocalizedFormatter that supports both parameters.
+     * @param lookupKey 
+     * @param cultureID 
+     * @returns 
+     */
+    public UnregisterLocalizedFormatter(lookupKey: string, cultureID: string): boolean {
+        let index = this.GetLocalizedFormatters().findIndex((dtlf) => dtlf.Supports(lookupKey, cultureID));
+        if (index >= 0) {
+            this._dataTypeLocalizedFormatters!.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Gets the IDataTypeLocalizedFormatter associated with the lookup key and this class's
+     * own CultureID.
+     * @param lookupKey
+     * @returns A matching IDataTypeLocalizedFormatter or null if none match.
+     */
+    public GetLocalizedFormatter(lookupKey: string, cultureId: string): IDataTypeLocalizedFormatter | null {
+        return this.GetLocalizedFormatters().find((dtlf) => dtlf.Supports(lookupKey, cultureId)) ?? null;
+    }
+
+    /**
+     * If the user hasn't registered any, this registers the standard
+     * IDataTypeLocalizedFormatters.
+     */
+    protected GetLocalizedFormatters() : Array<IDataTypeLocalizedFormatter>
+    {
+        if (!this._dataTypeLocalizedFormatters) {
+            this._dataTypeLocalizedFormatters = [];
+        }
+        return this._dataTypeLocalizedFormatters;
+    }
+
+    /**
+     * All registered IDataTypeLocalizedFormatters.
+     */
+    private _dataTypeLocalizedFormatters: Array<IDataTypeLocalizedFormatter>|null = null;
+
+    //#endregion Format, IDataTypeLocalizedFormatter.
+
+    //#region CompareValues and IDataTypeComparer
     /**
      * Compares two same-type values to see if they are equal or not.
      * It can return Equals and NotEquals for types that make no sense
@@ -156,8 +229,7 @@ export class DataTypeResolver implements IDataTypeResolver {
             }
             return key;
         }
-        function handleNullsAndUndefined(v1: any, v2: any): ComparersResult | null
-        {
+        function handleNullsAndUndefined(v1: any, v2: any): ComparersResult | null {
             if (v1 === null || v2 === null)
                 return v1 === v2 ? ComparersResult.Equals : ComparersResult.Undetermined;
             if (v1 === undefined || v2 === undefined)
@@ -187,7 +259,7 @@ export class DataTypeResolver implements IDataTypeResolver {
         let comparerCU = this.GetDataTypeComparer(cleanedUpValue1, cleanedUpValue2);
         if (comparerCU)
             return comparerCU.Compare(cleanedUpValue1, cleanedUpValue2);
-        
+
         return DefaultComparer(cleanedUpValue1, cleanedUpValue2);
     }
 
@@ -195,8 +267,7 @@ export class DataTypeResolver implements IDataTypeResolver {
         let dtc = this.GetDataTypeConverter(value, lookupKey);
         if (dtc) {
             value = dtc.Convert(value, lookupKey!);
-            switch (typeof value)
-            {
+            switch (typeof value) {
                 case 'number':
                 case 'string':
                 case 'boolean':
@@ -214,25 +285,9 @@ export class DataTypeResolver implements IDataTypeResolver {
         }
         return value;
     }
-    /**
-     * Extends the lookupKeys available to Format.
-     * Adds or replaces a LookupKey that is not associated with localization
-     * or is used as a fallback when no DataTypeLocalization supported the key.
-     * If the LookupKey was previously registered, its function is replaced.
-     * @param lookupKey 
-     * @param fn 
-     */
-    public RegisterAdditionalFormatters(lookupKey: string, fn: (value: string) => IDataTypeResolution<string>): void {
-        AssertNotNull(lookupKey, 'lookupKey');
-        AssertNotNull(fn, 'fn');
-        if (!this._additionalFormatFunctions)
-            this._additionalFormatFunctions = new NameToFunctionMapper<any, IDataTypeResolution<string>>();
-        this._additionalFormatFunctions.Register(lookupKey, fn);
-    }
 
     /**
-     * Supports CompareValues function.
-     * Adds or replaces a LookupKey and associated CompareValues function.
+     * Registers an IDataTypeComparer implementation.
      * @param comparer
      */
     public RegisterDataTypeComparer(comparer: IDataTypeComparer): void {
@@ -242,9 +297,6 @@ export class DataTypeResolver implements IDataTypeResolver {
             this._comparers = [];
         this._comparers.push(comparer);
     }
-    protected RegisterStandardDataTypeComparers(): void {
-        this.RegisterDataTypeComparer(new BooleanComparer());
-    }
 
     /**
      * Returns a comparer that supports both values or null if not.
@@ -252,12 +304,19 @@ export class DataTypeResolver implements IDataTypeResolver {
      * @param value2 
      * @returns 
      */
-    protected GetDataTypeComparer(value1: any, value2: any): IDataTypeComparer | null
+    protected GetDataTypeComparer(value1: any, value2: any): IDataTypeComparer | null {
+        return this.GetDataTypeComparers().find((dtc) => dtc.SupportsValues(value1, value2)) ?? null;
+    }
+
+    protected GetDataTypeComparers(): Array<IDataTypeComparer>
     {
         if (!this._comparers)
-            return null;
-        return this._comparers.find((dtc) => dtc.SupportsValues(value1, value2)) ?? null;
+            this._comparers = [];
+        return this._comparers;
     }
+
+    private _comparers: Array<IDataTypeComparer> | null = null;
+    //#endregion IDataTypeComparer
 
     //#region DataTypeIdentifiers
 
@@ -283,13 +342,13 @@ export class DataTypeResolver implements IDataTypeResolver {
      */
     public RegisterDataTypeIdentifier(identifier: IDataTypeIdentifier): void {
         AssertNotNull(identifier, 'identifier');
-        let existingPos = this._dataTypeIdentifiers.findIndex((idt) => idt.DataTypeLookupKey.toLowerCase() === identifier.DataTypeLookupKey.toLowerCase());
+        let existingPos = this.GetDataTypeIdentifiers().findIndex((idt) => idt.DataTypeLookupKey.toLowerCase() === identifier.DataTypeLookupKey.toLowerCase());
         if (existingPos < 0)
-            this._dataTypeIdentifiers.push(identifier);
+            this._dataTypeIdentifiers!.push(identifier);
         else
-            this._dataTypeIdentifiers[existingPos] = identifier;
+            this._dataTypeIdentifiers![existingPos] = identifier;
     }
-    private _dataTypeIdentifiers: Array<IDataTypeIdentifier> = [];
+    private _dataTypeIdentifiers: Array<IDataTypeIdentifier> | null = null;
 
     /**
      * Returns the matching DataType LookupKey for the given value or null if not supported.
@@ -297,14 +356,16 @@ export class DataTypeResolver implements IDataTypeResolver {
      * @returns 
      */
     protected GetDataTypeIdentifier(value: any): IDataTypeIdentifier | null {
-        return this._dataTypeIdentifiers.find((idt) => idt.SupportsValue(value)) ?? null;
+        return this.GetDataTypeIdentifiers().find((idt) => idt.SupportsValue(value)) ?? null;
     }
-    protected RegisterStandardDataTypeIdentifiers(): void {
-        this.RegisterDataTypeIdentifier(new NumberDataTypeIdentifier());
-        this.RegisterDataTypeIdentifier(new StringDataTypeIdentifier());
-        this.RegisterDataTypeIdentifier(new BooleanDataTypeIdentifier());
-        this.RegisterDataTypeIdentifier(new DateDataTypeIdentifier());
+    protected GetDataTypeIdentifiers(): Array<IDataTypeIdentifier>
+    {
+        if (!this._dataTypeIdentifiers)
+            this._dataTypeIdentifiers = [];
+
+        return this._dataTypeIdentifiers;
     }
+
     //#endregion IDataTypeIdentifiers
 
     //#region IConvertTo
@@ -315,9 +376,10 @@ export class DataTypeResolver implements IDataTypeResolver {
      */
     public RegisterDataTypeConverter(converter: IDataTypeConverter): void {
         AssertNotNull(converter, 'converter');
+        if (!this._converters)
+            this._converters = [];
         this._converters.push(converter);
     }
-    private _converters: Array<IDataTypeConverter> = [];
 
     /**
      * Gets the first IDataTypeConverter that supports the value, or null if none are found.
@@ -326,62 +388,38 @@ export class DataTypeResolver implements IDataTypeResolver {
      * @returns 
      */
     public GetDataTypeConverter(value: any, dataTypeLookupKey: string | null): IDataTypeConverter | null {
-        return this._converters.find((dtc) => dtc.SupportsValue(value, dataTypeLookupKey)) ?? null;
+        return this.GetDataTypeConverters().find((dtc) => dtc.SupportsValue(value, dataTypeLookupKey)) ?? null;
     }
+    protected GetDataTypeConverters(): Array<IDataTypeConverter>
+    {
+        if (!this._converters)
+            this._converters = [];
+        return this._converters;
+    }
+    private _converters: Array<IDataTypeConverter> | null = null;
 
-    protected RegisterStandardDataTypeConverters(): void {
-        this.RegisterDataTypeConverter(new CaseInsensitiveStringConverter());
-        this.RegisterDataTypeConverter(new UTCDateOnlyConverter());
-        this.RegisterDataTypeConverter(new DateTimeConverter());
-        this.RegisterDataTypeConverter(new LocalDateOnlyConverter());
-        this.RegisterDataTypeConverter(new TotalDaysConverter());
-        this.RegisterDataTypeConverter(new RoundToWholeConverter());
-    }
     //#endregion IConvertTo
-
-    //#region utilities    
-    /**
-     * Add or replace a DataTypeLocalization for a specific CultureID.
-     * @param la 
-     */
-    public RegisterDataTypeLocalization(la: IDataTypeLocalization): void {
-        this._dataTypeLocalizations.set(la.CultureID, la);
-    }
-
-    /**
-     * Utility to check for the presence of a IDataTypeLocalization
-     * based on a cultureID.
-     * Will fallback to language only check if language-country
-     * cultureID doesn't find a match.
-     */
-    public HasLocalizationFor(cultureID: string): boolean {
-        return this.GetMatchingDataTypeLocalization(cultureID) !== null;
-    }
-    /**
-     * Gets an IDataTypeLocalization matching the cultureID.
-     * If not found, it tries for an IDataTypeLocalization with just 
-     * the languageCode. So if 'en-US' is not found, it will try 'en'
-     * @param cultureID 
-     * @returns instance found or null
-     */
-    protected GetMatchingDataTypeLocalization(cultureID: string):
-        IDataTypeLocalization | null {
-        let la = this._dataTypeLocalizations.get(cultureID);
-        if (!la) {
-            let pos = cultureID.indexOf('-');
-            if (pos > 0)
-                la = this._dataTypeLocalizations.get(cultureID.substring(0, pos));
-        }
-        return la ?? null;
-    }
-    public GetDataTypeLocalization(cultureID: string): IDataTypeLocalization | null {
-        return this._dataTypeLocalizations.get(cultureID) ?? null;
-    }
-    public HasAdditionalFormatLookupKey(lookupKey: string): boolean {
-        return (this._additionalFormatFunctions != null &&
-            this._additionalFormatFunctions.Get(lookupKey) != null);
-    }
-
-    //#endregion utilities
 }
 
+/**
+ * Identifies a CultureID ('en', 'en-US', 'en-GB', etc) that you are supporting.
+ * Supplies a fallback CultureID if the culture requested did not have any support.
+ * Used by DataTypeResolver. Pass an array of these into the DataTypeResolver constructor.
+ */
+export interface CultureConfig {
+    /**
+     * The ISO culture name pattern in use:
+     * languagecode
+     * languagecode-countrycode or regioncode
+     * "en", "en-GB", "en-US"
+     * If this needs to change, it is OK if you set it and the Adaptor reconfigure,
+     * or to create a new instance and use it.
+     */
+    CultureId: string;
+
+    /**
+     * Identifies another culture to check if a lookup key cannot be resolved.
+     * Caller should find another DataTypeLocalization for that culture.
+     */
+    FallbackCultureId?: string | null;
+}

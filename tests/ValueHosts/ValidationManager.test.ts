@@ -1,11 +1,11 @@
 import { RequiredTextConditionType } from '../../src/Conditions/ConcreteConditions';
-import { ConditionFactory, RegisterStandardConditions } from "../../src/Conditions/ConditionFactory";
+import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { DataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValidationManagerCallbacks, ToIValidationManagerCallbacks, ValidationManager, ValidationManagerConfig, ValidationManagerStateChangedHandler } from "../../src/ValueHosts/ValidationManager";
 import { IValueHost, IValueHostDescriptor, IValueHostState } from "../../src/Interfaces/ValueHost";
-import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationManager, MockValidationServices, NeverMatchesConditionType, RegisterPredictableConditions } from "../Mocks";
+import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationManager, MockValidationServices, NeverMatchesConditionType, RegisterTestingOnlyConditions } from "../Mocks";
 import { InputValueHostType, InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
 import { BusinessLogicInputValueHost, BusinessLogicValueHostId } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { ValueHostId } from '../../src/DataTypes/BasicTypes';
@@ -17,6 +17,7 @@ import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { DeepClone } from '../../src/Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, ToIValueHostResolver, ToIValueHostsManager, ToIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
 import { NonInputValueHost } from '../../src/ValueHosts/NonInputValueHost';
+import { CreateDataTypeResolver, RegisterConditions } from '../../starter_code/create_services';
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<IValidationManagerState> {
@@ -62,12 +63,7 @@ describe('constructor and initial property values', () => {
         expect(() => testItem = new PublicifiedValidationManager(null!)).toThrow(/config/);
     
     });
-    test('No Services creates a ValidationServices object with default configuration', () => {
-        let descriptors: Array<IValueHostDescriptor> = [];
-        let testItem: PublicifiedValidationManager | null = null;
-        expect(() => testItem = new PublicifiedValidationManager({ ValueHostDescriptors: [] })).not.toThrow();
-        expect(testItem!.Services).toBeInstanceOf(ValidationServices);
-    });
+
     test('Descriptor for 1 ValueHost supplied. Other parameters are null', () => {
         let descriptors: Array<IValueHostDescriptor> = [{
             Id: 'Field1',
@@ -775,11 +771,11 @@ function SetupValidationManager(descriptors?: Array<IInputValueHostDescriptor> |
     } {
     let services = new ValidationServices();
     let conditionFactory = new ConditionFactory();
-    RegisterStandardConditions(conditionFactory);
-    RegisterPredictableConditions(conditionFactory);
+    RegisterConditions(conditionFactory);
+    RegisterTestingOnlyConditions(conditionFactory);
     services.ConditionFactory = conditionFactory;
     services.LoggerService = new MockCapturingLogger();
-    services.DataTypeResolverService = new DataTypeResolver();
+    services.DataTypeResolverService = CreateDataTypeResolver();
     services.MessageTokenResolverService = new MessageTokenResolver();
     
     let config: ValidationManagerConfig = {
@@ -1354,7 +1350,7 @@ describe('ToIValueHostResolverfunction', () => {
     });
     test('ValidationManager matches and returns itself.', () => {
         let testItem = new ValidationManager({
-            Services: null,
+            Services: new ValidationServices(),
             ValueHostDescriptors: []
         });
         expect(ToIValueHostResolver(testItem)).toBe(testItem);
@@ -1381,7 +1377,7 @@ describe('ToIValueHostsManager function', () => {
     });
     test('ValidationManager matches and returns itself.', () => {
         let testItem = new ValidationManager({
-            Services: null,
+            Services: new ValidationServices(),
             ValueHostDescriptors: []
         });
         expect(ToIValueHostsManager(testItem)).toBe(testItem);
@@ -1445,7 +1441,7 @@ describe('ToIValidationManagerCallbacks function', () => {
     });
     test('ValidationManager matches and returns itself.', () => {
         let testItem = new ValidationManager({
-            Services: null,
+            Services: new ValidationServices(),
             ValueHostDescriptors: []
         });
         expect(ToIValidationManagerCallbacks(testItem)).toBe(testItem);

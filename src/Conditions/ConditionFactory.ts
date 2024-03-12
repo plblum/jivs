@@ -1,24 +1,3 @@
-
-import type {
-    IRequiredTextConditionDescriptor,
-    IRequiredIndexConditionDescriptor, IRangeConditionDescriptor, ICompareToConditionDescriptor,
-    IStringLengthConditionDescriptor,
-    IRegExpConditionDescriptor,
-    IDataTypeCheckConditionDescriptor,
-    IAndConditionsDescriptor,
-    IOrConditionsDescriptor,
-    ICountMatchingConditionsDescriptor,
-} from "./ConcreteConditions";
-import {
-    RequiredTextConditionType, RequiredTextCondition,
-    RequiredIndexConditionType, RequiredIndexCondition, RangeConditionType,
-    RangeCondition, ValuesEqualConditionType, ValuesEqualCondition, ValuesNotEqualConditionType,
-    ValuesNotEqualCondition, ValueGTSecondValueConditionType, ValueGTSecondValueCondition, ValueLTSecondValueConditionType, ValueLTSecondValueCondition,
-    ValueGTESecondValueConditionType, ValueGTESecondValueCondition, ValueLTESecondValueConditionType, ValueLTESecondValueCondition,
-    StringLengthConditionType, StringLengthCondition, RegExpConditionType, RegExpCondition, AndConditions, AndConditionsType,
-    CountMatchingConditions, OrConditions, OrConditionsType, CountMatchingConditionsType, EveryConditionType, AnyConditionsType,
-    DataTypeCheckCondition, DataTypeCheckConditionType
-} from "./ConcreteConditions";
 import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
 import type { IConditionDescriptor, ICondition, IConditionCore, IConditionFactory } from "../Interfaces/Conditions";
 
@@ -69,41 +48,41 @@ export class ConditionFactory implements IConditionFactory {
     }
 }
 
-export function RegisterStandardConditions(factory: ConditionFactory): void {
-    factory.Register<IDataTypeCheckConditionDescriptor>(
-        DataTypeCheckConditionType, (descriptor) => new DataTypeCheckCondition(descriptor));
-    factory.Register<IRequiredTextConditionDescriptor>(
-        RequiredTextConditionType, (descriptor) => new RequiredTextCondition(descriptor));
-    factory.Register<IRequiredIndexConditionDescriptor>(
-        RequiredIndexConditionType, (descriptor) => new RequiredIndexCondition(descriptor));
-    factory.Register<IRegExpConditionDescriptor>(
-        RegExpConditionType, (descriptor) => new RegExpCondition(descriptor));
-    factory.Register<IRangeConditionDescriptor>(
-        RangeConditionType, (descriptor) => new RangeCondition(descriptor));
-    factory.Register<ICompareToConditionDescriptor>(
-        ValuesEqualConditionType, (descriptor) => new ValuesEqualCondition(descriptor));
-    factory.Register<ICompareToConditionDescriptor>
-        (ValuesNotEqualConditionType, (descriptor) => new ValuesNotEqualCondition(descriptor));
-    factory.Register<ICompareToConditionDescriptor>
-        (ValueGTSecondValueConditionType, (descriptor) => new ValueGTSecondValueCondition(descriptor));
-    factory.Register<ICompareToConditionDescriptor>
-        (ValueLTSecondValueConditionType, (descriptor) => new ValueLTSecondValueCondition(descriptor));
-    factory.Register<ICompareToConditionDescriptor>
-        (ValueGTESecondValueConditionType, (descriptor) => new ValueGTESecondValueCondition(descriptor));
-    factory.Register<ICompareToConditionDescriptor>
-        (ValueLTESecondValueConditionType, (descriptor) => new ValueLTESecondValueCondition(descriptor));
-    factory.Register<IStringLengthConditionDescriptor>
-        (StringLengthConditionType, (descriptor) => new StringLengthCondition(descriptor));
-    factory.Register<IAndConditionsDescriptor>
-        (AndConditionsType, (descriptor) => new AndConditions(descriptor));
-    factory.Register<IOrConditionsDescriptor>
-        (OrConditionsType, (descriptor) => new OrConditions(descriptor));
-    factory.Register<ICountMatchingConditionsDescriptor>
-        (CountMatchingConditionsType, (descriptor) => new CountMatchingConditions(descriptor));
-    // aliases for users who don't deal well with boolean logic can relate
-    factory.Register<IAndConditionsDescriptor>
-        (EveryConditionType, (descriptor) => new AndConditions(descriptor));
-    factory.Register<IOrConditionsDescriptor>
-        (AnyConditionsType, (descriptor) => new OrConditions(descriptor));    
-}
+// export function RegisterStandardConditions(factory: ConditionFactory): void {
+//     factory.Register<IDataTypeCheckConditionDescriptor>(
+//         DataTypeCheckConditionType, (descriptor) => new DataTypeCheckCondition(descriptor));
+//     factory.Register<IRequiredTextConditionDescriptor>(
+//         RequiredTextConditionType, (descriptor) => new RequiredTextCondition(descriptor));
+//     factory.Register<IRequiredIndexConditionDescriptor>(
+//         RequiredIndexConditionType, (descriptor) => new RequiredIndexCondition(descriptor));
+//     factory.Register<IRegExpConditionDescriptor>(
+//         RegExpConditionType, (descriptor) => new RegExpCondition(descriptor));
+//     factory.Register<IRangeConditionDescriptor>(
+//         RangeConditionType, (descriptor) => new RangeCondition(descriptor));
+//     factory.Register<ICompareToConditionDescriptor>(
+//         ValuesEqualConditionType, (descriptor) => new ValuesEqualCondition(descriptor));
+//     factory.Register<ICompareToConditionDescriptor>
+//         (ValuesNotEqualConditionType, (descriptor) => new ValuesNotEqualCondition(descriptor));
+//     factory.Register<ICompareToConditionDescriptor>
+//         (ValueGTSecondValueConditionType, (descriptor) => new ValueGTSecondValueCondition(descriptor));
+//     factory.Register<ICompareToConditionDescriptor>
+//         (ValueLTSecondValueConditionType, (descriptor) => new ValueLTSecondValueCondition(descriptor));
+//     factory.Register<ICompareToConditionDescriptor>
+//         (ValueGTESecondValueConditionType, (descriptor) => new ValueGTESecondValueCondition(descriptor));
+//     factory.Register<ICompareToConditionDescriptor>
+//         (ValueLTESecondValueConditionType, (descriptor) => new ValueLTESecondValueCondition(descriptor));
+//     factory.Register<IStringLengthConditionDescriptor>
+//         (StringLengthConditionType, (descriptor) => new StringLengthCondition(descriptor));
+//     factory.Register<IAndConditionsDescriptor>
+//         (AndConditionsType, (descriptor) => new AndConditions(descriptor));
+//     factory.Register<IOrConditionsDescriptor>
+//         (OrConditionsType, (descriptor) => new OrConditions(descriptor));
+//     factory.Register<ICountMatchingConditionsDescriptor>
+//         (CountMatchingConditionsType, (descriptor) => new CountMatchingConditions(descriptor));
+//     // aliases for users who don't deal well with boolean logic can relate
+//     factory.Register<IAndConditionsDescriptor>
+//         (EveryConditionType, (descriptor) => new AndConditions(descriptor));
+//     factory.Register<IOrConditionsDescriptor>
+//         (AnyConditionsType, (descriptor) => new OrConditions(descriptor));    
+// }
 //#endregion ConditionFactory

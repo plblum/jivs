@@ -1,5 +1,8 @@
+import { UTCDateOnlyConverter } from "../src/DataTypes/DataTypeConverters";
+import { DateDataTypeIdentifier } from "../src/DataTypes/DataTypeIdentifiers";
 import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
 import { ComparersResult } from "../src/Interfaces/DataTypes";
+import { CreateDataTypeResolver } from "../starter_code/create_services";
 import { RelativeDataLookupKey, RelativeDate, RelativeDateConverter, RelativeDateIdentifier } from "./ComparingCustomDataTypeAsDate";
 
 // All test relative to 2001-05-15
@@ -37,14 +40,15 @@ test('Test RelativeDateConverter class members for expected results', () => {
     expect(dtc.SupportsValue(new Date(), RelativeDataLookupKey)).toBe(false);
 });
 test('Register and test values against the RelativeDateIdentifier', () => {
-    let dataTypeResolver = new DataTypeResolver();
+    let dataTypeResolver = CreateDataTypeResolver();
     dataTypeResolver.RegisterDataTypeIdentifier(new RelativeDateIdentifier());
 
     expect(dataTypeResolver.IdentifyLookupKey(new RelativeDate(0, 1, 0))).toBe(RelativeDataLookupKey);
 });
 
 test('Register and test values against RelativeDateConverter', () => {
-    let dataTypeResolver = new DataTypeResolver(); 
+    let dataTypeResolver = CreateDataTypeResolver();
+    dataTypeResolver.RegisterDataTypeIdentifier(new RelativeDateIdentifier());
     dataTypeResolver.RegisterDataTypeConverter(new RelativeDateConverter());
     let relativeDate1 = new RelativeDate(1, 0);
     let relativeDate2 = new RelativeDate(2, 0);

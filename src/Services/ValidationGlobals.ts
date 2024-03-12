@@ -1,4 +1,4 @@
-import { ConditionFactory, RegisterStandardConditions } from "../Conditions/ConditionFactory";
+import { ConditionFactory } from "../Conditions/ConditionFactory";
 import { DataTypeResolver } from "../DataTypes/DataTypeResolver";
 import { InputValidatorFactory } from "../ValueHosts/InputValidator";
 import { ConsoleLogger } from "./ConsoleLogger";
@@ -21,6 +21,41 @@ import { IConditionFactory } from "../Interfaces/Conditions";
  */
 export class ValidationGlobals
 {
+/**
+ * The DataTypeResolver gets configured in its constructure, which needs to know of
+ * one or more CultureIds (like 'en' or 'en-GB') that its localization supports.
+ * This global is used when DataTypeResolver does not get those parameters.
+ * Its own default is 'en'.
+ */    
+    public get DefaultCultureId(): string
+    {
+        return this._defaultCultureId;
+    }
+    public set DefaultCultureId(cultureId: string)
+    {
+        AssertNotNull(cultureId, 'cultureId');
+        this._defaultCultureId = cultureId;
+    }
+    private _defaultCultureId = 'en';
+
+/**
+ * If you need to format a number as a currency in an error message,
+ * this provides a default currency code to the built-in
+ * CurrencyLocalizedFormatter which does the actual work.
+ * CurrencyLocalizedFormatter uses the Intl library, which doesn't
+ * know how to map a culture to a currency code.
+ * This is intended to bridge that gap, along with the constructor
+ * to CurrencyLocalizedFormatter.
+ */    
+    public get DefaultCurrencyCode(): string
+    {
+        return this._defaultCurrencyCode
+    }
+    public set DefaultCurrencyCode(code: string)
+    {
+        this._defaultCurrencyCode = code;
+    }
+    private _defaultCurrencyCode: string = 'USD';
 //#region ValueHostFactory
     /**
      * The ValueHostFactory to use. It is NOT associated with the ValidationServices.
@@ -73,9 +108,7 @@ export class ValidationGlobals
     {
         if (!this._defaultConditionFactory)
         {
-            let cf = new ConditionFactory();
-            RegisterStandardConditions(cf);    
-            this._defaultConditionFactory = cf;
+            this._defaultConditionFactory = new ConditionFactory();
         }
         return this._defaultConditionFactory;
     }

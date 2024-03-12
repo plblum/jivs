@@ -22,6 +22,7 @@ import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { ISetValueOptions, IValueHost, IValueHostState } from "../../src/Interfaces/ValueHost";
 import { IInputValueHostCallbacks, ToIInputValueHostCallbacks, ValueHostValidatedHandler, InputValueChangedHandler } from "../../src/ValueHosts/InputValueHostBase";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "../../src/ValueHosts/ValueHostBase";
+import { CreateValidationServices } from "../../starter_code/create_services";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -2521,7 +2522,7 @@ describe('InputValueHost.OtherValueHostChangedNotification and SetValues trigger
                 }]
             }
         ];
-        let services = new ValidationServices();
+        let services = CreateValidationServices();
         let vm = new ValidationManager({ Services: services, ValueHostDescriptors: vhDescriptors });   // the real thing so we use real InputValueHosts
 
 

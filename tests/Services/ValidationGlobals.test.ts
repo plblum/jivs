@@ -8,7 +8,27 @@ import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { LoggingLevel } from "../../src/Interfaces/Logger";
 
 
+describe('DefaultCultureId', () => {
+    test('Get with default as en', () => {
+        expect(valGlobals.DefaultCultureId).toBe('en');
+    });
+    test('Set then get an alternative', () => {
+        ResetValGlobals();
+        expect(() => valGlobals.DefaultCultureId = 'fr-FR').not.toThrow();
+        expect(valGlobals.DefaultCultureId).toBe('fr-FR');
+    });
+});
 
+describe('DefaultCurrencyCode', () => {
+    test('Get with default as USD', () => {
+        expect(valGlobals.DefaultCurrencyCode).toBe('USD');
+    });
+    test('Set then get an alternative', () => {
+        ResetValGlobals();
+        expect(() => valGlobals.DefaultCurrencyCode = 'EUR').not.toThrow();
+        expect(valGlobals.DefaultCurrencyCode).toBe('EUR');
+    });
+});
 describe('Global Defaults for ValueHostFactory', () => {
     test('_valueHostFactory global', () => {
         ResetValGlobals();

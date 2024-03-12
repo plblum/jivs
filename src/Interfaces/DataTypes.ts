@@ -77,9 +77,8 @@ export interface IDataTypeResolution<T>
  * Its task is to support the lookupKeys of the DataTypeResolver
  * by executing a function that returns a localized result for that lookup Key.
  * For example, with Format, "Date" will return a string formatted in short date format 
- * specific to the culture. With ToNative, "Date" will tell the string parser
- * to understand the ##/##/## pattern specific to the culture.
- * DataTypeResolver may have many instances of this, for each culture
+ * specific to the culture.
+ * DataTypeResolver may have many instances of this, for each culture ID
  * supported by the App. Each DataTypeLocalization may not need to support any particular
  * lookup Key. When not supported, the function lets the caller know and the caller
  * can try another DataTypeLocalization, using FallbackCultureID.
@@ -200,4 +199,34 @@ export enum ComparersResult {
     LessThan,
     GreaterThan,
     Undetermined
+}
+
+/**
+ * For creating DataTypeLocalizedFormatters that are registered and used
+ * by the IDataTypeLocalization implementation.
+ * Create implementations for each dataTypeLookupKey that needs localized formatting.
+ */
+export interface IDataTypeLocalizedFormatter
+{
+    /**
+     * Evaluates the parameters to determine if its Format method should handle the value
+     * with those same parameters.
+     * It should always match the DataTypeLookupKey. 
+     * It does not have to evaluate the cultureID, as there are implementations
+     * where the Format function handles every culture or isn't
+     * using culture at all.
+     * @param dataTypeLookupKey 
+     * @param cultureId - Such as 'en-US' and 'en'
+     * @returns Use its Format method when true. Do not use Format when false.
+     */
+    Supports(dataTypeLookupKey: string, cultureId: string): boolean;
+
+    /**
+     * Creates a formatted string for the value, applying the goals of the DataTypeLookupKey
+     * and making it culture specific.
+     * @param value 
+     * @param dataTypeLookupKey 
+     * @param cultureId 
+     */
+    Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string>;
 }

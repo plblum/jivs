@@ -1,5 +1,6 @@
 import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
 import { ComparersResult } from "../src/Interfaces/DataTypes";
+import { CreateDataTypeResolver } from "../starter_code/create_services";
 import {
     TimeSpan, TimeSpanAsSecondsLookupKey, TimeSpanIdentifier, TimeSpanLookupKey,
     TimeSpanToHoursConverter, TimeSpanToSecondsConverter
@@ -50,14 +51,14 @@ test('Test TimeSpanToSecondsConverter class members for expected results', () =>
     expect(dtc.SupportsValue(0, TimeSpanAsSecondsLookupKey)).toBe(false);
 });
 test('Register and test values against the TimeSpanIdentifier', () => {
-    let dataTypeResolver = new DataTypeResolver();
+    let dataTypeResolver = CreateDataTypeResolver();
     dataTypeResolver.RegisterDataTypeIdentifier(new TimeSpanIdentifier());
 
     expect(dataTypeResolver.IdentifyLookupKey(new TimeSpan(0, 1, 0))).toBe(TimeSpanLookupKey);
 });
 
 test('Register and test values against TimeSpanToHoursConverter', () => {
-    let dataTypeResolver = new DataTypeResolver(); 
+    let dataTypeResolver = CreateDataTypeResolver();
     dataTypeResolver.RegisterDataTypeConverter(new TimeSpanToHoursConverter());
     let TimeSpan1 = new TimeSpan(1, 0);
     let TimeSpan2 = new TimeSpan(2, 0);
@@ -69,7 +70,7 @@ test('Register and test values against TimeSpanToHoursConverter', () => {
 });
 
 test('Register and test values against TimeSpanToSecondsConverter', () => {
-    let dataTypeResolver = new DataTypeResolver(); 
+    let dataTypeResolver = CreateDataTypeResolver();
     dataTypeResolver.RegisterDataTypeConverter(new TimeSpanToSecondsConverter());
     let TimeSpan1 = new TimeSpan(1, 0);
     let TimeSpan2 = new TimeSpan(2, 0);
