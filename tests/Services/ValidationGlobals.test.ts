@@ -1,5 +1,5 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { DataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../../src/DataTypes/DataTypeServices";
 import { InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
 import { ConsoleLogger } from "../../src/Services/ConsoleLogger";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
@@ -71,26 +71,26 @@ describe('Global Defaults for ConditionFactory', () => {
     });
     test('_defaultConditionFactory global null gets a default', () => {
         ResetValGlobals();
-        let dtr = valGlobals.GetDefaultConditionFactory();
-        expect(dtr).not.toBeNull();
-        expect(dtr).toBeInstanceOf(ConditionFactory);
+        let dts = valGlobals.GetDefaultConditionFactory();
+        expect(dts).not.toBeNull();
+        expect(dts).toBeInstanceOf(ConditionFactory);
     });
   
 });
-describe('Global Defaults for DataTypeResolver', () => {
-    test('DefaultDataTypeResolver global', () => {
+describe('Global Defaults for DataTypeServices', () => {
+    test('DefaultDataTypeServices global', () => {
         ResetValGlobals();
-        let testItem = new DataTypeResolver();
-        valGlobals.SetDefaultDataTypeResolver(testItem);
-        expect(valGlobals.GetDefaultDataTypeResolver()).toBe(testItem);
-        expect(() => valGlobals.SetDefaultDataTypeResolver(null!)).toThrow();
+        let testItem = new DataTypeServices();
+        valGlobals.SetDefaultDataTypeServices(testItem);
+        expect(valGlobals.GetDefaultDataTypeServices()).toBe(testItem);
+        expect(() => valGlobals.SetDefaultDataTypeServices(null!)).toThrow();
     });
-    test('DefaultDataTypeResolver global null gets a default', () => {
+    test('DefaultDataTypeServices global null gets a default', () => {
         ResetValGlobals();
-        let dtr = valGlobals.GetDefaultDataTypeResolver();
-        expect(dtr).not.toBeNull();
-        expect(dtr).toBeInstanceOf(DataTypeResolver);
-        expect((dtr as DataTypeResolver).ActiveCultureID).toBe('en');
+        let dts = valGlobals.GetDefaultDataTypeServices();
+        expect(dts).not.toBeNull();
+        expect(dts).toBeInstanceOf(DataTypeServices);
+        expect((dts as DataTypeServices).ActiveCultureID).toBe('en');
     });
 });
 
@@ -102,11 +102,11 @@ describe('Global Defaults for MessageTokenResolver', () => {
         expect(valGlobals.GetDefaultMessageTokenResolver()).toBe(testItem);
         expect(() => valGlobals.SetDefaultMessageTokenResolver(null!)).toThrow();
     });
-    test('DefaultDataTypeResolver global null gets a default', () => {
+    test('DefaultDataTypeServices global null gets a default', () => {
         ResetValGlobals();
-        let dtr = valGlobals.GetDefaultMessageTokenResolver();
-        expect(dtr).not.toBeNull();
-        expect(dtr).toBeInstanceOf(MessageTokenResolver);
+        let dts = valGlobals.GetDefaultMessageTokenResolver();
+        expect(dts).not.toBeNull();
+        expect(dts).toBeInstanceOf(MessageTokenResolver);
     });
   
 });

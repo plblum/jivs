@@ -190,7 +190,7 @@ export enum ConditionCategory {
 }
 
 /**
- * Conditions that compare values using DataTypeResolver.CompareValues
+ * Conditions that compare values using DataTypeServices.CompareValues
  * will provide LookupKeys from the ValueHost.DataType. 
  * Often the comparison needs a little more work done to the value.
  * Examples:

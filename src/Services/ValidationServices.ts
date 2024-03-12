@@ -3,7 +3,7 @@ import { valGlobals } from "./ValidationGlobals";
 import type { ILogger } from "../Interfaces/Logger";
 import type { IMessageTokenResolver } from "../Interfaces/InputValidator";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
-import type { IDataTypeResolver } from "../Interfaces/DataTypes";
+import type { IDataTypeServices } from "../Interfaces/DataTypes";
 import type { IConditionFactory } from "../Interfaces/Conditions";
 
 
@@ -39,20 +39,20 @@ export class ValidationServices implements IValidationServices
     private _conditionFactory!: IConditionFactory;
 
     /**
-     * Service to get the IDataTypeResolver instance associated with the dataTypeLabel.
-     * Defaults to using the global defaultDataTypeResolverService.
+     * Service to get the IDataTypeServices instance associated with the dataTypeLabel.
+     * Defaults to using the global defaultDataTypeServices.
      */
-    public get DataTypeResolverService(): IDataTypeResolver {
-        if (!this._dataTypeResolverService)
-            this._dataTypeResolverService = valGlobals.GetDefaultDataTypeResolver();
-        return this._dataTypeResolverService;
+    public get DataTypeServices(): IDataTypeServices {
+        if (!this._dataTypeServices)
+            this._dataTypeServices = valGlobals.GetDefaultDataTypeServices();
+        return this._dataTypeServices;
     }
-    public set DataTypeResolverService(service: IDataTypeResolver)
+    public set DataTypeServices(service: IDataTypeServices)
     {
         AssertNotNull(service, 'service');
-        this._dataTypeResolverService = service;
+        this._dataTypeServices = service;
     }
-    private _dataTypeResolverService!: IDataTypeResolver;
+    private _dataTypeServices!: IDataTypeServices;
 
     /**
      * Service to get the IMessageTokenResolver instance that replaces

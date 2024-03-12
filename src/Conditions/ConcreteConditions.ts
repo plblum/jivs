@@ -251,7 +251,7 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
         let services = valueHostResolver.Services;
         let lookupKey = this.Descriptor.ConversionLookupKey ?? valueHost.GetDataType();
         let lower = this.Descriptor.Minimum != null ?  // null/undefined
-            services.DataTypeResolverService.CompareValues(this.Descriptor.Minimum, value,
+            services.DataTypeServices.CompareValues(this.Descriptor.Minimum, value,
                 null, lookupKey) :
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
@@ -260,7 +260,7 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
             return ConditionEvaluateResult.Undetermined;
         }
         let upper = this.Descriptor.Maximum != null ?  // null/undefined
-            services.DataTypeResolverService.CompareValues(this.Descriptor.Maximum, value,
+            services.DataTypeServices.CompareValues(this.Descriptor.Maximum, value,
                 null, lookupKey) :
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
@@ -352,7 +352,7 @@ export abstract class CompareToConditionBase extends OneValueConditionBase<IComp
             secondValue = this.Descriptor.SecondValue;
         }
 
-        let comparison = valueHostResolver.Services.DataTypeResolverService.CompareValues(
+        let comparison = valueHostResolver.Services.DataTypeServices.CompareValues(
             value, secondValue,
             this.Descriptor.ConversionLookupKey ?? valueHost.GetDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {

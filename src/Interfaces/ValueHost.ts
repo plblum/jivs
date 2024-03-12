@@ -96,7 +96,7 @@ export interface IValueHost {
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
-     * See the DataTypeResolver. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
+     * See the DataTypeServices. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
      */
     GetDataType(): string | null;
 
@@ -252,7 +252,7 @@ export interface IValueHostDescriptor {
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
-     * See the DataTypeResolver. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
+     * See the DataTypeServices. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
      * If null, the current value's type (ValueHostState.Value) is used and must be string, number, boolean, or date.
      */
     DataType?: string;

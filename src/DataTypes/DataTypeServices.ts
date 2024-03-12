@@ -1,13 +1,13 @@
 import { StringLookupKey } from './LookupKeys';
 import { DefaultComparer } from "./DataTypeComparers";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { IDataTypeResolution, IDataTypeResolver, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
+import { IDataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
 import { valGlobals } from '../Services/ValidationGlobals';
 import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
 
 
 /**
- * {@Link DataTypeResolver} handles various data types of the values.
+ * {@Link DataTypeServices} handles various data types of the values.
  * It works in conjunction with the DataType Lookup Keys @see {@link StringLookupKey }.
  * There are 4 features associated with any data type:
  * - Identify - These classes exist for all native datatypes. They handle when the LookupKey is unknown.
@@ -27,8 +27,8 @@ import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
  *   with the JavaScript comparison operators. Due to the Converter's ability to prepare
  *   most values for the default comparison function, these aren't often created.
  *   When they are, they are built on {@Link IDataTypeComparer }.
- * The actual instance of this class is found on ValidationServices.DataTypeResolverService.
- * @module DataTypeResolver
+ * The actual instance of this class is found on ValidationServices.DataTypeServices.
+ * @module DataTypeServices
  */
 
 /**
@@ -45,7 +45,7 @@ import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
  * Each identifies a culture that you support and a fallback culture when the desired culture
  * didn't support the Format.
  */
-export class DataTypeResolver implements IDataTypeResolver {
+export class DataTypeServices implements IDataTypeServices {
     /**
      * Constructor
      * @param activeCultureID - If not supplied, it uses valGlobals.DefaultCultureId, which itself
@@ -214,7 +214,7 @@ export class DataTypeResolver implements IDataTypeResolver {
      * @param lookupKey1 - Identifies the IDataTypeConverter and/or ComparerHandler function to use
      *   together with value1. If null, the native data type of the value will be converted to a lookupKey
      *   when String, Number, Boolean, Date object, or any IDataTypeIdentifier that you have registered
-     *   with the DataTypeResolver.
+     *   with the DataTypeServices.
      * @param lookupKey2 - Same idea as lookupKey1 but for value2. This value will not be used
      * to find a ComparerHandler.
      */
@@ -325,7 +325,7 @@ export class DataTypeResolver implements IDataTypeResolver {
      * DataType Lookup Key. By default, it supports values of type number, boolean,
      * string and Date object.
      * You can add your own data types by implementing IDataTypeIdentifier
-     * and registered you class with the DataTypeResolver.
+     * and registered you class with the DataTypeServices.
      * @param value 
      * @returns the found Lookup Key or "Unsupported".
      */
@@ -404,7 +404,7 @@ export class DataTypeResolver implements IDataTypeResolver {
 /**
  * Identifies a CultureID ('en', 'en-US', 'en-GB', etc) that you are supporting.
  * Supplies a fallback CultureID if the culture requested did not have any support.
- * Used by DataTypeResolver. Pass an array of these into the DataTypeResolver constructor.
+ * Used by DataTypeServices. Pass an array of these into the DataTypeServices constructor.
  */
 export interface CultureConfig {
     /**

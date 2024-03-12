@@ -1,4 +1,4 @@
-import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { StringLookupKey } from "../src/DataTypes/LookupKeys";
 import { ComparersResult } from "../src/Interfaces/DataTypes";
 import { UTCMonthYearConverter, MonthYearLookupKey } from "./MonthYearConverter";
@@ -26,7 +26,7 @@ describe('UTCMonthYearConverter', () => {
         let illegalDate = new Date("foo");
         expect(testItem.Convert(illegalDate, MonthYearLookupKey)).toBeUndefined();
     });
-    test('Within DataTypeResolver', () => {
+    test('Within DataTypeServices', () => {
         let date1 = new Date(Date.UTC(2000, 10, 1));
         let date2 = new Date(Date.UTC(2000, 10, 5, 2, 3, 4));
         let date3 = new Date(Date.UTC(2000, 9, 1));
@@ -35,7 +35,7 @@ describe('UTCMonthYearConverter', () => {
         let date7 = new Date(Date.UTC(2000, 10, 30, 23, 59, 59));
         let date8 = new Date(Date.UTC(2001, 10, 1));
         
-        let testItem = new DataTypeResolver('en'); 
+        let testItem = new DataTypeServices('en'); 
         testItem.RegisterDataTypeConverter(new UTCMonthYearConverter());
         expect(testItem.CompareValues(date1, date1, MonthYearLookupKey, MonthYearLookupKey)).toBe(ComparersResult.Equals);
         expect(testItem.CompareValues(date1, date2, MonthYearLookupKey, MonthYearLookupKey)).toBe(ComparersResult.Equals);
@@ -44,7 +44,7 @@ describe('UTCMonthYearConverter', () => {
         expect(testItem.CompareValues(date3, date1, MonthYearLookupKey, MonthYearLookupKey)).toBe(ComparersResult.LessThan); 
         expect(testItem.CompareValues(date1, date3, MonthYearLookupKey, MonthYearLookupKey)).toBe(ComparersResult.GreaterThan);            
         expect(testItem.CompareValues(date8, date7, MonthYearLookupKey, MonthYearLookupKey)).toBe(ComparersResult.GreaterThan);            
-        // these are due to the DataTypeResolver.CompareValues function itself
+        // these are due to the DataTypeServices.CompareValues function itself
         expect(testItem.CompareValues(null, null, MonthYearLookupKey, MonthYearLookupKey)).toBe(ComparersResult.Equals);
         expect(testItem.CompareValues(date1, null, MonthYearLookupKey, MonthYearLookupKey)).toBe(ComparersResult.Undetermined);
         expect(testItem.CompareValues(null, date2, MonthYearLookupKey, MonthYearLookupKey)).toBe(ComparersResult.Undetermined);

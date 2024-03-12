@@ -6,7 +6,7 @@ import { InvalidTypeError } from "../Utilities/ErrorHandling";
  * 
  * See IDataTypeConverter for more.
  * 
- * Comparison is handled by the DataTypeResolver.CompareValues function.
+ * Comparison is handled by the DataTypeServices.CompareValues function.
  * If you register a class there, it will be checked against values supplied.
  * If none of the registered classes support those values, the values
  * are first converted via any IDataTypeConverters register. Once
@@ -23,7 +23,7 @@ import { InvalidTypeError } from "../Utilities/ErrorHandling";
  * Supports Equals, LessThan, and Greater using the native Javascript operators
  * of ===, <, >. If the two values are the same type, it can use LessThan/GreaterThan.
  * Otherwise, it returns NotEquals.
- * By the time this is called, DataTypeResolver has handled out all other datatypes.
+ * By the time this is called, DataTypeServices has handled out all other datatypes.
  * @param value1 
  * @param value2 
  */

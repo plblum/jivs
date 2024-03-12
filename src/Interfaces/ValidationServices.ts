@@ -1,5 +1,5 @@
 import { IConditionFactory } from "./Conditions";
-import { IDataTypeResolver } from "./DataTypes";
+import { IDataTypeServices } from "./DataTypes";
 import { IMessageTokenResolver } from "./InputValidator";
 import { ILogger } from "./Logger";
 
@@ -37,10 +37,10 @@ export interface IValidationServices extends IBasicValidationServices
     ConditionFactory: IConditionFactory;
 
     /**
-     * Service to get the IDataTypeResolver instance associated with the dataTypeLabel.
-     * Defaults to using the global defaultDataTypeResolverService.
+     * Service to get the IDataTypeServices instance associated with the dataTypeLabel.
+     * Defaults to using the global defaultDataTypeServices.
      */
-    DataTypeResolverService: IDataTypeResolver;
+    DataTypeServices: IDataTypeServices;
     
     /**
      * Service to get the IMessageTokenResolver instance that replaces

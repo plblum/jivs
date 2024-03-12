@@ -1,5 +1,5 @@
 import { ConditionFactory } from "../src/Conditions/ConditionFactory";
-import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
 
 import { type ILogger, LoggingLevel } from "../src/Interfaces/Logger";
 import { MessageTokenResolver  } from "../src/ValueHosts/MessageTokenResolver";
@@ -15,16 +15,16 @@ import { IInputValueHost } from "../src/Interfaces/InputValueHost";
 import { IValidateOptions, IValidateResult, ValidationResult, IBusinessLogicError, IIssueFound, IIssueSnapshot } from "../src/Interfaces/Validation";
 import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler } from "../src/ValueHosts/InputValueHostBase";
 import { IMessageTokenResolver } from "../src/Interfaces/InputValidator";
-import { IDataTypeResolver } from "../src/Interfaces/DataTypes";
+import { IDataTypeServices } from "../src/Interfaces/DataTypes";
 import { IValidationManager } from "../src/Interfaces/ValidationManager";
-import { CreateDataTypeResolverWithManyCultures } from "./DataTypes/DataTypeResolver.test";
-import { RegisterConditions, PopulateDataTypeResolver } from "../starter_code/create_services";
+import { CreateDataTypeServicesWithManyCultures } from "./DataTypes/DataTypeServices.test";
+import { RegisterConditions, PopulateDataTypeServices } from "../starter_code/create_services";
 
 
 export function CreateMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
 {
     let services = new MockValidationServices(false, false);
-    services.DataTypeResolverService = CreateDataTypeResolverWithManyCultures(registerLookupKeys);
+    services.DataTypeServices = CreateDataTypeServicesWithManyCultures(registerLookupKeys);
     return new MockValidationManager(services);
 }
 
@@ -174,7 +174,7 @@ export class MockValidationServices implements IValidationServices
         registerStandardDataTypes: boolean)
     {
         this._conditionFactory = new ConditionFactory();
-        this._dataTypeResolverService = new DataTypeResolver();
+        this._DataTypeServices = new DataTypeServices();
         this._messageTokenResolverService = new MessageTokenResolver();
         this._loggerService = new MockCapturingLogger();
 
@@ -183,7 +183,7 @@ export class MockValidationServices implements IValidationServices
             RegisterTestingOnlyConditions(this._conditionFactory as ConditionFactory);
         }
         if (registerStandardDataTypes)
-            PopulateDataTypeResolver(this._dataTypeResolverService as DataTypeResolver);
+            PopulateDataTypeServices(this._DataTypeServices as DataTypeServices);
     }
 
     public get ConditionFactory(): IConditionFactory
@@ -192,14 +192,14 @@ export class MockValidationServices implements IValidationServices
     }
     private _conditionFactory!: IConditionFactory;
 
-    public get DataTypeResolverService(): IDataTypeResolver {
-        return this._dataTypeResolverService;
+    public get DataTypeServices(): IDataTypeServices {
+        return this._DataTypeServices;
     }
-    public set DataTypeResolverService(service: IDataTypeResolver)
+    public set DataTypeServices(service: IDataTypeServices)
     {
-        this._dataTypeResolverService = service;
+        this._DataTypeServices = service;
     }
-    private _dataTypeResolverService!: IDataTypeResolver;
+    private _DataTypeServices!: IDataTypeServices;
 
     public get MessageTokenResolverService(): IMessageTokenResolver {
         return this._messageTokenResolverService;

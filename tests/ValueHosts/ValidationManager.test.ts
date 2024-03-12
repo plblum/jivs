@@ -1,6 +1,6 @@
 import { RequiredTextConditionType } from '../../src/Conditions/ConcreteConditions';
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { DataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../../src/DataTypes/DataTypeServices";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValidationManagerCallbacks, ToIValidationManagerCallbacks, ValidationManager, ValidationManagerConfig, ValidationManagerStateChangedHandler } from "../../src/ValueHosts/ValidationManager";
@@ -17,7 +17,7 @@ import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { DeepClone } from '../../src/Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, ToIValueHostResolver, ToIValueHostsManager, ToIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
 import { NonInputValueHost } from '../../src/ValueHosts/NonInputValueHost';
-import { CreateDataTypeResolver, RegisterConditions } from '../../starter_code/create_services';
+import { CreateDataTypeServices, RegisterConditions } from '../../starter_code/create_services';
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<IValidationManagerState> {
@@ -775,7 +775,7 @@ function SetupValidationManager(descriptors?: Array<IInputValueHostDescriptor> |
     RegisterTestingOnlyConditions(conditionFactory);
     services.ConditionFactory = conditionFactory;
     services.LoggerService = new MockCapturingLogger();
-    services.DataTypeResolverService = CreateDataTypeResolver();
+    services.DataTypeServices = CreateDataTypeServices();
     services.MessageTokenResolverService = new MessageTokenResolver();
     
     let config: ValidationManagerConfig = {

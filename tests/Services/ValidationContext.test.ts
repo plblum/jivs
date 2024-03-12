@@ -1,5 +1,5 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { DataTypeResolver } from "../../src/DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../../src/DataTypes/DataTypeServices";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { valGlobals } from "../../src/Services/ValidationGlobals";
@@ -11,7 +11,7 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         let testItem = new ValidationServices();
         // check defaults for factories and services
         expect(testItem.ConditionFactory).toBe(valGlobals.GetDefaultConditionFactory());
-        expect(testItem.DataTypeResolverService).toBe(valGlobals.GetDefaultDataTypeResolver());
+        expect(testItem.DataTypeServices).toBe(valGlobals.GetDefaultDataTypeServices());
         expect(testItem.MessageTokenResolverService).toBe(valGlobals.GetDefaultMessageTokenResolver());
         expect(testItem.LoggerService).toBe(valGlobals.GetDefaultLogger());
     });
@@ -24,11 +24,11 @@ describe('Replace factories and services', () => {
         testItem.ConditionFactory = replacement;
         expect(testItem.ConditionFactory).toBe(replacement);
     });
-    test('Replace DataTypeResolverService', () => {
-        let replacement = new DataTypeResolver();
+    test('Replace DataTypeServices', () => {
+        let replacement = new DataTypeServices();
         let testItem = new ValidationServices();
-        testItem.DataTypeResolverService = replacement;
-        expect(testItem.DataTypeResolverService).toBe(replacement);
+        testItem.DataTypeServices = replacement;
+        expect(testItem.DataTypeServices).toBe(replacement);
     });
     test('Replace MessageTokenResolverService', () => {
         let replacement = new MessageTokenResolver();

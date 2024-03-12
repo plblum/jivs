@@ -1,10 +1,24 @@
-import { IDataTypeCheckConditionDescriptor, DataTypeCheckConditionType, DataTypeCheckCondition, IRequiredTextConditionDescriptor, RequiredTextConditionType, RequiredTextCondition, IRequiredIndexConditionDescriptor, RequiredIndexConditionType, RequiredIndexCondition, IRegExpConditionDescriptor, RegExpConditionType, RegExpCondition, IRangeConditionDescriptor, RangeConditionType, RangeCondition, ICompareToConditionDescriptor, ValuesEqualConditionType, ValuesEqualCondition, ValuesNotEqualConditionType, ValuesNotEqualCondition, ValueGTSecondValueConditionType, ValueGTSecondValueCondition, ValueLTSecondValueConditionType, ValueLTSecondValueCondition, ValueGTESecondValueConditionType, ValueGTESecondValueCondition, ValueLTESecondValueConditionType, ValueLTESecondValueCondition, IStringLengthConditionDescriptor, StringLengthConditionType, StringLengthCondition, IAndConditionsDescriptor, AndConditionsType, AndConditions, IOrConditionsDescriptor, OrConditionsType, OrConditions, ICountMatchingConditionsDescriptor, CountMatchingConditionsType, CountMatchingConditions, EveryConditionType, AnyConditionsType } from "../src/Conditions/ConcreteConditions";
+import {
+    IDataTypeCheckConditionDescriptor, DataTypeCheckConditionType, DataTypeCheckCondition, IRequiredTextConditionDescriptor, RequiredTextConditionType,
+    RequiredTextCondition, IRequiredIndexConditionDescriptor, RequiredIndexConditionType, RequiredIndexCondition, IRegExpConditionDescriptor,
+    RegExpConditionType, RegExpCondition, IRangeConditionDescriptor, RangeConditionType, RangeCondition, ICompareToConditionDescriptor,
+    ValuesEqualConditionType, ValuesEqualCondition, ValuesNotEqualConditionType, ValuesNotEqualCondition, ValueGTSecondValueConditionType, ValueGTSecondValueCondition,
+    ValueLTSecondValueConditionType, ValueLTSecondValueCondition, ValueGTESecondValueConditionType, ValueGTESecondValueCondition, ValueLTESecondValueConditionType,
+    ValueLTESecondValueCondition, IStringLengthConditionDescriptor, StringLengthConditionType, StringLengthCondition, IAndConditionsDescriptor,
+    AndConditionsType, AndConditions, IOrConditionsDescriptor, OrConditionsType, OrConditions, ICountMatchingConditionsDescriptor, CountMatchingConditionsType,
+    CountMatchingConditions, EveryConditionType, AnyConditionsType
+} from "../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../src/Conditions/ConditionFactory";
 import { BooleanDataTypeComparer } from "../src/DataTypes/DataTypeComparers";
 import { CaseInsensitiveStringConverter, UTCDateOnlyConverter, DateTimeConverter, LocalDateOnlyConverter, TotalDaysConverter, RoundToWholeConverter } from "../src/DataTypes/DataTypeConverters";
 import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIdentifier, DateDataTypeIdentifier } from "../src/DataTypes/DataTypeIdentifiers";
-import { StringLocalizedFormatter, NumberLocalizedFormatter, IntegerLocalizedFormatter, DateLocalizedFormatter, CapitalizeStringLocalizedFormatter, UppercaseStringLocalizedFormatter, LowercaseStringLocalizedFormatter, DateTimeLocalizedFormatter, AbbrevDateLocalizedFormatter, AbbrevDOWDateLocalizedFormatter, LongDateLocalizedFormatter, LongDOWDateLocalizedFormatter, TimeofDayLocalizedFormatter, TimeofDayHMSLocalizedFormatter, BooleanLocalizedFormatter, YesNoBooleanLocalizedFormatter, CurrencyLocalizedFormatter, PercentageLocalizedFormatter, Percentage100LocalizedFormatter } from "../src/DataTypes/DataTypeLocalizedFormatters";
-import { CultureConfig, DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
+import {
+    StringLocalizedFormatter, NumberLocalizedFormatter, IntegerLocalizedFormatter, DateLocalizedFormatter, CapitalizeStringLocalizedFormatter,
+    UppercaseStringLocalizedFormatter, LowercaseStringLocalizedFormatter, DateTimeLocalizedFormatter, AbbrevDateLocalizedFormatter,
+    AbbrevDOWDateLocalizedFormatter, LongDateLocalizedFormatter, LongDOWDateLocalizedFormatter, TimeofDayLocalizedFormatter, TimeofDayHMSLocalizedFormatter,
+    BooleanLocalizedFormatter, YesNoBooleanLocalizedFormatter, CurrencyLocalizedFormatter, PercentageLocalizedFormatter, Percentage100LocalizedFormatter
+} from "../src/DataTypes/DataTypeLocalizedFormatters";
+import { CultureConfig, DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { LoggingLevel } from "../src/Interfaces/Logger";
 import { ConsoleLogger } from "../src/Services/ConsoleLogger";
 import { valGlobals } from "../src/Services/ValidationGlobals";
@@ -31,9 +45,9 @@ export function CreateValidationServices(): ValidationServices {
     // --- ConditionFactory ---------------------------
     vs.ConditionFactory = CreateConditionFactory();
 
-    // --- DataTypeResolver services -------------------------------------
-    // Plenty to configure here. See CreateDataTypeResolver function below.
-    vs.DataTypeResolverService = CreateDataTypeResolver();
+    // --- DataTypeServices services -------------------------------------
+    // Plenty to configure here. See CreateDataTypeServices function below.
+    vs.DataTypeServices = CreateDataTypeServices();
 
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLogger and another, create the other
@@ -94,7 +108,7 @@ export function RegisterConditions(cf: ConditionFactory): void
 }
 
 /**
- * DataTypeResolver needs:
+ * DataTypeServices needs:
  * 1. Cultures that you want to localize. 
  *    -> Create an array of CultureConfig objects in ConfigureCultures()
  * 
@@ -122,13 +136,13 @@ export function RegisterConditions(cf: ConditionFactory): void
  * @param activeCultureID 
  * @param cultureConfig 
  */
-export function CreateDataTypeResolver(activeCultureID?: string | null, cultureConfig?: Array<CultureConfig> | null): DataTypeResolver {
+export function CreateDataTypeServices(activeCultureID?: string | null, cultureConfig?: Array<CultureConfig> | null): DataTypeServices {
      valGlobals.DefaultCultureId = activeCultureID ?? 'en';
     let cc: Array<CultureConfig> = cultureConfig ?? ConfigureCultures();
 
-    let dtr = new DataTypeResolver(valGlobals.DefaultCultureId, cc);
-    PopulateDataTypeResolver(dtr);
-    return dtr;
+    let dts = new DataTypeServices(valGlobals.DefaultCultureId, cc);
+    PopulateDataTypeServices(dts);
+    return dts;
 }
 
 
@@ -156,60 +170,60 @@ export function ConfigureCultures(): Array<CultureConfig>
         ];
 }
 
-export function PopulateDataTypeResolver(dtr: DataTypeResolver): void {
+export function PopulateDataTypeServices(dts: DataTypeServices): void {
 
-    RegisterDataTypeIdentifiers(dtr);
+    RegisterDataTypeIdentifiers(dts);
 
-    RegisterDataTypeLocalizedFormatters(dtr);
+    RegisterDataTypeLocalizedFormatters(dts);
 
-    RegisterDataTypeConverters(dtr);
+    RegisterDataTypeConverters(dts);
 
-    RegisterDataTypeComparers(dtr);
+    RegisterDataTypeComparers(dts);
 }
 
 // 2. IDataTypeIdentifiers. 
-export function RegisterDataTypeIdentifiers(dtr: DataTypeResolver): void
+export function RegisterDataTypeIdentifiers(dts: DataTypeServices): void
 {
     // !!!Please retain: StringDataTypeIdentifier, NumberDataTypeIdentifier, BooleanDataTypeIdentifier, and DateDataTypeIdentifier
-    dtr.RegisterDataTypeIdentifier(new NumberDataTypeIdentifier());
-    dtr.RegisterDataTypeIdentifier(new StringDataTypeIdentifier());
-    dtr.RegisterDataTypeIdentifier(new BooleanDataTypeIdentifier());
-    dtr.RegisterDataTypeIdentifier(new DateDataTypeIdentifier());
+    dts.RegisterDataTypeIdentifier(new NumberDataTypeIdentifier());
+    dts.RegisterDataTypeIdentifier(new StringDataTypeIdentifier());
+    dts.RegisterDataTypeIdentifier(new BooleanDataTypeIdentifier());
+    dts.RegisterDataTypeIdentifier(new DateDataTypeIdentifier());
 }
 // 3. IDataTypeLocalizedFormatter
-export function RegisterDataTypeLocalizedFormatters(dtr: DataTypeResolver): void
+export function RegisterDataTypeLocalizedFormatters(dts: DataTypeServices): void
 {
     // Most of these can be modified through their constructor.
     // - Those that use the Intl library for localization let you pass options
     //   supported by Intl.NumberFormat or Intl.DateFormat.
     // - The Boolean and YesNo let you supply a list of cultures and their
     //   language specific values for "TrueLabel" and "FalseLabel"
-    dtr.RegisterLocalizedFormatter(new StringLocalizedFormatter());
-    dtr.RegisterLocalizedFormatter(new NumberLocalizedFormatter());     // options?: Intl.NumberFormatOptions
-    dtr.RegisterLocalizedFormatter(new IntegerLocalizedFormatter());    // options?: Intl.NumberFormatOptions
-    dtr.RegisterLocalizedFormatter(new DateLocalizedFormatter());       // options?: Intl.DateTimeFormatOptions
+    dts.RegisterLocalizedFormatter(new StringLocalizedFormatter());
+    dts.RegisterLocalizedFormatter(new NumberLocalizedFormatter());     // options?: Intl.NumberFormatOptions
+    dts.RegisterLocalizedFormatter(new IntegerLocalizedFormatter());    // options?: Intl.NumberFormatOptions
+    dts.RegisterLocalizedFormatter(new DateLocalizedFormatter());       // options?: Intl.DateTimeFormatOptions
 
     // less used - consider commenting out until you know they are neded
-    dtr.RegisterLocalizedFormatter(new CapitalizeStringLocalizedFormatter());
-    dtr.RegisterLocalizedFormatter(new UppercaseStringLocalizedFormatter());
-    dtr.RegisterLocalizedFormatter(new LowercaseStringLocalizedFormatter());
-    dtr.RegisterLocalizedFormatter(new DateTimeLocalizedFormatter());       // options?: Intl.DateTimeFormatOptions
-    dtr.RegisterLocalizedFormatter(new AbbrevDateLocalizedFormatter());     // options?: Intl.DateTimeFormatOptions
-    dtr.RegisterLocalizedFormatter(new AbbrevDOWDateLocalizedFormatter());  // options?: Intl.DateTimeFormatOptions
-    dtr.RegisterLocalizedFormatter(new LongDateLocalizedFormatter());       // options?: Intl.DateTimeFormatOptions
-    dtr.RegisterLocalizedFormatter(new LongDOWDateLocalizedFormatter());    // options?: Intl.DateTimeFormatOptions
-    dtr.RegisterLocalizedFormatter(new TimeofDayLocalizedFormatter());      // options?: Intl.DateTimeFormatOptions
-    dtr.RegisterLocalizedFormatter(new TimeofDayHMSLocalizedFormatter());   // options?: Intl.DateTimeFormatOptions
-    dtr.RegisterLocalizedFormatter(new CurrencyLocalizedFormatter());       // options?: Intl.NumberFormatOptions, cultureToCurrencyCode? { 'en-US' : 'USD', 'es-SP': 'EUR' }
-    dtr.RegisterLocalizedFormatter(new PercentageLocalizedFormatter());     // options?: Intl.NumberFormatOptions
-    dtr.RegisterLocalizedFormatter(new Percentage100LocalizedFormatter());  // options?: Intl.NumberFormatOptions
-    dtr.RegisterLocalizedFormatter(new BooleanLocalizedFormatter());        // cultureToLabels?: Array<CultureToBooleanLabels>
+    dts.RegisterLocalizedFormatter(new CapitalizeStringLocalizedFormatter());
+    dts.RegisterLocalizedFormatter(new UppercaseStringLocalizedFormatter());
+    dts.RegisterLocalizedFormatter(new LowercaseStringLocalizedFormatter());
+    dts.RegisterLocalizedFormatter(new DateTimeLocalizedFormatter());       // options?: Intl.DateTimeFormatOptions
+    dts.RegisterLocalizedFormatter(new AbbrevDateLocalizedFormatter());     // options?: Intl.DateTimeFormatOptions
+    dts.RegisterLocalizedFormatter(new AbbrevDOWDateLocalizedFormatter());  // options?: Intl.DateTimeFormatOptions
+    dts.RegisterLocalizedFormatter(new LongDateLocalizedFormatter());       // options?: Intl.DateTimeFormatOptions
+    dts.RegisterLocalizedFormatter(new LongDOWDateLocalizedFormatter());    // options?: Intl.DateTimeFormatOptions
+    dts.RegisterLocalizedFormatter(new TimeofDayLocalizedFormatter());      // options?: Intl.DateTimeFormatOptions
+    dts.RegisterLocalizedFormatter(new TimeofDayHMSLocalizedFormatter());   // options?: Intl.DateTimeFormatOptions
+    dts.RegisterLocalizedFormatter(new CurrencyLocalizedFormatter());       // options?: Intl.NumberFormatOptions, cultureToCurrencyCode? { 'en-US' : 'USD', 'es-SP': 'EUR' }
+    dts.RegisterLocalizedFormatter(new PercentageLocalizedFormatter());     // options?: Intl.NumberFormatOptions
+    dts.RegisterLocalizedFormatter(new Percentage100LocalizedFormatter());  // options?: Intl.NumberFormatOptions
+    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter());        // cultureToLabels?: Array<CultureToBooleanLabels>
     // example parameter supporting english and spanish: 
     // [
     //   { CultureId: 'en', TrueLabel: 'true', FalseLabel: 'false' },
     //   { CultureId: 'es', TrueLabel: 'verdadero', FalseLabel: 'falso' },    
     // ]
-    dtr.RegisterLocalizedFormatter(new YesNoBooleanLocalizedFormatter());   // cultureToLabels?: Array<CultureToBooleanLabels>
+    dts.RegisterLocalizedFormatter(new YesNoBooleanLocalizedFormatter());   // cultureToLabels?: Array<CultureToBooleanLabels>
     // example parameter supporting english and spanish: 
     // [
     //   { CultureId: 'en', TrueLabel: 'yes', FalseLabel: 'no' },
@@ -218,18 +232,18 @@ export function RegisterDataTypeLocalizedFormatters(dtr: DataTypeResolver): void
 }
 
 // 4. IDataTypeConverters
-export function RegisterDataTypeConverters(dtr: DataTypeResolver): void
+export function RegisterDataTypeConverters(dts: DataTypeServices): void
 {
-    dtr.RegisterDataTypeConverter(new CaseInsensitiveStringConverter());
-    dtr.RegisterDataTypeConverter(new UTCDateOnlyConverter());
-    dtr.RegisterDataTypeConverter(new DateTimeConverter());
-    dtr.RegisterDataTypeConverter(new LocalDateOnlyConverter());
-    dtr.RegisterDataTypeConverter(new TotalDaysConverter());
-    dtr.RegisterDataTypeConverter(new RoundToWholeConverter());
+    dts.RegisterDataTypeConverter(new CaseInsensitiveStringConverter());
+    dts.RegisterDataTypeConverter(new UTCDateOnlyConverter());
+    dts.RegisterDataTypeConverter(new DateTimeConverter());
+    dts.RegisterDataTypeConverter(new LocalDateOnlyConverter());
+    dts.RegisterDataTypeConverter(new TotalDaysConverter());
+    dts.RegisterDataTypeConverter(new RoundToWholeConverter());
 }
 
 // 5. IDataTypeComparers
-export function RegisterDataTypeComparers(dtr: DataTypeResolver): void
+export function RegisterDataTypeComparers(dts: DataTypeServices): void
 {
-    dtr.RegisterDataTypeComparer(new BooleanDataTypeComparer());
+    dts.RegisterDataTypeComparer(new BooleanDataTypeComparer());
 }

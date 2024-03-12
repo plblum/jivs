@@ -24,53 +24,53 @@ describe('StringLocalizedFormatter', () => {
     });
     test('en: Format with string parameter', () => {
         let testItem = new StringLocalizedFormatter();
-        let dtr = testItem.Format('A', StringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format('A', StringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        expect(dts.ErrorMessage).toBeUndefined();
     });
 
     test('fr: Format with string parameter', () => {
         let testItem = new StringLocalizedFormatter();
-        let dtr = testItem.Format('A', StringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format('A', StringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        expect(dts.ErrorMessage).toBeUndefined();
     });    
     test('Format with number parameter is converted to string', () => {
         let testItem = new StringLocalizedFormatter();
         
-        let dtr = testItem.Format(15, StringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(15, StringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with null parameter returns empty string', () => {
         let testItem = new StringLocalizedFormatter();
         
-        let dtr = testItem.Format(null, StringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, StringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with undefined parameter returns empty string', () => {
         let testItem = new StringLocalizedFormatter();
         
-        let dtr = testItem.Format(undefined, StringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(undefined, StringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with object parameter is an error', () => {
         let testItem = new StringLocalizedFormatter();
         
-        let dtr = testItem.Format({}, StringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a string or primitive');
+        let dts = testItem.Format({}, StringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a string or primitive');
     });
 });
 describe('CapitalizeStringLocalizedFormatter', () => {
@@ -84,72 +84,72 @@ describe('CapitalizeStringLocalizedFormatter', () => {
     });
     test('en: Format with string parameter', () => {
         let testItem = new CapitalizeStringLocalizedFormatter();
-        let dtr = testItem.Format('A', CapitalizeStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format('A', CapitalizeStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        expect(dts.ErrorMessage).toBeUndefined();
 
-        dtr = testItem.Format('a', CapitalizeStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        dtr = testItem.Format('abc', CapitalizeStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Abc');        
-        dtr = testItem.Format('', CapitalizeStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');               
+        dts = testItem.Format('a', CapitalizeStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        dts = testItem.Format('abc', CapitalizeStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Abc');        
+        dts = testItem.Format('', CapitalizeStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');               
     });
 
     test('fr: Format with string parameter', () => {
         let testItem = new CapitalizeStringLocalizedFormatter();
-        let dtr = testItem.Format('A', CapitalizeStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        expect(dtr.ErrorMessage).toBeUndefined();
-        dtr = testItem.Format('a', CapitalizeStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        dtr = testItem.Format('abc', CapitalizeStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Abc');        
-        dtr = testItem.Format('', CapitalizeStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
+        let dts = testItem.Format('A', CapitalizeStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        expect(dts.ErrorMessage).toBeUndefined();
+        dts = testItem.Format('a', CapitalizeStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        dts = testItem.Format('abc', CapitalizeStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Abc');        
+        dts = testItem.Format('', CapitalizeStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
     });    
     test('Format with number parameter is converted to string', () => {
         let testItem = new CapitalizeStringLocalizedFormatter();
         
-        let dtr = testItem.Format(15, CapitalizeStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(15, CapitalizeStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with null parameter returns empty string', () => {
         let testItem = new CapitalizeStringLocalizedFormatter();
         
-        let dtr = testItem.Format(null, CapitalizeStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, CapitalizeStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with undefined parameter returns empty string', () => {
         let testItem = new CapitalizeStringLocalizedFormatter();
         
-        let dtr = testItem.Format(undefined, CapitalizeStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(undefined, CapitalizeStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with object parameter is an error', () => {
         let testItem = new CapitalizeStringLocalizedFormatter();
         
-        let dtr = testItem.Format({}, CapitalizeStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a string or primitive');
+        let dts = testItem.Format({}, CapitalizeStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a string or primitive');
     });
 });
 describe('UppercaseStringLocalizedFormatter', () => {
@@ -163,78 +163,78 @@ describe('UppercaseStringLocalizedFormatter', () => {
     });
     test('en: Format with string parameter', () => {
         let testItem = new UppercaseStringLocalizedFormatter();
-        let dtr = testItem.Format('A', UppercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format('A', UppercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        expect(dts.ErrorMessage).toBeUndefined();
 
-        dtr = testItem.Format('a', UppercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        dtr = testItem.Format('ABC', UppercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('ABC');           
-        dtr = testItem.Format('abc', UppercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('ABC');        
-        dtr = testItem.Format('', UppercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');               
+        dts = testItem.Format('a', UppercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        dts = testItem.Format('ABC', UppercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('ABC');           
+        dts = testItem.Format('abc', UppercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('ABC');        
+        dts = testItem.Format('', UppercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');               
     });
 
     test('fr: Format with string parameter', () => {
         let testItem = new UppercaseStringLocalizedFormatter();
-        let dtr = testItem.Format('A', UppercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        expect(dtr.ErrorMessage).toBeUndefined();
-        dtr = testItem.Format('a', UppercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('A');
-        dtr = testItem.Format('ABC', UppercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('ABC');          
-        dtr = testItem.Format('abc', UppercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('ABC');        
-        dtr = testItem.Format('', UppercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
+        let dts = testItem.Format('A', UppercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        expect(dts.ErrorMessage).toBeUndefined();
+        dts = testItem.Format('a', UppercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('A');
+        dts = testItem.Format('ABC', UppercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('ABC');          
+        dts = testItem.Format('abc', UppercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('ABC');        
+        dts = testItem.Format('', UppercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
     });    
     test('Format with number parameter is converted to string', () => {
         let testItem = new UppercaseStringLocalizedFormatter();
         
-        let dtr = testItem.Format(15, UppercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(15, UppercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with null parameter returns empty string', () => {
         let testItem = new UppercaseStringLocalizedFormatter();
         
-        let dtr = testItem.Format(null, UppercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, UppercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with undefined parameter returns empty string', () => {
         let testItem = new UppercaseStringLocalizedFormatter();
         
-        let dtr = testItem.Format(undefined, UppercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(undefined, UppercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with object parameter is an error', () => {
         let testItem = new UppercaseStringLocalizedFormatter();
         
-        let dtr = testItem.Format({}, UppercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a string or primitive');
+        let dts = testItem.Format({}, UppercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a string or primitive');
     });
 });
 describe('LowercaseStringLocalizedFormatter', () => {
@@ -248,78 +248,78 @@ describe('LowercaseStringLocalizedFormatter', () => {
     });
     test('en: Format with string parameter', () => {
         let testItem = new LowercaseStringLocalizedFormatter();
-        let dtr = testItem.Format('A', LowercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('a');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format('A', LowercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('a');
+        expect(dts.ErrorMessage).toBeUndefined();
 
-        dtr = testItem.Format('a', LowercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('a');
-        dtr = testItem.Format('ABC', LowercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('abc');           
-        dtr = testItem.Format('abc', LowercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('abc');        
-        dtr = testItem.Format('', LowercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');               
+        dts = testItem.Format('a', LowercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('a');
+        dts = testItem.Format('ABC', LowercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('abc');           
+        dts = testItem.Format('abc', LowercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('abc');        
+        dts = testItem.Format('', LowercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');               
     });
 
     test('fr: Format with string parameter', () => {
         let testItem = new LowercaseStringLocalizedFormatter();
-        let dtr = testItem.Format('A', LowercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('a');
-        expect(dtr.ErrorMessage).toBeUndefined();
-        dtr = testItem.Format('a', LowercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('a');
-        dtr = testItem.Format('ABC', LowercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('abc');          
-        dtr = testItem.Format('abc', LowercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('abc');        
-        dtr = testItem.Format('', LowercaseStringLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
+        let dts = testItem.Format('A', LowercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('a');
+        expect(dts.ErrorMessage).toBeUndefined();
+        dts = testItem.Format('a', LowercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('a');
+        dts = testItem.Format('ABC', LowercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('abc');          
+        dts = testItem.Format('abc', LowercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('abc');        
+        dts = testItem.Format('', LowercaseStringLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
     });    
     test('Format with number parameter is converted to string', () => {
         let testItem = new LowercaseStringLocalizedFormatter();
         
-        let dtr = testItem.Format(15, LowercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(15, LowercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with null parameter returns empty string', () => {
         let testItem = new LowercaseStringLocalizedFormatter();
         
-        let dtr = testItem.Format(null, LowercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, LowercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with undefined parameter returns empty string', () => {
         let testItem = new LowercaseStringLocalizedFormatter();
         
-        let dtr = testItem.Format(undefined, LowercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(undefined, LowercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Format with object parameter is an error', () => {
         let testItem = new LowercaseStringLocalizedFormatter();
         
-        let dtr = testItem.Format({}, LowercaseStringLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a string or primitive');
+        let dts = testItem.Format({}, LowercaseStringLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a string or primitive');
     });
 });
 
@@ -339,66 +339,66 @@ describe('NumberLocalizedFormatter', () => {
     test('en culture with various valid numbers', () => {
         let testItem = new NumberLocalizedFormatter();
         
-        let dtr = testItem.Format(1, NumberLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, NumberLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(1.5, NumberLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1.5');
-        dtr = testItem.Format(1000000, NumberLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,000,000');
-        dtr = testItem.Format(-9.50101, NumberLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('-9.501');
+        dts = testItem.Format(1.5, NumberLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1.5');
+        dts = testItem.Format(1000000, NumberLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,000,000');
+        dts = testItem.Format(-9.50101, NumberLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('-9.501');
     });
 
     test('fr culture with various valid numbers', () => {
         let testItem = new NumberLocalizedFormatter();
         
 
-        let dtr = testItem.Format(1, NumberLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, NumberLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(1.5, NumberLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,5');
-        dtr = testItem.Format(1000000, NumberLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1\u{202F}000\u{202F}000');
-        dtr = testItem.Format(-9.50101, NumberLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('-9,501');
+        dts = testItem.Format(1.5, NumberLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,5');
+        dts = testItem.Format(1000000, NumberLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1\u{202F}000\u{202F}000');
+        dts = testItem.Format(-9.50101, NumberLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('-9,501');
     });    
     test('en culture with ways to output empty string', () => {
         let testItem = new NumberLocalizedFormatter();
         
 
-        let dtr = testItem.Format(null, NumberLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, NumberLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, NumberLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
+        dts = testItem.Format(undefined, NumberLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
     });
     test('Invalid type returns ErrorMessage', () => {
         let testItem = new NumberLocalizedFormatter();
         
 
-        let dtr = testItem.Format('A', NumberLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a number');
+        let dts = testItem.Format('A', NumberLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a number');
         
-        dtr = testItem.Format({}, NumberLookupKey, 'en');
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a number');
+        dts = testItem.Format({}, NumberLookupKey, 'en');
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a number');
         
     });
 });
@@ -419,20 +419,20 @@ describe('CurrencyLocalizedFormatter', () => {
     test('en culture with various valid numbers, using currencycode USD from global default', () => {
         let testItem = new CurrencyLocalizedFormatter();
         
-        let dtr = testItem.Format(1, CurrencyLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('$1.00');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, CurrencyLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('$1.00');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(1.5, CurrencyLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('$1.50');
-        dtr = testItem.Format(1000000, CurrencyLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('$1,000,000.00');
-        dtr = testItem.Format(-9.50101, CurrencyLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('-$9.50');
+        dts = testItem.Format(1.5, CurrencyLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('$1.50');
+        dts = testItem.Format(1000000, CurrencyLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('$1,000,000.00');
+        dts = testItem.Format(-9.50101, CurrencyLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('-$9.50');
     });
 
     test('fr culture with various valid numbers', () => {
@@ -441,20 +441,20 @@ describe('CurrencyLocalizedFormatter', () => {
                 'fr': 'EUR',
             });
         
-        let dtr = testItem.Format(1, CurrencyLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,00\xA0€');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, CurrencyLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,00\xA0€');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(1.5, CurrencyLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,50\xA0€');
-        dtr = testItem.Format(1000000, CurrencyLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1\u{202F}000\u{202F}000,00\xA0€');
-        dtr = testItem.Format(-9.50101, CurrencyLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('-9,50\xA0€');
+        dts = testItem.Format(1.5, CurrencyLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,50\xA0€');
+        dts = testItem.Format(1000000, CurrencyLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1\u{202F}000\u{202F}000,00\xA0€');
+        dts = testItem.Format(-9.50101, CurrencyLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('-9,50\xA0€');
     });    
     test('fr-FR culture with various valid numbers', () => {
         let testItem = new CurrencyLocalizedFormatter(null,
@@ -462,20 +462,20 @@ describe('CurrencyLocalizedFormatter', () => {
                 'fr-FR': 'EUR',
             });
         
-        let dtr = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,00\xA0€');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,00\xA0€');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(1.5, CurrencyLookupKey, 'fr-FR');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,50\xA0€');
-        dtr = testItem.Format(1000000, CurrencyLookupKey, 'fr-FR');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1\u{202F}000\u{202F}000,00\xA0€');
-        dtr = testItem.Format(-9.50101, CurrencyLookupKey, 'fr-FR');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('-9,50\xA0€');
+        dts = testItem.Format(1.5, CurrencyLookupKey, 'fr-FR');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,50\xA0€');
+        dts = testItem.Format(1000000, CurrencyLookupKey, 'fr-FR');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1\u{202F}000\u{202F}000,00\xA0€');
+        dts = testItem.Format(-9.50101, CurrencyLookupKey, 'fr-FR');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('-9,50\xA0€');
     });        
     test('When full culture is missing in constructor, fallback to countrycode culture', () => {
         let testItem = new CurrencyLocalizedFormatter(null,
@@ -483,57 +483,57 @@ describe('CurrencyLocalizedFormatter', () => {
                 'fr': 'EUR',
             });
         
-        let dtr = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,00\xA0€');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,00\xA0€');
+        expect(dts.ErrorMessage).toBeUndefined();
     });       
     test('With global default currency code of USD and currencycode is missing in constructor, use default currency code', () => {
         let testItem = new CurrencyLocalizedFormatter(null);
         
-        let dtr = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,00\xA0$US'); // fr formatting, but US currency symbol
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,00\xA0$US'); // fr formatting, but US currency symbol
+        expect(dts.ErrorMessage).toBeUndefined();
 
     });         
     test('With EUR as default currency code, CurrencyLookupKey uses EUR when currencycode is missing in constructor', () => {
         valGlobals.DefaultCurrencyCode = 'EUR';
         let testItem = new CurrencyLocalizedFormatter(null);
         
-        let dtr = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,00\xA0€');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, CurrencyLookupKey, 'fr-FR');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,00\xA0€');
+        expect(dts.ErrorMessage).toBeUndefined();
         // try english and get its formatting, but still uses the fr currency symbol
-        dtr = testItem.Format(1, CurrencyLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('€1.00');
-        expect(dtr.ErrorMessage).toBeUndefined();        
+        dts = testItem.Format(1, CurrencyLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('€1.00');
+        expect(dts.ErrorMessage).toBeUndefined();        
     });                    
     test('null and undefined input results in empty string', () => {
         let testItem = new CurrencyLocalizedFormatter();
         
-        let dtr = testItem.Format(null, CurrencyLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, CurrencyLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, CurrencyLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
+        dts = testItem.Format(undefined, CurrencyLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
     });    
     test('Invalid type returns ErrorMessage', () => {
         let testItem = new CurrencyLocalizedFormatter();
         
-        let dtr = testItem.Format('A', CurrencyLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a number');
+        let dts = testItem.Format('A', CurrencyLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a number');
         
-        dtr = testItem.Format({}, CurrencyLookupKey, 'en');
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a number');
+        dts = testItem.Format({}, CurrencyLookupKey, 'en');
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a number');
         
     });    
 });
@@ -554,63 +554,63 @@ describe('PercentageLocalizedFormatter', () => {
     test('en culture with various valid numbers', () => {
         let testItem = new PercentageLocalizedFormatter();
         
-        let dtr = testItem.Format(1, PercentageLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('100%');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, PercentageLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('100%');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(0.15, PercentageLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15%');
-        dtr = testItem.Format(1000, PercentageLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('100,000%');
-        dtr = testItem.Format(-0.09, PercentageLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('-9%');
+        dts = testItem.Format(0.15, PercentageLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15%');
+        dts = testItem.Format(1000, PercentageLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('100,000%');
+        dts = testItem.Format(-0.09, PercentageLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('-9%');
     });
 
     test('fr culture with various valid numbers', () => {
         let testItem = new PercentageLocalizedFormatter();
         
-        let dtr = testItem.Format(1, PercentageLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('100\xA0%');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(1, PercentageLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('100\xA0%');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(0.15, PercentageLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15\xA0%');
-        dtr = testItem.Format(1000, PercentageLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('100\u{202F}000\xA0%');
-        dtr = testItem.Format(-0.09, PercentageLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('-9\xA0%');
+        dts = testItem.Format(0.15, PercentageLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15\xA0%');
+        dts = testItem.Format(1000, PercentageLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('100\u{202F}000\xA0%');
+        dts = testItem.Format(-0.09, PercentageLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('-9\xA0%');
     });    
     test('null and undefined empty string', () => {
         let testItem = new PercentageLocalizedFormatter();
         
-        let dtr = testItem.Format(null, PercentageLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, PercentageLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, PercentageLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
+        dts = testItem.Format(undefined, PercentageLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
     });
     test('Invalid type returns ErrorMessage', () => {
         let testItem = new PercentageLocalizedFormatter();
         
-        let dtr = testItem.Format('A', PercentageLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a number');
+        let dts = testItem.Format('A', PercentageLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a number');
         
-        dtr = testItem.Format({}, PercentageLookupKey, 'en');
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a number');
+        dts = testItem.Format({}, PercentageLookupKey, 'en');
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a number');
         
     });
 });
@@ -633,69 +633,69 @@ describe('Percentage100LocalizedFormatter', () => {
     test('en culture with various valid numbers', () => {
         let testItem = new Percentage100LocalizedFormatter();
         
-        let dtr = testItem.Format(100, Percentage100LookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('100%');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(100, Percentage100LookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('100%');
+        expect(dts.ErrorMessage).toBeUndefined();
         // Intl rounds percentage by default.
-        dtr = testItem.Format(15.2, Percentage100LookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15%');
-        dtr = testItem.Format(15.5, Percentage100LookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('16%');
-        dtr = testItem.Format(1000, Percentage100LookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1,000%');
-        dtr = testItem.Format(-9, Percentage100LookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('-9%');
+        dts = testItem.Format(15.2, Percentage100LookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15%');
+        dts = testItem.Format(15.5, Percentage100LookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('16%');
+        dts = testItem.Format(1000, Percentage100LookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1,000%');
+        dts = testItem.Format(-9, Percentage100LookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('-9%');
     });
 
     test('fr culture with various valid numbers', () => {
         let testItem = new Percentage100LocalizedFormatter();
         
-        let dtr = testItem.Format(100, Percentage100LookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('100\xA0%');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(100, Percentage100LookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('100\xA0%');
+        expect(dts.ErrorMessage).toBeUndefined();
         // Intl rounds percentage by default
-        dtr = testItem.Format(15.2, Percentage100LookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15\xA0%');
-        dtr = testItem.Format(15.5, Percentage100LookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('16\xA0%');        
-        dtr = testItem.Format(1000, Percentage100LookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1\u{202F}000\xA0%');
-        dtr = testItem.Format(-9, Percentage100LookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('-9\xA0%');
+        dts = testItem.Format(15.2, Percentage100LookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15\xA0%');
+        dts = testItem.Format(15.5, Percentage100LookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('16\xA0%');        
+        dts = testItem.Format(1000, Percentage100LookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1\u{202F}000\xA0%');
+        dts = testItem.Format(-9, Percentage100LookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('-9\xA0%');
     });    
     test('null and undefined empty string', () => {
         let testItem = new Percentage100LocalizedFormatter();
         
-        let dtr = testItem.Format(null, Percentage100LookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, Percentage100LookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, Percentage100LookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
+        dts = testItem.Format(undefined, Percentage100LookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
     });
     test('Invalid type returns ErrorMessage', () => {
         let testItem = new Percentage100LocalizedFormatter();
         
-        let dtr = testItem.Format('A', Percentage100LookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a number');
+        let dts = testItem.Format('A', Percentage100LookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a number');
         
-        dtr = testItem.Format({}, Percentage100LookupKey, 'en');
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a number');
+        dts = testItem.Format({}, Percentage100LookupKey, 'en');
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a number');
     });
 });
 
@@ -716,14 +716,14 @@ describe('BooleanLocalizedFormatter', () => {
     test('Without CultureToBooleanLabels, true and false are "true" and "false"', () => {
         let testItem = new BooleanLocalizedFormatter();
         
-        let dtr = testItem.Format(true, BooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('true');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(true, BooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('true');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, BooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('false');
+        dts = testItem.Format(false, BooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('false');
     });
     test('CultureToBooleanLabels are used when culture is specified and true/false used for another culture', () => {
         let testItem = new BooleanLocalizedFormatter([
@@ -744,83 +744,83 @@ describe('BooleanLocalizedFormatter', () => {
             }
         ]);
         
-        let dtr = testItem.Format(true, BooleanLookupKey, 'en');    // uses global default
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('true');
-        expect(dtr.ErrorMessage).toBeUndefined();
-        dtr = testItem.Format(false, BooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('false');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(true, BooleanLookupKey, 'en');    // uses global default
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('true');
+        expect(dts.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(false, BooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('false');
+        expect(dts.ErrorMessage).toBeUndefined();
 
-        dtr = testItem.Format(true, BooleanLookupKey, 'en-US');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('USTRUE');
-        expect(dtr.ErrorMessage).toBeUndefined();
-        dtr = testItem.Format(false, BooleanLookupKey, 'en-US');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('USFALSE');        
-        expect(dtr.ErrorMessage).toBeUndefined();       
+        dts = testItem.Format(true, BooleanLookupKey, 'en-US');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('USTRUE');
+        expect(dts.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(false, BooleanLookupKey, 'en-US');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('USFALSE');        
+        expect(dts.ErrorMessage).toBeUndefined();       
         
-        dtr = testItem.Format(true, BooleanLookupKey, 'en-GB'); // fallback to global default
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('true');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(true, BooleanLookupKey, 'en-GB'); // fallback to global default
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('true');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, BooleanLookupKey, 'en-GB');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('false');
+        dts = testItem.Format(false, BooleanLookupKey, 'en-GB');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('false');
 
-        dtr = testItem.Format(true, BooleanLookupKey, 'es'); 
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('esTRUE');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(true, BooleanLookupKey, 'es'); 
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('esTRUE');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, BooleanLookupKey, 'es');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('esFALSE');        
+        dts = testItem.Format(false, BooleanLookupKey, 'es');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('esFALSE');        
 
-        dtr = testItem.Format(true, BooleanLookupKey, 'es-SP'); 
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('esSPTRUE');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(true, BooleanLookupKey, 'es-SP'); 
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('esSPTRUE');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, BooleanLookupKey, 'es-SP');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('esSPFALSE');    
+        dts = testItem.Format(false, BooleanLookupKey, 'es-SP');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('esSPFALSE');    
 
-        dtr = testItem.Format(true, BooleanLookupKey, 'es-MX'); // fallback to es
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('esTRUE');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(true, BooleanLookupKey, 'es-MX'); // fallback to es
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('esTRUE');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, BooleanLookupKey, 'es-MX');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('esFALSE');                
+        dts = testItem.Format(false, BooleanLookupKey, 'es-MX');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('esFALSE');                
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new BooleanLocalizedFormatter();
         
-        let dtr = testItem.Format(null, BooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, BooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, BooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
+        dts = testItem.Format(undefined, BooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
     });    
     test('Invalid type returns ErrorMessage', () => {
         let testItem = new BooleanLocalizedFormatter();
         
-        let dtr = testItem.Format('A', BooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a boolean');
+        let dts = testItem.Format('A', BooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a boolean');
         
-        dtr = testItem.Format(1, BooleanLookupKey, 'en');
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a boolean');
+        dts = testItem.Format(1, BooleanLookupKey, 'en');
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a boolean');
         
     });
 });
@@ -841,14 +841,14 @@ describe('YesNoBooleanLocalizedFormatter', () => {
     test('Without CultureToYesNoBooleanLabels, true and false are "yes" and "no"', () => {
         let testItem = new YesNoBooleanLocalizedFormatter();
         
-        let dtr = testItem.Format(true, YesNoBooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('yes');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(true, YesNoBooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('yes');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, YesNoBooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('no');
+        dts = testItem.Format(false, YesNoBooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('no');
     });
     test('CultureToYesNoBooleanLabels are used when culture is specified and true/false used for another culture', () => {
         let testItem = new YesNoBooleanLocalizedFormatter([
@@ -869,92 +869,92 @@ describe('YesNoBooleanLocalizedFormatter', () => {
             }
         ]);
         
-        let dtr = testItem.Format(true, YesNoBooleanLookupKey, 'en');    // uses global default
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('yes');
-        expect(dtr.ErrorMessage).toBeUndefined();
-        dtr = testItem.Format(false, YesNoBooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('no');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(true, YesNoBooleanLookupKey, 'en');    // uses global default
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('yes');
+        expect(dts.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(false, YesNoBooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('no');
+        expect(dts.ErrorMessage).toBeUndefined();
 
-        dtr = testItem.Format(true, YesNoBooleanLookupKey, 'en-US');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('US YES');
-        expect(dtr.ErrorMessage).toBeUndefined();
-        dtr = testItem.Format(false, YesNoBooleanLookupKey, 'en-US');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('US NO');        
-        expect(dtr.ErrorMessage).toBeUndefined();       
+        dts = testItem.Format(true, YesNoBooleanLookupKey, 'en-US');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('US YES');
+        expect(dts.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(false, YesNoBooleanLookupKey, 'en-US');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('US NO');        
+        expect(dts.ErrorMessage).toBeUndefined();       
         
-        dtr = testItem.Format(true, YesNoBooleanLookupKey, 'en-GB'); // fallback to global default
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('yes');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(true, YesNoBooleanLookupKey, 'en-GB'); // fallback to global default
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('yes');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, YesNoBooleanLookupKey, 'en-GB');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('no');
+        dts = testItem.Format(false, YesNoBooleanLookupKey, 'en-GB');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('no');
 
-        dtr = testItem.Format(true, BooleanLookupKey, 'es'); 
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('sí');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(true, BooleanLookupKey, 'es'); 
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('sí');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, BooleanLookupKey, 'es');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('no');        
+        dts = testItem.Format(false, BooleanLookupKey, 'es');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('no');        
 
-        dtr = testItem.Format(true, BooleanLookupKey, 'es-SP'); 
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('esSP sí');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(true, BooleanLookupKey, 'es-SP'); 
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('esSP sí');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, BooleanLookupKey, 'es-SP');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('esSP no');    
+        dts = testItem.Format(false, BooleanLookupKey, 'es-SP');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('esSP no');    
 
-        dtr = testItem.Format(true, BooleanLookupKey, 'es-MX'); // fallback to es
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('sí');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(true, BooleanLookupKey, 'es-MX'); // fallback to es
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('sí');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, BooleanLookupKey, 'es-MX');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('no');         
+        dts = testItem.Format(false, BooleanLookupKey, 'es-MX');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('no');         
         
-        dtr = testItem.Format(true, BooleanLookupKey, 'de'); // fallback to es
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('yes');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(true, BooleanLookupKey, 'de'); // fallback to es
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('yes');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(false, BooleanLookupKey, 'de');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('no');                    
+        dts = testItem.Format(false, BooleanLookupKey, 'de');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('no');                    
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new YesNoBooleanLocalizedFormatter();
         
-        let dtr = testItem.Format(null, YesNoBooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, YesNoBooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, YesNoBooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
+        dts = testItem.Format(undefined, YesNoBooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
     });    
     test('Invalid type returns ErrorMessage', () => {
         let testItem = new YesNoBooleanLocalizedFormatter();
         
-        let dtr = testItem.Format('A', YesNoBooleanLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a boolean');
+        let dts = testItem.Format('A', YesNoBooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a boolean');
         
-        dtr = testItem.Format(1, YesNoBooleanLookupKey, 'en');
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a boolean');
+        dts = testItem.Format(1, YesNoBooleanLookupKey, 'en');
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a boolean');
         
     });
 });
@@ -977,75 +977,75 @@ describe('DateTimeLocalizedFormatter', () => {
         let testItem = new DateTimeLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, DateTimeLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('10/31/2000, 12:00 AM');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, DateTimeLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('10/31/2000, 12:00 AM');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, DateTimeLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1/1/1980, 4:00 AM');
+        dts = testItem.Format(date2, DateTimeLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1/1/1980, 4:00 AM');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, DateTimeLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1/15/1980, 4:04 PM');
+        dts = testItem.Format(date3, DateTimeLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1/15/1980, 4:04 PM');
     });
 
     test('fr culture with various valid dates', () => {
         let testItem = new DateTimeLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, DateTimeLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('31/10/2000 00:00');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, DateTimeLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('31/10/2000 00:00');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, DateTimeLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('01/01/1980 04:00');
+        dts = testItem.Format(date2, DateTimeLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('01/01/1980 04:00');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, DateTimeLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15/01/1980 16:04');
+        dts = testItem.Format(date3, DateTimeLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15/01/1980 16:04');
     });    
     test('null or undefined return empty string', () => {
         let testItem = new DateTimeLocalizedFormatter();
         
-        let dtr = testItem.Format(null, DateTimeLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, DateTimeLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, DateTimeLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(undefined, DateTimeLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Calues other than Date, null or undefined are errors', () => {
         let testItem = new DateTimeLocalizedFormatter();
         
-        let dtr = testItem.Format({}, DateTimeLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        let dts = testItem.Format({}, DateTimeLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format('', DateTimeLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format('', DateTimeLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format(10, DateTimeLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(10, DateTimeLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
             
-        dtr = testItem.Format(true, DateTimeLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(true, DateTimeLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
                 
     });
 });
@@ -1067,75 +1067,75 @@ describe('DateLocalizedFormatter', () => {
         let testItem = new DateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, DateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('10/31/2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, DateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('10/31/2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, DateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1/1/1980');
+        dts = testItem.Format(date2, DateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1/1/1980');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, DateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1/15/1980');
+        dts = testItem.Format(date3, DateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1/15/1980');
     });
 
     test('fr culture with various valid dates', () => {
         let testItem = new DateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, DateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('31/10/2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, DateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('31/10/2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, DateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('01/01/1980');
+        dts = testItem.Format(date2, DateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('01/01/1980');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, DateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15/01/1980');
+        dts = testItem.Format(date3, DateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15/01/1980');
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new DateLocalizedFormatter();
         
-        let dtr = testItem.Format(null, DateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, DateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, DateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(undefined, DateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
         let testItem = new DateLocalizedFormatter();
         
-        let dtr = testItem.Format({}, DateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        let dts = testItem.Format({}, DateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format('', DateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format('', DateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format(10, DateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(10, DateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
             
-        dtr = testItem.Format(true, DateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(true, DateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
                 
     });
 
@@ -1157,75 +1157,75 @@ describe('AbbrevDateLocalizedFormatter', () => {
         let testItem = new AbbrevDateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, AbbrevDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Oct 31, 2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, AbbrevDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Oct 31, 2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, AbbrevDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Jan 1, 1980');
+        dts = testItem.Format(date2, AbbrevDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Jan 1, 1980');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, AbbrevDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Jan 15, 1980');
+        dts = testItem.Format(date3, AbbrevDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Jan 15, 1980');
     });
 
     test('fr culture with various valid dates', () => {
         let testItem = new AbbrevDateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, AbbrevDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('31 oct. 2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, AbbrevDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('31 oct. 2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, AbbrevDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1 janv. 1980');
+        dts = testItem.Format(date2, AbbrevDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1 janv. 1980');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, AbbrevDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15 janv. 1980');
+        dts = testItem.Format(date3, AbbrevDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15 janv. 1980');
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new AbbrevDateLocalizedFormatter();
         
-        let dtr = testItem.Format(null, AbbrevDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, AbbrevDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, AbbrevDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(undefined, AbbrevDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
         let testItem = new AbbrevDateLocalizedFormatter();
         
-        let dtr = testItem.Format({}, AbbrevDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        let dts = testItem.Format({}, AbbrevDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format('', AbbrevDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format('', AbbrevDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format(10, AbbrevDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(10, AbbrevDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
             
-        dtr = testItem.Format(true, AbbrevDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(true, AbbrevDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
                 
     });
 });
@@ -1247,75 +1247,75 @@ describe('AbbrevDOWDateLocalizedFormatter', () => {
         let testItem = new AbbrevDOWDateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, AbbrevDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Tue, Oct 31, 2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, AbbrevDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Tue, Oct 31, 2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 2, 4, 0, 30);
-        dtr = testItem.Format(date2, AbbrevDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Wed, Jan 2, 1980');
+        dts = testItem.Format(date2, AbbrevDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Wed, Jan 2, 1980');
         let date3 = new Date(1980, 0, 18, 16, 4, 0);        
-        dtr = testItem.Format(date3, AbbrevDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Fri, Jan 18, 1980');
+        dts = testItem.Format(date3, AbbrevDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Fri, Jan 18, 1980');
     });
 
     test('fr culture with various valid dates', () => {
         let testItem = new AbbrevDOWDateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, AbbrevDOWDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('mar. 31 oct. 2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, AbbrevDOWDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('mar. 31 oct. 2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 3, 4, 0, 30);
-        dtr = testItem.Format(date2, AbbrevDOWDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('jeu. 3 janv. 1980');
+        dts = testItem.Format(date2, AbbrevDOWDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('jeu. 3 janv. 1980');
         let date3 = new Date(1980, 0, 18, 16, 4, 0);        
-        dtr = testItem.Format(date3, AbbrevDOWDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('ven. 18 janv. 1980');
+        dts = testItem.Format(date3, AbbrevDOWDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('ven. 18 janv. 1980');
     });    
     test('Null or undefined returns empty string', () => {
         let testItem = new AbbrevDOWDateLocalizedFormatter();
         
-        let dtr = testItem.Format(null, AbbrevDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, AbbrevDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, AbbrevDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(undefined, AbbrevDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
         let testItem = new AbbrevDOWDateLocalizedFormatter();
         
-        let dtr = testItem.Format({}, AbbrevDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        let dts = testItem.Format({}, AbbrevDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format('', AbbrevDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format('', AbbrevDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format(10, AbbrevDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(10, AbbrevDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
             
-        dtr = testItem.Format(true, AbbrevDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(true, AbbrevDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
                 
     });    
 });
@@ -1336,75 +1336,75 @@ describe('LongDateLocalizedFormatter', () => {
         let testItem = new LongDateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, LongDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('October 31, 2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, LongDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('October 31, 2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, LongDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('January 1, 1980');
+        dts = testItem.Format(date2, LongDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('January 1, 1980');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, LongDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('January 15, 1980');
+        dts = testItem.Format(date3, LongDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('January 15, 1980');
     });
 
     test('fr culture with various valid dates', () => {
         let testItem = new LongDateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, LongDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('31 octobre 2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, LongDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('31 octobre 2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, LongDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('1 janvier 1980');
+        dts = testItem.Format(date2, LongDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('1 janvier 1980');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, LongDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('15 janvier 1980');
+        dts = testItem.Format(date3, LongDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('15 janvier 1980');
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new LongDateLocalizedFormatter();
         
-        let dtr = testItem.Format(null, LongDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, LongDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, LongDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(undefined, LongDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
         let testItem = new LongDateLocalizedFormatter();
         
-        let dtr = testItem.Format({}, LongDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        let dts = testItem.Format({}, LongDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format('', LongDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format('', LongDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format(10, LongDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(10, LongDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
             
-        dtr = testItem.Format(true, LongDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(true, LongDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
                 
     });
 });
@@ -1426,75 +1426,75 @@ describe('LongDOWDateLocalizedFormatter', () => {
         let testItem = new LongDOWDateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, LongDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Tuesday, October 31, 2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, LongDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Tuesday, October 31, 2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 2, 4, 0, 30);
-        dtr = testItem.Format(date2, LongDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Wednesday, January 2, 1980');
+        dts = testItem.Format(date2, LongDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Wednesday, January 2, 1980');
         let date3 = new Date(1980, 0, 18, 16, 4, 0);        
-        dtr = testItem.Format(date3, LongDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('Friday, January 18, 1980');
+        dts = testItem.Format(date3, LongDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Friday, January 18, 1980');
     });
 
     test('fr culture with various valid dates', () => {
         let testItem = new LongDOWDateLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, LongDOWDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('mardi 31 octobre 2000');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, LongDOWDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('mardi 31 octobre 2000');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 3, 4, 0, 30);
-        dtr = testItem.Format(date2, LongDOWDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('jeudi 3 janvier 1980');
+        dts = testItem.Format(date2, LongDOWDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('jeudi 3 janvier 1980');
         let date3 = new Date(1980, 0, 18, 16, 4, 0);        
-        dtr = testItem.Format(date3, LongDOWDateLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('vendredi 18 janvier 1980');
+        dts = testItem.Format(date3, LongDOWDateLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('vendredi 18 janvier 1980');
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new LongDOWDateLocalizedFormatter();
         
-        let dtr = testItem.Format(null, LongDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, LongDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, LongDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(undefined, LongDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
         let testItem = new LongDOWDateLocalizedFormatter();
         
-        let dtr = testItem.Format({}, LongDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        let dts = testItem.Format({}, LongDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format('', LongDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format('', LongDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format(10, LongDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(10, LongDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
             
-        dtr = testItem.Format(true, LongDOWDateLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(true, LongDOWDateLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
                 
     });        
 });
@@ -1515,76 +1515,76 @@ describe('TimeofDayLocalizedFormatter', () => {
         let testItem = new TimeofDayLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, TimeOfDayLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('12:00 AM');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, TimeOfDayLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('12:00 AM');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, TimeOfDayLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('4:00 AM');
+        dts = testItem.Format(date2, TimeOfDayLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('4:00 AM');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, TimeOfDayLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('4:04 PM');
+        dts = testItem.Format(date3, TimeOfDayLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('4:04 PM');
     });
 
     test('fr culture with various valid dates', () => {
         let testItem = new TimeofDayLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, TimeOfDayLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('00:00');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, TimeOfDayLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('00:00');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, TimeOfDayLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('04:00');
+        dts = testItem.Format(date2, TimeOfDayLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('04:00');
         
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, TimeOfDayLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('16:04');
+        dts = testItem.Format(date3, TimeOfDayLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('16:04');
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new TimeofDayLocalizedFormatter();
         
-        let dtr = testItem.Format(null, TimeOfDayLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, TimeOfDayLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, TimeOfDayLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(undefined, TimeOfDayLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('values other than Date, null or undefined are errors', () => {
         let testItem = new TimeofDayLocalizedFormatter();
         
-        let dtr = testItem.Format({}, TimeOfDayLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        let dts = testItem.Format({}, TimeOfDayLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format('', TimeOfDayLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format('', TimeOfDayLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format(10, TimeOfDayLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(10, TimeOfDayLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
             
-        dtr = testItem.Format(true, TimeOfDayLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(true, TimeOfDayLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
                 
     });    
 });
@@ -1606,56 +1606,56 @@ describe('TimeofDayHMSLocalizedFormatter', () => {
         let testItem = new TimeofDayHMSLocalizedFormatter();
         
         let date1 = new Date(2000, 9, 31);
-        let dtr = testItem.Format(date1, TimeOfDayHMSLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('00:00:00');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(date1, TimeOfDayHMSLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('00:00:00');
+        expect(dts.ErrorMessage).toBeUndefined();
         
         let date2 = new Date(1980, 0, 1, 4, 0, 30);
-        dtr = testItem.Format(date2, TimeOfDayHMSLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('04:00:30');
+        dts = testItem.Format(date2, TimeOfDayHMSLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('04:00:30');
         let date3 = new Date(1980, 0, 15, 16, 4, 0);        
-        dtr = testItem.Format(date3, TimeOfDayHMSLookupKey, 'fr');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('16:04:00');
+        dts = testItem.Format(date3, TimeOfDayHMSLookupKey, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('16:04:00');
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new TimeofDayHMSLocalizedFormatter();
         
-        let dtr = testItem.Format(null, TimeOfDayHMSLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        let dts = testItem.Format(null, TimeOfDayHMSLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
-        dtr = testItem.Format(undefined, TimeOfDayHMSLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBe('');
-        expect(dtr.ErrorMessage).toBeUndefined();
+        dts = testItem.Format(undefined, TimeOfDayHMSLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('');
+        expect(dts.ErrorMessage).toBeUndefined();
         
     });
     test('Values other than Date, null or undefined are errors', () => {
         let testItem = new TimeofDayHMSLocalizedFormatter();
         
-        let dtr = testItem.Format({}, TimeOfDayHMSLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        let dts = testItem.Format({}, TimeOfDayHMSLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format('', TimeOfDayHMSLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format('', TimeOfDayHMSLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
         
-        dtr = testItem.Format(10, TimeOfDayHMSLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(10, TimeOfDayHMSLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
             
-        dtr = testItem.Format(true, TimeOfDayHMSLookupKey, 'en');
-        expect(dtr).not.toBeNull();
-        expect(dtr.Value).toBeUndefined();
-        expect(dtr.ErrorMessage).toBe('Not a date');
+        dts = testItem.Format(true, TimeOfDayHMSLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBeUndefined();
+        expect(dts.ErrorMessage).toBe('Not a date');
                 
     });        
 });

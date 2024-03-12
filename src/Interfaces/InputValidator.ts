@@ -253,9 +253,9 @@ export interface IInputValidatorFactory {
  * They need to be formatted according to the data type,
  * such as "number" will convert 1000 into "1,000" and "date" will convert 
  * a javascript Date into "May 20, 2001". This function uses the 
- * Services.DataTypeResolver to handle conversion and localization.
+ * Services.DataTypeServices to handle conversion and localization.
  * The "formatterkey" in {token:formatterkey} is actually the same
- * as a LookupKey in the DataTypeResolver and its DataTypeLocalizations.
+ * as a LookupKey in the DataTypeServices and its DataTypeLocalizations.
  * Tokens are supplied by implementers of IMessageTokenSource.
  */
 export interface IMessageTokenResolver

@@ -1,5 +1,5 @@
 import { ConditionFactory } from "../Conditions/ConditionFactory";
-import { DataTypeResolver } from "../DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../DataTypes/DataTypeServices";
 import { InputValidatorFactory } from "../ValueHosts/InputValidator";
 import { ConsoleLogger } from "./ConsoleLogger";
 import { MessageTokenResolver } from "../ValueHosts/MessageTokenResolver";
@@ -7,7 +7,7 @@ import { AssertNotNull } from "../Utilities/ErrorHandling";
 import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../ValueHosts/ValueHostFactory";
 import type { IInputValidatorFactory, IMessageTokenResolver } from "../Interfaces/InputValidator";
 import type { ILogger } from "../Interfaces/Logger";
-import type { IDataTypeResolver } from "../Interfaces/DataTypes";
+import type { IDataTypeServices } from "../Interfaces/DataTypes";
 import type { IValueHostFactory } from "../Interfaces/ValueHostFactory";
 import { IConditionFactory } from "../Interfaces/Conditions";
 
@@ -22,9 +22,9 @@ import { IConditionFactory } from "../Interfaces/Conditions";
 export class ValidationGlobals
 {
 /**
- * The DataTypeResolver gets configured in its constructure, which needs to know of
+ * The DataTypeServices gets configured in its constructure, which needs to know of
  * one or more CultureIds (like 'en' or 'en-GB') that its localization supports.
- * This global is used when DataTypeResolver does not get those parameters.
+ * This global is used when DataTypeServices does not get those parameters.
  * Its own default is 'en'.
  */    
     public get DefaultCultureId(): string
@@ -114,29 +114,29 @@ export class ValidationGlobals
     }
     //#endregion ConditionFactory
 
-    //#region DataTypeResolver
+    //#region DataTypeServices
     /**
-     * The default DataTypeResolverService on ValidationServices. 
-     * If you don't set it, it uses DataTypeResolver without any DataTypeLocalizations
+     * The default DataTypeServices on ValidationServices. 
+     * If you don't set it, it uses DataTypeServices without any DataTypeLocalizations
      * or registered data.
      * Generally used to register IDataTypeLocalization implementations and additional rules 
      * on a singleton so that it isn't done each time a services is created.
      */
-    private _defaultDataTypeResolver: IDataTypeResolver | null = null;
-    public SetDefaultDataTypeResolver(dtr: IDataTypeResolver): void
+    private _defaultDataTypeServices: IDataTypeServices | null = null;
+    public SetDefaultDataTypeServices(dts: IDataTypeServices): void
     {
-        AssertNotNull(dtr, 'dtr');
-        this._defaultDataTypeResolver = dtr;
+        AssertNotNull(dts, 'dts');
+        this._defaultDataTypeServices = dts;
     }
-    public GetDefaultDataTypeResolver() : IDataTypeResolver
+    public GetDefaultDataTypeServices() : IDataTypeServices
     {
-        if (!this._defaultDataTypeResolver) {
-            let dtr = new DataTypeResolver('en');
-            this._defaultDataTypeResolver = dtr;
+        if (!this._defaultDataTypeServices) {
+            let dts = new DataTypeServices('en');
+            this._defaultDataTypeServices = dts;
         }
-        return this._defaultDataTypeResolver;
+        return this._defaultDataTypeServices;
     }    
-    //#endregion DataTypeResolver
+    //#endregion DataTypeServices
     //#region MessageTokenResolver
     /**
      * The MessageTokenResolver that is used by default with each ValidationServices
