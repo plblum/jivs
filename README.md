@@ -119,6 +119,111 @@ building a UI are:
 	```
 	Validate
 	```
+## Bridging business logic and UI validation
+You need to build a class that adapts your validation rules to Jivs own types and classes. Jivs uses the classes that implement the ICondition interface to package up a validation rule, and ConditionDescriptor type to inform the Condition class how to configure itself. The class is a bridge between business logic and your UI. This section provides the details.
+
+### Separation of concerns: Input Validation vs Business Logic validation
+
+<details>
+<summary>This topic should orient the UI developer on keeping validation logic separate from the UI.</summary>
+Jivs wants the app to keep its validation rules in Business Logic separate from UI code. Business logic should have no knowledge of the UI. It operates based on an object called Model or Entity. As you know, properties of objects are completely disconnected from the UI input elements.
+
+> Input Validation’s role is to ensure that the values you move into a Model conform to the business logic, without using existing business logic code that depends on the Model.
+
+Business logic validation code still gets used, but only upon attempting to save into the Model. The user clicks a Save button. The button first checks if there are any remaining Input Validation errors. If none, you have code that populates a model from the Inputs. That’s when business logic does its own validation. It will save if no issues remain. It will report back issues if any are found. You’ll pass them along to ValidationManager to impact the user interface, like showing them in a ValidationSummary widget.
+
+About all the UI developer should know is:
+- The identity of the Model’s field, so it can move values between Model and UI.
+- The data type of the field. Specifically the property’s data type, like a number, date, Boolean, or complex object. The developer uses that to determine the widget that will edit the value. They also use that to write the code that converts the value between the Model property’s data type and the widget’s data type.
+- It is possible that there are validation rules. What they are doesn’t matter. The UI developer can build a widget that shows up when issues are found.
+	- There is one case where the UI developer might introduce a validation rule: reporting an issue when their code to convert from widget to Model property fails. Even that is often resolved behinds the scenes in Jivs.
+- Provide a common area on screen for consolidation of errors, including those reported by Business Logic. This is referred to as the ValidationSummary.
+
+Someone will code all of those validation rules in a way that Jivs can apply them. Whether it’s done by the UI developer or not, this new code will be separate from the UI code. (And unit tested.) This will likely be the most code you need to write to work with Jivs (or any validation system).
+</details>
+
+### Configuring a validation rule in Jivs
+
+You build validation rules using the Condition concept. A Condition simply packages a function to evaluate data together with a few other properties. 
+```ts
+interface ICondition {
+    Evaluate(valueHost, valueHostResolver): ConditionEvaluateResult;
+    Category: ConditionCategory;
+    ConditionType: string;
+}
+```
+That evaluation function entirely handles the validation rule, and returns a result of Match, NoMatch, or Undetermined.
+<details>
+
+- Match – Data conformed to the rule
+- NoMatch -Data violated the rule
+- Undetermined – Data wasn’t appropriate for evaluation. Example: an empty textbox’s value isn’t ready for a “Compare the input’s date value to Today”. There needs to be text representing a date first.
+</details>
+
+Jivs provides numerous Condition classes. 
+<details>
+Here are just a few:
+
+- RequiredTextCondition, RequiredIndexCondition - for required fields
+- DataTypeCheckCondition, RegExpCondition - for checking the data conforms to the data type.
+- RangeCondition, ValuesEqualCondition, ValueGTSecondValueCondition - Comparing values
+- AndCondition, OrCondition - For creating boolean logic with other Conditions.
+</details>
+
+To use them, you need to populate their ConditionDescriptor type, which has configuration properties specific to the Condition class. 
+We'll work with this example.
+Here's the rule we want to implement: Compare a date from the Input to today's date.
+
+The ValuesEqualCondition is the right Condition for the job.  You need to create a ValuesEqualConditionDescriptor that Jivs will use later to prepare the ValuesEqualCondition. Here's that ConditionDescriptor:
+```ts
+interface IValuesEqualConditionDescriptor {
+    Type: string;
+    ValueHostId: null | string;
+    SecondValueHostId: null | string;
+    SecondValue?: any;
+    ConversionLookupKey?: null | string;
+    SecondConversionLookupKey?: null | string;
+    Category?: ConditionCategory;
+}
+```
+>Where's the error message? A Condition is just part of a Validator. The InputValidator class connects your Condition to its error message.
+
+Your new code should look like this, where ValueHostId is your identifier for a field on the Model that you call “SignedOnDate”. (More on ValueHostIds later.)
+```ts
+{
+    Type: 'ValuesEqual';
+    ValueHostId: 'SignedOnDate';
+    SecondValue: date object representing Today;
+}
+```
+We recommend that you create a Factory-style class that takes your business logic validation information in and returns the appropriate ConditionDescriptor already configured. Let’s suppose that your business logic has a class called BusinessLogicComparer that looks like this:
+```ts
+class BusinessLogicComparer {
+    operator: ConditionOperators; // equals, notequals, etc
+    CompareTo?: ((date object representing Today));
+}
+```
+Here’s a framework for your new Factory.
+```ts
+class Factory
+{
+	Create(fieldRef: string, businessLogicRule: any): IConditionDescriptor
+	{
+		if (businessLogicRule instanceof BusinessLogicComparer)
+			switch (businessLogicRule.operator)
+			{
+				case ConditionOperators.Equals:
+					return <IValuesEqualsConditionDescriptor>{
+						Type: 'ValuesEqual',
+						ValueHostId: fieldRef,
+						SecondValue: businessLogicRule.SecondValue
+					}
+			}
+	}
+}
+```
+Use your Factory as you assemble the ValidationManagerConfig object. Its just one part of the work to configure the ValidationManager.
+	
 ---
 __This documentation is unfinished.__ Plenty still to write about:
 
