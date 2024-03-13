@@ -415,10 +415,34 @@ Let’s go through this type.
 -	OnInputValueChanged notifies you when an InputValueHost had its Input Value changed.
 -	OnValidated and OnValueHostValidated notifies you after a Validate function completes, providing the results.
 
+## Configuring the ValidationServices
+The ValidationServices class supports the operations of Validation with services and factories, which of course means you can heavily customize Jivs through the power of interfaces and dependency injection.
+
+ValidationServices is where we register new Conditions and classes to help work with all of the data types you might have in your Model. None of those classes are prepopulated. So let’s get them setup.
+
+Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)
+
+Add this file to your project. You will likely need to regenerate the list of inputs as your project source may be NPM. It results in this new function.
+```ts
+export function CreateValidationServices(): ValidationServices {
+…
+}
+```
+Once it compiles, you can edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
+
+Now that you have the CreateValidationServices function, let’s modify your earlier configuration code for ValidationManager by using it.
+```ts
+let valueHostDescriptors = ... copied from previous example ...
+let services = CreateValidationServices();	// replaced
+let config = <IValidationManagerConfig>{
+  Services: services,
+  ValueHostDescriptors: ValueHostDescriptors
+}
+let validationManager = new ValidationManager(config);
+// TODO: expose this validationManager to your widgets that need validation
+```
 ---
 __This documentation is unfinished.__ Plenty still to write about:
-
--   How to configure, including how to work with your business logic
 
 -   Each class and its members
 
@@ -430,4 +454,6 @@ __This documentation is unfinished.__ Plenty still to write about:
     like how the JavaScript Date object handles a DateTime value)
 
 -   Relating this to other input validation libraries
+
+- Localization
 
