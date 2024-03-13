@@ -328,7 +328,7 @@ export const CompareToConditionType = 'Range';
  * Subclasses implement the actual comparison operator (equals, greater than, etc)
  * Supports tokens: {CompareTo}, the value from the second value host.
  */
-export abstract class CompareToConditionBase extends OneValueConditionBase<ICompareToConditionDescriptor>
+export abstract class CompareToConditionBase<TDescriptor extends ICompareToConditionDescriptor> extends OneValueConditionBase<TDescriptor>
 {
     public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
@@ -406,7 +406,7 @@ export abstract class CompareToConditionBase extends OneValueConditionBase<IComp
 /**
  * Two values must be equal. Values are native datatype.
  */
-export class ValuesEqualCondition extends CompareToConditionBase {
+export class ValuesEqualCondition extends CompareToConditionBase<IValuesEqualConditionDescriptor> {
     public static get DefaultConditionType(): string { return ValuesEqualConditionType; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -416,11 +416,15 @@ export class ValuesEqualCondition extends CompareToConditionBase {
     }
 }
 export const ValuesEqualConditionType = 'ValuesEqual';
+/**
+ * Descriptor for ValuesEqualCondition
+ */
+export interface IValuesEqualConditionDescriptor extends ICompareToConditionDescriptor { }
 
 /**
  * Two values must not be equal. Values are native datatype.
  */
-export class ValuesNotEqualCondition extends CompareToConditionBase {
+export class ValuesNotEqualCondition extends CompareToConditionBase<IValuesNotEqualConditionDescriptor> {
     public static get DefaultConditionType(): string { return ValuesNotEqualConditionType; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -431,12 +435,15 @@ export class ValuesNotEqualCondition extends CompareToConditionBase {
     }
 }
 export const ValuesNotEqualConditionType = 'ValuesNotEqual';
-
+/**
+ * Descriptor for ValuesNotEqualCondition
+ */
+export interface IValuesNotEqualConditionDescriptor extends ICompareToConditionDescriptor { }
 /**
  * Value 1 must be greater than Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class ValueGTSecondValueCondition extends CompareToConditionBase {
+export class ValueGTSecondValueCondition extends CompareToConditionBase<IValueGTSecondValueConditionDescriptor> {
     public static get DefaultConditionType(): string { return ValueGTSecondValueConditionType; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -451,12 +458,15 @@ export class ValueGTSecondValueCondition extends CompareToConditionBase {
     }
 }
 export const ValueGTSecondValueConditionType = 'ValueGreaterThanSecondValue';
-
+/**
+ * Descriptor for ValueGTSecondValueCondition
+ */
+export interface IValueGTSecondValueConditionDescriptor extends ICompareToConditionDescriptor { }
 /**
  * Value 1 must be less than Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class ValueLTSecondValueCondition extends CompareToConditionBase {
+export class ValueLTSecondValueCondition extends CompareToConditionBase<IValueLTSecondValueConditionDescriptor> {
     public static get DefaultConditionType(): string { return ValueLTSecondValueConditionType; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -471,12 +481,15 @@ export class ValueLTSecondValueCondition extends CompareToConditionBase {
     }
 }
 export const ValueLTSecondValueConditionType = 'ValueLessThanSecondValue';
-
+/**
+ * Descriptor for ValueLTSecondValueCondition
+ */
+export interface IValueLTSecondValueConditionDescriptor extends ICompareToConditionDescriptor { }
 /**
  * Value 1 must be greater than or equal Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class ValueGTESecondValueCondition extends CompareToConditionBase {
+export class ValueGTESecondValueCondition extends CompareToConditionBase<IValueGTESecondValueConditionDescriptor> {
     public static get DefaultConditionType(): string { return ValueGTESecondValueConditionType; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -492,12 +505,15 @@ export class ValueGTESecondValueCondition extends CompareToConditionBase {
     }
 }
 export const ValueGTESecondValueConditionType = 'ValueGreaterThanOrEqualSecondValue';
-
+/**
+ * Descriptor for ValueGTESecondValueCondition
+ */
+export interface IValueGTESecondValueConditionDescriptor extends ICompareToConditionDescriptor { }
 /**
  * Value 1 must be less than or equal Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class ValueLTESecondValueCondition extends CompareToConditionBase {
+export class ValueLTESecondValueCondition extends CompareToConditionBase<IValueLTESecondValueConditionDescriptor> {
     public static get DefaultConditionType(): string { return ValueLTESecondValueConditionType; }    
 
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -513,7 +529,10 @@ export class ValueLTESecondValueCondition extends CompareToConditionBase {
     }
 }
 export const ValueLTESecondValueConditionType = 'ValueLessThanOrEqualSecondValue';
-
+/**
+ * Descriptor for ValueLTESecondValueCondition
+ */
+export interface IValueLTESecondValueConditionDescriptor extends ICompareToConditionDescriptor { }
 /**
  * Descriptor for StringLengthCondition
  */
