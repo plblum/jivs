@@ -119,7 +119,7 @@ building a UI are:
 	```
 	Validate
 	```
-## Bridging business logic and UI validation
+## Conditions - the validation rules
 You need to build a class that adapts your validation rules to Jivs own types and classes. Jivs uses the classes that implement the ICondition interface to package up a validation rule, and ConditionDescriptor type to inform the Condition class how to configure itself. The class is a bridge between business logic and your UI. This section provides the details.
 
 ### Separation of concerns: Input Validation vs Business Logic validation
@@ -172,8 +172,8 @@ Jivs provides numerous Condition classes.
 </details>
 
 To use them, you need to populate their ConditionDescriptor type, which has configuration properties specific to the Condition class. 
-We'll work with this example.
-Here's the rule we want to implement: Compare a date from the Input to today's date.
+
+We'll work with this example. Here's the rule we want to implement: Compare a date from the Input to today's date.
 
 The ValuesEqualCondition is the right Condition for the job.  You need to create a ValuesEqualConditionDescriptor that Jivs will use later to prepare the ValuesEqualCondition. Here's that ConditionDescriptor:
 ```ts
@@ -197,6 +197,8 @@ Your new code should look like this, where ValueHostId is your identifier for a 
     SecondValue: date object representing Today;
 }
 ```
+### Bridging business logic and UI validation
+
 We recommend that you create a Factory-style class that takes your business logic validation information in and returns the appropriate ConditionDescriptor already configured. Let’s suppose that your business logic has a class called BusinessLogicComparer that looks like this:
 ```ts
 class BusinessLogicComparer {
@@ -225,7 +227,7 @@ class Factory
 ```
 Use your Factory as you assemble the ValidationManagerConfig object. Its just one part of the work to configure the ValidationManager.
 
-### ValueHosts and their IDs
+## ValueHosts and their IDs
 
 Next task is to give names to every UI widget that correlates them to the fields of the Model.
 
@@ -299,7 +301,79 @@ The ValueHost Ids are also used to help a Condition retrieve a value from a Valu
   ]
 }
 ```
-	
+## InputValidators: Connecting Conditions to Error messages
+
+Validation is really just a process that evaluates some rule and returns a result. If there was an error, the result involves an error message. The InputValidator class handles this work. Once again, we use a Descriptor to configure it. Here’s the InputValidatorDescriptor:
+```ts
+interface IInputValidatorDescriptor {
+    ConditionDescriptor: null | IConditionDescriptor;
+    ConditionCreator?: ((requester) => null | ICondition);
+    ErrorMessage: string | ((host) => string);
+    SummaryErrorMessage?: null | string | ((host) => string);
+    Severity?: ValidationSeverity | ((host) => ValidationSeverity);
+    Enabled?: boolean | ((host) => boolean);
+    EnablerDescriptor?: null | IConditionDescriptor;
+    EnablerCreator?: ((requester) => null | ICondition);
+    Group?: null | string | string[];
+}
+```
+Because this is so full of goodness, let’s go through each property.
+
+-	ConditionDescriptor – Already described above. It is not the only way to setup a Condition…
+-	ConditionCreator – Alternative to creating a Condition by returning an implementation of ICondition. This choice gives you a lot of flexibility, especially when you have some complex logic that you feel you can code up in an Evaluate method easier than using a bunch of Conditions.
+-	ErrorMessage – A template for the message reporting an issue. Its intended location is nearby the Input, such that you can omit including the field’s label. “This field requires a value”. As a template, it provides tokens which can be replaced by live data. (Discussed later).
+-	SummaryErrorMessage – Same idea as ErrorMessage except to be shown in a Validation Summary. Its normal to include the field label in this message, using the {Label} token: “{Label} requires a value”.
+-	Severity – Controls some validation behaviors with these three values.
+	-	Error – normal error and the default when this field is omitted.
+	-	Severe – If there are more validation rules, skip them. Severity=Error continues to evaluate the remaining validation rules.
+	-	Warning – Want to give the user some direction, but not prevent saving the data.
+-	Enabled – A way to quickly disable the InputValidator.
+-	EnablerDescriptor and EnablerCreator – The Enabler is another Condition, used to determine if the InputValidator can validate. Often validation rules depend on other information. For example, you have a checkbox associated with a textbox. Any validation rule on the textbox isn’t used unless the checkbox is marked. You would assign a Condition to check the value of the checkbox to the Enabler.
+-	Group – A way to group together validators. Mostly used when your screen contains more than one “form”. Each form would get a group name.
+
+Now let’s place the IInputValidatorDescriptor into our previous example using a Model with FirstName and LastName.
+```ts
+[{
+  Type: 'Input',
+  Id: 'FirstName',
+  Label: 'First name',
+  DataType: 'String',
+  Validators: [{
+    ConditionDescriptor: {
+      Type: 'Required',
+      ValueHostId: null
+    },
+    ErrorMessage: 'This field requires a value',
+    SummaryErrorMessage: '{Label} requires a value.',
+  },
+  {
+    ConditionDescriptor: {
+      Type: 'ValuesNotEqual',
+      ValueHostId: null,
+      SecondValueHostId: 'LastName'
+    },
+    ErrorMessage: 'Are you sure that your first and last names are the same?',
+    SummaryErrorMessage: 'In {Label}, are you sure that your first and last names are the same?',
+    Severity: 'Warning'
+  }]
+},
+{
+  Type: 'Input',
+  Id: 'LastName',
+  Label: 'Last name',
+  DataType: 'String',
+  Validators: [{
+    ConditionDescriptor: {
+      Type: Required,
+      ValueHostId: null
+    },
+    ErrorMessage: 'This field requires a value',
+    SummaryErrorMessage: '{Label} requires a value.',
+  }]
+}]
+```
+
+
 ---
 __This documentation is unfinished.__ Plenty still to write about:
 
@@ -315,3 +389,4 @@ __This documentation is unfinished.__ Plenty still to write about:
     like how the JavaScript Date object handles a DateTime value)
 
 -   Relating this to other input validation libraries
+
