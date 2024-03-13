@@ -1,6 +1,3 @@
-import { IValueHostResolver } from "./ValueHostResolver";
-import { IValueHost } from "./ValueHost";
-
 /**
  * A Condition is a tool to evaluate value(s) against a rule
  * to see if the value(s) conform.
@@ -12,16 +9,19 @@ import { IValueHost } from "./ValueHost";
  * calling an API function, and using the result to determine how evaluation went.
  * 
  * Key interfaces:
- * - ICondition - Provides the Evaluate function for implementations.
- * - IConditionDescriptor - A description of the rules for evaluation, such
+ * - {@link ICondition} - Provides the Evaluate function for implementations.
+ * - {@link IConditionDescriptor} - A description of the rules for evaluation, such
  *   as ValueHostId="TextBox1", Type (of Condition to use)="Range",
  *   Minimum=3, and Maximum=5.
- * - IConditionCore<TConditionDescriptor> - Blending the ICondition with 
+ * - {@link IConditionCore } - Blending the ICondition with 
  *   the IConditionDescriptor, for implementing conditions that are configured
  *   through the Descriptor. Most Condition classes supplied in this library
  *   implement this interface.
+ * @module Conditions/Interfaces
  */
 
+import { IValueHostResolver } from "./ValueHostResolver";
+import { IValueHost } from "./ValueHost";
 
 /**
  * The basis for any condition that you want to work with these validators.
@@ -200,14 +200,14 @@ export enum ConditionCategory {
  * Implement this interface to provide ConversionLookupKey to
  * the ConditionDescriptor. If ConversionLookupKey is assigned, pass it
  * to CompareValues instead of ValueHost.DataType.
- * Some LookupKeys that might be offered: CaseInsensitive, RoundToWhole, TotalDays
+ * Some LookupKeys that might be used: CaseInsensitive, Integer, TotalDays
  */
 export interface ISupportsDataTypeConverter extends IConditionDescriptor
 {
     /**
      * Assign to a LookupKey that is associated with a DataTypeConverter.
      * Use it to convert the value prior to comparing, to handle special cases like
-     * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Round"),
+     * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Integer"),
      * just the Day or Month or any other number in a Date object ("Day", "Month").
      */
     ConversionLookupKey?: string | null;

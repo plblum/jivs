@@ -1,5 +1,15 @@
-import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
+/**
+ * Supplies services and tools to be used as dependency injection
+ * into the classes of this system.
+ * There are many configuration choices involved. Its best to have
+ * a function that creates a ValidationService with its configuration together.
+ * Copy the /starter_code/create_services.ts file into your app.
+ * It contains such a function, CreateValidationServices().
+ * Edit that file to adjust your configuration.
+ * @module ValidationServices
+ */
 
+import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import type { ILogger } from "../Interfaces/Logger";
 import type { IInputValidatorFactory, IMessageTokenResolver } from "../Interfaces/InputValidator";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
@@ -10,13 +20,14 @@ import { InputValidatorFactory } from "../ValueHosts/InputValidator";
 import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../ValueHosts/ValueHostFactory";
 import { ConsoleLogger } from "./ConsoleLogger";
 
-
-
 /**
  * Supplies services and tools to be used as dependency injection
- * into the classes of this system.
- * The same instance should be used by all features of that ValueHostsManager
- * and your UI elements associated with validation.
+ * into the classes of this system. It also supplies factories.
+ * There are many configuration choices involved. Its best to have
+ * a function that creates a ValidationService with its configuration together.
+ * Copy the /starter_code/create_services.ts file into your app.
+ * It contains such a function, CreateValidationServices().
+ * Edit that file to adjust your configuration.
  */
 export class ValidationServices implements IValidationServices {
     constructor() {

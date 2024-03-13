@@ -1,3 +1,10 @@
+/**
+ * Framework for evaluating the results from a list of conditions, where a rule determines what to
+ * do with their results. In this case, the value of the current input field/element passed into 
+ * Evaluate(vh) is ignored. All child conditions must specify their ValueHost sources explicitly.
+ * @module Conditions/EvaluateChildConditionResultsBase
+ */
+
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from "../Interfaces/Conditions";
 import { IValueHost, ToIGatherValueHostIds } from "../Interfaces/ValueHost";

@@ -1,3 +1,7 @@
+/**
+ * Standard implementation of IValueHost.
+ * @module ValueHosts/ValueHostBase
+ */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 import { DeepEquals, DeepClone } from "../Utilities/Utilities";

@@ -1,3 +1,7 @@
+/**
+ * {@inheritDoc ValueHosts/Interfaces!IMessageTokenResolver}
+ * @module ValueHosts/MessageTokenResolver
+ */
 import type { IDataTypeResolution } from "../Interfaces/DataTypes";
 import { IMessageTokenResolver, IMessageTokenSource, ITokenLabelAndValue } from "../Interfaces/InputValidator";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
@@ -7,22 +11,7 @@ import { type IValueHostResolver } from "../Interfaces/ValueHostResolver";
 
 
 /**
- * Replaces all tokens in a message with a user friendly value.
- * Tokens are single words within curley braces like {Label}. They are 
- * case insensitive.
- * Tokens can have an optional second part to identify a formatterKey.
- * The syntax is {token:formatterkey}.
- * Legal characters in token and formatterkey are letters, digits, and underscore.
- * These are matched case insensitively.
- * Some values are found in the Validator's ConditionDescriptor, 
- * such as the {Minimum} and {Maximum} of a RangeCondition. 
- * They need to be formatted according to the data type,
- * such as "number" will convert 1000 into "1,000" and "date" will convert 
- * a javascript Date into "May 20, 2001". This function uses the 
- * Services.DataTypeServices to handle conversion and localization.
- * The "formatterkey" in {token:formatterkey} is actually the same
- * as a LookupKey in the DataTypeServices and its DataTypeLocalizations.
- * Tokens are supplied by implementers of IMessageTokenSource.
+ * {@inheritDoc ValueHosts/Interfaces!IMessageTokenResolver}
  */
 export class MessageTokenResolver implements IMessageTokenResolver
 {

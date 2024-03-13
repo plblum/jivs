@@ -3,11 +3,11 @@ import { UTCDateOnlyConverter } from '../../src/DataTypes/DataTypeConverters';
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, StringDataTypeIdentifier } from '../../src/DataTypes/DataTypeIdentifiers';
 import { NumberDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
 import { CultureConfig, DataTypeServices } from "../../src/DataTypes/DataTypeServices";
-import { StringLookupKey, NumberLookupKey, BooleanLookupKey, allBuiltInFormatLookupKeys, DateLookupKey } from "../../src/DataTypes/LookupKeys";
+import { StringLookupKey, NumberLookupKey, BooleanLookupKey, DateLookupKey } from "../../src/DataTypes/LookupKeys";
 import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier, IDataTypeLocalizedFormatter, IDataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { RegisterDataTypeIdentifiers, RegisterDataTypeLocalizedFormatters } from "../../starter_code/create_services";
-import { BooleanDataTypeComparer, DefaultComparer } from '../../src/DataTypes/DataTypeComparers';
-import { BooleanLocalizedFormatter, BooleanLocalizedFormatterBase, NumberLocalizedFormatter } from '../../src/DataTypes/DataTypeLocalizedFormatters';
+import { BooleanDataTypeComparer } from '../../src/DataTypes/DataTypeComparers';
+import { BooleanLocalizedFormatter, NumberLocalizedFormatter } from '../../src/DataTypes/DataTypeLocalizedFormatters';
 
 
 describe('DataTypeServices constructor and properties', () => {

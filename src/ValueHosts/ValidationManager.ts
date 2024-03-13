@@ -12,7 +12,7 @@ import type { IValidationManagerState, IValidationManager } from "../Interfaces/
 
 
 /**
- * The central object for using this system.
+ * ValidationManager is the central object for using this system.
  * It is where you describe the shape of your inputs and their validation rules.
  * Once setup, it has a list of ValueHost objects. Those that are InputValueHosts
  * contain validators.

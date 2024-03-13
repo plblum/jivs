@@ -1,3 +1,7 @@
+/**
+ * Various utilities
+ * @module Utilities
+ */
 
 /**
  * Determines if the supplied group or group(s) are found in both parameters.

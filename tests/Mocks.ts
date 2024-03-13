@@ -6,7 +6,6 @@ import { MessageTokenResolver  } from "../src/ValueHosts/MessageTokenResolver";
 import type { IValidationServices } from "../src/Interfaces/ValidationServices";
 import type { IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../src/ValueHosts/ValidationManager";
 import type { IValueHost, ISetValueOptions, IValueHostState, IValueHostFactory } from "../src/Interfaces/ValueHost";
-import { commonBuiltInFormatLookupKeys } from "../src/DataTypes/LookupKeys";
 import { IValueHostResolver, IValueHostsManager } from "../src/Interfaces/ValueHostResolver";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "../src/ValueHosts/ValueHostBase";
 import { ConditionBase } from "../src/Conditions/ConditionBase";

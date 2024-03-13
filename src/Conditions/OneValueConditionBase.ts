@@ -1,16 +1,19 @@
+/**
+ * Base implementation for Conditions that get a value from a single ValueHostId.
+ * The Descriptor introduces ValueHostId.
+ * @module Conditions/OneValueConditionBase
+ */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IConditionDescriptor } from "../Interfaces/Conditions";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { ConditionBase } from "./ConditionBase";
 
-/**
- * Base implementation for Conditions that get a value from a single ValueHostId.
- * The Descriptor introduces ValueHostId.
- */
+
 
 /**
  * Base implementation of ICondition with IOneValueConditionDescriptor.
+ * The Descriptor introduces ValueHostId.
  */
 export abstract class OneValueConditionBase<TConditionDescriptor extends IOneValueConditionDescriptor>
     extends ConditionBase<TConditionDescriptor>

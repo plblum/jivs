@@ -1,3 +1,8 @@
+/**
+ * For creating Conditions given an IConditionDescriptor.
+ * Setup its instance on ValidationServices.ConditionFactory.
+ * @module Conditions/ConditionFactory
+ */
 import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
 import type { IConditionDescriptor, ICondition, IConditionCore, IConditionFactory } from "../Interfaces/Conditions";
 
@@ -6,6 +11,7 @@ import type { IConditionDescriptor, ICondition, IConditionCore, IConditionFactor
 
 /**
  * Creates instances of Conditions given an IConditionDescriptor.
+ * Setup its instance on ValidationServices.ConditionFactory.
  * IConditionDescriptor.Type is used to determine the Condition class to create.
  * Supports IConditionCore implementations of ICondition.
  */

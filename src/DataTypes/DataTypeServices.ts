@@ -1,17 +1,10 @@
-import { StringLookupKey } from './LookupKeys';
-import { DefaultComparer } from "./DataTypeComparers";
-import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { IDataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
-import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
-
-
 /**
- * {@Link DataTypeServices} handles various data types of the values.
- * It works in conjunction with the DataType Lookup Keys @see {@link StringLookupKey }.
+ * {@link DataTypes/DataTypeServices} handles various data types of the values.
+ * It works in conjunction with the {@link DataTypes/LookupKeys! | DataType Lookup Keys }.
  * There are 4 features associated with any data type:
  * - Identify - These classes exist for all native datatypes. They handle when the LookupKey is unknown.
  *   They are passed the actual value and if they identify that value's type, they return the LookupKey.
- *   They are built on {@Link IDataTypeIdentifier}.
+ *   They are built on {@link DataTypes/Interfaces!IDataTypeIdentifier | IDataTypeIdentifier}.
  * - Formatter - These functions change the native value into something you can display to the user.
  *   They are associated with the error message tokens, such as "You entered {Value}." where the value
  *   is a Date object and needs to be shown in a localized format of short, abbreviated, or full.
@@ -21,14 +14,20 @@ import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
  *   This is essential for comparison Conditions. Comparison works automatically
  *   with string, number, and boolean native types. Converters exist to take a Date
  *   or user defined class to a string, number, or boolean.
- *   They are built on {@Link IDataTypeConverter }.
+ *   They are built on {@link DataTypes/Interfaces!IDataTypeConverter | IDataTypeConverter}.
  * - Comparer - Used by Conditions to compare two values when those values don't naturally work
  *   with the JavaScript comparison operators. Due to the Converter's ability to prepare
  *   most values for the default comparison function, these aren't often created.
- *   When they are, they are built on {@Link IDataTypeComparer }.
+ *   When they are, they are built on {@link DataTypes/Interfaces!IDataTypeComparer | IDataTypeComparer}.
  * The actual instance of this class is found on ValidationServices.DataTypeServices.
- * @module DataTypeServices
+ * @module DataTypes/DataTypeServices
  */
+
+import { DefaultComparer } from "./DataTypeComparers";
+import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
+import { IDataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
+import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
+
 
 /**
  * A service that knows about data types providing tools for:
@@ -36,7 +35,7 @@ import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
  * - Converting them into something better suited for comparisons and formatting
  * - Formatting them for the tokens of error messages
  * - Comparing them
- * It works in conjunction with the DataType Lookup Keys @see {@link StringLookupKey }.
+ * It works in conjunction with the DataType Lookup Keys {@link DataTypes/LookupKeys! | Lookup Keys }.
  * 
  * Formatting supports localization, keeping a list of one or more IDataTypeLocalizedFormatters,
  * for all supported cultures.
@@ -145,7 +144,6 @@ export class DataTypeServices implements IDataTypeServices {
     /**
       * Registers an IDataTypeLocalizedFormatter for use by the Format function.
       * If the LookupKey was previously registered, its instance is replaced.
-      * @param lookupKey 
       * @param dtlf
       */
     public RegisterLocalizedFormatter(dtlf: IDataTypeLocalizedFormatter): void {

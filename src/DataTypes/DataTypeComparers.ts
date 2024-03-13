@@ -1,6 +1,3 @@
-import { ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
-import { InvalidTypeError } from "../Utilities/ErrorHandling";
-
 /**
  * Concrete implementations of IDataTypeComparer.
  * 
@@ -15,8 +12,11 @@ import { InvalidTypeError } from "../Utilities/ErrorHandling";
  * Default comparison is the DefaultComparer function below.
  * 
  * Expectation: Dates are handled by IDataTypeConverters. Thus no Comparer exists here.
+ * @module DataTypes/DataTypeComparers
  */
 
+import { ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
+import { InvalidTypeError } from "../Utilities/ErrorHandling";
 
 /**
  * Just the function for a Comparer that handles numbers and strings. 

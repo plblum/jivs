@@ -1,3 +1,7 @@
+/**
+ * {@inheritDoc InputValidator!}
+ * @module ValueHosts/Interfaces
+ */
 import { IValueHostResolver } from "./ValueHostResolver";
 import { ConditionEvaluateResult, ICondition, IConditionDescriptor } from "./Conditions";
 import { IInputValueHost } from "./InputValueHost";

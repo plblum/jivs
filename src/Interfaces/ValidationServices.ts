@@ -1,13 +1,14 @@
+/**
+ * Provides a dependency injection approach to this library.
+ * @module ValidationServices/Interfaces
+ */
+
 import { IConditionFactory } from "./Conditions";
 import { IDataTypeServices } from "./DataTypes";
 import { IInputValidatorFactory, IMessageTokenResolver } from "./InputValidator";
 import { ILogger } from "./Logger";
 import { IValueHostFactory } from "./ValueHost";
 
-/**
- * Provides a dependency injection approach to this library.
- * @module ValidationServices
- */
 
 /**
  * Subset of the IValidationServices interface designed to limit

@@ -1,3 +1,7 @@
+/**
+ * {@inheritDoc NonInputValueHost}
+ * @module ValueHosts/NonInputValueHost
+ */
 import { IInputValueHostDescriptor } from "../Interfaces/InputValueHost";
 import { INonInputValueHost, INonInputValueHostDescriptor, INonInputValueHostState } from "../Interfaces/NonInputValueHost";
 import { IValueHostDescriptor } from "../Interfaces/ValueHost";

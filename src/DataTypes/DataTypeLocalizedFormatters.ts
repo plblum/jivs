@@ -1,6 +1,16 @@
+/**
+ * Provides conversion between a native type and its formatted and localized string 
+ * representation. Each is associated with a lookup key.
+ * For example, the Date object has several of these implementations.
+ * LookupKey="Date" provides a localized short date pattern through DateLocalizedFormatter.
+ * LookupKey="AbbrevDate" provides the same but in abbreviated date pattern through AbbrevDateLocalizedFormatter.
+ * Create implementations for each dataTypeLookupKey that needs localized formatting.
+ * @module DataTypes/DataTypeLocalizedFormatters
+ */
+
 import { IDataTypeLocalizedFormatter, IDataTypeResolution } from "../Interfaces/DataTypes";
 import { CultureCountryCode } from "../Utilities/Utilities";
-import { AbbrevDOWDateLookupKey, AbbrevDateLookupKey, BooleanLookupKey, CapitalizeStringLookupKey, CurrencyLookupKey, DateLookupKey, DateTimeLookupKey, IntegerLookupKey, LongDOWDateLookupKey, LongDateLookupKey, LowercaseStringLookupKey, NumberLookupKey, Percentage100LookupKey, PercentageLookupKey, StringLookupKey, TimeOfDayHMSLookupKey, TimeOfDayLookupKey, UppercaseStringLookupKey, YesNoBooleanLookupKey } from "./LookupKeys";
+import { AbbrevDOWDateLookupKey, AbbrevDateLookupKey, BooleanLookupKey, CapitalizeStringLookupKey, CurrencyLookupKey, DateLookupKey, DateTimeLookupKey, IntegerLookupKey, LongDOWDateLookupKey, LongDateLookupKey, LowercaseStringLookupKey, NumberLookupKey, Percentage100LookupKey, PercentageLookupKey, ShortDateLookupKey, StringLookupKey, TimeOfDayHMSLookupKey, TimeOfDayLookupKey, UppercaseStringLookupKey, YesNoBooleanLookupKey } from "./LookupKeys";
 
 /**
  * Abstract implementation of IDataTypeLocalizedFormatter.
@@ -596,7 +606,7 @@ export class DateTimeLocalizedFormatter extends DateTimeLocalizedFormatterBase
 
 }
 /**
- * For DateLookupKey. 
+ * For DateLookupKey and ShortDateLookupKey.
  * Uses Intl library's DateTimeFormat to Y, M, D as digits (short date format)
  * unless you provide alternatives in the constructor.
  */
@@ -621,6 +631,10 @@ export class DateLocalizedFormatter extends DateTimeLocalizedFormatterBase
     protected SupportsCulture(cultureId: string): boolean
     {
         return true;
+    }
+
+    public Supports(dataTypeLookupKey: string, cultureId: string): boolean {
+        return (dataTypeLookupKey === ShortDateLookupKey || super.Supports(dataTypeLookupKey, cultureId));
     }
 
 }

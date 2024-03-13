@@ -1,3 +1,13 @@
+/**
+ * A ValueHost that supports input validation.
+ * It is associated with the input field/element itself.
+ * It provides:
+ * - Validate function which returns Validation Results in the form of a list of IssuesFound.
+ * - A list of InputValidators, each for a single validation rule and containing their own error messages
+ * - An additional value that can be validated, the value directly from the Input, which is often
+ *   quite different from the value intended to be stored in the Model/Entity.
+ * @module ValueHosts/InputValueHost
+ */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ValidationCategory } from "../Interfaces/Logger";
 import { ObjectKeysCount } from "../Utilities/Utilities";

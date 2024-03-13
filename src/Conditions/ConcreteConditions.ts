@@ -1,3 +1,14 @@
+/**
+ * Concrete implementations of {@link Conditions/Interfaces!ICondition | ICondition}, and their companion 
+ * {@link Conditions/Interfaces!IConditionDescriptor | IConditionDescriptor}.
+ * 
+ * The conditions found here all use an IConditionDescriptor for supplying 
+ * their configuration. Most Condition classes have a specific interface
+ * for their Descriptor, such as {@link IRangeConditionDescriptor} for {@link RangeCondition}.
+ * 
+ * @module Conditions/ConcreteConditions
+ */
+
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import type { ITokenLabelAndValue } from "../Interfaces/InputValidator";
@@ -17,15 +28,10 @@ import { EvaluateChildConditionResultsBase, IEvaluateChildConditionResultsDescri
 import { IRegExpConditionBaseDescriptor, RegExpConditionBase } from "./RegExpConditionBase";
 import { ComparersResult } from "../Interfaces/DataTypes";
 
+
 /**
- * Concrete implementations of Conditions, and their companion ConditionDescriptors.
- * 
- * The conditions found here all use an IConditionDescriptor for supplying 
- * their configuration. Most Condition classes have a specific interface
- * for their Descriptor, such as IRangeConditionDescriptor for RangeCondition.
+ * ConditionDescriptor to use with {@link DataTypeCheckCondition}
  */
-
-
 export interface IDataTypeCheckConditionDescriptor extends IOneValueConditionDescriptor {
 
 }

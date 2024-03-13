@@ -1,4 +1,9 @@
 /**
+ * @inheritDoc DataTypes/DataTypeServices!
+ * @module DataTypes/Interfaces
+ */
+
+/**
  * DataTypeServices handles various data types of the values.
  * It provides:
  * - Conversion to formatted string for displaying a value to the user.
@@ -59,6 +64,10 @@ export interface IDataTypeServices extends ICoreDataTypeServices
     IdentifyLookupKey(value: any): string | null;    
 }
 
+/**
+ * Result from a method that can deliver either a value or an error in
+ * attempting to generate that value.
+ */
 export interface IDataTypeResolution<T>
 {
     /**
@@ -72,52 +81,9 @@ export interface IDataTypeResolution<T>
     ErrorMessage?: string;
 }
 
-/**
- * Provides Localization of data types for a specific culture.
- * Its task is to support the lookupKeys of the DataTypeServices
- * by executing a function that returns a localized result for that lookup Key.
- * For example, with Format, "Date" will return a string formatted in short date format 
- * specific to the culture.
- * DataTypeServices may have many instances of this, for each culture ID
- * supported by the App. Each DataTypeLocalization may not need to support any particular
- * lookup Key. When not supported, the function lets the caller know and the caller
- * can try another DataTypeLocalization, using FallbackCultureID.
- */
-export interface IDataTypeLocalization extends ICoreDataTypeServices {
-    /**
-     * The ISO culture name pattern in use:
-     * languagecode
-     * languagecode-countrycode or regioncode
-     * "en", "en-GB", "en-US"
-     * If this needs to change, it is OK if you set it and the Adaptor reconfigure,
-     * or to create a new instance and use it.
-     */
-    CultureID: string;
-
-    /**
-     * Identifies another culture to check if a lookup key cannot be resolved.
-     * Caller should find another DataTypeLocalization for that culture.
-     */
-    FallbackCultureID: string | null;
-
-    /**
-     * Determines if the lookup has a supporting formatting registered.
-     * Always call prior to Format, and only use Format when it returns true.
-     * @param lookupKey 
-     */
-    CanFormat(lookupKey: string): boolean;    
-
-    /**
-     * Already declared, but we're changing the lookupKey parameter to be required and not null.
-     * @param value 
-     * @param lookupKey 
-     */
-    Format(value: any, lookupKey: string): IDataTypeResolution<string>;
-}
-
 
 /**
- * Provides a way to associate any data type with a datatype lookupkey.
+ * Provides a way to associate any value with a datatype lookupkey based on its actual datatype.
  * This interface is implemented for number as "Number", Date as "Date",
  * Boolean as "Boolean", and String as "String".
  * Each instance is registered with the DataTypeServices using the 
@@ -202,8 +168,11 @@ export enum ComparersResult {
 }
 
 /**
- * For creating DataTypeLocalizedFormatters that are registered and used
- * by the IDataTypeLocalization implementation.
+ * Provides conversion between a native type and its formatted and localized string 
+ * representation. Each is associated with a lookup key.
+ * For example, the Date object has several of these implementations.
+ * LookupKey="Date" provides a localized short date pattern through DateLocalizedFormatter.
+ * LookupKey="AbbrevDate" provides the same but in abbreviated date pattern through AbbrevDateLocalizedFormatter.
  * Create implementations for each dataTypeLookupKey that needs localized formatting.
  */
 export interface IDataTypeLocalizedFormatter

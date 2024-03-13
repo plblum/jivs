@@ -10,7 +10,7 @@ import {
 } from "../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../src/Conditions/ConditionFactory";
 import { BooleanDataTypeComparer } from "../src/DataTypes/DataTypeComparers";
-import { CaseInsensitiveStringConverter, UTCDateOnlyConverter, DateTimeConverter, LocalDateOnlyConverter, TotalDaysConverter, RoundToWholeConverter } from "../src/DataTypes/DataTypeConverters";
+import { CaseInsensitiveStringConverter, UTCDateOnlyConverter, DateTimeConverter, LocalDateOnlyConverter, TotalDaysConverter, IntegerConverter, TimeOfDayOnlyConverter, TimeOfDayHMSOnlyConverter } from "../src/DataTypes/DataTypeConverters";
 import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIdentifier, DateDataTypeIdentifier } from "../src/DataTypes/DataTypeIdentifiers";
 import {
     StringLocalizedFormatter, NumberLocalizedFormatter, IntegerLocalizedFormatter, DateLocalizedFormatter, CapitalizeStringLocalizedFormatter,
@@ -239,8 +239,10 @@ export function RegisterDataTypeConverters(dts: DataTypeServices): void
     dts.RegisterDataTypeConverter(new UTCDateOnlyConverter());
     dts.RegisterDataTypeConverter(new DateTimeConverter());
     dts.RegisterDataTypeConverter(new LocalDateOnlyConverter());
+    dts.RegisterDataTypeConverter(new TimeOfDayOnlyConverter());
+    dts.RegisterDataTypeConverter(new TimeOfDayHMSOnlyConverter());
+    dts.RegisterDataTypeConverter(new IntegerConverter());
     dts.RegisterDataTypeConverter(new TotalDaysConverter());
-    dts.RegisterDataTypeConverter(new RoundToWholeConverter());
 }
 
 // 5. IDataTypeComparers
