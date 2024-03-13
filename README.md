@@ -125,7 +125,7 @@ You need to build a class that adapts your validation rules to Jivs own types an
 ### Separation of concerns: Input Validation vs Business Logic validation
 
 <details>
-<summary>This topic should orient the UI developer on keeping validation logic separate from the UI.</summary>
+<summary>This topic should orient the developer on keeping validation logic separate from the UI.</summary>
 Jivs wants the app to keep its validation rules in Business Logic separate from UI code. Business logic should have no knowledge of the UI. It operates based on an object called Model or Entity. As you know, properties of objects are completely disconnected from the UI input elements.
 
 > Input Validation’s role is to ensure that the values you move into a Model conform to the business logic, without using existing business logic code that depends on the Model.
@@ -144,7 +144,7 @@ Someone will code all of those validation rules in a way that Jivs can apply the
 
 ### Configuring a validation rule in Jivs
 
-You build validation rules using the Condition concept. A Condition simply packages a function to evaluate data together with a few other properties. 
+You build validation rules using the Condition concept. A Condition simply packages a function to evaluate data together with a few other properties. Here is its interface:
 ```ts
 interface ICondition {
     Evaluate(valueHost, valueHostResolver): ConditionEvaluateResult;
@@ -152,8 +152,9 @@ interface ICondition {
     ConditionType: string;
 }
 ```
-That evaluation function entirely handles the validation rule, and returns a result of Match, NoMatch, or Undetermined.
+The Evaluate function entirely handles the validation rule, and returns a result of Match, NoMatch, or Undetermined.
 <details>
+<summary>Expand for details on the results.</summary>
 
 - Match – Data conformed to the rule
 - NoMatch -Data violated the rule
@@ -162,7 +163,7 @@ That evaluation function entirely handles the validation rule, and returns a res
 
 Jivs provides numerous Condition classes. 
 <details>
-Here are just a few:
+<summary>Expand to see just a few.</summary>
 
 - RequiredTextCondition, RequiredIndexCondition - for required fields
 - DataTypeCheckCondition, RegExpCondition - for checking the data conforms to the data type.
@@ -207,22 +208,97 @@ Here’s a framework for your new Factory.
 ```ts
 class Factory
 {
-	Create(fieldRef: string, businessLogicRule: any): IConditionDescriptor
-	{
-		if (businessLogicRule instanceof BusinessLogicComparer)
-			switch (businessLogicRule.operator)
-			{
-				case ConditionOperators.Equals:
-					return <IValuesEqualsConditionDescriptor>{
-						Type: 'ValuesEqual',
-						ValueHostId: fieldRef,
-						SecondValue: businessLogicRule.SecondValue
-					}
-			}
-	}
+  Create(fieldRef: string, businessLogicRule: any): IConditionDescriptor
+  {
+    if (businessLogicRule instanceof BusinessLogicComparer)
+      switch (businessLogicRule.operator)
+      {
+        case ConditionOperators.Equals:
+          return <IValuesEqualsConditionDescriptor>{
+            Type: 'ValuesEqual',
+            ValueHostId: fieldRef,
+            SecondValue: businessLogicRule.SecondValue
+          }
+      }
+  }
 }
 ```
 Use your Factory as you assemble the ValidationManagerConfig object. Its just one part of the work to configure the ValidationManager.
+
+### ValueHosts and their IDs
+
+Next task is to give names to every UI widget that correlates them to the fields of the Model.
+
+In this example, our Model’s property names are used in the input tag’s name attribute.
+
+| Model fields | HTML tag
+| ----  | ----
+| FirstName | `<input type="text" name="FirstName" />`
+| LastName | `<input type="text" name="LastName" />`
+
+Jivs wants those same names for basically the same purpose of correlating with fields in the Model. Instead of an HTML tag, Jivs uses the ValueHost class.
+When we configure the above Model for Jivs, you can imagine something like this object:
+```ts
+[
+  {
+	Id: 'FirstName',
+	Validators: [ condition descriptors ]
+  },
+  {
+	Id: 'LastName',
+	Validators: [ condition descriptors ]
+  }
+]
+```
+In fact, that’s about right, only with more properties. Those objects use the InputValueHostDescriptor type.
+```ts
+interface IInputValueHostDescriptor {
+  Type?: string;
+  Id: string;
+  Label: string;
+  DataType?: string;
+  InitialValue?: any;
+  ValidatorDescriptors: null | IInputValidatorDescriptor[];
+}
+```
+Here’s how your configuration actually looks:
+```ts
+[
+  {
+    Type: 'Input',
+    Id: 'FirstName',
+    Label: 'First name', // localized, of course!
+    DataType: 'String',
+    ValidatorDescriptors: [ InputValidatorDescriptors ]
+  },
+  {
+    Type: 'Input',
+    Id: 'LastName',
+    Label: 'Last name',
+    DataType: 'String',
+    ValidatorDescriptors: [ InputValidatorDescriptors ]
+  }
+]
+```
+The ValueHost Ids are also used to help a Condition retrieve a value from a ValueHost. Suppose that we use the ValuesNotEqualCondition on FirstName to compare to LastName. You have to supply the ValueHostId for the LastName field to the condition.
+```ts
+{
+  Id: 'FirstName',
+  ...
+  Validators: [
+    {
+      ConditionDescriptor: 
+      {
+        Type: 'ValuesNotEqual',
+        ValueHostId: null, // because owning ValueHost is provided automatically to the Condition.Evaluate function.
+        SecondValueHostId: 'LastName'
+      }      
+      ... and properties of IInputValidatorDescriptor that we've yet to cover ...
+    }
+
+  ]
+}
+```
 	
 ---
 __This documentation is unfinished.__ Plenty still to write about:
