@@ -328,7 +328,7 @@ Because this is so full of goodness, let’s go through each property.
 	-	Severe – If there are more validation rules, skip them. Severity=Error continues to evaluate the remaining validation rules.
 	-	Warning – Want to give the user some direction, but not prevent saving the data.
 -	Enabled – A way to quickly disable the InputValidator.
--	EnablerDescriptor and EnablerCreator – The Enabler is another Condition, used to determine if the InputValidator can validate. Often validation rules depend on other information. For example, you have a checkbox associated with a textbox. Any validation rule on the textbox isn’t used unless the checkbox is marked. You would assign a Condition to check the value of the checkbox to the Enabler.
+-	EnablerDescriptor and EnablerCreator – The Enabler is another Condition, used to determine if the InputValidator can validate. Often validation rules depend on other information for that. For example, you have a checkbox associated with a textbox. Any validation rule on the textbox isn’t used unless the checkbox is marked. You would assign a Condition to evaluate the value of the checkbox to the Enabler.
 -	Group – A way to group together validators. Mostly used when your screen contains more than one “form”. Each form would get a group name.
 
 Now let’s place the IInputValidatorDescriptor into our previous example using a Model with FirstName and LastName.
@@ -373,6 +373,47 @@ Now let’s place the IInputValidatorDescriptor into our previous example using 
 }]
 ```
 
+## Configuring the ValidationManager
+
+With Jivs, the UI uses the ValidationManager class to manage the ValueHosts, run validation, and get any issues found. All of your UI widgets should have access to the ValidationManager, so they can take actions resulting from validation.
+
+ValidationManager needs to be configured first. Much of that work was described in the previous sections that built ValueHostDescriptors, InputValidatorDescriptors, and ConditionDescriptors. The configuration is contained in the ValidationManagerConfig type.
+
+Here’s pseudocode for creating the ValidationManager.
+```ts
+let valueHostDescriptors = ... copied from previous example ...
+let services = new ValidationServices();	// alert! We are going to replace this
+let config = <IValidationManagerConfig>{
+  Services: services,
+  ValueHostDescriptors: ValueHostDescriptors
+}
+let validationManager = new ValidationManager(config);
+// TODO: expose this validationManager to your widgets that need validation
+```
+Here’s IValidationManagerConfig:
+```ts
+interface ValidationManagerConfig {
+    Services: IValidationServices;
+    ValueHostDescriptors: IValueHostDescriptor[];
+    SavedState?: null | IValidationManagerState;
+    SavedValueHostStates?: null | IValueHostState[];
+    OnInputValueChanged?: null | InputValueChangedHandler;
+    OnStateChanged?: null | ValidationManagerStateChangedHandler;
+    OnValidated?: null | ValidationManagerValidatedHandler;
+    OnValueChanged?: null | ValueChangedHandler;
+    OnValueHostStateChanged?: null | ValueHostStateChangedHandler;
+    OnValueHostValidated?: null | ValueHostValidatedHandler;
+}
+```
+Let’s go through this type.
+
+-	Services – Always takes a ValidationServices object, which is rich with services for dependency injection and factories. You will need to do a bunch to configure this, but don’t worry, we’ve got a code snippet to inject into your app to assist. (Described later.)
+-	ValueHostDescriptors – Already previously described. However, we haven’t mentioned including NonInputValueHost classes for data that isn’t associated with an Input field. ValueHosts expose values to validation, and some of those values may not come from editable elements. One use-case is taking value from a property on the Model that is used for comparisons. There are several other use-cases described later.
+-	SavedState and SavedValueHostStates – ValidationManager is stateless, or at least it knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the OnStateChanged and OnValueHostStateChanged events, and pass the values back into these two Config properties.
+-	OnStateChanged and OnValueHostStateChanged must be setup if you maintain the states. They supply a copy of the states for you to save.
+-	OnValueChanged notifies you when a ValueHost had its value changed.
+-	OnInputValueChanged notifies you when an InputValueHost had its Input Value changed.
+-	OnValidated and OnValueHostValidated notifies you after a Validate function completes, providing the results.
 
 ---
 __This documentation is unfinished.__ Plenty still to write about:
