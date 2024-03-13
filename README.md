@@ -431,6 +431,7 @@ export function CreateValidationServices(): ValidationServices {
 Once it compiles, you can edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
 
 Now that you have the CreateValidationServices function, let’s modify your earlier configuration code for ValidationManager by using it.
+
 ```ts
 let valueHostDescriptors = ... copied from previous example ...
 let services = CreateValidationServices();	// replaced
@@ -441,6 +442,7 @@ let config = <IValidationManagerConfig>{
 let validationManager = new ValidationManager(config);
 // TODO: expose this validationManager to your widgets that need validation
 ```
+
 ---
 __This documentation is unfinished.__ Plenty still to write about:
 
