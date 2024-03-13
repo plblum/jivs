@@ -1,34 +1,35 @@
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IValueHostsManager } from "./ValueHostResolver";
-import { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "./Validation";
-
 /**
- * The central object for using this system.
+ * ValidationManager is the central object for using this system.
  * It is where you describe the shape of your inputs and their validation
  * through the Descriptor classes.
  * Once setup, it has a list of ValueHost objects, one for each
  * descriptor that was supplied. Those that are InputValueHosts
  * contain validators.
  * 
- * Business logic is intended to manipulate the Descriptors found here.
- * Each time a InputValueHostDescriptor is created or replaced,
- * a corresponding entry is added or replaced in a dictionary of InputValueHost instances.
- * The InputValueHostDescriptors are considered immutable, only 
- * to be updated by business logic.
  * ValidationManager's job is:
- * - Maintain the ValueHostDescriptors
- * - Create and replace their associated ValueHost instances
- * - Provide access to all ValueHost instances so validators (specifically Conditions)
- *   can look up the data needed for evaluation.
- * - Retain a State object that reflects the states of all ValueHost instances.
- * - Provide a way to transfer values between the consuming system
- *   and the state.
- *   Notice that this class does not know anything about consuming system.
- *   It depends on the consuming system to transfer values.
+ * - Create and retain all ValueHosts.
+ * - Provide access to all ValueHosts with its GetValueHost function.
+ * - Retain State objects that reflects the states of all ValueHost instances.
+ *   This system can operate in a stateless way, so long as you keep
+ *   these objects and pass them back via the Configuration object.
+ *   Its OnStateChanged and OnValueHostStateChanged properties are callbacks
+ *   provide the latest State objects to you.
  * - Execute validation on demand to the consuming system, going
- *   through all InputValueHosts, although individual ValueHosts may be configured
- *   to opt out, or will be ignored when a validation group requested
- *   isn't a match to that InputValueHost.
+ *   through all eligible InputValueHosts.
+ * - Report a list of Issues Found for an individual UI element.
+ * - Report a list of Issues Found for the entire system for a UI 
+ *   element often known as "Validation Summary".
+ * 
+ * @module ValidationManager/Interfaces
+ */
+
+
+import { ValueHostId } from "../DataTypes/BasicTypes";
+import { IValueHostsManager } from "./ValueHostResolver";
+import { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "./Validation";
+
+/**
+ * Interface from which to implement a ValidationManager.
  */
 export interface IValidationManager extends IValueHostsManager {
 

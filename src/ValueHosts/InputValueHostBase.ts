@@ -1,3 +1,7 @@
+/**
+ * Core implementation of IInputValueHost without specifics on validators, just the idea of validating.
+ * @module ValueHosts/InputValueHostBase
+ */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { DeepEquals, ValidationGroupsMatch } from "../Utilities/Utilities";
 import { type ISetValueOptions} from "../Interfaces/ValueHost";
@@ -9,7 +13,7 @@ import { IBusinessLogicError, IIssueFound, IIssueSnapshot, IValidateOptions, IVa
 
 
 /**
-* Core implementation of IInputValueHost without specifics on validators, just on the idea of validating.
+* Core implementation of IInputValueHost without specifics on validators, just the idea of validating.
 * Each instance depends on a few things, all passed into the constructor
 * and treated as immutable.
 * - IValueHostsManager - Contains all ValueHosts. This is usually ValidationManager.

@@ -1,5 +1,6 @@
-import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { ComparersResult } from "../src/Interfaces/DataTypes";
+import { CreateDataTypeServices } from "../starter_code/create_services";
 import {
     TimeSpan, TimeSpanAsSecondsLookupKey, TimeSpanIdentifier, TimeSpanLookupKey,
     TimeSpanToHoursConverter, TimeSpanToSecondsConverter
@@ -50,31 +51,31 @@ test('Test TimeSpanToSecondsConverter class members for expected results', () =>
     expect(dtc.SupportsValue(0, TimeSpanAsSecondsLookupKey)).toBe(false);
 });
 test('Register and test values against the TimeSpanIdentifier', () => {
-    let dataTypeResolver = new DataTypeResolver();
-    dataTypeResolver.RegisterDataTypeIdentifier(new TimeSpanIdentifier());
+    let dataTypeServices = CreateDataTypeServices();
+    dataTypeServices.RegisterDataTypeIdentifier(new TimeSpanIdentifier());
 
-    expect(dataTypeResolver.IdentifyLookupKey(new TimeSpan(0, 1, 0))).toBe(TimeSpanLookupKey);
+    expect(dataTypeServices.IdentifyLookupKey(new TimeSpan(0, 1, 0))).toBe(TimeSpanLookupKey);
 });
 
 test('Register and test values against TimeSpanToHoursConverter', () => {
-    let dataTypeResolver = new DataTypeResolver(); 
-    dataTypeResolver.RegisterDataTypeConverter(new TimeSpanToHoursConverter());
+    let dataTypeServices = CreateDataTypeServices();
+    dataTypeServices.RegisterDataTypeConverter(new TimeSpanToHoursConverter());
     let TimeSpan1 = new TimeSpan(1, 0);
     let TimeSpan2 = new TimeSpan(2, 0);
-    expect(dataTypeResolver.GetDataTypeConverter(TimeSpan1, null)).toBeInstanceOf(TimeSpanToHoursConverter);
-    expect(dataTypeResolver.GetDataTypeConverter(TimeSpan1, TimeSpanLookupKey)).toBeInstanceOf(TimeSpanToHoursConverter);
-    expect(dataTypeResolver.GetDataTypeConverter(TimeSpan1, "willnotmatch")).toBeNull();
-    expect(dataTypeResolver.CompareValues(TimeSpan1, TimeSpan1, TimeSpanLookupKey, TimeSpanLookupKey)).toBe(ComparersResult.Equals);
-    expect(dataTypeResolver.CompareValues(TimeSpan1, TimeSpan2, TimeSpanLookupKey, TimeSpanLookupKey)).toBe(ComparersResult.LessThan);
+    expect(dataTypeServices.GetDataTypeConverter(TimeSpan1, null)).toBeInstanceOf(TimeSpanToHoursConverter);
+    expect(dataTypeServices.GetDataTypeConverter(TimeSpan1, TimeSpanLookupKey)).toBeInstanceOf(TimeSpanToHoursConverter);
+    expect(dataTypeServices.GetDataTypeConverter(TimeSpan1, "willnotmatch")).toBeNull();
+    expect(dataTypeServices.CompareValues(TimeSpan1, TimeSpan1, TimeSpanLookupKey, TimeSpanLookupKey)).toBe(ComparersResult.Equals);
+    expect(dataTypeServices.CompareValues(TimeSpan1, TimeSpan2, TimeSpanLookupKey, TimeSpanLookupKey)).toBe(ComparersResult.LessThan);
 });
 
 test('Register and test values against TimeSpanToSecondsConverter', () => {
-    let dataTypeResolver = new DataTypeResolver(); 
-    dataTypeResolver.RegisterDataTypeConverter(new TimeSpanToSecondsConverter());
+    let dataTypeServices = CreateDataTypeServices();
+    dataTypeServices.RegisterDataTypeConverter(new TimeSpanToSecondsConverter());
     let TimeSpan1 = new TimeSpan(1, 0);
     let TimeSpan2 = new TimeSpan(2, 0);
-    expect(dataTypeResolver.GetDataTypeConverter(TimeSpan1, TimeSpanAsSecondsLookupKey)).toBeInstanceOf(TimeSpanToSecondsConverter);
-    expect(dataTypeResolver.GetDataTypeConverter(TimeSpan1, "willnotmatch")).toBeNull();
-    expect(dataTypeResolver.CompareValues(TimeSpan1, TimeSpan1, TimeSpanAsSecondsLookupKey, TimeSpanAsSecondsLookupKey)).toBe(ComparersResult.Equals);
-    expect(dataTypeResolver.CompareValues(TimeSpan1, TimeSpan2, TimeSpanAsSecondsLookupKey, TimeSpanAsSecondsLookupKey)).toBe(ComparersResult.LessThan);
+    expect(dataTypeServices.GetDataTypeConverter(TimeSpan1, TimeSpanAsSecondsLookupKey)).toBeInstanceOf(TimeSpanToSecondsConverter);
+    expect(dataTypeServices.GetDataTypeConverter(TimeSpan1, "willnotmatch")).toBeNull();
+    expect(dataTypeServices.CompareValues(TimeSpan1, TimeSpan1, TimeSpanAsSecondsLookupKey, TimeSpanAsSecondsLookupKey)).toBe(ComparersResult.Equals);
+    expect(dataTypeServices.CompareValues(TimeSpan1, TimeSpan2, TimeSpanAsSecondsLookupKey, TimeSpanAsSecondsLookupKey)).toBe(ComparersResult.LessThan);
 });

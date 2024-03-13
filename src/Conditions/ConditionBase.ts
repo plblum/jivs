@@ -1,3 +1,9 @@
+/**
+ * ConditionBase is the base implementation of {@link Conditions/Interfaces!ICondition | ICondition}, 
+ * tying it to {@link Conditions/Interfaces!IConditionDescriptor | IConditionDescriptor}
+ * @module Conditions/ConditionBase
+ */
+
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { type IConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";

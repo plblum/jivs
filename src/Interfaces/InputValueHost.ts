@@ -1,3 +1,7 @@
+/**
+ * @inheritDoc ValueHosts/InputValueHostBase!
+ * @module ValueHosts/Interfaces
+ */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IInputValidatorDescriptor } from "./InputValidator";
 import {

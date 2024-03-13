@@ -13,7 +13,7 @@
  * }
  * 
  * We need to teach this library about your TimeSpan.
- * You will create and register 2 classes with the DataTypeResolver 
+ * You will create and register 2 classes with the DataTypeServices 
  * (found on the ValidationServices object).
  * 1. IDataTypeIdentifier - Class to recognize the TimeSpan object and give it a Lookup Key.
  *    See TimeSpanIdentifier class below.
@@ -24,10 +24,9 @@
  * 
  */
 
-import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { IDataTypeConverter, IDataTypeIdentifier } from "../src/Interfaces/DataTypes";
 import { IValidationServices } from "../src/Interfaces/ValidationServices"
-import { valGlobals } from "../src/Services/ValidationGlobals";
 
 export class TimeSpan
 {
@@ -101,19 +100,11 @@ export class TimeSpanToSecondsConverter implements IDataTypeConverter
 // Register after you have a ValidationService instance. Setup only on the ValidationService
 export function RegisterTimeSpan(validationServices: IValidationServices): void
 {
-    let dataTypeResolver = validationServices.DataTypeResolverService as DataTypeResolver;
-    dataTypeResolver.RegisterDataTypeIdentifier(new TimeSpanIdentifier());
-    dataTypeResolver.RegisterDataTypeConverter(new TimeSpanToHoursConverter());   
-    dataTypeResolver.RegisterDataTypeConverter(new TimeSpanToSecondsConverter());
+    let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
+    dataTypeServices.RegisterDataTypeIdentifier(new TimeSpanIdentifier());
+    dataTypeServices.RegisterDataTypeConverter(new TimeSpanToHoursConverter());   
+    dataTypeServices.RegisterDataTypeConverter(new TimeSpanToSecondsConverter());
     // now whenever a Condition's value is TimeSpan, it gets identified as LookupKey="TimeSpan"
     // When its time to compare, the TimeSpanToHoursConverters are asked if they support the value.
     // When they do, the comparision immediately calls Convert and now has a number value.
-}
-
-// Register BEFORE you have a ValidationService: set up a global default
-export function RegisterRelativeDateInDefaultDataTypeResolver(): void {
-    let dataTypeResolver = valGlobals.GetDefaultDataTypeResolver() as DataTypeResolver;
-    dataTypeResolver.RegisterDataTypeIdentifier(new TimeSpanIdentifier());
-    dataTypeResolver.RegisterDataTypeConverter(new TimeSpanToHoursConverter());
-    dataTypeResolver.RegisterDataTypeConverter(new TimeSpanToSecondsConverter());
 }

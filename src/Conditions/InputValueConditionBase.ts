@@ -1,3 +1,9 @@
+/**
+ * Base implementation for developing Conditions that use the value from ValueHost.GetInputValue.
+ * Most classes use ValueHost.GetValue (the native value).
+ * @module Conditions/InputValueConditionBase
+ */
+
 import { ConditionEvaluateResult } from "../Interfaces/Conditions";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { IValueHost } from "../Interfaces/ValueHost";

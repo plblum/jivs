@@ -13,7 +13,7 @@ import {
 } from "../../src/Conditions/ConcreteConditions";
 
 import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
-import { StringLookupKey, NumberLookupKey, DateLookupKey, BooleanLookupKey, RoundToWholeLookupKey } from "../../src/DataTypes/LookupKeys";
+import { StringLookupKey, NumberLookupKey, DateLookupKey, BooleanLookupKey, IntegerLookupKey } from "../../src/DataTypes/LookupKeys";
 
 import {
     MockValidationServices, MockValidationManager, MockCapturingLogger,
@@ -951,7 +951,7 @@ describe('class RangeCondition', () => {
             ValueHostId: 'Property1',
             Minimum: 1.6,
             Maximum: 6.1,
-            ConversionLookupKey: RoundToWholeLookupKey
+            ConversionLookupKey: IntegerLookupKey
         };
         let testItem = new RangeCondition(descriptor);
         vh.SetInputValue('---- does not matter ----');
@@ -1203,7 +1203,7 @@ describe('class ValuesEqualCondition', () => {
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     
-    test('Using ConversionLookupKey = RoundToWhole, show ValueHost(but not Second) is impacted by conversion', () => {
+    test('Using ConversionLookupKey = Integer, show ValueHost(but not Second) is impacted by conversion', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
@@ -1211,7 +1211,7 @@ describe('class ValuesEqualCondition', () => {
         let descriptor: ICompareToConditionDescriptor = {
             Type: ValuesEqualConditionType,
             ValueHostId: 'Property1',
-            ConversionLookupKey: RoundToWholeLookupKey,
+            ConversionLookupKey: IntegerLookupKey,
             SecondValue: 100,
             SecondValueHostId: null
         };
@@ -1236,9 +1236,9 @@ describe('class ValuesEqualCondition', () => {
         let descriptor: ICompareToConditionDescriptor = {
             Type: ValuesEqualConditionType,
             ValueHostId: 'Property1',
-            ConversionLookupKey: RoundToWholeLookupKey,
+            ConversionLookupKey: IntegerLookupKey,
             SecondValueHostId: 'Property2',
-            SecondConversionLookupKey: RoundToWholeLookupKey
+            SecondConversionLookupKey: IntegerLookupKey
         };
         let testItem = new ValuesEqualCondition(descriptor);
         vh1.SetInputValue('---- does not matter ----');

@@ -1,6 +1,7 @@
+import { RegExpCondition } from './../../src/Conditions/ConcreteConditions';
 import { ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { AssertNotNull } from "../../src/Utilities/ErrorHandling";
-import { DeepClone, DeepEquals, ValidationGroupsMatch } from "../../src/Utilities/Utilities";
+import { CultureCountryCode, DeepClone, DeepEquals, ValidationGroupsMatch } from "../../src/Utilities/Utilities";
 
 
 
@@ -144,4 +145,16 @@ describe('Utilities.ValidationGroupsMatch', () => {
         expect(ValidationGroupsMatch(['A'], ['B', 'C'])).toBe(false);
         expect(ValidationGroupsMatch(['A', 'C'], ['B'])).toBe(false);
     });    
+});
+
+describe('CultureCountryCode', () => {
+    test('Returns the country code as text before a dash', () => {
+        expect(CultureCountryCode('en-US')).toBe('en');
+        expect(CultureCountryCode('Abcdef-FR')).toBe('Abcdef');    // because we return everything verbatim if it lacks a dash
+        expect(CultureCountryCode('-FR')).toBe('-FR'); // dash at the start is a meaningless value
+    });    
+    test('Returns the same when it lacks the country code', () => {
+        expect(CultureCountryCode('en')).toBe('en');
+        expect(CultureCountryCode('Abcdef')).toBe('Abcdef');    // because we return everything verbatim if it lacks a dash
+    });
 });

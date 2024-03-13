@@ -4,9 +4,9 @@ module.exports = {
     },
     testRegex: "(/tests/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     testPathIgnorePatterns: ["/lib/", "/node_modules/"],
-    modulePaths: ["/src/", "/examples/"],
+    modulePaths: ["/src/", "/examples/", "/starter_code/"],
     moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
     collectCoverage: true,
     verbose: false,
-    coveragePathIgnorePatterns: ["/examples/"]
+    coveragePathIgnorePatterns: ["/examples/", "/starter_code"]
 };

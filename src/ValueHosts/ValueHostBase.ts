@@ -1,3 +1,7 @@
+/**
+ * Standard implementation of IValueHost.
+ * @module ValueHosts/ValueHostBase
+ */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 import { DeepEquals, DeepClone } from "../Utilities/Utilities";
@@ -139,7 +143,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     }
 /**
  * A name of a data type used to lookup supporting services specific to the data type.
- * See the DataTypeResolver. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
+ * See the DataTypeServices. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
  */    
     public GetDataType(): string | null
     {

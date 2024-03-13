@@ -1,3 +1,14 @@
+/**
+ * Concrete implementations of {@link Conditions/Interfaces!ICondition | ICondition}, and their companion 
+ * {@link Conditions/Interfaces!IConditionDescriptor | IConditionDescriptor}.
+ * 
+ * The conditions found here all use an IConditionDescriptor for supplying 
+ * their configuration. Most Condition classes have a specific interface
+ * for their Descriptor, such as {@link IRangeConditionDescriptor} for {@link RangeCondition}.
+ * 
+ * @module Conditions/ConcreteConditions
+ */
+
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import type { ITokenLabelAndValue } from "../Interfaces/InputValidator";
@@ -17,15 +28,10 @@ import { EvaluateChildConditionResultsBase, IEvaluateChildConditionResultsDescri
 import { IRegExpConditionBaseDescriptor, RegExpConditionBase } from "./RegExpConditionBase";
 import { ComparersResult } from "../Interfaces/DataTypes";
 
+
 /**
- * Concrete implementations of Conditions, and their companion ConditionDescriptors.
- * 
- * The conditions found here all use an IConditionDescriptor for supplying 
- * their configuration. Most Condition classes have a specific interface
- * for their Descriptor, such as IRangeConditionDescriptor for RangeCondition.
+ * ConditionDescriptor to use with {@link DataTypeCheckCondition}
  */
-
-
 export interface IDataTypeCheckConditionDescriptor extends IOneValueConditionDescriptor {
 
 }
@@ -251,7 +257,7 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
         let services = valueHostResolver.Services;
         let lookupKey = this.Descriptor.ConversionLookupKey ?? valueHost.GetDataType();
         let lower = this.Descriptor.Minimum != null ?  // null/undefined
-            services.DataTypeResolverService.CompareValues(this.Descriptor.Minimum, value,
+            services.DataTypeServices.CompareValues(this.Descriptor.Minimum, value,
                 null, lookupKey) :
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
@@ -260,7 +266,7 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
             return ConditionEvaluateResult.Undetermined;
         }
         let upper = this.Descriptor.Maximum != null ?  // null/undefined
-            services.DataTypeResolverService.CompareValues(this.Descriptor.Maximum, value,
+            services.DataTypeServices.CompareValues(this.Descriptor.Maximum, value,
                 null, lookupKey) :
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
@@ -352,7 +358,7 @@ export abstract class CompareToConditionBase extends OneValueConditionBase<IComp
             secondValue = this.Descriptor.SecondValue;
         }
 
-        let comparison = valueHostResolver.Services.DataTypeResolverService.CompareValues(
+        let comparison = valueHostResolver.Services.DataTypeServices.CompareValues(
             value, secondValue,
             this.Descriptor.ConversionLookupKey ?? valueHost.GetDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {

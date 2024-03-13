@@ -1,4 +1,4 @@
-import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { StringLookupKey } from "../src/DataTypes/LookupKeys";
 import { ComparersResult } from "../src/Interfaces/DataTypes";
 import { UTCAnniversaryConverter, AnniversaryLookupKey } from "./AnniversaryConverter";
@@ -27,7 +27,7 @@ describe('UTCAnniversaryConverter', () => {
         let illegalDate = new Date("foo");
         expect(testItem.Convert(illegalDate, AnniversaryLookupKey)).toBeUndefined();
     });
-    test('Within DataTypeResolver', () => {
+    test('Within DataTypeServices', () => {
         let date1 = new Date(Date.UTC(2000, 10, 1));
         let date2 = new Date(Date.UTC(2001, 10, 1, 2, 3, 4));
         let date3 = new Date(Date.UTC(2030, 9, 1));
@@ -36,7 +36,7 @@ describe('UTCAnniversaryConverter', () => {
         let date7 = new Date(Date.UTC(1981, 10, 30, 23, 59, 59));
         let date8 = new Date(Date.UTC(1976, 10, 1));
         
-        let testItem = new DataTypeResolver('en'); 
+        let testItem = new DataTypeServices('en'); 
         testItem.RegisterDataTypeConverter(new UTCAnniversaryConverter());
         expect(testItem.CompareValues(date1, date1, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
         expect(testItem.CompareValues(date1, date2, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
@@ -45,7 +45,7 @@ describe('UTCAnniversaryConverter', () => {
         expect(testItem.CompareValues(date5, date8, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.GreaterThan); 
         expect(testItem.CompareValues(date1, date3, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.GreaterThan);            
         expect(testItem.CompareValues(date7, date8, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.GreaterThan);            
-        // these are due to the DataTypeResolver.CompareValues function itself
+        // these are due to the DataTypeServices.CompareValues function itself
         expect(testItem.CompareValues(null, null, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
         expect(testItem.CompareValues(date1, null, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Undetermined);
         expect(testItem.CompareValues(null, date2, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Undetermined);

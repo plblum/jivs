@@ -1,12 +1,13 @@
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { type IValidationServices } from "./ValidationServices";
-import { type IValueHost } from "./ValueHost";
-
 /**
  * At its core, the ValidationManager needs to manage ValueHosts.
  * That's the purpose of these classes. They avoid the weight of validation features,
  * which are instead left to IValidationManager.
+ * @module ValueHosts/Interfaces
  */
+
+import { ValueHostId } from "../DataTypes/BasicTypes";
+import { type IValidationServices } from "./ValidationServices";
+import { type IValueHost } from "./ValueHost";
 
 /**
  * The fundamentals of managing ValueHosts involve just the ability

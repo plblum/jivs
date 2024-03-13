@@ -6,7 +6,7 @@ import { IValueHost, IValueHostDescriptor, IValueHostState } from "./ValueHost";
  * - A value external from the Model, such as a global, that is needed by validation
  * - When using ValidationManager as a Single Source of Truth, all values from the model
  *   that were not assigned to InputValueHosts
- * @module - NonInputValueHost_Interfaces
+ * @module - ValueHosts/Interfaces
  */
 
 export interface INonInputValueHost extends IValueHost {
