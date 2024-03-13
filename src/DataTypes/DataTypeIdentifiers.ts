@@ -1,8 +1,18 @@
+/**
+ * Concrete implementations of IDataTypeIdentifiers.
+ * Provides a way to associate any value with a datatype lookupkey based on its datatype.
+ * This interface is implemented for number as "Number", Date as "Date",
+ * Boolean as "Boolean", and String as "String".
+ * Each instance is registered with the DataTypeServices using the 
+ * RegisterDataType.
+ * @module DataTypes/DataTypeIdentifiers
+ */
 import { IDataTypeIdentifier } from "../Interfaces/DataTypes";
 import { BooleanLookupKey, DateLookupKey, NumberLookupKey, StringLookupKey } from "./LookupKeys";
 
 /**
- * Identifies Strings, and uses the lookup key "String"
+ * Identifies a value as a strings (typeof value === 'string'), and associates it
+ * with the lookup key "String" (const StringLookupKey)
  */
 export class StringDataTypeIdentifier implements IDataTypeIdentifier
 {
@@ -16,7 +26,8 @@ export class StringDataTypeIdentifier implements IDataTypeIdentifier
     
 }
 /**
- * Identifies Numbers, and uses the lookup key "Number"
+ * Identifies a value as a number (typeof value === 'number'), and associates it
+ * with the lookup key "Number" (const NumberLookupKey)
  */
 export class NumberDataTypeIdentifier implements IDataTypeIdentifier
 {
@@ -31,7 +42,8 @@ export class NumberDataTypeIdentifier implements IDataTypeIdentifier
 }
 
 /**
- * Identifies Booleans, and uses the lookup key "Boolean"
+ * Identifies a value as a boolean (typeof value === 'boolean'), and associates it
+ * with the lookup key "Boolean" (const BooleanLookupKey)
  */
 export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
 {
@@ -46,9 +58,10 @@ export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
 }
 
 /**
- * Identifies Strings, and uses the lookup key "Date"
+ * Identifies a value as a Date object (value instanceof Date), and associates it
+ * with the lookup key "Date" (const DateLookupKey)
+ * It uses the lookup key "Date" which only has the date part of date and time, 
  * not "DateTime" because the time part is less frequently used.
- * Date only uses the Date portion of a Date Time.
  * Explicitly specify a lookup key of "DateTime" if time is needed.
  */
 export class DateDataTypeIdentifier implements IDataTypeIdentifier

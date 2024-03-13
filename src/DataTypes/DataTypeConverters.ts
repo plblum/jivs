@@ -6,10 +6,11 @@
  * In these cases, we are handling standard data types of Date, string, and number
  * to reshape them. For example, there is a string conversion to a lowercase string
  * that is for case insensitive comparisons.
+ * @module DataTypes/DataTypeConverters
  */
 
 import { IDataTypeConverter } from "../Interfaces/DataTypes";
-import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, LocalDateLookupKey, LowercaseStringLookupKey, RoundToWholeLookupKey, TotalDaysLookupKey } from "./LookupKeys";
+import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, IntegerLookupKey, LocalDateLookupKey, LowercaseStringLookupKey, TimeOfDayHMSLookupKey, TimeOfDayLookupKey, TotalDaysLookupKey } from "./LookupKeys";
 
 /**
  * For string values to convert them into lowercase for case insensitive comparisons.
@@ -98,15 +99,51 @@ export class LocalDateOnlyConverter implements IDataTypeConverter
 }
 
 /**
+ * For JavaScript Date objects to convert just the time of day into a number of minutes.
+ * See also TimeOfDayHMSOnlyConverter.
+ * It assumes the Date object is in UTC and returns a UTC date.
+ * DataType LookupKey: "TimeOfDay".
+ */
+export class TimeOfDayOnlyConverter implements IDataTypeConverter
+{
+    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+        return (dataTypeLookupKey === TimeOfDayLookupKey) &&
+            value instanceof Date;
+    }
+    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+        if (isNaN(value.getTime()))
+            return undefined;      
+        return value.getUTCHours() * 60 + value.getUTCMinutes();
+    }
+}
+/**
+ * For JavaScript Date objects to convert just the time of day into a number of seconds.
+ * See also TimeOfDayOnlyConverter.
+ * It assumes the Date object is in UTC and returns a UTC date.
+ * DataType LookupKey: "TimeOfDay".
+ */
+export class TimeOfDayHMSOnlyConverter implements IDataTypeConverter
+{
+    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+        return (dataTypeLookupKey === TimeOfDayHMSLookupKey) &&
+            value instanceof Date;
+    }
+    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+        if (isNaN(value.getTime()))
+            return undefined;      
+        return value.getUTCHours() * 60 * 60 + value.getUTCMinutes() * 60 + value.getUTCSeconds();
+    }
+}
+/**
  * For number values to be compared as a whole number, using Math.round.
- * DataTypeLookupKey = "RoundToWhole"
+ * DataTypeLookupKey = "Integer"
  * Use in Conditions that offer the ConversionLookupKey property, assigned
  * to ConversionLookupKey and/or SecondValueConversionLookupKey.
  */
-export class RoundToWholeConverter implements IDataTypeConverter
+export class IntegerConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === RoundToWholeLookupKey) &&
+        return (dataTypeLookupKey === IntegerLookupKey) &&
             typeof value === 'number';
     }
     public Convert(value: number, dataTypeLookupKey: string): string | number | Date | null | undefined {

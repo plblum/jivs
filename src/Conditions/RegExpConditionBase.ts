@@ -1,3 +1,13 @@
+/**
+ * Base implementation for Conditions that evaluate a string against a regular expression.
+ * Very versatile tool for strings, as so many data types are strings with specific patterns
+ * that the regular expression can identify. In fact, many of these implementations fit into the
+ * Condition Category of "DataTypeCheck".
+ * This base class is often used to develop specific Conditions that have a built-in regular expression,
+ * such as USPhoneNumberCondition and EmailAddressCondition. Both are good examples of "DataTypeCheck" conditions.
+ * @module Conditions/RegExpConditionBase
+ */
+
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";

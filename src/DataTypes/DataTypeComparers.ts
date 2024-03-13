@@ -1,12 +1,9 @@
-import { ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
-import { InvalidTypeError } from "../Utilities/ErrorHandling";
-
 /**
  * Concrete implementations of IDataTypeComparer.
  * 
  * See IDataTypeConverter for more.
  * 
- * Comparison is handled by the DataTypeResolver.CompareValues function.
+ * Comparison is handled by the DataTypeServices.CompareValues function.
  * If you register a class there, it will be checked against values supplied.
  * If none of the registered classes support those values, the values
  * are first converted via any IDataTypeConverters register. Once
@@ -15,15 +12,18 @@ import { InvalidTypeError } from "../Utilities/ErrorHandling";
  * Default comparison is the DefaultComparer function below.
  * 
  * Expectation: Dates are handled by IDataTypeConverters. Thus no Comparer exists here.
+ * @module DataTypes/DataTypeComparers
  */
 
+import { ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
+import { InvalidTypeError } from "../Utilities/ErrorHandling";
 
 /**
  * Just the function for a Comparer that handles numbers and strings. 
  * Supports Equals, LessThan, and Greater using the native Javascript operators
  * of ===, <, >. If the two values are the same type, it can use LessThan/GreaterThan.
  * Otherwise, it returns NotEquals.
- * By the time this is called, DataTypeResolver has handled out all other datatypes.
+ * By the time this is called, DataTypeServices has handled out all other datatypes.
  * @param value1 
  * @param value2 
  */
@@ -57,7 +57,7 @@ function AssertPrimitive(value: any): void {
  * or when one is boolean and the other is null (for nullable booleans).
  * The rest are Undetermined
  */
-export class BooleanComparer implements IDataTypeComparer
+export class BooleanDataTypeComparer implements IDataTypeComparer
 {
     public SupportsValues(value1: any, value2: any): boolean {
         let isBool1 = typeof value1 === 'boolean';

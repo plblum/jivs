@@ -1,4 +1,3 @@
-import { valGlobals } from './../src/Services/ValidationGlobals';
 
 /**
  * class RelativeDate example
@@ -15,7 +14,7 @@ import { valGlobals } from './../src/Services/ValidationGlobals';
  * }
  * 
  * We need to teach this library about your RelativeDate class.
- * You will create and register 2 classes with the DataTypeResolver 
+ * You will create and register 2 classes with the DataTypeServices 
  * (found on the ValidationServices object).
  * 1. IDataTypeIdentifier - Class to recognize the RelativeDate object and give it a Lookup Key.
  *    See RelativeDateIdentifier class.
@@ -25,7 +24,7 @@ import { valGlobals } from './../src/Services/ValidationGlobals';
  * Registration is shown at the bottom of the file.
  */
 
-import { DataTypeResolver } from "../src/DataTypes/DataTypeResolver";
+import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { IDataTypeConverter, IDataTypeIdentifier } from "../src/Interfaces/DataTypes";
 import { IValidationServices } from "../src/Interfaces/ValidationServices"
 
@@ -102,22 +101,15 @@ export class RelativeDateConverter implements IDataTypeConverter
 // Register after you have a ValidationService instance. Setup only on the ValidationService
 export function RegisterRelativeDate(validationServices: IValidationServices): void
 {
-    let dataTypeResolver = validationServices.DataTypeResolverService as DataTypeResolver;
-    dataTypeResolver.RegisterDataTypeIdentifier(new RelativeDateIdentifier());
-    dataTypeResolver.RegisterDataTypeConverter(new RelativeDateConverter()); 
+    let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
+    dataTypeServices.RegisterDataTypeIdentifier(new RelativeDateIdentifier());
+    dataTypeServices.RegisterDataTypeConverter(new RelativeDateConverter()); 
 
     // now whenever a Condition's value is RelativeDate, it gets identified as LookupKey="RelativeDate"
     // even without any LookupKey supplied.
     // When its time to compare, the RelativeDateConverter is asked if it supports the value.
     // When they do, the comparision immediately calls Convert and now has a Date value.
-    // The DataTypeResolver knows to convert Date to a number, so it can be used by the 
+    // The DataTypeServices knows to convert Date to a number, so it can be used by the 
     // default converter (DefaultConverter function supports comparing numbers)
 }
 
-// Register BEFORE you have a ValidationService: set up a global default
-export function RegisterRelativeDateInDefaultDataTypeResolver(): void
-{
-    let dataTypeResolver = valGlobals.GetDefaultDataTypeResolver() as DataTypeResolver;
-    dataTypeResolver.RegisterDataTypeIdentifier(new RelativeDateIdentifier());
-    dataTypeResolver.RegisterDataTypeConverter(new RelativeDateConverter()); 
-}

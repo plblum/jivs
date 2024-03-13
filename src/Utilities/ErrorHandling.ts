@@ -1,4 +1,10 @@
 /**
+ * Various classes that support error handling.
+ * @module Utilities/ErrorHandling
+ */
+
+
+/**
  * Exception for reporting bad coding.
  */
 export class CodingError extends Error

@@ -2,5 +2,6 @@
     "$schema": "https://typedoc.org/schema.json",
     "entryPointStrategy": "expand",
     "entryPoints": ["src"],
-    "out": "docs"
+    "out": "docs",
+    "useTsLinkResolution": true
 }  

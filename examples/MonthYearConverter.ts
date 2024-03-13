@@ -1,6 +1,5 @@
-import { DataTypeResolver } from '../src/DataTypes/DataTypeResolver';
+import { DataTypeServices } from '../src/DataTypes/DataTypeServices';
 import { IValidationServices } from '../src/Interfaces/ValidationServices';
-import { valGlobals } from '../src/Services/ValidationGlobals';
 import { IDataTypeConverter } from './../src/Interfaces/DataTypes';
 import { RelativeDateIdentifier, RelativeDateConverter } from './ComparingCustomDataTypeAsDate';
 
@@ -34,19 +33,12 @@ export class UTCMonthYearConverter implements IDataTypeConverter
 // Register after you have a ValidationService instance. Setup only on the ValidationService
 export function RegisterRelativeDate(validationServices: IValidationServices): void
 {
-    let dataTypeResolver = validationServices.DataTypeResolverService as DataTypeResolver;
-    dataTypeResolver.RegisterDataTypeConverter(new UTCMonthYearConverter()); 
+    let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
+    dataTypeServices.RegisterDataTypeConverter(new UTCMonthYearConverter()); 
 
     // This gets used ONLY when the IValueHostDescriptor.DataType with "MonthYear".
     // When its time to compare, the UTCMonthYearConverter is asked if it supports the value.
     // If so, the comparision immediately calls Convert and now has a Date value.
-    // The DataTypeResolver knows to convert Date to a number, so it can be used by the 
+    // The DataTypeServices knows to convert Date to a number, so it can be used by the 
     // default converter (DefaultConverter function supports comparing numbers)
-}
-
-// Register BEFORE you have a ValidationService: set up a global default
-export function RegisterRelativeDateInDefaultDataTypeResolver(): void
-{
-    let dataTypeResolver = valGlobals.GetDefaultDataTypeResolver() as DataTypeResolver;
-    dataTypeResolver.RegisterDataTypeConverter(new UTCMonthYearConverter()); 
 }

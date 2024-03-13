@@ -1,4 +1,4 @@
-import { DefaultComparer, BooleanComparer } from "../../src/DataTypes/DataTypeComparers";
+import { BooleanDataTypeComparer, DefaultComparer } from "../../src/DataTypes/DataTypeComparers";
 import { ComparersResult } from "../../src/Interfaces/DataTypes";
 
 // function DefaultComparer(value1: any, value2: any): ComparersResult
@@ -47,10 +47,10 @@ describe('Comparers.DefaultComparer', () => {
     });        
 });
 
-// function BooleanComparer(value1: any, value2: any): ComparersResult
-describe('Comparers.BooleanComparer', () => {
+// function BooleanDataTypeComparer(value1: any, value2: any): ComparersResult
+describe('Comparers.BooleanDataTypeComparer', () => {
     test('SupportsValues', () => {
-        let testItem = new BooleanComparer();
+        let testItem = new BooleanDataTypeComparer();
         // so long as one is boolean, true
         expect(testItem.SupportsValues(true, false)).toBe(true);
         expect(testItem.SupportsValues(false, true)).toBe(true);
@@ -62,14 +62,14 @@ describe('Comparers.BooleanComparer', () => {
 
     });
     test('Equals', () => {
-        let testItem = new BooleanComparer();
+        let testItem = new BooleanDataTypeComparer();
         // only supply values are were approved by SupportsValues
         // This class allows just one to be a boolean
         expect(testItem.Compare(true, true)).toBe(ComparersResult.Equals);
         expect(testItem.Compare(false, false)).toBe(ComparersResult.Equals);
      });    
     test('Not Equals', () => {
-        let testItem = new BooleanComparer();
+        let testItem = new BooleanDataTypeComparer();
         // only supply values are were approved by SupportsValues
         // This class allows just one to be a boolean, and if so, returns NotEquals
         // when the other is null.
@@ -80,7 +80,7 @@ describe('Comparers.BooleanComparer', () => {
         expect(testItem.Compare(null, true)).toBe(ComparersResult.NotEquals);        
     });      
     test('Undefined', () => {
-        let testItem = new BooleanComparer();
+        let testItem = new BooleanDataTypeComparer();
         // only supply values are were approved by SupportsValues
         // This class allows just one to be a boolean, and if so, returns Undetermined
         // unless the other is null

@@ -1,7 +1,6 @@
 import { BusinessLogicInputValueHostType, BusinessLogicValueHostId } from "./BusinessLogicInputValueHost";
 import { DeepClone, DeepEquals } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
-import { valGlobals } from "../Services/ValidationGlobals";
 import type { IValueHost, IValueHostDescriptor, IValueHostState } from "../Interfaces/ValueHost";
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "./ValueHostBase";
@@ -10,11 +9,10 @@ import type { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnap
 import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 import type { IValidationManagerState, IValidationManager } from "../Interfaces/ValidationManager";
-import { ValidationServices } from "../Services/ValidationServices";
 
 
 /**
- * The central object for using this system.
+ * ValidationManager is the central object for using this system.
  * It is where you describe the shape of your inputs and their validation rules.
  * Once setup, it has a list of ValueHost objects. Those that are InputValueHosts
  * contain validators.
@@ -66,7 +64,7 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * @param config - Provides ValidationManager with numerous configuration settings.
      * It is just a simple object that you may initialize like this:
      * {
-     *   Services: new ValidationServices();
+     *   Services: CreateValidationServices(); <-- see and customize your create_services.ts file
      *   ValueHostDescriptors: [
      *     // see elsewhere for details on ValueHostDescriptors as they are the heavy lifting in this system.
      *     // Just know that you need one object for each value that you want to connect
@@ -84,16 +82,15 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      */
     constructor(config: ValidationManagerConfig) {
         AssertNotNull(config, 'config');
+        AssertNotNull(config.Services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         let savedServices = config.Services ?? null;
-        config.Services = null; // to ignore during DeepClone
+        config.Services = null as any; // to ignore during DeepClone
         let internalConfig = DeepClone(config) as ValidationManagerConfig;
         config.Services = savedServices;
         internalConfig.Services = savedServices;
 
         this._config = internalConfig;
-        if (!internalConfig.Services)
-            internalConfig.Services = new ValidationServices();
         this._valueHostDescriptors = {};
         this._valueHosts = {};
         this._state = internalConfig.SavedState ?? {};
@@ -239,7 +236,7 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * @returns 
      */
     protected ApplyDescriptor(descriptor: IValueHostDescriptor, initialState: IValueHostState | null): IValueHost {
-        let factory = valGlobals.GetValueHostFactory(); // functions in here throw exceptions if descriptor is unsupported
+        let factory = this.Services.ValueHostFactory; // functions in here throw exceptions if descriptor is unsupported
         let state: IValueHostState;
         let existingState = initialState;
         let defaultState = factory.CreateState(descriptor);
@@ -490,9 +487,8 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
 {
     /**
      * Provides services into the system. Dependency Injection and factories.
-     * If null, one is created using defaults found in ValidationGlobals.
      */
-    Services?: IValidationServices | null;
+    Services: IValidationServices;
     /**
      * Initial list of ValueHostDescriptors. Here's where all of the action is!
      * Each ValueHostDescriptor describes one ValueHost (which is info about one value in your app),

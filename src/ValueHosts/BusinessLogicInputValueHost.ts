@@ -1,3 +1,8 @@
+/**
+ * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
+ * @module ValueHosts/BusinessLogicInputValueHost
+ */
+
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IInputValueHostBaseDescriptor, IInputValueHostBaseState, IInputValueHost } from "../Interfaces/InputValueHost";
 import { IValidateOptions, IValidateResult, ValidationResult, IIssueFound, ValidationSeverity } from "../Interfaces/Validation";

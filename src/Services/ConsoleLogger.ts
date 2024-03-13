@@ -1,8 +1,12 @@
+/**
+ * Concrete implemenation of ILogger that provides logging to the Console.
+ * @module Loggers/ConsoleLogger
+ */
 import { ILogger, LoggingLevel } from "../Interfaces/Logger";
 
 
 /**
- * Provides a logger using the Console. This is the default logger.
+ * Concrete implemenation of ILogger that provides logging to the Console. This is the default logger.
  * If you want to log both to the console and another system, create both loggers,
  * passing the other into this constructor.
  */

@@ -1,6 +1,3 @@
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
-
 /**
  * Exposes values from the consuming system to the validation engine.
  * Each instance represents a single value from the consuming system.
@@ -39,6 +36,15 @@ import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
  *   The consumer handles converting the input field/element value into its native value
  *   and supplies it with SetNativeValue or NativeValueUndetermined.
  * - Most Conditions look at the NativeValue via GetNativeValue.
+ * @module ValueHost/Interfaces
+ */
+
+
+import { ValueHostId } from "../DataTypes/BasicTypes";
+import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
+
+/**
+ * Interface for creating ValueHosts.
  */
 export interface IValueHost {
     /**
@@ -96,7 +102,7 @@ export interface IValueHost {
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
-     * See the DataTypeResolver. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
+     * See the DataTypeServices. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
      */
     GetDataType(): string | null;
 
@@ -195,6 +201,9 @@ export interface IValueHostState {
     Items?: CustomItems;
 }
 
+/**
+ * @internal
+ */
 interface CustomItems {
     [key: string]: any
 }
@@ -252,7 +261,7 @@ export interface IValueHostDescriptor {
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
-     * See the DataTypeResolver. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
+     * See the DataTypeServices. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
      * If null, the current value's type (ValueHostState.Value) is used and must be string, number, boolean, or date.
      */
     DataType?: string;

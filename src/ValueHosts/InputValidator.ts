@@ -1,3 +1,17 @@
+/**
+ * Represents all aspects of a single validation rule.
+ * - Has the Validation function, which returns the ValidationResult, error messages, and severity.
+ * - Condition - the actual validation rule
+ * - Error Message - what to tell the user when there is an error
+ * - Summary Error Message - In the ValidationSummary UI element, what to tell the user 
+ *   when there is an error.
+ * - Severity: Error, Severe, and Warning
+ * - Rules to disable the validator: validation group matching, Enabler condition, and Enabled property.
+ * - Resolves error message tokens
+  * Attached to InputValueHosts through their InputValueHostDescriptor.
+  * @module InputValidator
+ */
+
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ValidationGroupsMatch } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
@@ -11,7 +25,7 @@ import { LoggingLevel, ConfigurationCategory, ValidationCategory } from "../Inte
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 
 /**
- * An IInputValidator implementation represents a single validator 
+ * An IInputValidator implementation that represents a single validator 
  * for the value of an InputValueHost.
  * It is stateless.
  * Basically you want to call Validate() to get all of the results
@@ -20,11 +34,7 @@ import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
  * That data ends up in the ValidationManager as part of its state,
  * allowing the system consumer to know how to deal with the data
  * of the ValueHost (save or not) and the UI to display the state.
- */
-
-
-/**
- * Standard implementation of IInputValidator
+ * 
  * Each instance depends on a few things, all passed into the constructor
  * and treated as immutable.
  * - IInputValueHost - ID, label, and values from the consuming system.
@@ -389,8 +399,7 @@ export function CreateIssueFound(valueHost: IValueHost,
 //#region Factory
 
 /**
- * InputvalidatorFactory is a system-wide singleton declared in
- * valGlobals with SetInputValidatorFactory.
+ * InputValidatorFactory creates the appropriate IInputValidator class
  */
 export class InputValidatorFactory implements IInputValidatorFactory {
     public Create(valueHost: IInputValueHost, descriptor: IInputValidatorDescriptor): IInputValidator {

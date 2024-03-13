@@ -1,11 +1,15 @@
-import { IValueHostDescriptor, IValueHostState, IValueHost } from "./ValueHost";
-import { IValueHostsManager } from "./ValueHostResolver";
-
 /**
  * Factory for generating classes that implement IValueHost that use IValueHostDescriptor.
  * IValueHostDescriptor identifies the desired ValueHost class.
  * Most apps will use the standard InputValueHost class.
- * This interface targets unit testing with mocks.
+ * @module ValueHosts/Interfaces
+ */
+
+import { IValueHostDescriptor, IValueHostState, IValueHost } from "./ValueHost";
+import { IValueHostsManager } from "./ValueHostResolver";
+
+/**
+ * Interface for creating ValueHostFactory classes.
  */
 export interface IValueHostFactory {
     /**

@@ -1,3 +1,12 @@
+/**
+ * Factory for generating classes that implement IValueHost that use IValueHostDescriptor.
+ * IValueHostDescriptor identifies the desired implementation.
+ * Most apps will use the ValueHost and InputValueHost class implementations.
+ * When adding a new ValueHost class, implement an IValueHostGenerator and register it
+ * with the ValueHostFactory.
+ * @module ValueHosts/ValueHostFactory
+ */
+
 import { BusinessLogicInputValueHostGenerator } from "./BusinessLogicInputValueHost";
 import { InputValueHostGenerator } from "./InputValueHost";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
@@ -5,14 +14,6 @@ import type { IValueHostState, IValueHost, IValueHostDescriptor } from "../Inter
 import type { IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { NonInputValueHostGenerator } from "./NonInputValueHost";
 import type { IValueHostFactory, IValueHostGenerator } from "../Interfaces/ValueHostFactory";
-
-/**
- * Factory for generating classes that implement IValueHost that use IValueHostDescriptor.
- * IValueHostDescriptor identifies the desired implementation.
- * Most apps will use the ValueHost and InputValueHost class implementations.
- * When adding a new ValueHost class, implement an IValueHostGenerator and register it
- * with the ValueHostFactory.
- */
 
 /**
  * Supports creating and working with various ValueHost implementations.

@@ -1,11 +1,16 @@
+/**
+ * Base implementation of a Condition that evaluates a string as the native value.
+ * @module Conditions/StringConditionBase
+ */
+
 import { ConditionEvaluateResult } from "../Interfaces/Conditions";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { IOneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
 
 /**
- * Abstract implementation of a Condition that evaluates a string as the native value.
- * Supported by IStringConditionDescriptor.
+ * Base implementation of a Condition that evaluates a string as the native value.
+ * Supported by IStringConditionDescriptor which introduces the Trim property.
  */
 export abstract class StringConditionBase<TConditionDescriptor extends IStringConditionDescriptor>
     extends OneValueConditionBase<TConditionDescriptor>
