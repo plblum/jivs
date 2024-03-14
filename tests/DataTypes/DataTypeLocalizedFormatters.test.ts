@@ -1,9 +1,38 @@
-import { AbbrevDOWDateLocalizedFormatter, AbbrevDateLocalizedFormatter, BooleanLocalizedFormatter, CapitalizeStringLocalizedFormatter, CurrencyLocalizedFormatter, DateLocalizedFormatter, DateTimeLocalizedFormatter, LongDOWDateLocalizedFormatter, LongDateLocalizedFormatter, LowercaseStringLocalizedFormatter, NumberLocalizedFormatter, Percentage100LocalizedFormatter, PercentageLocalizedFormatter, StringLocalizedFormatter, TimeofDayHMSLocalizedFormatter, TimeofDayLocalizedFormatter, UppercaseStringLocalizedFormatter, YesNoBooleanLocalizedFormatter } from './../../src/DataTypes/DataTypeLocalizedFormatters';
+import { AbbrevDOWDateLocalizedFormatter, AbbrevDateLocalizedFormatter, BooleanLocalizedFormatter, CapitalizeStringLocalizedFormatter, CurrencyLocalizedFormatter, DataTypeLocalizedFormatterBase, DateLocalizedFormatter, DateTimeLocalizedFormatter, LongDOWDateLocalizedFormatter, LongDateLocalizedFormatter, LowercaseStringLocalizedFormatter, NumberLocalizedFormatter, Percentage100LocalizedFormatter, PercentageLocalizedFormatter, StringLocalizedFormatter, TimeofDayHMSLocalizedFormatter, TimeofDayLocalizedFormatter, UppercaseStringLocalizedFormatter, YesNoBooleanLocalizedFormatter } from './../../src/DataTypes/DataTypeLocalizedFormatters';
 import {
     StringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
     NumberLookupKey, CurrencyLookupKey, PercentageLookupKey, BooleanLookupKey, YesNoBooleanLookupKey, DateTimeLookupKey, DateLookupKey,
     AbbrevDateLookupKey, AbbrevDOWDateLookupKey, LongDateLookupKey, LongDOWDateLookupKey, TimeOfDayLookupKey, TimeOfDayHMSLookupKey, Percentage100LookupKey
 } from "../../src/DataTypes/LookupKeys";
+import { IDataTypeResolution } from '../../src/Interfaces/DataTypes';
+import { MockValidationServices } from '../Mocks';
+
+describe('DataTypeLocalizedFormatterBase', () => {
+    class TestClass extends DataTypeLocalizedFormatterBase
+    {
+        protected get ExpectedLookupKeys(): string {
+            throw new Error('Method not implemented.');
+        }
+        protected SupportsCulture(cultureId: string): boolean {
+            throw new Error('Method not implemented.');
+        }
+        public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+            throw new Error('Method not implemented.');
+        }
+        
+    }
+    test('Services that are unassigned throw', () => {
+        let testItem = new TestClass();
+        let x: any;
+        expect(() => x = testItem.Services).toThrow(/Register/);
+    });
+    test('Services to return same ValidationService as assigned', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestClass();
+        expect(() => testItem.Services = services).not.toThrow();
+        expect(testItem.Services).toBe(services);
+    });
+})
 
 describe('StringLocalizedFormatter', () => {
 
