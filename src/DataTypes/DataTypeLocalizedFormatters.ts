@@ -34,6 +34,10 @@ export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocaliz
     {
         this._services = services;
     }
+    protected get HasServices(): boolean
+    {
+        return this._services !== null;
+    }
     private _services: IValidationServices | null = null;
     
     /**
@@ -452,15 +456,41 @@ export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBas
  */
 export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFormatterBase
 {
-    constructor(cultureToLabels?: Array<CultureToBooleanLabels>| null)
+    constructor(trueLabel?: string, falseLabel?: string)
     {
         super();
-        this._cultureToLabels = cultureToLabels ?? [];
+        let defaults = this.GetDefaultLabels();
+        this._trueLabel = trueLabel ?? defaults.TrueLabel ?? 'true';
+        this._falseLabel = falseLabel ?? defaults.FalseLabel ?? 'false';
     }
-    private _cultureToLabels: Array<CultureToBooleanLabels>;
 
-    protected abstract DefaultCultureToLabels(): CultureToBooleanLabels;
+    /**
+     * Text shown the user for a value of true.
+    * To provide localization of "true" and "false", set up
+    * ValidationServices.TextLocalizerService with text keys, cultures and
+    * translations. Then provide values for TrueLabel and FalseLabel
+    * when registering this class in the DataTypeServices.
+     */
+    public get TrueLabel(): string
+    {
+        return this._trueLabel;
+    }
+    private _trueLabel: string;
 
+    /**
+     * Text shown the user for a value of false
+    * To provide localization of "true" and "false", set up
+    * ValidationServices.TextLocalizerService with text keys, cultures and
+    * translations. Then provide values for TrueLabel and FalseLabel
+    * when registering this class in the DataTypeServices.
+      */
+    public get FalseLabel(): string
+    {
+        return this._falseLabel;
+    }
+    private _falseLabel: string;
+
+    protected abstract GetDefaultLabels(): { TrueLabel: string, FalseLabel: string };    
 
     public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
         if (typeof value === 'boolean') {
@@ -473,15 +503,12 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
     }
     protected FormatBoolean(value: boolean, cultureId: string): IDataTypeResolution<string>
     {
-        let tolabels = this._cultureToLabels.find((cbl) => cbl.CultureId === cultureId) ?? null;
-        if (!tolabels) {
-            let lang = CultureLanguageCode(cultureId);
-            if (lang && lang !== cultureId)
-                tolabels = this._cultureToLabels.find((cbl) => cbl.CultureId === lang) ?? null;
+        let text = value ? this.TrueLabel : this.FalseLabel;
+        if (this.HasServices) {
+            text = this.Services.TextLocalizerService.Localize(
+                cultureId, text);
         }
-        if (!tolabels)
-            tolabels = this.DefaultCultureToLabels();
-        return { Value: value ? tolabels!.TrueLabel : tolabels!.FalseLabel }
+        return { Value: text };
     }
 }
 /**
@@ -490,9 +517,9 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
  */
 export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
 {
-    constructor(cultureToLabels?: Array<CultureToBooleanLabels>| null)
+    constructor(trueLabel?: string, falseLabel?: string)
     {
-        super(cultureToLabels);
+        super(trueLabel, falseLabel);
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
@@ -504,9 +531,8 @@ export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
         return true;
     }
 
-    protected DefaultCultureToLabels(): CultureToBooleanLabels {
+    protected GetDefaultLabels(): { TrueLabel: string, FalseLabel: string } {
         return {
-            CultureId: '',
             TrueLabel: 'true',
             FalseLabel: 'false'
         };
@@ -519,9 +545,9 @@ export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
  */
 export class YesNoBooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
 {
-    constructor(cultureToLabels?: Array<CultureToBooleanLabels>| null)
+    constructor(trueLabel?: string, falseLabel?: string)
     {
-        super(cultureToLabels);
+        super(trueLabel, falseLabel);
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
@@ -533,9 +559,8 @@ export class YesNoBooleanLocalizedFormatter extends BooleanLocalizedFormatterBas
         return true;
     }
 
-    protected DefaultCultureToLabels(): CultureToBooleanLabels {
+    protected GetDefaultLabels(): { TrueLabel: string, FalseLabel: string } {
         return {
-            CultureId: '',
             TrueLabel: 'yes',
             FalseLabel: 'no'
         };

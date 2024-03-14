@@ -8,6 +8,7 @@ import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdenti
 import { RegisterDataTypeIdentifiers, RegisterDataTypeLocalizedFormatters } from "../../starter_code/create_services";
 import { BooleanDataTypeComparer } from '../../src/DataTypes/DataTypeComparers';
 import { BooleanLocalizedFormatter, NumberLocalizedFormatter } from '../../src/DataTypes/DataTypeLocalizedFormatters';
+import { MockValidationManager, MockValidationServices } from '../Mocks';
 
 
 describe('DataTypeServices constructor and properties', () => {
@@ -56,6 +57,7 @@ describe('DataTypeServices constructor and properties', () => {
         expect(testItem.ExposedGetLocalizedFormatters()).toEqual([]);
         expect(testItem.ExposedGetDataTypeConverters()).toEqual([]);
         expect(testItem.ExposedGetDataTypeComparers()).toEqual([]);
+        expect(() => testItem.Services).toThrow(/Attach/);
 
     });
     test('Constructor with cultureID of fr sets up ActiveCultureId of fr', () => {
@@ -80,6 +82,14 @@ describe('DataTypeServices constructor and properties', () => {
         expect(testItem.ActiveCultureId).toBe('fr');
         expect(testItem.ExposedCultureConfig).toEqual(ccs);
     });    
+    test('Attach Services returns the same instance', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new DataTypeServices('en');
+        expect(() => testItem.Services = services).not.toThrow();
+        let x: any;
+        expect(() => x = testItem.Services).not.toThrow();
+        expect(x).toBe(services);
+    });
 });
 
 function CreateCultureConfigsForEn(): Array<CultureConfig>
