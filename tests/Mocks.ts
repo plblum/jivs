@@ -20,6 +20,8 @@ import { CreateDataTypeServicesWithManyCultures } from "./DataTypes/DataTypeServ
 import { RegisterConditions, PopulateDataTypeServices } from "../starter_code/create_services";
 import { RegisterStandardValueHostGenerators, ValueHostFactory } from "../src/ValueHosts/ValueHostFactory";
 import { InputValidatorFactory } from "../src/ValueHosts/InputValidator";
+import { ITextLocalizerService } from "../src/Interfaces/TextLocalizerService";
+import { TextLocalizerService } from "../src/Services/TextLocalizerService";
 
 
 export function CreateMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -180,7 +182,8 @@ export class MockValidationServices implements IValidationServices
         this._inputValidatorFactory = new InputValidatorFactory();
 
         this._conditionFactory = new ConditionFactory();
-        this._DataTypeServices = new DataTypeServices('en');
+        this.DataTypeServices = new DataTypeServices('en');
+        this.TextLocalizerService = new TextLocalizerService();
         this._messageTokenResolverService = new MessageTokenResolver();
         this._loggerService = new MockCapturingLogger();
 
@@ -189,7 +192,7 @@ export class MockValidationServices implements IValidationServices
             RegisterTestingOnlyConditions(this._conditionFactory as ConditionFactory);
         }
         if (registerStandardDataTypes)
-            PopulateDataTypeServices(this._DataTypeServices as DataTypeServices);
+            PopulateDataTypeServices(this._dataTypeServices as DataTypeServices);
     }
 
     public get ConditionFactory(): IConditionFactory
@@ -199,13 +202,24 @@ export class MockValidationServices implements IValidationServices
     private _conditionFactory!: IConditionFactory;
 
     public get DataTypeServices(): IDataTypeServices {
-        return this._DataTypeServices;
+        return this._dataTypeServices;
     }
     public set DataTypeServices(service: IDataTypeServices)
     {
-        this._DataTypeServices = service;
+        this._dataTypeServices = service;
+        service.Services = this;
     }
-    private _DataTypeServices!: IDataTypeServices;
+    private _dataTypeServices!: IDataTypeServices;
+
+    public get TextLocalizerService(): ITextLocalizerService
+    {
+        return this._textLocalizerService!;
+    }
+    public set TextLocalizerService(service: ITextLocalizerService)
+    {
+        this._textLocalizerService = service;
+    }
+    private _textLocalizerService: ITextLocalizerService | null = null;     
 
     public get MessageTokenResolverService(): IMessageTokenResolver {
         return this._messageTokenResolverService;

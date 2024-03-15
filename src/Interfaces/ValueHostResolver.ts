@@ -6,25 +6,21 @@
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { type IValidationServices } from "./ValidationServices";
+import { IServicesAccessor } from "./ValidationServices";
 import { type IValueHost } from "./ValueHost";
 
 /**
  * The fundamentals of managing ValueHosts involve just the ability
- * to get a ValueHost and provide the Services (for dependeny injection).
+ * to get a ValueHost and provide the Services (for dependency injection).
  */
-export interface IValueHostResolver {
+export interface IValueHostResolver extends IServicesAccessor {
     /**
      * Retrieves the ValueHost of the identified by valueHostId
      * @param valueHostId - Matches to the IValueHost.Id property
      * Returns the instance or null if not found.
      */
     GetValueHost(valueHostId: ValueHostId): IValueHost | null;
-
-    /**
-     * Provides access to services.
-     */
-    Services: IValidationServices;    
+ 
 }
 
 /**

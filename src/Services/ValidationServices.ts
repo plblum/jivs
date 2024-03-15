@@ -19,6 +19,8 @@ import { IValueHostFactory } from "../Interfaces/ValueHost";
 import { InputValidatorFactory } from "../ValueHosts/InputValidator";
 import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../ValueHosts/ValueHostFactory";
 import { ConsoleLogger } from "./ConsoleLogger";
+import { ITextLocalizerService } from "../Interfaces/TextLocalizerService";
+import { TextLocalizerService } from "./TextLocalizerService";
 
 /**
  * Supplies services and tools to be used as dependency injection
@@ -57,11 +59,33 @@ export class ValidationServices implements IValidationServices {
 
         return this._dataTypeServices;
     }
-    public set DataTypeServices(service: IDataTypeServices) {
-        AssertNotNull(service, 'service');
-        this._dataTypeServices = service;
+    public set DataTypeServices(services: IDataTypeServices) {
+        AssertNotNull(services, 'services');
+        this._dataTypeServices = services;
+        services.Services = this;
     }
     private _dataTypeServices!: IDataTypeServices;
+
+    /**
+     * Service to text localization specific, effectively mapping
+     * a text key to a language specific version of that text.
+     * Error messages and IDataTypeLocalizedFormatters use this.
+     * Defaults to using TextLocalizerServices class.
+     * If you use a third party localization system, you may prefer
+     * to use that here. Implement ITextLocalizerService around
+     * that third party library.
+     */
+    public get TextLocalizerService(): ITextLocalizerService
+    {
+        if (!this._textLocalizerService)
+            this._textLocalizerService = new TextLocalizerService();
+        return this._textLocalizerService;
+    }
+    public set TextLocalizerService(service: ITextLocalizerService)
+    {
+        this._textLocalizerService = service;
+    }
+    private _textLocalizerService: ITextLocalizerService | null = null; 
 
     /**
      * Service to get the IMessageTokenResolver instance that replaces
