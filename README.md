@@ -54,7 +54,7 @@ As a service, you need to know about its API. The primary pieces for
 building a UI are:
 
 -   `ValueHost` classes -- Identifies a single value to be validated
-    and/or contributes data into the rules of your validation. Each has a unique
+    and/or contributes data used by the validators. Each has a unique
     identifier that you use to match it to a specific input, such as the
     ID of the HTML input tag (\"TextBox1\"), or even better, a path
     where it is found in a Model (\"Customer/Address/Street\").
@@ -75,6 +75,7 @@ building a UI are:
 		GetLabel
 		GetValue
 		SetValue
+		Descriptor // contains the configuration
 		```
 
 	- `InputValueHost` class - For Input values optionally with validators. In fact, they have all of the features of NonInputValueHost, just validation capability and know of a second value from the input.		
@@ -103,21 +104,20 @@ building a UI are:
     not identical*. While there are many standard rules for which there
     are Conditions included in this library, you are often going to need
     to build your own.
-    >In fact, you can substitute your own business logic code, so long as you wrap it in a Condition class.
 
 	Some members of these classes are:
 	```
 	Evaluate
 	ConditionCategory
+	Descriptor // contains the configuration
 	```
 
--   `InputValidator` class -- Handles a single rule, by assigning it to a
-    Condition. The Condition does the actual evaluation of the rule. InputValidator's job is to handle the validation process and deliver the error messages to the
-    list of issues found.
+-   `InputValidator` class -- Handle the validation process of a single rule and deliver the error messages to the InputValueHost's list of issues found. It contains one Condition, an error message, a second error message to be used in the Summary, and logic to determine if the validator will even run.
 
 	Some members of this class are:
 	```
 	Validate
+	Descriptor // contains the configuration including error messages and condition.
 	```
 ## Conditions - the validation rules
 You need to build a class that adapts your validation rules to Jivs own types and classes. Jivs uses the classes that implement the ICondition interface to package up a validation rule, and ConditionDescriptor type to inform the Condition class how to configure itself. The class is a bridge between business logic and your UI. This section provides the details.

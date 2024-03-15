@@ -36,7 +36,7 @@ describe('UTCAnniversaryConverter', () => {
         let date7 = new Date(Date.UTC(1981, 10, 30, 23, 59, 59));
         let date8 = new Date(Date.UTC(1976, 10, 1));
         
-        let testItem = new DataTypeServices('en'); 
+        let testItem = new DataTypeServices(); 
         testItem.RegisterDataTypeConverter(new UTCAnniversaryConverter());
         expect(testItem.CompareValues(date1, date1, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
         expect(testItem.CompareValues(date1, date2, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);

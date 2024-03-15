@@ -35,6 +35,18 @@ export class ValidationServices implements IValidationServices {
     constructor() {
 
     }
+    /**
+     * The culture shown to the user in the app. Its the ISO language-region format.
+       This value is the starting point to search through localizations.
+       If not supplied, it defaults to 'en'.
+     */
+    public get ActiveCultureId(): string {
+        return this._activeCultureID ?? 'en';
+    }
+    public set ActiveCultureId(cultureID: string) {
+        this._activeCultureID = cultureID;
+    }
+    private _activeCultureID: string | null = null;
 
     /**
      * Factory to create Condition objects.

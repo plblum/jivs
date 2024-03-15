@@ -32,13 +32,6 @@ export interface ICoreDataTypeServices
 export interface IDataTypeServices extends ICoreDataTypeServices, IServicesAccessor
 {
 /**
- * The culture shown to the user in the app. Its the ISO language-region format.
-   This value is the starting point to search through DataTypeLocalizations.
-   Those have their own FallbackCultureID to continue the search.
- */    
-    ActiveCultureId: string;
-
-/**
  * Compares two same-type values to see if they are equal or not.
  * It can return Equals and NotEquals for types that make no sense
  * to support greater than and less than.

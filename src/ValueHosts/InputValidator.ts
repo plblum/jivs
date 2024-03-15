@@ -188,29 +188,37 @@ export class InputValidator implements IInputValidator {
 
     /**
      * Resolves the ErrorMessage as a template - before it has its tokens processed.
-     * @returns 
+     * @returns Error message from ErrorMessage property with localization applied
+     * if ErrorMessagel10n is setup.
      */
     protected GetErrorMessageTemplate(): string {
-        let value = this.Descriptor.ErrorMessage;
-        if (typeof value == 'function')
-            value = value(this);
-        if (value == null)  // null/undefined
+        let msg = this.Descriptor.ErrorMessage;
+        if (typeof msg == 'function')
+            msg = msg(this);
+        if (this.Descriptor.ErrorMessagel10n)
+            msg = this.Services.TextLocalizerService.Localize(this.Services.ActiveCultureId,
+                this.Descriptor.ErrorMessagel10n, msg);
+        if (msg == null)  // null/undefined
             throw new Error('Must supply a value for Descriptor.ErrorMessage');
-        return value;
+        return msg;
     }
 
     /**
      * Resolves the SummaryErrorMessage as a template - before it has its tokens processed.
      * Falls back to use GetErrorMessageTemplate if Descriptor doesn't supply a value.
-     * @returns 
+     * @returns Error message from SummaryErrorMessage property with localization applied
+     * if SummaryErrorMessagel10n is setup.
      */
     protected GetSummaryErrorMessageTemplate(): string {
-        let value = this.Descriptor.SummaryErrorMessage;
-        if (typeof value == 'function')
-            value = value(this);
-        if (value == null)
+        let msg = this.Descriptor.SummaryErrorMessage;
+        if (typeof msg == 'function')
+            msg = msg(this);
+        if (this.Descriptor.SummaryErrorMessagel10n)
+            msg = this.Services.TextLocalizerService.Localize(this.Services.ActiveCultureId,
+                this.Descriptor.SummaryErrorMessagel10n, msg ?? '');
+        if (msg == null)
             return this.GetErrorMessageTemplate();
-        return value;
+        return msg;
     }
 
     /**

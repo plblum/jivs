@@ -27,7 +27,7 @@ import { TextLocalizerService } from "../src/Services/TextLocalizerService";
 export function CreateMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
 {
     let services = new MockValidationServices(false, false);
-    services.DataTypeServices = CreateDataTypeServicesWithManyCultures(registerLookupKeys);
+    services.DataTypeServices = CreateDataTypeServicesWithManyCultures('en', registerLookupKeys);
     return new MockValidationManager(services);
 }
 
@@ -181,8 +181,9 @@ export class MockValidationServices implements IValidationServices
         this._valueHostFactory = factory;
         this._inputValidatorFactory = new InputValidatorFactory();
 
+        this.ActiveCultureId = 'en';
         this._conditionFactory = new ConditionFactory();
-        this.DataTypeServices = new DataTypeServices('en');
+        this.DataTypeServices = new DataTypeServices();
         this.TextLocalizerService = new TextLocalizerService();
         this._messageTokenResolverService = new MessageTokenResolver();
         this._loggerService = new MockCapturingLogger();
@@ -194,6 +195,13 @@ export class MockValidationServices implements IValidationServices
         if (registerStandardDataTypes)
             PopulateDataTypeServices(this._dataTypeServices as DataTypeServices);
     }
+    public get ActiveCultureId(): string {
+        return this._activeCultureID;
+    }
+    public set ActiveCultureId(cultureID: string) {
+        this._activeCultureID = cultureID;
+    }
+    private _activeCultureID: string = 'en';
 
     public get ConditionFactory(): IConditionFactory
     {

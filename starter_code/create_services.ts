@@ -16,11 +16,14 @@ import {
     StringLocalizedFormatter, NumberLocalizedFormatter, IntegerLocalizedFormatter, DateLocalizedFormatter, CapitalizeStringLocalizedFormatter,
     UppercaseStringLocalizedFormatter, LowercaseStringLocalizedFormatter, DateTimeLocalizedFormatter, AbbrevDateLocalizedFormatter,
     AbbrevDOWDateLocalizedFormatter, LongDateLocalizedFormatter, LongDOWDateLocalizedFormatter, TimeofDayLocalizedFormatter, TimeofDayHMSLocalizedFormatter,
-    BooleanLocalizedFormatter, YesNoBooleanLocalizedFormatter, CurrencyLocalizedFormatter, PercentageLocalizedFormatter, Percentage100LocalizedFormatter
+    BooleanLocalizedFormatter, CurrencyLocalizedFormatter, PercentageLocalizedFormatter, Percentage100LocalizedFormatter
 } from "../src/DataTypes/DataTypeLocalizedFormatters";
-import { CultureConfig, DataTypeServices } from "../src/DataTypes/DataTypeServices";
+import { CultureIdFallback, DataTypeServices } from "../src/DataTypes/DataTypeServices";
+import { BooleanLookupKey, YesNoBooleanLookupKey } from "../src/DataTypes/LookupKeys";
 import { LoggingLevel } from "../src/Interfaces/Logger";
+import { ITextLocalizerService } from "../src/Interfaces/TextLocalizerService";
 import { ConsoleLogger } from "../src/Services/ConsoleLogger";
+import { TextLocalizerService } from "../src/Services/TextLocalizerService";
 import { ValidationServices } from "../src/Services/ValidationServices";
 import { MessageTokenResolver } from './../src/ValueHosts/MessageTokenResolver';
 
@@ -41,12 +44,19 @@ import { MessageTokenResolver } from './../src/ValueHosts/MessageTokenResolver';
 export function CreateValidationServices(): ValidationServices {
     let vs = new ValidationServices();
 
+    vs.ActiveCultureId = 'en'; // set this to your default culture
+
     // --- ConditionFactory ---------------------------
     vs.ConditionFactory = CreateConditionFactory();
 
     // --- DataTypeServices services -------------------------------------
     // Plenty to configure here. See CreateDataTypeServices function below.
     vs.DataTypeServices = CreateDataTypeServices();
+
+    // --- Text localization service
+    // The built-in class, TextLocalizerService, doesn't use a third party localization
+    // library. If you prefer one, create a class that implements ITextLocalizerService
+    vs.TextLocalizerService = CreateTextLocalizerService();
 
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLogger and another, create the other
@@ -109,7 +119,7 @@ export function RegisterConditions(cf: ConditionFactory): void
 /**
  * DataTypeServices needs:
  * 1. Cultures that you want to localize. 
- *    -> Create an array of CultureConfig objects in ConfigureCultures()
+ *    -> Create an array of CultureIdFallback objects in ConfigureCultures()
  * 
  * 2. Give native types their Lookup Keys. 
  *    -> Use classes that implement IDataTypeIdentifier in RegisterDataTypeIdentifiers()
@@ -135,19 +145,18 @@ export function RegisterConditions(cf: ConditionFactory): void
  * @param activeCultureID 
  * @param cultureConfig 
  */
-export function CreateDataTypeServices(activeCultureID?: string | null, cultureConfig?: Array<CultureConfig> | null): DataTypeServices {
-    let cc: Array<CultureConfig> = cultureConfig ?? ConfigureCultures();
+export function CreateDataTypeServices(activeCultureID?: string | null, cultureConfig?: Array<CultureIdFallback> | null): DataTypeServices {
+    let cc: Array<CultureIdFallback> = cultureConfig ?? ConfigureCultures();
 
-    let dts = new DataTypeServices(activeCultureID ?? 'en', // feel free to change 'en' to your default culture
-        cc);
+    let dts = new DataTypeServices(cc);
     PopulateDataTypeServices(dts);
     return dts;
 }
 
 
-export function ConfigureCultures(): Array<CultureConfig>
+export function ConfigureCultures(): Array<CultureIdFallback>
 {
-   // 1. CultureConfig objects and the default culture
+   // 1. CultureIdFallback objects and the default culture
    return [
         //!!! This is sample data. Please rework as you need it.
             {
@@ -213,23 +222,17 @@ export function RegisterDataTypeLocalizedFormatters(dts: DataTypeServices): void
     dts.RegisterLocalizedFormatter(new LongDOWDateLocalizedFormatter());    // options?: Intl.DateTimeFormatOptions
     dts.RegisterLocalizedFormatter(new TimeofDayLocalizedFormatter());      // options?: Intl.DateTimeFormatOptions
     dts.RegisterLocalizedFormatter(new TimeofDayHMSLocalizedFormatter());   // options?: Intl.DateTimeFormatOptions
-    dts.RegisterLocalizedFormatter(new CurrencyLocalizedFormatter('USD'));  // feel free to change the default currency code
+    dts.RegisterLocalizedFormatter(new CurrencyLocalizedFormatter('USD'));  // set this to your currency code
     // defaultCurrencyCode: 'USD', options?: Intl.NumberFormatOptions, cultureToCurrencyCode? { 'en-US' : 'USD', 'es-SP': 'EUR' }
 
     dts.RegisterLocalizedFormatter(new PercentageLocalizedFormatter());     // options?: Intl.NumberFormatOptions
     dts.RegisterLocalizedFormatter(new Percentage100LocalizedFormatter());  // options?: Intl.NumberFormatOptions
-    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter());        // cultureToLabels?: Array<CultureToBooleanLabels>
-    // example parameter supporting english and spanish: 
-    // [
-    //   { CultureId: 'en', TrueLabel: 'true', FalseLabel: 'false' },
-    //   { CultureId: 'es', TrueLabel: 'verdadero', FalseLabel: 'falso' },    
-    // ]
-    dts.RegisterLocalizedFormatter(new YesNoBooleanLocalizedFormatter());   // cultureToLabels?: Array<CultureToBooleanLabels>
-    // example parameter supporting english and spanish: 
-    // [
-    //   { CultureId: 'en', TrueLabel: 'yes', FalseLabel: 'no' },
-    //   { CultureId: 'es', TrueLabel: 'sí', FalseLabel: 'no' },    
-    // ]    
+    // NOTE: BooleanLocalizedFormatter has its strings localized in ValidationServices.TextLocalizerService
+    // connected to the TrueLabell10n and FalseLabell10n properties.
+    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(BooleanLookupKey)); // "true" and "false"
+   // Example of providing another set of labels for true/false by supplying a different lookup key
+    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(YesNoBooleanLookupKey, 'yes', 'no')); 
+ 
 }
 
 // 4. IDataTypeConverters
@@ -249,4 +252,36 @@ export function RegisterDataTypeConverters(dts: DataTypeServices): void
 export function RegisterDataTypeComparers(dts: DataTypeServices): void
 {
     dts.RegisterDataTypeComparer(new BooleanDataTypeComparer());
+}
+
+export function CreateTextLocalizerService(): ITextLocalizerService
+{
+    let service = new TextLocalizerService();
+    // the following is specific to TextLocalizerService class
+    // and simply an example of working with it.
+    // Feel free to replace this code in supporting your own
+    // ITextLocalizerService implementation.
+    // Here we provide localized text for "true", "false", "yes", and "no",
+    // all used by the BooleanLocalizedFormatter.
+    service.Register('TRUE', {
+        '*': 'true',
+        'en': 'true',
+        'es': 'verdadero'
+    });
+    service.Register('FALSE', {
+        '*': 'false',
+        'en': 'false',
+        'es': 'falso'
+    });    
+    service.Register('YES', {
+        '*': 'yes',
+        'en': 'yes',
+        'es': 'sí'
+    });
+    service.Register('NO', {
+        '*': 'no',
+        'en': 'no',
+        'es': 'no'
+    });    
+    return service;
 }

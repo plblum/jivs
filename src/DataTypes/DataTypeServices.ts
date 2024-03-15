@@ -40,23 +40,19 @@ import { IServicesAccessor, IValidationServices, ToIServicesAccessor } from "../
  * 
  * Formatting supports localization, keeping a list of one or more IDataTypeLocalizedFormatters,
  * for all supported cultures.
- * As you set it up, you must supply a list of one or more CultureConfig objects.
+ * As you set it up, you must supply a list of one or more CultureIdFallback objects.
  * Each identifies a culture that you support and a fallback culture when the desired culture
  * didn't support the Format.
  */
 export class DataTypeServices implements IDataTypeServices {
     /**
      * Constructor
-     * @param activeCultureId - Required. Can be just a language code like 'en', or complete like 'en-US'
-     * @param cultureConfig - All of the cultures that you intend to support, along with fallback Cultures
+     * @param cultureFallbacks - All of the cultures that you intend to support, along with fallback Cultures
+     * If null, it will create a single entry from the ValidationServices.ActiveCultureID
      */
-    constructor(activeCultureId: string, cultureConfig?: Array<CultureConfig> | null) {
-        AssertNotNull(activeCultureId, 'activeCultureId')
-        this._activeCultureID = activeCultureId;
-        if (!cultureConfig || cultureConfig.length === 0)
-            this._cultureConfig = [{ CultureId: this._activeCultureID }];
-        else
-            this._cultureConfig = DeepClone(cultureConfig) as Array<CultureConfig>;
+    constructor(cultureFallbacks?: Array<CultureIdFallback> | null) {
+        if (cultureFallbacks && cultureFallbacks.length > 0)
+            this._cultureConfig = DeepClone(cultureFallbacks) as Array<CultureIdFallback>;
     }
 
     /**
@@ -89,24 +85,16 @@ export class DataTypeServices implements IDataTypeServices {
             if (sa)
                 sa.Services = services;
         });
+        if (!this._cultureConfig || this._cultureConfig.length === 0)
+            this._cultureConfig = [{ CultureId: services.ActiveCultureId }];        
     }
-    /**
-     * The culture shown to the user in the app. Its the ISO language-region format.
-       This value is the starting point to search through DataTypeLocalizations.
-       Those have their own FallbackCultureID to continue the search.
-     */
-    public get ActiveCultureId(): string {
-        return this._activeCultureID;
-    }
-    public set ActiveCultureId(cultureID: string) {
-        this._activeCultureID = cultureID;
-    }
-    private _activeCultureID: string;
 
-    protected get CultureConfig(): Array<CultureConfig> {
+    protected get CultureIdFallback(): Array<CultureIdFallback> {
+        if (!this._cultureConfig || this._cultureConfig.length === 0)
+            throw new CodingError('Must establish the CultureIdFallback array in DataTypeServices.')
         return this._cultureConfig;
     }
-    private _cultureConfig: Array<CultureConfig>;
+    private _cultureConfig: Array<CultureIdFallback> | null = null;
 
     /**
      * Utility to check for the presence of a Culture.
@@ -117,24 +105,24 @@ export class DataTypeServices implements IDataTypeServices {
      * got the language. If no match, returns null.
      */
     public GetClosestCultureId(cultureId: string): string | null {
-        let cc = this.GetClosestCultureConfig(cultureId);
+        let cc = this.GetClosestCultureIdFallback(cultureId);
         if (cc)
             return cc.CultureId;
         return null;
     }
-    protected GetClosestCultureConfig(cultureId: string): CultureConfig | null {
-        let cc = this.GetCultureConfig(cultureId);
+    protected GetClosestCultureIdFallback(cultureId: string): CultureIdFallback | null {
+        let cc = this.GetCultureIdFallback(cultureId);
         if (!cc) {
             let lang = CultureLanguageCode(cultureId);
             if (lang !== cultureId) {
-                cc = this.GetCultureConfig(lang);
+                cc = this.GetCultureIdFallback(lang);
             }
         }
         return cc ?? null;
     }    
-    protected GetCultureConfig(cultureId: string): CultureConfig | null
+    protected GetCultureIdFallback(cultureId: string): CultureIdFallback | null
     {
-        return this._cultureConfig.find((cc) => cc.CultureId === cultureId) ?? null;
+        return this.CultureIdFallback.find((cc) => cc.CultureId === cultureId) ?? null;
     }
 
 
@@ -154,11 +142,12 @@ export class DataTypeServices implements IDataTypeServices {
             lookupKey = this.IdentifyLookupKey(value);
         if (lookupKey === null)
             throw new Error('Value type requires a LookupKey');
-        let cultureId: string | null = this._activeCultureID;
+        let cultureId: string | null = this.Services.ActiveCultureId;
         while (cultureId) {
-            let cc = this.GetCultureConfig(cultureId);
+            let cc = this.GetCultureIdFallback(cultureId);
             if (!cc)
-                break;  // hand off to additionalFormatters
+        //!!! change this to logging error.
+                throw new Error(`Need to support CultureID ${cultureId} in DataTypeServices.`);
             let dtlf = this.GetLocalizedFormatter(lookupKey, cultureId);
             if (dtlf)
                 try {
@@ -441,7 +430,7 @@ export class DataTypeServices implements IDataTypeServices {
  * Supplies a fallback CultureID if the culture requested did not have any support.
  * Used by DataTypeServices. Pass an array of these into the DataTypeServices constructor.
  */
-export interface CultureConfig {
+export interface CultureIdFallback {
     /**
      * The ISO culture name pattern in use:
      * languagecode
