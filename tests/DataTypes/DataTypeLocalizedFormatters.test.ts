@@ -774,7 +774,7 @@ describe('BooleanLocalizedFormatter', () => {
             'en': 'enFALSE',
             'es': 'esFALSE'
         });        
-        let testItem = new BooleanLocalizedFormatter(BooleanLookupKey, '!TRUE|true', '!FALSE|false');
+        let testItem = new BooleanLocalizedFormatter(BooleanLookupKey, 'true', 'false', 'TRUE', 'FALSE');
         testItem.Services = services;
         
         let dts = testItem.Format(true, BooleanLookupKey, 'en');    // uses global default

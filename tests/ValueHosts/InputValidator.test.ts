@@ -21,6 +21,7 @@ import { type ICondition, ConditionEvaluateResult, ConditionCategory } from '../
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
 import { ValidationSeverity, IValidateOptions } from '../../src/Interfaces/Validation';
 import { IInputValidateResult, IInputValidator, IInputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
+import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 
 // subclass of InputValidator to expose many of its protected members so they
 // can be individually tested
@@ -417,6 +418,26 @@ describe('InputValidator.Severity', () => {
     });
 });
 
+function SetupForLocalization(activeCultureID: string): PublicifiedInputValidator
+{
+    let config = SetupWithField1AndField2({
+        ErrorMessage: 'EM-fallback',
+        ErrorMessagel10n: 'EM',
+        SummaryErrorMessage: 'SEM-fallback',
+        SummaryErrorMessagel10n: 'SEM'
+    });               
+    let tlService = config.services.TextLocalizerService as TextLocalizerService;
+    tlService.Register('EM', {
+        'en': 'enErrorMessage',
+        'es': 'esErrorMessage'
+    });
+    tlService.Register('SEM', {
+        'en': 'enSummaryErrorMessage',
+        'es': 'esSummaryErrorMessage'
+    });        
+    config.services.DataTypeServices.ActiveCultureId = activeCultureID;
+    return config.inputValidator;
+}
 describe('InputValidator.GetErrorMessageTemplate', () => {
     test('Descriptor.ErrorMessage = string, return the same string', () => {
         let config = SetupWithField1AndField2({
@@ -441,6 +462,30 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
 
         expect(() => config.inputValidator.ExposeGetErrorMessageTemplate()).toThrow(/Descriptor\.ErrorMessage/);
     });
+
+    test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
+        let testItem = SetupForLocalization('en');
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');        
+    });
+
+    test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
+        let testItem = SetupForLocalization('en-US');
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');        
+    });    
+
+    test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
+        let testItem = SetupForLocalization('es-SP');
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('esErrorMessage');        
+    });    
+
+    test('TextLocalizationService not setup for fr language and active culture of fr uses ErrorMessage property', () => {
+        let testItem = SetupForLocalization('fr');
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');        
+    });    
+    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses ErrorMessage property', () => {
+        let testItem = SetupForLocalization('fr-FR');
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');        
+    });        
 });
 describe('InputValidator.GetSummaryErrorMessageTemplate', () => {
     test('Descriptor.SummaryErrorMessage = string, return the same string', () => {
@@ -484,6 +529,31 @@ describe('InputValidator.GetSummaryErrorMessageTemplate', () => {
 
         expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Local');
     });
+
+    test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
+        let testItem = SetupForLocalization('en');
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('enSummaryErrorMessage');        
+    });
+
+    test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
+        let testItem = SetupForLocalization('en-US');
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('enSummaryErrorMessage');        
+    });    
+
+    test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
+        let testItem = SetupForLocalization('es-SP');
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('esSummaryErrorMessage');        
+    });    
+
+    test('TextLocalizationService not setup for fr language and active culture of fr uses SummaryErrorMessage property', () => {
+        let testItem = SetupForLocalization('fr');
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('SEM-fallback');        
+    });    
+    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses SummaryErrorMessage property', () => {
+        let testItem = SetupForLocalization('fr-FR');
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('SEM-fallback');        
+    });        
+
 });
 // Validate(group?: string): IIssueFound | null
 describe('InputValidator.Validate', () => {

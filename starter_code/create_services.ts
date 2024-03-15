@@ -263,18 +263,22 @@ export function CreateTextLocalizerService(): ITextLocalizerService
     // Here we provide localized text for "true", "false", "yes", and "no",
     // all used by the BooleanLocalizedFormatter.
     service.Register('TRUE', {
+        '*': 'true',
         'en': 'true',
         'es': 'verdadero'
     });
     service.Register('FALSE', {
+        '*': 'false',
         'en': 'false',
         'es': 'falso'
     });    
     service.Register('YES', {
+        '*': 'yes',
         'en': 'yes',
         'es': 'sí'
     });
     service.Register('NO', {
+        '*': 'no',
         'en': 'no',
         'es': 'no'
     });    

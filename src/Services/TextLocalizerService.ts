@@ -1,113 +1,60 @@
 /**
  * @module Services/TextLocalizerServices
  */
-import { ITextLocalizerService, TextParts } from "../Interfaces/TextLocalizerService";
+import { ITextLocalizerService } from "../Interfaces/TextLocalizerService";
 import { CultureLanguageCode } from "../Utilities/Utilities";
 
 /**
  * A service to offer text alternatives to the default text
  * based on cultureId.
  * This implementation is independent of third party libraries
- * that you may be using. Thus, you may prefer to implement
- * ITextLocalizerService yourself.
+ * that you may be using. 
+ * Thus, you may prefer to implement ITextLocalizerService yourself.
  * 
- * The "sourceText" passed into these functions has a specific syntax:
- * !TextKey|default text
- * For example:
- * TrueLabel="!YES|yes"
- * ErrorMessage="!RequiresText|This field requires text".
- * 
- * The TextKey is limited to letters, digits, and underscore.
- * This value is CASE SENSITIVE.
- * 
- * Use that syntax when you setup an error message or values output
- * by IDataTypeLocalizedFormatters. For example, 
- * YesNoBooleanLocalizedFormatter supports "yes" and "no",
- * using TrueLabel="!yes|yes" and FalseLabel="!no|no".
- * 
- * The syntax can be omitted, leaving the entire string for the text 
- * that will be output.
- * TrueLabel="yes"
- * ErrorMessage="This field requires text".
+ * There are two text values associated with localization:
+ * - A lookup key. A short code that maps to the actual string for each culture.
+ * - Fallback text. The text supplied when the lookup key does not have
+ *   anything to offer for the given culture.
  */
 export class TextLocalizerService implements ITextLocalizerService
 {
     /**
      * Returns the localized version of the text for the given culture.
-     * Will try the language-countrycode format
-     * and fallback to language only.
-     * If nothing is matched, it returns the default text, which is in the source text.
-     * @param cultureIdToMatch - It will only use the language code part, like 'en' in 'en-US'
-     * @param sourceText - It must start with ! in order to be localized.
-     * Anything that doesn't get localized will be returned verbatim.
-     * So this has a TextID: "!hello|hola", "!hello"
-     * This does not: "hola", "hello|hola"
-     * @returns The localized text or the original text.
+     * Will try the language from the culture ('en' from 'en-US')
+     * and a code called '*' to be used as a general fallback. You will have to 
+     * register the '*' code along with your language code translations if you want
+     * support of '*'.
+     * service.Register('TRUE', {
+     *     '*': 'true',
+     *     'en': 'true',
+     *     'es': 'verdadero'
+     * });
+     * If nothing is matched, it returns the fallback text.
+     * @param cultureIdToMatch - It will only use the language code part, like 'en' in 'en-US'.
+     * It will always attempt to match to '*' if the language code doesn't match.
+     * @param l10nKey - Localization key, which is the text that identifies which word,
+     * phrase, or other block of text is requested. If '' or null, no localization is requested.
+     * @param fallback - Used when there was no match for the culture or '*'.
+     * Only supply '' if you are sure that registered data will always supply a value.
+     * @returns The localized text or the fallback text.
      */
-    public Localize(cultureIdToMatch: string, sourceText: string): string
+    public Localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string): string
     {
-        // some quick tests before getting a regular expression involved...
-        if (!sourceText || sourceText.length < 2)
-            return sourceText;
-        if (sourceText[0] !== '!')  // doesn't have a textKey
-            return sourceText;
-        let parts = this.IdentifyParts(sourceText);
-        if (parts.TextKey)
-        {
-            let mapped = this._textKeyMap.get(parts.TextKey);
-            if (mapped)
-            {
-                let text = mapped[CultureLanguageCode(cultureIdToMatch)];
-                if (text !== undefined)
-                    return text;
-                text = mapped['*'];
-                if (text !== undefined)
-                    return text;
-            }
-        }
-        return parts.FallbackText;
-    }
+        if (!l10nKey)   // including '', null and undefined
+            return fallback;
 
-    /**
-     * Converts the source text into the two parts it may have:
-     * textKey and default text.
-     * @param sourceText - String contains the default text and if appropriate, a
-     * textKey to select the correct localized text.
-     * Implementations can define the format of this string.
-     * If the sourcetext isn't setup to be localized, the result will be 
-     * TextKey: null and DefaultText = sourceText.
-     * If the sourceText is entirely the textKey, the result will be 
-     * TextKey=textKey
-     * DefaultText = ''
-     */
-    public IdentifyParts(sourceText: string): TextParts
-    {
-        if (!this._partsRegExp)
-            this._partsRegExp = this.CreatePartsRegExp();
-        let m = this._partsRegExp!.exec(sourceText);
-        if (m)
+        let mapped = this._textKeyMap.get(l10nKey);
+        if (mapped)
         {
-            let textKey = null;
-            let fallbackText = '';
-            if (m.groups && m.groups['textKey'] !== undefined)
-                textKey = m.groups['textKey'] ?? null;
-            if (m.groups && m.groups['text'] !== undefined)
-                fallbackText = m.groups['text'] ?? '';
-            return {
-                TextKey: textKey,
-                FallbackText: fallbackText
-            }
+            let text = mapped[CultureLanguageCode(cultureIdToMatch)];
+            if (text !== undefined)
+                return text;
+            text = mapped['*'];
+            if (text !== undefined)
+                return text;
         }
-        return {
-            TextKey: null,
-            FallbackText: sourceText
-        }
+        return fallback;
     }
-    protected CreatePartsRegExp(): RegExp
-    {
-        return /^\!(?<textKey>[\w]+)(\|(?<text>[\w\W]*))?$/i;
-    }
-    private _partsRegExp: RegExp | null = null;
 
     /**
      * Registers a textKey with the culture specific text.

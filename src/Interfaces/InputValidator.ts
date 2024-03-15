@@ -151,8 +151,19 @@ export interface IInputValidatorDescriptor {
      * * function - Returns the error message, given the InputValidator,
      *   allowing you to replace or customize the message during validation.
      *   The function must return a string, although an empty string is valid.
+     * When localization is setup in ErrorMessagel10n, the value can be set to ''
+     * so long as your TextLocalizerService ALWAYS returns the text.
+     * Otherwise, this should be the fallback.
      */
     ErrorMessage: string | ((host: IInputValidator) => string);
+
+    /**
+     * Localization key for ErrorMessage. Its value will be matched to an entry
+     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * If setup and no entry was found in TextLocalizerService,
+     * the value from the ErrorMessage property is used.
+     */
+    ErrorMessagel10n?: string | null | undefined;
     /**
      * Variation of the ErrorMessage intended to be displayed in a Validation Summary area.
      * A summary is usually not near the field with the error. 
@@ -164,8 +175,19 @@ export interface IInputValidatorDescriptor {
      * * function - Returns the error message, given the InputValidator,
      *   allowing you to replace or customize the message during validation.
      *   The function must return a string, although an empty string is valid.
+     * When localization is setup in SummaryErrorMessagel10n, the value can be set to ''
+     * so long as your TextLocalizerService ALWAYS returns the text.
+     * Otherwise, this should be the fallback.
      */
     SummaryErrorMessage?: undefined | null | string | ((host: IInputValidator) => string);
+
+    /**
+     * Localization key for SummaryErrorMessage. Its value will be matched to an entry
+     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * If setup and no entry was found in TextLocalizerService,
+     * the value from the ErrorMessage property is used.
+     */
+    SummaryErrorMessagel10n?: string | null | undefined;    
 }
 
 /**

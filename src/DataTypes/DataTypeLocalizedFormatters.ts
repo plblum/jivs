@@ -456,13 +456,25 @@ export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBas
  */
 export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFormatterBase
 {
-    constructor(dataTypeLookupKey: string, trueLabel?: string, falseLabel?: string)
+    /**
+     * Constructor
+     * @param dataTypeLookupKey - Formatter lookup key must match this value
+     * @param trueLabel - text for 'true'
+     * @param falseLabel - text for 'false'
+     * @param trueLabell10n - localization key for trueLabel
+     * @param falseLabell10n - localization key for falseLabel
+     */
+    constructor(dataTypeLookupKey: string,
+        trueLabel?: string, falseLabel?: string,
+        trueLabell10n?: string, falseLabell10n?: string)
     {
         super();
         this._dataTypeLookupKey = dataTypeLookupKey ?? BooleanLookupKey;
         let defaults = this.GetDefaultLabels();
         this._trueLabel = trueLabel ?? defaults.TrueLabel ?? 'true';
         this._falseLabel = falseLabel ?? defaults.FalseLabel ?? 'false';
+        this._trueLabell10n = trueLabell10n ?? defaults.TrueLabell10n ?? null;
+        this._falseLabell10n = falseLabell10n ?? defaults.FalseLabell10n ?? null;
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
@@ -483,6 +495,18 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
     private _trueLabel: string;
 
     /**
+     * Localization key for TrueLabel. Its value will be matched to an entry
+     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * If setup and no entry was found in TextLocalizerService,
+     * the value from the TrueLabel property is used.
+     */
+
+    public get TrueLabell10n(): string | null
+    {
+        return this._trueLabell10n;
+    }
+    private _trueLabell10n: string | null;
+    /**
      * Text shown the user for a value of false
     * To provide localization of "true" and "false", set up
     * ValidationServices.TextLocalizerService with text keys, cultures and
@@ -495,7 +519,20 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
     }
     private _falseLabel: string;
 
-    protected abstract GetDefaultLabels(): { TrueLabel: string, FalseLabel: string };    
+    /**
+     * Localization key for FalseLabel. Its value will be matched to an entry
+     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * If setup and no entry was found in TextLocalizerService,
+     * the value from the FalseLabel property is used.
+     */
+
+    public get FalseLabell10n(): string | null
+    {
+        return this._falseLabell10n;
+    }
+    private _falseLabell10n: string | null;
+
+    protected abstract GetDefaultLabels(): DefaultLabelsForBoolean;    
 
     public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
         if (typeof value === 'boolean') {
@@ -509,23 +546,46 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
     protected FormatBoolean(value: boolean, cultureId: string): IDataTypeResolution<string>
     {
         let text = value ? this.TrueLabel : this.FalseLabel;
+        let l10n = value ? this.TrueLabell10n : this.FalseLabell10n;
         if (this.HasServices) {
             text = this.Services.TextLocalizerService.Localize(
-                cultureId, text);
+                cultureId, l10n, text);
         }
         return { Value: text };
     }
 }
+export interface DefaultLabelsForBoolean
+{
+    TrueLabel: string,
+    FalseLabel: string,
+    TrueLabell10n: string,
+    FalseLabell10n: string
+}
+
 /**
  * Supports BooleanLookupKey, and provides 'true' and 'false' labels
- * for all cultures unless you provide alternatives into the constructor.
+ * for all cultures unless you provide alternatives into the constructor
+ * or setup localization with the TextLocalizerService.
+ * It defaults to 'TRUE' as the localization key for true
+ * and 'FALSE' as the localization key for false.
  * LookupKey: "Boolean" or whatever the user supplies.
  */
 export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
 {
-    constructor(dataTypeLookupKey: string, trueLabel?: string, falseLabel?: string)
+    /**
+     * Constructor
+     * @param dataTypeLookupKey - Formatter lookup key must match this value
+     * @param trueLabel - text for 'true'
+     * @param falseLabel - text for 'false'
+     * @param trueLabell10n - localization key for trueLabel
+     * @param falseLabell10n - localization key for falseLabel
+     */
+    constructor(dataTypeLookupKey: string,
+        trueLabel?: string, falseLabel?: string,
+        trueLabell10n?: string, falseLabell10n?: string)
     {
-        super(dataTypeLookupKey ?? BooleanLookupKey, trueLabel, falseLabel);
+        super(dataTypeLookupKey ?? BooleanLookupKey, trueLabel, falseLabel,
+            trueLabell10n, falseLabell10n);
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -533,10 +593,12 @@ export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
         return true;
     }
 
-    protected GetDefaultLabels(): { TrueLabel: string, FalseLabel: string } {
+    protected GetDefaultLabels(): DefaultLabelsForBoolean {
         return {
             TrueLabel: 'true',
-            FalseLabel: 'false'
+            FalseLabel: 'false',
+            TrueLabell10n: 'TRUE',
+            FalseLabell10n: 'FALSE'
         };
     }
 }
