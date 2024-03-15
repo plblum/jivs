@@ -456,14 +456,19 @@ export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBas
  */
 export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFormatterBase
 {
-    constructor(trueLabel?: string, falseLabel?: string)
+    constructor(dataTypeLookupKey: string, trueLabel?: string, falseLabel?: string)
     {
         super();
+        this._dataTypeLookupKey = dataTypeLookupKey ?? BooleanLookupKey;
         let defaults = this.GetDefaultLabels();
         this._trueLabel = trueLabel ?? defaults.TrueLabel ?? 'true';
         this._falseLabel = falseLabel ?? defaults.FalseLabel ?? 'false';
     }
-
+    protected get ExpectedLookupKeys(): string | Array<string>
+    {
+        return this._dataTypeLookupKey;
+    }
+    private _dataTypeLookupKey: string;
     /**
      * Text shown the user for a value of true.
     * To provide localization of "true" and "false", set up
@@ -514,16 +519,13 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
 /**
  * Supports BooleanLookupKey, and provides 'true' and 'false' labels
  * for all cultures unless you provide alternatives into the constructor.
+ * LookupKey: "Boolean" or whatever the user supplies.
  */
 export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
 {
-    constructor(trueLabel?: string, falseLabel?: string)
+    constructor(dataTypeLookupKey: string, trueLabel?: string, falseLabel?: string)
     {
-        super(trueLabel, falseLabel);
-    }
-    protected get ExpectedLookupKeys(): string | Array<string>
-    {
-        return BooleanLookupKey;
+        super(dataTypeLookupKey ?? BooleanLookupKey, trueLabel, falseLabel);
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -537,54 +539,6 @@ export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
             FalseLabel: 'false'
         };
     }
-}
-
-/**
- * Supports YesNoBooleanLookupKey, and provides 'yes' and 'no' labels
- * for all cultures unless you provide alternatives into the constructor.
- */
-export class YesNoBooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
-{
-    constructor(trueLabel?: string, falseLabel?: string)
-    {
-        super(trueLabel, falseLabel);
-    }
-    protected get ExpectedLookupKeys(): string | Array<string>
-    {
-        return YesNoBooleanLookupKey;
-    }
-
-    protected SupportsCulture(cultureId: string): boolean
-    {
-        return true;
-    }
-
-    protected GetDefaultLabels(): { TrueLabel: string, FalseLabel: string } {
-        return {
-            TrueLabel: 'yes',
-            FalseLabel: 'no'
-        };
-    }    
-}
-/**
- * Supports Boolean data types by mapping the labels
- * for "true" and "false" to language specific values.
- */
-export interface CultureToBooleanLabels
-{
-    /**
-     * Which culture is associated with these labels.
-     * It can be just the country code, like 'en'
-     */
-    CultureId: string;
-    /**
-     * Text to show the user when the value is true.
-     */
-    TrueLabel: string;
-    /**
-     * Text to show the user when the value is false.
-     */
-    FalseLabel: string;
 }
 
 /**

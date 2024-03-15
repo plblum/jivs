@@ -16,11 +16,14 @@ import {
     StringLocalizedFormatter, NumberLocalizedFormatter, IntegerLocalizedFormatter, DateLocalizedFormatter, CapitalizeStringLocalizedFormatter,
     UppercaseStringLocalizedFormatter, LowercaseStringLocalizedFormatter, DateTimeLocalizedFormatter, AbbrevDateLocalizedFormatter,
     AbbrevDOWDateLocalizedFormatter, LongDateLocalizedFormatter, LongDOWDateLocalizedFormatter, TimeofDayLocalizedFormatter, TimeofDayHMSLocalizedFormatter,
-    BooleanLocalizedFormatter, YesNoBooleanLocalizedFormatter, CurrencyLocalizedFormatter, PercentageLocalizedFormatter, Percentage100LocalizedFormatter
+    BooleanLocalizedFormatter, CurrencyLocalizedFormatter, PercentageLocalizedFormatter, Percentage100LocalizedFormatter
 } from "../src/DataTypes/DataTypeLocalizedFormatters";
 import { CultureConfig, DataTypeServices } from "../src/DataTypes/DataTypeServices";
+import { BooleanLookupKey, YesNoBooleanLookupKey } from "../src/DataTypes/LookupKeys";
 import { LoggingLevel } from "../src/Interfaces/Logger";
+import { ITextLocalizerService } from "../src/Interfaces/TextLocalizerService";
 import { ConsoleLogger } from "../src/Services/ConsoleLogger";
+import { TextLocalizerService } from "../src/Services/TextLocalizerService";
 import { ValidationServices } from "../src/Services/ValidationServices";
 import { MessageTokenResolver } from './../src/ValueHosts/MessageTokenResolver';
 
@@ -47,6 +50,11 @@ export function CreateValidationServices(): ValidationServices {
     // --- DataTypeServices services -------------------------------------
     // Plenty to configure here. See CreateDataTypeServices function below.
     vs.DataTypeServices = CreateDataTypeServices();
+
+    // --- Text localization service
+    // The built-in class, TextLocalizerService, doesn't use a third party localization
+    // library. If you prefer one, create a class that implements ITextLocalizerService
+    vs.TextLocalizerService = CreateTextLocalizerService();
 
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLogger and another, create the other
@@ -218,18 +226,12 @@ export function RegisterDataTypeLocalizedFormatters(dts: DataTypeServices): void
 
     dts.RegisterLocalizedFormatter(new PercentageLocalizedFormatter());     // options?: Intl.NumberFormatOptions
     dts.RegisterLocalizedFormatter(new Percentage100LocalizedFormatter());  // options?: Intl.NumberFormatOptions
-    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter());        // cultureToLabels?: Array<CultureToBooleanLabels>
-    // example parameter supporting english and spanish: 
-    // [
-    //   { CultureId: 'en', TrueLabel: 'true', FalseLabel: 'false' },
-    //   { CultureId: 'es', TrueLabel: 'verdadero', FalseLabel: 'falso' },    
-    // ]
-    dts.RegisterLocalizedFormatter(new YesNoBooleanLocalizedFormatter());   // cultureToLabels?: Array<CultureToBooleanLabels>
-    // example parameter supporting english and spanish: 
-    // [
-    //   { CultureId: 'en', TrueLabel: 'yes', FalseLabel: 'no' },
-    //   { CultureId: 'es', TrueLabel: 'sí', FalseLabel: 'no' },    
-    // ]    
+    // NOTE: BooleanLocalizedFormatter has its strings localized in ValidationServices.TextLocalizerService
+    // connected to the TrueLabell10n and FalseLabell10n properties.
+    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(BooleanLookupKey)); // "true" and "false"
+   // Example of providing another set of labels for true/false by supplying a different lookup key
+    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(YesNoBooleanLookupKey, 'yes', 'no')); 
+ 
 }
 
 // 4. IDataTypeConverters
@@ -249,4 +251,32 @@ export function RegisterDataTypeConverters(dts: DataTypeServices): void
 export function RegisterDataTypeComparers(dts: DataTypeServices): void
 {
     dts.RegisterDataTypeComparer(new BooleanDataTypeComparer());
+}
+
+export function CreateTextLocalizerService(): ITextLocalizerService
+{
+    let service = new TextLocalizerService();
+    // the following is specific to TextLocalizerService class
+    // and simply an example of working with it.
+    // Feel free to replace this code in supporting your own
+    // ITextLocalizerService implementation.
+    // Here we provide localized text for "true", "false", "yes", and "no",
+    // all used by the BooleanLocalizedFormatter.
+    service.Register('TRUE', {
+        'en': 'true',
+        'es': 'verdadero'
+    });
+    service.Register('FALSE', {
+        'en': 'false',
+        'es': 'falso'
+    });    
+    service.Register('YES', {
+        'en': 'yes',
+        'es': 'sí'
+    });
+    service.Register('NO', {
+        'en': 'no',
+        'es': 'no'
+    });    
+    return service;
 }

@@ -681,7 +681,7 @@ describe('Other functions in DataTypeServices', () => {
     test('UnregisterLocalizedFormatter', () => {
         let testItem = new DataTypeServices('en');
         testItem.RegisterLocalizedFormatter(new NumberLocalizedFormatter());
-        testItem.RegisterLocalizedFormatter(new BooleanLocalizedFormatter());
+        testItem.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(BooleanLookupKey));
         expect(testItem.UnregisterLocalizedFormatter(NumberLookupKey, 'en')).toBe(true);
         expect(testItem.UnregisterLocalizedFormatter(NumberLookupKey, 'en')).toBe(false);
         expect(testItem.UnregisterLocalizedFormatter(BooleanLookupKey, 'en')).toBe(true);
