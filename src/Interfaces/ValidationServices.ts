@@ -40,6 +40,11 @@ export interface IBasicValidationServices {
  * Full interface representation of ValidationServices.
  */
 export interface IValidationServices extends IBasicValidationServices {
+/**
+ * The culture shown to the user in the app. Its the ISO language-region format.
+   This value is the starting point to search through localizations.
+ */    
+    ActiveCultureId: string;
 
     /**
      * Factory to create Condition objects.

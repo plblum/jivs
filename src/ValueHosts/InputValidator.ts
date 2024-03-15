@@ -196,7 +196,7 @@ export class InputValidator implements IInputValidator {
         if (typeof msg == 'function')
             msg = msg(this);
         if (this.Descriptor.ErrorMessagel10n)
-            msg = this.Services.TextLocalizerService.Localize(this.Services.DataTypeServices.ActiveCultureId,
+            msg = this.Services.TextLocalizerService.Localize(this.Services.ActiveCultureId,
                 this.Descriptor.ErrorMessagel10n, msg);
         if (msg == null)  // null/undefined
             throw new Error('Must supply a value for Descriptor.ErrorMessage');
@@ -214,7 +214,7 @@ export class InputValidator implements IInputValidator {
         if (typeof msg == 'function')
             msg = msg(this);
         if (this.Descriptor.SummaryErrorMessagel10n)
-            msg = this.Services.TextLocalizerService.Localize(this.Services.DataTypeServices.ActiveCultureId,
+            msg = this.Services.TextLocalizerService.Localize(this.Services.ActiveCultureId,
                 this.Descriptor.SummaryErrorMessagel10n, msg ?? '');
         if (msg == null)
             return this.GetErrorMessageTemplate();

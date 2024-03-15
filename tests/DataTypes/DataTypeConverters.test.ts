@@ -21,7 +21,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.Convert("abc", CaseInsensitiveStringLookupKey)).toBe("abc");
         });
         test('Within DataTypeServices', () => {
-            let testItem = new DataTypeServices('en'); 
+            let testItem = new DataTypeServices(); 
             testItem.RegisterDataTypeConverter(new CaseInsensitiveStringConverter());
             expect(testItem.CompareValues("ABC", "ABC", CaseInsensitiveStringLookupKey, CaseInsensitiveStringLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues("ABC", "abc", CaseInsensitiveStringLookupKey, CaseInsensitiveStringLookupKey)).toBe(ComparersResult.Equals);
@@ -55,7 +55,7 @@ describe('DataTypeConverter concrete classes', () => {
             let date1 = new Date(Date.UTC(2000, 10, 1));
             let date2 = new Date(Date.UTC(2000, 10, 1, 2, 3, 4));
             
-            let testItem = new DataTypeServices('en'); 
+            let testItem = new DataTypeServices(); 
             testItem.RegisterDataTypeConverter(new DateTimeConverter());
             expect(testItem.CompareValues(date1, date1, DateTimeLookupKey, DateTimeLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues(date1, date2, DateTimeLookupKey, DateTimeLookupKey)).toBe(ComparersResult.LessThan);
@@ -98,7 +98,7 @@ describe('DataTypeConverter concrete classes', () => {
             let date7 = new Date(Date.UTC(2000, 10, 1, 23, 59, 59));
             let date8 = new Date(Date.UTC(2001, 10, 1));
             
-            let testItem = new DataTypeServices('en'); 
+            let testItem = new DataTypeServices(); 
             testItem.RegisterDataTypeConverter(new UTCDateOnlyConverter());
             expect(testItem.CompareValues(date1, date1, DateLookupKey, DateLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues(date1, date2, DateLookupKey, DateLookupKey)).toBe(ComparersResult.Equals);
@@ -145,7 +145,7 @@ describe('DataTypeConverter concrete classes', () => {
             let date7 = new Date(2000, 10, 1, 23, 59, 59);
             let date8 = new Date(2001, 10, 1);
             
-            let testItem = new DataTypeServices('en'); 
+            let testItem = new DataTypeServices(); 
             testItem.RegisterDataTypeConverter(new LocalDateOnlyConverter());
             expect(testItem.CompareValues(date1, date1, LocalDateLookupKey, LocalDateLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues(date1, date2, LocalDateLookupKey, LocalDateLookupKey)).toBe(ComparersResult.Equals);
@@ -189,7 +189,7 @@ describe('DataTypeConverter concrete classes', () => {
             let date1 = new Date(Date.UTC(2000, 10, 1));
             let date2 = new Date(Date.UTC(2000, 10, 1, 2, 3, 4));
             
-            let testItem = new DataTypeServices('en'); 
+            let testItem = new DataTypeServices(); 
             testItem.RegisterDataTypeConverter(new TimeOfDayOnlyConverter());
             expect(testItem.CompareValues(date1, date1, TimeOfDayLookupKey, TimeOfDayLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues(date1, date2, TimeOfDayLookupKey, TimeOfDayLookupKey)).toBe(ComparersResult.LessThan);
@@ -230,7 +230,7 @@ describe('DataTypeConverter concrete classes', () => {
             let date2 = new Date(Date.UTC(2000, 10, 1, 2, 3, 4));
             let date3 = new Date(Date.UTC(2023, 0, 1, 4, 30, 5));      
 
-            let testItem = new DataTypeServices('en'); 
+            let testItem = new DataTypeServices(); 
             testItem.RegisterDataTypeConverter(new TimeOfDayHMSOnlyConverter());
             expect(testItem.CompareValues(date1, date1, TimeOfDayHMSLookupKey, TimeOfDayHMSLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues(date1, date2, TimeOfDayHMSLookupKey, TimeOfDayHMSLookupKey)).toBe(ComparersResult.LessThan);
@@ -263,7 +263,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.Convert(-1.9999, IntegerLookupKey)).toBe(-2);
         });
         test('Within DataTypeServices', () => {
-            let testItem = new DataTypeServices('en'); 
+            let testItem = new DataTypeServices(); 
             testItem.RegisterDataTypeConverter(new IntegerConverter());
             expect(testItem.CompareValues(10, 10, IntegerLookupKey, IntegerLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues(4.2, 4, IntegerLookupKey, IntegerLookupKey)).toBe(ComparersResult.Equals);
@@ -294,7 +294,7 @@ describe('DataTypeConverter concrete classes', () => {
             let date1 = new Date(Date.UTC(2000, 10, 2));
             let date2 = new Date(Date.UTC(2000, 10, 2, 5, 4, 3));         
             let date3 = new Date(Date.UTC(2001, 10, 2));
-            let testItem = new DataTypeServices('en'); 
+            let testItem = new DataTypeServices(); 
             testItem.RegisterDataTypeConverter(new TotalDaysConverter());
             expect(testItem.CompareValues(date1, date1, TotalDaysLookupKey, TotalDaysLookupKey)).toBe(ComparersResult.Equals);
             expect(testItem.CompareValues(date1, date2, TotalDaysLookupKey, TotalDaysLookupKey)).toBe(ComparersResult.Equals);

@@ -13,6 +13,7 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
 
         let testItem = new ValidationServices();
         // check defaults for factories and services
+        expect(testItem.ActiveCultureId).toBe('en');        
         let x: any;
         expect(() => x = testItem.ConditionFactory).toThrow(/ConditionFactory/);
         expect(() => x = testItem.DataTypeServices).toThrow(/DataTypeServices/);
@@ -32,7 +33,7 @@ describe('Replace factories and services', () => {
         expect(testItem.ConditionFactory).toBe(replacement);
     });
     test('Replace DataTypeServices', () => {
-        let replacement = new DataTypeServices('en');
+        let replacement = new DataTypeServices();
         let testItem = new ValidationServices();
         testItem.DataTypeServices = replacement;
         expect(testItem.DataTypeServices).toBe(replacement);
@@ -69,7 +70,12 @@ describe('Replace factories and services', () => {
         testItem.InputValidatorFactory = replacement;
         expect(testItem.InputValidatorFactory).toBe(replacement);
     });    
-    
+    test('Replace ActiveCultureID', () => {
+        let replacement = 'fr';
+        let testItem = new ValidationServices();
+        testItem.ActiveCultureId = replacement;
+        expect(testItem.ActiveCultureId).toBe(replacement);
+    });    
 });
 describe('ValueHostFactory', () => {
     test('Set and Get', () => {

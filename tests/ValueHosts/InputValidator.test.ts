@@ -435,7 +435,7 @@ function SetupForLocalization(activeCultureID: string): PublicifiedInputValidato
         'en': 'enSummaryErrorMessage',
         'es': 'esSummaryErrorMessage'
     });        
-    config.services.DataTypeServices.ActiveCultureId = activeCultureID;
+    config.services.ActiveCultureId = activeCultureID;
     return config.inputValidator;
 }
 describe('InputValidator.GetErrorMessageTemplate', () => {

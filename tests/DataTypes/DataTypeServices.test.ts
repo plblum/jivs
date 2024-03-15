@@ -2,7 +2,7 @@
 import { UTCDateOnlyConverter } from '../../src/DataTypes/DataTypeConverters';
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, StringDataTypeIdentifier } from '../../src/DataTypes/DataTypeIdentifiers';
 import { NumberDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
-import { CultureConfig, DataTypeServices } from "../../src/DataTypes/DataTypeServices";
+import { CultureIdFallback, DataTypeServices } from "../../src/DataTypes/DataTypeServices";
 import { StringLookupKey, NumberLookupKey, BooleanLookupKey, DateLookupKey } from "../../src/DataTypes/LookupKeys";
 import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier, IDataTypeLocalizedFormatter, IDataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { RegisterDataTypeIdentifiers, RegisterDataTypeLocalizedFormatters } from "../../starter_code/create_services";
@@ -14,16 +14,16 @@ import { MockValidationManager, MockValidationServices } from '../Mocks';
 describe('DataTypeServices constructor and properties', () => {
     class Publicified_DataTypeServices extends DataTypeServices
     {
-        constructor(activeCultureID: string, cultureConfig?: Array<CultureConfig> | null) {
-            super(activeCultureID, cultureConfig);
+        constructor(cultureConfig?: Array<CultureIdFallback> | null) {
+            super(cultureConfig);
         }
-        public get ExposedCultureConfig(): Array<CultureConfig>
+        public get ExposedCultureIdFallback(): Array<CultureIdFallback>
         {
-            return this.CultureConfig;
+            return this.CultureIdFallback;
         }
-        public ExposedGetCultureConfig(cultureId: string): CultureConfig | null
+        public ExposedGetCultureIdFallback(cultureId: string): CultureIdFallback | null
         {
-            return this.GetCultureConfig(cultureId);
+            return this.GetCultureIdFallback(cultureId);
         }
         public ExposedGetLocalizedFormatters(): Array<IDataTypeLocalizedFormatter>
         {
@@ -47,12 +47,10 @@ describe('DataTypeServices constructor and properties', () => {
         }
     }
     
-    test('Constructor with no parameters sets up ActiveCultureId of en, one CultureConfig, and empty registered data lists', () => {
-        let testItem = new Publicified_DataTypeServices('en');
-        expect(testItem.ActiveCultureId).toBe('en');
-        expect(testItem.ExposedCultureConfig).toEqual([{
-            CultureId: 'en'
-        }]);
+    test('Constructor with no parameters', () => {
+        let testItem = new Publicified_DataTypeServices();
+
+        expect(()=> testItem.ExposedCultureIdFallback).toThrow(/CultureIdFallback/)
         expect(testItem.ExposedGetDataTypeIdentifiers()).toEqual([]);
         expect(testItem.ExposedGetLocalizedFormatters()).toEqual([]);
         expect(testItem.ExposedGetDataTypeConverters()).toEqual([]);
@@ -60,15 +58,30 @@ describe('DataTypeServices constructor and properties', () => {
         expect(() => testItem.Services).toThrow(/Attach/);
 
     });
-    test('Constructor with cultureID of fr sets up ActiveCultureId of fr', () => {
-        let testItem = new Publicified_DataTypeServices('fr');
-        expect(testItem.ActiveCultureId).toBe('fr');
-        expect(testItem.ExposedCultureConfig).toEqual([{
-            CultureId: 'fr'
-        }]);
+
+    test('Attach Services returns the same instance', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new Publicified_DataTypeServices();
+        expect(() => testItem.Services = services).not.toThrow();
+        let x: any;
+        expect(() => x = testItem.Services).not.toThrow();
+        expect(x).toBe(services);
+        expect(testItem.ExposedCultureIdFallback).toEqual([{
+            CultureId: 'en'
+        }]);        
     });
-    test('Constructor with cultureID of fr and DataTypeLocalization for en and fr', () => {
-        let ccs: Array<CultureConfig> = [
+    test('Attach Services supports use of ActiveCultureID', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new Publicified_DataTypeServices();
+        services.ActiveCultureId = 'fr';
+        testItem.Services = services;
+
+        expect(testItem.ExposedCultureIdFallback).toEqual([{
+            CultureId: 'fr'
+        }]);        
+    });    
+    test('Constructor with CultureFallbacks can retrieve the fr CultureFallback', () => {
+        let ccs: Array<CultureIdFallback> = [
             {
                 CultureId: 'en',
                 FallbackCultureId: null
@@ -78,21 +91,20 @@ describe('DataTypeServices constructor and properties', () => {
                 FallbackCultureId: 'en'
             }
         ];
-        let testItem = new Publicified_DataTypeServices('fr', ccs);
-        expect(testItem.ActiveCultureId).toBe('fr');
-        expect(testItem.ExposedCultureConfig).toEqual(ccs);
-    });    
-    test('Attach Services returns the same instance', () => {
         let services = new MockValidationServices(false, false);
-        let testItem = new DataTypeServices('en');
-        expect(() => testItem.Services = services).not.toThrow();
-        let x: any;
-        expect(() => x = testItem.Services).not.toThrow();
-        expect(x).toBe(services);
-    });
+        let testItem = new Publicified_DataTypeServices(ccs);
+        testItem.Services = services;
+
+        expect(testItem.ExposedCultureIdFallback).toEqual(ccs);
+        services.ActiveCultureId = 'fr';
+        expect(testItem.ExposedGetCultureIdFallback('fr')).toEqual({
+            CultureId: 'fr',
+            FallbackCultureId: 'en'
+        });
+    });        
 });
 
-function CreateCultureConfigsForEn(): Array<CultureConfig>
+function CreateCultureIdFallbacksForEn(): Array<CultureIdFallback>
 {
     return [
         {
@@ -117,7 +129,7 @@ function CreateCultureConfigsForEn(): Array<CultureConfig>
         },        
     ];
 }
-function CreateCultureConfigsForFR(): Array<CultureConfig>
+function CreateCultureIdFallbacksForFR(): Array<CultureIdFallback>
 {
     return [
         {
@@ -141,8 +153,8 @@ function CreateCultureConfigsForFR(): Array<CultureConfig>
 }
 describe('GetClosestCultureId', () => {
     test('Various', () => {
-        let ccs = CreateCultureConfigsForEn();
-        let testItem = new DataTypeServices('en', ccs);
+        let ccs = CreateCultureIdFallbacksForEn();
+        let testItem = new DataTypeServices(ccs);
         expect(testItem.GetClosestCultureId('en')).toBe('en');
         expect(testItem.GetClosestCultureId('fr')).toBe('fr');
         expect(testItem.GetClosestCultureId('fr-FR')).toBe('fr-FR');
@@ -155,10 +167,13 @@ describe('GetClosestCultureId', () => {
 })
 
 
-export function CreateDataTypeServicesWithManyCultures(registerFormatters: boolean = false): DataTypeServices
+export function CreateDataTypeServicesWithManyCultures(activeCultureId: string, registerFormatters: boolean = false): DataTypeServices
 {
-    let ccs = CreateCultureConfigsForEn();
-    let dts = new DataTypeServices('en', ccs);
+    let services = new MockValidationServices(false, false);
+    services.ActiveCultureId = activeCultureId;
+    let ccs = CreateCultureIdFallbacksForEn();
+    let dts = new DataTypeServices(ccs);
+    dts.Services = services;
     RegisterDataTypeIdentifiers(dts);   // always
     if (registerFormatters)
         RegisterDataTypeLocalizedFormatters(dts);
@@ -168,11 +183,11 @@ export function CreateDataTypeServicesWithManyCultures(registerFormatters: boole
 // Format(value: any, lookupKey?: string): IDataTypeResolution<string>
 describe('DataTypeServices.Format', () => {
     test('No lookupKey not resolved by data type error', () => {
-        let testItem = CreateDataTypeServicesWithManyCultures();
+        let testItem = CreateDataTypeServicesWithManyCultures('en');
         expect(() => testItem.Format({})).toThrow(/LookupKey/);
     });
     test('Unsupported lookupKey error', () => {
-        let testItem = CreateDataTypeServicesWithManyCultures();
+        let testItem = CreateDataTypeServicesWithManyCultures('en');
         expect(() => testItem.Format(0, 'huh')).toThrow(/LookupKey/);
     });
 
@@ -196,56 +211,52 @@ describe('DataTypeServices.Format', () => {
     }
 
     test('Lookup Key in DataTypeLocalization en', () => {
-        let testItem = CreateDataTypeServicesWithManyCultures(true);
+        let testItem = CreateDataTypeServicesWithManyCultures('en', true);
         testItem.RegisterLocalizedFormatter(new TestLocalizedFormatter(['en'], 'EN TestKey'));
-        testItem.ActiveCultureId = 'en';
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'en TestKey' });
     });     
     test('Lookup Key in DataTypeLocalization en using fallback from en-GB', () => {
-        let testItem = CreateDataTypeServicesWithManyCultures(true);
+        let testItem = CreateDataTypeServicesWithManyCultures('en-GB', true);
         testItem.RegisterLocalizedFormatter(new TestLocalizedFormatter(['en'], 'EN TestKey'));
-        testItem.ActiveCultureId = 'en-GB';
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'en TestKey' });
     });        
     test('Lookup Key in DataTypeLocalization en and en-GB gets from en-GB', () => {
-        let testItem = CreateDataTypeServicesWithManyCultures(true);
+        let testItem = CreateDataTypeServicesWithManyCultures('en-GB', true);
         testItem.RegisterLocalizedFormatter(new TestLocalizedFormatter(['en', 'en-GB'], 'EN TestKey'));
-        testItem.ActiveCultureId = 'en-GB';
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'en-GB TestKey' });
     }); 
     test('Date to string using built-in Localization', () => {
-        let testItem = CreateDataTypeServicesWithManyCultures(true);
+        let testItem = CreateDataTypeServicesWithManyCultures('en', true);
         let date = new Date(2000, 0, 11);
-        testItem.ActiveCultureId = 'en-GB';
+        testItem.Services.ActiveCultureId = 'en-GB';
         expect(testItem.Format(date)).toEqual({ Value: '11/01/2000' });
-        testItem.ActiveCultureId = 'en';
+        testItem.Services.ActiveCultureId = 'en';
         expect(testItem.Format(date)).toEqual({ Value: '1/11/2000' });
-        testItem.ActiveCultureId = 'fr';
+        testItem.Services.ActiveCultureId = 'fr';
         expect(testItem.Format(date)).toEqual({ Value: '11/01/2000' });
     });    
     test('Number to string using built-in Localization', () => {
-        let testItem = CreateDataTypeServicesWithManyCultures(true);
+        let testItem = CreateDataTypeServicesWithManyCultures('en', true);
         let value = 4000.932;
-        testItem.ActiveCultureId = 'en-GB';
+        testItem.Services.ActiveCultureId = 'en-GB';
         expect(testItem.Format(value)).toEqual({ Value: '4,000.932' });
-        testItem.ActiveCultureId = 'en';
+        testItem.Services.ActiveCultureId = 'en';
         expect(testItem.Format(value)).toEqual({ Value: '4,000.932' });
-        testItem.ActiveCultureId = 'fr';
+        testItem.Services.ActiveCultureId = 'fr';
         expect(testItem.Format(value)).toEqual({ Value: '4\u{202F}000,932' });
     });        
     test('String to string using built-in Localization. Expect no changes', () => {
-        let testItem = CreateDataTypeServicesWithManyCultures(true);
+        let testItem = CreateDataTypeServicesWithManyCultures('en', true);
         let value = 'abcZYX';
-        testItem.ActiveCultureId = 'en-GB';
+        testItem.Services.ActiveCultureId = 'en-GB';
         expect(testItem.Format(value)).toEqual({ Value: value });
-        testItem.ActiveCultureId = 'en';
+        testItem.Services.ActiveCultureId = 'en';
         expect(testItem.Format(value)).toEqual({ Value: value });
-        testItem.ActiveCultureId = 'fr';
+        testItem.Services.ActiveCultureId = 'fr';
         expect(testItem.Format(value)).toEqual({ Value: value });
     });
     test('Lookup Key supplied not compatible with native data type error', () => {
-        let testItem = CreateDataTypeServicesWithManyCultures(true);
-        testItem.ActiveCultureId = 'en';
+        let testItem = CreateDataTypeServicesWithManyCultures('en', true);
         expect(testItem.Format(10, DateLookupKey).ErrorMessage).not.toBeUndefined();
         expect(testItem.Format(10, BooleanLookupKey).ErrorMessage).not.toBeUndefined();
         expect(testItem.Format('10', NumberLookupKey).ErrorMessage).not.toBeUndefined();
@@ -293,12 +304,12 @@ describe('DataTypeServices.RegisterDataTypeComparer', () => {
         }
     }    
     test('Invalid parameters', () => {
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         expect(() => testItem.RegisterDataTypeComparer(null!)).toThrow(/comparer/);
     });
     test('New comparer that handles numbers with custom type and datatype lookup resolved by IDataTypeIdentifier', () => {
 
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new TestIdentifier());
         expect(() => testItem.RegisterDataTypeComparer(new TestComparer())).not.toThrow();
 
@@ -317,7 +328,7 @@ describe('DataTypeServices.RegisterDataTypeComparer', () => {
 
     test('New comparer that handles numbers with custom type and datatype lookup resolved by LookupKey', () => {
 
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new TestIdentifier());
         expect(() => testItem.RegisterDataTypeComparer(new TestComparer())).not.toThrow();
 
@@ -337,7 +348,7 @@ describe('DataTypeServices.RegisterDataTypeComparer', () => {
 // CompareValues(value1: any, value2: any, lookupKey: string | null): ComparersResult
 describe('DataTypeServices.CompareValues', () => {
     test('Number value resolves lookupKey and correctly handles comparisons', () => {
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new NumberDataTypeIdentifier());
         expect(testItem.CompareValues(0, 0, null, null)).toBe(ComparersResult.Equals);
         expect(testItem.CompareValues(0, 0, null, null)).toBe(ComparersResult.Equals);
@@ -368,7 +379,7 @@ describe('DataTypeServices.CompareValues', () => {
                 return value.Quantity;
             }
         }
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new NumberDataTypeIdentifier());
         testItem.RegisterDataTypeIdentifier(new SupportTestDataType());
         testItem.RegisterDataTypeConverter(new TestConverter());        
@@ -380,14 +391,14 @@ describe('DataTypeServices.CompareValues', () => {
 
     
     test('String value resolves lookupKey and correctly handles comparisons', () => {
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new StringDataTypeIdentifier());
         expect(testItem.CompareValues('A', 'A', null, null)).toBe(ComparersResult.Equals);
         expect(testItem.CompareValues('B', 'A', null, null)).toBe(ComparersResult.GreaterThan);
         expect(testItem.CompareValues('A', 'B', null, null)).toBe(ComparersResult.LessThan);        
     });    
     test('Boolean value resolves lookupKey and correctly handles comparisons', () => {
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new BooleanDataTypeIdentifier());
         testItem.RegisterDataTypeComparer(new BooleanDataTypeComparer());
         expect(testItem.CompareValues(true, true, null, null)).toBe(ComparersResult.Equals);
@@ -398,7 +409,7 @@ describe('DataTypeServices.CompareValues', () => {
     test('Date value resolves lookupKey and correctly handles comparisons', () => {
         let date1 = new Date(2000, 5, 31);
         let date2 = new Date(2000, 5, 30);
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new DateDataTypeIdentifier());
         testItem.RegisterDataTypeConverter(new UTCDateOnlyConverter());
 
@@ -430,7 +441,7 @@ describe('DataTypeServices.CompareValues', () => {
                 return value.DateValue;
             }
         }
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new DateDataTypeIdentifier());
         testItem.RegisterDataTypeConverter(new UTCDateOnlyConverter());
         testItem.RegisterDataTypeIdentifier(new SupportTestDataType());
@@ -445,12 +456,12 @@ describe('DataTypeServices.CompareValues', () => {
     });               
     
     test('Unsupported data type for lookupKey assignment error', () => {
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         expect(() => testItem.CompareValues({}, 'A', null, null)).toThrow(/operand/);
         expect(() => testItem.CompareValues(testItem /* some class */, 'A', null, null)).toThrow(/operand/);
     });    
     test('Fallback to DefaultComparer for unsupported lookupKey', () => {
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new StringDataTypeIdentifier());
 
         expect(testItem.CompareValues('A', 'A', 'Key1', null)).toBe(ComparersResult.Equals);
@@ -503,7 +514,7 @@ describe('DataTypeServices.CompareValues', () => {
         let test1 = new HoldsDate(2000, 1, 5);
         let test2 = new HoldsDate(2000, 1, 6);
         let test3 = new HoldsDate(2000, 1, 12);
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new HoldsDateIdentifier());
         testItem.RegisterDataTypeConverter(new HoldsDateConverter());
         testItem.RegisterDataTypeComparer(new DayOfWeekComparer());
@@ -518,7 +529,7 @@ describe('DataTypeServices utility methods', () => {
 
     // IdentifyLookupKey(value: any): string
     test('IdentifyLookupKey', () => {
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         RegisterDataTypeIdentifiers(testItem);
         expect(testItem.IdentifyLookupKey(0)).toBe(NumberLookupKey);
         expect(testItem.IdentifyLookupKey('abc')).toBe(StringLookupKey);
@@ -537,7 +548,7 @@ describe('DataTypeServices utility methods', () => {
             }
 
         }
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         RegisterDataTypeIdentifiers(testItem);
         testItem.RegisterDataTypeIdentifier(new TestIdentifier());
         expect(testItem.IdentifyLookupKey(new TestDataType())).toBe('TEST');
@@ -557,7 +568,7 @@ describe('DataTypeServices utility methods', () => {
             }
 
         }
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         RegisterDataTypeIdentifiers(testItem);
         testItem.RegisterDataTypeIdentifier(new TestIdentifier());
         expect(testItem.IdentifyLookupKey(new TestDataType())).toBe(DateLookupKey);
@@ -585,7 +596,7 @@ describe('DataTypeServices utility methods', () => {
                 return value.Quantity;
             }
         }
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeConverter(new TestConverter());
         let result = testItem.GetDataTypeConverter(new TestDataType(10), null);
         expect(result).not.toBeNull();
@@ -602,7 +613,7 @@ describe('DataTypeServices utility methods', () => {
             Quantity: number;
         }
 
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
 
         let result = testItem.GetDataTypeConverter(new TestDataType(10), null);
         expect(result).toBeNull();
@@ -626,7 +637,7 @@ describe('DataTypeServices utility methods', () => {
                 return value.Quantity;
             }
         }
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeConverter(new TestConverter());
         let result = testItem.GetDataTypeConverter(new TestDataType2(), null);
         expect(result).toBeNull();
@@ -664,7 +675,7 @@ describe('DataTypeServices utility methods', () => {
                 return value.Message;
             }
         }
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterDataTypeConverter(new TestConverter());
         testItem.RegisterDataTypeConverter(new TestConverter2());
         let result = testItem.GetDataTypeConverter(new TestDataType(10), null);
@@ -679,7 +690,7 @@ describe('DataTypeServices utility methods', () => {
 });
 describe('Other functions in DataTypeServices', () => {
     test('UnregisterLocalizedFormatter', () => {
-        let testItem = new DataTypeServices('en');
+        let testItem = new DataTypeServices();
         testItem.RegisterLocalizedFormatter(new NumberLocalizedFormatter());
         testItem.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(BooleanLookupKey));
         expect(testItem.UnregisterLocalizedFormatter(NumberLookupKey, 'en')).toBe(true);
