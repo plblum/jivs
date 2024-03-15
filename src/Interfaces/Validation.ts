@@ -3,6 +3,7 @@
  * @module ValueHosts/Interfaces
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
+import { IInputValidateResult } from "./InputValidator";
 
 /**
  * Parameter for the Validate method on InputValueHost and ValidationManager.
@@ -54,12 +55,21 @@ export interface IValidateResult {
     /**
      * The state of validation for this ValueHost.
      */
-    ValidationResult: ValidationResult,
+    ValidationResult: ValidationResult;
 
     /**
      * The issues that were found.
      */
-    IssuesFound: Array<IIssueFound> | null
+    IssuesFound: Array<IIssueFound> | null;
+
+    /**
+     * Any promises returned by InputValidator.Validate
+     * These still need to finish before supplying their evaluation results.
+     * When either null or undefined, nothing is pending.
+     * There should never be an empty array as the presence of an array
+     * will make the system think there are promises pending.
+     */
+    Pending?: Array<Promise<IInputValidateResult>> | null;
 }
 
 
@@ -68,20 +78,28 @@ export interface IValidateResult {
  * The state of validation for this ValueHost.
  */
 export enum ValidationResult {
-    // Indicates that Validate has yet to be attempted
-    // Once attempted, it will always be one of the other results
+    /**
+     * Indicates that Validate has yet to be attempted
+     * Once attempted, it will always be one of the other results
+     */
     NotAttempted,
-    // Indicates that either Value or InputValue was changed
-    // but has yet to be validated.
+    /**
+     * Indicates that either Value or InputValue was changed
+     * but has yet to be validated.
+     */
     ValueChangedButUnvalidated,
-    // Validation was not run, including when the InputValidator.Severity is Off.
+    /**
+     * Validation was not run, including when the InputValidator.Severity is Off.
+     */
     Undetermined,
-    // The validation is underway in an async function.
-    // When that function is resolved, it will change to any of the other states including (undetermined)
-    AsyncProcessing,
-    // Validation completed with all Conditions evaluating as Match
+
+    /**
+     * Validation completed with all Conditions evaluating as Match
+     */
     Valid,
-    // Validation completed with at least one Condition evaluating as NoMatch
+    /**
+     * Validation completed with at least one Condition evaluating as NoMatch
+     */
     Invalid
 }
 export const ValidationResultString = [

@@ -21,7 +21,7 @@ export abstract class StringConditionBase<TConditionDescriptor extends IStringCo
      * This function checks both in valueHost to determine a string source.
      * @param valueHostResolver 
      */
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
         let value = this.ResolveValue(valueHost);
         if (value === undefined)

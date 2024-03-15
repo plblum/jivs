@@ -53,7 +53,7 @@ export abstract class ConditionBase<TConditionDescriptor extends IConditionDescr
      * to a value host instead.
      * @param valueHostResolver 
      */
-    public abstract Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
+    public abstract Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
      * Data that supports the business rule defined in Evaluate.

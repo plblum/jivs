@@ -1365,7 +1365,7 @@ describe('InputValueHost.ClearValidation', () => {
 });
 // DoNotSaveNativeValue(): boolean
 describe('InputValueHost.DoNotSaveNativeValue', () => {
-    function TryDoNotSaveNativeValue(initialValidationResult: ValidationResult, expectedResult: boolean): void {
+    function TryDoNotSaveNativeValue(initialValidationResult: ValidationResult, hasPendings: boolean, expectedResult: boolean): void {
         let ivDescriptor: IInputValidatorDescriptor = {
             ConditionDescriptor: { Type: NeverMatchesConditionType },
             ErrorMessage: ''
@@ -1376,7 +1376,8 @@ describe('InputValueHost.DoNotSaveNativeValue', () => {
         let state: Partial<IInputValueHostState> = {
             Id: 'Field1',
             ValidationResult: initialValidationResult,
-            IssuesFound: []
+            IssuesFound: [],
+            Pending: hasPendings ? [] : null    // empty array is enough to indicate pendings exist
         };
 
         let config = SetupInputValueHostForValidate(ivDescriptors, state);
@@ -1384,19 +1385,19 @@ describe('InputValueHost.DoNotSaveNativeValue', () => {
         expect(config.valueHost.DoNotSaveNativeValue()).toBe(expectedResult);
     }
     test('ValidationResult = Valid, DoNotSaveNativeValue=false', () => {
-        TryDoNotSaveNativeValue(ValidationResult.Valid, false);
+        TryDoNotSaveNativeValue(ValidationResult.Valid, false, false);
     });
     test('ValidationResult = Undetermined, DoNotSaveNativeValue=false', () => {
-        TryDoNotSaveNativeValue(ValidationResult.Undetermined, false);
+        TryDoNotSaveNativeValue(ValidationResult.Undetermined, false, false);
     });
     test('ValidationResult = Invalid, DoNotSaveNativeValue=true', () => {
-        TryDoNotSaveNativeValue(ValidationResult.Invalid, true);
+        TryDoNotSaveNativeValue(ValidationResult.Invalid, false, true);
     });
-    test('ValidationResult = AsyncProcessing, DoNotSaveNativeValue=true', () => {
-        TryDoNotSaveNativeValue(ValidationResult.AsyncProcessing, true);
+    test('ValidationResult = Valid but with async pending, DoNotSaveNativeValue=true', () => {
+        TryDoNotSaveNativeValue(ValidationResult.Valid, true, true);
     });
     test('ValidationResult = ValueChangedButUnvalidated, DoNotSaveNativeValue=true', () => {
-        TryDoNotSaveNativeValue(ValidationResult.ValueChangedButUnvalidated, true);
+        TryDoNotSaveNativeValue(ValidationResult.ValueChangedButUnvalidated, false, true);
     });
 
 });

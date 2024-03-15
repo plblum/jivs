@@ -147,7 +147,7 @@ Someone will code all of those validation rules in a way that Jivs can apply the
 You build validation rules using the Condition concept. A Condition simply packages a function to evaluate data together with a few other properties. Here is its interface:
 ```ts
 interface ICondition {
-    Evaluate(valueHost, valueHostResolver): ConditionEvaluateResult;
+    Evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
     Category: ConditionCategory;
     ConditionType: string;
 }

@@ -272,6 +272,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     protected ClearValidationStateChanges(stateToUpdate: TState): void {
         stateToUpdate.ValidationResult = ValidationResult.NotAttempted;
         stateToUpdate.IssuesFound = null;
+        delete stateToUpdate.Pending;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
         delete stateToUpdate.ConversionErrorTokenValue;
         delete stateToUpdate.BusinessLogicErrors;
     }
@@ -282,10 +283,11 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     public DoNotSaveNativeValue(): boolean {
         switch (this.ValidationResult) {
             case ValidationResult.Invalid:
-            case ValidationResult.AsyncProcessing:
             case ValidationResult.ValueChangedButUnvalidated:
                 return true;
             default:
+                if (this.State.Pending) // async running so long as not null
+                    return true;
                 return false;
         }
     }

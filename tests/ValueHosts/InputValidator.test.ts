@@ -562,9 +562,11 @@ describe('InputValidator.Validate', () => {
         let config = SetupWithField1AndField2();
         config.valueHost1.SetInputValue('valid');
 
-        let vrResult: IInputValidateResult | null = null;
+        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
+        expect(vrResult).not.toBeInstanceOf(Promise);
+        vrResult = vrResult as unknown as IInputValidateResult;
         expect(vrResult!.IssueFound).toBeNull();
         expect(vrResult!.ConditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
     });
@@ -573,9 +575,11 @@ describe('InputValidator.Validate', () => {
             Severity: severity
         });
         config.valueHost1.SetInputValue('');   // will be invalid
-        let vrResult: IInputValidateResult | null = null;
+        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
+        expect(vrResult).not.toBeInstanceOf(Promise);
+        vrResult = vrResult as unknown as IInputValidateResult;
         expect(vrResult!.IssueFound).not.toBeNull();
         expect(vrResult!.IssueFound!.ConditionType).toBe(RequiredTextConditionType);
         expect(vrResult!.IssueFound!.Severity).toBe(severity);
@@ -598,9 +602,11 @@ describe('InputValidator.Validate', () => {
             SummaryErrorMessage: summaryErrorMessage,
         });
         config.valueHost1.SetInputValue('');   // will be an issue
-        let vrResult: IInputValidateResult | null = null;
+        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
+        expect(vrResult).not.toBeInstanceOf(Promise);
+        vrResult = vrResult as unknown as IInputValidateResult;
         expect(vrResult!.IssueFound).not.toBeNull();
 
         let issueFound = vrResult!.IssueFound;
@@ -623,9 +629,11 @@ describe('InputValidator.Validate', () => {
         logger.MinLevel = LoggingLevel.Info;  // to confirm logged condition result        
         config.valueHost1.SetInputValue('');   // will be invalid
         config.valueHost2.SetInputValue('');   // for use by Enabler to be invalid
-        let vrResult: IInputValidateResult | null = null;
+        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
+        expect(vrResult).not.toBeInstanceOf(Promise);
+        vrResult = vrResult as unknown as IInputValidateResult;
         expect(vrResult!.IssueFound).toBeNull();
 
         // 2 info level log entries: bailout and validation result
@@ -660,9 +668,11 @@ describe('InputValidator.Validate', () => {
         logger.MinLevel = LoggingLevel.Info;  // to confirm logged condition result
         config.valueHost1.SetInputValue('');   // will be invalid
         config.valueHost2.SetInputValue('ABC');   // for use by Enabler to enable the condition
-        let vrResult: IInputValidateResult | null = null;
+        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate(validateOptions)).not.toThrow();
         expect(vrResult).not.toBeNull();
+        expect(vrResult).not.toBeInstanceOf(Promise);
+        vrResult = vrResult as unknown as IInputValidateResult;        
         if (issueExpected)
             expect(vrResult!.IssueFound).not.toBeNull();
         else
@@ -750,8 +760,11 @@ describe('InputValidator.Validate', () => {
 
         let logger = config.services.LoggerService as MockCapturingLogger;
         logger.MinLevel = LoggingLevel.Info;  // to confirm logged condition result
-        let vrResult: IInputValidateResult | null = null;
+        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
+        expect(vrResult).not.toBeNull();
+        expect(vrResult).not.toBeInstanceOf(Promise);
+        vrResult = vrResult as unknown as IInputValidateResult;
         expect(vrResult).not.toBeNull();
         expect(vrResult!.IssueFound).toBeNull();
         expect(vrResult!.ConditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);

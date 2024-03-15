@@ -248,7 +248,7 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
 {
     public static get DefaultConditionType(): string { return RangeConditionType; }
     
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
         let value = valueHost.GetValue();
         if (value == null)  // includes undefined
@@ -330,7 +330,7 @@ export const CompareToConditionType = 'Range';
  */
 export abstract class CompareToConditionBase<TDescriptor extends ICompareToConditionDescriptor> extends OneValueConditionBase<TDescriptor>
 {
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
         let value = valueHost.GetValue();
         if (value == null)  // null/undefined
