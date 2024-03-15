@@ -193,7 +193,7 @@ describe('ResolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolver();
-        vm.Services.DataTypeServices.ActiveCultureId = 'de-DE';  // not configured in LA
+        vm.Services.ActiveCultureId = 'de-DE';  // not configured in LA
         expect(testItem.ResolveTokens('{token:' + NumberLookupKey + '}', null!, vm, messageTokeSource)).toBe('{token:' + NumberLookupKey + '}');
         expect(logger.EntryCount()).toBe(2);
         expect(logger.GetLatest()?.Level).toBe(LoggingLevel.Warn);
