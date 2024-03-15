@@ -9,16 +9,46 @@
  */
 
 import { IDataTypeLocalizedFormatter, IDataTypeResolution } from "../Interfaces/DataTypes";
-import { CultureCountryCode } from "../Utilities/Utilities";
+import { IServicesAccessor, IValidationServices } from "../Interfaces/ValidationServices";
+import { CodingError } from "../Utilities/ErrorHandling";
+import { CultureLanguageCode } from "../Utilities/Utilities";
 import { AbbrevDOWDateLookupKey, AbbrevDateLookupKey, BooleanLookupKey, CapitalizeStringLookupKey, CurrencyLookupKey, DateLookupKey, DateTimeLookupKey, IntegerLookupKey, LongDOWDateLookupKey, LongDateLookupKey, LowercaseStringLookupKey, NumberLookupKey, Percentage100LookupKey, PercentageLookupKey, ShortDateLookupKey, StringLookupKey, TimeOfDayHMSLookupKey, TimeOfDayLookupKey, UppercaseStringLookupKey, YesNoBooleanLookupKey } from "./LookupKeys";
 
 /**
  * Abstract implementation of IDataTypeLocalizedFormatter.
  */
-export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocalizedFormatter
+export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocalizedFormatter, IServicesAccessor
 {
-    protected abstract get ExpectedLookupKey(): string;
+    /**
+     * Services accessor.
+     * Note: Not passed into the constructor because this object should be created before
+     * ValidationServices itself. So it gets assigned when ValidationService.DataTypeServices is assigned a value.
+     */
+    public get Services(): IValidationServices
+    {
+        if (!this._services)
+            throw new CodingError('Register with DataTypeServices first.');
+        return this._services;
+    }
+    public set Services(services: IValidationServices)
+    {
+        this._services = services;
+    }
+    protected get HasServices(): boolean
+    {
+        return this._services !== null;
+    }
+    private _services: IValidationServices | null = null;
+    
+    /**
+     * The DataTypeLookup key(s) that this class supports.
+     */
+    protected abstract get ExpectedLookupKeys(): string | Array<string> | Array<string>;
 
+    /**
+     * Return true so long as the CultureId is supported by this class.
+     * @param cultureId 
+     */
     protected abstract SupportsCulture(cultureId: string): boolean;
     /**
      * Evaluates the parameters to determine if its Format method should handle the value
@@ -31,7 +61,7 @@ export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocaliz
      * @returns Use its Format method when true. Do not use Format when false.
      */
     public Supports(dataTypeLookupKey: string, cultureId: string): boolean {
-        return this.MatchingLookupKeys(dataTypeLookupKey, this.ExpectedLookupKey) &&
+        return this.MatchingLookupKeys(dataTypeLookupKey, this.ExpectedLookupKeys) &&
             this.SupportsCulture(cultureId);
     }
 
@@ -62,12 +92,24 @@ export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocaliz
      * @param luk2 
      * @returns 
      */
-    protected MatchingLookupKeys(luk1: string, luk2: string): boolean
+    protected MatchingLookupKeys(luk1: string, luk2: string | Array<string>): boolean
     {
-        if (luk1.length === luk2.length)    // to avoid converting two strings when its obvious we don't need to
+        function Try(a: string, b: string): boolean
         {
-            return luk1.toLocaleLowerCase() === luk2.toLocaleLowerCase();
+            if (a.length === b.length)    // to avoid converting two strings when its obvious we don't need to
+            {
+                return a.toLocaleLowerCase() === b.toLocaleLowerCase();
+            }
+            return false;            
         }
+        if (Array.isArray(luk2))
+        {
+            for (let i = 0; i < luk2.length; i++)
+                if (Try(luk1, luk2[i]))
+                    return true;
+        }
+        else if (Try(luk1, luk2))
+            return true;
         return false;
     }
 }
@@ -75,7 +117,7 @@ export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocaliz
  * For StringLookupKey. Culture neutral.
  */
 export class StringLocalizedFormatter extends DataTypeLocalizedFormatterBase {
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return StringLookupKey;
     }
@@ -97,7 +139,7 @@ export class StringLocalizedFormatter extends DataTypeLocalizedFormatterBase {
  */
 export class CapitalizeStringLocalizedFormatter extends DataTypeLocalizedFormatterBase
 {
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return CapitalizeStringLookupKey;
     }
@@ -122,7 +164,7 @@ export class CapitalizeStringLocalizedFormatter extends DataTypeLocalizedFormatt
  */
 export class UppercaseStringLocalizedFormatter extends DataTypeLocalizedFormatterBase
 {
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return UppercaseStringLookupKey;
     }
@@ -146,7 +188,7 @@ export class UppercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
  */
 export class LowercaseStringLocalizedFormatter extends DataTypeLocalizedFormatterBase
 {
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return LowercaseStringLookupKey;
     }
@@ -228,7 +270,7 @@ export class NumberLocalizedFormatter extends NumberLocalizedFormatterBase
     {
         super(options);
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return NumberLookupKey;
     }
@@ -255,7 +297,7 @@ export class IntegerLocalizedFormatter extends NumberLocalizedFormatterBase
     {
         super(options);
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return IntegerLookupKey;
     }
@@ -308,7 +350,7 @@ export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
     }
     private _cultureToCurrencyCode: { [cultureId: string]: string } | null;
 
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return CurrencyLookupKey;
     }
@@ -331,7 +373,7 @@ export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
         let currencyCode = this._defaultCurrencyCode;
         if (this._cultureToCurrencyCode)
             currencyCode = this._cultureToCurrencyCode[cultureId] ??
-                this._cultureToCurrencyCode[CultureCountryCode(cultureId)] ??
+                this._cultureToCurrencyCode[CultureLanguageCode(cultureId)] ??
                 this._defaultCurrencyCode;
         return currencyCode;
     }
@@ -353,7 +395,7 @@ export class PercentageLocalizedFormatter extends NumberLocalizedFormatterBase
             style: "percent",
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return PercentageLookupKey;
     }
@@ -381,7 +423,7 @@ export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBas
             style: "percent",
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return Percentage100LookupKey;
     }
@@ -407,18 +449,48 @@ export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBas
  * This base class lets you supply a list of cultures and the text
  * that you want to use for true and false.
  * If not supplied, it defaults to "true" and "false".
+ * To provide localization of "true" and "false", set up
+ * ValidationServices.TextLocalizerService with text keys, cultures and
+ * translations. Then provide values for TrueLabel and FalseLabel
+ * when registering this class in the DataTypeServices.
  */
 export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFormatterBase
 {
-    constructor(cultureToLabels?: Array<CultureToBooleanLabels>| null)
+    constructor(trueLabel?: string, falseLabel?: string)
     {
         super();
-        this._cultureToLabels = cultureToLabels ?? [];
+        let defaults = this.GetDefaultLabels();
+        this._trueLabel = trueLabel ?? defaults.TrueLabel ?? 'true';
+        this._falseLabel = falseLabel ?? defaults.FalseLabel ?? 'false';
     }
-    private _cultureToLabels: Array<CultureToBooleanLabels>;
 
-    protected abstract DefaultCultureToLabels(): CultureToBooleanLabels;
+    /**
+     * Text shown the user for a value of true.
+    * To provide localization of "true" and "false", set up
+    * ValidationServices.TextLocalizerService with text keys, cultures and
+    * translations. Then provide values for TrueLabel and FalseLabel
+    * when registering this class in the DataTypeServices.
+     */
+    public get TrueLabel(): string
+    {
+        return this._trueLabel;
+    }
+    private _trueLabel: string;
 
+    /**
+     * Text shown the user for a value of false
+    * To provide localization of "true" and "false", set up
+    * ValidationServices.TextLocalizerService with text keys, cultures and
+    * translations. Then provide values for TrueLabel and FalseLabel
+    * when registering this class in the DataTypeServices.
+      */
+    public get FalseLabel(): string
+    {
+        return this._falseLabel;
+    }
+    private _falseLabel: string;
+
+    protected abstract GetDefaultLabels(): { TrueLabel: string, FalseLabel: string };    
 
     public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
         if (typeof value === 'boolean') {
@@ -431,15 +503,12 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
     }
     protected FormatBoolean(value: boolean, cultureId: string): IDataTypeResolution<string>
     {
-        let tolabels = this._cultureToLabels.find((cbl) => cbl.CultureId === cultureId) ?? null;
-        if (!tolabels) {
-            let lang = CultureCountryCode(cultureId);
-            if (lang && lang !== cultureId)
-                tolabels = this._cultureToLabels.find((cbl) => cbl.CultureId === lang) ?? null;
+        let text = value ? this.TrueLabel : this.FalseLabel;
+        if (this.HasServices) {
+            text = this.Services.TextLocalizerService.Localize(
+                cultureId, text);
         }
-        if (!tolabels)
-            tolabels = this.DefaultCultureToLabels();
-        return { Value: value ? tolabels!.TrueLabel : tolabels!.FalseLabel }
+        return { Value: text };
     }
 }
 /**
@@ -448,11 +517,11 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
  */
 export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
 {
-    constructor(cultureToLabels?: Array<CultureToBooleanLabels>| null)
+    constructor(trueLabel?: string, falseLabel?: string)
     {
-        super(cultureToLabels);
+        super(trueLabel, falseLabel);
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return BooleanLookupKey;
     }
@@ -462,9 +531,8 @@ export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
         return true;
     }
 
-    protected DefaultCultureToLabels(): CultureToBooleanLabels {
+    protected GetDefaultLabels(): { TrueLabel: string, FalseLabel: string } {
         return {
-            CultureId: '',
             TrueLabel: 'true',
             FalseLabel: 'false'
         };
@@ -477,11 +545,11 @@ export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
  */
 export class YesNoBooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
 {
-    constructor(cultureToLabels?: Array<CultureToBooleanLabels>| null)
+    constructor(trueLabel?: string, falseLabel?: string)
     {
-        super(cultureToLabels);
+        super(trueLabel, falseLabel);
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return YesNoBooleanLookupKey;
     }
@@ -491,9 +559,8 @@ export class YesNoBooleanLocalizedFormatter extends BooleanLocalizedFormatterBas
         return true;
     }
 
-    protected DefaultCultureToLabels(): CultureToBooleanLabels {
+    protected GetDefaultLabels(): { TrueLabel: string, FalseLabel: string } {
         return {
-            CultureId: '',
             TrueLabel: 'yes',
             FalseLabel: 'no'
         };
@@ -594,7 +661,7 @@ export class DateTimeLocalizedFormatter extends DateTimeLocalizedFormatterBase
             minute: "numeric",
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return DateTimeLookupKey;
     }
@@ -623,9 +690,9 @@ export class DateLocalizedFormatter extends DateTimeLocalizedFormatterBase
             day: "numeric"
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return DateLookupKey;
+        return [DateLookupKey, ShortDateLookupKey];
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -657,7 +724,7 @@ export class AbbrevDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
             day: "numeric"
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return AbbrevDateLookupKey;
     }
@@ -688,7 +755,7 @@ export class AbbrevDOWDateLocalizedFormatter extends DateTimeLocalizedFormatterB
             weekday: "short"
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return AbbrevDOWDateLookupKey;
     }
@@ -718,7 +785,7 @@ export class LongDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
             day: "numeric"
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return LongDateLookupKey;
     }
@@ -749,7 +816,7 @@ export class LongDOWDateLocalizedFormatter extends DateTimeLocalizedFormatterBas
             weekday: "long"
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return LongDOWDateLookupKey;
     }
@@ -778,7 +845,7 @@ export class TimeofDayLocalizedFormatter extends DateTimeLocalizedFormatterBase
             minute: "numeric",
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return TimeOfDayLookupKey;
     }
@@ -808,7 +875,7 @@ export class TimeofDayHMSLocalizedFormatter extends DateTimeLocalizedFormatterBa
             second: "numeric"
         };
     }
-    protected get ExpectedLookupKey(): string
+    protected get ExpectedLookupKeys(): string | Array<string>
     {
         return TimeOfDayHMSLookupKey;
     }

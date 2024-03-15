@@ -6,6 +6,7 @@ import { MockCapturingLogger } from "../Mocks";
 import { InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ConsoleLogger } from "../../src/Services/ConsoleLogger";
+import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
     test('Has parameters', () => {
@@ -19,7 +20,7 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(testItem.LoggerService).toBeInstanceOf(ConsoleLogger);
         expect(testItem.ValueHostFactory).toBeInstanceOf(ValueHostFactory);
         expect(testItem.InputValidatorFactory).toBeInstanceOf(InputValidatorFactory);
-        
+        expect(testItem.TextLocalizerService).toBeInstanceOf(TextLocalizerService);
     });
 });
 describe('Replace factories and services', () => {
@@ -36,6 +37,13 @@ describe('Replace factories and services', () => {
         testItem.DataTypeServices = replacement;
         expect(testItem.DataTypeServices).toBe(replacement);
     });
+    test('Replace TextLocalizerService', () => {
+        let replacement = new TextLocalizerService();
+
+        let testItem = new ValidationServices();
+        testItem.TextLocalizerService = replacement;
+        expect(testItem.TextLocalizerService).toBe(replacement);
+    });    
     test('Replace MessageTokenResolverService', () => {
         let replacement = new MessageTokenResolver();
 

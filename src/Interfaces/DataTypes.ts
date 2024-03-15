@@ -3,6 +3,8 @@
  * @module DataTypes/Interfaces
  */
 
+import { IServicesAccessor } from "./ValidationServices";
+
 /**
  * DataTypeServices handles various data types of the values.
  * It provides:
@@ -27,7 +29,7 @@ export interface ICoreDataTypeServices
     Format(value: any, lookupKey?: string | null): IDataTypeResolution<string>;
 }
 
-export interface IDataTypeServices extends ICoreDataTypeServices
+export interface IDataTypeServices extends ICoreDataTypeServices, IServicesAccessor
 {
 /**
  * The culture shown to the user in the app. Its the ISO language-region format.
@@ -174,6 +176,8 @@ export enum ComparersResult {
  * LookupKey="Date" provides a localized short date pattern through DateLocalizedFormatter.
  * LookupKey="AbbrevDate" provides the same but in abbreviated date pattern through AbbrevDateLocalizedFormatter.
  * Create implementations for each dataTypeLookupKey that needs localized formatting.
+ * If you need access to ValidationServices, such as for text localization, implement
+ * IServicesAccessor on your class.
  */
 export interface IDataTypeLocalizedFormatter
 {

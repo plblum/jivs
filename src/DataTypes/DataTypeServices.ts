@@ -26,7 +26,8 @@
 import { DefaultComparer } from "./DataTypeComparers";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { IDataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
-import { CultureCountryCode, DeepClone } from '../Utilities/Utilities';
+import { CultureLanguageCode, DeepClone } from '../Utilities/Utilities';
+import { IServicesAccessor, IValidationServices, ToIServicesAccessor } from "../Interfaces/ValidationServices";
 
 
 /**
@@ -56,6 +57,38 @@ export class DataTypeServices implements IDataTypeServices {
             this._cultureConfig = [{ CultureId: this._activeCultureID }];
         else
             this._cultureConfig = DeepClone(cultureConfig) as Array<CultureConfig>;
+    }
+
+    /**
+     * Services accessor.
+     * Note: Not passed into the constructor because this object should be created before
+     * ValidationServices itself. So it gets assigned when ValidationService.DataTypeServices is assigned a value.
+     */
+    public get Services(): IValidationServices
+    {
+        if (!this._services)
+            throw new CodingError('Attach to ValidationServices.DataTypeServices first.');
+        return this._services;
+    }
+    public set Services(services: IValidationServices)
+    {
+        AssertNotNull(services, 'services');
+        this._services = services;
+        this.UpdateServices(services);
+    }
+    private _services: IValidationServices | null = null;
+
+    /**
+     * Changes the services on all implementations of IServicesAccessor
+     * @param services 
+     */
+    protected UpdateServices(services: IValidationServices): void
+    {
+        this._dataTypeLocalizedFormatters?.forEach((dtf) => {
+            let sa = ToIServicesAccessor(dtf);
+            if (sa)
+                sa.Services = services;
+        });
     }
     /**
      * The culture shown to the user in the app. Its the ISO language-region format.
@@ -92,7 +125,7 @@ export class DataTypeServices implements IDataTypeServices {
     protected GetClosestCultureConfig(cultureId: string): CultureConfig | null {
         let cc = this.GetCultureConfig(cultureId);
         if (!cc) {
-            let lang = CultureCountryCode(cultureId);
+            let lang = CultureLanguageCode(cultureId);
             if (lang !== cultureId) {
                 cc = this.GetCultureConfig(lang);
             }
@@ -151,6 +184,11 @@ export class DataTypeServices implements IDataTypeServices {
         if (!this._dataTypeLocalizedFormatters)
             this._dataTypeLocalizedFormatters = [];
         this._dataTypeLocalizedFormatters.push(dtlf);
+        if (this._services) {
+            let sa = ToIServicesAccessor(dtlf);
+            if (sa)
+                sa.Services = this._services;
+        }
     }
     /**
      * Removes the first IDataTypeLocalizedFormatter that supports both parameters.

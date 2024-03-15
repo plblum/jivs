@@ -83,12 +83,12 @@ export function ObjectKeysCount(object: Object | null): number
 }
 
 /**
- * Returns the country code part of the cultureId.
+ * Returns the language code part of the cultureId.
  * If cultureId is only that already, it gets returned.
  * @param cultureId 
  * @returns 
  */
-export function CultureCountryCode(cultureId: string): string
+export function CultureLanguageCode(cultureId: string): string
 {
     let pos = cultureId.indexOf('-');
     if (pos > 0)

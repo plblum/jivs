@@ -1,9 +1,39 @@
-import { AbbrevDOWDateLocalizedFormatter, AbbrevDateLocalizedFormatter, BooleanLocalizedFormatter, CapitalizeStringLocalizedFormatter, CurrencyLocalizedFormatter, DateLocalizedFormatter, DateTimeLocalizedFormatter, LongDOWDateLocalizedFormatter, LongDateLocalizedFormatter, LowercaseStringLocalizedFormatter, NumberLocalizedFormatter, Percentage100LocalizedFormatter, PercentageLocalizedFormatter, StringLocalizedFormatter, TimeofDayHMSLocalizedFormatter, TimeofDayLocalizedFormatter, UppercaseStringLocalizedFormatter, YesNoBooleanLocalizedFormatter } from './../../src/DataTypes/DataTypeLocalizedFormatters';
+import { AbbrevDOWDateLocalizedFormatter, AbbrevDateLocalizedFormatter, BooleanLocalizedFormatter, CapitalizeStringLocalizedFormatter, CurrencyLocalizedFormatter, DataTypeLocalizedFormatterBase, DateLocalizedFormatter, DateTimeLocalizedFormatter, LongDOWDateLocalizedFormatter, LongDateLocalizedFormatter, LowercaseStringLocalizedFormatter, NumberLocalizedFormatter, Percentage100LocalizedFormatter, PercentageLocalizedFormatter, StringLocalizedFormatter, TimeofDayHMSLocalizedFormatter, TimeofDayLocalizedFormatter, UppercaseStringLocalizedFormatter, YesNoBooleanLocalizedFormatter } from './../../src/DataTypes/DataTypeLocalizedFormatters';
 import {
     StringLookupKey, CapitalizeStringLookupKey, UppercaseStringLookupKey, LowercaseStringLookupKey,
     NumberLookupKey, CurrencyLookupKey, PercentageLookupKey, BooleanLookupKey, YesNoBooleanLookupKey, DateTimeLookupKey, DateLookupKey,
     AbbrevDateLookupKey, AbbrevDOWDateLookupKey, LongDateLookupKey, LongDOWDateLookupKey, TimeOfDayLookupKey, TimeOfDayHMSLookupKey, Percentage100LookupKey
 } from "../../src/DataTypes/LookupKeys";
+import { IDataTypeResolution } from '../../src/Interfaces/DataTypes';
+import { MockValidationServices } from '../Mocks';
+import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
+
+describe('DataTypeLocalizedFormatterBase', () => {
+    class TestClass extends DataTypeLocalizedFormatterBase
+    {
+        protected get ExpectedLookupKeys(): string {
+            throw new Error('Method not implemented.');
+        }
+        protected SupportsCulture(cultureId: string): boolean {
+            throw new Error('Method not implemented.');
+        }
+        public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+            throw new Error('Method not implemented.');
+        }
+        
+    }
+    test('Services that are unassigned throw', () => {
+        let testItem = new TestClass();
+        let x: any;
+        expect(() => x = testItem.Services).toThrow(/Register/);
+    });
+    test('Services to return same ValidationService as assigned', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestClass();
+        expect(() => testItem.Services = services).not.toThrow();
+        expect(testItem.Services).toBe(services);
+    });
+})
 
 describe('StringLocalizedFormatter', () => {
 
@@ -704,7 +734,7 @@ describe('BooleanLocalizedFormatter', () => {
         expect(testItem.Supports('anylookupkey', 'fr')).toBe(false);
     });
 
-    test('Without CultureToBooleanLabels, true and false are "true" and "false"', () => {
+    test('Without TextLocalizationService, true and false are "true" and "false"', () => {
         let testItem = new BooleanLocalizedFormatter();
         
         let dts = testItem.Format(true, BooleanLookupKey, 'en');
@@ -716,51 +746,58 @@ describe('BooleanLocalizedFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('false');
     });
-    test('CultureToBooleanLabels are used when culture is specified and true/false used for another culture', () => {
-        let testItem = new BooleanLocalizedFormatter([
-            {
-                CultureId: 'es',
-                TrueLabel: 'esTRUE',
-                FalseLabel: 'esFALSE'
-            },
-            {
-                CultureId: 'es-SP',
-                TrueLabel: 'esSPTRUE',
-                FalseLabel: 'esSPFALSE'
-            },
-            {
-                CultureId: 'en-US',
-                TrueLabel: 'USTRUE',
-                FalseLabel: 'USFALSE'
-            }
-        ]);
+    test('Without TextLocalizationService, true and false are values supplied in the constructor', () => {
+        let testItem = new BooleanLocalizedFormatter("T", "F");
+        
+        let dts = testItem.Format(true, BooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('T');
+        expect(dts.ErrorMessage).toBeUndefined();
+        
+        dts = testItem.Format(false, BooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('F');
+    });    
+    test('TextLocalizationService used for labels unless the culture is not setup', () => {
+        let services = new MockValidationServices(false, false);
+        let tlService = services.TextLocalizerService as TextLocalizerService;
+        tlService.Register('TRUE', {
+            'en': 'enTRUE',
+            'es': 'esTRUE'
+        });
+        tlService.Register('FALSE', {
+            'en': 'enFALSE',
+            'es': 'esFALSE'
+        });        
+        let testItem = new BooleanLocalizedFormatter('!TRUE|true', '!FALSE|false');
+        testItem.Services = services;
         
         let dts = testItem.Format(true, BooleanLookupKey, 'en');    // uses global default
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('true');
+        expect(dts.Value).toBe('enTRUE');
         expect(dts.ErrorMessage).toBeUndefined();
         dts = testItem.Format(false, BooleanLookupKey, 'en');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('false');
+        expect(dts.Value).toBe('enFALSE');
         expect(dts.ErrorMessage).toBeUndefined();
 
         dts = testItem.Format(true, BooleanLookupKey, 'en-US');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('USTRUE');
+        expect(dts.Value).toBe('enTRUE');
         expect(dts.ErrorMessage).toBeUndefined();
         dts = testItem.Format(false, BooleanLookupKey, 'en-US');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('USFALSE');        
+        expect(dts.Value).toBe('enFALSE');        
         expect(dts.ErrorMessage).toBeUndefined();       
         
         dts = testItem.Format(true, BooleanLookupKey, 'en-GB'); // fallback to global default
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('true');
+        expect(dts.Value).toBe('enTRUE');
         expect(dts.ErrorMessage).toBeUndefined();
         
         dts = testItem.Format(false, BooleanLookupKey, 'en-GB');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('false');
+        expect(dts.Value).toBe('enFALSE');
 
         dts = testItem.Format(true, BooleanLookupKey, 'es'); 
         expect(dts).not.toBeNull();
@@ -773,21 +810,21 @@ describe('BooleanLocalizedFormatter', () => {
 
         dts = testItem.Format(true, BooleanLookupKey, 'es-SP'); 
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('esSPTRUE');
+        expect(dts.Value).toBe('esTRUE');
         expect(dts.ErrorMessage).toBeUndefined();
         
         dts = testItem.Format(false, BooleanLookupKey, 'es-SP');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('esSPFALSE');    
+        expect(dts.Value).toBe('esFALSE');    
 
-        dts = testItem.Format(true, BooleanLookupKey, 'es-MX'); // fallback to es
+        dts = testItem.Format(true, BooleanLookupKey, 'fr'); // fallback to defaults
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('esTRUE');
+        expect(dts.Value).toBe('true');
         expect(dts.ErrorMessage).toBeUndefined();
         
-        dts = testItem.Format(false, BooleanLookupKey, 'es-MX');
+        dts = testItem.Format(false, BooleanLookupKey, 'fr');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('esFALSE');                
+        expect(dts.Value).toBe('false');                
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new BooleanLocalizedFormatter();
@@ -829,7 +866,7 @@ describe('YesNoBooleanLocalizedFormatter', () => {
         expect(testItem.Supports('anylookupkey', 'fr')).toBe(false);
     });
 
-    test('Without CultureToYesNoBooleanLabels, true and false are "yes" and "no"', () => {
+    test('Without TextLocalizationService, true and false are "yes" and "no"', () => {
         let testItem = new YesNoBooleanLocalizedFormatter();
         
         let dts = testItem.Format(true, YesNoBooleanLookupKey, 'en');
@@ -841,87 +878,86 @@ describe('YesNoBooleanLocalizedFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('no');
     });
-    test('CultureToYesNoBooleanLabels are used when culture is specified and true/false used for another culture', () => {
-        let testItem = new YesNoBooleanLocalizedFormatter([
-            {
-                CultureId: 'es',
-                TrueLabel: 'sí',
-                FalseLabel: 'no'
-            },
-            {
-                CultureId: 'es-SP',
-                TrueLabel: 'esSP sí',
-                FalseLabel: 'esSP no'
-            },
-            {
-                CultureId: 'en-US',
-                TrueLabel: 'US YES',
-                FalseLabel: 'US NO'
-            }
-        ]);
+    test('Without TextLocalizationService, true and false are supplied by the constructor parameters', () => {
+        let testItem = new YesNoBooleanLocalizedFormatter("Y", "N");
         
+        let dts = testItem.Format(true, YesNoBooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('Y');
+        expect(dts.ErrorMessage).toBeUndefined();
+        
+        dts = testItem.Format(false, YesNoBooleanLookupKey, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.Value).toBe('N');
+    });
+    test('With TextLocalizationService, text is driven by the culture unless not registered', () => {
+        let services = new MockValidationServices(false, false);
+        let tlService = services.TextLocalizerService as TextLocalizerService;
+        tlService.Register('YES', {
+            'en': 'enYES',
+            'es': 'esYES'
+        });
+        tlService.Register('NO', {
+            'en': 'enNO',
+            'es': 'esNO'
+        });        
+        let testItem = new YesNoBooleanLocalizedFormatter('!YES|yes', '!NO|no');
+        testItem.Services = services;
+
         let dts = testItem.Format(true, YesNoBooleanLookupKey, 'en');    // uses global default
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('yes');
+        expect(dts.Value).toBe('enYES');
         expect(dts.ErrorMessage).toBeUndefined();
         dts = testItem.Format(false, YesNoBooleanLookupKey, 'en');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('no');
+        expect(dts.Value).toBe('enNO');
         expect(dts.ErrorMessage).toBeUndefined();
 
         dts = testItem.Format(true, YesNoBooleanLookupKey, 'en-US');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('US YES');
+        expect(dts.Value).toBe('enYES');
         expect(dts.ErrorMessage).toBeUndefined();
         dts = testItem.Format(false, YesNoBooleanLookupKey, 'en-US');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('US NO');        
+        expect(dts.Value).toBe('enNO');        
         expect(dts.ErrorMessage).toBeUndefined();       
         
         dts = testItem.Format(true, YesNoBooleanLookupKey, 'en-GB'); // fallback to global default
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('yes');
+        expect(dts.Value).toBe('enYES');
         expect(dts.ErrorMessage).toBeUndefined();
         
         dts = testItem.Format(false, YesNoBooleanLookupKey, 'en-GB');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('no');
+        expect(dts.Value).toBe('enNO');
 
         dts = testItem.Format(true, BooleanLookupKey, 'es'); 
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('sí');
+        expect(dts.Value).toBe('esYES');
         expect(dts.ErrorMessage).toBeUndefined();
         
         dts = testItem.Format(false, BooleanLookupKey, 'es');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('no');        
+        expect(dts.Value).toBe('esNO');        
 
         dts = testItem.Format(true, BooleanLookupKey, 'es-SP'); 
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('esSP sí');
+        expect(dts.Value).toBe('esYES');
         expect(dts.ErrorMessage).toBeUndefined();
         
         dts = testItem.Format(false, BooleanLookupKey, 'es-SP');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('esSP no');    
+        expect(dts.Value).toBe('esNO');    
 
-        dts = testItem.Format(true, BooleanLookupKey, 'es-MX'); // fallback to es
-        expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('sí');
-        expect(dts.ErrorMessage).toBeUndefined();
-        
-        dts = testItem.Format(false, BooleanLookupKey, 'es-MX');
-        expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('no');         
-        
-        dts = testItem.Format(true, BooleanLookupKey, 'de'); // fallback to es
+        dts = testItem.Format(true, BooleanLookupKey, 'fr'); // fallback to default
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('yes');
         expect(dts.ErrorMessage).toBeUndefined();
         
-        dts = testItem.Format(false, BooleanLookupKey, 'de');
+        dts = testItem.Format(false, BooleanLookupKey, 'fr');
         expect(dts).not.toBeNull();
-        expect(dts.Value).toBe('no');                    
+        expect(dts.Value).toBe('no');         
+       
     });    
     test('null or undefined returns empty string', () => {
         let testItem = new YesNoBooleanLocalizedFormatter();
