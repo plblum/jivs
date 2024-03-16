@@ -188,20 +188,21 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
      * Your callback will be passed a cloned instance. Change any desired properties
      * and return that instance. It will become the new immutable value of
      * the State property.
+     * If changes were made, the OnValueHostStateChanged event is fire.
      * @param updater 
-     * @returns the state option that resulted from the work.
-     * If there were changes, it is a new instance.
+     * @returns true when the state did change. false when it did not.
      */
     public UpdateState(updater: (stateToUpdate: TState) => TState,
-        source: IValueHost): TState {
+        source: IValueHost): boolean {
         AssertNotNull(updater, 'updater');
         let toUpdate = DeepClone(this.State);
         let updated = updater(toUpdate);
         if (!DeepEquals(this.State, updated)) {
             this._state = updated;
             ToIValueHostCallbacks(this.ValueHostsManager)?.OnValueHostStateChanged?.(source, updated);
+            return true;
         }
-        return updated;
+        return false;
     }
 
 /**

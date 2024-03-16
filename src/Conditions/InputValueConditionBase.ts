@@ -26,7 +26,7 @@ export abstract class InputValueConditionBase<TDescriptor extends IOneValueCondi
      * This function checks both in valueHost to determine a string source.
      * @param valueHostResolver 
      */
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
         if (!ToIInputValueHost(valueHost)) {
             valueHostResolver.Services.LoggerService.Log('Invalid ValueHost used. Must be an InputValueHost',

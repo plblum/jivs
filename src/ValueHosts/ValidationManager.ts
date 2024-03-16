@@ -159,18 +159,18 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * and return that instance. It will become the new immutable value of
      * the State property.
      * @param updater - Your function to change and return a state instance.
-     * @returns the state option that resulted from the work.
-     * If there were changes, it is a new instance.
+     * @returns true when the state did change. false when it did not.
      */
-    public UpdateState(updater: (stateToUpdate: TState) => TState): TState {
+    public UpdateState(updater: (stateToUpdate: TState) => TState): boolean {
         AssertNotNull(updater, 'updater');
         let toUpdate = DeepClone(this.State);
         let updated = updater(toUpdate);
         if (!DeepEquals(this.State, updated)) {
             this._state = updated;
             this.OnStateChanged?.(this, updated);
+            return true;
         }
-        return updated;
+        return false;
     }
 
     /**

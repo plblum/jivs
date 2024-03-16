@@ -17,7 +17,7 @@ import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Condit
 import { IInputValueHostDescriptor, IInputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
 import { IValidateOptions, IValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IIssueFound } from "../Interfaces/Validation";
 import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
-import { IInputValidator } from "../Interfaces/InputValidator";
+import { IInputValidateResult, IInputValidator } from "../Interfaces/InputValidator";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 
 
@@ -52,8 +52,13 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
      * @returns IValidationResultDetails if at least one is invalid or null if all valid.
      */
     public Validate(options?: IValidateOptions): IValidateResult {
+        let self = this;
         if (!options)
             options = {};
+        // NOTE: This object instance is important for async validation.
+        // Its properties collect all validator results, including those delayed by async.
+        // By being an object, any closure referring to result will still get those
+        // property changes for all validators completed.
         let result: IValidateResult = {
             ValidationResult: ValidationResult.Undetermined,
             IssuesFound: null
@@ -66,7 +71,18 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
 
                 for (let i = 0; !stop && i < validators.length; i++) {
                     let iv = validators[i];
-                    let inputValResult = iv.Validate(options);
+                    let potentialIVR = iv.Validate(options);
+                    // promises will update the results later
+                    // All other validators in this loop will still finish
+                    // by updating the state. The state is just missing the results
+                    // from this validator. When this completes, it updates the state again.
+                    if (potentialIVR instanceof Promise)
+                    {
+                        ProcessPromise(potentialIVR);
+                        continue;
+                    }
+                // synchronous (normal) processing
+                    let inputValResult = potentialIVR as IInputValidateResult;
                     if (inputValResult.Skipped)
                         continue;
                     validatorsInUse++;
@@ -78,7 +94,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                                 break;
                             case ValidationSeverity.Warning:
                                 if (result.ValidationResult === ValidationResult.Undetermined)
-                                result.ValidationResult = ValidationResult.Valid;
+                                    result.ValidationResult = ValidationResult.Valid;
                                 break;
                         }
 
@@ -101,31 +117,91 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
             catch (e)
             {
                 if (e instanceof Error)
-                    this.Services.LoggerService.Log('Exception: ' + e.message,
-                        LoggingLevel.Error, ValidationCategory, this.Descriptor.Id)
+                    LogError(e.message);
                 // resume normal processing with Undetermined state
                 result.ValidationResult = ValidationResult.Undetermined;
             }                  
-            this.UpdateState((stateToUpdate) => {
-                stateToUpdate.ValidationResult = result.ValidationResult;
-                stateToUpdate.IssuesFound = result.IssuesFound;
-                if (options!.Group)
-                    stateToUpdate.Group = options!.Group;
-                return stateToUpdate;
-            }, this);
+            if (UpdateStateWithResult(result))
+                ToIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
             return result;
         }
   
         finally {
-            LogInfo(this, () => {
+            LogInfo(() => {
                 return {
                     message: `Input Validation result: ${ValidationResultString[result.ValidationResult]} Issues found:` +
                         (result.IssuesFound ? JSON.stringify(result.IssuesFound) : 'none')
                 }
             });
-            ToIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
         }
-        function LogInfo(self: InputValueHost,
+        function UpdateStateWithResult(result: IValidateResult): boolean
+        {
+            return self.UpdateState((stateToUpdate) => {
+                stateToUpdate.ValidationResult = result.ValidationResult;
+                stateToUpdate.IssuesFound = result.IssuesFound;
+                if (options!.Group)
+                    stateToUpdate.Group = options!.Group;
+                if (result.Pending)
+                    stateToUpdate.AsyncProcessing = true;
+                else
+                    delete stateToUpdate.AsyncProcessing;
+                return stateToUpdate;
+            }, self);
+        }
+        function ProcessPromise(promise: Promise<IInputValidateResult>): void
+        {
+            function CompleteThePromise(finish: () => void)
+            {
+                // remove the promise from result.Pending.
+                // We use result.Pending == null to mean no async processes remain.
+                // If Pending is null already, an external action has abandoned the current validation run
+                if (result.Pending && result.Pending.includes(promise))
+                {
+                    let index = result.Pending.indexOf(promise);
+                    result.Pending.splice(index, 1);
+                    if (result.Pending.length === 0)
+                        delete result.Pending;
+
+                    finish();
+                }
+            }
+            function DeleteAsyncProcessFlag()
+            {
+                if (!result.Pending)
+                    self.UpdateState((stateToUpdate) => {
+                        delete stateToUpdate.AsyncProcessing;
+                        return stateToUpdate;
+                    }, self);
+            }
+            if (!result.Pending)
+                result.Pending = [];
+            result.Pending.push(promise);
+            promise.then(
+            (ivr) => {
+                    CompleteThePromise(() => {
+                        // the only way we modify the issues, validation result, or State
+                        if (ivr.ConditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
+                            result.ValidationResult = ValidationResult.Invalid;
+                            if (!result.IssuesFound)
+                                result.IssuesFound = [];
+                            result.IssuesFound.push(ivr.IssueFound!);
+                            if (UpdateStateWithResult(result))
+                                ToIValidationManagerCallbacks(self.ValueHostsManager)?.OnValueHostValidated?.(self, result);
+                        }
+                        else
+                            DeleteAsyncProcessFlag();
+                    });
+            },
+            (failureInfo) => {
+                CompleteThePromise(() => { 
+                    DeleteAsyncProcessFlag();
+                    LogError(failureInfo ? failureInfo.toString() : 'unspecified');
+                });
+            }
+        );
+        // no change to the ValidationResult here            
+        }
+        function LogInfo(
             fn: () => { message: string, source?: string })
         {
             if (self.Services.LoggerService.MinLevel >= LoggingLevel.Info)
@@ -136,6 +212,11 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                     parms.source ?? `ValueHost ID ${self.Descriptor.Id}`);
             }
         }        
+        function LogError(message: string): void
+        {
+            self.Services.LoggerService.Log('Exception: ' + (message ?? 'Reason unspecified'),
+                LoggingLevel.Error, ValidationCategory, self.Descriptor.Id);
+        }
     }
 
     //#region validation

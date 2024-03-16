@@ -27,7 +27,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostId
      * @returns Identifies the ConditionEvaluationResult.
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
-    Validate(options: IValidateOptions): IInputValidateResult;
+    Validate(options: IValidateOptions): IInputValidateResult | Promise<IInputValidateResult>;
 
     /**
      * Exposes the Condition behind the validator
