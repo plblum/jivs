@@ -3,7 +3,7 @@ import {
     OrConditionsType, CountMatchingConditionsType, StringLengthConditionType
 } from '../../src/Conditions/ConcreteConditions';
 import {
-   type IRangeConditionDescriptor,
+    type IRangeConditionDescriptor,
     RequiredTextConditionType, RequiredTextCondition, ValuesEqualConditionType, ValuesEqualCondition, RangeConditionType,
     type IRequiredTextConditionDescriptor, type ICompareToConditionDescriptor, RequiredIndexConditionType,
     DataTypeCheckConditionType, RegExpConditionType, AndConditionsType, ValuesNotEqualConditionType
@@ -15,13 +15,14 @@ import type { ITokenLabelAndValue } from "../../src/Interfaces/InputValidator";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger, ThrowsExceptionConditionType, NeverMatchesConditionType } from "../Mocks";
 import { StringLookupKey } from '../../src/DataTypes/LookupKeys';
-import { IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
+import { IValueHostResolver, IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostId } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory } from '../../src/Interfaces/Conditions';
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
 import { ValidationSeverity, IValidateOptions } from '../../src/Interfaces/Validation';
 import { IInputValidateResult, IInputValidator, IInputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
+import { IValueHost } from '../../src/Interfaces/ValueHost';
 
 // subclass of InputValidator to expose many of its protected members so they
 // can be individually tested
@@ -32,12 +33,10 @@ class PublicifiedInputValidator extends InputValidator {
     public ExposeServices(): IValidationServices {
         return this.Services;
     }
-    public ExposeValidationManager(): IValueHostsManager
-    {
+    public ExposeValidationManager(): IValueHostsManager {
         return this.ValueHostsManager;
     }
-    public ExposeValueHost(): IInputValueHost
-    {
+    public ExposeValueHost(): IInputValueHost {
         return this.ValueHost;
     }
 
@@ -88,7 +87,7 @@ function SetupWithField1AndField2(descriptor?: Partial<IInputValidatorDescriptor
     let updatedDescriptor: IInputValidatorDescriptor = (!descriptor) ?
         defaultDescriptor :
         { ...defaultDescriptor, ...descriptor };
-    
+
     let testItem = new PublicifiedInputValidator(vh, updatedDescriptor);
     return {
         vm: vm,
@@ -99,7 +98,35 @@ function SetupWithField1AndField2(descriptor?: Partial<IInputValidatorDescriptor
         inputValidator: testItem
     };
 }
+export class ConditionWithPromiseTester implements ICondition {
+    constructor(result: ConditionEvaluateResult, delay: number, error?: string) {
+        this.Result = result;
+        this.Delay = delay;
+        this.Error = error ?? null;
+    }
+    ConditionType: string = 'TEST';
+    Category: ConditionCategory = ConditionCategory.Undetermined;
 
+    public Result: ConditionEvaluateResult;
+    public Delay: number;
+    public Error: string | null;
+    public Evaluate(valueHost: IValueHost, valueHostResolver: IValueHostResolver):
+        ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        let self = this;
+        return new Promise<ConditionEvaluateResult>((resolve, reject) => {
+            function Finish() {
+                if (self.Error)
+                    reject(self.Error);
+                else
+                    resolve(self.Result);
+            }
+            if (self.Delay)
+                globalThis.setTimeout(Finish, self.Delay);
+            else
+                Finish();
+        });
+    }
+}
 // constructor(valueHost: IInputValueHost, descriptor: IInputValidatorDescriptor)
 describe('Inputvalidator.constructor and initial property values', () => {
     test('valueHost parameter null throws', () => {
@@ -129,7 +156,7 @@ describe('InputValidator.Condition', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: <IRequiredTextConditionDescriptor>
                 { Type: RequiredTextConditionType, ValueHostId: null },
-        });        
+        });
 
         let condition: ICondition | null = null;
         expect(() => condition = config.inputValidator.Condition).not.toThrow();
@@ -139,7 +166,7 @@ describe('InputValidator.Condition', () => {
     test('Attempt to create Condition with ConditionDescriptor with invalid type throws', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: { Type: 'UnknownType' },
-        });                
+        });
 
         let condition: ICondition | null = null;
         expect(() => condition = config.inputValidator.Condition).toThrow(/not supported/);
@@ -150,13 +177,13 @@ describe('InputValidator.Condition', () => {
             ConditionCreator: (requestor) => {
                 return {
                     ConditionType: 'TEST',
-                    Evaluate: (valueHost, validationManager)=> {
+                    Evaluate: (valueHost, validationManager) => {
                         return ConditionEvaluateResult.Match;
                     },
                     Category: ConditionCategory.Undetermined
                 }
             }
-        });        
+        });
 
         let condition: ICondition | null = null;
         expect(() => condition = config.inputValidator.Condition).not.toThrow();
@@ -164,45 +191,45 @@ describe('InputValidator.Condition', () => {
         expect(condition!.ConditionType).toBe('TEST');
         expect(condition!.Category).toBe(ConditionCategory.Undetermined);
         expect(condition!.Evaluate(null, config.vm)).toBe(ConditionEvaluateResult.Match);
-    });    
+    });
     test('Neither Descriptor or Creator setup throws', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: null   // because the Setup function provides a default
-        });                
+        });
 
         let condition: ICondition | null = null;
         expect(() => condition = config.inputValidator.Condition).toThrow(/setup/);
-    });   
+    });
     test('Both Descriptor and Creator setup throws', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: { Type: RequiredTextConditionType },
             ConditionCreator: (requestor) => {
                 return {
                     ConditionType: 'TEST',
-                    Evaluate: (valueHost, validationManager)=> {
+                    Evaluate: (valueHost, validationManager) => {
                         return ConditionEvaluateResult.Match;
                     },
                     Category: ConditionCategory.Undetermined
                 }
             }
-        });                
+        });
 
         let condition: ICondition | null = null;
         expect(() => condition = config.inputValidator.Condition).toThrow(/both/);
-    });        
+    });
     test('ConditionCreator returns null throws', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: null,
             ConditionCreator: (requestor) => null
-        });                
+        });
 
         let condition: ICondition | null = null;
         expect(() => condition = config.inputValidator.Condition).toThrow(/instance/);
-    });    
+    });
 });
 describe('InputValidator.Enabler', () => {
     test('InputValidatorDescriptor has no Enabler assigned sets Enabler to null', () => {
-        let config = SetupWithField1AndField2({});                
+        let config = SetupWithField1AndField2({});
 
         let enabler: ICondition | null = null;
         expect(() => enabler = config.inputValidator.ExposeEnabler()).not.toThrow();
@@ -214,7 +241,7 @@ describe('InputValidator.Enabler', () => {
                 Type: ValuesEqualConditionType,
                 ValueHostId: null
             }
-        });        
+        });
 
         let enabler: ICondition | null = null;
         expect(() => enabler = config.inputValidator.ExposeEnabler()).not.toThrow();
@@ -226,7 +253,7 @@ describe('InputValidator.Enabler', () => {
             EnablerDescriptor: {
                 Type: 'UnknownType'
             }
-        });        
+        });
 
         let enabler: ICondition | null = null;
         expect(() => enabler = config.inputValidator.ExposeEnabler()).toThrow(/not supported/);
@@ -236,13 +263,13 @@ describe('InputValidator.Enabler', () => {
             EnablerCreator: (requestor) => {
                 return {
                     ConditionType: 'TEST',
-                    Evaluate: (valueHost, validationManager)=> {
+                    Evaluate: (valueHost, validationManager) => {
                         return ConditionEvaluateResult.Match;
                     },
                     Category: ConditionCategory.Undetermined
                 }
             }
-        });        
+        });
 
         let enabler: ICondition | null = null;
         expect(() => enabler = config.inputValidator.ExposeEnabler()).not.toThrow();
@@ -250,61 +277,61 @@ describe('InputValidator.Enabler', () => {
         expect(enabler!.ConditionType).toBe('TEST');
         expect(enabler!.Category).toBe(ConditionCategory.Undetermined);
         expect(enabler!.Evaluate(null, config.vm)).toBe(ConditionEvaluateResult.Match);
-    });    
+    });
     test('Neither Descriptor or Creator returns null', () => {
         let config = SetupWithField1AndField2({
-        });                
+        });
 
         let enabler: ICondition | null = null;
         expect(() => enabler = config.inputValidator.ExposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
-    });   
+    });
     test('Both Descriptor and Creator setup throws', () => {
         let config = SetupWithField1AndField2({
             EnablerDescriptor: { Type: RequiredTextConditionType },
             EnablerCreator: (requestor) => {
                 return {
                     ConditionType: 'TEST',
-                    Evaluate: (valueHost, services)=> {
+                    Evaluate: (valueHost, services) => {
                         return ConditionEvaluateResult.Match;
                     },
                     Category: ConditionCategory.Undetermined
                 }
             }
-        });                
+        });
 
         let enabler: ICondition | null = null;
         expect(() => enabler = config.inputValidator.ExposeEnabler()).toThrow(/both/);
-    });        
+    });
     test('EnablerCreator returns null throws', () => {
         let config = SetupWithField1AndField2({
             EnablerDescriptor: null,
             EnablerCreator: (requestor) => null
-        });                
+        });
 
         let enabler: ICondition | null = null;
         expect(() => enabler = config.inputValidator.ExposeEnabler()).toThrow(/instance/);
-    });           
+    });
 });
 describe('InputValidator.Enabled', () => {
     test('Descriptor.Enabled = true, Enabled=true', () => {
         let config = SetupWithField1AndField2({
             Enabled: true
-        });        
-        
+        });
+
         expect(config.inputValidator.Enabled).toBe(true);
     });
     test('Descriptor.Enabled = false, Enabled=false', () => {
         let config = SetupWithField1AndField2({
             Enabled: false
-        });                
+        });
 
         expect(config.inputValidator.Enabled).toBe(false);
     });
     test('Descriptor.Enabled = undefined, Enabled=true', () => {
         let config = SetupWithField1AndField2({
             Enabled: undefined
-        });                
+        });
 
         expect(config.inputValidator.Enabled).toBe(true);
     });
@@ -312,8 +339,8 @@ describe('InputValidator.Enabled', () => {
         let config = SetupWithField1AndField2({
 
             Enabled: (iv: IInputValidator) => enabledForFn
-        });                
-        
+        });
+
         let enabledForFn = true;
         expect(config.inputValidator.Enabled).toBe(true);
         enabledForFn = false;
@@ -326,22 +353,22 @@ describe('InputValidator.Severity', () => {
     test('Descriptor.Severity = Error, Severity=Error', () => {
         let config = SetupWithField1AndField2({
             Severity: ValidationSeverity.Error
-        });                
-        
+        });
+
         expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('Descriptor.Severity = Warning, Severity=Warning', () => {
         let config = SetupWithField1AndField2({
             Severity: ValidationSeverity.Warning
-        });       
+        });
 
         expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
     });
     test('Descriptor.Severity = Severe, Severity=Severe', () => {
         let config = SetupWithField1AndField2({
             Severity: ValidationSeverity.Severe
-        });               
-        
+        });
+
         expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
     });
     test('Conditions that use Severity=Severe when Descriptor.Severity = undefined', () => {
@@ -375,14 +402,14 @@ describe('InputValidator.Severity', () => {
         CheckDefaultSeverity(StringLengthConditionType);
         CheckDefaultSeverity(ValuesEqualConditionType);
         CheckDefaultSeverity(ValuesNotEqualConditionType);
-        CheckDefaultSeverity(ValueGTSecondValueConditionType);        
-        CheckDefaultSeverity(ValueGTESecondValueConditionType);        
-        CheckDefaultSeverity(ValueLTSecondValueConditionType);        
-        CheckDefaultSeverity(ValueLTESecondValueConditionType);        
-        CheckDefaultSeverity(AndConditionsType);        
-        CheckDefaultSeverity(OrConditionsType);        
-        CheckDefaultSeverity(CountMatchingConditionsType);        
-  
+        CheckDefaultSeverity(ValueGTSecondValueConditionType);
+        CheckDefaultSeverity(ValueGTESecondValueConditionType);
+        CheckDefaultSeverity(ValueLTSecondValueConditionType);
+        CheckDefaultSeverity(ValueLTESecondValueConditionType);
+        CheckDefaultSeverity(AndConditionsType);
+        CheckDefaultSeverity(OrConditionsType);
+        CheckDefaultSeverity(CountMatchingConditionsType);
+
     });
     test('RangeCondition Descriptor.Severity = undefined, Severity=Error', () => {
         let config = SetupWithField1AndField2({
@@ -390,7 +417,7 @@ describe('InputValidator.Severity', () => {
                 Type: RangeConditionType
             },
             Severity: undefined
-        });               
+        });
 
         expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
     });
@@ -400,14 +427,14 @@ describe('InputValidator.Severity', () => {
                 Type: AndConditionsType
             },
             Severity: undefined
-        });               
+        });
 
         expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
-    });    
+    });
     test('Descriptor.Severity = function, Severity= result of function', () => {
         let config = SetupWithField1AndField2({
             Severity: (iv: IInputValidator) => severityForFn
-        });               
+        });
 
         let severityForFn: ValidationSeverity = ValidationSeverity.Warning;
         expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
@@ -418,14 +445,13 @@ describe('InputValidator.Severity', () => {
     });
 });
 
-function SetupForLocalization(activeCultureID: string): PublicifiedInputValidator
-{
+function SetupForLocalization(activeCultureID: string): PublicifiedInputValidator {
     let config = SetupWithField1AndField2({
         ErrorMessage: 'EM-fallback',
         ErrorMessagel10n: 'EM',
         SummaryErrorMessage: 'SEM-fallback',
         SummaryErrorMessagel10n: 'SEM'
-    });               
+    });
     let tlService = config.services.TextLocalizerService as TextLocalizerService;
     tlService.Register('EM', {
         'en': 'enErrorMessage',
@@ -434,7 +460,7 @@ function SetupForLocalization(activeCultureID: string): PublicifiedInputValidato
     tlService.Register('SEM', {
         'en': 'enSummaryErrorMessage',
         'es': 'esSummaryErrorMessage'
-    });        
+    });
     config.services.ActiveCultureId = activeCultureID;
     return config.inputValidator;
 }
@@ -442,7 +468,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
     test('Descriptor.ErrorMessage = string, return the same string', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Test',
-        });               
+        });
 
         expect(config.inputValidator.ExposeGetErrorMessageTemplate()).toBe('Test');
     });
@@ -450,7 +476,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
     test('Descriptor.ErrorMessage = function, GetErrorMessageTemplate= result of function', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: (iv: IInputValidator) => errorMessageForFn
-        });               
+        });
 
         let errorMessageForFn = 'Test';
         expect(config.inputValidator.ExposeGetErrorMessageTemplate()).toBe('Test');
@@ -458,41 +484,41 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
     test('Descriptor.ErrorMessage = function, throws when function returns null', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: (iv: IInputValidator) => null!
-        });               
+        });
 
         expect(() => config.inputValidator.ExposeGetErrorMessageTemplate()).toThrow(/Descriptor\.ErrorMessage/);
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
         let testItem = SetupForLocalization('en');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');        
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
         let testItem = SetupForLocalization('en-US');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');        
-    });    
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('enErrorMessage');
+    });
 
     test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
         let testItem = SetupForLocalization('es-SP');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('esErrorMessage');        
-    });    
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('esErrorMessage');
+    });
 
     test('TextLocalizationService not setup for fr language and active culture of fr uses ErrorMessage property', () => {
         let testItem = SetupForLocalization('fr');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');        
-    });    
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');
+    });
     test('TextLocalizationService not setup for fr-FR language and active culture of fr uses ErrorMessage property', () => {
         let testItem = SetupForLocalization('fr-FR');
-        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');        
-    });        
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');
+    });
 });
 describe('InputValidator.GetSummaryErrorMessageTemplate', () => {
     test('Descriptor.SummaryErrorMessage = string, return the same string', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
             SummaryErrorMessage: 'Summary',
-        });               
+        });
 
         expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Summary');
     });
@@ -500,15 +526,15 @@ describe('InputValidator.GetSummaryErrorMessageTemplate', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
             SummaryErrorMessage: null,
-        });               
-        
+        });
+
         expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Local');
     });
     test('Descriptor.SummaryErrorMessage = undefined, return ErrorMessage', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
             SummaryErrorMessage: undefined
-        });               
+        });
 
         expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Local');
     });
@@ -516,7 +542,7 @@ describe('InputValidator.GetSummaryErrorMessageTemplate', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
             SummaryErrorMessage: (iv: IInputValidator) => summaryerrorMessageForFn
-        });               
+        });
 
         let summaryerrorMessageForFn = 'Summary';
         expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Summary');
@@ -525,34 +551,34 @@ describe('InputValidator.GetSummaryErrorMessageTemplate', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
             SummaryErrorMessage: (iv: IInputValidator) => null!
-        });               
+        });
 
         expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Local');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
         let testItem = SetupForLocalization('en');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('enSummaryErrorMessage');        
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('enSummaryErrorMessage');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
         let testItem = SetupForLocalization('en-US');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('enSummaryErrorMessage');        
-    });    
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('enSummaryErrorMessage');
+    });
 
     test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
         let testItem = SetupForLocalization('es-SP');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('esSummaryErrorMessage');        
-    });    
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('esSummaryErrorMessage');
+    });
 
     test('TextLocalizationService not setup for fr language and active culture of fr uses SummaryErrorMessage property', () => {
         let testItem = SetupForLocalization('fr');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('SEM-fallback');        
-    });    
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('SEM-fallback');
+    });
     test('TextLocalizationService not setup for fr-FR language and active culture of fr uses SummaryErrorMessage property', () => {
         let testItem = SetupForLocalization('fr-FR');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('SEM-fallback');        
-    });        
+        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('SEM-fallback');
+    });
 
 });
 // Validate(group?: string): IIssueFound | null
@@ -672,7 +698,7 @@ describe('InputValidator.Validate', () => {
         expect(() => vrResult = config.inputValidator.Validate(validateOptions)).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as IInputValidateResult;        
+        vrResult = vrResult as unknown as IInputValidateResult;
         if (issueExpected)
             expect(vrResult!.IssueFound).not.toBeNull();
         else
@@ -711,7 +737,7 @@ describe('InputValidator.Validate', () => {
     test('Issue exists. Group parameter assigned and but does not match Descriptor.Group. Returns null', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             Group: 'groupB'
-        }, { Group: 'groupA' }, 2, false);       
+        }, { Group: 'groupA' }, 2, false);
     });
     test('Issue exists. Group parameter assigned and matches Descriptor.Group with array. Returns issue', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
@@ -729,11 +755,11 @@ describe('InputValidator.Validate', () => {
     test('Issue exists and Required is evaluated (as NoMatch) because IValidateOption.DuringEdit = true.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { DuringEdit: true }, 2, true);
-    });    
+    });
     test('Issue exists and Required is evaluated (as NoMatch) because IValidateOption.DuringEdit = false doesnt skip that condition.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { DuringEdit: false }, 2, true);
-    });        
+    });
     test('Issue exists but NeverMatchCondition is skipped because IValidateOption.DuringEdit = true.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             ConditionDescriptor: {
@@ -747,7 +773,7 @@ describe('InputValidator.Validate', () => {
                 Type: NeverMatchesConditionType
             }
         }, { DuringEdit: false }, 2, true);
-    });    
+    });
     test('Issue exists and Required is evaluated (as NoMatch) because IValidateOption.Preliminary = false.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { Preliminary: false }, 2, true);
@@ -774,7 +800,93 @@ describe('InputValidator.Validate', () => {
         expect(logger.Captured[0].Level).toBe(LoggingLevel.Error);
         expect(logger.Captured[1].Level).toBe(LoggingLevel.Info);
     });
-     
+
+    function SetupPromiseTest(result: ConditionEvaluateResult, delay: number, error?: string): {
+        vm: MockValidationManager,
+        services: MockValidationServices,
+        vh: IInputValueHost,
+        testItem: InputValidator
+    } {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost('Field1', StringLookupKey, 'Field 1');
+
+        let descriptor: IInputValidatorDescriptor = {
+            ConditionDescriptor: null,
+            ConditionCreator: (requestor) => {
+                return new ConditionWithPromiseTester(result,
+                    delay, error);
+            },
+            ErrorMessage: 'Local',
+            SummaryErrorMessage: 'Summary'
+        };
+
+        let testItem = new InputValidator(vh, descriptor);
+        return {
+            vm: vm,
+            services: services,
+            vh: vh,
+            testItem: testItem
+        }
+    }
+
+    test('Condition using Promise to evaluate as Match results in InputValidateResult setup as Match with no IssuesFound', async () => {
+        let setup = SetupPromiseTest(ConditionEvaluateResult.Match, 0);
+        let result = await setup.testItem.Validate({});
+        expect(result).toEqual({
+            ConditionEvaluateResult: ConditionEvaluateResult.Match,
+            IssueFound: null
+        });
+    });
+    test('With delay, Condition using Promise to evaluate as Match results in InputValidateResult setup as Match with no IssuesFound',
+        async () => {
+            let setup = SetupPromiseTest(ConditionEvaluateResult.Match, 100);
+            let result = await setup.testItem.Validate({});
+            expect(result).toEqual({
+                ConditionEvaluateResult: ConditionEvaluateResult.Match,
+                IssueFound: null
+            });
+        });
+    test('Condition using Promise to evaluate as NoMatch results in InputValidateResult setup as Match with 1 IssueFound',
+        async () => {
+            let setup = SetupPromiseTest(ConditionEvaluateResult.NoMatch, 0);
+            let result = await setup.testItem.Validate({});
+            expect(result).toEqual(<IInputValidateResult>{
+                ConditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                IssueFound: {
+                    ConditionType: 'TEST',
+                    ErrorMessage: 'Local',
+                    SummaryErrorMessage: 'Summary',
+                    Severity: ValidationSeverity.Error,
+                    ValueHostId: 'Field1'
+                }
+            });
+        });
+    test('Condition using Promise to evaluate as Undetermined results in InputValidateResult setup as Undetermined with no IssuesFound',
+        async () => {
+            let setup = SetupPromiseTest(ConditionEvaluateResult.Undetermined, 0);
+            let result = await setup.testItem.Validate({});
+            expect(result).toEqual({
+                ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+                IssueFound: null
+            });
+        });
+    test('Condition using Promise to generate a rejection calls the catch',
+        async () => {
+     //       expect.assertions(1);
+            let setup = SetupPromiseTest(ConditionEvaluateResult.Match, 0, 'ERROR');
+            try {
+                let result = await setup.testItem.Validate({});
+                fail();
+            }
+            catch (e) {
+                expect(e).toBe('ERROR');
+                let logger = setup.services.LoggerService as MockCapturingLogger;
+                expect(logger.EntryCount()).toBe(1);
+                expect(logger.GetLatest()!.Message).toMatch(/ERROR/);
+
+            }
+        });
 });
 describe('InputValidator.GatherValueHostIds', () => {
     test('RequiredTextCondition supplies its ValueHostId', () => {
@@ -841,14 +953,14 @@ describe('GetValuesForTokens', () => {
                 TokenLabel: 'Minimum',
                 AssociatedValue: 'A',
                 Purpose: 'parameter'
-            },            
+            },
             {
                 TokenLabel: 'Maximum',
                 AssociatedValue: 'Z',
                 Purpose: 'parameter'
             },
         ])
-    });    
+    });
 });
 
 describe('InputValidatorFactory.Create', () => {

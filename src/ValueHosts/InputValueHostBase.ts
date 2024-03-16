@@ -272,7 +272,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     protected ClearValidationStateChanges(stateToUpdate: TState): void {
         stateToUpdate.ValidationResult = ValidationResult.NotAttempted;
         stateToUpdate.IssuesFound = null;
-        delete stateToUpdate.Pending;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
+        delete stateToUpdate.AsyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
         delete stateToUpdate.ConversionErrorTokenValue;
         delete stateToUpdate.BusinessLogicErrors;
     }
@@ -286,7 +286,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
             case ValidationResult.ValueChangedButUnvalidated:
                 return true;
             default:
-                if (this.State.Pending) // async running so long as not null
+                if (this.State.AsyncProcessing) // async running so long as not null
                     return true;
                 return false;
         }
@@ -446,7 +446,9 @@ export type InputValueChangedHandler = (valueHost: IInputValueHost, oldValue: an
  */
 export interface IInputValueHostCallbacks extends IValueHostCallbacks {
     /**
-     * Called when ValueHost's Validate method has returned.
+     * Called when ValueHost's Validate method has finished, and made
+     * changes to the state. (No point in notifying code intended to update the UI
+     * if nothing changed.)
      * Supplies the result to the callback.
      * Examples: Use to notify the validation related aspects of the component to refresh, 
      * such as showing error messages and changing style sheets.

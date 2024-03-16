@@ -49,9 +49,9 @@ export interface IValidateOptions
 }
 
 /**
- * Result of the Validate function.
+ * Result of the Validate function that will be saved in InputValueHostState
  */
-export interface IValidateResult {
+export interface IStatefulValidateResult {
     /**
      * The state of validation for this ValueHost.
      */
@@ -61,7 +61,11 @@ export interface IValidateResult {
      * The issues that were found.
      */
     IssuesFound: Array<IIssueFound> | null;
-
+}
+/**
+ * Result of the Validate function.
+ */
+export interface IValidateResult extends IStatefulValidateResult {
     /**
      * Any promises returned by InputValidator.Validate
      * These still need to finish before supplying their evaluation results.

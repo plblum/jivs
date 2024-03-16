@@ -6,7 +6,7 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IInputValidatorDescriptor } from "./InputValidator";
 import {
     type IValidateOptions, type IValidateResult, ValidationResult,
-    type IBusinessLogicError, type IIssueFound, type IIssueSnapshot
+    type IBusinessLogicError, type IIssueFound, type IIssueSnapshot, IStatefulValidateResult
 } from "./Validation";
 import type { IValueHost, ISetValueOptions, IValueHostDescriptor, IValueHostState } from "./ValueHost";
 
@@ -182,7 +182,7 @@ export interface IInputValueHostBaseDescriptor extends IValueHostDescriptor {
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface IInputValueHostBaseState extends IValueHostState, IValidateResult {
+export interface IInputValueHostBaseState extends IValueHostState, IStatefulValidateResult {
 
     /**
      * The value from the input field/element, even if invalid.
@@ -213,6 +213,11 @@ export interface IInputValueHostBaseState extends IValueHostState, IValidateResu
      * If not, this is undefined.
      */
     BusinessLogicErrors?: Array<IBusinessLogicError>;
+
+    /**
+     * When true, an async InputValidator is running
+     */
+    AsyncProcessing?: boolean;
 }
 
 /**

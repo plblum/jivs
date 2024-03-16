@@ -322,7 +322,7 @@ export class InputValidator implements IInputValidator {
                     },
                     (reason) => {
                         LogError(reason)
-                        reject();
+                        reject(reason);
                     });
             });
             return wrapperPromise;            

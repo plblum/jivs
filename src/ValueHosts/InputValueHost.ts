@@ -121,7 +121,8 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                 // resume normal processing with Undetermined state
                 result.ValidationResult = ValidationResult.Undetermined;
             }                  
-            UpdateStateWithResult(result);
+            if (UpdateStateWithResult(result))
+                ToIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
             return result;
         }
   
@@ -132,15 +133,18 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                         (result.IssuesFound ? JSON.stringify(result.IssuesFound) : 'none')
                 }
             });
-            ToIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
         }
-        function UpdateStateWithResult(result: IValidateResult): void
+        function UpdateStateWithResult(result: IValidateResult): boolean
         {
-            self.UpdateState((stateToUpdate) => {
+            return self.UpdateState((stateToUpdate) => {
                 stateToUpdate.ValidationResult = result.ValidationResult;
                 stateToUpdate.IssuesFound = result.IssuesFound;
                 if (options!.Group)
                     stateToUpdate.Group = options!.Group;
+                if (result.Pending)
+                    stateToUpdate.AsyncProcessing = true;
+                else
+                    delete stateToUpdate.AsyncProcessing;
                 return stateToUpdate;
             }, self);
         }
@@ -156,28 +160,43 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                     let index = result.Pending.indexOf(promise);
                     result.Pending.splice(index, 1);
                     if (result.Pending.length === 0)
-                        result.Pending = null;
+                        delete result.Pending;
 
                     finish();
                 }
+            }
+            function DeleteAsyncProcessFlag()
+            {
+                if (!result.Pending)
+                    self.UpdateState((stateToUpdate) => {
+                        delete stateToUpdate.AsyncProcessing;
+                        return stateToUpdate;
+                    }, self);
             }
             if (!result.Pending)
                 result.Pending = [];
             result.Pending.push(promise);
             promise.then(
-            (success) => {
+            (ivr) => {
                     CompleteThePromise(() => {
                         // the only way we modify the issues, validation result, or State
-                        if (success.ConditionEvaluateResult === ConditionEvaluateResult.NoMatch)
-                        {
+                        if (ivr.ConditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
                             result.ValidationResult = ValidationResult.Invalid;
-                            result.IssuesFound?.push(success.IssueFound!);
-                            UpdateStateWithResult(result);
+                            if (!result.IssuesFound)
+                                result.IssuesFound = [];
+                            result.IssuesFound.push(ivr.IssueFound!);
+                            if (UpdateStateWithResult(result))
+                                ToIValidationManagerCallbacks(self.ValueHostsManager)?.OnValueHostValidated?.(self, result);
                         }
+                        else
+                            DeleteAsyncProcessFlag();
                     });
             },
-            (failure) => {
-                CompleteThePromise(() => { });
+            (failureInfo) => {
+                CompleteThePromise(() => { 
+                    DeleteAsyncProcessFlag();
+                    LogError(failureInfo ? failureInfo.toString() : 'unspecified');
+                });
             }
         );
         // no change to the ValidationResult here            
