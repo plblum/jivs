@@ -229,27 +229,29 @@ export class InputValidator implements IInputValidator {
      * @returns Identifies the ConditionEvaluateResult.
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
-    public Validate(options: IValidateOptions): IInputValidateResult {
+    public Validate(options: IValidateOptions): IInputValidateResult | Promise<IInputValidateResult> {
         AssertNotNull(options, 'options');
+        let self = this;
+
         let resultState: IInputValidateResult = {
             ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-            IssueFound: null
+            IssueFound: null,
         };
         try {
             // options that may bail out
             if (options.Preliminary && this.Condition.Category === ConditionCategory.Required)
-                return Bailout(this, 'Preliminary option skips Required conditions');
+                return Bailout('Preliminary option skips Required conditions');
 
             if (options.DuringEdit && this.Condition.Category !== ConditionCategory.Required)
-                return Bailout(this, 'DuringEdit option limited to Required conditions');
+                return Bailout('DuringEdit option limited to Required conditions');
                 
             // enabled
             if (!this.Enabled)
-                return Bailout(this, 'Descriptor.Enabled is false');
+                return Bailout('Descriptor.Enabled is false');
 
             // validation groups
             if (!this.GroupMatch(options.Group))
-                return Bailout(this, `Group names do not match "${options.Group}" vs "${this.Descriptor.Group?.toString()}"`);
+                return Bailout( `Group names do not match "${options.Group}" vs "${this.Descriptor.Group?.toString()}"`);
 
             // enabler
             let enabler = this.Enabler;
@@ -261,55 +263,77 @@ export class InputValidator implements IInputValidator {
                 switch (result) {
                     case ConditionEvaluateResult.NoMatch:
                     case ConditionEvaluateResult.Undetermined:
-                        return Bailout(this, `Enabler evaluated as ${ConditionEvaluateResultStrings[result]}`);
+                        return Bailout(`Enabler evaluated as ${ConditionEvaluateResultStrings[result]}`);
                 }
             }
-            //!!!PENDING Support Async evaluation by letting Evaluate return a promise
+
+            let pendingCER = this.Condition.Evaluate(this.ValueHost, this.ValueHostsManager);
+
+            if (pendingCER instanceof Promise) {
+            // Support Async evaluation by letting Evaluate return a promise
             // When an async process returns, it must take NO action
             // if the value of State.ValidationResult is not still AsyncProcessing.
-
-            let cer = this.Condition.Evaluate(this.ValueHost, this.ValueHostsManager);
-            LogInfo(this, () => {
-                    return {
-                        message: `Condition evaluated as ${ConditionEvaluateResultStrings[cer]}`,
-                    }
-            });            
-            resultState.ConditionEvaluateResult = cer;
-            switch (cer) {
-                case ConditionEvaluateResult.NoMatch:
-                    let issueFound = CreateIssueFound(this.ValueHost, this);   // setup for ValidationResult.Undetermined
-                    issueFound.Severity = this.Severity;
-                    this.UpdateStateForNoMatch(issueFound, this.ValueHost);
-                    resultState.IssueFound = issueFound;
-                    break;
+                return ProcessPromise(pendingCER);
             }
-            return resultState;
+            else
+                return ResolveCER(pendingCER as ConditionEvaluateResult);
+
         }
         catch (e)
         {
             if (e instanceof Error)
-                this.Services.LoggerService.Log('Exception: ' + e.message,
-                    LoggingLevel.Error, ValidationCategory, this.GetLogSourceText())
+                LogError(e.message);
             // resume normal processing with Undetermined state
             resultState.ConditionEvaluateResult = ConditionEvaluateResult.Undetermined;
             resultState.IssueFound = null;
             return resultState;
         }
         finally {
-            LogInfo(this, () => {
+            LogInfo(() => {
                 return {
                     message: `Condition result: ${ConditionEvaluateResultStrings[resultState.ConditionEvaluateResult]} Issue found: ` +
                         (resultState ? JSON.stringify(resultState) : 'none'),
                 }
             });
         }
-        function Bailout(self: InputValidator, errorMessage: string): IInputValidateResult
+        function ResolveCER(cer: ConditionEvaluateResult): IInputValidateResult {
+            LogInfo(() => {
+                return {
+                    message: `Condition evaluated as ${ConditionEvaluateResultStrings[cer]}`,
+                }
+            });
+            resultState.ConditionEvaluateResult = cer;
+            switch (cer) {
+                case ConditionEvaluateResult.NoMatch:
+                    let issueFound = CreateIssueFound(self.ValueHost, self);   // setup for ValidationResult.Undetermined
+                    issueFound.Severity = self.Severity;
+                    self.UpdateStateForNoMatch(issueFound, self.ValueHost);
+                    resultState.IssueFound = issueFound;
+                    break;
+            }
+            return resultState;
+        }        
+        function ProcessPromise(promiseCER: Promise<ConditionEvaluateResult>): Promise<IInputValidateResult>
+        {
+            let wrapperPromise = new Promise<IInputValidateResult>((resolve, reject) => {
+                promiseCER.then(
+                    (resultingCER) => {
+                        resolve(ResolveCER(resultingCER));
+                    },
+                    (reason) => {
+                        LogError(reason)
+                        reject(reason);
+                    });
+            });
+            return wrapperPromise;            
+        }
+        function Bailout(errorMessage: string): IInputValidateResult
         {
             let resultState: IInputValidateResult = {
                 ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
                 IssueFound: null
             };
-            LogInfo(self, () => {
+            LogInfo(() => {
                 return {
                     message: errorMessage,
                 }
@@ -317,7 +341,7 @@ export class InputValidator implements IInputValidator {
             resultState.Skipped = true;
             return resultState;                    
         }
-        function LogInfo(self: InputValidator,
+        function LogInfo(
             fn: () => { message: string, source?: string })
         {
             if (self.Services.LoggerService.MinLevel >= LoggingLevel.Info)
@@ -327,6 +351,11 @@ export class InputValidator implements IInputValidator {
                     ValidationCategory,
                     parms.source ?? `Validation with ${self.GetLogSourceText()}`);
             }
+        }
+        function LogError(message: string): void
+        {
+            self.Services.LoggerService.Log('Exception: ' + (message ?? 'Reason unspecified'),
+                LoggingLevel.Error, ValidationCategory, self.GetLogSourceText())            
         }
     }
 

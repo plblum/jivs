@@ -9,6 +9,7 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from "../Interfaces/Conditions";
 import { IValueHost, ToIGatherValueHostIds } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
+import { CodingError } from "../Utilities/ErrorHandling";
 import { ConditionBase } from "./ConditionBase";
 
 /**
@@ -36,7 +37,7 @@ export interface IEvaluateChildConditionResultsDescriptor extends IConditionDesc
 export abstract class EvaluateChildConditionResultsBase<TDescriptor extends IEvaluateChildConditionResultsDescriptor>
     extends ConditionBase<TDescriptor>
 {
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         let conditions = this.Conditions(valueHostResolver);
         if (conditions.length === 0)
             return ConditionEvaluateResult.Undetermined;
@@ -67,7 +68,9 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends IEva
      * @param childResult 
      * @returns 
      */
-    protected CleanupChildResult(childResult: ConditionEvaluateResult): ConditionEvaluateResult {
+    protected CleanupChildResult(childResult: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
+        if (childResult instanceof Promise)
+            throw new CodingError('Promises are not supported for child conditions at this time.');
         if (childResult === ConditionEvaluateResult.Undetermined)
             return this.Descriptor.TreatUndeterminedAs ?? ConditionEvaluateResult.Undetermined;
         return childResult;

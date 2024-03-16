@@ -429,7 +429,7 @@ export const AlwaysMatchesConditionType = "AlwaysMatches";
 
 export class AlwaysMatchesCondition extends ConditionBase<IConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.Descriptor.Type; }    
-    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult {
+    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Match;
     }
     protected get DefaultCategory(): ConditionCategory {
@@ -446,7 +446,7 @@ export const NeverMatchesConditionType2 = "NeverMatches2"; // two type names for
 export class NeverMatchesCondition extends ConditionBase<IConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.Descriptor.Type; }
 
-    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult {
+    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.NoMatch;
     }
     protected get DefaultCategory(): ConditionCategory {
@@ -462,7 +462,7 @@ export const IsUndeterminedConditionType = "AlwaysUndetermined";
 export class IsUndeterminedCondition extends ConditionBase<IConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.Descriptor.Type; }
     
-    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult {
+    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Undetermined;
     }
     protected get DefaultCategory(): ConditionCategory {
@@ -477,7 +477,7 @@ export const ThrowsExceptionConditionType = "AlwaysThrows";
 
 export class ThrowsExceptionCondition extends ConditionBase<IConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.Descriptor.Type; }    
-    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult {
+    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         throw new Error("Always Throws");
     }
     protected get DefaultCategory(): ConditionCategory {

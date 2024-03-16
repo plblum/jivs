@@ -88,6 +88,9 @@ describe('ConditionBase class additional cases', () => {
 });
 
 describe('class DataTypeCheckCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(DataTypeCheckCondition.DefaultConditionType).toBe(DataTypeCheckConditionType);
+    });
     test('Evaluate returns Match when InputValue is not undefined and native Value is not undefined', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
@@ -224,6 +227,9 @@ describe('class DataTypeCheckCondition', () => {
     });
 });
 describe('class RequiredTextCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(RequiredTextCondition.DefaultConditionType).toBe(RequiredTextConditionType);
+    });
     test('Evaluate returns Match', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
@@ -407,6 +413,9 @@ describe('class RequiredTextCondition', () => {
 });
 
 describe('class RequiredIndexCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(RequiredIndexCondition.DefaultConditionType).toBe(RequiredIndexConditionType);
+    });
     test('Evaluate returns Match', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
@@ -517,6 +526,9 @@ describe('class RequiredIndexCondition', () => {
 });
 
 describe('class RegExpCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(RegExpCondition.DefaultConditionType).toBe(RegExpConditionType);
+    });    
     test('Text contains "ABC" somewhere (case sensitive). Evaluate returns Match if it is present and NoMatch if not', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
@@ -740,6 +752,9 @@ describe('class RegExpCondition', () => {
 });
 
 describe('class RangeCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(RangeCondition.DefaultConditionType).toBe(RangeConditionType);
+    });    
     test('Evaluate when Min/Max assigned to string returns Match inside of range; NoMatch outside of range', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -1116,6 +1131,9 @@ describe('CompareToConditionBase class additional cases', () => {
 
 
 describe('class ValuesEqualCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(ValuesEqualCondition.DefaultConditionType).toBe(ValuesEqualConditionType);
+    });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -1351,6 +1369,9 @@ describe('class ValuesEqualCondition', () => {
     });
 });
 describe('class ValuesNotEqualCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(ValuesNotEqualCondition.DefaultConditionType).toBe(ValuesNotEqualConditionType);
+    });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -1559,6 +1580,9 @@ describe('class ValuesNotEqualCondition', () => {
     });
 });
 describe('class ValueGTSecondValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(ValueGTSecondValueCondition.DefaultConditionType).toBe(ValueGTSecondValueConditionType);
+    });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -1742,6 +1766,9 @@ describe('class ValueGTSecondValueCondition', () => {
     });        
 });
 describe('class ValueGTESecondValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(ValueGTESecondValueCondition.DefaultConditionType).toBe(ValueGTESecondValueConditionType);
+    });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -1926,6 +1953,9 @@ describe('class ValueGTESecondValueCondition', () => {
 });
 
 describe('class ValueLTSecondValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(ValueLTSecondValueCondition.DefaultConditionType).toBe(ValueLTSecondValueConditionType);
+    });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -2109,6 +2139,9 @@ describe('class ValueLTSecondValueCondition', () => {
     });            
 });
 describe('class ValueLTESecondValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(ValueLTESecondValueCondition.DefaultConditionType).toBe(ValueLTESecondValueConditionType);
+    });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -2294,6 +2327,9 @@ describe('class ValueLTESecondValueCondition', () => {
 
 
 describe('class StringLengthCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(StringLengthCondition.DefaultConditionType).toBe(StringLengthConditionType);
+    });
     test('Evaluate when both Min/Max are assigned returns Match inside of stringlength; NoMatch outside of stringlength', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -2564,6 +2600,9 @@ describe('class StringLengthCondition', () => {
 });
 
 describe('class AndConditions', () => {
+    test('DefaultConditionType', () => {
+        expect(AndConditions.DefaultConditionType).toBe(AndConditionsType);
+    });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
@@ -2875,6 +2914,9 @@ describe('class AndConditions', () => {
     });        
 });
 describe('class OrConditions', () => {
+    test('DefaultConditionType', () => {
+        expect(OrConditions.DefaultConditionType).toBe(OrConditionsType);
+    });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
@@ -3211,6 +3253,9 @@ describe('class OrConditions', () => {
 });
 
 describe('class CountMatchingConditions', () => {
+    test('DefaultConditionType', () => {
+        expect(CountMatchingConditions.DefaultConditionType).toBe(CountMatchingConditionsType);
+    });
     function TestCount(conditionTypes: Array<string>, minimum: number | undefined,
         maximum: number | undefined, expectedResult: ConditionEvaluateResult,
         treatUndeterminedAs?: ConditionEvaluateResult): void {

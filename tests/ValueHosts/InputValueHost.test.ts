@@ -7,7 +7,7 @@ import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/Inpu
 import { InputValueHost, InputValueHostGenerator, InputValueHostType, ToIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { LoggingLevel } from "../../src/Interfaces/Logger";
 import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
-import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationServices, MockValidationManager, NeverMatchesConditionType, NeverMatchesConditionType2, NeverMatchesCondition } from "../Mocks";
+import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationServices, MockValidationManager, NeverMatchesConditionType, NeverMatchesConditionType2, NeverMatchesCondition, RegisterTestingOnlyConditions } from "../Mocks";
 import { ValidationServices } from '../../src/Services/ValidationServices';
 import { StringLookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValueHostId } from "../../src/DataTypes/BasicTypes";
@@ -22,6 +22,13 @@ import { ISetValueOptions, IValueHost, IValueHostState } from "../../src/Interfa
 import { IInputValueHostCallbacks, ToIInputValueHostCallbacks, ValueHostValidatedHandler, InputValueChangedHandler } from "../../src/ValueHosts/InputValueHostBase";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "../../src/ValueHosts/ValueHostBase";
 import { CreateValidationServices } from "../../starter_code/create_services";
+import { ConditionWithPromiseTester } from "./InputValidator.test";
+import { ConditionCategory, ConditionEvaluateResult, ICondition, IConditionDescriptor } from "../../src/Interfaces/Conditions";
+import { IValidationServices } from "../../src/Interfaces/ValidationServices";
+import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
+import { DataTypeServices } from "../../src/DataTypes/DataTypeServices";
+import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
+import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -31,17 +38,100 @@ interface ITestSetupConfig {
     valueHost: InputValueHost
 };
 
+function CreateInputValueHostDescriptor(fieldNumber: number = 1,
+    dataType: string = StringLookupKey,
+    initialValue?: any): IInputValueHostDescriptor {
+    return {
+        Id: 'Field' + fieldNumber,
+        Label: 'Label' + fieldNumber,
+        Type: InputValueHostType,
+        DataType: dataType,
+        InitialValue: initialValue,
+        ValidatorDescriptors: []
+    };
+}
+
+function FinishPartialInputValueHostDescriptor(partialDescriptor: Partial<IInputValueHostDescriptor> | null):
+    IInputValueHostDescriptor {
+    let defaultIVH = CreateInputValueHostDescriptor(1, StringLookupKey);
+    if (partialDescriptor) {
+        return { ...defaultIVH, ...partialDescriptor }
+    }
+    return defaultIVH;
+}
+
+function FinishPartialInputValueHostDescriptors(partialDescriptors: Array<Partial<IInputValueHostDescriptor>> | null):
+    Array<IInputValueHostDescriptor> | null {
+    let result: Array<IInputValueHostDescriptor> = [];
+    if (partialDescriptors) {
+        for (let i = 0; i < partialDescriptors.length; i++) {
+            let vhd = partialDescriptors[i];
+            result.push(FinishPartialInputValueHostDescriptor(vhd))
+        }
+    }
+
+    return result;
+}
+
+
+function CreateInputValidatorDescriptor(condDescriptor: IConditionDescriptor | null): IInputValidatorDescriptor {
+    return {
+        ConditionDescriptor: condDescriptor,
+        ErrorMessage: 'Local',
+        SummaryErrorMessage: 'Summary',
+    };
+}
+function FinishPartialInputValidatorDescriptor(validatorDescriptor: Partial<IInputValidatorDescriptor> | null):
+    IInputValidatorDescriptor {
+    let defaultIVD = CreateInputValidatorDescriptor(null);
+    if (validatorDescriptor) {
+        return { ...defaultIVD, ...validatorDescriptor };
+    }
+    return defaultIVD;
+}
+
+function FinishPartialInputValidatorDescriptors(validatorDescriptors: Array<Partial<IInputValidatorDescriptor>> | null):
+    Array<IInputValidatorDescriptor> {
+    let result: Array<IInputValidatorDescriptor> = [];
+    if (validatorDescriptors) {
+        let defaultIVD = CreateInputValidatorDescriptor(null);
+        for (let i = 0; i < validatorDescriptors.length; i++) {
+            let vd = validatorDescriptors[i];
+            result.push(FinishPartialInputValidatorDescriptor(vd));
+        }
+    }
+
+    return result;
+}
+
+function CreateInputValueHostState(fieldNumber: number = 1): IInputValueHostState {
+    return {
+        Id: 'Field' + fieldNumber,
+        Value: undefined,
+        InputValue: undefined,
+        IssuesFound: null,
+        ValidationResult: ValidationResult.NotAttempted
+    };
+}
+function FinishPartialInputValueHostState(partialState: Partial<IInputValueHostState> | null): IInputValueHostState {
+    let defaultIVS = CreateInputValueHostState(1);
+    if (partialState) {
+        return { ...defaultIVS, ...partialState };
+    }
+    return defaultIVS;
+}
+
 /**
  * Returns an ValueHost (PublicifiedValueHost subclass) ready for testing.
- * @param descriptor - Provide just the properties that you want to test.
+ * @param partialIVHDescriptor - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
  * Id: 'Field1',
  * Label: 'Label1',
- * Type: 'PublicifyValueHostBase',
+ * Type: 'Input',
  * DataType: StringLookupKey,
  * InitialValue: 'DATA'
  * ValidatorDescriptors: []
- * @param state - Use the default state by passing null. Otherwise pass
+ * @param partialState - Use the default state by passing null. Otherwise pass
  * a state. Your state will override default values. To avoid overriding,
  * pass the property with a value of undefined.
  * These are the default values
@@ -55,34 +145,14 @@ interface ITestSetupConfig {
  * and the state.
  */
 function SetupInputValueHost(
-    descriptor?: Partial<IInputValueHostDescriptor> | null,
-    state?: Partial<IInputValueHostState> | null): ITestSetupConfig {
+    partialIVHDescriptor?: Partial<IInputValueHostDescriptor> | null,
+    partialState?: Partial<IInputValueHostState> | null): ITestSetupConfig {
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
+    let updatedDescriptor = FinishPartialInputValueHostDescriptor(partialIVHDescriptor ?? null);
+    let updatedState = FinishPartialInputValueHostState(partialState ?? null);
 
-    let defaultDescriptor: IInputValueHostDescriptor = {
-        Id: 'Field1',
-        Label: 'Label1',
-        Type: InputValueHostType,
-        DataType: StringLookupKey,
-        InitialValue: 'DATA',
-        ValidatorDescriptors: []
-    };
-    let updatedDescriptor: IInputValueHostDescriptor = (!descriptor) ?
-        defaultDescriptor :
-        { ...defaultDescriptor, ...descriptor };
-    let defaultState: IInputValueHostState = {
-        Id: 'Field1',
-        Value: undefined,
-        InputValue: undefined,
-        IssuesFound: null,
-        ValidationResult: ValidationResult.NotAttempted
-    };
-    let updatedState: IInputValueHostState = (!state) ?
-        defaultState :
-        { ...defaultState, ...state };
-    let vh = new InputValueHost(vm,
-        updatedDescriptor, updatedState);
+    let vh = new InputValueHost(vm, updatedDescriptor, updatedState);
     return {
         services: services,
         validationManager: vm,
@@ -94,36 +164,24 @@ function SetupInputValueHost(
 
 /**
  * Creates a configuration where you can call Validate() and test various results.
- * @param validatorDescriptors - Always provide a list of the validatorDescriptors in the desired order.
+ * @param partialValidatorDescriptors - Always provide a list of the validatorDescriptors in the desired order.
  * If null, no validators are made available to Validate
- * @param inputValueState - Use to supply initial InputValue and Value properties. Any property
+ * @param partialInputValueState - Use to supply initial InputValue and Value properties. Any property
  * not supplied will be provided.
  * @returns Configuration that has been setup. Use valueHost to invoke validation functions.
  */
 function SetupInputValueHostForValidate(
-    validatorDescriptors: Array<Partial<IInputValidatorDescriptor>> | null,
-    inputValueState: Partial<IInputValueHostState> | null): ITestSetupConfig {
-    if (validatorDescriptors)
-        for (let i = 0; i < validatorDescriptors.length; i++) {
-            let vd = validatorDescriptors[i];
-            if (!vd.ErrorMessage)
-                vd.ErrorMessage = 'Local';
-            if (!vd.SummaryErrorMessage)
-                vd.SummaryErrorMessage = 'Summary';
-        }
+    partialValidatorDescriptors: Array<Partial<IInputValidatorDescriptor>> | null,
+    partialInputValueState: Partial<IInputValueHostState> | null): ITestSetupConfig {
+
     let inputValueDescriptor: Partial<IInputValueHostDescriptor> = {
-        ValidatorDescriptors: <any>validatorDescriptors ?? undefined
+        ValidatorDescriptors: partialValidatorDescriptors ?
+            FinishPartialInputValidatorDescriptors(partialValidatorDescriptors) :
+            undefined
     }
-    let defaultState: IInputValueHostState = {
-        Id: 'Field1',
-        InputValue: '',
-        Value: undefined,
-        IssuesFound: null,
-        ValidationResult: ValidationResult.NotAttempted
-    };
-    let updatedState = !inputValueState ?
-        defaultState :
-        { ...defaultState, ...inputValueState };
+
+    let updatedState = FinishPartialInputValueHostState(
+        { ...{ InputValue: '' }, ...partialInputValueState })
 
     return SetupInputValueHost(inputValueDescriptor, updatedState);
 }
@@ -684,6 +742,7 @@ function TestValidateFunction(validatorDescriptors: Array<Partial<IInputValidato
     expect(vrDetails).not.toBeNull();
     expect(vrDetails!.ValidationResult).toBe(expectedValidationResult);
     expect(vrDetails!.IssuesFound).toEqual(expectedIssuesFound);
+    expect(vrDetails!.Pending).toBeUndefined();
 
     let stateChanges = config.validationManager.GetHostStateChanges();
     expect(stateChanges).not.toBeNull();
@@ -691,6 +750,7 @@ function TestValidateFunction(validatorDescriptors: Array<Partial<IInputValidato
 
     return config;
 }
+
 function CreateIssueFound(conditionType: string,
     severity: ValidationSeverity = ValidationSeverity.Error,
     errorMessage: string = 'Local',
@@ -1244,6 +1304,422 @@ describe('Validate handles exception from custom InputValidator class', () => {
     });
 });
 
+function TestValidateFunctionWithPromise(
+    validatorDescriptors: Array<Partial<IInputValidatorDescriptor>> | null,
+    onValidated: ValueHostValidatedHandler,
+    onValueHostStateChanged?: ValueHostStateChangedHandler,
+    validationGroup?: string | undefined): {
+        services: IValidationServices,
+        vm: IValidationManager,
+        vh: InputValueHost,
+        promises: Array<Promise<IInputValidateResult>>
+    } {
+    let vhd1: IInputValueHostDescriptor = {
+        Id: 'Field1',
+        Label: 'Field 1',
+        Type: InputValueHostType,
+        ValidatorDescriptors: FinishPartialInputValidatorDescriptors(validatorDescriptors ?? null)
+    };
+    let services = new ValidationServices();
+    services.ActiveCultureId = 'en';
+    services.ConditionFactory = new ConditionFactory();
+    services.LoggerService = new MockCapturingLogger();
+    RegisterTestingOnlyConditions(services.ConditionFactory as ConditionFactory);
+    services.DataTypeServices = new DataTypeServices();
+    services.MessageTokenResolverService = new MessageTokenResolver();
+    let vm = new ValidationManager({
+        Services: services,
+        ValueHostDescriptors: [],
+        OnValueHostValidated: onValidated,
+        OnValueHostStateChanged: onValueHostStateChanged
+    });
+    let vh = vm.AddValueHost(vhd1, null) as InputValueHost;
+
+    // let setup = SetupInputValueHostForValidate(validatorDescriptors, inputValueState);
+    // setup.validationManager.OnValueHostValidated = onValidated;
+
+    let vrDetails: IValidateResult | null = null;
+    expect(() => vrDetails = vh.Validate({ Group: validationGroup })).not.toThrow();
+    expect(vrDetails).not.toBeNull();
+    expect(vrDetails!.Pending).not.toBeNull();
+    return {
+        services: services,
+        vm: vm,
+        vh: vh,
+        promises: vrDetails!.Pending!
+    };
+}
+async function TestOnePendingResult(
+    pending: Promise<IInputValidateResult>,
+    expectedInputValidateResult: IInputValidateResult) {
+    let asyncResult = await pending;
+
+    expect(asyncResult.ConditionEvaluateResult).toBe(expectedInputValidateResult.ConditionEvaluateResult);
+}
+function ValidateWithAsyncConditions(
+    conditionEvaluateResult: ConditionEvaluateResult,
+    // one entry per promise expected, in the order of the promises
+    expectedInputValidateResults: Array<IInputValidateResult>,
+    // one entry per expected OnValueHostValidate, in the order expected
+    expectedValidateResults: Array<IValidateResult>,
+    done: jest.DoneCallback,
+    // place this before the auto generated async condition
+    before?: IInputValidatorDescriptor | null,
+    // place this after the auto generated async condition
+    after?: IInputValidatorDescriptor | null,
+    doneAfterStateChangeCount?: number): void {
+    let ivDescriptors: Array<Partial<IInputValidatorDescriptor>> = [];
+    if (before)
+        ivDescriptors.push(before);
+    ivDescriptors.push({
+        ConditionDescriptor: null,
+        ConditionCreator: (requester) =>
+            new ConditionWithPromiseTester(
+                conditionEvaluateResult, 0
+            )
+    });
+    if (after)
+        ivDescriptors.push(after);
+
+    let doneTime = false;
+    let handlerCount = 0;
+    let onValidateHandler: ValueHostValidatedHandler =
+        (valueHost: IInputValueHost, validateResult: IValidateResult) => {
+            let vm = (valueHost as InputValueHost).ValueHostsManager as IValidationManager;
+            let evr = expectedValidateResults[handlerCount];
+            expect(validateResult.ValidationResult).toBe(evr.ValidationResult);
+            expect(validateResult.IssuesFound).toEqual(evr.IssuesFound);
+            if (evr.Pending) {
+                expect(validateResult.Pending!.length).toBe(evr.Pending.length);
+            }
+            else
+                expect(validateResult.Pending).toBeUndefined();
+            handlerCount++;
+            if (doneTime) {
+                expect(vm.DoNotSaveNativeValue()).toBe(evr.ValidationResult === ValidationResult.Invalid);
+                done();
+            }
+            else
+                expect(vm.DoNotSaveNativeValue()).toBe(true);
+        };
+    let stateChangeCounter = 0;
+    let onStateChangedHandler: ValueHostStateChangedHandler =
+        (valueHost: IValueHost, stateToRetain: IValueHostState) => {
+            stateChangeCounter++;
+            if (stateChangeCounter === doneAfterStateChangeCount)
+                done();
+        }
+
+    let setup = TestValidateFunctionWithPromise(ivDescriptors, onValidateHandler, onStateChangedHandler);
+    expect(setup.promises.length).toBe(expectedInputValidateResults.length);
+
+    for (let i = 0; i < setup.promises.length; i++)
+        TestOnePendingResult(setup.promises[i], expectedInputValidateResults[i]);
+    // we are awaiting a callback to OnValueHostValidated to finish,
+    // but only if the expected result is Invalid
+    doneTime = true;
+    expect(setup.vm.DoNotSaveNativeValue()).toBe(true); // because of Async, regardless of ValidationResult
+}
+describe('Validate with async Conditions', () => {
+    test('With 1 Condition that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
+        (done) => {
+            ValidateWithAsyncConditions(ConditionEvaluateResult.Match,
+                [{
+                    ConditionEvaluateResult: ConditionEvaluateResult.Match,
+                    IssueFound: null
+                }],
+                [{
+                    ValidationResult: ValidationResult.Valid,
+                    IssuesFound: null,
+                    Pending: [<any>{}]
+                }],
+                done, null, null,
+                2); // 2 onstatechanged to invoke done()
+        },
+        1500);  // shortened timeout
+    test('With 1 Condition that returns a promise evaluating as NoMatch is ValidatorResult.Invalid, IssuesFound assigned',
+        (done) => {
+            let issueFound: IIssueFound = {
+                ConditionType: 'TEST',
+                ErrorMessage: 'Local',
+                Severity: ValidationSeverity.Error,
+                ValueHostId: 'Field1',
+                SummaryErrorMessage: 'Summary'
+            };
+
+            ValidateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
+                [{
+                    ConditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                    IssueFound: issueFound
+                }],
+                [{  // onValueHostValidate prior to promise
+                    ValidationResult: ValidationResult.Valid,
+                    IssuesFound: null,
+                    Pending: [<any>{}]
+                },
+                {   // after promise
+                    ValidationResult: ValidationResult.Invalid,
+                    IssuesFound: [issueFound]
+                }],
+                done);
+        },
+        1500);  // shortened timeout
+    test('With 1 Condition that returns a promise evaluating as Undetermined is ValidatorResult.Undetermined, IssuesFound = null',
+        (done) => {
+            ValidateWithAsyncConditions(ConditionEvaluateResult.Undetermined,
+                [{
+                    ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+                    IssueFound: null
+                }],
+                [{
+                    ValidationResult: ValidationResult.Valid,
+                    IssuesFound: null,
+                    Pending: [<any>{}]
+                }],
+                done, null, null,
+                2); // onstatechanges to invoke done()
+        },
+        1500);  // shortened timeout
+    test('With 2 Conditions, first is Match, second is async that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
+        (done) => {
+            ValidateWithAsyncConditions(ConditionEvaluateResult.Match,
+                [{
+                    ConditionEvaluateResult: ConditionEvaluateResult.Match,
+                    IssueFound: null
+                }],
+                [{
+                    ValidationResult: ValidationResult.Valid,
+                    IssuesFound: null,
+                    Pending: [<any>{}]
+                }],
+                done,
+                <IInputValidatorDescriptor>{
+                    ConditionDescriptor: {
+                        Type: AlwaysMatchesConditionType
+                    },
+                    ErrorMessage: 'Always',
+                }, null,
+                2); // 2 onstatechanges to invoke done()
+        },
+        1500);  // shortened timeout
+    test('With 2 Conditions, second is Match, first is async that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
+        (done) => {
+            ValidateWithAsyncConditions(ConditionEvaluateResult.Match,
+                [{
+                    ConditionEvaluateResult: ConditionEvaluateResult.Match,
+                    IssueFound: null
+                }],
+                [{
+                    ValidationResult: ValidationResult.Valid,
+                    IssuesFound: null,
+                    Pending: [<any>{}]
+                }],
+                done,
+                null,
+                <IInputValidatorDescriptor>{
+                    ConditionDescriptor: {
+                        Type: AlwaysMatchesConditionType
+                    },
+                    ErrorMessage: 'Always',
+                },
+                2); // 2 onstatechanges to invoke done()
+        },
+        1500);  // shortened timeout
+    test('With 2 Conditions, first is NoMatch, second is async that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null, result is Invalid with 1 issuefound',
+        (done) => {
+            let issueFound: IIssueFound = {
+                ConditionType: NeverMatchesConditionType,
+                ErrorMessage: 'Never',
+                Severity: ValidationSeverity.Error,
+                ValueHostId: 'Field1',
+                SummaryErrorMessage: 'Summary'
+            };
+            ValidateWithAsyncConditions(ConditionEvaluateResult.Match,
+                [{
+                    ConditionEvaluateResult: ConditionEvaluateResult.Match,
+                    IssueFound: null
+                }],
+                [
+                    // Despite the async returning, it doesn't change the result
+                    // so there is only one call to OnValueHostValidate
+                    {
+                        ValidationResult: ValidationResult.Invalid,
+                        IssuesFound: [issueFound],
+                        Pending: [<any>{}]
+                    }],
+                done,
+                <IInputValidatorDescriptor>{
+                    ConditionDescriptor: {
+                        Type: NeverMatchesConditionType
+                    },
+                    ErrorMessage: 'Never',
+                },
+                null,
+                2); // to catch the final promise communication which doesn't use OnValidate
+        },
+        1500);  // shortened timeout
+    test('With 2 Conditions, first is NoMatch, second is async that returns a promise evaluating as NoMatch, result is Invalid with 2 issues found',
+        (done) => {
+            let issueFoundFromNever: IIssueFound = {
+                ConditionType: NeverMatchesConditionType,
+                ErrorMessage: 'Never',
+                Severity: ValidationSeverity.Error,
+                ValueHostId: 'Field1',
+                SummaryErrorMessage: 'Never Summary'
+            };
+            let issueFoundFromPromise: IIssueFound = {
+                ConditionType: 'TEST',
+                ErrorMessage: 'Local',
+                Severity: ValidationSeverity.Error,
+                ValueHostId: 'Field1',
+                SummaryErrorMessage: 'Summary'
+            };
+            ValidateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
+                [{
+                    ConditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                    IssueFound: issueFoundFromPromise
+                }],
+                [
+                    {
+                        ValidationResult: ValidationResult.Invalid,
+                        IssuesFound: [issueFoundFromNever],
+                        Pending: [<any>{}]
+                    },
+                    {
+                        ValidationResult: ValidationResult.Invalid,
+                        IssuesFound: [issueFoundFromNever, issueFoundFromPromise],
+                    }],
+                done,
+                <IInputValidatorDescriptor>{
+                    ConditionDescriptor: {
+                        Type: NeverMatchesConditionType
+                    },
+                    ErrorMessage: 'Never',
+                    SummaryErrorMessage: 'Never Summary'
+                });
+        },
+        1500);  // shortened timeout
+
+    test('With 2 Conditions, second is NoMatch, first is async that returns a promise evaluating as NoMatch, result is Invalid with 2 issues found',
+        (done) => {
+            let issueFoundFromNever: IIssueFound = {
+                ConditionType: NeverMatchesConditionType,
+                ErrorMessage: 'Never',
+                Severity: ValidationSeverity.Error,
+                ValueHostId: 'Field1',
+                SummaryErrorMessage: 'Never Summary'
+            };
+            let issueFoundFromPromise: IIssueFound = {
+                ConditionType: 'TEST',
+                ErrorMessage: 'Local',
+                Severity: ValidationSeverity.Error,
+                ValueHostId: 'Field1',
+                SummaryErrorMessage: 'Summary'
+            };
+            ValidateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
+                [{
+                    ConditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                    IssueFound: issueFoundFromPromise
+                }],
+                [
+                    {
+                        ValidationResult: ValidationResult.Invalid,
+                        IssuesFound: [issueFoundFromNever],
+                        Pending: [<any>{}]
+                    },
+                    {
+                        ValidationResult: ValidationResult.Invalid,
+                        IssuesFound: [issueFoundFromNever, issueFoundFromPromise],
+                    }],
+                done,
+                null, // before not assigned
+                <IInputValidatorDescriptor>{
+                    ConditionDescriptor: {
+                        Type: NeverMatchesConditionType
+                    },
+                    ErrorMessage: 'Never',
+                    SummaryErrorMessage: 'Never Summary'
+                });
+        },
+        1500);  // shortened timeout    
+    test('With 2 Conditions, both are async and both return a promise of Match. 1 OnValidate call. 2 OnValueHostStateChanges',
+        (done) => {
+            ValidateWithAsyncConditions(ConditionEvaluateResult.Match,
+                [{
+                    ConditionEvaluateResult: ConditionEvaluateResult.Match,
+                    IssueFound: null
+                },
+                {
+                    ConditionEvaluateResult: ConditionEvaluateResult.Match,
+                    IssueFound: null
+                }],
+                [{
+                    ValidationResult: ValidationResult.Valid,
+                    IssuesFound: null,
+                    Pending: [<any>{}, <any>{}]
+                }],
+                done,
+                null,
+                <IInputValidatorDescriptor>{
+                    ConditionDescriptor: null,
+                    ConditionCreator: (requester) =>
+                        new ConditionWithPromiseTester(
+                            ConditionEvaluateResult.Match, 0
+                        ),
+                    ErrorMessage: 'Second'
+                },
+                2); // state change count
+        },
+        1500);  // shortened timeout   
+
+    test('With 1 Condition that whose promise gets rejected doesnt change validation results',
+        (done) => {
+            let vds: IInputValidatorDescriptor = {
+                ConditionDescriptor: null,
+                ConditionCreator: (requester) =>
+                {
+                    return <ICondition>{
+                        Category: ConditionCategory.Undetermined,
+                        ConditionType: 'TEST',
+                        Evaluate: (valueHost: IValueHost | null,
+                            valueHostResolver: IValueHostResolver) => {
+                            let promise = new Promise<ConditionEvaluateResult>(
+                                (resolve, reject) => {
+                                    reject('REJECTED ERROR');
+                                }
+                            );
+                            return promise;
+                        }
+                    }
+                },
+                ErrorMessage: 'Error'
+            }
+            // expect the sync process does nothing and thus doesn't call onValidate,
+            // but it does update the state for AsyncProcessing=true
+            // Then when the promise completes, it also doesn't call onValidate
+            // but it does update the state for AsyncProcessing=false
+            let onValidateHandler: ValueHostValidatedHandler =
+                (vh, vr) => { 
+           //         fail();
+                };
+            let statecounter = 0;
+            let onStateChangedHandler: ValueHostStateChangedHandler =
+                (vh, stateToRetain) => {
+                    statecounter++;
+                    if (statecounter === 2) {
+                        let logger = setup.services.LoggerService as MockCapturingLogger;
+                        expect(logger.GetLatest()).not.toBeNull();
+                        expect(logger.GetLatest()!.Message).toMatch(/REJECTED ERROR/);
+                        done();
+                    }
+                };
+            let setup = TestValidateFunctionWithPromise([vds], onValidateHandler, onStateChangedHandler);
+            expect(setup.promises.length).toBe(1);
+
+        },
+        1500);  // shortened timeout    
+});
+
 // ClearValidation(): void
 describe('InputValueHost.ClearValidation', () => {
     test('After Validate, Ensure no exceptions and the state is NotAttempted with IssuesFound = null', () => {
@@ -1365,7 +1841,7 @@ describe('InputValueHost.ClearValidation', () => {
 });
 // DoNotSaveNativeValue(): boolean
 describe('InputValueHost.DoNotSaveNativeValue', () => {
-    function TryDoNotSaveNativeValue(initialValidationResult: ValidationResult, expectedResult: boolean): void {
+    function TryDoNotSaveNativeValue(initialValidationResult: ValidationResult, hasPendings: boolean, expectedResult: boolean): void {
         let ivDescriptor: IInputValidatorDescriptor = {
             ConditionDescriptor: { Type: NeverMatchesConditionType },
             ErrorMessage: ''
@@ -1376,7 +1852,8 @@ describe('InputValueHost.DoNotSaveNativeValue', () => {
         let state: Partial<IInputValueHostState> = {
             Id: 'Field1',
             ValidationResult: initialValidationResult,
-            IssuesFound: []
+            IssuesFound: [],
+            AsyncProcessing: hasPendings
         };
 
         let config = SetupInputValueHostForValidate(ivDescriptors, state);
@@ -1384,19 +1861,19 @@ describe('InputValueHost.DoNotSaveNativeValue', () => {
         expect(config.valueHost.DoNotSaveNativeValue()).toBe(expectedResult);
     }
     test('ValidationResult = Valid, DoNotSaveNativeValue=false', () => {
-        TryDoNotSaveNativeValue(ValidationResult.Valid, false);
+        TryDoNotSaveNativeValue(ValidationResult.Valid, false, false);
     });
     test('ValidationResult = Undetermined, DoNotSaveNativeValue=false', () => {
-        TryDoNotSaveNativeValue(ValidationResult.Undetermined, false);
+        TryDoNotSaveNativeValue(ValidationResult.Undetermined, false, false);
     });
     test('ValidationResult = Invalid, DoNotSaveNativeValue=true', () => {
-        TryDoNotSaveNativeValue(ValidationResult.Invalid, true);
+        TryDoNotSaveNativeValue(ValidationResult.Invalid, false, true);
     });
-    test('ValidationResult = AsyncProcessing, DoNotSaveNativeValue=true', () => {
-        TryDoNotSaveNativeValue(ValidationResult.AsyncProcessing, true);
+    test('ValidationResult = Valid but with async pending, DoNotSaveNativeValue=true', () => {
+        TryDoNotSaveNativeValue(ValidationResult.Valid, true, true);
     });
     test('ValidationResult = ValueChangedButUnvalidated, DoNotSaveNativeValue=true', () => {
-        TryDoNotSaveNativeValue(ValidationResult.ValueChangedButUnvalidated, true);
+        TryDoNotSaveNativeValue(ValidationResult.ValueChangedButUnvalidated, false, true);
     });
 
 });
@@ -2026,7 +2503,7 @@ describe('InputValueHostGenerator members', () => {
         let testItem = new InputValueHostGenerator();
         expect(() => testItem.CleanupState(state, descriptor)).not.toThrow();
         expect(state).toEqual(originalState);
-    });    
+    });
     test('Using ConditionDescriptor, CleanupState existing state with ValidationResult.Error has an IssuesFound and there is a ValidatorDescriptor. State.IssuesFound unchanged', () => {
         let originalState: IInputValueHostState = {
             Id: 'Field1',
@@ -2092,7 +2569,7 @@ describe('InputValueHostGenerator members', () => {
         let testItem = new InputValueHostGenerator();
         expect(() => testItem.CleanupState(state, descriptor)).not.toThrow();
         expect(state).toEqual(originalState);
-    });    
+    });
     test('Using ConditionDescriptor, CleanupState existing state has an IssuesFound but no associated ValidationDescriptor. State.IssuesFound is null', () => {
         let originalState: IInputValueHostState = {
             Id: 'Field1',
@@ -2674,17 +3151,16 @@ describe('ToIInputValueHost function', () => {
             Label: 'Label1',
             ValidatorDescriptors: []
         },
-        {
-            Id: 'Field1',
-            Value: undefined,
-            IssuesFound: null,
-            ValidationResult: ValidationResult.NotAttempted,
-            InputValue: undefined
-        })
+            {
+                Id: 'Field1',
+                Value: undefined,
+                IssuesFound: null,
+                ValidationResult: ValidationResult.NotAttempted,
+                InputValue: undefined
+            })
         expect(ToIInputValueHost(testItem)).toBe(testItem);
     });
-    class TestIInputValueHostImplementation implements IInputValueHost
-    {
+    class TestIInputValueHostImplementation implements IInputValueHost {
         GetInputValue() {
             throw new Error("Method not implemented.");
         }
@@ -2752,23 +3228,23 @@ describe('ToIInputValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         IsChanged: boolean = false;
-        
+
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIInputValueHostImplementation();
 
         expect(ToIInputValueHost(testItem)).toBe(testItem);
-    });    
+    });
     test('Non-matching interface returns null.', () => {
-        let testItem = { };
+        let testItem = {};
         expect(ToIInputValueHost(testItem)).toBeNull();
-    });    
+    });
     test('null returns null.', () => {
         expect(ToIInputValueHost(null)).toBeNull();
-    });        
+    });
     test('Non-object returns null.', () => {
         expect(ToIInputValueHost(100)).toBeNull();
-    });        
+    });
 });
 
 describe('ToIInputValueHostCallbacks function', () => {
@@ -2777,10 +3253,9 @@ describe('ToIInputValueHostCallbacks function', () => {
 
         expect(ToIInputValueHostCallbacks(testItem)).toBe(testItem);
     });
-    class TestIInputValueHostCallbacksImplementation implements IInputValueHostCallbacks
-    {
-        OnValueChanged(vh: IValueHost, old: any) {}
-        OnValueHostStateChanged(vh: IValueHost, state: IValueHostState){}
+    class TestIInputValueHostCallbacksImplementation implements IInputValueHostCallbacks {
+        OnValueChanged(vh: IValueHost, old: any) { }
+        OnValueHostStateChanged(vh: IValueHost, state: IValueHostState) { }
         OnInputValueChanged(vh: IInputValueHost, old: any) { }
         OnValueHostValidated(vh: IInputValueHost, validationResult: IValidateResult) { }
     }
@@ -2788,15 +3263,15 @@ describe('ToIInputValueHostCallbacks function', () => {
         let testItem = new TestIInputValueHostCallbacksImplementation();
 
         expect(ToIInputValueHostCallbacks(testItem)).toBe(testItem);
-    });    
+    });
     test('Non-matching interface returns null.', () => {
-        let testItem = { };
+        let testItem = {};
         expect(ToIInputValueHostCallbacks(testItem)).toBeNull();
-    });    
+    });
     test('null returns null.', () => {
         expect(ToIInputValueHostCallbacks(null)).toBeNull();
-    });        
+    });
     test('Non-object returns null.', () => {
         expect(ToIInputValueHostCallbacks(100)).toBeNull();
-    });        
+    });
 });
