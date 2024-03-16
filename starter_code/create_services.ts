@@ -19,7 +19,7 @@ import {
     BooleanLocalizedFormatter, CurrencyLocalizedFormatter, PercentageLocalizedFormatter, Percentage100LocalizedFormatter
 } from "../src/DataTypes/DataTypeLocalizedFormatters";
 import { CultureIdFallback, DataTypeServices } from "../src/DataTypes/DataTypeServices";
-import { BooleanLookupKey, YesNoBooleanLookupKey } from "../src/DataTypes/LookupKeys";
+import { AbbrevDateLookupKey, BooleanLookupKey, DateLookupKey, IntegerLookupKey, NumberLookupKey, YesNoBooleanLookupKey } from "../src/DataTypes/LookupKeys";
 import { LoggingLevel } from "../src/Interfaces/Logger";
 import { ITextLocalizerService } from "../src/Interfaces/TextLocalizerService";
 import { ConsoleLogger } from "../src/Services/ConsoleLogger";
@@ -283,5 +283,78 @@ export function CreateTextLocalizerService(): ITextLocalizerService
         'en': 'no',
         'es': 'no'
     });    
+
+    // Validator error messages can use these instead of having to be setup on individual InputValidatorDescriptors.
+    // So long as you don't supply a value to the InputValidatorDescriptor.ErrorMessage property, it will
+    // create a lookup key using this pattern, and see if the TextLocalizerService has a value for it.
+    // EM-ConditionType-DataTypeLookupKey
+    // and a fallback:
+    // EM-ConditionType
+    // Similar for SummaryMessage, only with SEM- prefix:
+    // SEM-ConditionType-DataTypeLookupKey
+    // SEM-ConditionType
+    // 
+    // This becomes important for auto-generating the "Data type check" validators, a step that the UI developer
+    // would normally have to inject into the list of validators from business logic.
+    // Guidance: Remember that error messages need to be easily understood and help the user fix the input.
+    // 
+    //!!!ALERT: This is a partial list of ConditionTypes and possible DataTypeLookupKeys
+    service.RegisterErrorMessage(RequiredTextConditionType, null, {
+        '*': 'Requires a value.'
+    });
+    service.RegisterSummaryMessage(RequiredTextConditionType, null, {
+        '*': '{Label} requires a value.'
+    });    
+    service.RegisterErrorMessage(DataTypeCheckConditionType, null, {
+        '*': 'Invalid value.'   // this is a fallback for when all datatypelookup keys have failed. Its a terrible error message, very unhelpful. That's why we need data type specific versions.
+    });
+    service.RegisterSummaryMessage(DataTypeCheckConditionType, null, {
+        '*': '{Label} has an invalid value.'
+    });    
+    service.RegisterErrorMessage(DataTypeCheckConditionType, DateLookupKey,  {
+        '*': 'Invalid value. Enter a date.',
+        'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
+        'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
+    });
+    service.RegisterSummaryMessage(DataTypeCheckConditionType, DateLookupKey,  {
+        '*': '{Label} has an invalid value. Enter a date.',
+        'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
+        'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
+    });    
+    service.RegisterErrorMessage(DataTypeCheckConditionType, NumberLookupKey, {
+        '*': 'Invalid value. Enter a number.',
+    });
+    service.RegisterSummaryMessage(DataTypeCheckConditionType, NumberLookupKey, {
+        '*': '{Label} has an invalid value. Enter a number.',
+    });    
+    service.RegisterErrorMessage(DataTypeCheckConditionType, IntegerLookupKey, {
+        '*': 'Invalid value. Enter an integer.',
+    });
+    service.RegisterSummaryMessage(DataTypeCheckConditionType, IntegerLookupKey, {
+        '*': '{Label} has an invalid value. Enter an integer.',
+    });    
+    service.RegisterErrorMessage(DataTypeCheckConditionType, DateLookupKey, {
+        '*': 'Invalid value. Enter a date.',
+        'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
+        'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
+    });
+    service.RegisterSummaryMessage(DataTypeCheckConditionType, DateLookupKey, {
+        '*': '{Label} has an invalid value. Enter a date.',
+        'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
+        'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
+    });    
+    service.RegisterErrorMessage(DataTypeCheckConditionType, AbbrevDateLookupKey, {
+        '*': 'Invalid value. Enter a date.',
+        'en-US': 'Invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
+        'en-GB': 'Invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
+    });
+    service.RegisterSummaryMessage(DataTypeCheckConditionType, AbbrevDateLookupKey, {
+        '*': '{Label} has an invalid value. Enter a date.',
+        'en-US': '{Label} has an invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
+        'en-GB': '{Label} has an invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
+    });    
+
+
     return service;
+    
 }

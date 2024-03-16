@@ -309,7 +309,7 @@ interface IInputValidatorDescriptor {
     ConditionDescriptor: null | IConditionDescriptor;
     ConditionCreator?: ((requester) => null | ICondition);
     ErrorMessage: string | ((host) => string);
-    SummaryErrorMessage?: null | string | ((host) => string);
+    SummaryMessage?: null | string | ((host) => string);
     Severity?: ValidationSeverity | ((host) => ValidationSeverity);
     Enabled?: boolean | ((host) => boolean);
     EnablerDescriptor?: null | IConditionDescriptor;
@@ -322,7 +322,7 @@ Because this is so full of goodness, let’s go through each property.
 -	ConditionDescriptor – Already described above. It is not the only way to setup a Condition…
 -	ConditionCreator – Alternative to creating a Condition by returning an implementation of ICondition. This choice gives you a lot of flexibility, especially when you have some complex logic that you feel you can code up in an Evaluate method easier than using a bunch of Conditions.
 -	ErrorMessage – A template for the message reporting an issue. Its intended location is nearby the Input, such that you can omit including the field’s label. “This field requires a value”. As a template, it provides tokens which can be replaced by live data. (Discussed later).
--	SummaryErrorMessage – Same idea as ErrorMessage except to be shown in a Validation Summary. Its normal to include the field label in this message, using the {Label} token: “{Label} requires a value”.
+-	SummaryMessage – Same idea as ErrorMessage except to be shown in a Validation Summary. Its normal to include the field label in this message, using the {Label} token: “{Label} requires a value”.
 -	Severity – Controls some validation behaviors with these three values.
 	-	Error – normal error and the default when this field is omitted.
 	-	Severe – If there are more validation rules, skip them. Severity=Error continues to evaluate the remaining validation rules.
@@ -344,7 +344,7 @@ Now let’s place the IInputValidatorDescriptor into our previous example using 
       ValueHostId: null
     },
     ErrorMessage: 'This field requires a value',
-    SummaryErrorMessage: '{Label} requires a value.',
+    SummaryMessage: '{Label} requires a value.',
   },
   {
     ConditionDescriptor: {
@@ -353,7 +353,7 @@ Now let’s place the IInputValidatorDescriptor into our previous example using 
       SecondValueHostId: 'LastName'
     },
     ErrorMessage: 'Are you sure that your first and last names are the same?',
-    SummaryErrorMessage: 'In {Label}, are you sure that your first and last names are the same?',
+    SummaryMessage: 'In {Label}, are you sure that your first and last names are the same?',
     Severity: 'Warning'
   }]
 },
@@ -368,7 +368,7 @@ Now let’s place the IInputValidatorDescriptor into our previous example using 
       ValueHostId: null
     },
     ErrorMessage: 'This field requires a value',
-    SummaryErrorMessage: '{Label} requires a value.',
+    SummaryMessage: '{Label} requires a value.',
   }]
 }]
 ```

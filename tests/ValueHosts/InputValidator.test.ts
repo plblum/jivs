@@ -14,7 +14,7 @@ import { LoggingLevel } from "../../src/Interfaces/Logger";
 import type { ITokenLabelAndValue } from "../../src/Interfaces/InputValidator";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger, ThrowsExceptionConditionType, NeverMatchesConditionType } from "../Mocks";
-import { StringLookupKey } from '../../src/DataTypes/LookupKeys';
+import { DateLookupKey, StringLookupKey } from '../../src/DataTypes/LookupKeys';
 import { IValueHostResolver, IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostId } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory } from '../../src/Interfaces/Conditions';
@@ -23,6 +23,7 @@ import { ValidationSeverity, IValidateOptions } from '../../src/Interfaces/Valid
 import { IInputValidateResult, IInputValidator, IInputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
+import { ValidationServices } from '../../src/Services/ValidationServices';
 
 // subclass of InputValidator to expose many of its protected members so they
 // can be individually tested
@@ -49,8 +50,8 @@ class PublicifiedInputValidator extends InputValidator {
     public ExposeGetErrorMessageTemplate(): string {
         return this.GetErrorMessageTemplate();
     }
-    public ExposeGetSummaryErrorMessageTemplate(): string {
-        return this.GetSummaryErrorMessageTemplate();
+    public ExposeGetSummaryMessageTemplate(): string {
+        return this.GetSummaryMessageTemplate();
     }
 }
 /**
@@ -60,7 +61,7 @@ class PublicifiedInputValidator extends InputValidator {
  * Any not supplied but are required will be assigned using these rules:
  * ConditionDescriptor - RequiredTextConditiontType, ValueHostId: null
  * ErrorMessage: 'Local'
- * SummaryErrorMessage: 'Summary'
+ * SummaryMessage: 'Summary'
  * @returns An object with all of the parts that were setup including 
  * ValidationManager, Services, two ValueHosts, the complete Descriptor,
  * and the InputValidator.
@@ -81,7 +82,7 @@ function SetupWithField1AndField2(descriptor?: Partial<IInputValidatorDescriptor
         ConditionDescriptor: <IRequiredTextConditionDescriptor>
             { Type: RequiredTextConditionType, ValueHostId: 'Field1' },
         ErrorMessage: 'Local',
-        SummaryErrorMessage: 'Summary'
+        SummaryMessage: 'Summary'
     };
 
     let updatedDescriptor: IInputValidatorDescriptor = (!descriptor) ?
@@ -449,8 +450,8 @@ function SetupForLocalization(activeCultureID: string): PublicifiedInputValidato
     let config = SetupWithField1AndField2({
         ErrorMessage: 'EM-fallback',
         ErrorMessagel10n: 'EM',
-        SummaryErrorMessage: 'SEM-fallback',
-        SummaryErrorMessagel10n: 'SEM'
+        SummaryMessage: 'SEM-fallback',
+        SummaryMessagel10n: 'SEM'
     });
     let tlService = config.services.TextLocalizerService as TextLocalizerService;
     tlService.Register('EM', {
@@ -458,8 +459,8 @@ function SetupForLocalization(activeCultureID: string): PublicifiedInputValidato
         'es': 'esErrorMessage'
     });
     tlService.Register('SEM', {
-        'en': 'enSummaryErrorMessage',
-        'es': 'esSummaryErrorMessage'
+        'en': 'enSummaryMessage',
+        'es': 'esSummaryMessage'
     });
     config.services.ActiveCultureId = activeCultureID;
     return config.inputValidator;
@@ -512,74 +513,212 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
         let testItem = SetupForLocalization('fr-FR');
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');
     });
+
+    test('TextLocalizationService.GetErrorMessage used because ErrorMessage is not supplied', () => {
+      
+        let config = SetupWithField1AndField2({
+            ErrorMessage: null,
+            ErrorMessagel10n: null,
+        });
+        config.services.TextLocalizerService.RegisterErrorMessage(RequiredTextConditionType, null, {
+            '*': 'Default Error Message'
+        });
+        config.services.ActiveCultureId = 'en';
+        let testItem = config.inputValidator;
+    
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
+    });    
+    test('TextLocalizationService.GetErrorMessage is not used because ErrorMessage is supplied', () => {
+      
+        let config = SetupWithField1AndField2({
+            ErrorMessage: 'supplied',
+            ErrorMessagel10n: null,
+        });
+
+        config.services.TextLocalizerService.RegisterErrorMessage(RequiredTextConditionType, null, {
+            '*': 'Default Error Message'
+        });
+        config.services.ActiveCultureId = 'en';
+        let testItem = config.inputValidator;
+    
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('supplied');
+    });        
+    test('TextLocalizationService.GetErrorMessage together with both Condition Type and DataTypeLookupKey', () => {
+      
+        let config = SetupWithField1AndField2({
+            ConditionDescriptor: {
+                Type: DataTypeCheckConditionType
+            },
+            ErrorMessage: null,
+            ErrorMessagel10n: null,
+        });
+        config.services.TextLocalizerService.RegisterErrorMessage(DataTypeCheckConditionType, StringLookupKey, // LookupKey must conform to ValueHost.DataType
+        {
+            '*': 'Default Error Message'
+        });
+        config.services.ActiveCultureId = 'en';
+        let testItem = config.inputValidator;
+    
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
+    });        
+    test('TextLocalizationService.GetErrorMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
+      
+        let config = SetupWithField1AndField2({
+            ConditionDescriptor: {
+                Type: DataTypeCheckConditionType
+            },
+            ErrorMessage: null,
+            ErrorMessagel10n: null,
+        });
+        config.services.TextLocalizerService.RegisterErrorMessage(DataTypeCheckConditionType, null,
+        {
+            '*': 'Default Error Message'
+        });        
+        config.services.TextLocalizerService.RegisterErrorMessage(DataTypeCheckConditionType, DateLookupKey, // LookupKey of VH is StringLookupKey
+        {
+            '*': 'Default Error Message-String'
+        });
+        config.services.ActiveCultureId = 'en';
+        let testItem = config.inputValidator;
+    
+        expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
+    }); 
 });
-describe('InputValidator.GetSummaryErrorMessageTemplate', () => {
-    test('Descriptor.SummaryErrorMessage = string, return the same string', () => {
+describe('InputValidator.GetSummaryMessageTemplate', () => {
+    test('Descriptor.SummaryMessage = string, return the same string', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
-            SummaryErrorMessage: 'Summary',
+            SummaryMessage: 'Summary',
         });
 
-        expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Summary');
+        expect(config.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
     });
-    test('Descriptor.SummaryErrorMessage = null, return ErrorMessage', () => {
+    test('Descriptor.SummaryMessage = null, return ErrorMessage', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
-            SummaryErrorMessage: null,
+            SummaryMessage: null,
         });
 
-        expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Local');
+        expect(config.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Local');
     });
-    test('Descriptor.SummaryErrorMessage = undefined, return ErrorMessage', () => {
+    test('Descriptor.SummaryMessage = undefined, return ErrorMessage', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
-            SummaryErrorMessage: undefined
+            SummaryMessage: undefined
         });
 
-        expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Local');
+        expect(config.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Local');
     });
-    test('Descriptor.SummaryErrorMessage = function, GetSummaryErrorMessageTemplate= result of function', () => {
+    test('Descriptor.SummaryMessage = function, GetSummaryMessageTemplate= result of function', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
-            SummaryErrorMessage: (iv: IInputValidator) => summaryerrorMessageForFn
+            SummaryMessage: (iv: IInputValidator) => summaryMessageForFn
         });
 
-        let summaryerrorMessageForFn = 'Summary';
-        expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Summary');
+        let summaryMessageForFn = 'Summary';
+        expect(config.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
     });
-    test('Descriptor.SummaryErrorMessage = function that returns null GetSummaryErrorMessageTemplate = ErrorMessage', () => {
+    test('Descriptor.SummaryMessage = function that returns null GetSummaryMessageTemplate = ErrorMessage', () => {
         let config = SetupWithField1AndField2({
             ErrorMessage: 'Local',
-            SummaryErrorMessage: (iv: IInputValidator) => null!
+            SummaryMessage: (iv: IInputValidator) => null!
         });
 
-        expect(config.inputValidator.ExposeGetSummaryErrorMessageTemplate()).toBe('Local');
+        expect(config.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Local');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
         let testItem = SetupForLocalization('en');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('enSummaryErrorMessage');
+        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
         let testItem = SetupForLocalization('en-US');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('enSummaryErrorMessage');
+        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
     });
 
     test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
         let testItem = SetupForLocalization('es-SP');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('esSummaryErrorMessage');
+        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('esSummaryMessage');
     });
 
-    test('TextLocalizationService not setup for fr language and active culture of fr uses SummaryErrorMessage property', () => {
+    test('TextLocalizationService not setup for fr language and active culture of fr uses SummaryMessage property', () => {
         let testItem = SetupForLocalization('fr');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('SEM-fallback');
+        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
-    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses SummaryErrorMessage property', () => {
+    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses SummaryMessage property', () => {
         let testItem = SetupForLocalization('fr-FR');
-        expect(testItem.ExposeGetSummaryErrorMessageTemplate()).toBe('SEM-fallback');
+        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
+    test('TextLocalizationService.GetSummaryMessage used because SummaryMessage is not supplied', () => {
+      
+        let config = SetupWithField1AndField2({
+            SummaryMessage: null,
+            SummaryMessagel10n: null,
+        });
+        config.services.TextLocalizerService.RegisterSummaryMessage(RequiredTextConditionType, null, {
+            '*': 'Default Error Message'
+        });
+        config.services.ActiveCultureId = 'en';
+        let testItem = config.inputValidator;
+    
+        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
+    });    
+    test('TextLocalizationService.GetSummaryMessage is not used because SummaryMessage is supplied', () => {
+      
+        let config = SetupWithField1AndField2({
+            SummaryMessage: 'supplied',
+            SummaryMessagel10n: null,
+        });
 
+        config.services.TextLocalizerService.RegisterSummaryMessage(RequiredTextConditionType, null, {
+            '*': 'Default Error Message'
+        });
+        config.services.ActiveCultureId = 'en';
+        let testItem = config.inputValidator;
+    
+        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('supplied');
+    });        
+    test('TextLocalizationService.GetSummaryMessage together with both Condition Type and DataTypeLookupKey', () => {
+      
+        let config = SetupWithField1AndField2({
+            ConditionDescriptor: {
+                Type: DataTypeCheckConditionType
+            },
+            SummaryMessage: null,
+            SummaryMessagel10n: null,
+        });
+        config.services.TextLocalizerService.RegisterSummaryMessage(DataTypeCheckConditionType, StringLookupKey, // LookupKey must conform to ValueHost.DataType
+        {
+            '*': 'Default Error Message'
+        });
+        config.services.ActiveCultureId = 'en';
+        let testItem = config.inputValidator;
+    
+        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
+    });        
+    test('TextLocalizationService.GetSummaryMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
+      
+        let config = SetupWithField1AndField2({
+            ConditionDescriptor: {
+                Type: DataTypeCheckConditionType
+            },
+            SummaryMessage: null,
+            SummaryMessagel10n: null,
+        });
+        config.services.TextLocalizerService.RegisterSummaryMessage(DataTypeCheckConditionType, null,
+        {
+            '*': 'Default Error Message'
+        });        
+        config.services.TextLocalizerService.RegisterSummaryMessage(DataTypeCheckConditionType, DateLookupKey, // LookupKey of VH is StringLookupKey
+        {
+            '*': 'Default Error Message-String'
+        });
+        config.services.ActiveCultureId = 'en';
+        let testItem = config.inputValidator;
+    
+        expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
+    }); 
 });
 // Validate(group?: string): IIssueFound | null
 describe('InputValidator.Validate', () => {
@@ -621,11 +760,11 @@ describe('InputValidator.Validate', () => {
         testSeverity(ValidationSeverity.Severe);
     });
     function testErrorMessages(errorMessage: string | ((host: IInputValidator) => string),
-        summaryErrorMessage: string | ((host: IInputValidator) => string) | null,
+        summaryMessage: string | ((host: IInputValidator) => string) | null,
         expectedErrorMessage: string, expectedSummaryMessage: string): void {
         let config = SetupWithField1AndField2({
             ErrorMessage: errorMessage,
-            SummaryErrorMessage: summaryErrorMessage,
+            SummaryMessage: summaryMessage,
         });
         config.valueHost1.SetInputValue('');   // will be an issue
         let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
@@ -638,15 +777,15 @@ describe('InputValidator.Validate', () => {
         let issueFound = vrResult!.IssueFound;
         expect(issueFound!.ConditionType).toBe(RequiredTextConditionType);
         expect(issueFound!.ErrorMessage).toBe(expectedErrorMessage);
-        expect(issueFound!.SummaryErrorMessage).toBe(expectedSummaryMessage);
+        expect(issueFound!.SummaryMessage).toBe(expectedSummaryMessage);
     }
     test('Issue found. Only ErrorMessage supplied. Summary is the same as ErrorMessage', () => {
         testErrorMessages('Local', null, 'Local', 'Local');
     });
-    test('Issue found. ErrorMessage and SummaryErrorMessage supplied. Issue reflects them', () => {
+    test('Issue found. ErrorMessage and SummaryMessage supplied. Issue reflects them', () => {
         testErrorMessages('Local', 'Summary', 'Local', 'Summary');
     });
-    test('Issue found. ErrorMessage and SummaryErrorMessage supplied each with tokens. Error messages both have correctly replaced the tokens.', () => {
+    test('Issue found. ErrorMessage and SummaryMessage supplied each with tokens. Error messages both have correctly replaced the tokens.', () => {
         testErrorMessages('{Label} Local', '{Label} Summary', 'Label1 Local', 'Label1 Summary');
     });
     function testConditionHasIssueButDisabledReturnsNull(descriptorChanges: Partial<IInputValidatorDescriptor>): void {
@@ -818,7 +957,7 @@ describe('InputValidator.Validate', () => {
                     delay, error);
             },
             ErrorMessage: 'Local',
-            SummaryErrorMessage: 'Summary'
+            SummaryMessage: 'Summary'
         };
 
         let testItem = new InputValidator(vh, descriptor);
@@ -856,7 +995,7 @@ describe('InputValidator.Validate', () => {
                 IssueFound: {
                     ConditionType: 'TEST',
                     ErrorMessage: 'Local',
-                    SummaryErrorMessage: 'Summary',
+                    SummaryMessage: 'Summary',
                     Severity: ValidationSeverity.Error,
                     ValueHostId: 'Field1'
                 }
@@ -974,7 +1113,7 @@ describe('InputValidatorFactory.Create', () => {
                 ValueHostId: 'Field1'
             },
             ErrorMessage: 'Local',
-            SummaryErrorMessage: 'Summary'
+            SummaryMessage: 'Summary'
         };
         let testItem = new InputValidatorFactory();
         let created: IInputValidator | null = null;

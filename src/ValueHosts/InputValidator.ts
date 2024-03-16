@@ -188,34 +188,50 @@ export class InputValidator implements IInputValidator {
 
     /**
      * Resolves the ErrorMessage as a template - before it has its tokens processed.
+     * It uses several sources to get the template. The first to have text is used.
+     * 1. Descriptor.ErrorMessagel10n gets data from TextLocalizerService with Descriptor.ErrorMessage as fallback
+     * 2. Descriptor.ErrorMessage
+     * 3. TextLocalizerService.GetErrorMessage
      * @returns Error message from ErrorMessage property with localization applied
      * if ErrorMessagel10n is setup.
      */
     protected GetErrorMessageTemplate(): string {
-        let msg = this.Descriptor.ErrorMessage;
-        if (typeof msg == 'function')
-            msg = msg(this);
+        let direct = this.Descriptor.ErrorMessage;
+        if (typeof direct == 'function')
+            direct = direct(this);
+        let msg = direct as string | null;
         if (this.Descriptor.ErrorMessagel10n)
             msg = this.Services.TextLocalizerService.Localize(this.Services.ActiveCultureId,
                 this.Descriptor.ErrorMessagel10n, msg);
         if (msg == null)  // null/undefined
+        {// fallback: see if TextLocalizerService has an entry specific to the ConditionType and DataTypeLookupKey.
+            msg = this.Services.TextLocalizerService.GetErrorMessage(this.Services.ActiveCultureId,
+                this.Condition.ConditionType, this.ValueHost.GetDataType());
+        }
+        if (msg == null)
             throw new Error('Must supply a value for Descriptor.ErrorMessage');
         return msg;
     }
 
     /**
-     * Resolves the SummaryErrorMessage as a template - before it has its tokens processed.
+     * Resolves the SummaryMessage as a template - before it has its tokens processed.
      * Falls back to use GetErrorMessageTemplate if Descriptor doesn't supply a value.
-     * @returns Error message from SummaryErrorMessage property with localization applied
-     * if SummaryErrorMessagel10n is setup.
+     * @returns Error message from SummaryMessage property with localization applied
+     * if SummaryMessagel10n is setup.
      */
-    protected GetSummaryErrorMessageTemplate(): string {
-        let msg = this.Descriptor.SummaryErrorMessage;
-        if (typeof msg == 'function')
-            msg = msg(this);
-        if (this.Descriptor.SummaryErrorMessagel10n)
+    protected GetSummaryMessageTemplate(): string {
+        let direct = this.Descriptor.SummaryMessage;
+        if (typeof direct == 'function')
+            direct = direct(this);
+        let msg = direct as string | null;
+        if (this.Descriptor.SummaryMessagel10n)
             msg = this.Services.TextLocalizerService.Localize(this.Services.ActiveCultureId,
-                this.Descriptor.SummaryErrorMessagel10n, msg ?? '');
+                this.Descriptor.SummaryMessagel10n, msg ?? '');
+        if (msg == null)  // null/undefined
+        {// fallback: see if TextLocalizerService has an entry specific to the ConditionType and DataTypeLookupKey.
+            msg = this.Services.TextLocalizerService.GetSummaryMessage(this.Services.ActiveCultureId,
+                this.Condition.ConditionType, this.ValueHost.GetDataType());
+        }        
         if (msg == null)
             return this.GetErrorMessageTemplate();
         return msg;
@@ -373,9 +389,9 @@ export class InputValidator implements IInputValidator {
         let errorMessage = this.GetErrorMessageTemplate();
         stateToUpdate.ErrorMessage = services.MessageTokenResolverService.ResolveTokens(
             errorMessage, this.ValueHost, this.ValueHostsManager, this);
-        let summaryErrorMessage = this.GetSummaryErrorMessageTemplate();
-        stateToUpdate.SummaryErrorMessage = summaryErrorMessage ?
-            services.MessageTokenResolverService.ResolveTokens(summaryErrorMessage, this._valueHost, this.ValueHostsManager, this) :
+        let summaryMessage = this.GetSummaryMessageTemplate();
+        stateToUpdate.SummaryMessage = summaryMessage ?
+            services.MessageTokenResolverService.ResolveTokens(summaryMessage, this._valueHost, this.ValueHostsManager, this) :
             undefined;
     }
 
@@ -429,7 +445,7 @@ export function CreateIssueFound(valueHost: IValueHost,
         ConditionType: validator.Condition.ConditionType,
         Severity: ValidationSeverity.Error,
         ErrorMessage: '',
-        SummaryErrorMessage: undefined
+        SummaryMessage: undefined
     }
 }
 
