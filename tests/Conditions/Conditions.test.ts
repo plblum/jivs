@@ -1,15 +1,15 @@
 import { ValueHostId } from "../../src/DataTypes/BasicTypes";
 import {
     type IRequiredTextConditionDescriptor, type IRequiredIndexConditionDescriptor, type IRangeConditionDescriptor, type ICompareToConditionDescriptor,
-    RequiredTextConditionType, RequiredTextCondition,
-    RequiredIndexConditionType, RequiredIndexCondition,
-    RangeConditionType, RangeCondition, ValuesEqualConditionType, ValuesEqualCondition, ValuesNotEqualConditionType,
-    ValuesNotEqualCondition, ValueGTSecondValueConditionType, ValueGTSecondValueCondition, ValueGTESecondValueConditionType,
-    ValueGTESecondValueCondition, ValueLTSecondValueConditionType, ValueLTSecondValueCondition, ValueLTESecondValueConditionType,
-    ValueLTESecondValueCondition, IStringLengthConditionDescriptor, StringLengthConditionType, StringLengthCondition,
-    IRegExpConditionDescriptor, RegExpCondition, RegExpConditionType,
-    AndConditionsType, AndConditions, DataTypeCheckConditionType, IDataTypeCheckConditionDescriptor, DataTypeCheckCondition,
-    OrConditions, OrConditionsType, CountMatchingConditions, CountMatchingConditionsType, ICountMatchingConditionsDescriptor
+    RequiredTextCondition,
+    RequiredIndexCondition,
+    RangeCondition, ValuesEqualCondition, 
+    ValuesNotEqualCondition, ValueGTSecondValueCondition,
+    ValueGTESecondValueCondition,  ValueLTSecondValueCondition, 
+    ValueLTESecondValueCondition, IStringLengthConditionDescriptor,  StringLengthCondition,
+    IRegExpConditionDescriptor, RegExpCondition, 
+    AndConditions, IDataTypeCheckConditionDescriptor, DataTypeCheckCondition,
+    OrConditions, CountMatchingConditions, ICountMatchingConditionsDescriptor
 } from "../../src/Conditions/ConcreteConditions";
 
 import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
@@ -21,6 +21,7 @@ import {
 } from "../Mocks";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
 import { IEvaluateChildConditionResultsDescriptor } from "../../src/Conditions/EvaluateChildConditionResultsBase";
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
 
 
 describe('ConditionBase class additional cases', () => {
@@ -31,7 +32,7 @@ describe('ConditionBase class additional cases', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'PropertyNotRegistered',
             Trim: true
         };
@@ -47,7 +48,7 @@ describe('ConditionBase class additional cases', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'PropertyNotRegistered',
             Trim: true
         };
@@ -62,7 +63,7 @@ describe('ConditionBase class additional cases', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: null,
             Trim: true
         };
@@ -76,7 +77,7 @@ describe('ConditionBase class additional cases', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: null,
             Trim: true
         };
@@ -89,7 +90,7 @@ describe('ConditionBase class additional cases', () => {
 
 describe('class DataTypeCheckCondition', () => {
     test('DefaultConditionType', () => {
-        expect(DataTypeCheckCondition.DefaultConditionType).toBe(DataTypeCheckConditionType);
+        expect(DataTypeCheckCondition.DefaultConditionType).toBe(ConditionType.DataTypeCheck);
     });
     test('Evaluate returns Match when InputValue is not undefined and native Value is not undefined', () => {
         let services = new MockValidationServices(false, false);
@@ -97,7 +98,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
-            Type: DataTypeCheckConditionType,
+            Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
@@ -116,7 +117,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
-            Type: DataTypeCheckConditionType,
+            Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
@@ -131,7 +132,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
-            Type: DataTypeCheckConditionType,
+            Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
@@ -146,7 +147,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
-            Type: DataTypeCheckConditionType,
+            Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
         };
         vh.SetValueToUndefined({ ConversionErrorTokenValue: 'ERROR' });
@@ -168,7 +169,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
-            Type: DataTypeCheckConditionType,
+            Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
@@ -185,7 +186,7 @@ describe('class DataTypeCheckCondition', () => {
     });    
     test('Category is DataTypeCheck', () => {
         let descriptor: IDataTypeCheckConditionDescriptor = {
-            Type: DataTypeCheckConditionType,
+            Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
@@ -193,7 +194,7 @@ describe('class DataTypeCheckCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: IDataTypeCheckConditionDescriptor = {
-            Type: DataTypeCheckConditionType,
+            Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
             Category: ConditionCategory.Contents
         };
@@ -204,7 +205,7 @@ describe('class DataTypeCheckCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let descriptor: IDataTypeCheckConditionDescriptor = {
-            Type: DataTypeCheckConditionType,
+            Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
         };
         let condition = new DataTypeCheckCondition(descriptor);
@@ -217,7 +218,7 @@ describe('class DataTypeCheckCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let descriptor: IDataTypeCheckConditionDescriptor = {
-            Type: DataTypeCheckConditionType,
+            Type: ConditionType.DataTypeCheck,
             ValueHostId: null,
         };
         let condition = new DataTypeCheckCondition(descriptor);
@@ -228,7 +229,7 @@ describe('class DataTypeCheckCondition', () => {
 });
 describe('class RequiredTextCondition', () => {
     test('DefaultConditionType', () => {
-        expect(RequiredTextCondition.DefaultConditionType).toBe(RequiredTextConditionType);
+        expect(RequiredTextCondition.DefaultConditionType).toBe(ConditionType.RequiredText);
     });
     test('Evaluate returns Match', () => {
         let services = new MockValidationServices(false, false);
@@ -236,7 +237,7 @@ describe('class RequiredTextCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
             Trim: true
         };
@@ -252,7 +253,7 @@ describe('class RequiredTextCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
             Trim: true
         };
@@ -268,7 +269,7 @@ describe('class RequiredTextCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
             Trim: true,
             EmptyValue: 'EMPTY'
@@ -293,7 +294,7 @@ describe('class RequiredTextCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
             Trim: false,
             EmptyValue: 'EMPTY'
@@ -318,7 +319,7 @@ describe('class RequiredTextCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
         };
         let testItem = new RequiredTextCondition(descriptor);
@@ -333,7 +334,7 @@ describe('class RequiredTextCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
             Trim: true
         };
@@ -354,7 +355,7 @@ describe('class RequiredTextCondition', () => {
         let vh = vm.AddValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
             Trim: true
         };
@@ -368,7 +369,7 @@ describe('class RequiredTextCondition', () => {
     });
     test('Category is Required', () => {
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
         };
         let testItem = new RequiredTextCondition(descriptor);
@@ -376,7 +377,7 @@ describe('class RequiredTextCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
             Category: ConditionCategory.Contents
         };
@@ -388,7 +389,7 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
         };
         let condition = new RequiredTextCondition(descriptor);
@@ -402,7 +403,7 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IRequiredTextConditionDescriptor = {
-            Type: RequiredTextConditionType,
+            Type: ConditionType.RequiredText,
             ValueHostId: null,
         };
         let condition = new RequiredTextCondition(descriptor);
@@ -414,7 +415,7 @@ describe('class RequiredTextCondition', () => {
 
 describe('class RequiredIndexCondition', () => {
     test('DefaultConditionType', () => {
-        expect(RequiredIndexCondition.DefaultConditionType).toBe(RequiredIndexConditionType);
+        expect(RequiredIndexCondition.DefaultConditionType).toBe(ConditionType.RequiredIndex);
     });
     test('Evaluate returns Match', () => {
         let services = new MockValidationServices(false, false);
@@ -422,7 +423,7 @@ describe('class RequiredIndexCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: IRequiredIndexConditionDescriptor = {
-            Type: RequiredIndexConditionType,
+            Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1'
         };
         let testItem = new RequiredIndexCondition(descriptor);
@@ -437,7 +438,7 @@ describe('class RequiredIndexCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: IRequiredIndexConditionDescriptor = {
-            Type: RequiredIndexConditionType,
+            Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1',
         };
         let testItem = new RequiredIndexCondition(descriptor);
@@ -450,7 +451,7 @@ describe('class RequiredIndexCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: IRequiredIndexConditionDescriptor = {
-            Type: RequiredIndexConditionType,
+            Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1',
             UnselectedIndexValue: -1
         };
@@ -467,7 +468,7 @@ describe('class RequiredIndexCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: IRequiredIndexConditionDescriptor = {
-            Type: RequiredIndexConditionType,
+            Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1'
         };
         let testItem = new RequiredIndexCondition(descriptor);
@@ -482,7 +483,7 @@ describe('class RequiredIndexCondition', () => {
     });
     test('Category is Required', () => {
         let descriptor: IRequiredIndexConditionDescriptor = {
-            Type: RequiredIndexConditionType,
+            Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1',
         };
         let testItem = new RequiredIndexCondition(descriptor);
@@ -490,7 +491,7 @@ describe('class RequiredIndexCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: IRequiredIndexConditionDescriptor = {
-            Type: RequiredIndexConditionType,
+            Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1',
             Category: ConditionCategory.Contents
         };
@@ -502,7 +503,7 @@ describe('class RequiredIndexCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IRequiredIndexConditionDescriptor = {
-            Type: RequiredIndexConditionType,
+            Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1',
         };
         let condition = new RequiredIndexCondition(descriptor);
@@ -515,7 +516,7 @@ describe('class RequiredIndexCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let descriptor: IRequiredIndexConditionDescriptor = {
-            Type: RequiredIndexConditionType,
+            Type: ConditionType.RequiredIndex,
             ValueHostId: null,
         };
         let condition = new RequiredIndexCondition(descriptor);
@@ -527,7 +528,7 @@ describe('class RequiredIndexCondition', () => {
 
 describe('class RegExpCondition', () => {
     test('DefaultConditionType', () => {
-        expect(RegExpCondition.DefaultConditionType).toBe(RegExpConditionType);
+        expect(RegExpCondition.DefaultConditionType).toBe(ConditionType.RegExp);
     });    
     test('Text contains "ABC" somewhere (case sensitive). Evaluate returns Match if it is present and NoMatch if not', () => {
         let services = new MockValidationServices(false, false);
@@ -535,7 +536,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
             ExpressionAsString: 'ABC'
         };
@@ -559,7 +560,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
             ExpressionAsString: 'ABC',
             IgnoreCase: true
@@ -584,7 +585,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
             ExpressionAsString: '^ABC$',
             Multiline: false
@@ -609,7 +610,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
             ExpressionAsString: '^ABC$',
             Multiline: true
@@ -634,7 +635,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
             Expression: /^ABC$/im
         };
@@ -660,7 +661,7 @@ describe('class RegExpCondition', () => {
             'Property1', StringLookupKey, 'Label');
 
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
             ExpressionAsString: '^ABC$',
             Trim: false
@@ -678,7 +679,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
             ExpressionAsString: 'ABC'
         };
@@ -698,7 +699,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
         };
         let testItem = new RegExpCondition(descriptor);
@@ -707,7 +708,7 @@ describe('class RegExpCondition', () => {
     });
     test('Category is DataTypeCheck', () => {
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
         };
         let testItem = new RegExpCondition(descriptor);
@@ -715,7 +716,7 @@ describe('class RegExpCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
             Category: ConditionCategory.Contents
         };
@@ -727,7 +728,7 @@ describe('class RegExpCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
         };
         let condition = new RegExpCondition(descriptor);
@@ -741,7 +742,7 @@ describe('class RegExpCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IRegExpConditionDescriptor = {
-            Type: RegExpConditionType,
+            Type: ConditionType.RegExp,
             ValueHostId: null,
         };
         let condition = new RegExpCondition(descriptor);
@@ -753,7 +754,7 @@ describe('class RegExpCondition', () => {
 
 describe('class RangeCondition', () => {
     test('DefaultConditionType', () => {
-        expect(RangeCondition.DefaultConditionType).toBe(RangeConditionType);
+        expect(RangeCondition.DefaultConditionType).toBe(ConditionType.Range);
     });    
     test('Evaluate when Min/Max assigned to string returns Match inside of range; NoMatch outside of range', () => {
         let services = new MockValidationServices(false, true);
@@ -761,7 +762,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: 'C',
             Maximum: 'G'
@@ -792,7 +793,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: -8,
             Maximum: 25
@@ -821,7 +822,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', DateLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: new Date(Date.UTC(2000, 5, 1)),
             Maximum: new Date(Date.UTC(2000, 5, 30))
@@ -847,7 +848,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: undefined,
             Maximum: 'G'
@@ -875,7 +876,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: 'C',
             Maximum: null   // should work like undefined
@@ -907,7 +908,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: 'C',
             Maximum: 'G'
@@ -924,7 +925,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: 'G',    // this is a mismatch
             Maximum: 10  // this is OK
@@ -943,7 +944,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: 10, // this is OK
             Maximum: 'G'    // this is a mismatch
@@ -962,7 +963,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: 1.6,
             Maximum: 6.1,
@@ -987,7 +988,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: 'C',
             Maximum: 'G'
@@ -1014,7 +1015,7 @@ describe('class RangeCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: undefined,
             Maximum: null
@@ -1037,7 +1038,7 @@ describe('class RangeCondition', () => {
     });    
     test('Category is Comparison', () => {
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: 2,
             Maximum: null
@@ -1047,7 +1048,7 @@ describe('class RangeCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Category: ConditionCategory.Contents,
             Minimum: 2,
@@ -1061,7 +1062,7 @@ describe('class RangeCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             Minimum: 2,
             Maximum: undefined,
             ValueHostId: 'Property1',
@@ -1077,7 +1078,7 @@ describe('class RangeCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IRangeConditionDescriptor = {
-            Type: RangeConditionType,
+            Type: ConditionType.Range,
             Minimum: 2,
             Maximum: undefined,
             ValueHostId: null,
@@ -1098,7 +1099,7 @@ describe('CompareToConditionBase class additional cases', () => {
         let logger = services.LoggerService as MockCapturingLogger;
         vh.SetValue('');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             SecondValueHostId: 'PropertyNotRegistered',
             ValueHostId: null
         };
@@ -1116,7 +1117,7 @@ describe('CompareToConditionBase class additional cases', () => {
         let logger = services.LoggerService as MockCapturingLogger;
         vh.SetValue('');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: null,
             SecondValueHostId: null,
             SecondValue: null
@@ -1132,7 +1133,7 @@ describe('CompareToConditionBase class additional cases', () => {
 
 describe('class ValuesEqualCondition', () => {
     test('DefaultConditionType', () => {
-        expect(ValuesEqualCondition.DefaultConditionType).toBe(ValuesEqualConditionType);
+        expect(ValuesEqualCondition.DefaultConditionType).toBe(ConditionType.ValuesEqual);
     });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -1140,7 +1141,7 @@ describe('class ValuesEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1161,7 +1162,7 @@ describe('class ValuesEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', BooleanLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             SecondValue: false,
             SecondValueHostId: null
@@ -1181,7 +1182,7 @@ describe('class ValuesEqualCondition', () => {
         let vh2 = vm.AddInputValueHost(
             'Property2', NumberLookupKey, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -1205,7 +1206,7 @@ describe('class ValuesEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1227,7 +1228,7 @@ describe('class ValuesEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             ConversionLookupKey: IntegerLookupKey,
             SecondValue: 100,
@@ -1252,7 +1253,7 @@ describe('class ValuesEqualCondition', () => {
         let vh2 = vm.AddInputValueHost(
             'Property2', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             ConversionLookupKey: IntegerLookupKey,
             SecondValueHostId: 'Property2',
@@ -1278,7 +1279,7 @@ describe('class ValuesEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1300,7 +1301,7 @@ describe('class ValuesEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             SecondValue: undefined,
             SecondValueHostId: null
@@ -1318,7 +1319,7 @@ describe('class ValuesEqualCondition', () => {
     });    
     test('Category is Comparison', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null
@@ -1328,7 +1329,7 @@ describe('class ValuesEqualCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null,
@@ -1342,7 +1343,7 @@ describe('class ValuesEqualCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -1358,7 +1359,7 @@ describe('class ValuesEqualCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesEqualConditionType,
+            Type: ConditionType.ValuesEqual,
             ValueHostId: null,
             SecondValueHostId: null
         };
@@ -1370,7 +1371,7 @@ describe('class ValuesEqualCondition', () => {
 });
 describe('class ValuesNotEqualCondition', () => {
     test('DefaultConditionType', () => {
-        expect(ValuesNotEqualCondition.DefaultConditionType).toBe(ValuesNotEqualConditionType);
+        expect(ValuesNotEqualCondition.DefaultConditionType).toBe(ConditionType.ValuesNotEqual);
     });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -1378,7 +1379,7 @@ describe('class ValuesNotEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1399,7 +1400,7 @@ describe('class ValuesNotEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', BooleanLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValue: false,
             SecondValueHostId: null
@@ -1419,7 +1420,7 @@ describe('class ValuesNotEqualCondition', () => {
         let vh2 = vm.AddInputValueHost(
             'Property2', NumberLookupKey, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -1443,7 +1444,7 @@ describe('class ValuesNotEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1464,7 +1465,7 @@ describe('class ValuesNotEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1489,7 +1490,7 @@ describe('class ValuesNotEqualCondition', () => {
             'Property2', NumberLookupKey, 'Label2');
         vh2.SetValue(100);
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValue: null,
             SecondValueHostId: 'Property2'
@@ -1511,7 +1512,7 @@ describe('class ValuesNotEqualCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValue: null,
             SecondValueHostId: null
@@ -1529,7 +1530,7 @@ describe('class ValuesNotEqualCondition', () => {
     });    
     test('Category is Comparison', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null
@@ -1539,7 +1540,7 @@ describe('class ValuesNotEqualCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null,
@@ -1553,7 +1554,7 @@ describe('class ValuesNotEqualCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -1569,7 +1570,7 @@ describe('class ValuesNotEqualCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValuesNotEqualConditionType,
+            Type: ConditionType.ValuesNotEqual,
             ValueHostId: null,
             SecondValueHostId: null
         };
@@ -1581,7 +1582,7 @@ describe('class ValuesNotEqualCondition', () => {
 });
 describe('class ValueGTSecondValueCondition', () => {
     test('DefaultConditionType', () => {
-        expect(ValueGTSecondValueCondition.DefaultConditionType).toBe(ValueGTSecondValueConditionType);
+        expect(ValueGTSecondValueCondition.DefaultConditionType).toBe(ConditionType.ValueGTSecondValue);
     });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -1589,7 +1590,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1610,7 +1611,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', BooleanLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: false,
             SecondValueHostId: null
@@ -1630,7 +1631,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let vh2 = vm.AddInputValueHost(
             'Property2', NumberLookupKey, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -1654,7 +1655,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1675,7 +1676,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1697,7 +1698,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: null,
             SecondValueHostId: null
@@ -1715,7 +1716,7 @@ describe('class ValueGTSecondValueCondition', () => {
     });    
     test('Category is Comparison', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null
@@ -1725,7 +1726,7 @@ describe('class ValueGTSecondValueCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null,
@@ -1739,7 +1740,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -1755,7 +1756,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTSecondValueConditionType,
+            Type: ConditionType.ValueGTSecondValue,
             ValueHostId: null,
             SecondValueHostId: null
         };
@@ -1767,7 +1768,7 @@ describe('class ValueGTSecondValueCondition', () => {
 });
 describe('class ValueGTESecondValueCondition', () => {
     test('DefaultConditionType', () => {
-        expect(ValueGTESecondValueCondition.DefaultConditionType).toBe(ValueGTESecondValueConditionType);
+        expect(ValueGTESecondValueCondition.DefaultConditionType).toBe(ConditionType.ValueGTESecondValue);
     });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -1775,7 +1776,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1796,7 +1797,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', BooleanLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: false,
             SecondValueHostId: null
@@ -1816,7 +1817,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let vh2 = vm.AddInputValueHost(
             'Property2', NumberLookupKey, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -1840,7 +1841,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1861,7 +1862,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1883,7 +1884,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: null,
             SecondValueHostId: null
@@ -1901,7 +1902,7 @@ describe('class ValueGTESecondValueCondition', () => {
     });    
     test('Category is Comparison', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null
@@ -1911,7 +1912,7 @@ describe('class ValueGTESecondValueCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null,
@@ -1925,7 +1926,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -1941,7 +1942,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueGTESecondValueConditionType,
+            Type: ConditionType.ValueGTESecondValue,
             ValueHostId: null,
             SecondValueHostId: null
         };
@@ -1954,7 +1955,7 @@ describe('class ValueGTESecondValueCondition', () => {
 
 describe('class ValueLTSecondValueCondition', () => {
     test('DefaultConditionType', () => {
-        expect(ValueLTSecondValueCondition.DefaultConditionType).toBe(ValueLTSecondValueConditionType);
+        expect(ValueLTSecondValueCondition.DefaultConditionType).toBe(ConditionType.ValueLTSecondValue);
     });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -1962,7 +1963,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -1983,7 +1984,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', BooleanLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: false,
             SecondValueHostId: null
@@ -2003,7 +2004,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let vh2 = vm.AddInputValueHost(
             'Property2', NumberLookupKey, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -2027,7 +2028,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -2048,7 +2049,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -2070,7 +2071,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: null,
             SecondValueHostId: null
@@ -2088,7 +2089,7 @@ describe('class ValueLTSecondValueCondition', () => {
     });    
     test('Category is Comparison', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null
@@ -2098,7 +2099,7 @@ describe('class ValueLTSecondValueCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null,
@@ -2112,7 +2113,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -2128,7 +2129,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTSecondValueConditionType,
+            Type: ConditionType.ValueLTSecondValue,
             ValueHostId: null,
             SecondValueHostId: null
         };
@@ -2140,7 +2141,7 @@ describe('class ValueLTSecondValueCondition', () => {
 });
 describe('class ValueLTESecondValueCondition', () => {
     test('DefaultConditionType', () => {
-        expect(ValueLTESecondValueCondition.DefaultConditionType).toBe(ValueLTESecondValueConditionType);
+        expect(ValueLTESecondValueCondition.DefaultConditionType).toBe(ConditionType.ValueLTESecondValue);
     });
     test('Evaluate using SecondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -2148,7 +2149,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -2169,7 +2170,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', BooleanLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: false,
             SecondValueHostId: null
@@ -2189,7 +2190,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let vh2 = vm.AddInputValueHost(
             'Property2', NumberLookupKey, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -2213,7 +2214,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -2234,7 +2235,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 100,
             SecondValueHostId: null
@@ -2256,7 +2257,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', NumberLookupKey, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: null,
             SecondValueHostId: null
@@ -2274,7 +2275,7 @@ describe('class ValueLTESecondValueCondition', () => {
     });    
     test('Category is Comparison', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null
@@ -2284,7 +2285,7 @@ describe('class ValueLTESecondValueCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
             SecondValue: 10,
             SecondValueHostId: null,
@@ -2298,7 +2299,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
             SecondValueHostId: 'Property2'
         };
@@ -2314,7 +2315,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: ICompareToConditionDescriptor = {
-            Type: ValueLTESecondValueConditionType,
+            Type: ConditionType.ValueLTESecondValue,
             ValueHostId: null,
             SecondValueHostId: null
         };
@@ -2328,7 +2329,7 @@ describe('class ValueLTESecondValueCondition', () => {
 
 describe('class StringLengthCondition', () => {
     test('DefaultConditionType', () => {
-        expect(StringLengthCondition.DefaultConditionType).toBe(StringLengthConditionType);
+        expect(StringLengthCondition.DefaultConditionType).toBe(ConditionType.StringLength);
     });
     test('Evaluate when both Min/Max are assigned returns Match inside of stringlength; NoMatch outside of stringlength', () => {
         let services = new MockValidationServices(false, true);
@@ -2336,7 +2337,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
             Minimum: 2,
             Maximum: 5
@@ -2362,7 +2363,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
             Minimum: 2,
             Maximum: null
@@ -2386,7 +2387,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
             Minimum: null,
             Maximum: 5
@@ -2415,7 +2416,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
             Minimum: undefined,
             Maximum: undefined
@@ -2436,7 +2437,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
             Minimum: 2,
             Maximum: 5,
@@ -2459,7 +2460,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
             Minimum: 2,
             Maximum: 5
@@ -2491,7 +2492,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
             Minimum: 2,
             Maximum: 5
@@ -2525,7 +2526,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
             Minimum: null,
             Maximum: null
@@ -2555,7 +2556,7 @@ describe('class StringLengthCondition', () => {
     });    
     test('Category is Comparison', () => {
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
         };
         let testItem = new StringLengthCondition(descriptor);
@@ -2563,7 +2564,7 @@ describe('class StringLengthCondition', () => {
     });
     test('Category is overridden', () => {
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
             Category: ConditionCategory.Contents
         };
@@ -2575,7 +2576,7 @@ describe('class StringLengthCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: 'Property1'
         };
         let condition = new StringLengthCondition(descriptor);
@@ -2589,7 +2590,7 @@ describe('class StringLengthCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IStringLengthConditionDescriptor = {
-            Type: StringLengthConditionType,
+            Type: ConditionType.StringLength,
             ValueHostId: null
         };
         let condition = new StringLengthCondition(descriptor);
@@ -2601,7 +2602,7 @@ describe('class StringLengthCondition', () => {
 
 describe('class AndConditions', () => {
     test('DefaultConditionType', () => {
-        expect(AndConditions.DefaultConditionType).toBe(AndConditionsType);
+        expect(AndConditions.DefaultConditionType).toBe(ConditionType.And);
     });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
@@ -2609,7 +2610,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: []
         };
         let testItem = new AndConditions(descriptor);
@@ -2621,7 +2622,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
             }]
@@ -2635,7 +2636,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
             },
@@ -2658,7 +2659,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: NeverMatchesConditionType
             }]
@@ -2672,7 +2673,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
             },
@@ -2695,7 +2696,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: NeverMatchesConditionType
             },
@@ -2718,7 +2719,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType
             }]
@@ -2732,7 +2733,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
 
@@ -2748,7 +2749,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
 
@@ -2764,7 +2765,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
             }],
@@ -2779,7 +2780,7 @@ describe('class AndConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType
             },
@@ -2799,7 +2800,7 @@ describe('class AndConditions', () => {
     });
     test('Category is Children', () => {
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: []
         };
         let testItem = new AndConditions(descriptor);
@@ -2807,7 +2808,7 @@ describe('class AndConditions', () => {
     });
     test('Category is overridden', () => {
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [],
             Category: ConditionCategory.Contents
         };
@@ -2819,7 +2820,7 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: []
         };
         let condition = new AndConditions(descriptor);
@@ -2832,18 +2833,18 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field2'
                 },             
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field3'
                 },                
             ]
@@ -2861,18 +2862,18 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field2'
                 },             
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },                
             ]
@@ -2889,18 +2890,18 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: AndConditionsType,
+            Type: ConditionType.And,
             ConditionDescriptors: [
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: null
                 },             
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field3'
                 },                
             ]
@@ -2915,7 +2916,7 @@ describe('class AndConditions', () => {
 });
 describe('class OrConditions', () => {
     test('DefaultConditionType', () => {
-        expect(OrConditions.DefaultConditionType).toBe(OrConditionsType);
+        expect(OrConditions.DefaultConditionType).toBe(ConditionType.Or);
     });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
@@ -2923,7 +2924,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: []
         };
         let testItem = new OrConditions(descriptor);
@@ -2935,7 +2936,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
             }]
@@ -2949,7 +2950,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
             },
@@ -2972,7 +2973,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: NeverMatchesConditionType
             }]
@@ -2986,7 +2987,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
             },
@@ -3009,7 +3010,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
             },
@@ -3033,7 +3034,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: NeverMatchesConditionType
             },
@@ -3056,7 +3057,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType
             }]
@@ -3070,7 +3071,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
 
@@ -3086,7 +3087,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
 
@@ -3102,7 +3103,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
             }],
@@ -3117,7 +3118,7 @@ describe('class OrConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType
             },
@@ -3137,7 +3138,7 @@ describe('class OrConditions', () => {
     });
     test('Category is Children', () => {
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: []
         };
         let testItem = new OrConditions(descriptor);
@@ -3145,7 +3146,7 @@ describe('class OrConditions', () => {
     });
     test('Category is overridden', () => {
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [],
             Category: ConditionCategory.Contents
         };
@@ -3157,7 +3158,7 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: []
         };
         let condition = new OrConditions(descriptor);
@@ -3170,18 +3171,18 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field2'
                 },             
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field3'
                 },                
             ]
@@ -3199,18 +3200,18 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field2'
                 },             
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },                
             ]
@@ -3227,18 +3228,18 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: OrConditionsType,
+            Type: ConditionType.Or,
             ConditionDescriptors: [
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: null
                 },             
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field3'
                 },                
             ]
@@ -3254,7 +3255,7 @@ describe('class OrConditions', () => {
 
 describe('class CountMatchingConditions', () => {
     test('DefaultConditionType', () => {
-        expect(CountMatchingConditions.DefaultConditionType).toBe(CountMatchingConditionsType);
+        expect(CountMatchingConditions.DefaultConditionType).toBe(ConditionType.CountMatches);
     });
     function TestCount(conditionTypes: Array<string>, minimum: number | undefined,
         maximum: number | undefined, expectedResult: ConditionEvaluateResult,
@@ -3264,7 +3265,7 @@ describe('class CountMatchingConditions', () => {
         let vh = vm.AddInputValueHost(
             'Property1', StringLookupKey, 'Label');
         let descriptor: ICountMatchingConditionsDescriptor = {
-            Type: CountMatchingConditionsType,
+            Type: ConditionType.CountMatches,
             Minimum: minimum,
             Maximum: maximum,
             ConditionDescriptors: []
@@ -3343,7 +3344,7 @@ describe('class CountMatchingConditions', () => {
     });
     test('Category is Children', () => {
         let descriptor: ICountMatchingConditionsDescriptor = {
-            Type: CountMatchingConditionsType,
+            Type: ConditionType.CountMatches,
             ConditionDescriptors: []
         };
         let testItem = new CountMatchingConditions(descriptor);
@@ -3351,7 +3352,7 @@ describe('class CountMatchingConditions', () => {
     });
     test('Category is overridden', () => {
         let descriptor: ICountMatchingConditionsDescriptor = {
-            Type: CountMatchingConditionsType,
+            Type: ConditionType.CountMatches,
             ConditionDescriptors: [],
             Category: ConditionCategory.Contents
         };
@@ -3363,7 +3364,7 @@ describe('class CountMatchingConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: CountMatchingConditionsType,
+            Type: ConditionType.CountMatches,
             ConditionDescriptors: []
         };
         let condition = new CountMatchingConditions(descriptor);
@@ -3376,18 +3377,18 @@ describe('class CountMatchingConditions', () => {
         let vm = new MockValidationManager(services);
   
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: CountMatchingConditionsType,
+            Type: ConditionType.CountMatches,
             ConditionDescriptors: [
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field2'
                 },             
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field3'
                 },                
             ]
@@ -3405,18 +3406,18 @@ describe('class CountMatchingConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: CountMatchingConditionsType,
+            Type: ConditionType.CountMatches,
             ConditionDescriptors: [
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field2'
                 },             
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },                
             ]
@@ -3433,18 +3434,18 @@ describe('class CountMatchingConditions', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
-            Type: CountMatchingConditionsType,
+            Type: ConditionType.CountMatches,
             ConditionDescriptors: [
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field1'
                 },
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: null
                 },             
                 <IRequiredTextConditionDescriptor>{
-                    Type: RequiredTextConditionType,
+                    Type: ConditionType.RequiredText,
                     ValueHostId: 'Field3'
                 },                
             ]

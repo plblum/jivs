@@ -1,12 +1,8 @@
 import {
-    ValueGTESecondValueConditionType, ValueGTSecondValueConditionType, ValueLTSecondValueConditionType, ValueLTESecondValueConditionType,
-    OrConditionsType, CountMatchingConditionsType, StringLengthConditionType
-} from '../../src/Conditions/ConcreteConditions';
-import {
     type IRangeConditionDescriptor,
-    RequiredTextConditionType, RequiredTextCondition, ValuesEqualConditionType, ValuesEqualCondition, RangeConditionType,
-    type IRequiredTextConditionDescriptor, type ICompareToConditionDescriptor, RequiredIndexConditionType,
-    DataTypeCheckConditionType, RegExpConditionType, AndConditionsType, ValuesNotEqualConditionType
+    RequiredTextCondition, ValuesEqualCondition,
+    type IRequiredTextConditionDescriptor, type ICompareToConditionDescriptor, 
+    
 } from "../../src/Conditions/ConcreteConditions";
 
 import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
@@ -23,7 +19,7 @@ import { ValidationSeverity, IValidateOptions } from '../../src/Interfaces/Valid
 import { IInputValidateResult, IInputValidator, IInputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
-import { ValidationServices } from '../../src/Services/ValidationServices';
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
 
 // subclass of InputValidator to expose many of its protected members so they
 // can be individually tested
@@ -80,7 +76,7 @@ function SetupWithField1AndField2(descriptor?: Partial<IInputValidatorDescriptor
     let vh2 = vm.AddInputValueHost('Field2', StringLookupKey, 'Label2');
     const defaultDescriptor: IInputValidatorDescriptor = {
         ConditionDescriptor: <IRequiredTextConditionDescriptor>
-            { Type: RequiredTextConditionType, ValueHostId: 'Field1' },
+            { Type: ConditionType.RequiredText, ValueHostId: 'Field1' },
         ErrorMessage: 'Local',
         SummaryMessage: 'Summary'
     };
@@ -156,7 +152,7 @@ describe('InputValidator.Condition', () => {
     test('Successful creation of RequiredTextCondition using ConditionDescriptor', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: <IRequiredTextConditionDescriptor>
-                { Type: RequiredTextConditionType, ValueHostId: null },
+                { Type: ConditionType.RequiredText, ValueHostId: null },
         });
 
         let condition: ICondition | null = null;
@@ -203,7 +199,7 @@ describe('InputValidator.Condition', () => {
     });
     test('Both Descriptor and Creator setup throws', () => {
         let config = SetupWithField1AndField2({
-            ConditionDescriptor: { Type: RequiredTextConditionType },
+            ConditionDescriptor: { Type: ConditionType.RequiredText },
             ConditionCreator: (requestor) => {
                 return {
                     ConditionType: 'TEST',
@@ -239,7 +235,7 @@ describe('InputValidator.Enabler', () => {
     test('Successful creation of ValuesEqualCondition', () => {
         let config = SetupWithField1AndField2({
             EnablerDescriptor: <ICompareToConditionDescriptor>{
-                Type: ValuesEqualConditionType,
+                Type: ConditionType.ValuesEqual,
                 ValueHostId: null
             }
         });
@@ -289,7 +285,7 @@ describe('InputValidator.Enabler', () => {
     });
     test('Both Descriptor and Creator setup throws', () => {
         let config = SetupWithField1AndField2({
-            EnablerDescriptor: { Type: RequiredTextConditionType },
+            EnablerDescriptor: { Type: ConditionType.RequiredText },
             EnablerCreator: (requestor) => {
                 return {
                     ConditionType: 'TEST',
@@ -383,10 +379,10 @@ describe('InputValidator.Severity', () => {
 
             expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
         }
-        CheckDefaultSeverity(RequiredTextConditionType);
-        CheckDefaultSeverity(RequiredIndexConditionType);
-        CheckDefaultSeverity(DataTypeCheckConditionType);
-        CheckDefaultSeverity(RegExpConditionType);
+        CheckDefaultSeverity(ConditionType.RequiredText);
+        CheckDefaultSeverity(ConditionType.RequiredIndex);
+        CheckDefaultSeverity(ConditionType.DataTypeCheck);
+        CheckDefaultSeverity(ConditionType.RegExp);
     });
     test('Conditions that use Severity=Error when Descriptor.Severity = undefined', () => {
         function CheckDefaultSeverity(conditionType: string) {
@@ -399,23 +395,23 @@ describe('InputValidator.Severity', () => {
 
             expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
         }
-        CheckDefaultSeverity(RangeConditionType);
-        CheckDefaultSeverity(StringLengthConditionType);
-        CheckDefaultSeverity(ValuesEqualConditionType);
-        CheckDefaultSeverity(ValuesNotEqualConditionType);
-        CheckDefaultSeverity(ValueGTSecondValueConditionType);
-        CheckDefaultSeverity(ValueGTESecondValueConditionType);
-        CheckDefaultSeverity(ValueLTSecondValueConditionType);
-        CheckDefaultSeverity(ValueLTESecondValueConditionType);
-        CheckDefaultSeverity(AndConditionsType);
-        CheckDefaultSeverity(OrConditionsType);
-        CheckDefaultSeverity(CountMatchingConditionsType);
+        CheckDefaultSeverity(ConditionType.Range);
+        CheckDefaultSeverity(ConditionType.StringLength);
+        CheckDefaultSeverity(ConditionType.ValuesEqual);
+        CheckDefaultSeverity(ConditionType.ValuesNotEqual);
+        CheckDefaultSeverity(ConditionType.ValueGTSecondValue);
+        CheckDefaultSeverity(ConditionType.ValueGTESecondValue);
+        CheckDefaultSeverity(ConditionType.ValueLTSecondValue);
+        CheckDefaultSeverity(ConditionType.ValueLTESecondValue);
+        CheckDefaultSeverity(ConditionType.And);
+        CheckDefaultSeverity(ConditionType.Or);
+        CheckDefaultSeverity(ConditionType.CountMatches);
 
     });
     test('RangeCondition Descriptor.Severity = undefined, Severity=Error', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: {
-                Type: RangeConditionType
+                Type: ConditionType.Range
             },
             Severity: undefined
         });
@@ -425,7 +421,7 @@ describe('InputValidator.Severity', () => {
     test('AndConditions Descriptor.Severity = undefined, Severity=Error', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: {
-                Type: AndConditionsType
+                Type: ConditionType.And
             },
             Severity: undefined
         });
@@ -520,7 +516,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
             ErrorMessage: null,
             ErrorMessagel10n: null,
         });
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(RequiredTextConditionType, null, {
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(ConditionType.RequiredText, null, {
             '*': 'Default Error Message'
         });
         config.services.ActiveCultureId = 'en';
@@ -535,7 +531,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
             ErrorMessagel10n: null,
         });
 
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(RequiredTextConditionType, null, {
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(ConditionType.RequiredText, null, {
             '*': 'Default Error Message'
         });
         config.services.ActiveCultureId = 'en';
@@ -547,12 +543,12 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
       
         let config = SetupWithField1AndField2({
             ConditionDescriptor: {
-                Type: DataTypeCheckConditionType
+                Type: ConditionType.DataTypeCheck
             },
             ErrorMessage: null,
             ErrorMessagel10n: null,
         });
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(DataTypeCheckConditionType, StringLookupKey, // LookupKey must conform to ValueHost.DataType
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(ConditionType.DataTypeCheck, StringLookupKey, // LookupKey must conform to ValueHost.DataType
         {
             '*': 'Default Error Message'
         });
@@ -565,16 +561,16 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
       
         let config = SetupWithField1AndField2({
             ConditionDescriptor: {
-                Type: DataTypeCheckConditionType
+                Type: ConditionType.DataTypeCheck
             },
             ErrorMessage: null,
             ErrorMessagel10n: null,
         });
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(DataTypeCheckConditionType, null,
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(ConditionType.DataTypeCheck, null,
         {
             '*': 'Default Error Message'
         });        
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(DataTypeCheckConditionType, DateLookupKey, // LookupKey of VH is StringLookupKey
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(ConditionType.DataTypeCheck, DateLookupKey, // LookupKey of VH is StringLookupKey
         {
             '*': 'Default Error Message-String'
         });
@@ -656,7 +652,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             SummaryMessage: null,
             SummaryMessagel10n: null,
         });
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(RequiredTextConditionType, null, {
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(ConditionType.RequiredText, null, {
             '*': 'Default Error Message'
         });
         config.services.ActiveCultureId = 'en';
@@ -671,7 +667,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             SummaryMessagel10n: null,
         });
 
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(RequiredTextConditionType, null, {
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(ConditionType.RequiredText, null, {
             '*': 'Default Error Message'
         });
         config.services.ActiveCultureId = 'en';
@@ -683,12 +679,12 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
       
         let config = SetupWithField1AndField2({
             ConditionDescriptor: {
-                Type: DataTypeCheckConditionType
+                Type: ConditionType.DataTypeCheck
             },
             SummaryMessage: null,
             SummaryMessagel10n: null,
         });
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(DataTypeCheckConditionType, StringLookupKey, // LookupKey must conform to ValueHost.DataType
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(ConditionType.DataTypeCheck, StringLookupKey, // LookupKey must conform to ValueHost.DataType
         {
             '*': 'Default Error Message'
         });
@@ -701,16 +697,16 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
       
         let config = SetupWithField1AndField2({
             ConditionDescriptor: {
-                Type: DataTypeCheckConditionType
+                Type: ConditionType.DataTypeCheck
             },
             SummaryMessage: null,
             SummaryMessagel10n: null,
         });
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(DataTypeCheckConditionType, null,
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(ConditionType.DataTypeCheck, null,
         {
             '*': 'Default Error Message'
         });        
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(DataTypeCheckConditionType, DateLookupKey, // LookupKey of VH is StringLookupKey
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(ConditionType.DataTypeCheck, DateLookupKey, // LookupKey of VH is StringLookupKey
         {
             '*': 'Default Error Message-String'
         });
@@ -746,7 +742,7 @@ describe('InputValidator.Validate', () => {
         expect(vrResult).not.toBeInstanceOf(Promise);
         vrResult = vrResult as unknown as IInputValidateResult;
         expect(vrResult!.IssueFound).not.toBeNull();
-        expect(vrResult!.IssueFound!.ConditionType).toBe(RequiredTextConditionType);
+        expect(vrResult!.IssueFound!.ConditionType).toBe(ConditionType.RequiredText);
         expect(vrResult!.IssueFound!.Severity).toBe(severity);
         expect(vrResult!.ConditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
     }
@@ -775,7 +771,7 @@ describe('InputValidator.Validate', () => {
         expect(vrResult!.IssueFound).not.toBeNull();
 
         let issueFound = vrResult!.IssueFound;
-        expect(issueFound!.ConditionType).toBe(RequiredTextConditionType);
+        expect(issueFound!.ConditionType).toBe(ConditionType.RequiredText);
         expect(issueFound!.ErrorMessage).toBe(expectedErrorMessage);
         expect(issueFound!.SummaryMessage).toBe(expectedSummaryMessage);
     }
@@ -812,7 +808,7 @@ describe('InputValidator.Validate', () => {
     test('Issue exists. Enabler = NoMatch. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
             EnablerDescriptor: <IRequiredTextConditionDescriptor>{
-                Type: RequiredTextConditionType,
+                Type: ConditionType.RequiredText,
                 ValueHostId: 'Field2'
             }
         });
@@ -821,7 +817,7 @@ describe('InputValidator.Validate', () => {
         testConditionHasIssueButDisabledReturnsNull({
             EnablerDescriptor: <IRangeConditionDescriptor>{
                 // the input value is '', which causes this condition to return Undetermined
-                Type: RangeConditionType, ValueHostId: 'Field2',
+                Type: ConditionType.Range, ValueHostId: 'Field2',
                 Minimum: 0, Maximum: 10
             }
         });
@@ -849,7 +845,7 @@ describe('InputValidator.Validate', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             EnablerDescriptor: <IRequiredTextConditionDescriptor>{
                 // the input value is 'ABC', which causes this condition to return Match
-                Type: RequiredTextConditionType, ValueHostId: 'Field2'
+                Type: ConditionType.RequiredText, ValueHostId: 'Field2'
             }
         }, {}, 2);
     });
@@ -1001,7 +997,7 @@ describe('InputValidator.GatherValueHostIds', () => {
     test('RequiredTextCondition supplies its ValueHostId', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: <IRequiredTextConditionDescriptor>
-                { Type: RequiredTextConditionType, ValueHostId: 'Property1' },
+                { Type: ConditionType.RequiredText, ValueHostId: 'Property1' },
         });
         let collection = new Set<ValueHostId>();
         expect(() => config.inputValidator.GatherValueHostIds(collection, config.vm)).not.toThrow();
@@ -1014,7 +1010,7 @@ describe('GetValuesForTokens', () => {
     test('RequiredTextCondition returns 2 tokens: Label and Value', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: <IRequiredTextConditionDescriptor>{
-                Type: RequiredTextConditionType,
+                Type: ConditionType.RequiredText,
                 ValueHostId: null
             }
         });
@@ -1038,7 +1034,7 @@ describe('GetValuesForTokens', () => {
     test('RangeCondition returns 4 tokens: Label, Value, Minimum, Maximum', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: <IRangeConditionDescriptor>{
-                Type: RangeConditionType, ValueHostId: null,
+                Type: ConditionType.Range, ValueHostId: null,
                 Minimum: 'A',
                 Maximum: 'Z'
             }
@@ -1079,7 +1075,7 @@ describe('InputValidatorFactory.Create', () => {
         let vh = vm.AddInputValueHost('Field1', StringLookupKey, 'Label1');
         const descriptor: IInputValidatorDescriptor = {
             ConditionDescriptor: <IRequiredTextConditionDescriptor>{
-                Type: RequiredTextConditionType,
+                Type: ConditionType.RequiredText,
                 ValueHostId: 'Field1'
             },
             ErrorMessage: 'Local',

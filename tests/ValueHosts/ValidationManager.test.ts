@@ -1,6 +1,4 @@
-import { RequiredTextConditionType } from '../../src/Conditions/ConcreteConditions';
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { DataTypeServices } from "../../src/DataTypes/DataTypeServices";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValidationManagerCallbacks, ToIValidationManagerCallbacks, ValidationManager, ValidationManagerConfig, ValidationManagerStateChangedHandler } from "../../src/ValueHosts/ValidationManager";
@@ -18,6 +16,7 @@ import { DeepClone } from '../../src/Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, ToIValueHostResolver, ToIValueHostsManager, ToIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
 import { NonInputValueHost } from '../../src/ValueHosts/NonInputValueHost';
 import { CreateDataTypeServices, RegisterConditions } from '../../starter_code/create_services';
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<IValidationManagerState> {
@@ -330,7 +329,7 @@ describe('ValidationManager.AddValueHost', () => {
             ValidatorDescriptors: [
                 {
                     ConditionDescriptor: {
-                        Type: RequiredTextConditionType,
+                        Type: ConditionType.RequiredText,
                     },
                     ErrorMessage: 'msg'
                 }
@@ -351,7 +350,7 @@ describe('ValidationManager.AddValueHost', () => {
             IssuesFound: [{
                 ErrorMessage: 'msg',
                 ValueHostId: 'Field1',
-                ConditionType: RequiredTextConditionType,
+                ConditionType: ConditionType.RequiredText,
                 Severity: ValidationSeverity.Error
             }]
         };
@@ -367,7 +366,7 @@ describe('ValidationManager.AddValueHost', () => {
             ValidatorDescriptors: [
                 {
                     ConditionDescriptor: {
-                        Type: RequiredTextConditionType,
+                        Type: ConditionType.RequiredText,
                     },
                     ErrorMessage: 'msg'
                 }
@@ -385,7 +384,7 @@ describe('ValidationManager.AddValueHost', () => {
             ValidatorDescriptors: [
                 {
                     ConditionDescriptor: {
-                        Type: RequiredTextConditionType,
+                        Type: ConditionType.RequiredText,
                     },
                     ErrorMessage: 'msg'
                 }
@@ -409,7 +408,7 @@ describe('ValidationManager.AddValueHost', () => {
             IssuesFound: [{
                 ErrorMessage: 'msg',
                 ValueHostId: 'Field1',
-                ConditionType: RequiredTextConditionType,
+                ConditionType: ConditionType.RequiredText,
                 Severity: ValidationSeverity.Error
             }]
         };
@@ -439,7 +438,7 @@ describe('ValidationManager.AddValueHost', () => {
             ValidatorDescriptors: [
                 {
                     ConditionDescriptor: {
-                        Type: RequiredTextConditionType,
+                        Type: ConditionType.RequiredText,
                     },
                     ErrorMessage: 'msg'
                 }
@@ -1131,7 +1130,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
             }]);
     });
     test('With 1 inputValueHost and a Required condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationResult.Valid because Required should be skipped, leaving NO validators which means Valid', () => {
-        let descriptor = SetupInputValueHostDescriptor(0, [RequiredTextConditionType]);
+        let descriptor = SetupInputValueHostDescriptor(0, [ConditionType.RequiredText]);
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];
@@ -1145,7 +1144,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         expect(setup.validationManager.GetIssuesForSummary()).toEqual([]);
     });
     test('With 1 inputValueHost and a Required condition that will evaluate as NoMatch, use option Preliminary=false, expect ValidationResult.Invalid because Preliminary is off', () => {
-        let descriptor = SetupInputValueHostDescriptor(0, [RequiredTextConditionType]);
+        let descriptor = SetupInputValueHostDescriptor(0, [ConditionType.RequiredText]);
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];
@@ -1153,10 +1152,10 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         expect(() => validateResults = setup.validationManager.Validate({ Preliminary: false })).not.toThrow();
 
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            ConditionType: RequiredTextConditionType,
+            ConditionType: ConditionType.RequiredText,
             ValueHostId: 'Field1',
-            ErrorMessage: 'Error 1: ' + RequiredTextConditionType,
-            SummaryMessage: 'Summary 1: ' + RequiredTextConditionType,
+            ErrorMessage: 'Error 1: ' + ConditionType.RequiredText,
+            SummaryMessage: 'Summary 1: ' + ConditionType.RequiredText,
             Severity: ValidationSeverity.Severe // only because Required conditions default to Severe
         }
         ]);
@@ -1165,18 +1164,18 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         let inputSnapshot: IIssueSnapshot = {
             Id: descriptor.Id,
             Severity: ValidationSeverity.Severe, // only because Required conditions default to Severe
-            ErrorMessage: 'Error 1: ' + RequiredTextConditionType,
+            ErrorMessage: 'Error 1: ' + ConditionType.RequiredText,
         };
         expect(setup.validationManager.GetIssuesForInput(descriptor.Id)).toEqual([inputSnapshot]);
         let summarySnapshot: IIssueSnapshot = {
             Id: descriptor.Id,
             Severity: ValidationSeverity.Severe, // only because Required conditions default to Severe
-            ErrorMessage: 'Summary 1: ' + RequiredTextConditionType,
+            ErrorMessage: 'Summary 1: ' + ConditionType.RequiredText,
         };
         expect(setup.validationManager.GetIssuesForSummary()).toEqual([summarySnapshot]);
     });
     test('With 1 inputValueHost and a Required condition that will evaluate as NoMatch, use option DuringEdit=true, expect normal Invalid as DuringEdit has no impact on Required validators', () => {
-        let descriptor = SetupInputValueHostDescriptor(0, [RequiredTextConditionType]);
+        let descriptor = SetupInputValueHostDescriptor(0, [ConditionType.RequiredText]);
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];
@@ -1186,7 +1185,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         TestIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, null);
     });
     test('With 1 inputValueHost and a Required condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit has no impact on Required validators', () => {
-        let descriptor = SetupInputValueHostDescriptor(0, [RequiredTextConditionType]);
+        let descriptor = SetupInputValueHostDescriptor(0, [ConditionType.RequiredText]);
         let setup = SetupValidationManager([descriptor]);
 
         let validateResults: Array<IValidateResult> = [];

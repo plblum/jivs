@@ -1,14 +1,15 @@
 import {
-    IDataTypeCheckConditionDescriptor, DataTypeCheckConditionType, DataTypeCheckCondition, IRequiredTextConditionDescriptor, RequiredTextConditionType,
-    RequiredTextCondition, IRequiredIndexConditionDescriptor, RequiredIndexConditionType, RequiredIndexCondition, IRegExpConditionDescriptor,
-    RegExpConditionType, RegExpCondition, IRangeConditionDescriptor, RangeConditionType, RangeCondition, ICompareToConditionDescriptor,
-    ValuesEqualConditionType, ValuesEqualCondition, ValuesNotEqualConditionType, ValuesNotEqualCondition, ValueGTSecondValueConditionType, ValueGTSecondValueCondition,
-    ValueLTSecondValueConditionType, ValueLTSecondValueCondition, ValueGTESecondValueConditionType, ValueGTESecondValueCondition, ValueLTESecondValueConditionType,
-    ValueLTESecondValueCondition, IStringLengthConditionDescriptor, StringLengthConditionType, StringLengthCondition, IAndConditionsDescriptor,
-    AndConditionsType, AndConditions, IOrConditionsDescriptor, OrConditionsType, OrConditions, ICountMatchingConditionsDescriptor, CountMatchingConditionsType,
-    CountMatchingConditions, EveryConditionType, AnyConditionsType
+    IDataTypeCheckConditionDescriptor,  DataTypeCheckCondition, IRequiredTextConditionDescriptor,
+    RequiredTextCondition, IRequiredIndexConditionDescriptor, RequiredIndexCondition, IRegExpConditionDescriptor,
+    RegExpCondition, IRangeConditionDescriptor, RangeCondition, ICompareToConditionDescriptor,
+    ValuesEqualCondition, ValuesNotEqualCondition,  ValueGTSecondValueCondition,
+    ValueLTSecondValueCondition, ValueGTESecondValueCondition, 
+    ValueLTESecondValueCondition, IStringLengthConditionDescriptor, StringLengthCondition, IAndConditionsDescriptor,
+    AndConditions, IOrConditionsDescriptor,  OrConditions, ICountMatchingConditionsDescriptor,
+    CountMatchingConditions
 } from "../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../src/Conditions/ConditionFactory";
+import { ConditionType } from "../src/Conditions/ConditionTypes";
 import { BooleanDataTypeComparer } from "../src/DataTypes/DataTypeComparers";
 import { CaseInsensitiveStringConverter, UTCDateOnlyConverter, DateTimeConverter, LocalDateOnlyConverter, TotalDaysConverter, IntegerConverter, TimeOfDayOnlyConverter, TimeOfDayHMSOnlyConverter } from "../src/DataTypes/DataTypeConverters";
 import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIdentifier, DateDataTypeIdentifier } from "../src/DataTypes/DataTypeIdentifiers";
@@ -80,40 +81,40 @@ export function RegisterConditions(cf: ConditionFactory): void
 {
     // Install the desired conditions
     cf.Register<IDataTypeCheckConditionDescriptor>(
-        DataTypeCheckConditionType, (descriptor) => new DataTypeCheckCondition(descriptor));
+        ConditionType.DataTypeCheck, (descriptor) => new DataTypeCheckCondition(descriptor));
     cf.Register<IRequiredTextConditionDescriptor>(
-        RequiredTextConditionType, (descriptor) => new RequiredTextCondition(descriptor));
+        ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor));
     cf.Register<IRequiredIndexConditionDescriptor>(
-        RequiredIndexConditionType, (descriptor) => new RequiredIndexCondition(descriptor));
+        ConditionType.RequiredIndex, (descriptor) => new RequiredIndexCondition(descriptor));
     cf.Register<IRegExpConditionDescriptor>(
-        RegExpConditionType, (descriptor) => new RegExpCondition(descriptor));
+        ConditionType.RegExp, (descriptor) => new RegExpCondition(descriptor));
     cf.Register<IRangeConditionDescriptor>(
-        RangeConditionType, (descriptor) => new RangeCondition(descriptor));
+        ConditionType.Range, (descriptor) => new RangeCondition(descriptor));
     cf.Register<ICompareToConditionDescriptor>(
-        ValuesEqualConditionType, (descriptor) => new ValuesEqualCondition(descriptor));
+        ConditionType.ValuesEqual, (descriptor) => new ValuesEqualCondition(descriptor));
     cf.Register<ICompareToConditionDescriptor>
-        (ValuesNotEqualConditionType, (descriptor) => new ValuesNotEqualCondition(descriptor));
+        (ConditionType.ValuesNotEqual, (descriptor) => new ValuesNotEqualCondition(descriptor));
     cf.Register<ICompareToConditionDescriptor>
-        (ValueGTSecondValueConditionType, (descriptor) => new ValueGTSecondValueCondition(descriptor));
+        (ConditionType.ValueGTSecondValue, (descriptor) => new ValueGTSecondValueCondition(descriptor));
     cf.Register<ICompareToConditionDescriptor>
-        (ValueLTSecondValueConditionType, (descriptor) => new ValueLTSecondValueCondition(descriptor));
+        (ConditionType.ValueLTSecondValue, (descriptor) => new ValueLTSecondValueCondition(descriptor));
     cf.Register<ICompareToConditionDescriptor>
-        (ValueGTESecondValueConditionType, (descriptor) => new ValueGTESecondValueCondition(descriptor));
+        (ConditionType.ValueGTESecondValue, (descriptor) => new ValueGTESecondValueCondition(descriptor));
     cf.Register<ICompareToConditionDescriptor>
-        (ValueLTESecondValueConditionType, (descriptor) => new ValueLTESecondValueCondition(descriptor));
+        (ConditionType.ValueLTESecondValue, (descriptor) => new ValueLTESecondValueCondition(descriptor));
     cf.Register<IStringLengthConditionDescriptor>
-        (StringLengthConditionType, (descriptor) => new StringLengthCondition(descriptor));
+        (ConditionType.StringLength, (descriptor) => new StringLengthCondition(descriptor));
     cf.Register<IAndConditionsDescriptor>
-        (AndConditionsType, (descriptor) => new AndConditions(descriptor));
+        (ConditionType.And, (descriptor) => new AndConditions(descriptor));
     cf.Register<IOrConditionsDescriptor>
-        (OrConditionsType, (descriptor) => new OrConditions(descriptor));
+        (ConditionType.Or, (descriptor) => new OrConditions(descriptor));
     cf.Register<ICountMatchingConditionsDescriptor>
-        (CountMatchingConditionsType, (descriptor) => new CountMatchingConditions(descriptor));
+        (ConditionType.CountMatches, (descriptor) => new CountMatchingConditions(descriptor));
     // aliases for users who don't deal well with boolean logic can relate
     cf.Register<IAndConditionsDescriptor>
-        (EveryConditionType, (descriptor) => new AndConditions(descriptor));
+        (ConditionType.Every, (descriptor) => new AndConditions(descriptor));
     cf.Register<IOrConditionsDescriptor>
-        (AnyConditionsType, (descriptor) => new OrConditions(descriptor));
+        (ConditionType.Any, (descriptor) => new OrConditions(descriptor));
 }
 
 /**
@@ -299,56 +300,56 @@ export function CreateTextLocalizerService(): ITextLocalizerService
     // Guidance: Remember that error messages need to be easily understood and help the user fix the input.
     // 
     //!!!ALERT: This is a partial list of ConditionTypes and possible DataTypeLookupKeys
-    service.RegisterErrorMessage(RequiredTextConditionType, null, {
+    service.RegisterErrorMessage(ConditionType.RequiredText, null, {
         '*': 'Requires a value.'
     });
-    service.RegisterSummaryMessage(RequiredTextConditionType, null, {
+    service.RegisterSummaryMessage(ConditionType.RequiredText, null, {
         '*': '{Label} requires a value.'
     });    
-    service.RegisterErrorMessage(DataTypeCheckConditionType, null, {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, null, {
         '*': 'Invalid value.'   // this is a fallback for when all datatypelookup keys have failed. Its a terrible error message, very unhelpful. That's why we need data type specific versions.
     });
-    service.RegisterSummaryMessage(DataTypeCheckConditionType, null, {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, null, {
         '*': '{Label} has an invalid value.'
     });    
-    service.RegisterErrorMessage(DataTypeCheckConditionType, DateLookupKey,  {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, DateLookupKey,  {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
     });
-    service.RegisterSummaryMessage(DataTypeCheckConditionType, DateLookupKey,  {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, DateLookupKey,  {
         '*': '{Label} has an invalid value. Enter a date.',
         'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
     });    
-    service.RegisterErrorMessage(DataTypeCheckConditionType, NumberLookupKey, {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, NumberLookupKey, {
         '*': 'Invalid value. Enter a number.',
     });
-    service.RegisterSummaryMessage(DataTypeCheckConditionType, NumberLookupKey, {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, NumberLookupKey, {
         '*': '{Label} has an invalid value. Enter a number.',
     });    
-    service.RegisterErrorMessage(DataTypeCheckConditionType, IntegerLookupKey, {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, IntegerLookupKey, {
         '*': 'Invalid value. Enter an integer.',
     });
-    service.RegisterSummaryMessage(DataTypeCheckConditionType, IntegerLookupKey, {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, IntegerLookupKey, {
         '*': '{Label} has an invalid value. Enter an integer.',
     });    
-    service.RegisterErrorMessage(DataTypeCheckConditionType, DateLookupKey, {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, DateLookupKey, {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
     });
-    service.RegisterSummaryMessage(DataTypeCheckConditionType, DateLookupKey, {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, DateLookupKey, {
         '*': '{Label} has an invalid value. Enter a date.',
         'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
     });    
-    service.RegisterErrorMessage(DataTypeCheckConditionType, AbbrevDateLookupKey, {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, AbbrevDateLookupKey, {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
         'en-GB': 'Invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
     });
-    service.RegisterSummaryMessage(DataTypeCheckConditionType, AbbrevDateLookupKey, {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, AbbrevDateLookupKey, {
         '*': '{Label} has an invalid value. Enter a date.',
         'en-US': '{Label} has an invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'

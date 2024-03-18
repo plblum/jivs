@@ -22,6 +22,7 @@
 
 import { IValueHostResolver } from "./ValueHostResolver";
 import { IValueHost } from "./ValueHost";
+import { ConditionType } from "../Conditions/ConditionTypes";
 
 /**
  * The basis for any condition that you want to work with these validators.
@@ -39,7 +40,7 @@ export interface ICondition {
      * When defining conditions through a ConditionDescriptor, the Type property must 
      * be assigned with a valid ConditionType.
      */
-    ConditionType: string;
+    ConditionType: ConditionType | string;
 
     /**
      * Evaluate something against the rules defined in the implementation. Return whether
@@ -98,7 +99,7 @@ export interface IConditionDescriptor {
      * and be able to process the propertys of IConditionDescriptor.
      * Used by the ConditionFactory
      */
-    Type: string;
+    Type: ConditionType | string;
 
     /**
      * Most Condition classes have an official value for Category.
