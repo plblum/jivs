@@ -11,7 +11,7 @@ import { ValueChangedHandler, ValueHostStateChangedHandler } from "../src/ValueH
 import { ConditionBase } from "../src/Conditions/ConditionBase";
 import { ConditionDescriptor, ConditionEvaluateResult, ConditionCategory, IConditionFactory } from "../src/Interfaces/Conditions";
 import { IInputValueHost } from "../src/Interfaces/InputValueHost";
-import { ValidateOptions, IValidateResult, ValidationResult, IBusinessLogicError, IIssueFound, IIssueSnapshot } from "../src/Interfaces/Validation";
+import { ValidateOptions, ValidateResult, ValidationResult, BusinessLogicError, IssueFound, IssueSnapshot } from "../src/Interfaces/Validation";
 import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler } from "../src/ValueHosts/InputValueHostBase";
 import { IInputValidatorFactory, IMessageTokenResolver } from "../src/Interfaces/InputValidator";
 import { IDataTypeServices } from "../src/Interfaces/DataTypes";
@@ -123,7 +123,7 @@ export class MockInputValueHost extends MockValueHost
         else
             this._conversionErrorMessage = undefined;
     }
-    Validate(options?: ValidateOptions): IValidateResult {
+    Validate(options?: ValidateOptions): ValidateResult {
         throw new Error("Method not implemented.");
     }
     ClearValidation(): void {
@@ -138,20 +138,20 @@ export class MockInputValueHost extends MockValueHost
 
     ValidationResult: ValidationResult = ValidationResult.NotAttempted;
     
-    SetBusinessLogicError(error: IBusinessLogicError): void {
+    SetBusinessLogicError(error: BusinessLogicError): void {
         throw new Error("Method not implemented.");
     }
     ClearBusinessLogicErrors(): void {
         throw new Error("Method not implemented.");
     }
     
-    GetIssuesFound(): Array<IIssueFound> | null {
+    GetIssuesFound(): Array<IssueFound> | null {
         throw new Error("Method not implemented.");
     }    
-    GetIssuesForInput(): IIssueSnapshot[] {
+    GetIssuesForInput(): IssueSnapshot[] {
         throw new Error("Method not implemented.");
     }
-    GetIssuesForSummary(group?: string | undefined): IIssueSnapshot[] {
+    GetIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
         throw new Error("Method not implemented.");
     }    
 
@@ -312,7 +312,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         return this._hostStateChanges;
     }    
 
-    Validate(options?: ValidateOptions): Array<IValidateResult> {
+    Validate(options?: ValidateOptions): Array<ValidateResult> {
         throw new Error("Method not implemented.");
     }
     ClearValidation(): void {
@@ -330,14 +330,14 @@ export class MockValidationManager implements IValidationManager, IValidationMan
                 vh.OtherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
         });
     }    
-    public SetBusinessLogicErrors(errors: Array<IBusinessLogicError> | null): void
+    public SetBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void
     {
         throw new Error("Method not implemented.");        
     }        
-    GetIssuesForInput(valueHostId: string): IIssueSnapshot[] {
+    GetIssuesForInput(valueHostId: string): IssueSnapshot[] {
         throw new Error("Method not implemented.");
     }
-    GetIssuesForSummary(group?: string | undefined): IIssueSnapshot[] {
+    GetIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
         throw new Error("Method not implemented.");
     }
 
@@ -394,7 +394,7 @@ export class MockCapturingLogger implements ILogger
 {
     public MinLevel: LoggingLevel = LoggingLevel.Warn;
     
-    public Captured: Array<IMockCapturedLog> = [];
+    public Captured: Array<MockCapturedLog> = [];
     public Log(message: string, level: LoggingLevel, category?: string | undefined, source?: string | undefined): void {
         if (level >= this.MinLevel)
             this.Captured.push({
@@ -408,14 +408,14 @@ export class MockCapturingLogger implements ILogger
     {
         return this.Captured.length;
     }
-    public GetLatest(): IMockCapturedLog | null
+    public GetLatest(): MockCapturedLog | null
     {
         if (this.Captured.length)
             return this.Captured[this.Captured.length - 1];
         return null;
     }
 }
-export interface IMockCapturedLog
+export interface MockCapturedLog
 {
     Message: string,
     Level: LoggingLevel,

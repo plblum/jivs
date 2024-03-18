@@ -5,8 +5,8 @@
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { InputValidatorDescriptor } from "./InputValidator";
 import {
-    type ValidateOptions, type IValidateResult, ValidationResult,
-    type IBusinessLogicError, type IIssueFound, type IIssueSnapshot, IStatefulValidateResult
+    type ValidateOptions, type ValidateResult, ValidationResult,
+    type BusinessLogicError, type IssueFound, type IssueSnapshot, StatefulValidateResult
 } from "./Validation";
 import type { IValueHost, SetValueOptions, ValueHostDescriptor, ValueHostState } from "./ValueHost";
 
@@ -72,7 +72,7 @@ export interface IInputValueHost extends IValueHost {
      * @param options - Provides guidance on which validators to include.
      * @returns IValidationResultDetails
      */
-    Validate(options?: ValidateOptions): IValidateResult
+    Validate(options?: ValidateOptions): ValidateResult
 
     /**
      * Changes the validation state to itself initial: Undetermined
@@ -105,7 +105,7 @@ export interface IInputValueHost extends IValueHost {
      * Each time called, it adds to the existing list. Use ClearBusinessLogicErrors first if starting a fresh list.
      * @param error - An error to show.
      */
-    SetBusinessLogicError(error: IBusinessLogicError): void;
+    SetBusinessLogicError(error: BusinessLogicError): void;
 
     /**
      * Removes any business logic errors. Generally called automatically by
@@ -123,14 +123,14 @@ export interface IInputValueHost extends IValueHost {
      * The results of the latest Validate()
      * @returns Issues found or null if none.
      */
-    GetIssuesFound(): Array<IIssueFound> | null;
+    GetIssuesFound(): Array<IssueFound> | null;
 
     /**
      * Lists all error messages and supporting info about each validator
      * for use by a input field/element that shows its own error messages (InputValueHostState.ErrorMessage)
      * @returns 
      */
-    GetIssuesForInput(): Array<IIssueSnapshot>;
+    GetIssuesForInput(): Array<IssueSnapshot>;
 
     /**
      * A list of all issues to show in a Validation Summary widget optionally for a given group.
@@ -145,7 +145,7 @@ export interface IInputValueHost extends IValueHost {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    GetIssuesForSummary(group?: string): Array<IIssueSnapshot>;
+    GetIssuesForSummary(group?: string): Array<IssueSnapshot>;
 
     /**
      * Returns the ConversionErrorTokenValue supplied by the latest call
@@ -202,7 +202,7 @@ export interface InputValueHostBaseDescriptor extends ValueHostDescriptor {
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface InputValueHostBaseState extends ValueHostState, IStatefulValidateResult {
+export interface InputValueHostBaseState extends ValueHostState, StatefulValidateResult {
 
     /**
      * The value from the input field/element, even if invalid.
@@ -232,7 +232,7 @@ export interface InputValueHostBaseState extends ValueHostState, IStatefulValida
      * If there are any business logic errors, they are kept here.
      * If not, this is undefined.
      */
-    BusinessLogicErrors?: Array<IBusinessLogicError>;
+    BusinessLogicErrors?: Array<BusinessLogicError>;
 
     /**
      * When true, an async InputValidator is running

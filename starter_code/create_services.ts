@@ -1,11 +1,11 @@
 import {
-    IDataTypeCheckConditionDescriptor,  DataTypeCheckCondition, IRequiredTextConditionDescriptor,
-    RequiredTextCondition, IRequiredIndexConditionDescriptor, RequiredIndexCondition, IRegExpConditionDescriptor,
-    RegExpCondition, IRangeConditionDescriptor, RangeCondition, ICompareToConditionDescriptor,
-    ValuesEqualCondition, ValuesNotEqualCondition,  ValueGTSecondValueCondition,
-    ValueLTSecondValueCondition, ValueGTESecondValueCondition, 
-    ValueLTESecondValueCondition, IStringLengthConditionDescriptor, StringLengthCondition, IAndConditionsDescriptor,
-    AndConditions, IOrConditionsDescriptor,  OrConditions, ICountMatchingConditionsDescriptor,
+    DataTypeCheckConditionDescriptor,  DataTypeCheckCondition, RequiredTextConditionDescriptor,
+    RequiredTextCondition, RequiredIndexConditionDescriptor, RequiredIndexCondition, RegExpConditionDescriptor,
+    RegExpCondition, RangeConditionDescriptor, RangeCondition, CompareToConditionDescriptor,
+    EqualToCondition, NotEqualToCondition,  GreaterThanCondition,
+    LessThanCondition, GreaterThanOrEqualToCondition, 
+    LessThanOrEqualToCondition, StringLengthConditionDescriptor, StringLengthCondition, AndConditionsDescriptor,
+    AndConditions, OrConditionsDescriptor,  OrConditions, CountMatchingConditionsDescriptor,
     CountMatchingConditions
 } from "../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../src/Conditions/ConditionFactory";
@@ -80,40 +80,40 @@ export function CreateConditionFactory(): ConditionFactory
 export function RegisterConditions(cf: ConditionFactory): void
 {
     // Install the desired conditions
-    cf.Register<IDataTypeCheckConditionDescriptor>(
+    cf.Register<DataTypeCheckConditionDescriptor>(
         ConditionType.DataTypeCheck, (descriptor) => new DataTypeCheckCondition(descriptor));
-    cf.Register<IRequiredTextConditionDescriptor>(
+    cf.Register<RequiredTextConditionDescriptor>(
         ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor));
-    cf.Register<IRequiredIndexConditionDescriptor>(
+    cf.Register<RequiredIndexConditionDescriptor>(
         ConditionType.RequiredIndex, (descriptor) => new RequiredIndexCondition(descriptor));
-    cf.Register<IRegExpConditionDescriptor>(
+    cf.Register<RegExpConditionDescriptor>(
         ConditionType.RegExp, (descriptor) => new RegExpCondition(descriptor));
-    cf.Register<IRangeConditionDescriptor>(
+    cf.Register<RangeConditionDescriptor>(
         ConditionType.Range, (descriptor) => new RangeCondition(descriptor));
-    cf.Register<ICompareToConditionDescriptor>(
-        ConditionType.ValuesEqual, (descriptor) => new ValuesEqualCondition(descriptor));
-    cf.Register<ICompareToConditionDescriptor>
-        (ConditionType.ValuesNotEqual, (descriptor) => new ValuesNotEqualCondition(descriptor));
-    cf.Register<ICompareToConditionDescriptor>
-        (ConditionType.ValueGTSecondValue, (descriptor) => new ValueGTSecondValueCondition(descriptor));
-    cf.Register<ICompareToConditionDescriptor>
-        (ConditionType.ValueLTSecondValue, (descriptor) => new ValueLTSecondValueCondition(descriptor));
-    cf.Register<ICompareToConditionDescriptor>
-        (ConditionType.ValueGTESecondValue, (descriptor) => new ValueGTESecondValueCondition(descriptor));
-    cf.Register<ICompareToConditionDescriptor>
-        (ConditionType.ValueLTESecondValue, (descriptor) => new ValueLTESecondValueCondition(descriptor));
-    cf.Register<IStringLengthConditionDescriptor>
+    cf.Register<CompareToConditionDescriptor>(
+        ConditionType.EqualTo, (descriptor) => new EqualToCondition(descriptor));
+    cf.Register<CompareToConditionDescriptor>
+        (ConditionType.NotEqualTo, (descriptor) => new NotEqualToCondition(descriptor));
+    cf.Register<CompareToConditionDescriptor>
+        (ConditionType.GreaterThan, (descriptor) => new GreaterThanCondition(descriptor));
+    cf.Register<CompareToConditionDescriptor>
+        (ConditionType.LessThan, (descriptor) => new LessThanCondition(descriptor));
+    cf.Register<CompareToConditionDescriptor>
+        (ConditionType.GreaterThanOrEqualTo, (descriptor) => new GreaterThanOrEqualToCondition(descriptor));
+    cf.Register<CompareToConditionDescriptor>
+        (ConditionType.LessThanOrEqualTo, (descriptor) => new LessThanOrEqualToCondition(descriptor));
+    cf.Register<StringLengthConditionDescriptor>
         (ConditionType.StringLength, (descriptor) => new StringLengthCondition(descriptor));
-    cf.Register<IAndConditionsDescriptor>
+    cf.Register<AndConditionsDescriptor>
         (ConditionType.And, (descriptor) => new AndConditions(descriptor));
-    cf.Register<IOrConditionsDescriptor>
+    cf.Register<OrConditionsDescriptor>
         (ConditionType.Or, (descriptor) => new OrConditions(descriptor));
-    cf.Register<ICountMatchingConditionsDescriptor>
+    cf.Register<CountMatchingConditionsDescriptor>
         (ConditionType.CountMatches, (descriptor) => new CountMatchingConditions(descriptor));
     // aliases for users who don't deal well with boolean logic can relate
-    cf.Register<IAndConditionsDescriptor>
+    cf.Register<AndConditionsDescriptor>
         (ConditionType.Every, (descriptor) => new AndConditions(descriptor));
-    cf.Register<IOrConditionsDescriptor>
+    cf.Register<OrConditionsDescriptor>
         (ConditionType.Any, (descriptor) => new OrConditions(descriptor));
 }
 

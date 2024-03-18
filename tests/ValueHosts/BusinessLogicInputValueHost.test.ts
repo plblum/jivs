@@ -3,7 +3,7 @@ import { BusinessLogicInputValueHost, BusinessLogicInputValueHostType } from "..
 import { MockValidationManager, MockValidationServices } from "../Mocks";
 import { ObjectKeysCount } from '../../src/Utilities/Utilities';
 import { InputValueHostBaseDescriptor, InputValueHostBaseState, IInputValueHost } from '../../src/Interfaces/InputValueHost';
-import { ValidationResult, IValidateResult, IIssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
+import { ValidationResult, ValidateResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
 
 
 interface ITestSetupConfig {
@@ -52,7 +52,7 @@ function SetupInputValueHost(
 describe('BusinessLogicInputValueHost.Validate', () => {
     test('No BusinessLogicErrors results in ValidationResult.Valid', () => {
         let config = SetupInputValueHost();
-        let vr: IValidateResult | null = null;
+        let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.Validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
@@ -60,7 +60,7 @@ describe('BusinessLogicInputValueHost.Validate', () => {
     });
     test('Has group which is ignored. No BusinessLogicErrors results in ValidationResult.Valid', () => {
         let config = SetupInputValueHost();
-        let vr: IValidateResult | null = null;
+        let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.Validate({ Group: 'GROUPA' })).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
@@ -71,13 +71,13 @@ describe('BusinessLogicInputValueHost.Validate', () => {
         config.valueHost.SetBusinessLogicError({
             ErrorMessage: 'ERROR',
         });
-        let vr: IValidateResult | null = null;
+        let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.Validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
         expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IIssueFound>{
+        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "ERROR",
             Severity: ValidationSeverity.Error,
@@ -90,13 +90,13 @@ describe('BusinessLogicInputValueHost.Validate', () => {
             ErrorMessage: 'ERROR',
             Severity: ValidationSeverity.Error
         });
-        let vr: IValidateResult | null = null;
+        let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.Validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
         expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IIssueFound>{
+        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "ERROR",
             Severity: ValidationSeverity.Error,
@@ -109,13 +109,13 @@ describe('BusinessLogicInputValueHost.Validate', () => {
             ErrorMessage: 'ERROR',
             Severity: ValidationSeverity.Severe
         });
-        let vr: IValidateResult | null = null;
+        let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.Validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
         expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IIssueFound>{
+        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "ERROR",
             Severity: ValidationSeverity.Severe,
@@ -128,13 +128,13 @@ describe('BusinessLogicInputValueHost.Validate', () => {
             ErrorMessage: 'WARNING',
             Severity: ValidationSeverity.Warning
         });
-        let vr: IValidateResult | null = null;
+        let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.Validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
         expect(vr!.IssuesFound).not.toBeNull();
         expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IIssueFound>{
+        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "WARNING",
             Severity: ValidationSeverity.Warning,
@@ -148,13 +148,13 @@ describe('BusinessLogicInputValueHost.Validate', () => {
             Severity: ValidationSeverity.Error,
             ErrorCode: "EC1"
         });
-        let vr: IValidateResult | null = null;
+        let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.Validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
         expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IIssueFound>{
+        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "EC1",
             ErrorMessage: "ERROR",
             Severity: ValidationSeverity.Error,
@@ -171,19 +171,19 @@ describe('BusinessLogicInputValueHost.Validate', () => {
             ErrorMessage: 'ERROR',
             Severity: ValidationSeverity.Error
         });        
-        let vr: IValidateResult | null = null;
+        let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.Validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
         expect(ObjectKeysCount(vr!.IssuesFound)).toBe(2);
-        expect(vr!.IssuesFound![0]).toEqual(<IIssueFound>{
+        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "WARNING",
             Severity: ValidationSeverity.Warning,
             ValueHostId: BusinessLogicValueHostId
         });
-        expect(vr!.IssuesFound![1]).toEqual(<IIssueFound>{
+        expect(vr!.IssuesFound![1]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_1",
             ErrorMessage: "ERROR",
             Severity: ValidationSeverity.Error,
@@ -200,19 +200,19 @@ describe('BusinessLogicInputValueHost.Validate', () => {
             ErrorMessage: 'WARNING2',
             Severity: ValidationSeverity.Warning
         });        
-        let vr: IValidateResult | null = null;
+        let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.Validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
         expect(vr!.IssuesFound).not.toBeNull();
         expect(ObjectKeysCount(vr!.IssuesFound)).toBe(2);
-        expect(vr!.IssuesFound![0]).toEqual(<IIssueFound>{
+        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "WARNING",
             Severity: ValidationSeverity.Warning,
             ValueHostId: BusinessLogicValueHostId
         });
-        expect(vr!.IssuesFound![1]).toEqual(<IIssueFound>{
+        expect(vr!.IssuesFound![1]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_1",
             ErrorMessage: "WARNING2",
             Severity: ValidationSeverity.Warning,

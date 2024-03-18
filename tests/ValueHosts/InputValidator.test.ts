@@ -1,7 +1,7 @@
 import {
-    type IRangeConditionDescriptor,
-    RequiredTextCondition, ValuesEqualCondition,
-    type IRequiredTextConditionDescriptor, type ICompareToConditionDescriptor, 
+    type RangeConditionDescriptor,
+    RequiredTextCondition, EqualToCondition,
+    type RequiredTextConditionDescriptor, type CompareToConditionDescriptor, 
     
 } from "../../src/Conditions/ConcreteConditions";
 
@@ -75,7 +75,7 @@ function SetupWithField1AndField2(descriptor?: Partial<InputValidatorDescriptor>
     let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'Label1');
     let vh2 = vm.AddInputValueHost('Field2', LookupKey.String, 'Label2');
     const defaultDescriptor: InputValidatorDescriptor = {
-        ConditionDescriptor: <IRequiredTextConditionDescriptor>
+        ConditionDescriptor: <RequiredTextConditionDescriptor>
             { Type: ConditionType.RequiredText, ValueHostId: 'Field1' },
         ErrorMessage: 'Local',
         SummaryMessage: 'Summary'
@@ -151,7 +151,7 @@ describe('Inputvalidator.constructor and initial property values', () => {
 describe('InputValidator.Condition', () => {
     test('Successful creation of RequiredTextCondition using ConditionDescriptor', () => {
         let config = SetupWithField1AndField2({
-            ConditionDescriptor: <IRequiredTextConditionDescriptor>
+            ConditionDescriptor: <RequiredTextConditionDescriptor>
                 { Type: ConditionType.RequiredText, ValueHostId: null },
         });
 
@@ -232,10 +232,10 @@ describe('InputValidator.Enabler', () => {
         expect(() => enabler = config.inputValidator.ExposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
     });
-    test('Successful creation of ValuesEqualCondition', () => {
+    test('Successful creation of EqualToCondition', () => {
         let config = SetupWithField1AndField2({
-            EnablerDescriptor: <ICompareToConditionDescriptor>{
-                Type: ConditionType.ValuesEqual,
+            EnablerDescriptor: <CompareToConditionDescriptor>{
+                Type: ConditionType.EqualTo,
                 ValueHostId: null
             }
         });
@@ -243,7 +243,7 @@ describe('InputValidator.Enabler', () => {
         let enabler: ICondition | null = null;
         expect(() => enabler = config.inputValidator.ExposeEnabler()).not.toThrow();
         expect(enabler).not.toBeNull();
-        expect(enabler).toBeInstanceOf(ValuesEqualCondition);
+        expect(enabler).toBeInstanceOf(EqualToCondition);
     });
     test('Attempt to create Enabler with invalid type throws', () => {
         let config = SetupWithField1AndField2({
@@ -397,12 +397,12 @@ describe('InputValidator.Severity', () => {
         }
         CheckDefaultSeverity(ConditionType.Range);
         CheckDefaultSeverity(ConditionType.StringLength);
-        CheckDefaultSeverity(ConditionType.ValuesEqual);
-        CheckDefaultSeverity(ConditionType.ValuesNotEqual);
-        CheckDefaultSeverity(ConditionType.ValueGTSecondValue);
-        CheckDefaultSeverity(ConditionType.ValueGTESecondValue);
-        CheckDefaultSeverity(ConditionType.ValueLTSecondValue);
-        CheckDefaultSeverity(ConditionType.ValueLTESecondValue);
+        CheckDefaultSeverity(ConditionType.EqualTo);
+        CheckDefaultSeverity(ConditionType.NotEqualTo);
+        CheckDefaultSeverity(ConditionType.GreaterThan);
+        CheckDefaultSeverity(ConditionType.GreaterThanOrEqualTo);
+        CheckDefaultSeverity(ConditionType.LessThan);
+        CheckDefaultSeverity(ConditionType.LessThanOrEqualTo);
         CheckDefaultSeverity(ConditionType.And);
         CheckDefaultSeverity(ConditionType.Or);
         CheckDefaultSeverity(ConditionType.CountMatches);
@@ -716,7 +716,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     }); 
 });
-// Validate(group?: string): IIssueFound | null
+// Validate(group?: string): IssueFound | null
 describe('InputValidator.Validate', () => {
 
     test('No issue found. Returns ConditionEvaluateResult.Match', () => {
@@ -807,7 +807,7 @@ describe('InputValidator.Validate', () => {
     });
     test('Issue exists. Enabler = NoMatch. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
-            EnablerDescriptor: <IRequiredTextConditionDescriptor>{
+            EnablerDescriptor: <RequiredTextConditionDescriptor>{
                 Type: ConditionType.RequiredText,
                 ValueHostId: 'Field2'
             }
@@ -815,7 +815,7 @@ describe('InputValidator.Validate', () => {
     });
     test('Issue exists. Enabler = Undetermined. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
-            EnablerDescriptor: <IRangeConditionDescriptor>{
+            EnablerDescriptor: <RangeConditionDescriptor>{
                 // the input value is '', which causes this condition to return Undetermined
                 Type: ConditionType.Range, ValueHostId: 'Field2',
                 Minimum: 0, Maximum: 10
@@ -843,7 +843,7 @@ describe('InputValidator.Validate', () => {
     }
     test('Issue exists. Enabler = Match. Returns Issue with correct error messages', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
-            EnablerDescriptor: <IRequiredTextConditionDescriptor>{
+            EnablerDescriptor: <RequiredTextConditionDescriptor>{
                 // the input value is 'ABC', which causes this condition to return Match
                 Type: ConditionType.RequiredText, ValueHostId: 'Field2'
             }
@@ -996,7 +996,7 @@ describe('InputValidator.Validate', () => {
 describe('InputValidator.GatherValueHostIds', () => {
     test('RequiredTextCondition supplies its ValueHostId', () => {
         let config = SetupWithField1AndField2({
-            ConditionDescriptor: <IRequiredTextConditionDescriptor>
+            ConditionDescriptor: <RequiredTextConditionDescriptor>
                 { Type: ConditionType.RequiredText, ValueHostId: 'Property1' },
         });
         let collection = new Set<ValueHostId>();
@@ -1009,7 +1009,7 @@ describe('InputValidator.GatherValueHostIds', () => {
 describe('GetValuesForTokens', () => {
     test('RequiredTextCondition returns 2 tokens: Label and Value', () => {
         let config = SetupWithField1AndField2({
-            ConditionDescriptor: <IRequiredTextConditionDescriptor>{
+            ConditionDescriptor: <RequiredTextConditionDescriptor>{
                 Type: ConditionType.RequiredText,
                 ValueHostId: null
             }
@@ -1033,7 +1033,7 @@ describe('GetValuesForTokens', () => {
     });
     test('RangeCondition returns 4 tokens: Label, Value, Minimum, Maximum', () => {
         let config = SetupWithField1AndField2({
-            ConditionDescriptor: <IRangeConditionDescriptor>{
+            ConditionDescriptor: <RangeConditionDescriptor>{
                 Type: ConditionType.Range, ValueHostId: null,
                 Minimum: 'A',
                 Maximum: 'Z'
@@ -1074,7 +1074,7 @@ describe('InputValidatorFactory.Create', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'Label1');
         const descriptor: InputValidatorDescriptor = {
-            ConditionDescriptor: <IRequiredTextConditionDescriptor>{
+            ConditionDescriptor: <RequiredTextConditionDescriptor>{
                 Type: ConditionType.RequiredText,
                 ValueHostId: 'Field1'
             },

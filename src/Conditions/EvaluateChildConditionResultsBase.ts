@@ -15,7 +15,7 @@ import { ConditionBase } from "./ConditionBase";
 /**
  * Descriptor for all implementations of EvaluateChildConditionResultsBase.
  */
-export interface IEvaluateChildConditionResultsDescriptor extends ConditionDescriptor {
+export interface EvaluateChildConditionResultsDescriptor extends ConditionDescriptor {
     /**
      * Conditions for this condition to evaluate and apply its rules based on those results.
      * When left empty, the condition evaluates as Undetermined.
@@ -34,7 +34,7 @@ export interface IEvaluateChildConditionResultsDescriptor extends ConditionDescr
  * do with their results. In this case, the value of the current input field/element passed into 
  * Evaluate(vh) is ignored. All child conditions must specify their ValueHost sources explicitly.
  */
-export abstract class EvaluateChildConditionResultsBase<TDescriptor extends IEvaluateChildConditionResultsDescriptor>
+export abstract class EvaluateChildConditionResultsBase<TDescriptor extends EvaluateChildConditionResultsDescriptor>
     extends ConditionBase<TDescriptor>
 {
     public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {

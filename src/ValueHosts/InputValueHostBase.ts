@@ -9,7 +9,7 @@ import { IValueHostCallbacks, ToIValueHostCallbacks, ValueHostBase } from "./Val
 import { type IValueHostGenerator } from "../Interfaces/ValueHostFactory";
 import { IValueHostResolver, IValueHostsManager, ToIValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { IInputValueHost, InputValueHostBaseDescriptor, InputValueHostBaseState } from "../Interfaces/InputValueHost";
-import { IBusinessLogicError, IIssueFound, IIssueSnapshot, ValidateOptions, IValidateResult, ValidationResult, ValidationSeverity } from "../Interfaces/Validation";
+import { BusinessLogicError, IssueFound, IssueSnapshot, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from "../Interfaces/Validation";
 
 
 /**
@@ -231,7 +231,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * @param options - Provides guidance on which validators to include.
     * @returns IValidationResultDetails if at least one is invalid or null if all valid.
     */
-    public abstract Validate(options?: ValidateOptions): IValidateResult;
+    public abstract Validate(options?: ValidateOptions): ValidateResult;
 
     /**
      * Value is setup by calling Validate(). It does not run Validate itself.
@@ -301,7 +301,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * Each time called, it adds to the existing list. Use ClearBusinessLogicErrors first if starting a fresh list.
      * @param error - A business logic error to show.
      */
-    public SetBusinessLogicError(error: IBusinessLogicError): void {
+    public SetBusinessLogicError(error: BusinessLogicError): void {
         if (error) {
             this.UpdateState((stateToUpdate) => {
                 if (!stateToUpdate.BusinessLogicErrors)
@@ -327,14 +327,14 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     /**
      * exposes the Business Logic Errors list. If none, it is null.
      */
-    protected get BusinessLogicErrors(): Array<IBusinessLogicError> | null {
+    protected get BusinessLogicErrors(): Array<BusinessLogicError> | null {
         return this.State.BusinessLogicErrors ?? null;
     }
 
     //#endregion business logic errors
 
     //#region access to validation results    
-    public GetIssueFound(conditionType: string): IIssueFound | null {
+    public GetIssueFound(conditionType: string): IssueFound | null {
         //!! Not sure this is the correct approach.
         // We may only want the caller to have access to the picture of all
         // with error messages.
@@ -351,7 +351,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * The results of the latest Validate()
      * @returns Issues found or null if none.
      */
-    public GetIssuesFound(): Array<IIssueFound> | null {
+    public GetIssuesFound(): Array<IssueFound> | null {
         return this.State.IssuesFound;
     }
 
@@ -360,9 +360,9 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * for use by a input field/element that shows its own error messages (InputValueHostState.ErrorMessage)
      * @returns 
      */
-    public GetIssuesForInput(): Array<IIssueSnapshot> {
+    public GetIssuesForInput(): Array<IssueSnapshot> {
         let id = this.GetId();
-        let list: Array<IIssueSnapshot> = [];
+        let list: Array<IssueSnapshot> = [];
 
         if (this.State?.IssuesFound) {
             for (let valKey in this.State.IssuesFound) {
@@ -392,9 +392,9 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    public GetIssuesForSummary(group?: string): Array<IIssueSnapshot> {
+    public GetIssuesForSummary(group?: string): Array<IssueSnapshot> {
         let id = this.GetId();
-        let list: Array<IIssueSnapshot> = [];
+        let list: Array<IssueSnapshot> = [];
 
         if (this.State?.IssuesFound && GroupsMatch(group, this.State.Group)) {
             for (let valKey in this.State.IssuesFound) {
@@ -410,7 +410,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
 
         return list;
     }
-    private AddBusinessLogicErrorsToSnapshotList(list: Array<IIssueSnapshot>): void {
+    private AddBusinessLogicErrorsToSnapshotList(list: Array<IssueSnapshot>): void {
         if (this.BusinessLogicErrors) {
             for (let error of this.BusinessLogicErrors) {
                 list.push({
@@ -439,7 +439,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
 }
 
 
-export type ValueHostValidatedHandler = (valueHost: IInputValueHost, validateResult: IValidateResult) => void;
+export type ValueHostValidatedHandler = (valueHost: IInputValueHost, validateResult: ValidateResult) => void;
 export type InputValueChangedHandler = (valueHost: IInputValueHost, oldValue: any) => void;
 
 /**

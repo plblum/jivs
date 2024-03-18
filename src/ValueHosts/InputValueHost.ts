@@ -15,7 +15,7 @@ import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
 import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
-import { ValidateOptions, IValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IIssueFound } from "../Interfaces/Validation";
+import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from "../Interfaces/Validation";
 import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
 import { InputValidateResult, IInputValidator } from "../Interfaces/InputValidator";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
@@ -51,7 +51,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
      * @param options - Provides guidance on which validators to include.
      * @returns IValidationResultDetails if at least one is invalid or null if all valid.
      */
-    public Validate(options?: ValidateOptions): IValidateResult {
+    public Validate(options?: ValidateOptions): ValidateResult {
         let self = this;
         if (!options)
             options = {};
@@ -59,7 +59,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
         // Its properties collect all validator results, including those delayed by async.
         // By being an object, any closure referring to result will still get those
         // property changes for all validators completed.
-        let result: IValidateResult = {
+        let result: ValidateResult = {
             ValidationResult: ValidationResult.Undetermined,
             IssuesFound: null
         };
@@ -138,7 +138,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                 }
             });
         }
-        function UpdateStateWithResult(result: IValidateResult): boolean
+        function UpdateStateWithResult(result: ValidateResult): boolean
         {
             return self.UpdateState((stateToUpdate) => {
                 stateToUpdate.ValidationResult = result.ValidationResult;
@@ -206,9 +206,9 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
         // no change to the ValidationResult here            
         }
 
-        function Bailout(errorMessage: string): IValidateResult
+        function Bailout(errorMessage: string): ValidateResult
         {
-            let resultState: IValidateResult = {
+            let resultState: ValidateResult = {
                 ValidationResult: ValidationResult.Undetermined,
                 IssuesFound: null
             };
@@ -345,7 +345,7 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
         AssertNotNull(descriptor, 'descriptor');
         let descriptorChanged = false;
         let oldStateCount = 0;
-        let issuesFound: Array<IIssueFound> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
 
         if (state.IssuesFound) {
             let oldState = state.IssuesFound;
@@ -374,7 +374,7 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
         if (!descriptorChanged && (oldStateCount === ObjectKeysCount(state.IssuesFound)))
             return;
 
-        state.IssuesFound = issuesFound as (Array<IIssueFound> | null);
+        state.IssuesFound = issuesFound as (Array<IssueFound> | null);
         // fix validation result for when validation had occurred
         if (state.ValidationResult === ValidationResult.Invalid) {
             let vr = ValidationResult.ValueChangedButUnvalidated;

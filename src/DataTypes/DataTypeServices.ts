@@ -9,7 +9,7 @@
  *   They are associated with the error message tokens, such as "You entered {Value}." where the value
  *   is a Date object and needs to be shown in a localized format of short, abbreviated, or full.
  *   Uses DataTypeLocalizations to localizing the formatted string.
- *   Their function definition is fn(value: any) : IDataTypeResolution<string>.
+ *   Their function definition is fn(value: any) : DataTypeResolution<string>.
  * - Converter - Change the native value into somethat used by a Condition.Evaluate function.
  *   This is essential for comparison Conditions. Comparison works automatically
  *   with string, number, and boolean native types. Converters exist to take a Date
@@ -25,7 +25,7 @@
 
 import { DefaultComparer } from "./DataTypeComparers";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { IDataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
+import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
 import { CultureLanguageCode, DeepClone } from '../Utilities/Utilities';
 import { IServicesAccessor, IValidationServices, ToIServicesAccessor } from "../Interfaces/ValidationServices";
 
@@ -137,7 +137,7 @@ export class DataTypeServices implements IDataTypeServices {
      * always pass in the associated lookup key. They can be found in the LookupKeys module.
      * @returns successfully converted value or validation error information.
     */
-    public Format(value: any, lookupKey?: string | null): IDataTypeResolution<string> {
+    public Format(value: any, lookupKey?: string | null): DataTypeResolution<string> {
         if (!lookupKey)
             lookupKey = this.IdentifyLookupKey(value);
         if (lookupKey === null)

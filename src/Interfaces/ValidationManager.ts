@@ -26,7 +26,7 @@
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IValueHostsManager } from "./ValueHostResolver";
-import { ValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "./Validation";
+import { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from "./Validation";
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -40,9 +40,9 @@ export interface IValidationManager extends IValueHostsManager {
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      * Important to set options.BeforeSubmit to true if invoking Validate prior to submitting.
-     * @returns Array of IValidateResult with empty array if all are valid
+     * @returns Array of ValidateResult with empty array if all are valid
      */
-    Validate(options?: ValidateOptions): Array<IValidateResult>;
+    Validate(options?: ValidateOptions): Array<ValidateResult>;
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
@@ -75,7 +75,7 @@ export interface IValidationManager extends IValueHostsManager {
      * Each time its called, all previous business logic errors are abandoned.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      */
-    SetBusinessLogicErrors(errors: Array<IBusinessLogicError> | null): void;
+    SetBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void;
 
     /**
      * Lists all issues found (error messages and supporting info) for a single InputValueHost
@@ -89,7 +89,7 @@ export interface IValidationManager extends IValueHostsManager {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    GetIssuesForInput(valueHostId: ValueHostId): Array<IIssueSnapshot>;
+    GetIssuesForInput(valueHostId: ValueHostId): Array<IssueSnapshot>;
 
     /**
      * A list of all issues to show in a Validation Summary widget optionally for a given group.
@@ -104,7 +104,7 @@ export interface IValidationManager extends IValueHostsManager {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    GetIssuesForSummary(group?: string): Array<IIssueSnapshot>;
+    GetIssuesForSummary(group?: string): Array<IssueSnapshot>;
 }
 
 /**

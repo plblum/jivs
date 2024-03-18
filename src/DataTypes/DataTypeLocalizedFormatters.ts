@@ -8,7 +8,7 @@
  * @module DataTypes/DataTypeLocalizedFormatters
  */
 
-import { IDataTypeLocalizedFormatter, IDataTypeResolution } from "../Interfaces/DataTypes";
+import { IDataTypeLocalizedFormatter, DataTypeResolution } from "../Interfaces/DataTypes";
 import { IServicesAccessor, IValidationServices } from "../Interfaces/ValidationServices";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { CultureLanguageCode } from "../Utilities/Utilities";
@@ -72,9 +72,9 @@ export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocaliz
      * @param dataTypeLookupKey 
      * @param cultureId 
      */
-    public abstract Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string>;
+    public abstract Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string>;
     
-    protected prepString(value: any): IDataTypeResolution<string> {
+    protected prepString(value: any): DataTypeResolution<string> {
         if (value == null)    // null/undefined
             return { Value: '' };
         // filter out invalid values
@@ -127,7 +127,7 @@ export class StringLocalizedFormatter extends DataTypeLocalizedFormatterBase {
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         return this.prepString(value);
     }
 }
@@ -149,7 +149,7 @@ export class CapitalizeStringLocalizedFormatter extends DataTypeLocalizedFormatt
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let result = this.prepString(value);
         if (result.Value && result.Value.length > 0)
             result.Value = result.Value[0].toLocaleUpperCase(cultureId) +
@@ -174,7 +174,7 @@ export class UppercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let result = this.prepString(value);
         if (result.Value && result.Value.length > 0)
             result.Value = result.Value.toLocaleUpperCase(cultureId);
@@ -198,7 +198,7 @@ export class LowercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let result = this.prepString(value);
         if (result.Value && result.Value.length > 0)
             result.Value = result.Value.toLocaleLowerCase(cultureId);
@@ -233,7 +233,7 @@ export abstract class NumberLocalizedFormatterBase extends DataTypeLocalizedForm
      */
     protected abstract GetDefaultOptions(): Intl.NumberFormatOptions;
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         return this.FormatNumber(value, cultureId);
     }    
 
@@ -248,7 +248,7 @@ export abstract class NumberLocalizedFormatterBase extends DataTypeLocalizedForm
      * @returns 
      */
     protected FormatNumber(value: any, cultureId: string,
-        options?: Intl.NumberFormatOptions | null | null): IDataTypeResolution<string> {
+        options?: Intl.NumberFormatOptions | null | null): DataTypeResolution<string> {
         if (typeof value === 'number')
             return {
                 Value: Intl.NumberFormat(cultureId, options ?? this.Options).format(value)
@@ -314,7 +314,7 @@ export class IntegerLocalizedFormatter extends NumberLocalizedFormatterBase
         };
     }
 
-    // public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    // public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
     //     if (typeof value === 'number')
     //         value = Math.floor(value);
     //     super.Format(value, dataTypeLookupKey, cultureId);
@@ -361,7 +361,7 @@ export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
     }
 
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let options = this.Options;
         if (options.currency === "DEFAULT") {
             options = { ...options, currency: this.ResolveCurrencyCode(cultureId) };
@@ -434,7 +434,7 @@ export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBas
     }
 
     // Intl library treats 1.0 as 100. So we adjust the value.
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         if (typeof value === 'number')
             value = value / 100.0;
         return super.Format(value, dataTypeLookupKey, cultureId);
@@ -534,7 +534,7 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
 
     protected abstract GetDefaultLabels(): DefaultLabelsForBoolean;    
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         if (typeof value === 'boolean') {
             return this.FormatBoolean(value, cultureId);
         }
@@ -543,7 +543,7 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
         else
             return { ErrorMessage: 'Not a boolean' }
     }
-    protected FormatBoolean(value: boolean, cultureId: string): IDataTypeResolution<string>
+    protected FormatBoolean(value: boolean, cultureId: string): DataTypeResolution<string>
     {
         let text = value ? this.TrueLabel : this.FalseLabel;
         let l10n = value ? this.TrueLabell10n : this.FalseLabell10n;
@@ -630,7 +630,7 @@ export abstract class DateTimeLocalizedFormatterBase extends DataTypeLocalizedFo
      */
     protected abstract GetDefaultOptions(): Intl.DateTimeFormatOptions;
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         return this.FormatDateTime(value, cultureId);
     }    
 
@@ -645,7 +645,7 @@ export abstract class DateTimeLocalizedFormatterBase extends DataTypeLocalizedFo
      * @returns 
      */
     protected FormatDateTime(value: any, cultureId: string,
-        options?: Intl.DateTimeFormatOptions | null): IDataTypeResolution<string> {
+        options?: Intl.DateTimeFormatOptions | null): DataTypeResolution<string> {
         if (value instanceof Date)
             return {
                 Value: Intl.DateTimeFormat(cultureId, this.Options).format(value)

@@ -5,7 +5,7 @@
 import { IValueHostResolver } from "./ValueHostResolver";
 import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from "./Conditions";
 import { IInputValueHost } from "./InputValueHost";
-import { IIssueFound, ValidateOptions, ValidationSeverity } from "./Validation";
+import { IssueFound, ValidateOptions, ValidationSeverity } from "./Validation";
 import { IGatherValueHostIds } from "./ValueHost";
 
 /**
@@ -187,7 +187,7 @@ export interface InputValidateResult {
      * Assigned with issue details when an issue is found.
      * Null when no issue is found.
      */
-    IssueFound: IIssueFound | null,
+    IssueFound: IssueFound | null,
 
     /**
      * When true, Validate bailed before evaluation due to Enabled or Enabler

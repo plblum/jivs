@@ -213,7 +213,7 @@ Jivs provides numerous Condition classes.
 
 - RequiredTextCondition, RequiredIndexCondition - for required fields
 - DataTypeCheckCondition, RegExpCondition - for checking the data conforms to the data type.
-- RangeCondition, ValuesEqualCondition, ValueGTSecondValueCondition - Comparing values
+- RangeCondition, EqualToCondition, GreaterThanCondition - Comparing values
 - AndCondition, OrCondition - For creating boolean logic with other Conditions.
 </details>
 
@@ -221,9 +221,9 @@ To use them, you need to populate their ConditionDescriptor type, which has conf
 
 We'll work with this example. Here's the rule we want to implement: Compare a date from the Input to today's date.
 
-The ValuesEqualCondition is the right Condition for the job.  You need to create a ValuesEqualConditionDescriptor that Jivs will use later to prepare the ValuesEqualCondition. Here's that ConditionDescriptor:
+The EqualToCondition is the right Condition for the job.  You need to create a EqualToConditionDescriptor that Jivs will use later to prepare the EqualToCondition. Here's that ConditionDescriptor:
 ```ts
-interface IValuesEqualConditionDescriptor {
+interface EqualToConditionDescriptor {
     Type: string;
     ValueHostId: null | string;
     SecondValueHostId: null | string;
@@ -238,7 +238,7 @@ interface IValuesEqualConditionDescriptor {
 Your new code should look like this, where ValueHostId is your identifier for a field on the Model that you call “SignedOnDate”. (More on ValueHostIds later.)
 ```ts
 {
-    Type: 'ValuesEqual';
+    Type: 'EqualTo';
     ValueHostId: 'SignedOnDate';
     SecondValue: date object representing Today;
 }
@@ -262,8 +262,8 @@ class Factory
       switch (businessLogicRule.operator)
       {
         case ConditionOperators.Equals:
-          return <IValuesEqualsConditionDescriptor>{
-            Type: 'ValuesEqual',
+          return <EqualTosConditionDescriptor>{
+            Type: 'EqualTo',
             ValueHostId: fieldRef,
             SecondValue: businessLogicRule.SecondValue
           }
@@ -329,7 +329,7 @@ Here’s how your configuration actually looks:
   }
 ]
 ```
-The ValueHost Ids are also used to help a Condition retrieve a value from a ValueHost. Suppose that we use the ValuesNotEqualCondition on FirstName to compare to LastName. You have to supply the ValueHostId for the LastName field to the condition.
+The ValueHost Ids are also used to help a Condition retrieve a value from a ValueHost. Suppose that we use the NotEqualToCondition on FirstName to compare to LastName. You have to supply the ValueHostId for the LastName field to the condition.
 ```ts
 {
   Id: 'FirstName',
@@ -338,7 +338,7 @@ The ValueHost Ids are also used to help a Condition retrieve a value from a Valu
     {
       ConditionDescriptor: 
       {
-        Type: 'ValuesNotEqual',
+        Type: 'NotEqualTo',
         ValueHostId: null, // because owning ValueHost is provided automatically to the Condition.Evaluate function.
         SecondValueHostId: 'LastName'
       }      
@@ -393,7 +393,7 @@ Now let’s place the InputValidatorDescriptor into our previous example using a
   },
   {
     ConditionDescriptor: {
-      Type: 'ValuesNotEqual',
+      Type: 'NotEqualTo',
       ValueHostId: null,
       SecondValueHostId: 'LastName'
     },

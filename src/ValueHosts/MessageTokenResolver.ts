@@ -2,7 +2,7 @@
  * {@inheritDoc ValueHosts/Interfaces!IMessageTokenResolver}
  * @module ValueHosts/MessageTokenResolver
  */
-import type { IDataTypeResolution } from "../Interfaces/DataTypes";
+import type { DataTypeResolution } from "../Interfaces/DataTypes";
 import { IMessageTokenResolver, IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/InputValidator";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { LoggingLevel, ConfigurationCategory, TypeMismatchCategory, FormattingCategory } from "../Interfaces/Logger";
@@ -165,7 +165,7 @@ class CapturedToken
  * @param validationManager 
  * @returns 
  */    
-    public Replacement(replacementValue: any, valueHostResolver: IValueHostResolver): IDataTypeResolution<string>
+    public Replacement(replacementValue: any, valueHostResolver: IValueHostResolver): DataTypeResolution<string>
     {
         return valueHostResolver.Services.DataTypeServices.Format(replacementValue, this.formatterKey ?? undefined);
     }

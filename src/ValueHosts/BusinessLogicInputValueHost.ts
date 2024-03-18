@@ -5,7 +5,7 @@
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { InputValueHostBaseDescriptor, InputValueHostBaseState, IInputValueHost } from "../Interfaces/InputValueHost";
-import { ValidateOptions, IValidateResult, ValidationResult, IIssueFound, ValidationSeverity } from "../Interfaces/Validation";
+import { ValidateOptions, ValidateResult, ValidationResult, IssueFound, ValidationSeverity } from "../Interfaces/Validation";
 import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
 import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
@@ -24,14 +24,14 @@ export class BusinessLogicInputValueHost extends InputValueHostBase<InputValueHo
      * @param options 
      * @returns 
      */
-    public Validate(options?: ValidateOptions): IValidateResult {
-        let result: IValidateResult = {
+    public Validate(options?: ValidateOptions): ValidateResult {
+        let result: ValidateResult = {
             IssuesFound: null,
             ValidationResult: ValidationResult.Valid
         };
         if (this.BusinessLogicErrors)
         {
-            let iif: Array<IIssueFound> = [];
+            let iif: Array<IssueFound> = [];
             let issueCount = 0; // used to generate unique keys in IssueCount. They are fake ConditionTypes.
             let errorFound = false;
 

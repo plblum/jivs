@@ -5,7 +5,7 @@ import type { IValueHost, ValueHostDescriptor, ValueHostState } from "../Interfa
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "./ValueHostBase";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
-import type { ValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "../Interfaces/Validation";
+import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from "../Interfaces/Validation";
 import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 import type { ValidationManagerState, IValidationManager } from "../Interfaces/ValidationManager";
@@ -296,13 +296,13 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * even if they are considered Valid.
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-     * @returns Array of IValidateResult with empty array if all are valid
+     * @returns Array of ValidateResult with empty array if all are valid
      */
-    public Validate(options?: ValidateOptions): Array<IValidateResult> //!!!PENDING change this to IValidateResults with IsValid and DoNotSave in addition to this array
+    public Validate(options?: ValidateOptions): Array<ValidateResult> //!!!PENDING change this to ValidateResults with IsValid and DoNotSave in addition to this array
     {
         if (!options)
             options = {};
-        let list: Array<IValidateResult> = [];
+        let list: Array<ValidateResult> = [];
 
         for (let vh of this.InputValueHost()) {
             list.push(vh.Validate(options));
@@ -360,7 +360,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * error that lacks an AssociatedValueHostId.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      */
-    public SetBusinessLogicErrors(errors: Array<IBusinessLogicError> | null): void {
+    public SetBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void {
 
         for (let vh of this.InputValueHost()) {
             vh.ClearBusinessLogicErrors();
@@ -392,7 +392,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    public GetIssuesForInput(valueHostId: ValueHostId): Array<IIssueSnapshot> {
+    public GetIssuesForInput(valueHostId: ValueHostId): Array<IssueSnapshot> {
         let vh = this.GetValueHost(valueHostId);
         if (vh && vh instanceof InputValueHostBase)
             return vh.GetIssuesForInput();
@@ -410,8 +410,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    public GetIssuesForSummary(group?: string): Array<IIssueSnapshot> {
-        let list: Array<IIssueSnapshot> = [];
+    public GetIssuesForSummary(group?: string): Array<IssueSnapshot> {
+        let list: Array<IssueSnapshot> = [];
         for (let vh of this.InputValueHost()) {
             list = list.concat(vh.GetIssuesForSummary(group));
         }
@@ -543,7 +543,7 @@ interface IValueHostsMap {
 }
 
 export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;
-export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<IValidateResult>) => void;
+export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<ValidateResult>) => void;
 
 
 /**

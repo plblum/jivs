@@ -41,34 +41,34 @@ export enum ConditionType
     Range = 'Range',
 
     /**
-     * Associated with ValuesEqualCondition class.
+     * Associated with EqualToCondition class.
      */
-    ValuesEqual = 'ValuesEqual',
+    EqualTo = 'EqualTo',
 
     /**
-     * Associated with ValuesNotEqualCondition class.
+     * Associated with NotEqualToCondition class.
      */
-    ValuesNotEqual = 'ValuesNotEqual',
+    NotEqualTo = 'NotEqualTo',
 
     /**
-     * Associated with ValueGTSecondValueCondition class.
+     * Associated with GreaterThanCondition class.
      */
-    ValueGTSecondValue = 'ValueGreaterThanSecondValue',
+    GreaterThan = 'GreaterThan',
 
     /**
-     * Associated with ValueLTSecondValueCondition class.
+     * Associated with LessThanCondition class.
      */
-    ValueLTSecondValue = 'ValueLessThanSecondValue',
+    LessThan = 'LessThan',
 
     /**
-     * Associated with ValueGTESecondValueCondition class.
+     * Associated with GreaterThanOrEqualToCondition class.
      */
-    ValueGTESecondValue = 'ValueGreaterThanOrEqualSecondValue',
+    GreaterThanOrEqualTo = 'GreaterThanOrEqualTo',
 
     /**
-     * Associated with ValueLTESecondValueCondition class.
+     * Associated with LessThanOrEqualToCondition class.
      */
-    ValueLTESecondValue = 'ValueLessThanOrEqualSecondValue',
+    LessThanOrEqualTo = 'LessThanOrEqualTo',
 
     /**
      * Associated with StringLengthCondition class.

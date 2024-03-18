@@ -18,7 +18,7 @@ import { ToIGatherValueHostIds, type IValueHost } from "../Interfaces/ValueHost"
 import { type IValueHostResolver, type IValueHostsManager, ToIValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings } from "../Interfaces/Conditions";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
-import { type ValidateOptions, ValidationSeverity, type IIssueFound } from "../Interfaces/Validation";
+import { type ValidateOptions, ValidationSeverity, type IssueFound } from "../Interfaces/Validation";
 import type { InputValidateResult, IInputValidator, InputValidatorDescriptor, IInputValidatorFactory, IMessageTokenSource, TokenLabelAndValue  } from "../Interfaces/InputValidator";
 import { LoggingLevel, ConfigurationCategory, ValidationCategory } from "../Interfaces/Logger";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
@@ -368,7 +368,7 @@ export class InputValidator implements IInputValidator {
      * Do not modify the actual instance as it is immutable.
      * @param value 
      */
-    protected UpdateStateForNoMatch(stateToUpdate: IIssueFound,
+    protected UpdateStateForNoMatch(stateToUpdate: IssueFound,
         value: IValueHost): void {
         let services = this.Services;
         stateToUpdate.Severity = this.Severity;
@@ -425,7 +425,7 @@ export class InputValidator implements IInputValidator {
 
 
 export function CreateIssueFound(valueHost: IValueHost,
-    validator: IInputValidator): IIssueFound {
+    validator: IInputValidator): IssueFound {
     return {
         ValueHostId: valueHost.GetId(),
         ConditionType: validator.Condition.ConditionType,

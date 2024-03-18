@@ -26,7 +26,7 @@ export interface ICoreDataTypeServices
  * always pass in the associated lookup key. They can be found in the LookupKeys module.
  * @returns successfully converted value or validation error information.
  */    
-    Format(value: any, lookupKey?: string | null): IDataTypeResolution<string>;
+    Format(value: any, lookupKey?: string | null): DataTypeResolution<string>;
 }
 
 export interface IDataTypeServices extends ICoreDataTypeServices, IServicesAccessor
@@ -63,7 +63,7 @@ export interface IDataTypeServices extends ICoreDataTypeServices, IServicesAcces
  * Result from a method that can deliver either a value or an error in
  * attempting to generate that value.
  */
-export interface IDataTypeResolution<T>
+export interface DataTypeResolution<T>
 {
     /**
      * If assigned, it is the resolved value.
@@ -194,5 +194,5 @@ export interface IDataTypeLocalizedFormatter
      * @param dataTypeLookupKey 
      * @param cultureId 
      */
-    Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string>;
+    Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string>;
 }

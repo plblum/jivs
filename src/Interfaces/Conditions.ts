@@ -34,8 +34,8 @@ import { ConditionType } from "../Conditions/ConditionTypes";
 export interface ICondition {
     /**
      * A unique identifier for the specific implementation, like "Required" or "Range".
-     * Its value appears in the IIssueFound that comes from Validation, and in 
-     * IIssueSnapshot that comes from retrieving a list of errors to display.
+     * Its value appears in the IssueFound that comes from Validation, and in 
+     * IssueSnapshot that comes from retrieving a list of errors to display.
      * It allows the consumer of both to correlate those instances with the specific condition.
      * When defining conditions through a ConditionDescriptor, the Type property must 
      * be assigned with a valid ConditionType.
@@ -169,7 +169,7 @@ export enum ConditionCategory {
       */
     DataTypeCheck,
     /**
-     * Provides logical comparison: ValuesEqualCondition, ValueGTSecondValueCondition, etc.
+     * Provides logical comparison: EqualToCondition, GreaterThanCondition, etc.
      */
     Comparison,
     /**

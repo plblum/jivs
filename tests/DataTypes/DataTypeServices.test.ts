@@ -3,7 +3,7 @@ import { UTCDateOnlyConverter } from '../../src/DataTypes/DataTypeConverters';
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, StringDataTypeIdentifier } from '../../src/DataTypes/DataTypeIdentifiers';
 import { NumberDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
 import { CultureIdFallback, DataTypeServices } from "../../src/DataTypes/DataTypeServices";
-import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier, IDataTypeLocalizedFormatter, IDataTypeResolution } from "../../src/Interfaces/DataTypes";
+import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier, IDataTypeLocalizedFormatter, DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { RegisterDataTypeIdentifiers, RegisterDataTypeLocalizedFormatters } from "../../starter_code/create_services";
 import { BooleanDataTypeComparer } from '../../src/DataTypes/DataTypeComparers';
 import { BooleanLocalizedFormatter, NumberLocalizedFormatter } from '../../src/DataTypes/DataTypeLocalizedFormatters';
@@ -180,7 +180,7 @@ export function CreateDataTypeServicesWithManyCultures(activeCultureId: string, 
     return dts;
         
 }
-// Format(value: any, lookupKey?: string): IDataTypeResolution<string>
+// Format(value: any, lookupKey?: string): DataTypeResolution<string>
 describe('DataTypeServices.Format', () => {
     test('No lookupKey not resolved by data type error', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en');
@@ -204,7 +204,7 @@ describe('DataTypeServices.Format', () => {
         Supports(dataTypeLookupKey: string, cultureId: string): boolean {
             return this._supportedCultureIds.includes(cultureId);
         }
-        Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+        Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
             return { Value: `${cultureId} TestKey` };
         }
         

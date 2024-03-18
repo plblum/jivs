@@ -5,7 +5,7 @@ import {
     TimeofDayHMSLocalizedFormatter, TimeofDayLocalizedFormatter, UppercaseStringLocalizedFormatter
 } from './../../src/DataTypes/DataTypeLocalizedFormatters';
 
-import { IDataTypeResolution } from '../../src/Interfaces/DataTypes';
+import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
 import { MockValidationServices } from '../Mocks';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
@@ -19,7 +19,7 @@ describe('DataTypeLocalizedFormatterBase', () => {
         protected SupportsCulture(cultureId: string): boolean {
             throw new Error('Method not implemented.');
         }
-        public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+        public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
             throw new Error('Method not implemented.');
         }
         
