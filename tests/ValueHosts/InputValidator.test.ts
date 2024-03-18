@@ -7,15 +7,15 @@ import {
 
 import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
 import { LoggingLevel } from "../../src/Interfaces/Logger";
-import type { ITokenLabelAndValue } from "../../src/Interfaces/InputValidator";
+import type { TokenLabelAndValue } from "../../src/Interfaces/InputValidator";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger, ThrowsExceptionConditionType, NeverMatchesConditionType } from "../Mocks";
 import { IValueHostResolver, IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostId } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory } from '../../src/Interfaces/Conditions';
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
-import { ValidationSeverity, IValidateOptions } from '../../src/Interfaces/Validation';
-import { IInputValidateResult, IInputValidator, IInputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
+import { ValidationSeverity, ValidateOptions } from '../../src/Interfaces/Validation';
+import { InputValidateResult, IInputValidator, InputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -24,7 +24,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 // subclass of InputValidator to expose many of its protected members so they
 // can be individually tested
 class PublicifiedInputValidator extends InputValidator {
-    public ExposeDescriptor(): IInputValidatorDescriptor {
+    public ExposeDescriptor(): InputValidatorDescriptor {
         return this.Descriptor;
     }
     public ExposeServices(): IValidationServices {
@@ -62,26 +62,26 @@ class PublicifiedInputValidator extends InputValidator {
  * ValidationManager, Services, two ValueHosts, the complete Descriptor,
  * and the InputValidator.
  */
-function SetupWithField1AndField2(descriptor?: Partial<IInputValidatorDescriptor>): {
+function SetupWithField1AndField2(descriptor?: Partial<InputValidatorDescriptor>): {
     vm: MockValidationManager,
     services: MockValidationServices,
     valueHost1: MockInputValueHost,
     valueHost2: MockInputValueHost,
-    descriptor: IInputValidatorDescriptor,
+    descriptor: InputValidatorDescriptor,
     inputValidator: PublicifiedInputValidator
 } {
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
     let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'Label1');
     let vh2 = vm.AddInputValueHost('Field2', LookupKey.String, 'Label2');
-    const defaultDescriptor: IInputValidatorDescriptor = {
+    const defaultDescriptor: InputValidatorDescriptor = {
         ConditionDescriptor: <IRequiredTextConditionDescriptor>
             { Type: ConditionType.RequiredText, ValueHostId: 'Field1' },
         ErrorMessage: 'Local',
         SummaryMessage: 'Summary'
     };
 
-    let updatedDescriptor: IInputValidatorDescriptor = (!descriptor) ?
+    let updatedDescriptor: InputValidatorDescriptor = (!descriptor) ?
         defaultDescriptor :
         { ...defaultDescriptor, ...descriptor };
 
@@ -124,10 +124,10 @@ export class ConditionWithPromiseTester implements ICondition {
         });
     }
 }
-// constructor(valueHost: IInputValueHost, descriptor: IInputValidatorDescriptor)
+// constructor(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor)
 describe('Inputvalidator.constructor and initial property values', () => {
     test('valueHost parameter null throws', () => {
-        let descriptor: IInputValidatorDescriptor = {
+        let descriptor: InputValidatorDescriptor = {
             ConditionDescriptor: { Type: '' },
             ErrorMessage: ''
         };
@@ -723,11 +723,11 @@ describe('InputValidator.Validate', () => {
         let config = SetupWithField1AndField2();
         config.valueHost1.SetInputValue('valid');
 
-        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
+        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as IInputValidateResult;
+        vrResult = vrResult as unknown as InputValidateResult;
         expect(vrResult!.IssueFound).toBeNull();
         expect(vrResult!.ConditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
     });
@@ -736,11 +736,11 @@ describe('InputValidator.Validate', () => {
             Severity: severity
         });
         config.valueHost1.SetInputValue('');   // will be invalid
-        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
+        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as IInputValidateResult;
+        vrResult = vrResult as unknown as InputValidateResult;
         expect(vrResult!.IssueFound).not.toBeNull();
         expect(vrResult!.IssueFound!.ConditionType).toBe(ConditionType.RequiredText);
         expect(vrResult!.IssueFound!.Severity).toBe(severity);
@@ -763,11 +763,11 @@ describe('InputValidator.Validate', () => {
             SummaryMessage: summaryMessage,
         });
         config.valueHost1.SetInputValue('');   // will be an issue
-        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
+        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as IInputValidateResult;
+        vrResult = vrResult as unknown as InputValidateResult;
         expect(vrResult!.IssueFound).not.toBeNull();
 
         let issueFound = vrResult!.IssueFound;
@@ -784,17 +784,17 @@ describe('InputValidator.Validate', () => {
     test('Issue found. ErrorMessage and SummaryMessage supplied each with tokens. Error messages both have correctly replaced the tokens.', () => {
         testErrorMessages('{Label} Local', '{Label} Summary', 'Label1 Local', 'Label1 Summary');
     });
-    function testConditionHasIssueButDisabledReturnsNull(descriptorChanges: Partial<IInputValidatorDescriptor>): void {
+    function testConditionHasIssueButDisabledReturnsNull(descriptorChanges: Partial<InputValidatorDescriptor>): void {
         let config = SetupWithField1AndField2(descriptorChanges);
         let logger = config.services.LoggerService as MockCapturingLogger;
         logger.MinLevel = LoggingLevel.Info;  // to confirm logged condition result        
         config.valueHost1.SetInputValue('');   // will be invalid
         config.valueHost2.SetInputValue('');   // for use by Enabler to be invalid
-        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
+        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as IInputValidateResult;
+        vrResult = vrResult as unknown as InputValidateResult;
         expect(vrResult!.IssueFound).toBeNull();
 
         // 2 info level log entries: bailout and validation result
@@ -822,18 +822,18 @@ describe('InputValidator.Validate', () => {
             }
         });
     });
-    function testConditionHasIssueAndBlockingCheckPermitsValidation(descriptorChanges: Partial<IInputValidatorDescriptor>,
-        validateOptions: IValidateOptions, logCount: number, issueExpected: boolean = true): void {
+    function testConditionHasIssueAndBlockingCheckPermitsValidation(descriptorChanges: Partial<InputValidatorDescriptor>,
+        validateOptions: ValidateOptions, logCount: number, issueExpected: boolean = true): void {
         let config = SetupWithField1AndField2(descriptorChanges);
         let logger = config.services.LoggerService as MockCapturingLogger;
         logger.MinLevel = LoggingLevel.Info;  // to confirm logged condition result
         config.valueHost1.SetInputValue('');   // will be invalid
         config.valueHost2.SetInputValue('ABC');   // for use by Enabler to enable the condition
-        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
+        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate(validateOptions)).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as IInputValidateResult;
+        vrResult = vrResult as unknown as InputValidateResult;
         if (issueExpected)
             expect(vrResult!.IssueFound).not.toBeNull();
         else
@@ -891,11 +891,11 @@ describe('InputValidator.Validate', () => {
 
         let logger = config.services.LoggerService as MockCapturingLogger;
         logger.MinLevel = LoggingLevel.Info;  // to confirm logged condition result
-        let vrResult: IInputValidateResult | Promise<IInputValidateResult> | null = null;
+        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.Validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as IInputValidateResult;
+        vrResult = vrResult as unknown as InputValidateResult;
         expect(vrResult).not.toBeNull();
         expect(vrResult!.IssueFound).toBeNull();
         expect(vrResult!.ConditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
@@ -916,7 +916,7 @@ describe('InputValidator.Validate', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'Field 1');
 
-        let descriptor: IInputValidatorDescriptor = {
+        let descriptor: InputValidatorDescriptor = {
             ConditionDescriptor: null,
             ConditionCreator: (requestor) => {
                 return new ConditionWithPromiseTester(result,
@@ -956,7 +956,7 @@ describe('InputValidator.Validate', () => {
         async () => {
             let setup = SetupPromiseTest(ConditionEvaluateResult.NoMatch, 0);
             let result = await setup.testItem.Validate({});
-            expect(result).toEqual(<IInputValidateResult>{
+            expect(result).toEqual(<InputValidateResult>{
                 ConditionEvaluateResult: ConditionEvaluateResult.NoMatch,
                 IssueFound: {
                     ConditionType: 'TEST',
@@ -1015,7 +1015,7 @@ describe('GetValuesForTokens', () => {
             }
         });
         config.valueHost1.SetInputValue('Value1');
-        let tlvs: Array<ITokenLabelAndValue> | null = null;
+        let tlvs: Array<TokenLabelAndValue> | null = null;
         expect(() => tlvs = config.inputValidator.GetValuesForTokens(config.valueHost1, config.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();
         expect(tlvs).toEqual([
@@ -1040,7 +1040,7 @@ describe('GetValuesForTokens', () => {
             }
         });
         config.valueHost1.SetInputValue('C');
-        let tlvs: Array<ITokenLabelAndValue> | null = null;
+        let tlvs: Array<TokenLabelAndValue> | null = null;
         expect(() => tlvs = config.inputValidator.GetValuesForTokens(config.valueHost1, config.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();
         expect(tlvs).toEqual([
@@ -1073,7 +1073,7 @@ describe('InputValidatorFactory.Create', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'Label1');
-        const descriptor: IInputValidatorDescriptor = {
+        const descriptor: InputValidatorDescriptor = {
             ConditionDescriptor: <IRequiredTextConditionDescriptor>{
                 Type: ConditionType.RequiredText,
                 ValueHostId: 'Field1'

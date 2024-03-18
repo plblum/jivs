@@ -4,7 +4,7 @@ import { CreateMockValidationManagerForMessageTokenResolver, MockCapturingLogger
 import { IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IInputValueHost } from "../../src/Interfaces/InputValueHost";
-import { IMessageTokenSource, ITokenLabelAndValue } from "../../src/Interfaces/InputValidator";
+import { IMessageTokenSource, TokenLabelAndValue } from "../../src/Interfaces/InputValidator";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 
@@ -13,7 +13,7 @@ describe('ResolveTokens', () => {
     test('Invalid parameters', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(false);
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue> {
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue> {
                 return [];
             }
         };
@@ -25,7 +25,7 @@ describe('ResolveTokens', () => {
     test('Message with no tokens returns verbatim', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(false);
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [];
             }
@@ -39,7 +39,7 @@ describe('ResolveTokens', () => {
     test('Message with {token} gets token replaced. Token value is a string.', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     TokenLabel: 'token',
@@ -59,7 +59,7 @@ describe('ResolveTokens', () => {
     test('Message with {token} gets token replaced. Token value is a Date.', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     TokenLabel: 'token',
@@ -74,7 +74,7 @@ describe('ResolveTokens', () => {
     test('Message with {token} gets token replaced. Token value is a Number.', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     TokenLabel: 'token',
@@ -89,7 +89,7 @@ describe('ResolveTokens', () => {
     test('Message with {token} gets token replaced. Token value is a Boolean.', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     TokenLabel: 'token',
@@ -104,7 +104,7 @@ describe('ResolveTokens', () => {
     test('Message with {token} gets token replaced using formatters. Token value is a String.', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     TokenLabel: 'token',
@@ -121,7 +121,7 @@ describe('ResolveTokens', () => {
     test('Message with {token} gets token replaced using formatters. Token value is a Date.', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     TokenLabel: 'token',
@@ -138,7 +138,7 @@ describe('ResolveTokens', () => {
     test('Message with {token1} and {token2} gets tokens replaced using formatters. Token1 is a Date; Token2 is a string.', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(true);
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     TokenLabel: 'token1',
@@ -162,7 +162,7 @@ describe('ResolveTokens', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(true);
         let logger = vm.Services.LoggerService as MockCapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     TokenLabel: 'token',
@@ -183,7 +183,7 @@ describe('ResolveTokens', () => {
         let vm = CreateMockValidationManagerForMessageTokenResolver(true);
         let logger = vm.Services.LoggerService as MockCapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
-            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<ITokenLabelAndValue>
+            GetValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
                     TokenLabel: 'token',

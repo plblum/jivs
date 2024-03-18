@@ -4,12 +4,12 @@
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { DeepEquals, GroupsMatch } from "../Utilities/Utilities";
-import { type ISetValueOptions} from "../Interfaces/ValueHost";
+import { type SetValueOptions} from "../Interfaces/ValueHost";
 import { IValueHostCallbacks, ToIValueHostCallbacks, ValueHostBase } from "./ValueHostBase";
 import { type IValueHostGenerator } from "../Interfaces/ValueHostFactory";
 import { IValueHostResolver, IValueHostsManager, ToIValueHostsManager } from "../Interfaces/ValueHostResolver";
-import { IInputValueHost, IInputValueHostBaseDescriptor, IInputValueHostBaseState } from "../Interfaces/InputValueHost";
-import { IBusinessLogicError, IIssueFound, IIssueSnapshot, IValidateOptions, IValidateResult, ValidationResult, ValidationSeverity } from "../Interfaces/Validation";
+import { IInputValueHost, InputValueHostBaseDescriptor, InputValueHostBaseState } from "../Interfaces/InputValueHost";
+import { IBusinessLogicError, IIssueFound, IIssueSnapshot, ValidateOptions, IValidateResult, ValidationResult, ValidationSeverity } from "../Interfaces/Validation";
 
 
 /**
@@ -18,15 +18,15 @@ import { IBusinessLogicError, IIssueFound, IIssueSnapshot, IValidateOptions, IVa
 * and treated as immutable.
 * - IValueHostsManager - Contains all ValueHosts. This is usually ValidationManager.
 *   It is the owner of all state and provides group validation.
-* - IInputValueHostBaseDescriptor - The business logic supplies these rules
+* - InputValueHostBaseDescriptor - The business logic supplies these rules
 *   to implement a ValueHost's Id, label, data type, validation rules,
 *   and other business logic metadata.
-* - IInputValueHostState - State used by this InputValueHost including
+* - InputValueHostState - State used by this InputValueHost including
     its validators.
 * If the caller changes any of these, discard the instance
 * and create a new one.
  */
-export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBaseDescriptor, TState extends IInputValueHostBaseState>
+export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseDescriptor, TState extends InputValueHostBaseState>
     extends ValueHostBase<TDescriptor, TState>
     implements IInputValueHost {
     constructor(valueHostsManager: IValueHostsManager, descriptor: TDescriptor, state: TState) {
@@ -46,7 +46,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
     */
-    public SetValue(value: any, options?: ISetValueOptions): void {
+    public SetValue(value: any, options?: SetValueOptions): void {
         if (!options)
             options = {};        
         let oldValue: any = this.State.Value;
@@ -87,7 +87,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
     */
-    public SetInputValue(value: any, options?: ISetValueOptions): void {
+    public SetInputValue(value: any, options?: SetValueOptions): void {
         if (!options)
             options = {};        
         let oldValue: any = this.State.InputValue;
@@ -123,7 +123,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    public SetValues(nativeValue: any, inputValue: any, options?: ISetValueOptions): void {
+    public SetValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {
         if (!options)
             options = options ?? {};
         let oldNative: any = this.State.Value;
@@ -151,15 +151,15 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
         this.UseOnValueChanged(inputChanged, oldInput, options);
     }
 
-    protected UpdateConversionErrorMessage(stateToUpdate: IInputValueHostBaseState,
-        nativeValue: any, options: ISetValueOptions): void {
+    protected UpdateConversionErrorMessage(stateToUpdate: InputValueHostBaseState,
+        nativeValue: any, options: SetValueOptions): void {
         if ((nativeValue === undefined) && options.ConversionErrorTokenValue)
             stateToUpdate.ConversionErrorTokenValue = options.ConversionErrorTokenValue;
         else
             delete stateToUpdate.ConversionErrorTokenValue;
     }
 
-    protected ProcessValidationOptions(options: ISetValueOptions): void {
+    protected ProcessValidationOptions(options: SetValueOptions): void {
         if (options.Validate) {
             if (this.State.ValidationResult === ValidationResult.ValueChangedButUnvalidated)
                 this.Validate(); // Result isn't ignored. Its automatically updates state and notifies parent
@@ -168,7 +168,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
             this.ClearValidation();
     }
 
-    protected NotifyOthersOfChange(options: ISetValueOptions): void {
+    protected NotifyOthersOfChange(options: SetValueOptions): void {
         ToIValueHostsManager(this.ValueHostsManager)?.NotifyOtherValueHostsOfValueChange?.(
             this.GetId(), options.Validate === true);
     }
@@ -231,7 +231,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
      * @param options - Provides guidance on which validators to include.
     * @returns IValidationResultDetails if at least one is invalid or null if all valid.
     */
-    public abstract Validate(options?: IValidateOptions): IValidateResult;
+    public abstract Validate(options?: ValidateOptions): IValidateResult;
 
     /**
      * Value is setup by calling Validate(). It does not run Validate itself.
@@ -357,7 +357,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
 
     /**
      * Lists all error messages and supporting info about each validator
-     * for use by a input field/element that shows its own error messages (IInputValueHostState.ErrorMessage)
+     * for use by a input field/element that shows its own error messages (InputValueHostState.ErrorMessage)
      * @returns 
      */
     public GetIssuesForInput(): Array<IIssueSnapshot> {
@@ -486,9 +486,9 @@ export function ToIInputValueHostCallbacks(source: any): IInputValueHostCallback
 
 
 export abstract class InputValueHostBaseGenerator implements IValueHostGenerator {
-    public abstract CanCreate(descriptor: IInputValueHostBaseDescriptor): boolean;
+    public abstract CanCreate(descriptor: InputValueHostBaseDescriptor): boolean;
 
-    public abstract Create(valueHostsManager: IValueHostsManager, descriptor: IInputValueHostBaseDescriptor, state: IInputValueHostBaseState): IInputValueHost;
+    public abstract Create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostBaseDescriptor, state: InputValueHostBaseState): IInputValueHost;
 
     /**
      * Looking for changes to the ValidationDescriptors to impact IssuesFound.
@@ -497,8 +497,8 @@ export abstract class InputValueHostBaseGenerator implements IValueHostGenerator
      * @param state 
      * @param descriptor 
      */
-    public abstract CleanupState(state: IInputValueHostBaseState, descriptor: IInputValueHostBaseDescriptor): void;
-    public CreateState(descriptor: IInputValueHostBaseDescriptor): IInputValueHostBaseState {
+    public abstract CleanupState(state: InputValueHostBaseState, descriptor: InputValueHostBaseDescriptor): void;
+    public CreateState(descriptor: InputValueHostBaseDescriptor): InputValueHostBaseState {
         return {
             Id: descriptor.Id,
             Value: descriptor.InitialValue,

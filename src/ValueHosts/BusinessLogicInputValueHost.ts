@@ -4,8 +4,8 @@
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IInputValueHostBaseDescriptor, IInputValueHostBaseState, IInputValueHost } from "../Interfaces/InputValueHost";
-import { IValidateOptions, IValidateResult, ValidationResult, IIssueFound, ValidationSeverity } from "../Interfaces/Validation";
+import { InputValueHostBaseDescriptor, InputValueHostBaseState, IInputValueHost } from "../Interfaces/InputValueHost";
+import { ValidateOptions, IValidateResult, ValidationResult, IIssueFound, ValidationSeverity } from "../Interfaces/Validation";
 import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
 import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
@@ -14,7 +14,7 @@ import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostR
 /**
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
  */
-export class BusinessLogicInputValueHost extends InputValueHostBase<IInputValueHostBaseDescriptor, IInputValueHostBaseState>
+export class BusinessLogicInputValueHost extends InputValueHostBase<InputValueHostBaseDescriptor, InputValueHostBaseState>
 {
     /**
      * Result is based on the presence of Business Logic Errors that are not warnings.
@@ -24,7 +24,7 @@ export class BusinessLogicInputValueHost extends InputValueHostBase<IInputValueH
      * @param options 
      * @returns 
      */
-    public Validate(options?: IValidateOptions): IValidateResult {
+    public Validate(options?: ValidateOptions): IValidateResult {
         let result: IValidateResult = {
             IssuesFound: null,
             ValidationResult: ValidationResult.Valid
@@ -75,13 +75,13 @@ export const BusinessLogicValueHostId = '*';
 export const BusinessLogicInputValueHostType = 'BusinessLogic';
 export class BusinessLogicInputValueHostGenerator extends InputValueHostBaseGenerator {
 
-    public CanCreate(descriptor: IInputValueHostBaseDescriptor): boolean {
+    public CanCreate(descriptor: InputValueHostBaseDescriptor): boolean {
         return descriptor.Type === BusinessLogicInputValueHostType;
     }
-    public Create(valueHostsManager: IValueHostsManager, descriptor: IInputValueHostBaseDescriptor, state: IInputValueHostBaseState): IInputValueHost {
+    public Create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostBaseDescriptor, state: InputValueHostBaseState): IInputValueHost {
         return new BusinessLogicInputValueHost(valueHostsManager, descriptor, state);
     }
-    public CleanupState(state: IInputValueHostBaseState, descriptor: IInputValueHostBaseDescriptor): void {
+    public CleanupState(state: InputValueHostBaseState, descriptor: InputValueHostBaseDescriptor): void {
         // nothing to do
     }
 }

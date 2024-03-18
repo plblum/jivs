@@ -3,12 +3,12 @@
  * @module ValueHosts/Interfaces
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IInputValidatorDescriptor } from "./InputValidator";
+import { InputValidatorDescriptor } from "./InputValidator";
 import {
-    type IValidateOptions, type IValidateResult, ValidationResult,
+    type ValidateOptions, type IValidateResult, ValidationResult,
     type IBusinessLogicError, type IIssueFound, type IIssueSnapshot, IStatefulValidateResult
 } from "./Validation";
-import type { IValueHost, ISetValueOptions, IValueHostDescriptor, IValueHostState } from "./ValueHost";
+import type { IValueHost, SetValueOptions, ValueHostDescriptor, ValueHostState } from "./ValueHost";
 
 /**
 * Manages a value that may use input validation.
@@ -33,7 +33,7 @@ export interface IInputValueHost extends IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetInputValue(value: any, options?: ISetValueOptions): void;
+    SetInputValue(value: any, options?: SetValueOptions): void;
 
     /**
      * Sets both (native data type) Value and Input Value at the same time
@@ -52,7 +52,7 @@ export interface IInputValueHost extends IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetValues(nativeValue: any, inputValue: any, options?: ISetValueOptions): void;
+    SetValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
 
     /**
      * When SetValue, SetValues, SetInputValue, or SetToUndefined occurs,
@@ -72,7 +72,7 @@ export interface IInputValueHost extends IValueHost {
      * @param options - Provides guidance on which validators to include.
      * @returns IValidationResultDetails
      */
-    Validate(options?: IValidateOptions): IValidateResult
+    Validate(options?: ValidateOptions): IValidateResult
 
     /**
      * Changes the validation state to itself initial: Undetermined
@@ -127,7 +127,7 @@ export interface IInputValueHost extends IValueHost {
 
     /**
      * Lists all error messages and supporting info about each validator
-     * for use by a input field/element that shows its own error messages (IInputValueHostState.ErrorMessage)
+     * for use by a input field/element that shows its own error messages (InputValueHostState.ErrorMessage)
      * @returns 
      */
     GetIssuesForInput(): Array<IIssueSnapshot>;
@@ -165,7 +165,7 @@ export interface IInputValueHost extends IValueHost {
 /**
  * Just the data that is used to describe this input value.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to IInputValueHostDescriptor.
+ * It should be generatable from JSON, and simply gets typed to InputValueHostDescriptor.
  * This provides the backing data for each InputValueHost.
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this, except values are converted to their native forms
@@ -175,7 +175,7 @@ export interface IInputValueHost extends IValueHost {
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  */
-export interface IInputValueHostBaseDescriptor extends IValueHostDescriptor {
+export interface InputValueHostBaseDescriptor extends ValueHostDescriptor {
 
     /**
      * InputValueHosts can be part of one or more named groups.
@@ -202,7 +202,7 @@ export interface IInputValueHostBaseDescriptor extends IValueHostDescriptor {
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface IInputValueHostBaseState extends IValueHostState, IStatefulValidateResult {
+export interface InputValueHostBaseState extends ValueHostState, IStatefulValidateResult {
 
     /**
      * The value from the input field/element, even if invalid.
@@ -243,7 +243,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IStatefulVali
 /**
  * Just the data that is used to describe this input value.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to IInputValueHostDescriptor.
+ * It should be generatable from JSON, and simply gets typed to InputValueHostDescriptor.
  * This provides the backing data for each InputValueHost.
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this, except values are converted to their native forms
@@ -253,7 +253,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IStatefulVali
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  */
-export interface IInputValueHostDescriptor extends IInputValueHostBaseDescriptor {
+export interface InputValueHostDescriptor extends InputValueHostBaseDescriptor {
 
     /**
      * How to validate based on the business rules.
@@ -261,13 +261,13 @@ export interface IInputValueHostDescriptor extends IInputValueHostBaseDescriptor
      * This array may need to host validators that are client-side only,
      * such as parser error converting "abc" to number.
      */
-    ValidatorDescriptors: Array<IInputValidatorDescriptor> | null;
+    ValidatorDescriptors: Array<InputValidatorDescriptor> | null;
 }
 
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface IInputValueHostState extends IInputValueHostBaseState {
+export interface InputValueHostState extends InputValueHostBaseState {
 
 }
 

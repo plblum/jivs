@@ -6,7 +6,7 @@
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from "../Interfaces/Conditions";
+import { ConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from "../Interfaces/Conditions";
 import { IValueHost, ToIGatherValueHostIds } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { CodingError } from "../Utilities/ErrorHandling";
@@ -15,12 +15,12 @@ import { ConditionBase } from "./ConditionBase";
 /**
  * Descriptor for all implementations of EvaluateChildConditionResultsBase.
  */
-export interface IEvaluateChildConditionResultsDescriptor extends IConditionDescriptor {
+export interface IEvaluateChildConditionResultsDescriptor extends ConditionDescriptor {
     /**
      * Conditions for this condition to evaluate and apply its rules based on those results.
      * When left empty, the condition evaluates as Undetermined.
      */
-    ConditionDescriptors: Array<IConditionDescriptor>;
+    ConditionDescriptors: Array<ConditionDescriptor>;
 
     /**
      * When a child condition evaluates as Undetermined, this indicates how to handle it.

@@ -26,7 +26,7 @@
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IValueHostsManager } from "./ValueHostResolver";
-import { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "./Validation";
+import { ValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "./Validation";
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -42,7 +42,7 @@ export interface IValidationManager extends IValueHostsManager {
      * Important to set options.BeforeSubmit to true if invoking Validate prior to submitting.
      * @returns Array of IValidateResult with empty array if all are valid
      */
-    Validate(options?: IValidateOptions): Array<IValidateResult>;
+    Validate(options?: ValidateOptions): Array<IValidateResult>;
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
@@ -116,7 +116,7 @@ export interface IValidationManager extends IValueHostsManager {
  * The SPA may keep an instance of ValidationManager for the duration needed.
  * Each entry in ValueHostStates must have a companion in ValueHosts and ValueHostDescriptors.
  */
-export interface IValidationManagerState {
+export interface ValidationManagerState {
     StateChangeCounter?: number;
 }
 

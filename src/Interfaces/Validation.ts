@@ -3,13 +3,13 @@
  * @module ValueHosts/Interfaces
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IInputValidateResult } from "./InputValidator";
+import { InputValidateResult } from "./InputValidator";
 
 /**
  * Parameter for the Validate method on InputValueHost and ValidationManager.
  * It provides additional guidance on how to get the validators involved.
  */
-export interface IValidateOptions
+export interface ValidateOptions
 {
     /**
      * Group validation name, a tool to group InputValueHosts with a specific submit command when validating.
@@ -73,7 +73,7 @@ export interface IValidateResult extends IStatefulValidateResult {
      * There should never be an empty array as the presence of an array
      * will make the system think there are promises pending.
      */
-    Pending?: Array<Promise<IInputValidateResult>> | null;
+    Pending?: Array<Promise<InputValidateResult>> | null;
 }
 
 

@@ -1,4 +1,4 @@
-import { IValueHost, IValueHostDescriptor, IValueHostState } from "./ValueHost";
+import { IValueHost, ValueHostDescriptor, ValueHostState } from "./ValueHost";
 /**
  * Interfaces that extend IValueHost to support ValueHosts without validation.
  * The NonInputValueHost is used in many situations:
@@ -13,10 +13,13 @@ export interface INonInputValueHost extends IValueHost {
 }
 
 /**
- * Elements of ValueHost that are stateful based on user interaction
+ * State for NonInputValueHost
  */
-export interface INonInputValueHostState extends IValueHostState {
+export interface NonInputValueHostState extends ValueHostState {
 }
 
-export interface INonInputValueHostDescriptor extends IValueHostDescriptor {
+/**
+ * Descriptor for configuring NonInputValueHost
+ */
+export interface NonInputValueHostDescriptor extends ValueHostDescriptor {
 }    

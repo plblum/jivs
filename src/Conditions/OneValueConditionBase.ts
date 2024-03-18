@@ -4,7 +4,7 @@
  * @module Conditions/OneValueConditionBase
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IConditionDescriptor } from "../Interfaces/Conditions";
+import { ConditionDescriptor } from "../Interfaces/Conditions";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { ConditionBase } from "./ConditionBase";
@@ -54,7 +54,7 @@ export abstract class OneValueConditionBase<TConditionDescriptor extends IOneVal
 /**
  * Base conditionDescriptor for Conditions that need to get a value from a ValueHost.
  */
-export interface IOneValueConditionDescriptor extends IConditionDescriptor {
+export interface IOneValueConditionDescriptor extends ConditionDescriptor {
     /**
      * One source for the value to evaluate.
      * By design, Condition.Evaluate takes a valueHost object, allowing the caller 

@@ -83,7 +83,7 @@ export interface IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
     */
-    SetValue(value: any, options?: ISetValueOptions): void;
+    SetValue(value: any, options?: SetValueOptions): void;
 
     /**
      * Identifies that the value is undetermined. For example,
@@ -98,7 +98,7 @@ export interface IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetValueToUndefined(options?: ISetValueOptions): void;
+    SetValueToUndefined(options?: SetValueOptions): void;
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
@@ -136,7 +136,7 @@ export interface IValueHost {
 /**
  * Optional options for IValueHost Set functions.
  */
-export interface ISetValueOptions {
+export interface SetValueOptions {
 
     /**
      * Perform validation if ValueHost supports it.
@@ -170,7 +170,7 @@ export interface ISetValueOptions {
 /**
  * Elements of ValueHost that are stateful based on user interaction
  */
-export interface IValueHostState {
+export interface ValueHostState {
 
     /**
      * The ValueHostId for the associated ValueHost.
@@ -218,7 +218,7 @@ interface CustomItems {
  * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
  */
-export interface IValueHostDescriptor {
+export interface ValueHostDescriptor {
     /**
      * Identifies the type of ValueHost that will be created to 
      * support the Descriptor.
@@ -226,7 +226,7 @@ export interface IValueHostDescriptor {
      * NonInputValueHost - 'Noninput'
      * HTMLElementValueHost - 'HTMLElement'
      * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
-     * by checking for inclusion of the IInputValueHostDescriptor.ValidationDescriptors property.
+     * by checking for inclusion of the InputValueHostDescriptor.ValidationDescriptors property.
      */
     Type?: string;
     /**
@@ -305,8 +305,8 @@ export function ToIGatherValueHostIds(source: any): IGatherValueHostIds | null {
 }
 
 /**
- * Factory for generating classes that implement IValueHost that use IValueHostDescriptor.
- * IValueHostDescriptor identifies the desired ValueHost class.
+ * Factory for generating classes that implement IValueHost that use ValueHostDescriptor.
+ * ValueHostDescriptor identifies the desired ValueHost class.
  * Most apps will use the standard InputValueHost class.
  * This interface targets unit testing with mocks.
  */
@@ -314,10 +314,10 @@ export interface IValueHostFactory {
     /**
      * Creates the instance.
      * @param valueHostsManager 
-     * @param descriptor - determines the class. All classes supported here must IValueHostDescriptor to get their setup.
+     * @param descriptor - determines the class. All classes supported here must ValueHostDescriptor to get their setup.
      * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.CreateState() to create an initial value.
      */
-    Create(valueHostsManager: IValueHostsManager, descriptor: IValueHostDescriptor, state: IValueHostState): IValueHost;
+    Create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
     /**
      * Adjusts the state from a previous time to conform to the Descriptor.
      * For example, if the Descriptor had a rule change, some data in the state may
@@ -325,10 +325,10 @@ export interface IValueHostFactory {
      * @param state 
      * @param descriptor 
      */
-    CleanupState(state: IValueHostState, descriptor: IValueHostDescriptor): void;
+    CleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
     /**
      * Creates an initialized State object
      * @param descriptor 
      */
-    CreateState(descriptor: IValueHostDescriptor): IValueHostState;
+    CreateState(descriptor: ValueHostDescriptor): ValueHostState;
 }

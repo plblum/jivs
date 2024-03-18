@@ -1,6 +1,6 @@
 /**
- * Factory for generating classes that implement IValueHost that use IValueHostDescriptor.
- * IValueHostDescriptor identifies the desired implementation.
+ * Factory for generating classes that implement IValueHost that use ValueHostDescriptor.
+ * ValueHostDescriptor identifies the desired implementation.
  * Most apps will use the ValueHost and InputValueHost class implementations.
  * When adding a new ValueHost class, implement an IValueHostGenerator and register it
  * with the ValueHostFactory.
@@ -10,7 +10,7 @@
 import { BusinessLogicInputValueHostGenerator } from "./BusinessLogicInputValueHost";
 import { InputValueHostGenerator } from "./InputValueHost";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import type { IValueHostState, IValueHost, IValueHostDescriptor } from "../Interfaces/ValueHost";
+import type { ValueHostState, IValueHost, ValueHostDescriptor } from "../Interfaces/ValueHost";
 import type { IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { NonInputValueHostGenerator } from "./NonInputValueHost";
 import type { IValueHostFactory, IValueHostGenerator } from "../Interfaces/ValueHostFactory";
@@ -25,7 +25,7 @@ export class ValueHostFactory implements IValueHostFactory {
      * @param descriptor 
      * @param state 
      */
-    public Create(valueHostsManager: IValueHostsManager, descriptor: IValueHostDescriptor, state: IValueHostState): IValueHost {
+    public Create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost {
         AssertNotNull(valueHostsManager, 'valueHostsManager');
         AssertNotNull(descriptor, 'descriptor');
         AssertNotNull(state, 'state');
@@ -42,7 +42,7 @@ export class ValueHostFactory implements IValueHostFactory {
      * @param descriptor 
      * @returns 
      */
-    private ResolveDescriptor(descriptor: IValueHostDescriptor): IValueHostGenerator {
+    private ResolveDescriptor(descriptor: ValueHostDescriptor): IValueHostGenerator {
         if (!descriptor.Type)
             throw new Error('ValueHostDescriptor.Type field required');
         for (const generator of this._descriptorResolvers) {
@@ -59,7 +59,7 @@ export class ValueHostFactory implements IValueHostFactory {
      * @param state 
      * @param descriptor 
      */
-    public CleanupState(state: IValueHostState, descriptor: IValueHostDescriptor): void {
+    public CleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void {
         AssertNotNull(descriptor, 'descriptor');
         this.ResolveDescriptor(descriptor).CleanupState(state, descriptor);
     }
@@ -67,7 +67,7 @@ export class ValueHostFactory implements IValueHostFactory {
      * Creates an initialized State object
      * @param descriptor 
      */
-    public CreateState(descriptor: IValueHostDescriptor): IValueHostState {
+    public CreateState(descriptor: ValueHostDescriptor): ValueHostState {
         AssertNotNull(descriptor, 'descriptor');
         return this.ResolveDescriptor(descriptor).CreateState(descriptor);
     }
@@ -87,7 +87,7 @@ export class ValueHostFactory implements IValueHostFactory {
      * @param descriptor 
      * @returns 
      */
-    public IsRegistered(descriptor: IValueHostDescriptor): boolean
+    public IsRegistered(descriptor: ValueHostDescriptor): boolean
     {
         for (const generator of this._descriptorResolvers) {
             if (generator.CanCreate(descriptor))

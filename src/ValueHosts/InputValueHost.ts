@@ -14,10 +14,10 @@ import { ObjectKeysCount, GroupsMatch } from "../Utilities/Utilities";
 import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
-import { IInputValueHostDescriptor, IInputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
-import { IValidateOptions, IValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IIssueFound } from "../Interfaces/Validation";
+import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
+import { ValidateOptions, IValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IIssueFound } from "../Interfaces/Validation";
 import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
-import { IInputValidateResult, IInputValidator } from "../Interfaces/InputValidator";
+import { InputValidateResult, IInputValidator } from "../Interfaces/InputValidator";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 
 
@@ -28,16 +28,16 @@ import { AssertNotNull } from "../Utilities/ErrorHandling";
  * 
 * Each instance depends on a few things, all passed into the constructor:
 * - valueHostsManager - Typically this is the ValidationManager.
-* - IInputValueHostDescriptor - The business logic supplies these rules
+* - InputValueHostDescriptor - The business logic supplies these rules
 *   to implement a ValueHost's Id, label, data type, validation rules,
 *   and other business logic metadata.
-* - IInputValueHostState - State used by this InputValueHost including
+* - InputValueHostState - State used by this InputValueHost including
     its validators.
 * If the caller changes any of these, discard the instance
 * and create a new one.
  */
-export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor, IInputValueHostState>{
-    constructor(valueHostsManager: IValueHostsManager, descriptor: IInputValueHostDescriptor, state: IInputValueHostState) {
+export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor, InputValueHostState>{
+    constructor(valueHostsManager: IValueHostsManager, descriptor: InputValueHostDescriptor, state: InputValueHostState) {
         super(valueHostsManager, descriptor, state);
     }
 
@@ -51,7 +51,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
      * @param options - Provides guidance on which validators to include.
      * @returns IValidationResultDetails if at least one is invalid or null if all valid.
      */
-    public Validate(options?: IValidateOptions): IValidateResult {
+    public Validate(options?: ValidateOptions): IValidateResult {
         let self = this;
         if (!options)
             options = {};
@@ -86,7 +86,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                         continue;
                     }
                 // synchronous (normal) processing
-                    let inputValResult = potentialIVR as IInputValidateResult;
+                    let inputValResult = potentialIVR as InputValidateResult;
                     if (inputValResult.Skipped)
                         continue;
                     validatorsInUse++;
@@ -152,7 +152,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                 return stateToUpdate;
             }, self);
         }
-        function ProcessPromise(promise: Promise<IInputValidateResult>): void
+        function ProcessPromise(promise: Promise<InputValidateResult>): void
         {
             function CompleteThePromise(finish: () => void)
             {
@@ -322,7 +322,7 @@ export function ToIInputValueHost(source: any): IInputValueHost | null
 
 export const InputValueHostType = 'Input';
 export class InputValueHostGenerator extends InputValueHostBaseGenerator {
-    public CanCreate(descriptor: IInputValueHostDescriptor): boolean {
+    public CanCreate(descriptor: InputValueHostDescriptor): boolean {
         if (descriptor.Type != null)    // null/undefined
             return descriptor.Type === InputValueHostType;
 
@@ -330,7 +330,7 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
             return false;
         return true;
     }
-    public Create(valueHostsManager: IValueHostsManager, descriptor: IInputValueHostDescriptor, state: IInputValueHostState): IInputValueHost {
+    public Create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostDescriptor, state: InputValueHostState): IInputValueHost {
         return new InputValueHost(valueHostsManager, descriptor, state);
     }
 /**
@@ -340,7 +340,7 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
  * @param state 
  * @param descriptor 
  */    
-    public CleanupState(state: IInputValueHostState, descriptor: IInputValueHostDescriptor): void {
+    public CleanupState(state: InputValueHostState, descriptor: InputValueHostDescriptor): void {
         AssertNotNull(state, 'state');
         AssertNotNull(descriptor, 'descriptor');
         let descriptorChanged = false;

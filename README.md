@@ -256,7 +256,7 @@ Here’s a framework for your new Factory.
 ```ts
 class Factory
 {
-  Create(fieldRef: string, businessLogicRule: any): IConditionDescriptor
+  Create(fieldRef: string, businessLogicRule: any): ConditionDescriptor
   {
     if (businessLogicRule instanceof BusinessLogicComparer)
       switch (businessLogicRule.operator)
@@ -300,13 +300,13 @@ When we configure the above Model for Jivs, you can imagine something like this 
 ```
 In fact, that’s about right, only with more properties. Those objects use the InputValueHostDescriptor type.
 ```ts
-interface IInputValueHostDescriptor {
+interface InputValueHostDescriptor {
   Type?: string;
   Id: string;
   Label: string;
   DataType?: string;
   InitialValue?: any;
-  ValidatorDescriptors: null | IInputValidatorDescriptor[];
+  ValidatorDescriptors: null | InputValidatorDescriptor[];
   Group?: undefined | null | string | Array<string>;
 }
 ```
@@ -342,7 +342,7 @@ The ValueHost Ids are also used to help a Condition retrieve a value from a Valu
         ValueHostId: null, // because owning ValueHost is provided automatically to the Condition.Evaluate function.
         SecondValueHostId: 'LastName'
       }      
-      ... and properties of IInputValidatorDescriptor that we've yet to cover ...
+      ... and properties of InputValidatorDescriptor that we've yet to cover ...
     }
 
   ]
@@ -352,14 +352,14 @@ The ValueHost Ids are also used to help a Condition retrieve a value from a Valu
 
 Validation is really just a process that evaluates some rule and returns a result. If there was an error, the result involves an error message. The InputValidator class handles this work. Once again, we use a Descriptor to configure it. Here’s the InputValidatorDescriptor:
 ```ts
-interface IInputValidatorDescriptor {
-    ConditionDescriptor: null | IConditionDescriptor;
+interface InputValidatorDescriptor {
+    ConditionDescriptor: null | ConditionDescriptor;
     ConditionCreator?: ((requester) => null | ICondition);
     ErrorMessage: string | ((host) => string);
     SummaryMessage?: null | string | ((host) => string);
     Severity?: ValidationSeverity | ((host) => ValidationSeverity);
     Enabled?: boolean | ((host) => boolean);
-    EnablerDescriptor?: null | IConditionDescriptor;
+    EnablerDescriptor?: null | ConditionDescriptor;
     EnablerCreator?: ((requester) => null | ICondition);
 }
 ```
@@ -376,7 +376,7 @@ Because this is so full of goodness, let’s go through each property.
 -	Enabled – A way to quickly disable the InputValidator.
 -	EnablerDescriptor and EnablerCreator – The Enabler is another Condition, used to determine if the InputValidator can validate. Often validation rules depend on other information for that. For example, you have a checkbox associated with a textbox. Any validation rule on the textbox isn’t used unless the checkbox is marked. You would assign a Condition to evaluate the value of the checkbox to the Enabler.
 
-Now let’s place the IInputValidatorDescriptor into our previous example using a Model with FirstName and LastName.
+Now let’s place the InputValidatorDescriptor into our previous example using a Model with FirstName and LastName.
 ```ts
 [{
   Type: 'Input',
@@ -439,9 +439,9 @@ Here’s IValidationManagerConfig:
 ```ts
 interface ValidationManagerConfig {
     Services: IValidationServices;
-    ValueHostDescriptors: IValueHostDescriptor[];
-    SavedState?: null | IValidationManagerState;
-    SavedValueHostStates?: null | IValueHostState[];
+    ValueHostDescriptors: ValueHostDescriptor[];
+    SavedState?: null | ValidationManagerState;
+    SavedValueHostStates?: null | ValueHostState[];
     OnInputValueChanged?: null | InputValueChangedHandler;
     OnStateChanged?: null | ValidationManagerStateChangedHandler;
     OnValidated?: null | ValidationManagerValidatedHandler;

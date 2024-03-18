@@ -3,7 +3,7 @@
  * @module ValueHosts/MessageTokenResolver
  */
 import type { IDataTypeResolution } from "../Interfaces/DataTypes";
-import { IMessageTokenResolver, IMessageTokenSource, ITokenLabelAndValue } from "../Interfaces/InputValidator";
+import { IMessageTokenResolver, IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/InputValidator";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { LoggingLevel, ConfigurationCategory, TypeMismatchCategory, FormattingCategory } from "../Interfaces/Logger";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
@@ -44,7 +44,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
         });
 
         let revised = message;
-        let allTavs: Array<ITokenLabelAndValue> = [];
+        let allTavs: Array<TokenLabelAndValue> = [];
         hosts.forEach((tokenSource, index) => {
             let tavs = tokenSource.GetValuesForTokens(valueHost, valueHostResolver);
             if (tavs)
@@ -98,7 +98,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
  * enclosing the formatted value.
  * @param tav 
  */    
-    protected FinalizeReplacement(replacement: string, tav: ITokenLabelAndValue): string
+    protected FinalizeReplacement(replacement: string, tav: TokenLabelAndValue): string
     {
         return replacement;
     }
@@ -155,7 +155,7 @@ class CapturedToken
  * @param tav 
  * @returns 
  */    
-    public IsMatch(tav: ITokenLabelAndValue): boolean
+    public IsMatch(tav: TokenLabelAndValue): boolean
     {
         return tav.TokenLabel.toLowerCase() === this.token;
     }

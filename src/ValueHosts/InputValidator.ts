@@ -6,7 +6,7 @@
  * - Summary Error Message - In the ValidationSummary UI element, what to tell the user 
  *   when there is an error.
  * - Severity: Error, Severe, and Warning
- * - Rules to disable the validator: Enabler condition, Enabled property and several IValidateOptions.
+ * - Rules to disable the validator: Enabler condition, Enabled property and several ValidateOptions.
  * - Resolves error message tokens
   * Attached to InputValueHosts through their InputValueHostDescriptor.
   * @module InputValidator
@@ -18,8 +18,8 @@ import { ToIGatherValueHostIds, type IValueHost } from "../Interfaces/ValueHost"
 import { type IValueHostResolver, type IValueHostsManager, ToIValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings } from "../Interfaces/Conditions";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
-import { type IValidateOptions, ValidationSeverity, type IIssueFound } from "../Interfaces/Validation";
-import type { IInputValidateResult, IInputValidator, IInputValidatorDescriptor, IInputValidatorFactory, IMessageTokenSource, ITokenLabelAndValue  } from "../Interfaces/InputValidator";
+import { type ValidateOptions, ValidationSeverity, type IIssueFound } from "../Interfaces/Validation";
+import type { InputValidateResult, IInputValidator, InputValidatorDescriptor, IInputValidatorFactory, IMessageTokenSource, TokenLabelAndValue  } from "../Interfaces/InputValidator";
 import { LoggingLevel, ConfigurationCategory, ValidationCategory } from "../Interfaces/Logger";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 
@@ -37,7 +37,7 @@ import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
  * Each instance depends on a few things, all passed into the constructor
  * and treated as immutable.
  * - IInputValueHost - ID, label, and values from the consuming system.
- * - IInputValidatorDescriptor - The business logic supplies these rules
+ * - InputValidatorDescriptor - The business logic supplies these rules
  *   to implement validation including Condition, Enabler, and error messages
  * If the caller changes any of these, discard the instance
  * and create a new one. The IInputValidatorState will restore the state.
@@ -45,7 +45,7 @@ import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 export class InputValidator implements IInputValidator {
     // As a rule, InputValueHost discards InputValidator when anything contained in these objects
     // has changed.
-    constructor(valueHost: IInputValueHost, descriptor: IInputValidatorDescriptor) {
+    constructor(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor) {
         AssertNotNull(valueHost, 'valueHost');
         AssertNotNull(descriptor, 'descriptor');
         this._valueHost = valueHost;
@@ -55,7 +55,7 @@ export class InputValidator implements IInputValidator {
     /**
     * The business rules behind this validator.
     */
-    protected get Descriptor(): IInputValidatorDescriptor {
+    protected get Descriptor(): InputValidatorDescriptor {
         return this._descriptor;
     }
 
@@ -81,7 +81,7 @@ export class InputValidator implements IInputValidator {
      * and at that time, it must replace this instance with 
      * a new one and a new Descriptor instance.
      */
-    private _descriptor: IInputValidatorDescriptor;
+    private _descriptor: InputValidatorDescriptor;
 
 
     /**
@@ -235,11 +235,11 @@ export class InputValidator implements IInputValidator {
      * @returns Identifies the ConditionEvaluateResult.
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
-    public Validate(options: IValidateOptions): IInputValidateResult | Promise<IInputValidateResult> {
+    public Validate(options: ValidateOptions): InputValidateResult | Promise<InputValidateResult> {
         AssertNotNull(options, 'options');
         let self = this;
 
-        let resultState: IInputValidateResult = {
+        let resultState: InputValidateResult = {
             ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
             IssueFound: null,
         };
@@ -298,7 +298,7 @@ export class InputValidator implements IInputValidator {
                 }
             });
         }
-        function ResolveCER(cer: ConditionEvaluateResult): IInputValidateResult {
+        function ResolveCER(cer: ConditionEvaluateResult): InputValidateResult {
             LogInfo(() => {
                 return {
                     message: `Condition evaluated as ${ConditionEvaluateResultStrings[cer]}`,
@@ -315,9 +315,9 @@ export class InputValidator implements IInputValidator {
             }
             return resultState;
         }        
-        function ProcessPromise(promiseCER: Promise<ConditionEvaluateResult>): Promise<IInputValidateResult>
+        function ProcessPromise(promiseCER: Promise<ConditionEvaluateResult>): Promise<InputValidateResult>
         {
-            let wrapperPromise = new Promise<IInputValidateResult>((resolve, reject) => {
+            let wrapperPromise = new Promise<InputValidateResult>((resolve, reject) => {
                 promiseCER.then(
                     (resultingCER) => {
                         resolve(ResolveCER(resultingCER));
@@ -329,9 +329,9 @@ export class InputValidator implements IInputValidator {
             });
             return wrapperPromise;            
         }
-        function Bailout(errorMessage: string): IInputValidateResult
+        function Bailout(errorMessage: string): InputValidateResult
         {
-            let resultState: IInputValidateResult = {
+            let resultState: InputValidateResult = {
                 ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
                 IssueFound: null
             };
@@ -399,8 +399,8 @@ export class InputValidator implements IInputValidator {
      * {Value} - the native value in State.Value. If null/undefined, the value in State.LastRawValue.
      * Plus any from the Condition in use.     
      */
-    public GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
-        let tlv: Array<ITokenLabelAndValue> = [
+    public GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let tlv: Array<TokenLabelAndValue> = [
             {
                 TokenLabel: 'Label',
                 AssociatedValue: valueHost.GetLabel(),
@@ -441,7 +441,7 @@ export function CreateIssueFound(valueHost: IValueHost,
  * InputValidatorFactory creates the appropriate IInputValidator class
  */
 export class InputValidatorFactory implements IInputValidatorFactory {
-    public Create(valueHost: IInputValueHost, descriptor: IInputValidatorDescriptor): IInputValidator {
+    public Create(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor): IInputValidator {
         return new InputValidator(valueHost, descriptor);
     }
 }

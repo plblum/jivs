@@ -1,8 +1,8 @@
 /**
  * Concrete implementations of {@link Conditions/Interfaces!ICondition | ICondition}, and their companion 
- * {@link Conditions/Interfaces!IConditionDescriptor | IConditionDescriptor}.
+ * {@link Conditions/Interfaces!ConditionDescriptor | ConditionDescriptor}.
  * 
- * The conditions found here all use an IConditionDescriptor for supplying 
+ * The conditions found here all use an ConditionDescriptor for supplying 
  * their configuration. Most Condition classes have a specific interface
  * for their Descriptor, such as {@link IRangeConditionDescriptor} for {@link RangeCondition}.
  * 
@@ -11,14 +11,14 @@
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
-import type { ITokenLabelAndValue } from "../Interfaces/InputValidator";
+import type { TokenLabelAndValue } from "../Interfaces/InputValidator";
 import { CodingError } from "../Utilities/ErrorHandling";
 
 import { type IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import {
     type ICondition,
-    ConditionCategory, ConditionEvaluateResult, ISupportsDataTypeConverter
+    ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter
 } from "../Interfaces/Conditions";
 import { IOneValueConditionDescriptor, OneValueConditionBase, ITwoValueConditionDescriptor } from "./OneValueConditionBase";
 import { IStringConditionDescriptor, StringConditionBase } from "./StringConditionBase";
@@ -56,8 +56,8 @@ export class DataTypeCheckCondition extends InputValueConditionBase<IDataTypeChe
         return valueHost.GetValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
 
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
-        let list: Array<ITokenLabelAndValue> = [];
+    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
 
@@ -218,7 +218,7 @@ export class RegExpCondition extends RegExpConditionBase<IRegExpConditionDescrip
 /**
  * Descriptor for RangeCondition
  */
-export interface IRangeConditionDescriptor extends IOneValueConditionDescriptor, ISupportsDataTypeConverter {
+export interface IRangeConditionDescriptor extends IOneValueConditionDescriptor, SupportsDataTypeConverter {
     /**
      * Native data type representing the minimum of the range.
      * When undefined or null, no minimum, like ValueLTESecondValueConditon.
@@ -277,8 +277,8 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
 
         return ConditionEvaluateResult.NoMatch;
     }
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
-        let list: Array<ITokenLabelAndValue> = [];
+    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
 
@@ -301,7 +301,7 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
 /**
  * Descriptor for CompareToConditionBase.
  */
-export interface ICompareToConditionDescriptor extends ITwoValueConditionDescriptor, ISupportsDataTypeConverter {
+export interface ICompareToConditionDescriptor extends ITwoValueConditionDescriptor, SupportsDataTypeConverter {
     /**
      * Native data type representing the minimum of the range.
      */
@@ -372,8 +372,8 @@ export abstract class CompareToConditionBase<TDescriptor extends ICompareToCondi
             collection.add(this.Descriptor.SecondValueHostId);
     }
 
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
-        let list: Array<ITokenLabelAndValue> = [];
+    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
         let secondValue: any;
@@ -565,8 +565,8 @@ export class StringLengthCondition extends StringConditionBase<IStringLengthCond
         return ConditionEvaluateResult.Match;
     }
 
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
-        let list: Array<ITokenLabelAndValue> = [];
+    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
 

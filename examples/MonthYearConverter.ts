@@ -36,7 +36,7 @@ export function RegisterRelativeDate(validationServices: IValidationServices): v
     let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
     dataTypeServices.RegisterDataTypeConverter(new UTCMonthYearConverter()); 
 
-    // This gets used ONLY when the IValueHostDescriptor.DataType with "MonthYear".
+    // This gets used ONLY when the ValueHostDescriptor.DataType with "MonthYear".
     // When its time to compare, the UTCMonthYearConverter is asked if it supports the value.
     // If so, the comparision immediately calls Convert and now has a Date value.
     // The DataTypeServices knows to convert Date to a number, so it can be used by the 

@@ -35,7 +35,7 @@ export function RegisterRelativeDate(validationServices: IValidationServices): v
     let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
     dataTypeServices.RegisterDataTypeConverter(new UTCAnniversaryConverter()); 
 
-    // This gets used ONLY when the IValueHostDescriptor.DataType with "Anniversary".
+    // This gets used ONLY when the ValueHostDescriptor.DataType with "Anniversary".
     // When its time to compare, the UTCAnniversaryConverter is asked if it supports the value.
     // If so, the comparision immediately calls Convert and now has a Date value.
     // The DataTypeServices knows to convert Date to a number, so it can be used by the 

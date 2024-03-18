@@ -3,7 +3,7 @@ import {
     type IRequiredTextConditionDescriptor,
     RequiredTextCondition
 } from "../../src/Conditions/ConcreteConditions";
-import type { IConditionCore, IConditionDescriptor } from "../../src/Interfaces/Conditions";
+import type { IConditionCore, ConditionDescriptor } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 
 describe('ConditionFactory.Create', () => {
@@ -26,7 +26,7 @@ describe('ConditionFactory.Create', () => {
         let factory = new ConditionFactory();
         expect(() => factory.Register<IRequiredTextConditionDescriptor>(
             ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor))).not.toThrow();
-        let condition: IConditionCore<IConditionDescriptor> | null = null;
+        let condition: IConditionCore<ConditionDescriptor> | null = null;
         expect(() => condition = factory.Create({
             Type: 'UnknownType',
             ValueHostId: null

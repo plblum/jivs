@@ -1,14 +1,14 @@
 import { BusinessLogicInputValueHostType, BusinessLogicValueHostId } from "./BusinessLogicInputValueHost";
 import { DeepClone, DeepEquals } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
-import type { IValueHost, IValueHostDescriptor, IValueHostState } from "../Interfaces/ValueHost";
+import type { IValueHost, ValueHostDescriptor, ValueHostState } from "../Interfaces/ValueHost";
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "./ValueHostBase";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
-import type { IValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "../Interfaces/Validation";
+import type { ValidateOptions, IValidateResult, IBusinessLogicError, IIssueSnapshot } from "../Interfaces/Validation";
 import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import type { IValidationManagerState, IValidationManager } from "../Interfaces/ValidationManager";
+import type { ValidationManagerState, IValidationManager } from "../Interfaces/ValidationManager";
 
 
 /**
@@ -18,8 +18,8 @@ import type { IValidationManagerState, IValidationManager } from "../Interfaces/
  * contain validators.
  * 
  * Descriptors are interfaces you use with plain objects to fashion them into 
- * ValidationManager's configuration. IValueHostDescriptor describes a ValueHost.
- * IInputValueHostDescriptor describes an InputValueHost (which supports validation).
+ * ValidationManager's configuration. ValueHostDescriptor describes a ValueHost.
+ * InputValueHostDescriptor describes an InputValueHost (which supports validation).
  * An InputValueHost takes InputValidatorDescriptors to fashion its list of Validators.
  * An InputValidator takes various ConditionDescriptors to fashion the specific 
  * validation rule.
@@ -58,7 +58,7 @@ import type { IValidationManagerState, IValidationManager } from "../Interfaces/
  * the UI and the ValueHosts. Auxillary Jivs libraries may handle this.
  */
 
-export class ValidationManager<TState extends IValidationManagerState> implements IValidationManager, IValidationManagerCallbacks {
+export class ValidationManager<TState extends ValidationManagerState> implements IValidationManager, IValidationManagerCallbacks {
     /**
      * Constructor
      * @param config - Provides ValidationManager with numerous configuration settings.
@@ -141,19 +141,19 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * A copy of this is expected to be retained (redux/localstorage/etc)
      * by the caller to support recreating the ValidationManager in a stateless situation.
      */
-    protected get State(): IValidationManagerState {
+    protected get State(): ValidationManagerState {
         return this._state;
     }
-    private _state: IValidationManagerState;
+    private _state: ValidationManagerState;
 
     /**
      * Value retained from the constructor to share with calls to AddValueHost,
      * giving new ValueHost instances their last state.
      */
-    private _lastValueHostStates: Array<IValueHostState>;
+    private _lastValueHostStates: Array<ValueHostState>;
 
     /**
-     * Use to change anything in IValidationManagerState without impacting the immutability 
+     * Use to change anything in ValidationManagerState without impacting the immutability 
      * of the current instance.
      * Your callback will be passed a cloned instance. Change any desired properties
      * and return that instance. It will become the new immutable value of
@@ -184,7 +184,7 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * When null, the state supplied in the ValidationManager constructor will be used if available.
      * When neither state was supplied, a default state is created.
      */
-    public AddValueHost(descriptor: IValueHostDescriptor, initialState: IValueHostState | null): IValueHost {
+    public AddValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
         AssertNotNull(descriptor, 'descriptor');
         if (!this._valueHostDescriptors[descriptor.Id])
             return this.ApplyDescriptor(descriptor, initialState);
@@ -200,7 +200,7 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.CleanupState first.
      */
-    public UpdateValueHost(descriptor: IValueHostDescriptor, initialState: IValueHostState | null): IValueHost {
+    public UpdateValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
         AssertNotNull(descriptor, 'descriptor');
         if (this._valueHostDescriptors[descriptor.Id])
             return this.ApplyDescriptor(descriptor, initialState);
@@ -212,7 +212,7 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * Does not trigger any notifications.
      * @param descriptor 
      */
-    public DiscardValueHost(descriptor: IValueHostDescriptor): void {
+    public DiscardValueHost(descriptor: ValueHostDescriptor): void {
         AssertNotNull(descriptor, 'descriptor');
         if (this._valueHostDescriptors[descriptor.Id]) {
             delete this._valueHosts[descriptor.Id];
@@ -235,16 +235,16 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * It will be run through ValueHostFactory.CleanupState first.
      * @returns 
      */
-    protected ApplyDescriptor(descriptor: IValueHostDescriptor, initialState: IValueHostState | null): IValueHost {
+    protected ApplyDescriptor(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
         let factory = this.Services.ValueHostFactory; // functions in here throw exceptions if descriptor is unsupported
-        let state: IValueHostState;
+        let state: ValueHostState;
         let existingState = initialState;
         let defaultState = factory.CreateState(descriptor);
 
         if (!existingState && this._lastValueHostStates)
             existingState = this._lastValueHostStates.find((state) => state.Id === descriptor.Id) ?? null;
         if (existingState) {
-            let cleanedState = DeepClone(existingState) as IValueHostState;  // clone to allow changes during Cleanup
+            let cleanedState = DeepClone(existingState) as ValueHostState;  // clone to allow changes during Cleanup
             factory.CleanupState(cleanedState, descriptor);
             // User may have supplied the state without
             // all of the properties we normally use.
@@ -298,7 +298,7 @@ export class ValidationManager<TState extends IValidationManagerState> implement
      * @param options - Provides guidance on which validators to include.
      * @returns Array of IValidateResult with empty array if all are valid
      */
-    public Validate(options?: IValidateOptions): Array<IValidateResult> //!!!PENDING change this to IValidateResults with IsValid and DoNotSave in addition to this array
+    public Validate(options?: ValidateOptions): Array<IValidateResult> //!!!PENDING change this to IValidateResults with IsValid and DoNotSave in addition to this array
     {
         if (!options)
             options = {};
@@ -436,7 +436,7 @@ export class ValidationManager<TState extends IValidationManagerState> implement
         return this.Config.OnValidated ?? null;
     }
     /**
-     * Called when any ValueHost had its IValueHostState changed.
+     * Called when any ValueHost had its ValueHostState changed.
      * React example: React component useState feature retains this value
      * and needs to know when to call the setValueHostState() with the stateToRetain.
      * You can setup the same callback on individual ValueHosts.
@@ -496,7 +496,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * If rules need to be changed later, either create a new instance of ValidationManager
      * or use its AddValueHost, UpdateValueHost, DiscardValueHost methods.
      */
-    ValueHostDescriptors: Array<IValueHostDescriptor>;
+    ValueHostDescriptors: Array<ValueHostDescriptor>;
     /**
      * The state for the ValidationManager itself.
      * Its up to you to retain stateful information so that the service works statelessly.
@@ -506,7 +506,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */
-    SavedState?: IValidationManagerState | null;
+    SavedState?: ValidationManagerState | null;
     /**
      * The state for each ValueHost. The array may not have the same states for all the ValueHostDescriptors
      * you are supplying. It will create defaults for those missing and discard those no longer in use.
@@ -519,7 +519,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */
-    SavedValueHostStates?: Array<IValueHostState> | null;
+    SavedValueHostStates?: Array<ValueHostState> | null;
 }
 
 /**
@@ -530,7 +530,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
  * this ValidationManager.
  */
 interface IValueHostDescriptorsMap {
-    [valueHostId: ValueHostId]: IValueHostDescriptor
+    [valueHostId: ValueHostId]: ValueHostDescriptor
 }
 
 /**
@@ -542,7 +542,7 @@ interface IValueHostsMap {
     [valueHostId: ValueHostId]: IValueHost
 }
 
-export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: IValidationManagerState) => void;
+export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;
 export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<IValidateResult>) => void;
 
 
