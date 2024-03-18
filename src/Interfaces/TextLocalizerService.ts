@@ -17,5 +17,52 @@ export interface ITextLocalizerService
      * Only supply '' if you are sure that registered data will always supply a value.
      * @returns The localized text or the fallback text.
      */
-    Localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string): string;
+    Localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null;
+
+    /**
+     * Attempts to get the localized error message for the ConditionType and optional DataTypeLookupKey
+     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ConditionType.
+     * @param conditionType 
+     * @param dataTypeLookupKey 
+     * @returns The error message or null if not available.
+     */
+    GetErrorMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null;
+
+    /**
+     * Attempts to get the localized Summary error message for the ConditionType and optional DataTypeLookupKey
+     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ConditionType.
+     * @param conditionType 
+     * @param dataTypeLookupKey 
+     * @returns The Summary error message or null if not available.
+     */
+    GetSummaryMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null;
+
+    /**
+     * Utility to add an error message for a validator
+     * @param conditionType
+     * @param dataTypeLookupKey - optional. 
+     * @param cultureToText 
+     */
+    RegisterErrorMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
+    /**
+     * Utility to add an error message for a validator
+     * @param conditionType
+     * @param dataTypeLookupKey - optional. 
+     * @param cultureToText 
+     */
+    RegisterSummaryMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText): void
+}
+
+
+/**
+ * Example:
+ * {
+ *   "*": "hello",  // optional and provides a universal default
+ *   "en": "hello",
+ *   "sp": "hola"
+ * }
+ */
+export type CultureToText =
+{
+    [cultureId: string]: string;
 }

@@ -844,7 +844,7 @@ function SetupInputValueHostDescriptor(fieldIndex: number,
                     Type: conditionType
                 },
                 ErrorMessage: `Error ${labelNumber}: ${conditionType}`,
-                SummaryErrorMessage: `Summary ${labelNumber}: ${conditionType}`
+                SummaryMessage: `Summary ${labelNumber}: ${conditionType}`
             });
         }
 
@@ -898,7 +898,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
                 ConditionType: NeverMatchesConditionType,
                 ValueHostId: 'Field1',
                 ErrorMessage: 'Error 1: ' + NeverMatchesConditionType,
-                SummaryErrorMessage: 'Summary 1: ' + NeverMatchesConditionType,
+                SummaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
                 Severity: ValidationSeverity.Error
             }]);
 
@@ -931,7 +931,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
                 ConditionType: NeverMatchesConditionType,
                 ValueHostId: 'Field1',
                 ErrorMessage: 'Error 1: ' + NeverMatchesConditionType,
-                SummaryErrorMessage: 'Summary 1: ' + NeverMatchesConditionType,
+                SummaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
                 Severity: ValidationSeverity.Error
             }
             ]);
@@ -1003,7 +1003,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
                 ConditionType: NeverMatchesConditionType,
                 ValueHostId: 'Field1',
                 ErrorMessage: 'Error 1: ' + NeverMatchesConditionType,
-                SummaryErrorMessage: 'Summary 1: ' + NeverMatchesConditionType,
+                SummaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
                 Severity: ValidationSeverity.Error
             }
         ]);
@@ -1012,7 +1012,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
                 ConditionType: NeverMatchesConditionType,
                 ValueHostId: 'Field2',
                 ErrorMessage: 'Error 2: ' + NeverMatchesConditionType,
-                SummaryErrorMessage: 'Summary 2: ' + NeverMatchesConditionType,
+                SummaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
                 Severity: ValidationSeverity.Error
             }
         ]);
@@ -1095,7 +1095,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
 
         let descriptor = SetupInputValueHostDescriptor(0, [NeverMatchesConditionType]);
         descriptor.ValidatorDescriptors![0].ErrorMessage = 'CONDITION ERROR';
-        descriptor.ValidatorDescriptors![0].SummaryErrorMessage = 'SUMMARY CONDITION ERROR';
+        descriptor.ValidatorDescriptors![0].SummaryMessage = 'SUMMARY CONDITION ERROR';
         let setup = SetupValidationManager([descriptor]);
         setup.validationManager.SetBusinessLogicErrors([
             {
@@ -1156,7 +1156,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
             ConditionType: RequiredTextConditionType,
             ValueHostId: 'Field1',
             ErrorMessage: 'Error 1: ' + RequiredTextConditionType,
-            SummaryErrorMessage: 'Summary 1: ' + RequiredTextConditionType,
+            SummaryMessage: 'Summary 1: ' + RequiredTextConditionType,
             Severity: ValidationSeverity.Severe // only because Required conditions default to Severe
         }
         ]);

@@ -1,7 +1,7 @@
 /**
  * @module Services/TextLocalizerServices
  */
-import { ITextLocalizerService } from "../Interfaces/TextLocalizerService";
+import { CultureToText, ITextLocalizerService } from "../Interfaces/TextLocalizerService";
 import { CultureLanguageCode } from "../Utilities/Utilities";
 
 /**
@@ -38,12 +38,12 @@ export class TextLocalizerService implements ITextLocalizerService
      * Only supply '' if you are sure that registered data will always supply a value.
      * @returns The localized text or the fallback text.
      */
-    public Localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string): string
+    public Localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null
     {
         if (!l10nKey)   // including '', null and undefined
             return fallback;
 
-        let mapped = this._textKeyMap.get(l10nKey);
+        let mapped = this._l10nKeyMap.get(l10nKey);
         if (mapped)
         {
             let text = mapped[CultureLanguageCode(cultureIdToMatch)];
@@ -57,21 +57,106 @@ export class TextLocalizerService implements ITextLocalizerService
     }
 
     /**
-     * Registers a textKey with the culture specific text.
-     * Replaces an already registered entry with the same TextKey.
-     * @param textKey
+     * Attempts to get the localized error message for the ConditionType and optional DataTypeLookupKey.
+     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ConditionType.
+     * @param conditionType 
+     * @param dataTypeLookupKey 
+     * @returns The error message or null if not available.
+     */
+    public GetErrorMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null
+    {
+        let text = this.Localize(cultureIdToMatch, this.GetErrorMessagel10nText(conditionType, dataTypeLookupKey), null);
+        if (text === null && dataTypeLookupKey)
+            text = this.Localize(cultureIdToMatch, this.GetErrorMessagel10nText(conditionType, null), null);
+        return text;
+    }
+    /**
+     * Constructs the l10nText for the Error Message.
+     * @param conditionType 
+     * @param dataTypeLookupKey 
+     * @returns 
+     */
+    protected GetErrorMessagel10nText(conditionType: string, dataTypeLookupKey: string | null): string
+    {
+        let l10nText = 'EM-' + conditionType;
+        if (dataTypeLookupKey)
+            l10nText += '-' + dataTypeLookupKey;
+        return l10nText;
+    }
+
+    /**
+     * Attempts to get the localized Summary error message for the ConditionType and optional DataTypeLookupKey
+     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ConditionType.
+     * @param conditionType 
+     * @param dataTypeLookupKey 
+     * @returns The Summary error message or null if not available.
+     */
+    public GetSummaryMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null
+    {
+        let text = this.Localize(cultureIdToMatch, this.GetSummaryMessagel10nText(conditionType, dataTypeLookupKey), null);
+        if (text === null && dataTypeLookupKey)
+            text = this.Localize(cultureIdToMatch, this.GetSummaryMessagel10nText(conditionType, null), null);
+        return text;
+    }
+    /**
+     * Constructs the l10nText for the Summary error message.
+     * @param conditionType 
+     * @param dataTypeLookupKey 
+     * @returns 
+     */
+    protected GetSummaryMessagel10nText(conditionType: string, dataTypeLookupKey: string | null): string
+    {
+        let l10nText = 'SEM-' + conditionType;
+        if (dataTypeLookupKey)
+            l10nText += '-' + dataTypeLookupKey;
+        return l10nText;
+    }
+
+    /**
+     * Registers a lookup key with the culture specific text.
+     * Replaces an already registered entry with the same l10nKey.
+     * @param l10nKey - Localization key, which is the text that identifies which word,
+     * phrase, or other block of text is requested.
      * @param cultureToText - keys are language codes from cultureId, like 'en'.
      * values are the actual text to output.
      */
-    public Register(textKey: string, cultureToText: CultureToText): void
+    public Register(l10nKey: string, cultureToText: CultureToText): void
     {
-        this._textKeyMap.set(textKey, cultureToText);
+        this._l10nKeyMap.set(l10nKey, cultureToText);
+    }
+
+    /**
+     * Utility to add an error message for a validator.
+     * The localization key (l10ntext) will use this pattern:
+     * 'EM-' + ConditionType + '-' + DataTypeLookupKey
+     * 'EM-' + ConditionType   // this is a fallback
+     * @param conditionType
+     * @param dataTypeLookupKey - optional. 
+     * @param cultureToText 
+     */
+    public RegisterErrorMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
+    {
+        this.Register(this.GetErrorMessagel10nText(conditionType, dataTypeLookupKey), cultureToText);
     }
     /**
-     * Data is stored here, where the key is the TextKey and the value
+     * Utility to add a summary error message for a validator
+     * The localization key (l10ntext) will use this pattern:
+     * 'SEM-' + ConditionType + '-' + DataTypeLookupKey
+     * 'SEM-' + ConditionType   // this is a fallback
+     * @param conditionType
+     * @param dataTypeLookupKey - optional. 
+     * @param cultureToText 
+     */
+    public RegisterSummaryMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
+    {
+        this.Register(this.GetSummaryMessagel10nText(conditionType, dataTypeLookupKey), cultureToText);
+    }    
+
+    /**
+     * Data is stored here, where the key is the l10nKey and the value
      * is the object that maps cultureId to its text.
      * {
-     *   'HELLO' :  // textKey
+     *   'HELLO' :  // l10nKey
      *   {
      *      '*': 'hello',
      *      'en': 'hello',
@@ -85,18 +170,5 @@ export class TextLocalizerService implements ITextLocalizerService
      *   },
      * }
      */
-    private _textKeyMap: Map<string, CultureToText> = new Map<string, CultureToText>();
-}
-
-/**
- * Example:
- * {
- *   "*": "hello",  // optional and provides a universal default
- *   "en": "hello",
- *   "sp": "hola"
- * }
- */
-type CultureToText =
-{
-    [cultureId: string]: string;
+    private _l10nKeyMap: Map<string, CultureToText> = new Map<string, CultureToText>();
 }

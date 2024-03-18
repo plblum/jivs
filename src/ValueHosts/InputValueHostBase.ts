@@ -401,7 +401,7 @@ export abstract class InputValueHostBase<TDescriptor extends IInputValueHostBase
                 list.push({
                     Id: id,
                     Severity: issue.Severity,
-                    ErrorMessage: issue.SummaryErrorMessage ?? issue.ErrorMessage
+                    ErrorMessage: issue.SummaryMessage ?? issue.ErrorMessage
                 });
             }
         }

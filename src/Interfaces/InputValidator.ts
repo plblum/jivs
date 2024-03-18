@@ -60,11 +60,11 @@ export interface IInputValidatorDescriptor {
     // such as your custom validation functions that hook back into your business logic.
     // -----------------------
 
-     /** 
-     * ConditionDescriptor that allows the ConditionFactory to provide the Condition.
-     * Like all Descriptors in this system, this is expected to be immutable.
-     * Only use this when ConditionCreator is null.
-     */
+    /** 
+    * ConditionDescriptor that allows the ConditionFactory to provide the Condition.
+    * Like all Descriptors in this system, this is expected to be immutable.
+    * Only use this when ConditionCreator is null.
+    */
     ConditionDescriptor: IConditionDescriptor | null;
 
     /**
@@ -95,7 +95,7 @@ export interface IInputValidatorDescriptor {
      * @param requester
      * @returns 
      */
-    EnablerCreator?: (requester: IInputValidatorDescriptor) => ICondition | null;    
+    EnablerCreator?: (requester: IInputValidatorDescriptor) => ICondition | null;
 
     /**
      * When false, validation is never run. This supersedes the Enabler too.
@@ -154,8 +154,10 @@ export interface IInputValidatorDescriptor {
      * When localization is setup in ErrorMessagel10n, the value can be set to ''
      * so long as your TextLocalizerService ALWAYS returns the text.
      * Otherwise, this should be the fallback.
+     * If you have setup defaults for error messages with TextLocalizerService,
+     * leave this null to use the default. Any value here supersedes default error messages.
      */
-    ErrorMessage: string | ((host: IInputValidator) => string);
+    ErrorMessage?: undefined | null | string | ((host: IInputValidator) => string);
 
     /**
      * Localization key for ErrorMessage. Its value will be matched to an entry
@@ -175,19 +177,21 @@ export interface IInputValidatorDescriptor {
      * * function - Returns the error message, given the InputValidator,
      *   allowing you to replace or customize the message during validation.
      *   The function must return a string, although an empty string is valid.
-     * When localization is setup in SummaryErrorMessagel10n, the value can be set to ''
+     * When localization is setup in SummaryMessagel10n, the value can be set to ''
      * so long as your TextLocalizerService ALWAYS returns the text.
      * Otherwise, this should be the fallback.
+     * If you have setup defaults for error messages with TextLocalizerService,
+     * leave this null to use the default. Any value here supersedes default error messages.
      */
-    SummaryErrorMessage?: undefined | null | string | ((host: IInputValidator) => string);
+    SummaryMessage?: undefined | null | string | ((host: IInputValidator) => string);
 
     /**
-     * Localization key for SummaryErrorMessage. Its value will be matched to an entry
+     * Localization key for SummaryMessage. Its value will be matched to an entry
      * made to ValidationServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
      * the value from the ErrorMessage property is used.
      */
-    SummaryErrorMessagel10n?: string | null | undefined;    
+    SummaryMessagel10n?: string | null | undefined;
 }
 
 /**
@@ -213,8 +217,7 @@ export interface IInputValidateResult {
 }
 
 
-export interface IMessageTokenSource
-{
+export interface IMessageTokenSource {
     /**
      * Returns an array of 0 or more tokens supported by this MessageTokenSource.
      * Each returned has the token supported (omitting {} so {Label} is "Label")
@@ -230,28 +233,27 @@ export interface IMessageTokenSource
 /**
  * Result from IMessageTokenSource.GetValuesForTokens
  */
-export interface ITokenLabelAndValue
-{
-/**
- * The text within the {} of the token. Used to match tokens.
- */    
+export interface ITokenLabelAndValue {
+    /**
+     * The text within the {} of the token. Used to match tokens.
+     */
     TokenLabel: string,
-/**
- * The value to be used as a replacement. When the value isn't a string,
- * it is converted to a string through IDataTypeLocalization.
- */    
+    /**
+     * The value to be used as a replacement. When the value isn't a string,
+     * it is converted to a string through IDataTypeLocalization.
+     */
     AssociatedValue: any,
-/**
- * Provides additional guidance about the token's purpose so the
- * IMessageTokenResolver can apply additional formatting to the token,
- * such as in HTML, a span tag with a specific classname.
- * When null, no additional guidance is offered.
- * Values are:
- * 'label' - the target of the message, such as the ValueHost's label. {Label} is an example
- * 'parameter' - configuration data, such as a ConditionDescriptor's rules. {Minimum} is an example
- * 'value' - some live data, such as the ValueHost's current value. {Value} is an example
- * 'message' - text just augments the error message, like {ConversionError} of DataTypeCheckCondition
- */
+    /**
+     * Provides additional guidance about the token's purpose so the
+     * IMessageTokenResolver can apply additional formatting to the token,
+     * such as in HTML, a span tag with a specific classname.
+     * When null, no additional guidance is offered.
+     * Values are:
+     * 'label' - the target of the message, such as the ValueHost's label. {Label} is an example
+     * 'parameter' - configuration data, such as a ConditionDescriptor's rules. {Minimum} is an example
+     * 'value' - some live data, such as the ValueHost's current value. {Value} is an example
+     * 'message' - text just augments the error message, like {ConversionError} of DataTypeCheckCondition
+     */
     Purpose?: 'label' | 'parameter' | 'value' | 'message';
 }
 
@@ -284,8 +286,7 @@ export interface IInputValidatorFactory {
  * as a LookupKey in the DataTypeServices and its DataTypeLocalizations.
  * Tokens are supplied by implementers of IMessageTokenSource.
  */
-export interface IMessageTokenResolver
-{
+export interface IMessageTokenResolver {
     /**
      * Replaces tokens in the message with user friendly values
      * @param message 
