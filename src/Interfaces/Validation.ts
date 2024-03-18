@@ -177,7 +177,7 @@ export interface IIssueFound {
      * (for example, HTML tags around some tokens if the platform supports HTML).
      * If null/undefined, summary viewer should use ErrorMessage.
      */
-    SummaryErrorMessage?: string;
+    SummaryMessage?: string;
 }
 
 

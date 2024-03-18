@@ -549,7 +549,7 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
         let l10n = value ? this.TrueLabell10n : this.FalseLabell10n;
         if (this.HasServices) {
             text = this.Services.TextLocalizerService.Localize(
-                cultureId, l10n, text);
+                cultureId, l10n, text)!;
         }
         return { Value: text };
     }

@@ -78,7 +78,7 @@ function CreateInputValidatorDescriptor(condDescriptor: IConditionDescriptor | n
     return {
         ConditionDescriptor: condDescriptor,
         ErrorMessage: 'Local',
-        SummaryErrorMessage: 'Summary',
+        SummaryMessage: 'Summary',
     };
 }
 function FinishPartialInputValidatorDescriptor(validatorDescriptor: Partial<IInputValidatorDescriptor> | null):
@@ -754,13 +754,13 @@ function TestValidateFunction(validatorDescriptors: Array<Partial<IInputValidato
 function CreateIssueFound(conditionType: string,
     severity: ValidationSeverity = ValidationSeverity.Error,
     errorMessage: string = 'Local',
-    summaryErrorMessage: string = 'Summary'): IIssueFound {
+    summaryMessage: string = 'Summary'): IIssueFound {
     return {
         ValueHostId: 'Field1',
         ConditionType: conditionType,
         Severity: severity,
         ErrorMessage: errorMessage,
-        SummaryErrorMessage: summaryErrorMessage
+        SummaryMessage: summaryMessage
     };
 }
 describe('InputValueHost.Validate', () => {
@@ -1444,7 +1444,7 @@ describe('Validate with async Conditions', () => {
                 ErrorMessage: 'Local',
                 Severity: ValidationSeverity.Error,
                 ValueHostId: 'Field1',
-                SummaryErrorMessage: 'Summary'
+                SummaryMessage: 'Summary'
             };
 
             ValidateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
@@ -1532,7 +1532,7 @@ describe('Validate with async Conditions', () => {
                 ErrorMessage: 'Never',
                 Severity: ValidationSeverity.Error,
                 ValueHostId: 'Field1',
-                SummaryErrorMessage: 'Summary'
+                SummaryMessage: 'Summary'
             };
             ValidateWithAsyncConditions(ConditionEvaluateResult.Match,
                 [{
@@ -1565,14 +1565,14 @@ describe('Validate with async Conditions', () => {
                 ErrorMessage: 'Never',
                 Severity: ValidationSeverity.Error,
                 ValueHostId: 'Field1',
-                SummaryErrorMessage: 'Never Summary'
+                SummaryMessage: 'Never Summary'
             };
             let issueFoundFromPromise: IIssueFound = {
                 ConditionType: 'TEST',
                 ErrorMessage: 'Local',
                 Severity: ValidationSeverity.Error,
                 ValueHostId: 'Field1',
-                SummaryErrorMessage: 'Summary'
+                SummaryMessage: 'Summary'
             };
             ValidateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
                 [{
@@ -1595,7 +1595,7 @@ describe('Validate with async Conditions', () => {
                         Type: NeverMatchesConditionType
                     },
                     ErrorMessage: 'Never',
-                    SummaryErrorMessage: 'Never Summary'
+                    SummaryMessage: 'Never Summary'
                 });
         },
         1500);  // shortened timeout
@@ -1607,14 +1607,14 @@ describe('Validate with async Conditions', () => {
                 ErrorMessage: 'Never',
                 Severity: ValidationSeverity.Error,
                 ValueHostId: 'Field1',
-                SummaryErrorMessage: 'Never Summary'
+                SummaryMessage: 'Never Summary'
             };
             let issueFoundFromPromise: IIssueFound = {
                 ConditionType: 'TEST',
                 ErrorMessage: 'Local',
                 Severity: ValidationSeverity.Error,
                 ValueHostId: 'Field1',
-                SummaryErrorMessage: 'Summary'
+                SummaryMessage: 'Summary'
             };
             ValidateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
                 [{
@@ -1638,7 +1638,7 @@ describe('Validate with async Conditions', () => {
                         Type: NeverMatchesConditionType
                     },
                     ErrorMessage: 'Never',
-                    SummaryErrorMessage: 'Never Summary'
+                    SummaryMessage: 'Never Summary'
                 });
         },
         1500);  // shortened timeout    
@@ -2084,7 +2084,7 @@ describe('InputValueHost.GetIssuesForInput', () => {
                     Type: NeverMatchesConditionType
                 },
                 ErrorMessage: '1',
-                SummaryErrorMessage: 'Summary1',
+                SummaryMessage: 'Summary1',
                 Severity: ValidationSeverity.Warning
             },
             {
@@ -2092,7 +2092,7 @@ describe('InputValueHost.GetIssuesForInput', () => {
                     Type: NeverMatchesConditionType2
                 },
                 ErrorMessage: '2',
-                SummaryErrorMessage: 'Summary2'
+                SummaryMessage: 'Summary2'
             }
         ];
         let state: Partial<IInputValueHostState> = {};
@@ -2181,7 +2181,7 @@ describe('InputValueHost.GetIssuesForInput', () => {
                     Type: NeverMatchesConditionType
                 },
                 ErrorMessage: 'Condition Error',
-                SummaryErrorMessage: 'Summary1',
+                SummaryMessage: 'Summary1',
                 Severity: ValidationSeverity.Error
             },
 
@@ -2228,7 +2228,7 @@ describe('InputValueHost.GetIssuesForSummary', () => {
                     Type: NeverMatchesConditionType
                 },
                 ErrorMessage: '1',
-                SummaryErrorMessage: 'Summary1',
+                SummaryMessage: 'Summary1',
                 Severity: ValidationSeverity.Warning
             },
             {
@@ -2236,7 +2236,7 @@ describe('InputValueHost.GetIssuesForSummary', () => {
                     Type: NeverMatchesConditionType2
                 },
                 ErrorMessage: '2',
-                SummaryErrorMessage: 'Summary2'
+                SummaryMessage: 'Summary2'
             }
         ];
         let state: Partial<IInputValueHostState> = {};
@@ -2326,7 +2326,7 @@ describe('InputValueHost.GetIssuesForSummary', () => {
                     Type: NeverMatchesConditionType
                 },
                 ErrorMessage: 'Condition Error',
-                SummaryErrorMessage: 'Summary Condition Error',
+                SummaryMessage: 'Summary Condition Error',
                 Severity: ValidationSeverity.Error
             },
 
@@ -2517,7 +2517,7 @@ describe('InputValueHostGenerator members', () => {
             ConditionType: RequiredTextConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Error,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         let state = { ...originalState };
         let descriptor: IInputValueHostDescriptor = {
@@ -2551,7 +2551,7 @@ describe('InputValueHostGenerator members', () => {
             ConditionType: RequiredTextConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Error,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         let state = { ...originalState };
         let descriptor: IInputValueHostDescriptor = {
@@ -2583,7 +2583,7 @@ describe('InputValueHostGenerator members', () => {
             ConditionType: RequiredTextConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Warning,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         let state = { ...originalState };
         let descriptor: IInputValueHostDescriptor = {
@@ -2619,7 +2619,7 @@ describe('InputValueHostGenerator members', () => {
             ConditionType: RequiredTextConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Warning,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         let state = { ...originalState };
         let descriptor: IInputValueHostDescriptor = {
@@ -2654,7 +2654,7 @@ describe('InputValueHostGenerator members', () => {
             ConditionType: RequiredTextConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Error,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         let state = { ...originalState };
         let descriptor: IInputValueHostDescriptor = {
@@ -2691,14 +2691,14 @@ describe('InputValueHostGenerator members', () => {
             ConditionType: RequiredTextConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Error,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         originalState.IssuesFound!.push({
             ValueHostId: 'Field1',
             ConditionType: NeverMatchesConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Warning,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         let state = { ...originalState };
         let descriptor: IInputValueHostDescriptor = {
@@ -2735,21 +2735,21 @@ describe('InputValueHostGenerator members', () => {
             ConditionType: RequiredTextConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Error,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         originalState.IssuesFound!.push({
             ValueHostId: 'Field1',
             ConditionType: NeverMatchesConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Warning,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         originalState.IssuesFound!.push({
             ValueHostId: 'Field1',
             ConditionType: RangeConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Error,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         let state = { ...originalState };
         let descriptor: IInputValueHostDescriptor = {
@@ -2793,21 +2793,21 @@ describe('InputValueHostGenerator members', () => {
             ConditionType: RequiredTextConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Error,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         originalState.IssuesFound!.push({
             ValueHostId: 'Field1',
             ConditionType: NeverMatchesConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Warning,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         originalState.IssuesFound!.push({
             ValueHostId: 'Field1',
             ConditionType: RangeConditionType,
             ErrorMessage: '',
             Severity: ValidationSeverity.Severe,
-            SummaryErrorMessage: ''
+            SummaryMessage: ''
         });
         let state = { ...originalState };
         let descriptor: IInputValueHostDescriptor = {
