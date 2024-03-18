@@ -35,6 +35,49 @@ The UI uses that information to change the visuals: show those errors in
 some way and perhaps change the appearance of the input and its
 surroundings. Jivs knows nothing about that stuff, although its
 supporting libraries (pending) are well-informed on those matters.
+
+## Why Use Jivs?
+### Prerequisites:
+-	Your app uses JavaScript or TypeScript
+-	Your app targets the browser and/or Node.js
+-	Your app needs to validate values, whether for user input or Model properties.
+
+### Setting Expectations:
+
+- **What Jivs Isn’t:** It doesn't come with UI widgets for displaying error messages or applying stylesheet changes. However, we're developing additional libraries to complement Jivs with these UI capabilities—stay tuned.
+- **What Jivs Excels At:** Its forte is value validation. This distinct focus from UI concerns allows for flexible UI development on any framework, such as React, which requires a unique approach to HTML manipulation. We plan to support both standard DOM and React-specific libraries.
+- **Not Just for Browsers:** Despite seeming browser-centric, server-side validation is critical to prevent tampered data and address server-specific validations. Jivs supports this on Node.js, enabling consistent validation rules across client and server.
+- **Code Effort:** While using Jivs involves coding, it’s basically what you would have to write anyway. Some of your coding work with or without Jivs:
+	- **Defining validation rules:** Jivs encourages business logic-driven validation, independent of UI.
+	- **Data Conversion:** Managing the conversion between model properties and UI representations, like converting a Date object in the model to a string for an \<input> field, is up to you. Jivs doesn't intrude here.
+	- **Managing save attempts:** Jivs aids in handling errors, whether from UI or business logic, facilitating the delivery of additional messages and error handling
+
+### Features
+
+-	Fields are independently configurable, allowing UI widgets to remain unaware of validation rules and error messages. Jivs notifies UI widgets with validation outcomes.
+-	Provides "Condition" objects for a standardized approach to validation, alongside support for custom validation rules, including asynchronous ones. Supplied conditions include: Required, Regular Expression, Range, Compare Two Matches, String Length, All Match, Any Match.
+-	Most validation rules come from business logic. The "Data Type Check" is different, a rule that comes from the decisions made about UI widgets. For example, a Date can be edited by a textbox or calendar. Jivs automatically applies an appropriate rule for these checks, keeping the UI code free from validation concerns.
+-	Jivs enables complex validations by providing the All Match and Any Match Conditions. They provide Boolean logic to a list of other Conditions.
+-	Business logic must also validate the Model before saving. Jivs incorporates business logic error messages alongside its own.
+-	Error message features:
+	- Embed tokens to reusable templates   
+	`The {Label} must be between {Minimum} and {Maximum}.`
+	- Tokens that can show live data   
+	`The current value is {Value}.`
+	- Token values are localizable
+	- Token values can select a format.   
+	`The {Label:Uppercase} must be between {Minimum:AbbrevDate} and {Maximum:AbbrevDate}.`
+	- Message text itself is localizable
+	- Validators have two error messages. The first message, designed for proximity to the UI widget, is succinct, focusing on the issue without field context. The second, intended for a Validation Summary displayed elsewhere on the screen, includes the field name for clarity.
+	- You can setup default error messages, localized of course. This is particularly useful for Data Type Check validations, where distinct data types require specific guidance. For instance, use "Enter a date in the form MM/DD/YYYY" for dates, and "Enter a number using only digits" for numbers.
+	- Jivs can provide every error associated with a field, not just the initial one, ensuring thorough feedback and guidance.
+- Jivs provides built-in support for common data types—number, string, Boolean, and date—and accommodates unique usage scenarios through extensive customizability.
+	- Formatter Customization: Tailor how values are displayed to users, with localization. For instance, configure error messages to show dates in an abbreviated format rather than a short date format.
+	- Converter Customization: Adjust the data under validation to fit various contexts, such as interpreting a JavaScript Date object in multiple ways—anniversary, expiry, total days, date with time, or time alone.
+	- Identifier Customization: Integrate custom objects to be treated as standard data types, enabling complex comparisons. An object denoting "tomorrow" or "next month" can be identified as a Date for comparison purposes.
+	- Comparer Customization: Supports Conditions that compare two values so they can handler your non-standard data types. 
+
+
 ## Quick terminology overview
 Here are a few terms used.
 - **Validator** - Combines a single rule that must be validated along with the error message(s) it may return when an issue is found.
