@@ -78,7 +78,7 @@ export interface IValidationManager extends IValueHostsManager {
     SetBusinessLogicErrors(errors: Array<IBusinessLogicError> | null): void;
 
     /**
-     * Lists all issues found (error messages and supporting info) about each validator
+     * Lists all issues found (error messages and supporting info) for a single InputValueHost
      * so the input field/element can show error messages and adjust its appearance.
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
@@ -90,9 +90,11 @@ export interface IValidationManager extends IValueHostsManager {
      *   is returned.
      */
     GetIssuesForInput(valueHostId: ValueHostId): Array<IIssueSnapshot>;
+
     /**
-     * A list of all issues to show in a Validation Summary widget for a giving validation group.
-     * @param group 
+     * A list of all issues to show in a Validation Summary widget optionally for a given group.
+     * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
+     * the same group (case insensitive match).
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.

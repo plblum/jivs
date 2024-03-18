@@ -10,7 +10,7 @@
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ValidationCategory } from "../Interfaces/Logger";
-import { ObjectKeysCount } from "../Utilities/Utilities";
+import { ObjectKeysCount, GroupsMatch } from "../Utilities/Utilities";
 import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
@@ -63,6 +63,10 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
             ValidationResult: ValidationResult.Undetermined,
             IssuesFound: null
         };
+
+        if (!GroupsMatch(options.Group, this.Descriptor.Group))
+            return Bailout(`Group names do not match "${options.Group}" vs "${this.Descriptor.Group?.toString()}"`);      
+        
         try {
             try {
                 let validators = this.Validators();
@@ -201,6 +205,20 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
         );
         // no change to the ValidationResult here            
         }
+
+        function Bailout(errorMessage: string): IValidateResult
+        {
+            let resultState: IValidateResult = {
+                ValidationResult: ValidationResult.Undetermined,
+                IssuesFound: null
+            };
+            LogInfo(() => {
+                return {
+                    message: errorMessage,
+                }
+            });
+            return resultState;                    
+        }        
         function LogInfo(
             fn: () => { message: string, source?: string })
         {

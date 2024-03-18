@@ -133,8 +133,9 @@ export interface IInputValueHost extends IValueHost {
     GetIssuesForInput(): Array<IIssueSnapshot>;
 
     /**
-     * A list of all issues to show in a Validation Summary widget for a giving validation group.
-     * @param group 
+     * A list of all issues to show in a Validation Summary widget optionally for a given group.
+     * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
+     * the same group (case insensitive match).
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
@@ -176,6 +177,25 @@ export interface IInputValueHost extends IValueHost {
  */
 export interface IInputValueHostBaseDescriptor extends IValueHostDescriptor {
 
+    /**
+     * InputValueHosts can be part of one or more named groups.
+     * Groups are part of validating the complete Model.
+     * All InputValueHosts on the page may be asked to validate.
+     * Often fields are used for different aspects of the page, like 
+     * a login or search field in the header is a different feature
+     * from the form where data is being gathered.
+     * Submit buttons usually call Validate and supply their group name.
+     * When they do, InputValueHosts associated with that button must have the same
+     * group name.
+     * Values:
+     * * undefined, null or '*' all mean the group feature is ignored.
+     * * string - a single group name. If it does not match the requested group
+     *   in the Validate function, the validator is treated as disabled.
+     *   Case insensitive matching.
+     * * string[] - a list of group names. If none match the requested group
+     *   in the Validate function, the validator is treated as disabled.
+     */
+    Group?: undefined | null | string | Array<string>;
 }
 
 
@@ -195,7 +215,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IStatefulVali
 
 
     /**
-     * Validation group used when Validate was last called. It is associated
+     * Group used when Validate was last called. It is associated
      * with the current IssuesFound
      */
     Group?: string;

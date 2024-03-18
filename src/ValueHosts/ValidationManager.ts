@@ -380,7 +380,7 @@ export class ValidationManager<TState extends IValidationManagerState> implement
             }
     }
     /**
-     * Lists all issues found (error messages and supporting info) about each validator
+     * Lists all issues found (error messages and supporting info) for a single InputValueHost
      * so the input field/element can show error messages and adjust its appearance.
      * @param valueHostId - identifies the ValueHost whose issues you want.
      * @returns An array of 0 or more details of issues found. Each contains:

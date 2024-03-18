@@ -6,14 +6,13 @@
  * - Summary Error Message - In the ValidationSummary UI element, what to tell the user 
  *   when there is an error.
  * - Severity: Error, Severe, and Warning
- * - Rules to disable the validator: validation group matching, Enabler condition, and Enabled property.
+ * - Rules to disable the validator: Enabler condition, Enabled property and several IValidateOptions.
  * - Resolves error message tokens
   * Attached to InputValueHosts through their InputValueHostDescriptor.
   * @module InputValidator
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { ValidationGroupsMatch } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
 import { ToIGatherValueHostIds, type IValueHost } from "../Interfaces/ValueHost";
 import { type IValueHostResolver, type IValueHostsManager, ToIValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
@@ -158,15 +157,6 @@ export class InputValidator implements IInputValidator {
     }
 
     /**
-     * Determines if the supplied group or group(s) matches the Descriptor.Group.
-     * When there is an array, it just requires an intersection of the group names.
-     * @param group 
-     */
-    protected GroupMatch(group: string | Array<string> | undefined | null): boolean {
-        return ValidationGroupsMatch(group, this.Descriptor.Group);
-    }
-
-    /**
      * Determined from Descriptor.Severity.
      */
     protected get Severity(): ValidationSeverity {
@@ -264,10 +254,6 @@ export class InputValidator implements IInputValidator {
             // enabled
             if (!this.Enabled)
                 return Bailout('Descriptor.Enabled is false');
-
-            // validation groups
-            if (!this.GroupMatch(options.Group))
-                return Bailout( `Group names do not match "${options.Group}" vs "${this.Descriptor.Group?.toString()}"`);
 
             // enabler
             let enabler = this.Enabler;

@@ -12,14 +12,14 @@ import { IInputValidateResult } from "./InputValidator";
 export interface IValidateOptions
 {
     /**
-     * Group validation name, a tool to group validators with a specific submit command.
-     * Use when there is more than one list of ValueHosts to be validated together.
+     * Group validation name, a tool to group InputValueHosts with a specific submit command when validating.
+     * Use when there is more than one group of InputValueHosts to be validated together.
      * For example, the ValidationManager handles two forms at once. Give
-     * the InputValidatorDescriptor.Group a name for each form. Then make their submit command
+     * the InputValueHostDescriptor.Group a name for each form. Then make their submit command
      * pass in the same group name.
-     * When Group is undefined or "*", validate does not check group names. All Validators 
-     * within the ValidationManager get involved.
-     * When assigned, only validators with a matching group name (case insensitive) will be involved.
+     * When Group is undefined or "*", Validate does not check group names. All InputValueHosts 
+     * within the ValidationManager are validated.
+     * When assigned, only InputValueHosts with a matching group name (case insensitive) will be involved.
      */
     Group?: string;
 

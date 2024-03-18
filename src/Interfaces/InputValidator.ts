@@ -119,26 +119,6 @@ export interface IInputValidatorDescriptor {
     Severity?: undefined | ValidationSeverity | ((host: IInputValidator) => ValidationSeverity);
 
     /**
-     * Validators can be part of one or more named groups.
-     * Groups are part of validating the complete Model.
-     * All validators on the page may be asked to validate.
-     * Often fields are used for different aspects of the page, like 
-     * a login or search field in the header is a different feature
-     * from the form where data is being gathered.
-     * Submit buttons usually call Validate and supply their validation group name.
-     * When they do, validators associated with that button must have the same
-     * group name.
-     * Values:
-     * * undefined, null or '*' all mean the group feature is ignored.
-     * * string - a single group name. If it does not match the requested group
-     *   in the Validate function, the validator is treated as disabled.
-     *   Case insensitive matching.
-     * * string[] - a list of group names. If none match the requested group
-     *   in the Validate function, the validator is treated as disabled.
-     */
-    Group?: undefined | null | string | Array<string>;
-
-    /**
      * The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * Tokens are resolved with Services.MessageTokenResolver.
@@ -210,8 +190,7 @@ export interface IInputValidateResult {
     IssueFound: IIssueFound | null,
 
     /**
-     * When true, Validate bailed before evaluation due to Enabled, Enabler
-     * or validation group mismatch.
+     * When true, Validate bailed before evaluation due to Enabled or Enabler
      */
     Skipped?: boolean;
 }

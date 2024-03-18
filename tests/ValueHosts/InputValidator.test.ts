@@ -853,36 +853,6 @@ describe('InputValidator.Validate', () => {
             }
         }, {}, 2);
     });
-    test('Issue exists. Group parameter = empty string always continues. Returns issue', () => {
-        testConditionHasIssueAndBlockingCheckPermitsValidation({
-            Group: 'Anything'
-        }, { Group: '' }, 2);
-    });
-    test('Issue exists. Group parameter = "*" always continues. Returns issue', () => {
-        testConditionHasIssueAndBlockingCheckPermitsValidation({
-            Group: 'Anything'
-        }, { Group: '*' }, 2);
-    });
-    test('Issue exists. Group parameter assigned and matches Descriptor.Group. Returns issue', () => {
-        testConditionHasIssueAndBlockingCheckPermitsValidation({
-            Group: 'group1'
-        }, { Group: 'group1' }, 2);
-    });
-    test('Issue exists. Group parameter assigned and matches Descriptor.Group while cases do not match. Returns issue', () => {
-        testConditionHasIssueAndBlockingCheckPermitsValidation({
-            Group: 'GROUP1'
-        }, { Group: 'group1' }, 2);
-    });
-    test('Issue exists. Group parameter assigned and but does not match Descriptor.Group. Returns null', () => {
-        testConditionHasIssueAndBlockingCheckPermitsValidation({
-            Group: 'groupB'
-        }, { Group: 'groupA' }, 2, false);
-    });
-    test('Issue exists. Group parameter assigned and matches Descriptor.Group with array. Returns issue', () => {
-        testConditionHasIssueAndBlockingCheckPermitsValidation({
-            Group: ['group1', 'group2']
-        }, { Group: 'group1' }, 2);
-    });
     test('Issue exists but Required is skipped because IValidateOption.Preliminary = true.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { Preliminary: true }, 2, false);

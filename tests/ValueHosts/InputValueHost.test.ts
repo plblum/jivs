@@ -172,13 +172,16 @@ function SetupInputValueHost(
  */
 function SetupInputValueHostForValidate(
     partialValidatorDescriptors: Array<Partial<IInputValidatorDescriptor>> | null,
-    partialInputValueState: Partial<IInputValueHostState> | null): ITestSetupConfig {
+    partialInputValueState: Partial<IInputValueHostState> | null,
+    vhGroup? : string | null): ITestSetupConfig {
 
     let inputValueDescriptor: Partial<IInputValueHostDescriptor> = {
         ValidatorDescriptors: partialValidatorDescriptors ?
             FinishPartialInputValidatorDescriptors(partialValidatorDescriptors) :
             undefined
     }
+    if (vhGroup !== undefined)
+        inputValueDescriptor.Group = vhGroup;
 
     let updatedState = FinishPartialInputValueHostState(
         { ...{ InputValue: '' }, ...partialInputValueState })
@@ -734,11 +737,13 @@ function TestValidateFunction(validatorDescriptors: Array<Partial<IInputValidato
     inputValueState: Partial<IInputValueHostState> | null,
     expectedValidationResult: ValidationResult,
     expectedIssuesFound: Array<IIssueFound> | null,
-    validationGroup?: string | undefined): ITestSetupConfig {
+    validationGroupForValueHost?: string | undefined,
+    validationGroupForValidateFn?: string | undefined,
+    expectedStateChanges: number = 1): ITestSetupConfig {
 
-    let config = SetupInputValueHostForValidate(validatorDescriptors, inputValueState);
+    let config = SetupInputValueHostForValidate(validatorDescriptors, inputValueState, validationGroupForValueHost);
     let vrDetails: IValidateResult | null = null;
-    expect(() => vrDetails = config.valueHost.Validate({ Group: validationGroup })).not.toThrow();
+    expect(() => vrDetails = config.valueHost.Validate({ Group: validationGroupForValidateFn })).not.toThrow();
     expect(vrDetails).not.toBeNull();
     expect(vrDetails!.ValidationResult).toBe(expectedValidationResult);
     expect(vrDetails!.IssuesFound).toEqual(expectedIssuesFound);
@@ -746,7 +751,7 @@ function TestValidateFunction(validatorDescriptors: Array<Partial<IInputValidato
 
     let stateChanges = config.validationManager.GetHostStateChanges();
     expect(stateChanges).not.toBeNull();
-    expect(stateChanges.length).toBe(1);
+    expect(stateChanges.length).toBe(expectedStateChanges);
 
     return config;
 }
@@ -1012,25 +1017,45 @@ describe('InputValueHost.Validate', () => {
         TestValidateFunction(ivDescriptors, state, ValidationResult.Valid, null);
 
     });
-    test('With 2 Validators, and both don\'t match validation group, acts like there are no validators. ValidationResult is Valid', () => {
+    function TestGroups(valueHostGroup: string, validateGroup: string, expectedResult: ValidationResult, expectedStateChanges: number = 1): void
+    {
         let ivDescriptors: Array<Partial<IInputValidatorDescriptor>> = [
             {
                 ConditionDescriptor: {
                     Type: NeverMatchesConditionType
                 },
-                Group: 'GROUPA'
-            },
-            {
-                ConditionDescriptor: {
-                    Type: NeverMatchesConditionType
-                },
-                Group: 'GROUPA'
             }
         ];
         let state: Partial<IInputValueHostState> = {};
-        TestValidateFunction(ivDescriptors, state, ValidationResult.Valid, null, 'GROUPB');
+        let issueFound: IIssueFound | null = null;
+        if (expectedResult === ValidationResult.Invalid)
+            issueFound = {
+                ConditionType: NeverMatchesConditionType,
+                ErrorMessage: 'Local',
+                SummaryMessage: 'Summary',
+                Severity: ValidationSeverity.Error,
+                ValueHostId: 'Field1'
+            };
+        TestValidateFunction(ivDescriptors, state, expectedResult, issueFound ? [issueFound] : null, valueHostGroup, validateGroup, expectedStateChanges);
+    }
 
+    test('Group test. InputValueHost has Group name but validate has empty string for group name. Validation occurs and returns an issue', () => {
+        TestGroups('GROUPA', '', ValidationResult.Invalid);
     });
+    test('Group test. InputValueHost has Group name but validate has * for group name. Validation occurs and returns an issue', () => {
+        TestGroups('GROUPA', '*', ValidationResult.Invalid);
+    });    
+    test('Group test. InputValueHost has Group name and Validate has same group name. Validation occurs and returns an issue', () => {
+        TestGroups('GROUPA', 'GROUPA', ValidationResult.Invalid);
+    });
+
+    test('Group test. InputValueHost has Group name and Validate has same group name but case mismatch. Validation occurs and returns an issue', () => {
+        TestGroups('GROUPA', 'groupa', ValidationResult.Invalid);
+    });
+    test('Group test. InputValueHost has Group name but validate has a different group name. Validation skipped and result is Valid', () => {
+        TestGroups('GROUPA', 'GROUPB', ValidationResult.Undetermined, 0);
+    });
+
     test('Validate one ValueHost with validators that results in Valid. OnValueHostValidated called.', () => {
         let ivDescriptors: Array<Partial<IInputValidatorDescriptor>> = [
             {

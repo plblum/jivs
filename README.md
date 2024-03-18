@@ -307,6 +307,7 @@ interface IInputValueHostDescriptor {
   DataType?: string;
   InitialValue?: any;
   ValidatorDescriptors: null | IInputValidatorDescriptor[];
+  Group?: undefined | null | string | Array<string>;
 }
 ```
 Here’s how your configuration actually looks:
@@ -360,7 +361,6 @@ interface IInputValidatorDescriptor {
     Enabled?: boolean | ((host) => boolean);
     EnablerDescriptor?: null | IConditionDescriptor;
     EnablerCreator?: ((requester) => null | ICondition);
-    Group?: null | string | string[];
 }
 ```
 Because this is so full of goodness, let’s go through each property.
@@ -375,7 +375,6 @@ Because this is so full of goodness, let’s go through each property.
 	-	Warning – Want to give the user some direction, but not prevent saving the data.
 -	Enabled – A way to quickly disable the InputValidator.
 -	EnablerDescriptor and EnablerCreator – The Enabler is another Condition, used to determine if the InputValidator can validate. Often validation rules depend on other information for that. For example, you have a checkbox associated with a textbox. Any validation rule on the textbox isn’t used unless the checkbox is marked. You would assign a Condition to evaluate the value of the checkbox to the Enabler.
--	Group – A way to group together validators. Mostly used when your screen contains more than one “form”. Each form would get a group name.
 
 Now let’s place the IInputValidatorDescriptor into our previous example using a Model with FirstName and LastName.
 ```ts
