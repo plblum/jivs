@@ -8,7 +8,6 @@ import { LoggingLevel } from "../../src/Interfaces/Logger";
 import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationServices, MockValidationManager, NeverMatchesConditionType, NeverMatchesConditionType2, NeverMatchesCondition, RegisterTestingOnlyConditions } from "../Mocks";
 import { ValidationServices } from '../../src/Services/ValidationServices';
-import { StringLookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValueHostId } from "../../src/DataTypes/BasicTypes";
 import { IInputValueHostDescriptor, IInputValueHostState, IInputValueHost, IInputValueHostBaseState } from "../../src/Interfaces/InputValueHost";
 import {
@@ -30,6 +29,7 @@ import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver"
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -40,7 +40,7 @@ interface ITestSetupConfig {
 };
 
 function CreateInputValueHostDescriptor(fieldNumber: number = 1,
-    dataType: string = StringLookupKey,
+    dataType: string = LookupKey.String,
     initialValue?: any): IInputValueHostDescriptor {
     return {
         Id: 'Field' + fieldNumber,
@@ -54,7 +54,7 @@ function CreateInputValueHostDescriptor(fieldNumber: number = 1,
 
 function FinishPartialInputValueHostDescriptor(partialDescriptor: Partial<IInputValueHostDescriptor> | null):
     IInputValueHostDescriptor {
-    let defaultIVH = CreateInputValueHostDescriptor(1, StringLookupKey);
+    let defaultIVH = CreateInputValueHostDescriptor(1, LookupKey.String);
     if (partialDescriptor) {
         return { ...defaultIVH, ...partialDescriptor }
     }
@@ -129,7 +129,7 @@ function FinishPartialInputValueHostState(partialState: Partial<IInputValueHostS
  * Id: 'Field1',
  * Label: 'Label1',
  * Type: 'Input',
- * DataType: StringLookupKey,
+ * DataType: LookupKey.String,
  * InitialValue: 'DATA'
  * ValidatorDescriptors: []
  * @param partialState - Use the default state by passing null. Otherwise pass
@@ -199,7 +199,7 @@ describe('constructor and resulting property values', () => {
 
         expect(testItem.GetId()).toBe('Field1');
         expect(testItem.GetLabel()).toBe('Label1');
-        expect(testItem.GetDataType()).toBe(StringLookupKey);
+        expect(testItem.GetDataType()).toBe(LookupKey.String);
         expect(testItem.GetValue()).toBeUndefined();
         expect(testItem.IsChanged).toBe(false);
         expect(testItem.RequiresInput).toBe(false);

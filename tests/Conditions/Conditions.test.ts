@@ -13,7 +13,6 @@ import {
 } from "../../src/Conditions/ConcreteConditions";
 
 import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
-import { StringLookupKey, NumberLookupKey, DateLookupKey, BooleanLookupKey, IntegerLookupKey } from "../../src/DataTypes/LookupKeys";
 
 import {
     MockValidationServices, MockValidationManager, MockCapturingLogger,
@@ -22,6 +21,7 @@ import {
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
 import { IEvaluateChildConditionResultsDescriptor } from "../../src/Conditions/EvaluateChildConditionResultsBase";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 
 describe('ConditionBase class additional cases', () => {
@@ -30,7 +30,7 @@ describe('ConditionBase class additional cases', () => {
         let vm = new MockValidationManager(services);
         let logger = services.LoggerService as MockCapturingLogger;
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: 'PropertyNotRegistered',
@@ -46,7 +46,7 @@ describe('ConditionBase class additional cases', () => {
         let vm = new MockValidationManager(services);
         let logger = services.LoggerService as MockCapturingLogger;
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: 'PropertyNotRegistered',
@@ -61,7 +61,7 @@ describe('ConditionBase class additional cases', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: null,
@@ -75,7 +75,7 @@ describe('ConditionBase class additional cases', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: null,
@@ -96,7 +96,7 @@ describe('class DataTypeCheckCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
             Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
@@ -115,7 +115,7 @@ describe('class DataTypeCheckCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
             Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
@@ -130,7 +130,7 @@ describe('class DataTypeCheckCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
             Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
@@ -145,7 +145,7 @@ describe('class DataTypeCheckCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
             Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
@@ -167,7 +167,7 @@ describe('class DataTypeCheckCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IDataTypeCheckConditionDescriptor = {
             Type: ConditionType.DataTypeCheck,
             ValueHostId: 'Property1',
@@ -235,7 +235,7 @@ describe('class RequiredTextCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
@@ -251,7 +251,7 @@ describe('class RequiredTextCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
@@ -267,7 +267,7 @@ describe('class RequiredTextCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
@@ -292,7 +292,7 @@ describe('class RequiredTextCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
@@ -317,7 +317,7 @@ describe('class RequiredTextCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
@@ -332,7 +332,7 @@ describe('class RequiredTextCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
@@ -353,7 +353,7 @@ describe('class RequiredTextCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRequiredTextConditionDescriptor = {
             Type: ConditionType.RequiredText,
             ValueHostId: 'Property1',
@@ -421,7 +421,7 @@ describe('class RequiredIndexCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: IRequiredIndexConditionDescriptor = {
             Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1'
@@ -436,7 +436,7 @@ describe('class RequiredIndexCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: IRequiredIndexConditionDescriptor = {
             Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1',
@@ -449,7 +449,7 @@ describe('class RequiredIndexCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: IRequiredIndexConditionDescriptor = {
             Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1',
@@ -466,7 +466,7 @@ describe('class RequiredIndexCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: IRequiredIndexConditionDescriptor = {
             Type: ConditionType.RequiredIndex,
             ValueHostId: 'Property1'
@@ -534,7 +534,7 @@ describe('class RegExpCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
             Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
@@ -558,7 +558,7 @@ describe('class RegExpCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
             Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
@@ -583,7 +583,7 @@ describe('class RegExpCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
             Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
@@ -608,7 +608,7 @@ describe('class RegExpCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
             Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
@@ -633,7 +633,7 @@ describe('class RegExpCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
             Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
@@ -658,7 +658,7 @@ describe('class RegExpCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
 
         let descriptor: IRegExpConditionDescriptor = {
             Type: ConditionType.RegExp,
@@ -677,7 +677,7 @@ describe('class RegExpCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
             Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
@@ -697,7 +697,7 @@ describe('class RegExpCondition', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRegExpConditionDescriptor = {
             Type: ConditionType.RegExp,
             ValueHostId: 'Property1',
@@ -760,7 +760,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -791,7 +791,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -820,7 +820,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', DateLookupKey, 'Label');
+            'Property1', LookupKey.Date, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -846,7 +846,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -874,7 +874,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -906,7 +906,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -923,7 +923,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -942,7 +942,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -961,13 +961,13 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
             Minimum: 1.6,
             Maximum: 6.1,
-            ConversionLookupKey: IntegerLookupKey
+            ConversionLookupKey: LookupKey.Integer
         };
         let testItem = new RangeCondition(descriptor);
         vh.SetInputValue('---- does not matter ----');
@@ -986,7 +986,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -1013,7 +1013,7 @@ describe('class RangeCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IRangeConditionDescriptor = {
             Type: ConditionType.Range,
             ValueHostId: 'Property1',
@@ -1095,7 +1095,7 @@ describe('CompareToConditionBase class additional cases', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let logger = services.LoggerService as MockCapturingLogger;
         vh.SetValue('');
         let descriptor: ICompareToConditionDescriptor = {
@@ -1113,7 +1113,7 @@ describe('CompareToConditionBase class additional cases', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let logger = services.LoggerService as MockCapturingLogger;
         vh.SetValue('');
         let descriptor: ICompareToConditionDescriptor = {
@@ -1139,7 +1139,7 @@ describe('class ValuesEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
@@ -1160,7 +1160,7 @@ describe('class ValuesEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', BooleanLookupKey, 'Label');
+            'Property1', LookupKey.Boolean, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
@@ -1178,9 +1178,9 @@ describe('class ValuesEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.AddInputValueHost(
-            'Property2', NumberLookupKey, 'Label2');
+            'Property2', LookupKey.Number, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
@@ -1204,7 +1204,7 @@ describe('class ValuesEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
@@ -1226,11 +1226,11 @@ describe('class ValuesEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
-            ConversionLookupKey: IntegerLookupKey,
+            ConversionLookupKey: LookupKey.Integer,
             SecondValue: 100,
             SecondValueHostId: null
         };
@@ -1249,15 +1249,15 @@ describe('class ValuesEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh1 = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.AddInputValueHost(
-            'Property2', NumberLookupKey, 'Label');
+            'Property2', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
-            ConversionLookupKey: IntegerLookupKey,
+            ConversionLookupKey: LookupKey.Integer,
             SecondValueHostId: 'Property2',
-            SecondConversionLookupKey: IntegerLookupKey
+            SecondConversionLookupKey: LookupKey.Integer
         };
         let testItem = new ValuesEqualCondition(descriptor);
         vh1.SetInputValue('---- does not matter ----');
@@ -1277,7 +1277,7 @@ describe('class ValuesEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
@@ -1299,7 +1299,7 @@ describe('class ValuesEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesEqual,
             ValueHostId: 'Property1',
@@ -1377,7 +1377,7 @@ describe('class ValuesNotEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
@@ -1398,7 +1398,7 @@ describe('class ValuesNotEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', BooleanLookupKey, 'Label');
+            'Property1', LookupKey.Boolean, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
@@ -1416,9 +1416,9 @@ describe('class ValuesNotEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.AddInputValueHost(
-            'Property2', NumberLookupKey, 'Label2');
+            'Property2', LookupKey.Number, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
@@ -1442,7 +1442,7 @@ describe('class ValuesNotEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
@@ -1463,7 +1463,7 @@ describe('class ValuesNotEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
@@ -1485,9 +1485,9 @@ describe('class ValuesNotEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.AddValueHost(
-            'Property2', NumberLookupKey, 'Label2');
+            'Property2', LookupKey.Number, 'Label2');
         vh2.SetValue(100);
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesNotEqual,
@@ -1510,7 +1510,7 @@ describe('class ValuesNotEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValuesNotEqual,
             ValueHostId: 'Property1',
@@ -1588,7 +1588,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
@@ -1609,7 +1609,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', BooleanLookupKey, 'Label');
+            'Property1', LookupKey.Boolean, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
@@ -1627,9 +1627,9 @@ describe('class ValueGTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.AddInputValueHost(
-            'Property2', NumberLookupKey, 'Label2');
+            'Property2', LookupKey.Number, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
@@ -1653,7 +1653,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
@@ -1674,7 +1674,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
@@ -1696,7 +1696,7 @@ describe('class ValueGTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTSecondValue,
             ValueHostId: 'Property1',
@@ -1774,7 +1774,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
@@ -1795,7 +1795,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', BooleanLookupKey, 'Label');
+            'Property1', LookupKey.Boolean, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
@@ -1813,9 +1813,9 @@ describe('class ValueGTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.AddInputValueHost(
-            'Property2', NumberLookupKey, 'Label2');
+            'Property2', LookupKey.Number, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
@@ -1839,7 +1839,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
@@ -1860,7 +1860,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
@@ -1882,7 +1882,7 @@ describe('class ValueGTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueGTESecondValue,
             ValueHostId: 'Property1',
@@ -1961,7 +1961,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
@@ -1982,7 +1982,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', BooleanLookupKey, 'Label');
+            'Property1', LookupKey.Boolean, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
@@ -2000,9 +2000,9 @@ describe('class ValueLTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.AddInputValueHost(
-            'Property2', NumberLookupKey, 'Label2');
+            'Property2', LookupKey.Number, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
@@ -2026,7 +2026,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
@@ -2047,7 +2047,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
@@ -2069,7 +2069,7 @@ describe('class ValueLTSecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTSecondValue,
             ValueHostId: 'Property1',
@@ -2147,7 +2147,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
@@ -2168,7 +2168,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', BooleanLookupKey, 'Label');
+            'Property1', LookupKey.Boolean, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
@@ -2186,9 +2186,9 @@ describe('class ValueLTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.AddInputValueHost(
-            'Property2', NumberLookupKey, 'Label2');
+            'Property2', LookupKey.Number, 'Label2');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
@@ -2212,7 +2212,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
@@ -2233,7 +2233,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
@@ -2255,7 +2255,7 @@ describe('class ValueLTESecondValueCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', NumberLookupKey, 'Label');
+            'Property1', LookupKey.Number, 'Label');
         let descriptor: ICompareToConditionDescriptor = {
             Type: ConditionType.ValueLTESecondValue,
             ValueHostId: 'Property1',
@@ -2335,7 +2335,7 @@ describe('class StringLengthCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
             Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
@@ -2361,7 +2361,7 @@ describe('class StringLengthCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
             Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
@@ -2385,7 +2385,7 @@ describe('class StringLengthCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
             Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
@@ -2414,7 +2414,7 @@ describe('class StringLengthCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
             Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
@@ -2435,7 +2435,7 @@ describe('class StringLengthCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
             Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
@@ -2458,7 +2458,7 @@ describe('class StringLengthCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
             Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
@@ -2490,7 +2490,7 @@ describe('class StringLengthCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
             Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
@@ -2524,7 +2524,7 @@ describe('class StringLengthCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IStringLengthConditionDescriptor = {
             Type: ConditionType.StringLength,
             ValueHostId: 'Property1',
@@ -2608,7 +2608,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: []
@@ -2620,7 +2620,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2634,7 +2634,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2657,7 +2657,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2671,7 +2671,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2694,7 +2694,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2717,7 +2717,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2731,7 +2731,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2747,7 +2747,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2763,7 +2763,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2778,7 +2778,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
@@ -2922,7 +2922,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: []
@@ -2934,7 +2934,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -2948,7 +2948,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -2971,7 +2971,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -2985,7 +2985,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -3008,7 +3008,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -3032,7 +3032,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -3055,7 +3055,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -3069,7 +3069,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -3085,7 +3085,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -3101,7 +3101,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -3116,7 +3116,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: IEvaluateChildConditionResultsDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
@@ -3263,7 +3263,7 @@ describe('class CountMatchingConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
-            'Property1', StringLookupKey, 'Label');
+            'Property1', LookupKey.String, 'Label');
         let descriptor: ICountMatchingConditionsDescriptor = {
             Type: ConditionType.CountMatches,
             Minimum: minimum,

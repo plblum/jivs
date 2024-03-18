@@ -5,9 +5,9 @@ import {
 import { IValueHostCallbacks, ToIValueHostCallbacks, ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { MockValidationServices, MockValidationManager } from "../Mocks";
-import { StringLookupKey } from "../../src/DataTypes/LookupKeys";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 
 interface IPublicifiedValueHostState extends IValueHostState
@@ -76,7 +76,7 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
  * Id: 'Field1',
  * Label: 'Label1',
  * Type: 'PublicifyValueHostBase',
- * DataType: StringLookupKey,
+ * DataType: LookupKey.String,
  * InitialValue: 'DATA'
  * @returns An object with all of the parts that were setup including 
  * ValidationManager, Services, ValueHosts, the complete Descriptor,
@@ -99,7 +99,7 @@ function SetupValueHost(descriptor?: Partial<IValueHostDescriptor>, initialValue
         Id: 'Field1',
         Label: 'Label1',
         Type: 'PublicifyValueHostBase',
-        DataType: StringLookupKey,
+        DataType: LookupKey.String,
         InitialValue: 'DATA'
     };
     let updatedDescriptor: IValueHostDescriptor = (!descriptor) ?
@@ -134,7 +134,7 @@ describe('constructor and resulting property values', () => {
 
         expect(testItem.GetId()).toBe('Field1');
         expect(testItem.GetLabel()).toBe('Label1');
-        expect(testItem.GetDataType()).toBe(StringLookupKey);
+        expect(testItem.GetDataType()).toBe(LookupKey.String);
         expect(testItem.GetValue()).toBeUndefined();
         expect(testItem.IsChanged).toBe(false);
     });
@@ -155,7 +155,7 @@ describe('constructor and resulting property values', () => {
             Id: 'Field1',
             Label: 'Label1',
             Type: 'PublicifyValueHostBase',
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
         let state: IPublicifiedValueHostState = {

@@ -10,7 +10,6 @@ import { LoggingLevel } from "../../src/Interfaces/Logger";
 import type { ITokenLabelAndValue } from "../../src/Interfaces/InputValidator";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger, ThrowsExceptionConditionType, NeverMatchesConditionType } from "../Mocks";
-import { DateLookupKey, StringLookupKey } from '../../src/DataTypes/LookupKeys';
 import { IValueHostResolver, IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostId } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory } from '../../src/Interfaces/Conditions';
@@ -20,6 +19,7 @@ import { IInputValidateResult, IInputValidator, IInputValidatorDescriptor } from
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 // subclass of InputValidator to expose many of its protected members so they
 // can be individually tested
@@ -72,8 +72,8 @@ function SetupWithField1AndField2(descriptor?: Partial<IInputValidatorDescriptor
 } {
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
-    let vh = vm.AddInputValueHost('Field1', StringLookupKey, 'Label1');
-    let vh2 = vm.AddInputValueHost('Field2', StringLookupKey, 'Label2');
+    let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'Label1');
+    let vh2 = vm.AddInputValueHost('Field2', LookupKey.String, 'Label2');
     const defaultDescriptor: IInputValidatorDescriptor = {
         ConditionDescriptor: <IRequiredTextConditionDescriptor>
             { Type: ConditionType.RequiredText, ValueHostId: 'Field1' },
@@ -548,7 +548,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
             ErrorMessage: null,
             ErrorMessagel10n: null,
         });
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(ConditionType.DataTypeCheck, StringLookupKey, // LookupKey must conform to ValueHost.DataType
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.DataType
         {
             '*': 'Default Error Message'
         });
@@ -570,7 +570,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
         {
             '*': 'Default Error Message'
         });        
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(ConditionType.DataTypeCheck, DateLookupKey, // LookupKey of VH is StringLookupKey
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, // LookupKey of VH is LookupKey.String
         {
             '*': 'Default Error Message-String'
         });
@@ -684,7 +684,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             SummaryMessage: null,
             SummaryMessagel10n: null,
         });
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(ConditionType.DataTypeCheck, StringLookupKey, // LookupKey must conform to ValueHost.DataType
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.DataType
         {
             '*': 'Default Error Message'
         });
@@ -706,7 +706,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
         {
             '*': 'Default Error Message'
         });        
-        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(ConditionType.DataTypeCheck, DateLookupKey, // LookupKey of VH is StringLookupKey
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, // LookupKey of VH is LookupKey.String
         {
             '*': 'Default Error Message-String'
         });
@@ -914,7 +914,7 @@ describe('InputValidator.Validate', () => {
     } {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.AddInputValueHost('Field1', StringLookupKey, 'Field 1');
+        let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'Field 1');
 
         let descriptor: IInputValidatorDescriptor = {
             ConditionDescriptor: null,
@@ -1072,7 +1072,7 @@ describe('InputValidatorFactory.Create', () => {
     test('Returns an InputValidator', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.AddInputValueHost('Field1', StringLookupKey, 'Label1');
+        let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'Label1');
         const descriptor: IInputValidatorDescriptor = {
             ConditionDescriptor: <IRequiredTextConditionDescriptor>{
                 Type: ConditionType.RequiredText,

@@ -1,5 +1,5 @@
 import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
-import { StringLookupKey } from "../src/DataTypes/LookupKeys";
+import { LookupKey } from "../src/DataTypes/LookupKeys";
 import { ComparersResult } from "../src/Interfaces/DataTypes";
 import { UTCAnniversaryConverter, AnniversaryLookupKey } from "./AnniversaryConverter";
 
@@ -7,7 +7,7 @@ describe('UTCAnniversaryConverter', () => {
     test('SupportsValue', () => {
         let testItem = new UTCAnniversaryConverter();
         expect(testItem.SupportsValue(new Date(), AnniversaryLookupKey)).toBe(true);
-        expect(testItem.SupportsValue(new Date(), StringLookupKey)).toBe(false);
+        expect(testItem.SupportsValue(new Date(), LookupKey.String)).toBe(false);
         expect(testItem.SupportsValue(new Date(), null)).toBe(false); // always requires AnniversaryLookupKey            
         expect(testItem.SupportsValue(0, AnniversaryLookupKey)).toBe(false);
         expect(testItem.SupportsValue(null, AnniversaryLookupKey)).toBe(false);

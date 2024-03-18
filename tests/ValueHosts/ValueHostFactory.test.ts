@@ -1,11 +1,11 @@
 import { InputValueHostType, InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
-import { StringLookupKey } from "../../src/DataTypes/LookupKeys";
 import { IValueHostState, IValueHost, IValueHostDescriptor } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { MockValidationManager, MockValidationServices } from "../Mocks";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 /**
  * For testing the Factory's support of IValueHostGenerator implementations
@@ -71,7 +71,7 @@ describe('ValueHostFactory.Create', () => {
             Id: 'Field1',
             Label: 'Label1',
             Type: FactoryTestGeneratorType,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -95,7 +95,7 @@ describe('ValueHostFactory.Create', () => {
             Id: 'Field1',
             Label: 'Label1',
             Type: FactoryTestGeneratorType,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -118,7 +118,7 @@ describe('ValueHostFactory.Create', () => {
             Id: 'Field1',
             Label: 'Label1',
             Type: null!,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -140,7 +140,7 @@ describe('ValueHostFactory.Create', () => {
             Id: 'Field1',
             Label: 'Label1',
             Type: 'Unregistered',
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -165,7 +165,7 @@ describe('ValueHostFactory.CleanupState', () => {
             Id: 'Field1',
             Label: 'Label1',
             Type: FactoryTestGeneratorType,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -192,7 +192,7 @@ describe('ValueHostFactory.CreateState', () => {
             Id: 'Field1',
             Label: 'Label1',
             Type: FactoryTestGeneratorType,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: undefined
         };
 

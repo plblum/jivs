@@ -10,8 +10,7 @@
  */
 
 import { IDataTypeConverter } from "../Interfaces/DataTypes";
-import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, IntegerLookupKey, LocalDateLookupKey, LowercaseStringLookupKey, TimeOfDayHMSLookupKey, TimeOfDayLookupKey, TotalDaysLookupKey } from "./LookupKeys";
-
+import { LookupKey } from "./LookupKeys";
 /**
  * For string values to convert them into lowercase for case insensitive comparisons.
  * DataTypeLookupKey = "CaseInsensitive" or "Lowercase"
@@ -21,8 +20,8 @@ import { CaseInsensitiveStringLookupKey, DateLookupKey, DateTimeLookupKey, Integ
 export class CaseInsensitiveStringConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === CaseInsensitiveStringLookupKey ||
-            dataTypeLookupKey === LowercaseStringLookupKey) &&
+        return (dataTypeLookupKey === LookupKey.CaseInsensitive ||
+            dataTypeLookupKey === LookupKey.Lowercase) &&
             typeof value === 'string';
     }
     public Convert(value: string, dataTypeLookupKey: string): string | number | Date | null | undefined {
@@ -43,7 +42,7 @@ export class CaseInsensitiveStringConverter implements IDataTypeConverter
 export class DateTimeConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === DateTimeLookupKey) &&
+        return (dataTypeLookupKey === LookupKey.DateTime) &&
             value instanceof Date;
     }
     public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
@@ -68,7 +67,7 @@ export class DateTimeConverter implements IDataTypeConverter
 export class UTCDateOnlyConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (!dataTypeLookupKey || (dataTypeLookupKey === DateLookupKey)) &&
+        return (!dataTypeLookupKey || (dataTypeLookupKey === LookupKey.Date)) &&
             value instanceof Date;
     }
     public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
@@ -87,7 +86,7 @@ export class UTCDateOnlyConverter implements IDataTypeConverter
 export class LocalDateOnlyConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === LocalDateLookupKey) &&
+        return (dataTypeLookupKey === LookupKey.LocalDate) &&
             value instanceof Date;
     }
     public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
@@ -107,7 +106,7 @@ export class LocalDateOnlyConverter implements IDataTypeConverter
 export class TimeOfDayOnlyConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === TimeOfDayLookupKey) &&
+        return (dataTypeLookupKey === LookupKey.TimeOfDay) &&
             value instanceof Date;
     }
     public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
@@ -125,7 +124,7 @@ export class TimeOfDayOnlyConverter implements IDataTypeConverter
 export class TimeOfDayHMSOnlyConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === TimeOfDayHMSLookupKey) &&
+        return (dataTypeLookupKey === LookupKey.TimeOfDayHMS) &&
             value instanceof Date;
     }
     public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
@@ -143,7 +142,7 @@ export class TimeOfDayHMSOnlyConverter implements IDataTypeConverter
 export class IntegerConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === IntegerLookupKey) &&
+        return (dataTypeLookupKey === LookupKey.Integer) &&
             typeof value === 'number';
     }
     public Convert(value: number, dataTypeLookupKey: string): string | number | Date | null | undefined {
@@ -160,7 +159,7 @@ export class IntegerConverter implements IDataTypeConverter
 export class TotalDaysConverter implements IDataTypeConverter
 {
     public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === TotalDaysLookupKey) &&
+        return (dataTypeLookupKey === LookupKey.TotalDays) &&
             value instanceof Date;
     }
     public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {

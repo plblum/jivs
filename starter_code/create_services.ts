@@ -20,7 +20,7 @@ import {
     BooleanLocalizedFormatter, CurrencyLocalizedFormatter, PercentageLocalizedFormatter, Percentage100LocalizedFormatter
 } from "../src/DataTypes/DataTypeLocalizedFormatters";
 import { CultureIdFallback, DataTypeServices } from "../src/DataTypes/DataTypeServices";
-import { AbbrevDateLookupKey, BooleanLookupKey, DateLookupKey, IntegerLookupKey, NumberLookupKey, YesNoBooleanLookupKey } from "../src/DataTypes/LookupKeys";
+import { LookupKey } from "../src/DataTypes/LookupKeys";
 import { LoggingLevel } from "../src/Interfaces/Logger";
 import { ITextLocalizerService } from "../src/Interfaces/TextLocalizerService";
 import { ConsoleLogger } from "../src/Services/ConsoleLogger";
@@ -230,9 +230,9 @@ export function RegisterDataTypeLocalizedFormatters(dts: DataTypeServices): void
     dts.RegisterLocalizedFormatter(new Percentage100LocalizedFormatter());  // options?: Intl.NumberFormatOptions
     // NOTE: BooleanLocalizedFormatter has its strings localized in ValidationServices.TextLocalizerService
     // connected to the TrueLabell10n and FalseLabell10n properties.
-    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(BooleanLookupKey)); // "true" and "false"
+    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(LookupKey.Boolean)); // "true" and "false"
    // Example of providing another set of labels for true/false by supplying a different lookup key
-    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(YesNoBooleanLookupKey, 'yes', 'no')); 
+    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(LookupKey.YesNoBoolean, 'yes', 'no')); 
  
 }
 
@@ -312,44 +312,44 @@ export function CreateTextLocalizerService(): ITextLocalizerService
     service.RegisterSummaryMessage(ConditionType.DataTypeCheck, null, {
         '*': '{Label} has an invalid value.'
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, DateLookupKey,  {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, DateLookupKey,  {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
         '*': '{Label} has an invalid value. Enter a date.',
         'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, NumberLookupKey, {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
         '*': 'Invalid value. Enter a number.',
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, NumberLookupKey, {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
         '*': '{Label} has an invalid value. Enter a number.',
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, IntegerLookupKey, {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
         '*': 'Invalid value. Enter an integer.',
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, IntegerLookupKey, {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
         '*': '{Label} has an invalid value. Enter an integer.',
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, DateLookupKey, {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, DateLookupKey, {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
         '*': '{Label} has an invalid value. Enter a date.',
         'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, AbbrevDateLookupKey, {
+    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
         'en-GB': 'Invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, AbbrevDateLookupKey, {
+    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
         '*': '{Label} has an invalid value. Enter a date.',
         'en-US': '{Label} has an invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'

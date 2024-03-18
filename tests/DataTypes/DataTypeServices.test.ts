@@ -3,12 +3,12 @@ import { UTCDateOnlyConverter } from '../../src/DataTypes/DataTypeConverters';
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, StringDataTypeIdentifier } from '../../src/DataTypes/DataTypeIdentifiers';
 import { NumberDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
 import { CultureIdFallback, DataTypeServices } from "../../src/DataTypes/DataTypeServices";
-import { StringLookupKey, NumberLookupKey, BooleanLookupKey, DateLookupKey } from "../../src/DataTypes/LookupKeys";
 import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier, IDataTypeLocalizedFormatter, IDataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { RegisterDataTypeIdentifiers, RegisterDataTypeLocalizedFormatters } from "../../starter_code/create_services";
 import { BooleanDataTypeComparer } from '../../src/DataTypes/DataTypeComparers';
 import { BooleanLocalizedFormatter, NumberLocalizedFormatter } from '../../src/DataTypes/DataTypeLocalizedFormatters';
 import { MockValidationManager, MockValidationServices } from '../Mocks';
+import { LookupKey } from '../../src/DataTypes/LookupKeys';
 
 
 describe('DataTypeServices constructor and properties', () => {
@@ -257,9 +257,9 @@ describe('DataTypeServices.Format', () => {
     });
     test('Lookup Key supplied not compatible with native data type error', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en', true);
-        expect(testItem.Format(10, DateLookupKey).ErrorMessage).not.toBeUndefined();
-        expect(testItem.Format(10, BooleanLookupKey).ErrorMessage).not.toBeUndefined();
-        expect(testItem.Format('10', NumberLookupKey).ErrorMessage).not.toBeUndefined();
+        expect(testItem.Format(10, LookupKey.Date).ErrorMessage).not.toBeUndefined();
+        expect(testItem.Format(10, LookupKey.Boolean).ErrorMessage).not.toBeUndefined();
+        expect(testItem.Format('10', LookupKey.Number).ErrorMessage).not.toBeUndefined();
     });         
 });
 // RegisterDataTypeComparer(comparer: IDataTypeComparer): void
@@ -531,10 +531,10 @@ describe('DataTypeServices utility methods', () => {
     test('IdentifyLookupKey', () => {
         let testItem = new DataTypeServices();
         RegisterDataTypeIdentifiers(testItem);
-        expect(testItem.IdentifyLookupKey(0)).toBe(NumberLookupKey);
-        expect(testItem.IdentifyLookupKey('abc')).toBe(StringLookupKey);
-        expect(testItem.IdentifyLookupKey(false)).toBe(BooleanLookupKey);
-        expect(testItem.IdentifyLookupKey(new Date())).toBe(DateLookupKey);
+        expect(testItem.IdentifyLookupKey(0)).toBe(LookupKey.Number);
+        expect(testItem.IdentifyLookupKey('abc')).toBe(LookupKey.String);
+        expect(testItem.IdentifyLookupKey(false)).toBe(LookupKey.Boolean);
+        expect(testItem.IdentifyLookupKey(new Date())).toBe(LookupKey.Date);
         expect(testItem.IdentifyLookupKey({})).toBeNull();
         expect(testItem.IdentifyLookupKey([])).toBeNull();
     });
@@ -553,16 +553,16 @@ describe('DataTypeServices utility methods', () => {
         testItem.RegisterDataTypeIdentifier(new TestIdentifier());
         expect(testItem.IdentifyLookupKey(new TestDataType())).toBe('TEST');
         // confirm we didn't clobber the built in ones
-        expect(testItem.IdentifyLookupKey(0)).toBe(NumberLookupKey);
-        expect(testItem.IdentifyLookupKey('abc')).toBe(StringLookupKey);
-        expect(testItem.IdentifyLookupKey(false)).toBe(BooleanLookupKey);
-        expect(testItem.IdentifyLookupKey(new Date())).toBe(DateLookupKey);        
+        expect(testItem.IdentifyLookupKey(0)).toBe(LookupKey.Number);
+        expect(testItem.IdentifyLookupKey('abc')).toBe(LookupKey.String);
+        expect(testItem.IdentifyLookupKey(false)).toBe(LookupKey.Boolean);
+        expect(testItem.IdentifyLookupKey(new Date())).toBe(LookupKey.Date);        
     });
     test('RegisterDataTypeIdentifier replaces existing item', () => {
         class TestDataType {}
         class TestIdentifier implements IDataTypeIdentifier
         {
-            DataTypeLookupKey: string = DateLookupKey;  // will replace Dates...
+            DataTypeLookupKey: string = LookupKey.Date;  // will replace Dates...
             SupportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }
@@ -571,12 +571,12 @@ describe('DataTypeServices utility methods', () => {
         let testItem = new DataTypeServices();
         RegisterDataTypeIdentifiers(testItem);
         testItem.RegisterDataTypeIdentifier(new TestIdentifier());
-        expect(testItem.IdentifyLookupKey(new TestDataType())).toBe(DateLookupKey);
+        expect(testItem.IdentifyLookupKey(new TestDataType())).toBe(LookupKey.Date);
         expect(testItem.IdentifyLookupKey(new Date())).toBeNull();
         // confirm we didn't clobber the built in ones
-        expect(testItem.IdentifyLookupKey(0)).toBe(NumberLookupKey);
-        expect(testItem.IdentifyLookupKey('abc')).toBe(StringLookupKey);
-        expect(testItem.IdentifyLookupKey(false)).toBe(BooleanLookupKey);
+        expect(testItem.IdentifyLookupKey(0)).toBe(LookupKey.Number);
+        expect(testItem.IdentifyLookupKey('abc')).toBe(LookupKey.String);
+        expect(testItem.IdentifyLookupKey(false)).toBe(LookupKey.Boolean);
 
     });
     test('RegisterDataTypeConverter adds new item', () => {
@@ -692,10 +692,10 @@ describe('Other functions in DataTypeServices', () => {
     test('UnregisterLocalizedFormatter', () => {
         let testItem = new DataTypeServices();
         testItem.RegisterLocalizedFormatter(new NumberLocalizedFormatter());
-        testItem.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(BooleanLookupKey));
-        expect(testItem.UnregisterLocalizedFormatter(NumberLookupKey, 'en')).toBe(true);
-        expect(testItem.UnregisterLocalizedFormatter(NumberLookupKey, 'en')).toBe(false);
-        expect(testItem.UnregisterLocalizedFormatter(BooleanLookupKey, 'en')).toBe(true);
-        expect(testItem.UnregisterLocalizedFormatter(BooleanLookupKey, 'en')).toBe(false);
+        testItem.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(LookupKey.Boolean));
+        expect(testItem.UnregisterLocalizedFormatter(LookupKey.Number, 'en')).toBe(true);
+        expect(testItem.UnregisterLocalizedFormatter(LookupKey.Number, 'en')).toBe(false);
+        expect(testItem.UnregisterLocalizedFormatter(LookupKey.Boolean, 'en')).toBe(true);
+        expect(testItem.UnregisterLocalizedFormatter(LookupKey.Boolean, 'en')).toBe(false);
     });
 });
