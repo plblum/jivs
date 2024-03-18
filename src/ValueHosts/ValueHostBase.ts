@@ -58,7 +58,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
      * for which they will transfer a value, via ValueHostsManager.GetValueHost(this id)
      */
     public GetId(): ValueHostId {
-        return this._descriptor.Id;
+        return this.Descriptor.Id;
     }
 
     /**
@@ -67,7 +67,10 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
      * Localization should occur when setting up the ValueHostDescriptor.
      */
     public GetLabel(): string {
-        return this._descriptor.Label;
+        let label = this.Descriptor.Label ?? '';
+        if (this.Descriptor.Labell10n)
+            return this.Services.TextLocalizerService.Localize(this.Services.ActiveCultureId, this.Descriptor.Labell10n, label) ?? '';
+        return label;
     }
 
     /**

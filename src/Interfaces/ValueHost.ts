@@ -247,7 +247,15 @@ export interface IValueHostDescriptor {
      * The UI-ready label for this value, to be shown in error messages
      * that have the {Label} token.
      */
-    Label: string;
+    Label?: string;
+
+    /**
+     * Localization key for Label. Its value will be matched to an entry
+     * made to ValidationServices.TextLocalizerService, specific to the active culture.
+     * If setup and no entry was found in TextLocalizerService,
+     * the value from the ErrorMessage property is used.
+     */
+    Labell10n?: string | null | undefined;
 
     /**
      * Provides an initial value when constructing the instance.

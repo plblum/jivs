@@ -520,7 +520,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
             ErrorMessage: null,
             ErrorMessagel10n: null,
         });
-        config.services.TextLocalizerService.RegisterErrorMessage(RequiredTextConditionType, null, {
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(RequiredTextConditionType, null, {
             '*': 'Default Error Message'
         });
         config.services.ActiveCultureId = 'en';
@@ -535,7 +535,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
             ErrorMessagel10n: null,
         });
 
-        config.services.TextLocalizerService.RegisterErrorMessage(RequiredTextConditionType, null, {
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(RequiredTextConditionType, null, {
             '*': 'Default Error Message'
         });
         config.services.ActiveCultureId = 'en';
@@ -552,7 +552,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
             ErrorMessage: null,
             ErrorMessagel10n: null,
         });
-        config.services.TextLocalizerService.RegisterErrorMessage(DataTypeCheckConditionType, StringLookupKey, // LookupKey must conform to ValueHost.DataType
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(DataTypeCheckConditionType, StringLookupKey, // LookupKey must conform to ValueHost.DataType
         {
             '*': 'Default Error Message'
         });
@@ -570,11 +570,11 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
             ErrorMessage: null,
             ErrorMessagel10n: null,
         });
-        config.services.TextLocalizerService.RegisterErrorMessage(DataTypeCheckConditionType, null,
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(DataTypeCheckConditionType, null,
         {
             '*': 'Default Error Message'
         });        
-        config.services.TextLocalizerService.RegisterErrorMessage(DataTypeCheckConditionType, DateLookupKey, // LookupKey of VH is StringLookupKey
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterErrorMessage(DataTypeCheckConditionType, DateLookupKey, // LookupKey of VH is StringLookupKey
         {
             '*': 'Default Error Message-String'
         });
@@ -656,7 +656,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             SummaryMessage: null,
             SummaryMessagel10n: null,
         });
-        config.services.TextLocalizerService.RegisterSummaryMessage(RequiredTextConditionType, null, {
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(RequiredTextConditionType, null, {
             '*': 'Default Error Message'
         });
         config.services.ActiveCultureId = 'en';
@@ -671,7 +671,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             SummaryMessagel10n: null,
         });
 
-        config.services.TextLocalizerService.RegisterSummaryMessage(RequiredTextConditionType, null, {
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(RequiredTextConditionType, null, {
             '*': 'Default Error Message'
         });
         config.services.ActiveCultureId = 'en';
@@ -688,7 +688,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             SummaryMessage: null,
             SummaryMessagel10n: null,
         });
-        config.services.TextLocalizerService.RegisterSummaryMessage(DataTypeCheckConditionType, StringLookupKey, // LookupKey must conform to ValueHost.DataType
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(DataTypeCheckConditionType, StringLookupKey, // LookupKey must conform to ValueHost.DataType
         {
             '*': 'Default Error Message'
         });
@@ -706,11 +706,11 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             SummaryMessage: null,
             SummaryMessagel10n: null,
         });
-        config.services.TextLocalizerService.RegisterSummaryMessage(DataTypeCheckConditionType, null,
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(DataTypeCheckConditionType, null,
         {
             '*': 'Default Error Message'
         });        
-        config.services.TextLocalizerService.RegisterSummaryMessage(DataTypeCheckConditionType, DateLookupKey, // LookupKey of VH is StringLookupKey
+        (config.services.TextLocalizerService as TextLocalizerService).RegisterSummaryMessage(DataTypeCheckConditionType, DateLookupKey, // LookupKey of VH is StringLookupKey
         {
             '*': 'Default Error Message-String'
         });

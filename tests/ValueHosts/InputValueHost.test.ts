@@ -29,6 +29,7 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { DataTypeServices } from "../../src/DataTypes/DataTypeServices";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
+import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -205,7 +206,19 @@ describe('constructor and resulting property values', () => {
         expect(testItem.GetConversionErrorMessage()).toBeNull();
         expect(testItem.IsValid).toBe(true);
     });
+    test('constructor with Descriptor.labell10n setup. GetLabel results in localized lookup', () => {
+        let config = SetupInputValueHost({
+            Labell10n: 'Label1-key'
+        });
+        let tls = config.services.TextLocalizerService as TextLocalizerService;
+        tls.Register('Label1-key', {
+            '*': '*-Label1'
+        });
+        let testItem = config.valueHost;
 
+        expect(testItem.GetLabel()).toBe('*-Label1');
+
+    });
 });
 describe('InputValueHost.GetValue', () => {
     test('Set State.Value to undefined; GetValue is undefined', () => {
