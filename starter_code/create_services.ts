@@ -4,9 +4,9 @@ import {
     RegExpCondition, RangeConditionDescriptor, RangeCondition, CompareToConditionDescriptor,
     EqualToCondition, NotEqualToCondition,  GreaterThanCondition,
     LessThanCondition, GreaterThanOrEqualToCondition, 
-    LessThanOrEqualToCondition, StringLengthConditionDescriptor, StringLengthCondition, AndConditionsDescriptor,
-    AndConditions, OrConditionsDescriptor,  OrConditions, CountMatchingConditionsDescriptor,
-    CountMatchingConditions
+    LessThanOrEqualToCondition, StringLengthConditionDescriptor, StringLengthCondition, AllMatchConditionDescriptor,
+    AllMatchCondition, AnyMatchConditionDescriptor,  AnyMatchCondition, CountMatchesConditionDescriptor,
+    CountMatchesCondition
 } from "../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../src/Conditions/ConditionFactory";
 import { ConditionType } from "../src/Conditions/ConditionTypes";
@@ -104,17 +104,17 @@ export function RegisterConditions(cf: ConditionFactory): void
         (ConditionType.LessThanOrEqualTo, (descriptor) => new LessThanOrEqualToCondition(descriptor));
     cf.Register<StringLengthConditionDescriptor>
         (ConditionType.StringLength, (descriptor) => new StringLengthCondition(descriptor));
-    cf.Register<AndConditionsDescriptor>
-        (ConditionType.And, (descriptor) => new AndConditions(descriptor));
-    cf.Register<OrConditionsDescriptor>
-        (ConditionType.Or, (descriptor) => new OrConditions(descriptor));
-    cf.Register<CountMatchingConditionsDescriptor>
-        (ConditionType.CountMatches, (descriptor) => new CountMatchingConditions(descriptor));
+    cf.Register<AllMatchConditionDescriptor>
+        (ConditionType.And, (descriptor) => new AllMatchCondition(descriptor));
+    cf.Register<AnyMatchConditionDescriptor>
+        (ConditionType.Or, (descriptor) => new AnyMatchCondition(descriptor));
+    cf.Register<CountMatchesConditionDescriptor>
+        (ConditionType.CountMatches, (descriptor) => new CountMatchesCondition(descriptor));
     // aliases for users who don't deal well with boolean logic can relate
-    cf.Register<AndConditionsDescriptor>
-        (ConditionType.Every, (descriptor) => new AndConditions(descriptor));
-    cf.Register<OrConditionsDescriptor>
-        (ConditionType.Any, (descriptor) => new OrConditions(descriptor));
+    cf.Register<AllMatchConditionDescriptor>
+        (ConditionType.All, (descriptor) => new AllMatchCondition(descriptor));
+    cf.Register<AnyMatchConditionDescriptor>
+        (ConditionType.Any, (descriptor) => new AnyMatchCondition(descriptor));
 }
 
 /**

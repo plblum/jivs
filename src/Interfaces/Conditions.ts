@@ -50,7 +50,7 @@ export interface ICondition {
      * This parameter is used as an optimization, both to avoid that lookup and to avoid
      * the user typing in a ValueHostId when creating the Condition instance.
      * InputValidator.Validate knows to pass the ValueHostId that hosts the InputValidator.
-     * Expect this to be null in other cases, such as when Condition is a child of the AndConditions
+     * Expect this to be null in other cases, such as when Condition is a child of the AllMatchCondition
      * and its peers. In otherwords, support both ways.
      * @param valueHostResolver - Its primary use is to lookup ValueHosts to get their data.
      * @returns Any of these values:
@@ -181,7 +181,7 @@ export enum ConditionCategory {
     Contents,
     /**
      * Evaluation is based on the evaluation results of Child conditions: 
-     * AndConditions/EveryCondition, OrConditions/AnyCondition, CountMatchingConditions
+     * AllMatchCondition/EveryCondition, AnyMatchCondition/AnyCondition, CountMatchesCondition
      */
     Children,
     /**

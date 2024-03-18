@@ -75,28 +75,29 @@ export enum ConditionType
      */
     StringLength = 'StringLength',
 
+
     /**
-     * Associated with AndConditions class.
+     * Associated with AllMatchCondition class.
+     */
+    All = 'All',
+
+    /**
+     * Associated with AllMatchCondition class. Alias to 'All'
      */
     And = 'And',
 
     /**
-     * Associated with AndConditions class. Just a synonym to 'and'
-     */
-    Every = 'All',
-
-    /**
-     * Associated with OrConditions class.
-     */
-    Or = 'Or',
-
-    /**
-     * Associated with OrConditions class. Just a synonym to 'or'
+     * Associated with AnyMatchCondition class.
      */
     Any = 'Any', 
+
+    /**
+     * Associated with AnyMatchCondition class. Always to 'Any'
+     */
+    Or = 'Or',
     
     /**
-     * Associated with CountMatchingConditions class.
+     * Associated with CountMatchesCondition class.
      */
     CountMatches = "CountMatches",
 }

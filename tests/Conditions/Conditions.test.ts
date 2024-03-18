@@ -8,8 +8,8 @@ import {
     GreaterThanOrEqualToCondition,  LessThanCondition, 
     LessThanOrEqualToCondition, StringLengthConditionDescriptor,  StringLengthCondition,
     RegExpConditionDescriptor, RegExpCondition, 
-    AndConditions, DataTypeCheckConditionDescriptor, DataTypeCheckCondition,
-    OrConditions, CountMatchingConditions, CountMatchingConditionsDescriptor, AndConditionsDescriptor, OrConditionsDescriptor
+    AllMatchCondition, DataTypeCheckConditionDescriptor, DataTypeCheckCondition,
+    AnyMatchCondition, CountMatchesCondition, CountMatchesConditionDescriptor, AllMatchConditionDescriptor, AnyMatchConditionDescriptor
 } from "../../src/Conditions/ConcreteConditions";
 
 import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
@@ -2599,20 +2599,20 @@ describe('class StringLengthCondition', () => {
     });            
 });
 
-describe('class AndConditions', () => {
+describe('class AllMatchCondition', () => {
     test('DefaultConditionType', () => {
-        expect(AndConditions.DefaultConditionType).toBe(ConditionType.And);
+        expect(AllMatchCondition.DefaultConditionType).toBe(ConditionType.And);
     });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: []
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('With 1 child condition that evaluates as Match, evaluates as Match', () => {
@@ -2620,13 +2620,13 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
             }]
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('With 4 child conditions that evaluate as Match, evaluates as Match', () => {
@@ -2634,7 +2634,7 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
@@ -2649,7 +2649,7 @@ describe('class AndConditions', () => {
                 Type: AlwaysMatchesConditionType
             }]
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('With 1 child condition that evaluates as NoMatch, evaluates as NoMatch', () => {
@@ -2657,13 +2657,13 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: NeverMatchesConditionType
             }]
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('With 4 child conditions where the last evaluates as NoMatch, evaluates as NoMatch', () => {
@@ -2671,7 +2671,7 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
@@ -2686,7 +2686,7 @@ describe('class AndConditions', () => {
                 Type: NeverMatchesConditionType
             }]
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('With 4 child conditions where the first evaluates as NoMatch, evaluates as NoMatch', () => {
@@ -2694,7 +2694,7 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: NeverMatchesConditionType
@@ -2709,7 +2709,7 @@ describe('class AndConditions', () => {
                 Type: AlwaysMatchesConditionType
             }]
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('With 1 child condition that evaluates as Undefined and TreatUndefinedAs not supplied, evaluates as Undetermined', () => {
@@ -2717,13 +2717,13 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType
             }]
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('With 1 child condition that evaluates as Undefined and TreatUndefinedAs=Match, evaluates as Match', () => {
@@ -2731,7 +2731,7 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
@@ -2739,7 +2739,7 @@ describe('class AndConditions', () => {
             }],
             TreatUndeterminedAs: ConditionEvaluateResult.Match
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('With 1 child condition that evaluates as Undefined and TreatUndefinedAs=NoMatch, evaluates as NoMatch', () => {
@@ -2747,7 +2747,7 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
@@ -2755,7 +2755,7 @@ describe('class AndConditions', () => {
             }],
             TreatUndeterminedAs: ConditionEvaluateResult.NoMatch
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('With 1 child condition that evaluates as Undefined and TreatUndefinedAs=Undetermined, evaluates as Undetermined', () => {
@@ -2763,14 +2763,14 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
             }],
             TreatUndeterminedAs: ConditionEvaluateResult.Undetermined
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('With 4 child conditions where the first evaluates as Undetermined but TreatUndeterminedAs=Match, evaluates as Match', () => {
@@ -2778,7 +2778,7 @@ describe('class AndConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType
@@ -2794,35 +2794,35 @@ describe('class AndConditions', () => {
             }],
             TreatUndeterminedAs: ConditionEvaluateResult.Match
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('Category is Children', () => {
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: []
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Category).toBe(ConditionCategory.Children);
     });
     test('Category is overridden', () => {
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [],
             Category: ConditionCategory.Contents
         };
-        let testItem = new AndConditions(descriptor);
+        let testItem = new AllMatchCondition(descriptor);
         expect(testItem.Category).toBe(ConditionCategory.Contents);
     });
     test('GatherValueHostIds with no children has none', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: []
         };
-        let condition = new AndConditions(descriptor);
+        let condition = new AllMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(0);
@@ -2831,7 +2831,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
@@ -2848,7 +2848,7 @@ describe('class AndConditions', () => {
                 },                
             ]
         };
-        let condition = new AndConditions(descriptor);
+        let condition = new AllMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(3);
@@ -2860,7 +2860,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
@@ -2877,7 +2877,7 @@ describe('class AndConditions', () => {
                 },                
             ]
         };
-        let condition = new AndConditions(descriptor);
+        let condition = new AllMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(2);
@@ -2888,7 +2888,7 @@ describe('class AndConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: AndConditionsDescriptor = {
+        let descriptor: AllMatchConditionDescriptor = {
             Type: ConditionType.And,
             ConditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
@@ -2905,7 +2905,7 @@ describe('class AndConditions', () => {
                 },                
             ]
         };
-        let condition = new AndConditions(descriptor);
+        let condition = new AllMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(2);
@@ -2913,20 +2913,20 @@ describe('class AndConditions', () => {
         expect(testItem.has('Field3')).toBe(true);
     });        
 });
-describe('class OrConditions', () => {
+describe('class AnyMatchCondition', () => {
     test('DefaultConditionType', () => {
-        expect(OrConditions.DefaultConditionType).toBe(ConditionType.Or);
+        expect(AnyMatchCondition.DefaultConditionType).toBe(ConditionType.Or);
     });
     test('With 0 child conditions, evaluates as Undetermined', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: []
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('With 1 child condition that evaluates as Match, evaluates as Match', () => {
@@ -2934,13 +2934,13 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
             }]
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('With 4 child conditions that evaluate as Match, evaluates as Match', () => {
@@ -2948,7 +2948,7 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
@@ -2963,7 +2963,7 @@ describe('class OrConditions', () => {
                 Type: AlwaysMatchesConditionType
             }]
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('With 1 child condition that evaluates as NoMatch, evaluates as NoMatch', () => {
@@ -2971,13 +2971,13 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: NeverMatchesConditionType
             }]
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('With 4 child conditions where the last evaluates as NoMatch, evaluates as Match', () => {
@@ -2985,7 +2985,7 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
@@ -3000,7 +3000,7 @@ describe('class OrConditions', () => {
                 Type: NeverMatchesConditionType
             }]
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('With 4 child conditions where the first evaluates as Match and the rest NoMatch, evaluates as Match', () => {
@@ -3008,7 +3008,7 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: AlwaysMatchesConditionType
@@ -3023,7 +3023,7 @@ describe('class OrConditions', () => {
                 Type: NeverMatchesConditionType
             }]
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
 
@@ -3032,7 +3032,7 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: NeverMatchesConditionType
@@ -3047,7 +3047,7 @@ describe('class OrConditions', () => {
                 Type: NeverMatchesConditionType
             }]
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('With 1 child condition that evaluates as Undefined Or TreatUndefinedAs not supplied, evaluates as Undetermined', () => {
@@ -3055,13 +3055,13 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType
             }]
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('With 1 child condition that evaluates as Undefined Or TreatUndefinedAs=Match, evaluates as Match', () => {
@@ -3069,7 +3069,7 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
@@ -3077,7 +3077,7 @@ describe('class OrConditions', () => {
             }],
             TreatUndeterminedAs: ConditionEvaluateResult.Match
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('With 1 child condition that evaluates as Undefined Or TreatUndefinedAs=NoMatch, evaluates as NoMatch', () => {
@@ -3085,7 +3085,7 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
@@ -3093,7 +3093,7 @@ describe('class OrConditions', () => {
             }],
             TreatUndeterminedAs: ConditionEvaluateResult.NoMatch
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('With 1 child condition that evaluates as Undefined Or TreatUndefinedAs=Undetermined, evaluates as Undetermined', () => {
@@ -3101,14 +3101,14 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType,
             }],
             TreatUndeterminedAs: ConditionEvaluateResult.Undetermined
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('With 4 child conditions where the first evaluates as Undetermined but TreatUndeterminedAs=Match, evaluates as Match', () => {
@@ -3116,7 +3116,7 @@ describe('class OrConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [{
                 Type: IsUndeterminedConditionType
@@ -3132,35 +3132,35 @@ describe('class OrConditions', () => {
             }],
             TreatUndeterminedAs: ConditionEvaluateResult.Match
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('Category is Children', () => {
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: []
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Category).toBe(ConditionCategory.Children);
     });
     test('Category is overridden', () => {
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [],
             Category: ConditionCategory.Contents
         };
-        let testItem = new OrConditions(descriptor);
+        let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.Category).toBe(ConditionCategory.Contents);
     });
     test('GatherValueHostIds with no children has none', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: []
         };
-        let condition = new OrConditions(descriptor);
+        let condition = new AnyMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(0);
@@ -3169,7 +3169,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
@@ -3186,7 +3186,7 @@ describe('class OrConditions', () => {
                 },                
             ]
         };
-        let condition = new OrConditions(descriptor);
+        let condition = new AnyMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(3);
@@ -3198,7 +3198,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
@@ -3215,7 +3215,7 @@ describe('class OrConditions', () => {
                 },                
             ]
         };
-        let condition = new OrConditions(descriptor);
+        let condition = new AnyMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
@@ -3226,7 +3226,7 @@ describe('class OrConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: OrConditionsDescriptor = {
+        let descriptor: AnyMatchConditionDescriptor = {
             Type: ConditionType.Or,
             ConditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
@@ -3243,7 +3243,7 @@ describe('class OrConditions', () => {
                 },                
             ]
         };
-        let condition = new OrConditions(descriptor);
+        let condition = new AnyMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(2);
@@ -3252,9 +3252,9 @@ describe('class OrConditions', () => {
     });            
 });
 
-describe('class CountMatchingConditions', () => {
+describe('class CountMatchesCondition', () => {
     test('DefaultConditionType', () => {
-        expect(CountMatchingConditions.DefaultConditionType).toBe(ConditionType.CountMatches);
+        expect(CountMatchesCondition.DefaultConditionType).toBe(ConditionType.CountMatches);
     });
     function TestCount(conditionTypes: Array<string>, minimum: number | undefined,
         maximum: number | undefined, expectedResult: ConditionEvaluateResult,
@@ -3263,7 +3263,7 @@ describe('class CountMatchingConditions', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.AddInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let descriptor: CountMatchingConditionsDescriptor = {
+        let descriptor: CountMatchesConditionDescriptor = {
             Type: ConditionType.CountMatches,
             Minimum: minimum,
             Maximum: maximum,
@@ -3275,7 +3275,7 @@ describe('class CountMatchingConditions', () => {
             descriptor.ConditionDescriptors.push({
                 Type: conType
             })
-        let testItem = new CountMatchingConditions(descriptor);
+        let testItem = new CountMatchesCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(expectedResult);
     }
     test('With 0 child conditions, evaluates as Undetermined', () => {
@@ -3342,31 +3342,31 @@ describe('class CountMatchingConditions', () => {
             ConditionEvaluateResult.NoMatch);
     });
     test('Category is Children', () => {
-        let descriptor: CountMatchingConditionsDescriptor = {
+        let descriptor: CountMatchesConditionDescriptor = {
             Type: ConditionType.CountMatches,
             ConditionDescriptors: []
         };
-        let testItem = new CountMatchingConditions(descriptor);
+        let testItem = new CountMatchesCondition(descriptor);
         expect(testItem.Category).toBe(ConditionCategory.Children);
     });
     test('Category is overridden', () => {
-        let descriptor: CountMatchingConditionsDescriptor = {
+        let descriptor: CountMatchesConditionDescriptor = {
             Type: ConditionType.CountMatches,
             ConditionDescriptors: [],
             Category: ConditionCategory.Contents
         };
-        let testItem = new CountMatchingConditions(descriptor);
+        let testItem = new CountMatchesCondition(descriptor);
         expect(testItem.Category).toBe(ConditionCategory.Contents);
     });
     test('GatherValueHostIds with no children has none', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: CountMatchingConditionsDescriptor = {
+        let descriptor: CountMatchesConditionDescriptor = {
             Type: ConditionType.CountMatches,
             ConditionDescriptors: []
         };
-        let condition = new CountMatchingConditions(descriptor);
+        let condition = new CountMatchesCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(0);
@@ -3375,7 +3375,7 @@ describe('class CountMatchingConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
   
-        let descriptor: CountMatchingConditionsDescriptor = {
+        let descriptor: CountMatchesConditionDescriptor = {
             Type: ConditionType.CountMatches,
             ConditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
@@ -3392,7 +3392,7 @@ describe('class CountMatchingConditions', () => {
                 },                
             ]
         };
-        let condition = new CountMatchingConditions(descriptor);
+        let condition = new CountMatchesCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(3);
@@ -3404,7 +3404,7 @@ describe('class CountMatchingConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: CountMatchingConditionsDescriptor = {
+        let descriptor: CountMatchesConditionDescriptor = {
             Type: ConditionType.CountMatches,
             ConditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
@@ -3421,7 +3421,7 @@ describe('class CountMatchingConditions', () => {
                 },                
             ]
         };
-        let condition = new CountMatchingConditions(descriptor);
+        let condition = new CountMatchesCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(2);
@@ -3432,7 +3432,7 @@ describe('class CountMatchingConditions', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
-        let descriptor: CountMatchingConditionsDescriptor = {
+        let descriptor: CountMatchesConditionDescriptor = {
             Type: ConditionType.CountMatches,
             ConditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
@@ -3449,7 +3449,7 @@ describe('class CountMatchingConditions', () => {
                 },                
             ]
         };
-        let condition = new CountMatchingConditions(descriptor);
+        let condition = new CountMatchesCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
         expect(testItem.size).toBe(2);

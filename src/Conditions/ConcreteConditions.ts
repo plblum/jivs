@@ -592,7 +592,7 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
     }
 }
 
-export interface AndConditionsDescriptor extends EvaluateChildConditionResultsDescriptor
+export interface AllMatchConditionDescriptor extends EvaluateChildConditionResultsDescriptor
 {
     
 }
@@ -601,7 +601,7 @@ export interface AndConditionsDescriptor extends EvaluateChildConditionResultsDe
  * All Children must evaluate as Match for a result of Match.
  * If any are still Undetermined after TreatUndeterminedAs is applied, this results as Undetermined.
  */
-export class AndConditions extends EvaluateChildConditionResultsBase<AndConditionsDescriptor>
+export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatchConditionDescriptor>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.And; }
     
@@ -617,7 +617,7 @@ export class AndConditions extends EvaluateChildConditionResultsBase<AndConditio
     }
 }
 
-export interface OrConditionsDescriptor extends EvaluateChildConditionResultsDescriptor
+export interface AnyMatchConditionDescriptor extends EvaluateChildConditionResultsDescriptor
 {
     
 }
@@ -625,7 +625,7 @@ export interface OrConditionsDescriptor extends EvaluateChildConditionResultsDes
  * At least one Child Condition must evaluate as Match for a result of Match.
  * If any are still Undetermined after TreatUndeterminedAs is applied, this results as Undetermined.
  */
-export class OrConditions extends EvaluateChildConditionResultsBase<OrConditionsDescriptor>
+export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatchConditionDescriptor>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Or; }
 
@@ -644,9 +644,9 @@ export class OrConditions extends EvaluateChildConditionResultsBase<OrConditions
 }
 
 /**
- * ConditionDescriptor for CountMatchingConditions.
+ * ConditionDescriptor for CountMatchesCondition.
  */
-export interface CountMatchingConditionsDescriptor extends EvaluateChildConditionResultsDescriptor {
+export interface CountMatchesConditionDescriptor extends EvaluateChildConditionResultsDescriptor {
     /**
      * Must have at least this many matches. 0 or higher.
      * When undefined, the Minimum is 1.
@@ -667,7 +667,7 @@ export interface CountMatchingConditionsDescriptor extends EvaluateChildConditio
  * is within a range of Descriptor.Minimum to Descriptor.Maximum.
  * When Minimum isn't supplied, it defaults to 1.
  */
-export class CountMatchingConditions extends EvaluateChildConditionResultsBase<CountMatchingConditionsDescriptor>
+export class CountMatchesCondition extends EvaluateChildConditionResultsBase<CountMatchesConditionDescriptor>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.CountMatches; }
     

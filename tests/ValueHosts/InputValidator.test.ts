@@ -418,7 +418,7 @@ describe('InputValidator.Severity', () => {
 
         expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
     });
-    test('AndConditions Descriptor.Severity = undefined, Severity=Error', () => {
+    test('AllMatchCondition Descriptor.Severity = undefined, Severity=Error', () => {
         let config = SetupWithField1AndField2({
             ConditionDescriptor: {
                 Type: ConditionType.And
