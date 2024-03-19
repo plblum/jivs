@@ -1,16 +1,16 @@
 /**
  * ConditionBase is the base implementation of {@link Conditions/Interfaces!ICondition | ICondition}, 
- * tying it to {@link Conditions/Interfaces!IConditionDescriptor | IConditionDescriptor}
+ * tying it to {@link Conditions/Interfaces!ConditionDescriptor | ConditionDescriptor}
  * @module Conditions/ConditionBase
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { type IConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
+import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
 import type { IGatherValueHostIds, IValueHost } from "../Interfaces/ValueHost";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
-import type { IMessageTokenSource, ITokenLabelAndValue } from "../Interfaces/InputValidator";
+import type { IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/InputValidator";
 import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 
 /**
@@ -20,7 +20,7 @@ import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
  * required, string matches the data type, compare value to another.
  * Instances should be registered in the ConditionFactory.
  */
-export abstract class ConditionBase<TConditionDescriptor extends IConditionDescriptor>
+export abstract class ConditionBase<TConditionDescriptor extends ConditionDescriptor>
     implements IConditionCore<TConditionDescriptor>, IMessageTokenSource, IGatherValueHostIds {
     constructor(descriptor: TConditionDescriptor) {
         AssertNotNull(descriptor, 'descriptor');
@@ -28,8 +28,8 @@ export abstract class ConditionBase<TConditionDescriptor extends IConditionDescr
     }
     /**
      * A unique identifier for the specific implementation, like "Required" or "Range".
-     * Its value appears in the IIssueFound that comes from Validation, and in 
-     * IIssueSnapshot that comes from retrieving a list of errors to display.
+     * Its value appears in the IssueFound that comes from Validation, and in 
+     * IssueSnapshot that comes from retrieving a list of errors to display.
      * It allows the consumer of both to correlate those instances with the specific condition.
      * When defining conditions through a ConditionDescriptor, the Type property must 
      * be assigned with a valid ConditionType.
@@ -70,10 +70,10 @@ export abstract class ConditionBase<TConditionDescriptor extends IConditionDescr
      * * Sort order of the list of Conditions evaluated by an InputValidator,
      *   placing Required first and DataTypeCheck second.
      * * Sets InputValueHostDescriptor.Required.
-     * * Sets IInputValidatorDescriptor.Severity when undefined, where Required
+     * * Sets InputValidatorDescriptor.Severity when undefined, where Required
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
-     * override it with IConditionDescriptor.Category.
+     * override it with ConditionDescriptor.Category.
      */
     public get Category(): ConditionCategory {
         return this.Descriptor.Category ?? this.DefaultCategory;
@@ -101,7 +101,7 @@ export abstract class ConditionBase<TConditionDescriptor extends IConditionDescr
      * @returns An array. If an empty array if there are no token to offer.
      * This base class has no tokens to offer.
      */
-    public GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
+    public GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         return [];
     }
 

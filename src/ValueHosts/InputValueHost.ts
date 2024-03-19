@@ -10,14 +10,14 @@
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ValidationCategory } from "../Interfaces/Logger";
-import { ObjectKeysCount } from "../Utilities/Utilities";
+import { ObjectKeysCount, GroupsMatch } from "../Utilities/Utilities";
 import { ToIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
-import { IInputValueHostDescriptor, IInputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
-import { IValidateOptions, IValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IIssueFound } from "../Interfaces/Validation";
+import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
+import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from "../Interfaces/Validation";
 import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
-import { IInputValidateResult, IInputValidator } from "../Interfaces/InputValidator";
+import { InputValidateResult, IInputValidator } from "../Interfaces/InputValidator";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 
 
@@ -28,16 +28,16 @@ import { AssertNotNull } from "../Utilities/ErrorHandling";
  * 
 * Each instance depends on a few things, all passed into the constructor:
 * - valueHostsManager - Typically this is the ValidationManager.
-* - IInputValueHostDescriptor - The business logic supplies these rules
+* - InputValueHostDescriptor - The business logic supplies these rules
 *   to implement a ValueHost's Id, label, data type, validation rules,
 *   and other business logic metadata.
-* - IInputValueHostState - State used by this InputValueHost including
+* - InputValueHostState - State used by this InputValueHost including
     its validators.
 * If the caller changes any of these, discard the instance
 * and create a new one.
  */
-export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor, IInputValueHostState>{
-    constructor(valueHostsManager: IValueHostsManager, descriptor: IInputValueHostDescriptor, state: IInputValueHostState) {
+export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor, InputValueHostState>{
+    constructor(valueHostsManager: IValueHostsManager, descriptor: InputValueHostDescriptor, state: InputValueHostState) {
         super(valueHostsManager, descriptor, state);
     }
 
@@ -51,7 +51,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
      * @param options - Provides guidance on which validators to include.
      * @returns IValidationResultDetails if at least one is invalid or null if all valid.
      */
-    public Validate(options?: IValidateOptions): IValidateResult {
+    public Validate(options?: ValidateOptions): ValidateResult {
         let self = this;
         if (!options)
             options = {};
@@ -59,10 +59,14 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
         // Its properties collect all validator results, including those delayed by async.
         // By being an object, any closure referring to result will still get those
         // property changes for all validators completed.
-        let result: IValidateResult = {
+        let result: ValidateResult = {
             ValidationResult: ValidationResult.Undetermined,
             IssuesFound: null
         };
+
+        if (!GroupsMatch(options.Group, this.Descriptor.Group))
+            return Bailout(`Group names do not match "${options.Group}" vs "${this.Descriptor.Group?.toString()}"`);      
+        
         try {
             try {
                 let validators = this.Validators();
@@ -82,7 +86,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                         continue;
                     }
                 // synchronous (normal) processing
-                    let inputValResult = potentialIVR as IInputValidateResult;
+                    let inputValResult = potentialIVR as InputValidateResult;
                     if (inputValResult.Skipped)
                         continue;
                     validatorsInUse++;
@@ -134,7 +138,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                 }
             });
         }
-        function UpdateStateWithResult(result: IValidateResult): boolean
+        function UpdateStateWithResult(result: ValidateResult): boolean
         {
             return self.UpdateState((stateToUpdate) => {
                 stateToUpdate.ValidationResult = result.ValidationResult;
@@ -148,7 +152,7 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
                 return stateToUpdate;
             }, self);
         }
-        function ProcessPromise(promise: Promise<IInputValidateResult>): void
+        function ProcessPromise(promise: Promise<InputValidateResult>): void
         {
             function CompleteThePromise(finish: () => void)
             {
@@ -201,6 +205,20 @@ export class InputValueHost extends InputValueHostBase<IInputValueHostDescriptor
         );
         // no change to the ValidationResult here            
         }
+
+        function Bailout(errorMessage: string): ValidateResult
+        {
+            let resultState: ValidateResult = {
+                ValidationResult: ValidationResult.Undetermined,
+                IssuesFound: null
+            };
+            LogInfo(() => {
+                return {
+                    message: errorMessage,
+                }
+            });
+            return resultState;                    
+        }        
         function LogInfo(
             fn: () => { message: string, source?: string })
         {
@@ -304,7 +322,7 @@ export function ToIInputValueHost(source: any): IInputValueHost | null
 
 export const InputValueHostType = 'Input';
 export class InputValueHostGenerator extends InputValueHostBaseGenerator {
-    public CanCreate(descriptor: IInputValueHostDescriptor): boolean {
+    public CanCreate(descriptor: InputValueHostDescriptor): boolean {
         if (descriptor.Type != null)    // null/undefined
             return descriptor.Type === InputValueHostType;
 
@@ -312,7 +330,7 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
             return false;
         return true;
     }
-    public Create(valueHostsManager: IValueHostsManager, descriptor: IInputValueHostDescriptor, state: IInputValueHostState): IInputValueHost {
+    public Create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostDescriptor, state: InputValueHostState): IInputValueHost {
         return new InputValueHost(valueHostsManager, descriptor, state);
     }
 /**
@@ -322,12 +340,12 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
  * @param state 
  * @param descriptor 
  */    
-    public CleanupState(state: IInputValueHostState, descriptor: IInputValueHostDescriptor): void {
+    public CleanupState(state: InputValueHostState, descriptor: InputValueHostDescriptor): void {
         AssertNotNull(state, 'state');
         AssertNotNull(descriptor, 'descriptor');
         let descriptorChanged = false;
         let oldStateCount = 0;
-        let issuesFound: Array<IIssueFound> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
 
         if (state.IssuesFound) {
             let oldState = state.IssuesFound;
@@ -356,7 +374,7 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
         if (!descriptorChanged && (oldStateCount === ObjectKeysCount(state.IssuesFound)))
             return;
 
-        state.IssuesFound = issuesFound as (Array<IIssueFound> | null);
+        state.IssuesFound = issuesFound as (Array<IssueFound> | null);
         // fix validation result for when validation had occurred
         if (state.ValidationResult === ValidationResult.Invalid) {
             let vr = ValidationResult.ValueChangedButUnvalidated;

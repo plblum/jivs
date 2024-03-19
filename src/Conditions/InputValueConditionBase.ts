@@ -10,14 +10,14 @@ import { IValueHost } from "../Interfaces/ValueHost";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { IOneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
+import { OneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
 import { ToIInputValueHost } from "../ValueHosts/InputValueHost";
 
 /**
  * Abstract class for developing Conditions that use the value from ValueHost.GetInputValue.
  * Most classes use ValueHost.GetValue (the native value).
  */
-export abstract class InputValueConditionBase<TDescriptor extends IOneValueConditionDescriptor>
+export abstract class InputValueConditionBase<TDescriptor extends OneValueConditionDescriptor>
     extends OneValueConditionBase<TDescriptor>
 {
     /**

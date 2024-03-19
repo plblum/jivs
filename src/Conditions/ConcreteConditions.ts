@@ -1,42 +1,42 @@
 /**
  * Concrete implementations of {@link Conditions/Interfaces!ICondition | ICondition}, and their companion 
- * {@link Conditions/Interfaces!IConditionDescriptor | IConditionDescriptor}.
+ * {@link Conditions/Interfaces!ConditionDescriptor | ConditionDescriptor}.
  * 
- * The conditions found here all use an IConditionDescriptor for supplying 
+ * The conditions found here all use an ConditionDescriptor for supplying 
  * their configuration. Most Condition classes have a specific interface
- * for their Descriptor, such as {@link IRangeConditionDescriptor} for {@link RangeCondition}.
+ * for their Descriptor, such as {@link RangeConditionDescriptor} for {@link RangeCondition}.
  * 
  * @module Conditions/ConcreteConditions
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
-import type { ITokenLabelAndValue } from "../Interfaces/InputValidator";
+import type { TokenLabelAndValue } from "../Interfaces/InputValidator";
 import { CodingError } from "../Utilities/ErrorHandling";
 
 import { type IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import {
     type ICondition,
-    ConditionCategory, ConditionEvaluateResult, ISupportsDataTypeConverter
+    ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter
 } from "../Interfaces/Conditions";
-import { IOneValueConditionDescriptor, OneValueConditionBase, ITwoValueConditionDescriptor } from "./OneValueConditionBase";
-import { IStringConditionDescriptor, StringConditionBase } from "./StringConditionBase";
+import { OneValueConditionDescriptor, OneValueConditionBase, TwoValueConditionDescriptor } from "./OneValueConditionBase";
+import { StringConditionDescriptor, StringConditionBase } from "./StringConditionBase";
 import { InputValueConditionBase } from "./InputValueConditionBase";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { EvaluateChildConditionResultsBase, IEvaluateChildConditionResultsDescriptor } from "./EvaluateChildConditionResultsBase";
-import { IRegExpConditionBaseDescriptor, RegExpConditionBase } from "./RegExpConditionBase";
+import { EvaluateChildConditionResultsBase, EvaluateChildConditionResultsDescriptor } from "./EvaluateChildConditionResultsBase";
+import { RegExpConditionBaseDescriptor, RegExpConditionBase } from "./RegExpConditionBase";
 import { ComparersResult } from "../Interfaces/DataTypes";
+import { ConditionType } from "./ConditionTypes";
 
 
 /**
  * ConditionDescriptor to use with {@link DataTypeCheckCondition}
  */
-export interface IDataTypeCheckConditionDescriptor extends IOneValueConditionDescriptor {
+export interface DataTypeCheckConditionDescriptor extends OneValueConditionDescriptor {
 
 }
 
-export const DataTypeCheckConditionType = 'DataTypeCheck';
 
 /**
  * Determines if the value of InputValue can be successfully converted to its native data type.
@@ -46,9 +46,9 @@ export const DataTypeCheckConditionType = 'DataTypeCheck';
  * Supports these tokens:
  * {ConversionError} - Uses the value from IInputValueHost.GetConversionErrorMessage()
  */
-export class DataTypeCheckCondition extends InputValueConditionBase<IDataTypeCheckConditionDescriptor>
+export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeCheckConditionDescriptor>
 {
-    public static get DefaultConditionType(): string { return DataTypeCheckConditionType; }
+    public static get DefaultConditionType(): ConditionType { return ConditionType.DataTypeCheck; }
     
     protected EvaluateInputValue(value: any, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
@@ -56,8 +56,8 @@ export class DataTypeCheckCondition extends InputValueConditionBase<IDataTypeChe
         return valueHost.GetValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
 
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
-        let list: Array<ITokenLabelAndValue> = [];
+    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
 
@@ -77,7 +77,7 @@ export class DataTypeCheckCondition extends InputValueConditionBase<IDataTypeChe
 /**
  * Descriptor for RequiredTextCondition, which uses the InputValue
  */
-export interface IRequiredTextConditionDescriptor extends IStringConditionDescriptor {
+export interface RequiredTextConditionDescriptor extends StringConditionDescriptor {
     /**
      * The value that means nothing is assigned.
      * If anything other than '', '' is still considered unassigned.
@@ -86,15 +86,17 @@ export interface IRequiredTextConditionDescriptor extends IStringConditionDescri
      */
     EmptyValue?: string;
 }
-export const RequiredTextConditionType = 'Required';
 
 /**
  * For any input field/element whose native data is textual, including HTML's <select> elements,
  * which also have an index. That can be evaluated by RequiredIndexValidator
+ * It evaluates InputValueHost.InputValue, so that it can be evaluated as the user types into a textbox,
+ * prior to when you might update the InputValueHost.NativeValue.
+ * See also its NativeValue companion, StringNotEmptyCondition.
  */
-export class RequiredTextCondition extends InputValueConditionBase<IRequiredTextConditionDescriptor>
+export class RequiredTextCondition extends InputValueConditionBase<RequiredTextConditionDescriptor>
 {
-    public static get DefaultConditionType(): string { return RequiredTextConditionType; }    
+    public static get DefaultConditionType(): ConditionType { return ConditionType.RequiredText; }    
 
     protected EvaluateInputValue(value: any, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
@@ -117,7 +119,7 @@ export class RequiredTextCondition extends InputValueConditionBase<IRequiredText
 /**
  * Descriptor for RequiredIndexCondition
  */
-export interface IRequiredIndexConditionDescriptor extends IOneValueConditionDescriptor {
+export interface RequiredIndexConditionDescriptor extends OneValueConditionDescriptor {
 
     /**
      * The index that means nothing is selected.
@@ -125,15 +127,14 @@ export interface IRequiredIndexConditionDescriptor extends IOneValueConditionDes
      */
     UnselectedIndexValue?: number;
 }
-export const RequiredIndexConditionType = 'RequiredIndex';
 
 /**
  * For single selection lists to have a selected value. Values are expected 
  * to be an index.
  */
-export class RequiredIndexCondition extends InputValueConditionBase<IRequiredIndexConditionDescriptor>
+export class RequiredIndexCondition extends InputValueConditionBase<RequiredIndexConditionDescriptor>
 {
-    public static get DefaultConditionType(): string { return RequiredIndexConditionType; }    
+    public static get DefaultConditionType(): ConditionType { return ConditionType.RequiredIndex; }    
 
     protected EvaluateInputValue(value: any, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
@@ -151,7 +152,7 @@ export class RequiredIndexCondition extends InputValueConditionBase<IRequiredInd
 /**
  * Descriptor for RegExpCondition.
  */
-export interface IRegExpConditionDescriptor extends IRegExpConditionBaseDescriptor {
+export interface RegExpConditionDescriptor extends RegExpConditionBaseDescriptor {
     /**
      * Used either ExpressionAsString or Expression for the expression.
      * When using ExpressionAsString, it is combined with IgnoreCase and Global to create
@@ -185,15 +186,14 @@ export interface IRegExpConditionDescriptor extends IRegExpConditionBaseDescript
     Expression?: RegExp;
 }
 
-export const RegExpConditionType = 'RegExp';
 /**
  * Evaluates the native value, which must be a string, against a regular expression.
  * This implementation has the user supply the regular expression through
- * IRegExpConditionDescriptor.
+ * RegExpConditionDescriptor.
  */
-export class RegExpCondition extends RegExpConditionBase<IRegExpConditionDescriptor>
+export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescriptor>
 {
-    public static get DefaultConditionType(): string { return RegExpConditionType; }
+    public static get DefaultConditionType(): ConditionType { return ConditionType.RegExp; }
     
     private _savedRE: RegExp | null = null; // cache the results. By design, any change to the Descriptor requires creating a new instance of the condition, discarding this
 
@@ -221,20 +221,19 @@ export class RegExpCondition extends RegExpConditionBase<IRegExpConditionDescrip
 /**
  * Descriptor for RangeCondition
  */
-export interface IRangeConditionDescriptor extends IOneValueConditionDescriptor, ISupportsDataTypeConverter {
+export interface RangeConditionDescriptor extends OneValueConditionDescriptor, SupportsDataTypeConverter {
     /**
      * Native data type representing the minimum of the range.
-     * When undefined or null, no minimum, like ValueLTESecondValueConditon.
+     * When undefined or null, no minimum, like LessThanOrEqualToConditon.
      */
     Minimum: any;
 
     /**
      * Native data type representing the maximum of the range.
-     * When undefined or null, no maximum, like ValueGTESecondValueConditon.
+     * When undefined or null, no maximum, like GreaterThanOrEqualToConditon.
      */
     Maximum: any;
 }
-export const RangeConditionType = 'Range';
 
 /**
  * Compare the native datatype value against two other values to ensure
@@ -244,9 +243,9 @@ export const RangeConditionType = 'Range';
  * When data types differ or don't support GreaterThan/LessThan evaluate as Undetermined.
  * Supports Descriptor.ConversionLookupKey, but its only applied to the incoming value, not Min/Max.
  */
-export class RangeCondition extends OneValueConditionBase<IRangeConditionDescriptor>
+export class RangeCondition extends OneValueConditionBase<RangeConditionDescriptor>
 {
-    public static get DefaultConditionType(): string { return RangeConditionType; }
+    public static get DefaultConditionType(): ConditionType { return ConditionType.Range; }
     
     public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
@@ -281,8 +280,8 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
 
         return ConditionEvaluateResult.NoMatch;
     }
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
-        let list: Array<ITokenLabelAndValue> = [];
+    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
 
@@ -305,7 +304,7 @@ export class RangeCondition extends OneValueConditionBase<IRangeConditionDescrip
 /**
  * Descriptor for CompareToConditionBase.
  */
-export interface ICompareToConditionDescriptor extends ITwoValueConditionDescriptor, ISupportsDataTypeConverter {
+export interface CompareToConditionDescriptor extends TwoValueConditionDescriptor, SupportsDataTypeConverter {
     /**
      * Native data type representing the minimum of the range.
      */
@@ -319,7 +318,6 @@ export interface ICompareToConditionDescriptor extends ITwoValueConditionDescrip
      */
     SecondConversionLookupKey?: string | null;
 }
-export const CompareToConditionType = 'Range';
 
 /**
  * Compare the native datatype value against a second value.
@@ -328,7 +326,7 @@ export const CompareToConditionType = 'Range';
  * Subclasses implement the actual comparison operator (equals, greater than, etc)
  * Supports tokens: {CompareTo}, the value from the second value host.
  */
-export abstract class CompareToConditionBase<TDescriptor extends ICompareToConditionDescriptor> extends OneValueConditionBase<TDescriptor>
+export abstract class CompareToConditionBase<TDescriptor extends CompareToConditionDescriptor> extends OneValueConditionBase<TDescriptor>
 {
     public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
@@ -377,8 +375,8 @@ export abstract class CompareToConditionBase<TDescriptor extends ICompareToCondi
             collection.add(this.Descriptor.SecondValueHostId);
     }
 
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
-        let list: Array<ITokenLabelAndValue> = [];
+    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
         let secondValue: any;
@@ -406,8 +404,8 @@ export abstract class CompareToConditionBase<TDescriptor extends ICompareToCondi
 /**
  * Two values must be equal. Values are native datatype.
  */
-export class ValuesEqualCondition extends CompareToConditionBase<IValuesEqualConditionDescriptor> {
-    public static get DefaultConditionType(): string { return ValuesEqualConditionType; }
+export class EqualToCondition extends CompareToConditionBase<EqualToConditionDescriptor> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.EqualTo; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         return comparison === ComparersResult.Equals ?
@@ -415,17 +413,16 @@ export class ValuesEqualCondition extends CompareToConditionBase<IValuesEqualCon
             ConditionEvaluateResult.NoMatch;
     }
 }
-export const ValuesEqualConditionType = 'ValuesEqual';
 /**
- * Descriptor for ValuesEqualCondition
+ * Descriptor for EqualToCondition
  */
-export interface IValuesEqualConditionDescriptor extends ICompareToConditionDescriptor { }
+export interface EqualToConditionDescriptor extends CompareToConditionDescriptor { }
 
 /**
  * Two values must not be equal. Values are native datatype.
  */
-export class ValuesNotEqualCondition extends CompareToConditionBase<IValuesNotEqualConditionDescriptor> {
-    public static get DefaultConditionType(): string { return ValuesNotEqualConditionType; }
+export class NotEqualToCondition extends CompareToConditionBase<NotEqualToConditionDescriptor> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.NotEqualTo; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
 
@@ -434,17 +431,17 @@ export class ValuesNotEqualCondition extends CompareToConditionBase<IValuesNotEq
             ConditionEvaluateResult.NoMatch;
     }
 }
-export const ValuesNotEqualConditionType = 'ValuesNotEqual';
+
 /**
- * Descriptor for ValuesNotEqualCondition
+ * Descriptor for NotEqualToCondition
  */
-export interface IValuesNotEqualConditionDescriptor extends ICompareToConditionDescriptor { }
+export interface NotEqualToConditionDescriptor extends CompareToConditionDescriptor { }
 /**
  * Value 1 must be greater than Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class ValueGTSecondValueCondition extends CompareToConditionBase<IValueGTSecondValueConditionDescriptor> {
-    public static get DefaultConditionType(): string { return ValueGTSecondValueConditionType; }
+export class GreaterThanCondition extends CompareToConditionBase<GreaterThanConditionDescriptor> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThan; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
@@ -457,17 +454,17 @@ export class ValueGTSecondValueCondition extends CompareToConditionBase<IValueGT
         }
     }
 }
-export const ValueGTSecondValueConditionType = 'ValueGreaterThanSecondValue';
+
 /**
- * Descriptor for ValueGTSecondValueCondition
+ * Descriptor for GreaterThanCondition
  */
-export interface IValueGTSecondValueConditionDescriptor extends ICompareToConditionDescriptor { }
+export interface GreaterThanConditionDescriptor extends CompareToConditionDescriptor { }
 /**
  * Value 1 must be less than Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class ValueLTSecondValueCondition extends CompareToConditionBase<IValueLTSecondValueConditionDescriptor> {
-    public static get DefaultConditionType(): string { return ValueLTSecondValueConditionType; }
+export class LessThanCondition extends CompareToConditionBase<LessThanConditionDescriptor> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThan; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
@@ -480,17 +477,17 @@ export class ValueLTSecondValueCondition extends CompareToConditionBase<IValueLT
         }
     }
 }
-export const ValueLTSecondValueConditionType = 'ValueLessThanSecondValue';
+
 /**
- * Descriptor for ValueLTSecondValueCondition
+ * Descriptor for LessThanCondition
  */
-export interface IValueLTSecondValueConditionDescriptor extends ICompareToConditionDescriptor { }
+export interface LessThanConditionDescriptor extends CompareToConditionDescriptor { }
 /**
  * Value 1 must be greater than or equal Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class ValueGTESecondValueCondition extends CompareToConditionBase<IValueGTESecondValueConditionDescriptor> {
-    public static get DefaultConditionType(): string { return ValueGTESecondValueConditionType; }
+export class GreaterThanOrEqualToCondition extends CompareToConditionBase<GreaterThanOrEqualToConditionDescriptor> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqualTo; }
     
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
@@ -504,17 +501,17 @@ export class ValueGTESecondValueCondition extends CompareToConditionBase<IValueG
         }
     }
 }
-export const ValueGTESecondValueConditionType = 'ValueGreaterThanOrEqualSecondValue';
+
 /**
- * Descriptor for ValueGTESecondValueCondition
+ * Descriptor for GreaterThanOrEqualToCondition
  */
-export interface IValueGTESecondValueConditionDescriptor extends ICompareToConditionDescriptor { }
+export interface GreaterThanOrEqualToConditionDescriptor extends CompareToConditionDescriptor { }
 /**
  * Value 1 must be less than or equal Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class ValueLTESecondValueCondition extends CompareToConditionBase<IValueLTESecondValueConditionDescriptor> {
-    public static get DefaultConditionType(): string { return ValueLTESecondValueConditionType; }    
+export class LessThanOrEqualToCondition extends CompareToConditionBase<LessThanOrEqualToConditionDescriptor> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqualTo; }    
 
     protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
@@ -528,37 +525,36 @@ export class ValueLTESecondValueCondition extends CompareToConditionBase<IValueL
         }
     }
 }
-export const ValueLTESecondValueConditionType = 'ValueLessThanOrEqualSecondValue';
+
 /**
- * Descriptor for ValueLTESecondValueCondition
+ * Descriptor for LessThanOrEqualToCondition
  */
-export interface IValueLTESecondValueConditionDescriptor extends ICompareToConditionDescriptor { }
+export interface LessThanOrEqualToConditionDescriptor extends CompareToConditionDescriptor { }
 /**
  * Descriptor for StringLengthCondition
  */
-export interface IStringLengthConditionDescriptor extends IStringConditionDescriptor {
+export interface StringLengthConditionDescriptor extends StringConditionDescriptor {
     /**
      * Native data type representing the minimum of the range.
-     * When undefined or null, no minimum, like ValueLTESecondValueConditon.
+     * When undefined or null, no minimum, like LessThanOrEqualToConditon.
      */
     Minimum?: number | null;
 
     /**
      * Native data type representing the maximum of the range.
-     * When undefined or null, no maximum, like ValueGTESecondValueConditon.
+     * When undefined or null, no maximum, like GreaterThanOrEqualToConditon.
      */
     Maximum?: number | null;
 }
-export const StringLengthConditionType = 'StringLength';
 
 /**
  * Evaluates the length of a string in characters (after trimming if Trim is true).
  * Compares the result to non-null Minimum and/or Maximum parameters.
  * Supports these tokens: {Length}, {Minimum} and {Maximum}
  */
-export class StringLengthCondition extends StringConditionBase<IStringLengthConditionDescriptor>
+export class StringLengthCondition extends StringConditionBase<StringLengthConditionDescriptor>
 {
-    public static get DefaultConditionType(): string { return StringLengthConditionType; }
+    public static get DefaultConditionType(): ConditionType { return ConditionType.StringLength; }
     
     protected EvaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let len = text.length;  // already trimmed
@@ -572,8 +568,8 @@ export class StringLengthCondition extends StringConditionBase<IStringLengthCond
         return ConditionEvaluateResult.Match;
     }
 
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<ITokenLabelAndValue> {
-        let list: Array<ITokenLabelAndValue> = [];
+    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
 
@@ -599,7 +595,7 @@ export class StringLengthCondition extends StringConditionBase<IStringLengthCond
     }
 }
 
-export interface IAndConditionsDescriptor extends IEvaluateChildConditionResultsDescriptor
+export interface AllMatchConditionDescriptor extends EvaluateChildConditionResultsDescriptor
 {
     
 }
@@ -608,11 +604,9 @@ export interface IAndConditionsDescriptor extends IEvaluateChildConditionResults
  * All Children must evaluate as Match for a result of Match.
  * If any are still Undetermined after TreatUndeterminedAs is applied, this results as Undetermined.
  */
-export const AndConditionsType = 'And';
-export const EveryConditionType = 'Every';  // alias for AndConditions; for users who don't deal well with boolean logic can relate
-export class AndConditions extends EvaluateChildConditionResultsBase<IAndConditionsDescriptor>
+export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatchConditionDescriptor>
 {
-    public static get DefaultConditionType(): string { return AndConditionsType; }
+    public static get DefaultConditionType(): ConditionType { return ConditionType.And; }
     
     protected EvaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         for (let condition of conditions)
@@ -626,7 +620,7 @@ export class AndConditions extends EvaluateChildConditionResultsBase<IAndConditi
     }
 }
 
-export interface IOrConditionsDescriptor extends IEvaluateChildConditionResultsDescriptor
+export interface AnyMatchConditionDescriptor extends EvaluateChildConditionResultsDescriptor
 {
     
 }
@@ -634,11 +628,9 @@ export interface IOrConditionsDescriptor extends IEvaluateChildConditionResultsD
  * At least one Child Condition must evaluate as Match for a result of Match.
  * If any are still Undetermined after TreatUndeterminedAs is applied, this results as Undetermined.
  */
-export const OrConditionsType = 'Or';
-export const AnyConditionsType = 'Any'; // alias for OrConditions; for users who don't deal well with boolean logic can relate
-export class OrConditions extends EvaluateChildConditionResultsBase<IOrConditionsDescriptor>
+export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatchConditionDescriptor>
 {
-    public static get DefaultConditionType(): string { return OrConditionsType; }
+    public static get DefaultConditionType(): ConditionType { return ConditionType.Or; }
 
     protected EvaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let countMatches = 0;
@@ -655,9 +647,9 @@ export class OrConditions extends EvaluateChildConditionResultsBase<IOrCondition
 }
 
 /**
- * ConditionDescriptor for CountMatchingConditions.
+ * ConditionDescriptor for CountMatchesCondition.
  */
-export interface ICountMatchingConditionsDescriptor extends IEvaluateChildConditionResultsDescriptor {
+export interface CountMatchesConditionDescriptor extends EvaluateChildConditionResultsDescriptor {
     /**
      * Must have at least this many matches. 0 or higher.
      * When undefined, the Minimum is 1.
@@ -673,16 +665,14 @@ export interface ICountMatchingConditionsDescriptor extends IEvaluateChildCondit
     Maximum?: number;
 }
 
-export const CountMatchingConditionsType = "CountMatches";
-
 /**
  * Counts the number of child Conditions that evaluate as Match and determines if that count
  * is within a range of Descriptor.Minimum to Descriptor.Maximum.
  * When Minimum isn't supplied, it defaults to 1.
  */
-export class CountMatchingConditions extends EvaluateChildConditionResultsBase<ICountMatchingConditionsDescriptor>
+export class CountMatchesCondition extends EvaluateChildConditionResultsBase<CountMatchesConditionDescriptor>
 {
-    public static get DefaultConditionType(): string { return CountMatchingConditionsType; }
+    public static get DefaultConditionType(): ConditionType { return ConditionType.CountMatches; }
     
     protected EvaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let countMatches = 0;
@@ -700,5 +690,83 @@ export class CountMatchingConditions extends EvaluateChildConditionResultsBase<I
         if (this.Descriptor.Maximum !== undefined && countMatches > this.Descriptor.Maximum)
             return ConditionEvaluateResult.NoMatch;
         return ConditionEvaluateResult.Match;
+    }
+}
+
+/**
+ * Descriptor for StringNotEmptyCondition.
+ */
+export interface StringNotEmptyConditionDescriptor extends OneValueConditionDescriptor {
+/**
+ * Normally a value of null is considered NoMatch so both an empty string and null are NoMatch.
+ * When this is set, it determines the value.
+ * If you want to consider null as valid, supply Match. If you don't want to evaluate null
+ * at all, supply Undetermined.
+ */    
+    NullValueResult?: ConditionEvaluateResult;
+}
+
+/**
+ * To evaluate the Native Value when it is expected to contain a string.
+ * Reports NoMatch when the value is an empty string ("").
+ * No whitespace trimming is applied. The value of the InputValue may need trimming,
+ * but the InputValue is expected to be the final value, already trimmed.
+ * See also its InputValue companion, RequiredTextCondition.
+ */
+export class StringNotEmptyCondition extends OneValueConditionBase<StringNotEmptyConditionDescriptor>
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.StringNotEmpty; }    
+
+    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.GetValue();
+        if (value === undefined) 
+            return ConditionEvaluateResult.Undetermined;
+        if (value === null)
+            return this.Descriptor.NullValueResult ?? ConditionEvaluateResult.NoMatch;
+
+        if (typeof value !== 'string')
+            return ConditionEvaluateResult.Undetermined;
+        let text = value;
+        if (text == '')
+            return ConditionEvaluateResult.NoMatch;
+        return ConditionEvaluateResult.Match;
+    }
+
+    protected get DefaultCategory(): ConditionCategory {
+        return ConditionCategory.Required;
+    }
+}
+
+/**
+ * Descriptor for NotNullCondition.
+ */
+export interface NotNullConditionDescriptor extends OneValueConditionDescriptor {
+
+}
+
+/**
+ * To evaluate the Native Value when it may contain a null,
+ * and null is not valid in this case.
+ * Reports NoMatch when the value is null.
+
+ * See also StringNotEmptyCondition which includes checking for null in addition to the empty string.
+ */
+export class NotNullCondition extends OneValueConditionBase<NotNullConditionDescriptor>
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.NotNull; }    
+
+    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.GetValue();
+        if (value === undefined) 
+            return ConditionEvaluateResult.Undetermined;
+        if (value === null)
+            return ConditionEvaluateResult.NoMatch;
+        return ConditionEvaluateResult.Match;
+    }
+
+    protected get DefaultCategory(): ConditionCategory {
+        return ConditionCategory.Required;
     }
 }

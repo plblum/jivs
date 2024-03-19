@@ -1,4 +1,4 @@
-import { INonInputValueHostDescriptor, INonInputValueHostState, INonInputValueHost } from "../../src/Interfaces/NonInputValueHost";
+import { NonInputValueHostDescriptor, NonInputValueHostState, INonInputValueHost } from "../../src/Interfaces/NonInputValueHost";
 import { IGatherValueHostIds, ToIGatherValueHostIds } from "../../src/Interfaces/ValueHost";
 import { NonInputValueHost, NonInputValueHostType, NonInputValueHostGenerator } from "../../src/ValueHosts/NonInputValueHost";
 import { MockValidationServices, MockValidationManager, NeverMatchesConditionType } from "../Mocks";
@@ -80,12 +80,12 @@ describe('NonInputValueHostGenerator members', () => {
     test('Create returns instance of NonInputValueHost with VM, Descriptor and State established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);        
-        let descriptor: INonInputValueHostDescriptor = {
+        let descriptor: NonInputValueHostDescriptor = {
             Id: 'Field1',
             Type: NonInputValueHostType,
             Label: ''
         };
-        let state: INonInputValueHostState = {
+        let state: NonInputValueHostState = {
             Id: 'Field1',
             Value: "ABC"
         };
@@ -98,12 +98,12 @@ describe('NonInputValueHostGenerator members', () => {
         expect(vh!.GetValue()).toBe("ABC");
     });
     test('CleanupState existing state takes no action. Returns the same data', () => {
-        let originalState: INonInputValueHostState = {
+        let originalState: NonInputValueHostState = {
             Id: 'Field1',
             Value: 10
         };
         let state = { ...originalState };
-        let descriptor: INonInputValueHostDescriptor = {
+        let descriptor: NonInputValueHostDescriptor = {
             Id: 'Field1',
             Type: NonInputValueHostType,
             Label: ''
@@ -115,13 +115,13 @@ describe('NonInputValueHostGenerator members', () => {
  
     test('CreateState returns instance with ID and InitialValue from Descriptor', () => {
         let testItem = new NonInputValueHostGenerator();
-        let descriptor: INonInputValueHostDescriptor = {
+        let descriptor: NonInputValueHostDescriptor = {
             Id: 'Field1',
             Type: NonInputValueHostType,
             Label: '',
             InitialValue: 'TEST'
         };
-        let state: INonInputValueHostState | null = null;
+        let state: NonInputValueHostState | null = null;
         expect(() => state = testItem.CreateState(descriptor)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.Id).toBe(descriptor.Id);

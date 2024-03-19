@@ -6,9 +6,9 @@
  * and you want that class to be treated like that date within the Conditions
  * that compare two values.
  * In this example, the class calculates a date relative today with properties of Days, Months, and Years.
- * You want to setup the the ValuesEqualCondition like this:
- * <IValuesEqualConditionDescriptor>{
- *   Type: "ValuesEqual",
+ * You want to setup the the EqualToCondition like this:
+ * <IEqualToConditionDescriptor>{
+ *   Type: "EqualTo",
  *   ValueHost1: "TextBox1", // your code supplies the textbox value to its ValueHost as a RelativeDate
  *   SecondValue: new Date(2000, 0, 1) // Compare to this date
  * }

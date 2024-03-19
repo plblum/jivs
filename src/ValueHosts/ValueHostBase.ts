@@ -6,7 +6,7 @@ import { ValueHostId } from "../DataTypes/BasicTypes";
 import { AssertNotNull } from "../Utilities/ErrorHandling";
 import { DeepEquals, DeepClone } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
-import type { IValueHost, ISetValueOptions, IValueHostState, IValueHostDescriptor } from "../Interfaces/ValueHost";
+import type { IValueHost, SetValueOptions, ValueHostState, ValueHostDescriptor } from "../Interfaces/ValueHost";
 import type { IValueHostsManager, IValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
 import { IValueHostGenerator } from "../Interfaces/ValueHostFactory";
 
@@ -19,7 +19,7 @@ import { IValueHostGenerator } from "../Interfaces/ValueHostFactory";
 /**
  * Standard implementation of IValueHost
  */
-export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TState extends IValueHostState>
+export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TState extends ValueHostState>
     implements IValueHost, IValueHostsManagerAccessor {
     constructor(valueHostsManager: IValueHostsManager, descriptor: TDescriptor, state: TState) {
         AssertNotNull(valueHostsManager, 'valueHostsManager');
@@ -58,7 +58,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
      * for which they will transfer a value, via ValueHostsManager.GetValueHost(this id)
      */
     public GetId(): ValueHostId {
-        return this._descriptor.Id;
+        return this.Descriptor.Id;
     }
 
     /**
@@ -67,7 +67,10 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
      * Localization should occur when setting up the ValueHostDescriptor.
      */
     public GetLabel(): string {
-        return this._descriptor.Label;
+        let label = this.Descriptor.Label ?? '';
+        if (this.Descriptor.Labell10n)
+            return this.Services.TextLocalizerService.Localize(this.Services.ActiveCultureId, this.Descriptor.Labell10n, label) ?? '';
+        return label;
     }
 
     /**
@@ -95,7 +98,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     * SkipValueChangedCallback - Skips the automatic callback setup with the 
     * OnValueChanged property.
     */
-    public SetValue(value: any, options?: ISetValueOptions): void {
+    public SetValue(value: any, options?: SetValueOptions): void {
         if (!options)
             options = {};
         let oldValue: any = this.State.Value;   // even undefined is supported
@@ -124,11 +127,11 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    public SetValueToUndefined(options?: ISetValueOptions): void {
+    public SetValueToUndefined(options?: SetValueOptions): void {
         this.SetValue(undefined, options);
     }
 
-    protected UpdateChangeCounterInState(stateToUpdate: TState, valueChanged: boolean, options: ISetValueOptions): void
+    protected UpdateChangeCounterInState(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void
     {
         if (options.Reset)
             stateToUpdate.ChangeCounter = 0;
@@ -136,7 +139,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
             stateToUpdate.ChangeCounter = (stateToUpdate.ChangeCounter ?? 0) + 1;        
     }
 
-    protected UseOnValueChanged(changed: boolean, oldValue: any, options: ISetValueOptions): void
+    protected UseOnValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void
     {
         if (changed && (!options || !options.SkipValueChangedCallback))
             ToIValueHostCallbacks(this.ValueHostsManager)?.OnValueChanged?.(this, oldValue);        
@@ -183,7 +186,7 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
     private _state: TState;
 
     /**
-     * Use to change anything in IValueHostState without impacting the immutability 
+     * Use to change anything in ValueHostState without impacting the immutability 
      * of the current instance.
      * Your callback will be passed a cloned instance. Change any desired properties
      * and return that instance. It will become the new immutable value of
@@ -236,13 +239,13 @@ export abstract class ValueHostBase<TDescriptor extends IValueHostDescriptor, TS
 }
 
 export type ValueChangedHandler = (valueHost: IValueHost, oldValue: any) => void;
-export type ValueHostStateChangedHandler = (valueHost: IValueHost, stateToRetain: IValueHostState) => void;
+export type ValueHostStateChangedHandler = (valueHost: IValueHost, stateToRetain: ValueHostState) => void;
 /**
  * Provides callback hooks for the consuming system to get feedback from ValueHosts.
  */
 export interface IValueHostCallbacks {
     /**
-     * Called when any ValueHost had its IValueHostState changed.
+     * Called when any ValueHost had its ValueHostState changed.
      * React example: React component useState feature retains this value
      * and needs to know when to call the setValueHostState() with the stateToRetain.
      * You can setup the same callback on individual ValueHosts.
@@ -277,9 +280,9 @@ export function ToIValueHostCallbacks(source: any): IValueHostCallbacks | null
 }
 
 export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
-    public abstract CanCreate(descriptor: IValueHostDescriptor): boolean;
+    public abstract CanCreate(descriptor: ValueHostDescriptor): boolean;
 
-    public abstract Create(valueHostsManager: IValueHostsManager, descriptor: IValueHostDescriptor, state: IValueHostState): IValueHost;
+    public abstract Create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
 
     /**
      * Looking for changes to the ValidationDescriptors to impact IssuesFound.
@@ -288,8 +291,8 @@ export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
      * @param state 
      * @param descriptor 
      */
-    public abstract CleanupState(state: IValueHostState, descriptor: IValueHostDescriptor): void;
-    public CreateState(descriptor: IValueHostDescriptor): IValueHostState {
+    public abstract CleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
+    public CreateState(descriptor: ValueHostDescriptor): ValueHostState {
         return {
             Id: descriptor.Id,
             Value: descriptor.InitialValue

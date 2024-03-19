@@ -10,11 +10,11 @@
  * 
  * Key interfaces:
  * - {@link ICondition} - Provides the Evaluate function for implementations.
- * - {@link IConditionDescriptor} - A description of the rules for evaluation, such
+ * - {@link ConditionDescriptor} - A description of the rules for evaluation, such
  *   as ValueHostId="TextBox1", Type (of Condition to use)="Range",
  *   Minimum=3, and Maximum=5.
  * - {@link IConditionCore } - Blending the ICondition with 
- *   the IConditionDescriptor, for implementing conditions that are configured
+ *   the ConditionDescriptor, for implementing conditions that are configured
  *   through the Descriptor. Most Condition classes supplied in this library
  *   implement this interface.
  * @module Conditions/Interfaces
@@ -22,6 +22,7 @@
 
 import { IValueHostResolver } from "./ValueHostResolver";
 import { IValueHost } from "./ValueHost";
+import { ConditionType } from "../Conditions/ConditionTypes";
 
 /**
  * The basis for any condition that you want to work with these validators.
@@ -33,13 +34,13 @@ import { IValueHost } from "./ValueHost";
 export interface ICondition {
     /**
      * A unique identifier for the specific implementation, like "Required" or "Range".
-     * Its value appears in the IIssueFound that comes from Validation, and in 
-     * IIssueSnapshot that comes from retrieving a list of errors to display.
+     * Its value appears in the IssueFound that comes from Validation, and in 
+     * IssueSnapshot that comes from retrieving a list of errors to display.
      * It allows the consumer of both to correlate those instances with the specific condition.
      * When defining conditions through a ConditionDescriptor, the Type property must 
      * be assigned with a valid ConditionType.
      */
-    ConditionType: string;
+    ConditionType: ConditionType | string;
 
     /**
      * Evaluate something against the rules defined in the implementation. Return whether
@@ -49,7 +50,7 @@ export interface ICondition {
      * This parameter is used as an optimization, both to avoid that lookup and to avoid
      * the user typing in a ValueHostId when creating the Condition instance.
      * InputValidator.Validate knows to pass the ValueHostId that hosts the InputValidator.
-     * Expect this to be null in other cases, such as when Condition is a child of the AndConditions
+     * Expect this to be null in other cases, such as when Condition is a child of the AllMatchCondition
      * and its peers. In otherwords, support both ways.
      * @param valueHostResolver - Its primary use is to lookup ValueHosts to get their data.
      * @returns Any of these values:
@@ -65,10 +66,10 @@ export interface ICondition {
      * * Sort order of the list of Conditions evaluated by an InputValidator,
      *   placing Required first and DataTypeCheck second.
      * * Sets InputValueHostDescriptor.Required.
-     * * Sets IInputValidatorDescriptor.Severity when undefined, where Required
+     * * Sets InputValidatorDescriptor.Severity when undefined, where Required
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
-     * override it with IConditionDescriptor.Category.
+     * override it with ConditionDescriptor.Category.
      */
     Category: ConditionCategory;
 }
@@ -78,7 +79,7 @@ export interface ICondition {
  * Just the data that is used to identify a Condition that is needed,
  * along with data that supports its ability to evaluate its business rule.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to IConditionDescriptor.
+ * It should be generatable from JSON, and simply gets typed to ConditionDescriptor.
  * This provides the backing data for each ICondition.
  * When placed into the ICondition, it is treated as immutable
  * and can be used as state in React.
@@ -92,13 +93,13 @@ export interface ICondition {
  * RangeValidator:  { type: 'Range', minimum: any, maximum: any } // datatype sensitive values are in their native datatype
  *  CustomValidator: { type: 'Custom' } // this needs the user to supply a function callback for validation
  */
-export interface IConditionDescriptor {
+export interface ConditionDescriptor {
     /**
      * Identifies the class to create. Class must implement ICondition
-     * and be able to process the propertys of IConditionDescriptor.
+     * and be able to process the propertys of ConditionDescriptor.
      * Used by the ConditionFactory
      */
-    Type: string;
+    Type: ConditionType | string;
 
     /**
      * Most Condition classes have an official value for Category.
@@ -111,7 +112,7 @@ export interface IConditionDescriptor {
 /**
  * The base for conditions implemented within this library.
  */
-export interface IConditionCore<TConditionDescriptor extends IConditionDescriptor> extends ICondition {
+export interface IConditionCore<TConditionDescriptor extends ConditionDescriptor> extends ICondition {
 
     /**
      * Data that supports the business rule defined in Evaluate.
@@ -139,14 +140,14 @@ export const ConditionEvaluateResultStrings = [
 /**
  * Each Category gets assigned a category. For the most part, these are merely info.
  * However, Required and DataTypeCheck have special meaning.
- * Required - the IInputValueHostDescriptor.Required property is set if this is found.
+ * Required - the InputValueHostDescriptor.Required property is set if this is found.
  *   These conditions are always placed first in the evaluation order.
- *   When Required, IInputValidatorDescriptor.Severity of Undefined is treated as Severe, not Error
+ *   When Required, InputValidatorDescriptor.Severity of Undefined is treated as Severe, not Error
  *   to stop further Condition evaluation.
  * DataTypeCheck - used to ensure we have a valid native object that can be used by other
  *   conditions. Because these should be evaluated before those, these conditions
  *   are placed just after Required.
- *   When DataTypeCheck, IInputValidatorDescriptor.Severity of Undefined is treated as Severe, not Error,
+ *   When DataTypeCheck, InputValidatorDescriptor.Severity of Undefined is treated as Severe, not Error,
  *   to stop further Condition evaluation.
  *   Users may set RegExpCondition's Category to DataTypeCheck if the expression confirms 
  *   a string is the expected data type, like USPhoneNumber or EmailAddress.
@@ -157,18 +158,18 @@ export enum ConditionCategory {
     /**
      * Use when the data is required: RequiredTextCondition and RequiredIndexCondition.
      * These will be evaluated first by the InputValueHost, and will stop further evaluation
-     * if evaluation is NoMatch (unless user explicitly sets IInputValidatorDescriptor.Severity to Error or Warning.)
+     * if evaluation is NoMatch (unless user explicitly sets InputValidatorDescriptor.Severity to Error or Warning.)
      */
     Required,
     /**
      * Use to check the data is in its expected final form, whether a primitive, object (like Date), or
      * if it remains a string, it contains the expected pattern: DataTypeCheckCondition, RegExpCondition
      * These will be evaluated before all other conditions except Required, and will stop further evaluation
-     * if evaluation is NoMatch (unless user explicitly sets IInputValidatorDescriptor.Severity to Error or Warning.)
+     * if evaluation is NoMatch (unless user explicitly sets InputValidatorDescriptor.Severity to Error or Warning.)
       */
     DataTypeCheck,
     /**
-     * Provides logical comparison: ValuesEqualCondition, ValueGTSecondValueCondition, etc.
+     * Provides logical comparison: EqualToCondition, GreaterThanCondition, etc.
      */
     Comparison,
     /**
@@ -180,7 +181,7 @@ export enum ConditionCategory {
     Contents,
     /**
      * Evaluation is based on the evaluation results of Child conditions: 
-     * AndConditions/EveryCondition, OrConditions/AnyCondition, CountMatchingConditions
+     * AllMatchCondition/EveryCondition, AnyMatchCondition/AnyCondition, CountMatchesCondition
      */
     Children,
     /**
@@ -202,7 +203,7 @@ export enum ConditionCategory {
  * to CompareValues instead of ValueHost.DataType.
  * Some LookupKeys that might be used: CaseInsensitive, Integer, TotalDays
  */
-export interface ISupportsDataTypeConverter extends IConditionDescriptor
+export interface SupportsDataTypeConverter extends ConditionDescriptor
 {
     /**
      * Assign to a LookupKey that is associated with a DataTypeConverter.
@@ -214,14 +215,14 @@ export interface ISupportsDataTypeConverter extends IConditionDescriptor
 }
 
 /**
- * Creates instances of Conditions given an IConditionDescriptor.
- * IConditionDescriptor.Type is used to determine the Condition class to create.
+ * Creates instances of Conditions given an ConditionDescriptor.
+ * ConditionDescriptor.Type is used to determine the Condition class to create.
  */
 export interface IConditionFactory {
     /**
-     * Create an instance of a Condition from the IConditionDescriptor.
+     * Create an instance of a Condition from the ConditionDescriptor.
      * @param descriptor 
      * @returns 
      */
-    Create(descriptor: IConditionDescriptor): ICondition;
+    Create(descriptor: ConditionDescriptor): ICondition;
 }

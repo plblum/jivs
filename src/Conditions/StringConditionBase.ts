@@ -6,13 +6,13 @@
 import { ConditionEvaluateResult } from "../Interfaces/Conditions";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { IOneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
+import { OneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
 
 /**
  * Base implementation of a Condition that evaluates a string as the native value.
- * Supported by IStringConditionDescriptor which introduces the Trim property.
+ * Supported by StringConditionDescriptor which introduces the Trim property.
  */
-export abstract class StringConditionBase<TConditionDescriptor extends IStringConditionDescriptor>
+export abstract class StringConditionBase<TConditionDescriptor extends StringConditionDescriptor>
     extends OneValueConditionBase<TConditionDescriptor>
 {
     /**
@@ -55,7 +55,7 @@ export abstract class StringConditionBase<TConditionDescriptor extends IStringCo
     }
 }
 
-export interface IStringConditionDescriptor extends IOneValueConditionDescriptor {
+export interface StringConditionDescriptor extends OneValueConditionDescriptor {
     /**
      * Indicates that validation is applied only after trimming a string value
      * that is returned by a input field/element whose native datatype is string.

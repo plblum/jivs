@@ -2,9 +2,9 @@
  * {@inheritDoc NonInputValueHost}
  * @module ValueHosts/NonInputValueHost
  */
-import { IInputValueHostDescriptor } from "../Interfaces/InputValueHost";
-import { INonInputValueHost, INonInputValueHostDescriptor, INonInputValueHostState } from "../Interfaces/NonInputValueHost";
-import { IValueHostDescriptor } from "../Interfaces/ValueHost";
+import { InputValueHostDescriptor } from "../Interfaces/InputValueHost";
+import { INonInputValueHost, NonInputValueHostDescriptor, NonInputValueHostState } from "../Interfaces/NonInputValueHost";
+import { ValueHostDescriptor } from "../Interfaces/ValueHost";
 import { IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ValueHostBase, ValueHostBaseGenerator } from "./ValueHostBase";
 
@@ -26,10 +26,10 @@ import { ValueHostBase, ValueHostBaseGenerator } from "./ValueHostBase";
  *   your input fields/elements to get their value from ValidationManager and upon change, provide
  *   the new values back.
  */
-export class NonInputValueHost extends ValueHostBase<INonInputValueHostDescriptor, INonInputValueHostState>
+export class NonInputValueHost extends ValueHostBase<NonInputValueHostDescriptor, NonInputValueHostState>
     implements INonInputValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, descriptor: INonInputValueHostDescriptor, state: INonInputValueHostState)
+    constructor(valueHostsManager: IValueHostsManager, descriptor: NonInputValueHostDescriptor, state: NonInputValueHostState)
     {
         super(valueHostsManager, descriptor, state);
     }
@@ -43,19 +43,19 @@ export const NonInputValueHostType = 'NonInput';
  */
 export class NonInputValueHostGenerator extends ValueHostBaseGenerator {
 
-    public CanCreate(descriptor: IValueHostDescriptor): boolean {
+    public CanCreate(descriptor: ValueHostDescriptor): boolean {
         if (descriptor.Type != null)    // null/undefined
             return descriptor.Type === NonInputValueHostType;
-        let test = descriptor as unknown as IInputValueHostDescriptor;
+        let test = descriptor as unknown as InputValueHostDescriptor;
         if (test.ValidatorDescriptors === undefined)
             return true;
         return false;
     }
-    public Create(valueHostsManager: IValueHostsManager, descriptor: INonInputValueHostDescriptor, state: INonInputValueHostState): INonInputValueHost {
+    public Create(valueHostsManager: IValueHostsManager, descriptor: NonInputValueHostDescriptor, state: NonInputValueHostState): INonInputValueHost {
         return new NonInputValueHost(valueHostsManager, descriptor, state);
     }
 
-    public CleanupState(state: INonInputValueHostState, descriptor: INonInputValueHostDescriptor): void {
+    public CleanupState(state: NonInputValueHostState, descriptor: NonInputValueHostDescriptor): void {
         // nothing needed.
     }
 }

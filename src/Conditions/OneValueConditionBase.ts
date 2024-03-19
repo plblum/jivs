@@ -4,7 +4,7 @@
  * @module Conditions/OneValueConditionBase
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IConditionDescriptor } from "../Interfaces/Conditions";
+import { ConditionDescriptor } from "../Interfaces/Conditions";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { ConditionBase } from "./ConditionBase";
@@ -12,10 +12,10 @@ import { ConditionBase } from "./ConditionBase";
 
 
 /**
- * Base implementation of ICondition with IOneValueConditionDescriptor.
+ * Base implementation of ICondition with OneValueConditionDescriptor.
  * The Descriptor introduces ValueHostId.
  */
-export abstract class OneValueConditionBase<TConditionDescriptor extends IOneValueConditionDescriptor>
+export abstract class OneValueConditionBase<TConditionDescriptor extends OneValueConditionDescriptor>
     extends ConditionBase<TConditionDescriptor>
 {
     constructor(descriptor: TConditionDescriptor) {
@@ -54,7 +54,7 @@ export abstract class OneValueConditionBase<TConditionDescriptor extends IOneVal
 /**
  * Base conditionDescriptor for Conditions that need to get a value from a ValueHost.
  */
-export interface IOneValueConditionDescriptor extends IConditionDescriptor {
+export interface OneValueConditionDescriptor extends ConditionDescriptor {
     /**
      * One source for the value to evaluate.
      * By design, Condition.Evaluate takes a valueHost object, allowing the caller 
@@ -81,7 +81,7 @@ export interface IOneValueConditionDescriptor extends IConditionDescriptor {
  * For conditions where it takes 2 values to evaluate properly, like
  * when comparing the values of two properties.
  */
-export interface ITwoValueConditionDescriptor extends IOneValueConditionDescriptor {
+export interface TwoValueConditionDescriptor extends OneValueConditionDescriptor {
     /**
      * ValueHostId to retrieve a ValueHost that will be the source
      * of another value for the Evaluate method.

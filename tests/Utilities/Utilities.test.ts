@@ -1,7 +1,7 @@
 import { RegExpCondition } from './../../src/Conditions/ConcreteConditions';
 import { ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { AssertNotNull } from "../../src/Utilities/ErrorHandling";
-import { CultureLanguageCode, DeepClone, DeepEquals, ValidationGroupsMatch } from "../../src/Utilities/Utilities";
+import { CultureLanguageCode, DeepClone, DeepEquals, GroupsMatch } from "../../src/Utilities/Utilities";
 
 
 
@@ -114,36 +114,36 @@ describe('Utilities.DeepClone', () => {
     });    
 });
 
-// function ValidationGroupsMatch(group1: string | Array<string> | undefined | null,
+// function GroupsMatch(group1: string | Array<string> | undefined | null,
 //    group2: string | Array<string>| undefined | null): boolean
-describe('Utilities.ValidationGroupsMatch', () => {
+describe('Utilities.GroupsMatch', () => {
     test('Matching validation groups', () => {
-        expect(ValidationGroupsMatch(null, null)).toBe(true); 
-        expect(ValidationGroupsMatch(undefined, undefined)).toBe(true); 
-        expect(ValidationGroupsMatch('', '')).toBe(true);
-        expect(ValidationGroupsMatch(null, undefined)).toBe(true); 
-        expect(ValidationGroupsMatch(undefined, '')).toBe(true); 
-        expect(ValidationGroupsMatch([], '')).toBe(true);
-        expect(ValidationGroupsMatch('A', 'A')).toBe(true);
-        expect(ValidationGroupsMatch([], [])).toBe(true);
-        expect(ValidationGroupsMatch(['A'], ['A'])).toBe(true);
-        expect(ValidationGroupsMatch(['A'], ['a'])).toBe(true);
-        expect(ValidationGroupsMatch(['a'], ['A'])).toBe(true);
-        expect(ValidationGroupsMatch(['A', 'B'], ['A', 'B'])).toBe(true);
-        expect(ValidationGroupsMatch(['A', 'B'], ['a', 'b'])).toBe(true);
-        expect(ValidationGroupsMatch(['A', 'B'], ['B', 'A'])).toBe(true);        
-        expect(ValidationGroupsMatch(['A', 'B'], ['b', 'a'])).toBe(true);
-        expect(ValidationGroupsMatch(['A', 'B'], ['B',])).toBe(true);        
-        expect(ValidationGroupsMatch(['A', 'B'], ['a'])).toBe(true);
-        expect(ValidationGroupsMatch(['A'], ['B', 'A'])).toBe(true);        
-        expect(ValidationGroupsMatch(['B'], ['b', 'a'])).toBe(true);
+        expect(GroupsMatch(null, null)).toBe(true); 
+        expect(GroupsMatch(undefined, undefined)).toBe(true); 
+        expect(GroupsMatch('', '')).toBe(true);
+        expect(GroupsMatch(null, undefined)).toBe(true); 
+        expect(GroupsMatch(undefined, '')).toBe(true); 
+        expect(GroupsMatch([], '')).toBe(true);
+        expect(GroupsMatch('A', 'A')).toBe(true);
+        expect(GroupsMatch([], [])).toBe(true);
+        expect(GroupsMatch(['A'], ['A'])).toBe(true);
+        expect(GroupsMatch(['A'], ['a'])).toBe(true);
+        expect(GroupsMatch(['a'], ['A'])).toBe(true);
+        expect(GroupsMatch(['A', 'B'], ['A', 'B'])).toBe(true);
+        expect(GroupsMatch(['A', 'B'], ['a', 'b'])).toBe(true);
+        expect(GroupsMatch(['A', 'B'], ['B', 'A'])).toBe(true);        
+        expect(GroupsMatch(['A', 'B'], ['b', 'a'])).toBe(true);
+        expect(GroupsMatch(['A', 'B'], ['B',])).toBe(true);        
+        expect(GroupsMatch(['A', 'B'], ['a'])).toBe(true);
+        expect(GroupsMatch(['A'], ['B', 'A'])).toBe(true);        
+        expect(GroupsMatch(['B'], ['b', 'a'])).toBe(true);
     });
     test('Non-matching validation groups', () => {
 
-        expect(ValidationGroupsMatch('A', 'B')).toBe(false);
-        expect(ValidationGroupsMatch(['A'], ['B'])).toBe(false);
-        expect(ValidationGroupsMatch(['A'], ['B', 'C'])).toBe(false);
-        expect(ValidationGroupsMatch(['A', 'C'], ['B'])).toBe(false);
+        expect(GroupsMatch('A', 'B')).toBe(false);
+        expect(GroupsMatch(['A'], ['B'])).toBe(false);
+        expect(GroupsMatch(['A'], ['B', 'C'])).toBe(false);
+        expect(GroupsMatch(['A', 'C'], ['B'])).toBe(false);
     });    
 });
 

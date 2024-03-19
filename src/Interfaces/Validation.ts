@@ -3,23 +3,23 @@
  * @module ValueHosts/Interfaces
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IInputValidateResult } from "./InputValidator";
+import { InputValidateResult } from "./InputValidator";
 
 /**
  * Parameter for the Validate method on InputValueHost and ValidationManager.
  * It provides additional guidance on how to get the validators involved.
  */
-export interface IValidateOptions
+export interface ValidateOptions
 {
     /**
-     * Group validation name, a tool to group validators with a specific submit command.
-     * Use when there is more than one list of ValueHosts to be validated together.
+     * Group validation name, a tool to group InputValueHosts with a specific submit command when validating.
+     * Use when there is more than one group of InputValueHosts to be validated together.
      * For example, the ValidationManager handles two forms at once. Give
-     * the InputValidatorDescriptor.Group a name for each form. Then make their submit command
+     * the InputValueHostDescriptor.Group a name for each form. Then make their submit command
      * pass in the same group name.
-     * When Group is undefined or "*", validate does not check group names. All Validators 
-     * within the ValidationManager get involved.
-     * When assigned, only validators with a matching group name (case insensitive) will be involved.
+     * When Group is undefined or "*", Validate does not check group names. All InputValueHosts 
+     * within the ValidationManager are validated.
+     * When assigned, only InputValueHosts with a matching group name (case insensitive) will be involved.
      */
     Group?: string;
 
@@ -51,7 +51,7 @@ export interface IValidateOptions
 /**
  * Result of the Validate function that will be saved in InputValueHostState
  */
-export interface IStatefulValidateResult {
+export interface StatefulValidateResult {
     /**
      * The state of validation for this ValueHost.
      */
@@ -60,12 +60,12 @@ export interface IStatefulValidateResult {
     /**
      * The issues that were found.
      */
-    IssuesFound: Array<IIssueFound> | null;
+    IssuesFound: Array<IssueFound> | null;
 }
 /**
  * Result of the Validate function.
  */
-export interface IValidateResult extends IStatefulValidateResult {
+export interface ValidateResult extends StatefulValidateResult {
     /**
      * Any promises returned by InputValidator.Validate
      * These still need to finish before supplying their evaluation results.
@@ -73,7 +73,7 @@ export interface IValidateResult extends IStatefulValidateResult {
      * There should never be an empty array as the presence of an array
      * will make the system think there are promises pending.
      */
-    Pending?: Array<Promise<IInputValidateResult>> | null;
+    Pending?: Array<Promise<InputValidateResult>> | null;
 }
 
 
@@ -147,7 +147,7 @@ export enum ValidationSeverity {
 /**
  * Snapshot of the results of Validate when there are errors/warnings ("Issues")
  */
-export interface IIssueFound {
+export interface IssueFound {
     /**
      * Containing ValueHostId
      */
@@ -184,7 +184,7 @@ export interface IIssueFound {
 /**
  * Results for function that reveal error messages.
  */
-export interface IIssueSnapshot {
+export interface IssueSnapshot {
     Id: ValueHostId;
     Severity: ValidationSeverity;
     ErrorMessage: string;
@@ -197,7 +197,7 @@ export interface IIssueSnapshot {
  * the Validation Summary (GetIssuesForSummary) and optionally for an individual ValueHostId,
  * by specifying that ValueHostID in AssociatedValueHostId.
  */
-export interface IBusinessLogicError {
+export interface BusinessLogicError {
     /**
      * The error message to show to the user. It should be fully realized, no tokens
      * or language conversion expected to be handled by the ValidationManager.
@@ -219,12 +219,12 @@ export interface IBusinessLogicError {
     Severity?: ValidationSeverity;
     /**
      * Optional information about the error to pass along to the ValidationSummary.
-     * It should be a short error code as a string. It will be used in the IIssueFound
-     * returned from Validate and GetIssuesFound in IIssueFound.ConditionType.
-     * ConditionType is used to uniquely identify each IIssueFound, and your value
+     * It should be a short error code as a string. It will be used in the IssueFound
+     * returned from Validate and GetIssuesFound in IssueFound.ConditionType.
+     * ConditionType is used to uniquely identify each IssueFound, and your value
      * here will serve the same role. As a result, its value cannot match any
      * ConditionType.
-     * If not supplied, the IIssueFound.ConditionType will be assigned a generated value.
+     * If not supplied, the IssueFound.ConditionType will be assigned a generated value.
      */
     ErrorCode?: string;
 }

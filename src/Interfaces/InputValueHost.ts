@@ -3,12 +3,12 @@
  * @module ValueHosts/Interfaces
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IInputValidatorDescriptor } from "./InputValidator";
+import { InputValidatorDescriptor } from "./InputValidator";
 import {
-    type IValidateOptions, type IValidateResult, ValidationResult,
-    type IBusinessLogicError, type IIssueFound, type IIssueSnapshot, IStatefulValidateResult
+    type ValidateOptions, type ValidateResult, ValidationResult,
+    type BusinessLogicError, type IssueFound, type IssueSnapshot, StatefulValidateResult
 } from "./Validation";
-import type { IValueHost, ISetValueOptions, IValueHostDescriptor, IValueHostState } from "./ValueHost";
+import type { IValueHost, SetValueOptions, ValueHostDescriptor, ValueHostState } from "./ValueHost";
 
 /**
 * Manages a value that may use input validation.
@@ -33,7 +33,7 @@ export interface IInputValueHost extends IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetInputValue(value: any, options?: ISetValueOptions): void;
+    SetInputValue(value: any, options?: SetValueOptions): void;
 
     /**
      * Sets both (native data type) Value and Input Value at the same time
@@ -52,7 +52,7 @@ export interface IInputValueHost extends IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetValues(nativeValue: any, inputValue: any, options?: ISetValueOptions): void;
+    SetValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
 
     /**
      * When SetValue, SetValues, SetInputValue, or SetToUndefined occurs,
@@ -72,7 +72,7 @@ export interface IInputValueHost extends IValueHost {
      * @param options - Provides guidance on which validators to include.
      * @returns IValidationResultDetails
      */
-    Validate(options?: IValidateOptions): IValidateResult
+    Validate(options?: ValidateOptions): ValidateResult
 
     /**
      * Changes the validation state to itself initial: Undetermined
@@ -105,7 +105,7 @@ export interface IInputValueHost extends IValueHost {
      * Each time called, it adds to the existing list. Use ClearBusinessLogicErrors first if starting a fresh list.
      * @param error - An error to show.
      */
-    SetBusinessLogicError(error: IBusinessLogicError): void;
+    SetBusinessLogicError(error: BusinessLogicError): void;
 
     /**
      * Removes any business logic errors. Generally called automatically by
@@ -123,18 +123,19 @@ export interface IInputValueHost extends IValueHost {
      * The results of the latest Validate()
      * @returns Issues found or null if none.
      */
-    GetIssuesFound(): Array<IIssueFound> | null;
+    GetIssuesFound(): Array<IssueFound> | null;
 
     /**
      * Lists all error messages and supporting info about each validator
-     * for use by a input field/element that shows its own error messages (IInputValueHostState.ErrorMessage)
+     * for use by a input field/element that shows its own error messages (InputValueHostState.ErrorMessage)
      * @returns 
      */
-    GetIssuesForInput(): Array<IIssueSnapshot>;
+    GetIssuesForInput(): Array<IssueSnapshot>;
 
     /**
-     * A list of all issues to show in a Validation Summary widget for a giving validation group.
-     * @param group 
+     * A list of all issues to show in a Validation Summary widget optionally for a given group.
+     * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
+     * the same group (case insensitive match).
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
@@ -144,7 +145,7 @@ export interface IInputValueHost extends IValueHost {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    GetIssuesForSummary(group?: string): Array<IIssueSnapshot>;
+    GetIssuesForSummary(group?: string): Array<IssueSnapshot>;
 
     /**
      * Returns the ConversionErrorTokenValue supplied by the latest call
@@ -164,7 +165,7 @@ export interface IInputValueHost extends IValueHost {
 /**
  * Just the data that is used to describe this input value.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to IInputValueHostDescriptor.
+ * It should be generatable from JSON, and simply gets typed to InputValueHostDescriptor.
  * This provides the backing data for each InputValueHost.
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this, except values are converted to their native forms
@@ -174,15 +175,34 @@ export interface IInputValueHost extends IValueHost {
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  */
-export interface IInputValueHostBaseDescriptor extends IValueHostDescriptor {
+export interface InputValueHostBaseDescriptor extends ValueHostDescriptor {
 
+    /**
+     * InputValueHosts can be part of one or more named groups.
+     * Groups are part of validating the complete Model.
+     * All InputValueHosts on the page may be asked to validate.
+     * Often fields are used for different aspects of the page, like 
+     * a login or search field in the header is a different feature
+     * from the form where data is being gathered.
+     * Submit buttons usually call Validate and supply their group name.
+     * When they do, InputValueHosts associated with that button must have the same
+     * group name.
+     * Values:
+     * * undefined, null or '*' all mean the group feature is ignored.
+     * * string - a single group name. If it does not match the requested group
+     *   in the Validate function, the validator is treated as disabled.
+     *   Case insensitive matching.
+     * * string[] - a list of group names. If none match the requested group
+     *   in the Validate function, the validator is treated as disabled.
+     */
+    Group?: undefined | null | string | Array<string>;
 }
 
 
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface IInputValueHostBaseState extends IValueHostState, IStatefulValidateResult {
+export interface InputValueHostBaseState extends ValueHostState, StatefulValidateResult {
 
     /**
      * The value from the input field/element, even if invalid.
@@ -195,7 +215,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IStatefulVali
 
 
     /**
-     * Validation group used when Validate was last called. It is associated
+     * Group used when Validate was last called. It is associated
      * with the current IssuesFound
      */
     Group?: string;
@@ -212,7 +232,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IStatefulVali
      * If there are any business logic errors, they are kept here.
      * If not, this is undefined.
      */
-    BusinessLogicErrors?: Array<IBusinessLogicError>;
+    BusinessLogicErrors?: Array<BusinessLogicError>;
 
     /**
      * When true, an async InputValidator is running
@@ -223,7 +243,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IStatefulVali
 /**
  * Just the data that is used to describe this input value.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to IInputValueHostDescriptor.
+ * It should be generatable from JSON, and simply gets typed to InputValueHostDescriptor.
  * This provides the backing data for each InputValueHost.
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this, except values are converted to their native forms
@@ -233,7 +253,7 @@ export interface IInputValueHostBaseState extends IValueHostState, IStatefulVali
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  */
-export interface IInputValueHostDescriptor extends IInputValueHostBaseDescriptor {
+export interface InputValueHostDescriptor extends InputValueHostBaseDescriptor {
 
     /**
      * How to validate based on the business rules.
@@ -241,13 +261,13 @@ export interface IInputValueHostDescriptor extends IInputValueHostBaseDescriptor
      * This array may need to host validators that are client-side only,
      * such as parser error converting "abc" to number.
      */
-    ValidatorDescriptors: Array<IInputValidatorDescriptor> | null;
+    ValidatorDescriptors: Array<InputValidatorDescriptor> | null;
 }
 
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface IInputValueHostState extends IInputValueHostBaseState {
+export interface InputValueHostState extends InputValueHostBaseState {
 
 }
 

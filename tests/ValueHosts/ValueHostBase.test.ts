@@ -1,16 +1,16 @@
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import {
-    type IValueHostState, type IValueHost, IValueHostDescriptor
+    type ValueHostState, type IValueHost, ValueHostDescriptor
 } from "../../src/Interfaces/ValueHost";
 import { IValueHostCallbacks, ToIValueHostCallbacks, ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { MockValidationServices, MockValidationManager } from "../Mocks";
-import { StringLookupKey } from "../../src/DataTypes/LookupKeys";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 
-interface IPublicifiedValueHostState extends IValueHostState
+interface IPublicifiedValueHostState extends ValueHostState
 {
     Counter: number;    // incremented each time the state is cleaned    
 }
@@ -18,16 +18,16 @@ interface IPublicifiedValueHostState extends IValueHostState
  * Subclass of ValueHostBase to focus testing on ValueHostBase members
  * including exposing protected members
  */
-class PublicifiedValueHostBase extends ValueHostBase<IValueHostDescriptor, IPublicifiedValueHostState>
+class PublicifiedValueHostBase extends ValueHostBase<ValueHostDescriptor, IPublicifiedValueHostState>
 {
-    constructor(valueHostsManager : IValueHostsManager, descriptor: IValueHostDescriptor, state: IPublicifiedValueHostState) {
+    constructor(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IPublicifiedValueHostState) {
         super(valueHostsManager, descriptor, state);
     }
     public ExposeServices(): IValidationServices {
         return this.Services;
     }
 
-    public ExposeDescriptor(): IValueHostDescriptor {
+    public ExposeDescriptor(): ValueHostDescriptor {
         return this.Descriptor;
     }
 
@@ -39,16 +39,16 @@ class PublicifiedValueHostBase extends ValueHostBase<IValueHostDescriptor, IPubl
  * This implementation of IValueHostGenerator is actually tested in ValueHostFactory.tests.ts
  */
 class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
-    public CanCreate(descriptor: IValueHostDescriptor): boolean {
+    public CanCreate(descriptor: ValueHostDescriptor): boolean {
         return descriptor.Type === 'PublicifyValueHostBase';
     }
-    public Create(valueHostsManager : IValueHostsManager, descriptor: IValueHostDescriptor, state: IPublicifiedValueHostState): IValueHost {
+    public Create(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IPublicifiedValueHostState): IValueHost {
         return new PublicifiedValueHostBase(valueHostsManager, descriptor, state);
     }
-    public CleanupState(state: IPublicifiedValueHostState, descriptor: IValueHostDescriptor): void {
+    public CleanupState(state: IPublicifiedValueHostState, descriptor: ValueHostDescriptor): void {
         state.Counter = 0;
     }
-    public CreateState(descriptor: IValueHostDescriptor): IPublicifiedValueHostState {
+    public CreateState(descriptor: ValueHostDescriptor): IPublicifiedValueHostState {
         let state: IPublicifiedValueHostState = {
             Id: descriptor.Id,
             Value: descriptor.InitialValue,
@@ -76,17 +76,17 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
  * Id: 'Field1',
  * Label: 'Label1',
  * Type: 'PublicifyValueHostBase',
- * DataType: StringLookupKey,
+ * DataType: LookupKey.String,
  * InitialValue: 'DATA'
  * @returns An object with all of the parts that were setup including 
  * ValidationManager, Services, ValueHosts, the complete Descriptor,
  * and the state.
  */
-function SetupValueHost(descriptor?: Partial<IValueHostDescriptor>, initialValue?: any): {
+function SetupValueHost(descriptor?: Partial<ValueHostDescriptor>, initialValue?: any): {
     services: MockValidationServices,
     validationManager: MockValidationManager,
-    descriptor: IValueHostDescriptor,
-    state: IValueHostState,
+    descriptor: ValueHostDescriptor,
+    state: ValueHostState,
     valueHost: PublicifiedValueHostBase
 } {
     let services = new MockValidationServices(false, false);
@@ -95,14 +95,14 @@ function SetupValueHost(descriptor?: Partial<IValueHostDescriptor>, initialValue
     services.ValueHostFactory = factory;
     let vm = new MockValidationManager(services);
 
-    let defaultDescriptor: IValueHostDescriptor = {
+    let defaultDescriptor: ValueHostDescriptor = {
         Id: 'Field1',
         Label: 'Label1',
         Type: 'PublicifyValueHostBase',
-        DataType: StringLookupKey,
+        DataType: LookupKey.String,
         InitialValue: 'DATA'
     };
-    let updatedDescriptor: IValueHostDescriptor = (!descriptor) ?
+    let updatedDescriptor: ValueHostDescriptor = (!descriptor) ?
         defaultDescriptor :
         { ...defaultDescriptor, ...descriptor };
     let state: IPublicifiedValueHostState = {
@@ -134,7 +134,7 @@ describe('constructor and resulting property values', () => {
 
         expect(testItem.GetId()).toBe('Field1');
         expect(testItem.GetLabel()).toBe('Label1');
-        expect(testItem.GetDataType()).toBe(StringLookupKey);
+        expect(testItem.GetDataType()).toBe(LookupKey.String);
         expect(testItem.GetValue()).toBeUndefined();
         expect(testItem.IsChanged).toBe(false);
     });
@@ -151,11 +151,11 @@ describe('constructor and resulting property values', () => {
 
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);        
-        let descriptor: IValueHostDescriptor = {
+        let descriptor: ValueHostDescriptor = {
             Id: 'Field1',
             Label: 'Label1',
             Type: 'PublicifyValueHostBase',
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
         let state: IPublicifiedValueHostState = {
@@ -368,7 +368,7 @@ describe('SetValue', () => {
         const finalValue = 200;
 
         let config = SetupValueHost({}, initialValue);
-        let changedState: Array<IValueHostState> = []
+        let changedState: Array<ValueHostState> = []
         config.validationManager.OnValueHostStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };
@@ -386,7 +386,7 @@ describe('SetValue', () => {
         const initialValue = 100;
 
         let config = SetupValueHost({}, initialValue);
-        let changedState: Array<IValueHostState> = []
+        let changedState: Array<ValueHostState> = []
         config.validationManager.OnValueHostStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };

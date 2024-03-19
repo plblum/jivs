@@ -3,9 +3,9 @@
  * @module ValueHosts/Interfaces
  */
 import { IValueHostResolver } from "./ValueHostResolver";
-import { ConditionEvaluateResult, ICondition, IConditionDescriptor } from "./Conditions";
+import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from "./Conditions";
 import { IInputValueHost } from "./InputValueHost";
-import { IIssueFound, IValidateOptions, ValidationSeverity } from "./Validation";
+import { IssueFound, ValidateOptions, ValidationSeverity } from "./Validation";
 import { IGatherValueHostIds } from "./ValueHost";
 
 /**
@@ -27,7 +27,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostId
      * @returns Identifies the ConditionEvaluationResult.
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
-    Validate(options: IValidateOptions): IInputValidateResult | Promise<IInputValidateResult>;
+    Validate(options: ValidateOptions): InputValidateResult | Promise<InputValidateResult>;
 
     /**
      * Exposes the Condition behind the validator
@@ -39,7 +39,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostId
 /**
  * Just the data that is used to describe one validator assigned to a ValueHost.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to IInputValidatorDescriptor.
+ * It should be generatable from JSON, and simply gets typed to InputValidatorDescriptor.
  * This provides the backing data for each InputValidatorInfo.
  * When placed into the InputValidatorInfo, it is treated as immutable
  * and can be used as state in React.
@@ -49,14 +49,14 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostId
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  */
-export interface IInputValidatorDescriptor {
+export interface InputValidatorDescriptor {
     // -----------------------
     // There are two ways to supply this validator's Condition.
     // 1. Pass a ConditionDescriptor and we'll create the correct Condition instance
     // registered with the ValidationServices.ConditionFactory.
-    // This is limited to Condition instances that implement IConditionCore<IConditionDescriptor>.
+    // This is limited to Condition instances that implement IConditionCore<ConditionDescriptor>.
     // 2. Provide a function that will return the instance.
-    // This is ideal for when the Condition does not implement IConditionCore<IConditionDescriptor>
+    // This is ideal for when the Condition does not implement IConditionCore<ConditionDescriptor>
     // such as your custom validation functions that hook back into your business logic.
     // -----------------------
 
@@ -65,16 +65,16 @@ export interface IInputValidatorDescriptor {
     * Like all Descriptors in this system, this is expected to be immutable.
     * Only use this when ConditionCreator is null.
     */
-    ConditionDescriptor: IConditionDescriptor | null;
+    ConditionDescriptor: ConditionDescriptor | null;
 
     /**
      * Use to create the Condition instance yourself, especially to support
-     * implementations of ICondition that don't implement IConditionCore<IConditionDescriptor>.
+     * implementations of ICondition that don't implement IConditionCore<ConditionDescriptor>.
      * Only use this when ConditionDescriptor is null.
      * @param requester
      * @returns 
      */
-    ConditionCreator?: (requester: IInputValidatorDescriptor) => ICondition | null;
+    ConditionCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
 
     /**
      * The ConditionDescriptor to create an Enabler Condition.
@@ -84,18 +84,18 @@ export interface IInputValidatorDescriptor {
      * being checked.
      * Leave it null if not needed.
      * An EnablerDescriptor instance should be considered immutable once assigned here.
-     * Use this when the Condition extends IConditionCore<IConditionDescriptor>.
+     * Use this when the Condition extends IConditionCore<ConditionDescriptor>.
      * Leave null if EnablerCreator is asssigned.
      */
-    EnablerDescriptor?: IConditionDescriptor | null | undefined;
+    EnablerDescriptor?: ConditionDescriptor | null | undefined;
     /**
      * Use to create the Condition instance yourself, especially to support
-     * implementations of ICondition that don't implement IConditionCore<IConditionDescriptor>.
+     * implementations of ICondition that don't implement IConditionCore<ConditionDescriptor>.
      * Only use this when EnablerDescriptor is null.
      * @param requester
      * @returns 
      */
-    EnablerCreator?: (requester: IInputValidatorDescriptor) => ICondition | null;
+    EnablerCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
 
     /**
      * When false, validation is never run. This supersedes the Enabler too.
@@ -117,26 +117,6 @@ export interface IInputValidatorDescriptor {
      *   given the InputValidator as a parameter.
      */
     Severity?: undefined | ValidationSeverity | ((host: IInputValidator) => ValidationSeverity);
-
-    /**
-     * Validators can be part of one or more named groups.
-     * Groups are part of validating the complete Model.
-     * All validators on the page may be asked to validate.
-     * Often fields are used for different aspects of the page, like 
-     * a login or search field in the header is a different feature
-     * from the form where data is being gathered.
-     * Submit buttons usually call Validate and supply their validation group name.
-     * When they do, validators associated with that button must have the same
-     * group name.
-     * Values:
-     * * undefined, null or '*' all mean the group feature is ignored.
-     * * string - a single group name. If it does not match the requested group
-     *   in the Validate function, the validator is treated as disabled.
-     *   Case insensitive matching.
-     * * string[] - a list of group names. If none match the requested group
-     *   in the Validate function, the validator is treated as disabled.
-     */
-    Group?: undefined | null | string | Array<string>;
 
     /**
      * The error message "template" that will appear on screen when the condition is NoMatch.
@@ -197,7 +177,7 @@ export interface IInputValidatorDescriptor {
 /**
  * Result of the Validate function.
  */
-export interface IInputValidateResult {
+export interface InputValidateResult {
     /**
      * The result of Validate
      */
@@ -207,11 +187,10 @@ export interface IInputValidateResult {
      * Assigned with issue details when an issue is found.
      * Null when no issue is found.
      */
-    IssueFound: IIssueFound | null,
+    IssueFound: IssueFound | null,
 
     /**
-     * When true, Validate bailed before evaluation due to Enabled, Enabler
-     * or validation group mismatch.
+     * When true, Validate bailed before evaluation due to Enabled or Enabler
      */
     Skipped?: boolean;
 }
@@ -228,12 +207,12 @@ export interface IMessageTokenSource {
      * attributes within the token, like {Value:AbbrevDateFormat}
      */
     GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver):
-        Array<ITokenLabelAndValue>;
+        Array<TokenLabelAndValue>;
 }
 /**
  * Result from IMessageTokenSource.GetValuesForTokens
  */
-export interface ITokenLabelAndValue {
+export interface TokenLabelAndValue {
     /**
      * The text within the {} of the token. Used to match tokens.
      */
@@ -265,7 +244,7 @@ export interface ITokenLabelAndValue {
  * This interface targets unit testing with mocks.
  */
 export interface IInputValidatorFactory {
-    Create(valueHost: IInputValueHost, descriptor: IInputValidatorDescriptor): IInputValidator;
+    Create(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor): IInputValidator;
 }
 
 /**

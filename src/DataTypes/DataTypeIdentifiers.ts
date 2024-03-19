@@ -8,17 +8,16 @@
  * @module DataTypes/DataTypeIdentifiers
  */
 import { IDataTypeIdentifier } from "../Interfaces/DataTypes";
-import { BooleanLookupKey, DateLookupKey, NumberLookupKey, StringLookupKey } from "./LookupKeys";
-
+import { LookupKey } from "./LookupKeys";
 /**
  * Identifies a value as a strings (typeof value === 'string'), and associates it
- * with the lookup key "String" (const StringLookupKey)
+ * with the lookup key "String" (const LookupKey.String)
  */
 export class StringDataTypeIdentifier implements IDataTypeIdentifier
 {
     public get DataTypeLookupKey(): string
     {
-        return StringLookupKey;
+        return LookupKey.String;
     }
     public SupportsValue(value: any): boolean {
         return typeof value === 'string';
@@ -27,13 +26,13 @@ export class StringDataTypeIdentifier implements IDataTypeIdentifier
 }
 /**
  * Identifies a value as a number (typeof value === 'number'), and associates it
- * with the lookup key "Number" (const NumberLookupKey)
+ * with the lookup key "Number" (const LookupKey.Number)
  */
 export class NumberDataTypeIdentifier implements IDataTypeIdentifier
 {
     public get DataTypeLookupKey(): string
     {
-        return NumberLookupKey;
+        return LookupKey.Number;
     }
     public SupportsValue(value: any): boolean {
         return typeof value === 'number';
@@ -43,13 +42,13 @@ export class NumberDataTypeIdentifier implements IDataTypeIdentifier
 
 /**
  * Identifies a value as a boolean (typeof value === 'boolean'), and associates it
- * with the lookup key "Boolean" (const BooleanLookupKey)
+ * with the lookup key "Boolean" (const LookupKey.Boolean)
  */
 export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
 {
     public get DataTypeLookupKey(): string
     {
-        return BooleanLookupKey;
+        return LookupKey.Boolean;
     }
     public SupportsValue(value: any): boolean {
         return typeof value === 'boolean';
@@ -59,7 +58,7 @@ export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
 
 /**
  * Identifies a value as a Date object (value instanceof Date), and associates it
- * with the lookup key "Date" (const DateLookupKey)
+ * with the lookup key "Date" (const LookupKey.Date)
  * It uses the lookup key "Date" which only has the date part of date and time, 
  * not "DateTime" because the time part is less frequently used.
  * Explicitly specify a lookup key of "DateTime" if time is needed.
@@ -68,7 +67,7 @@ export class DateDataTypeIdentifier implements IDataTypeIdentifier
 {
     public get DataTypeLookupKey(): string
     {
-        return DateLookupKey;
+        return LookupKey.Date;
     }
     public SupportsValue(value: any): boolean {
         return value instanceof Date;

@@ -11,12 +11,12 @@
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
 import { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { IStringConditionDescriptor, StringConditionBase } from "./StringConditionBase";
+import { StringConditionDescriptor, StringConditionBase } from "./StringConditionBase";
 
 /**
  * For any regular expression condition
  */
-export interface IRegExpConditionBaseDescriptor extends IStringConditionDescriptor {
+export interface RegExpConditionBaseDescriptor extends StringConditionDescriptor {
 
 }
 
@@ -28,7 +28,7 @@ export interface IRegExpConditionBaseDescriptor extends IStringConditionDescript
  * such as USPhoneNumberCondition and EmailAddressCondition.
  * The user can also use RegExpCondition as a way to assign a RegExp on demand.
  */
-export abstract class RegExpConditionBase<TDescriptor extends IRegExpConditionBaseDescriptor>
+export abstract class RegExpConditionBase<TDescriptor extends RegExpConditionBaseDescriptor>
     extends StringConditionBase<TDescriptor>
 {
     protected EvaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
