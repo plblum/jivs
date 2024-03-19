@@ -8,11 +8,11 @@
  * @module DataTypes/DataTypeLocalizedFormatters
  */
 
-import { IDataTypeLocalizedFormatter, IDataTypeResolution } from "../Interfaces/DataTypes";
+import { IDataTypeLocalizedFormatter, DataTypeResolution } from "../Interfaces/DataTypes";
 import { IServicesAccessor, IValidationServices } from "../Interfaces/ValidationServices";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { CultureLanguageCode } from "../Utilities/Utilities";
-import { AbbrevDOWDateLookupKey, AbbrevDateLookupKey, BooleanLookupKey, CapitalizeStringLookupKey, CurrencyLookupKey, DateLookupKey, DateTimeLookupKey, IntegerLookupKey, LongDOWDateLookupKey, LongDateLookupKey, LowercaseStringLookupKey, NumberLookupKey, Percentage100LookupKey, PercentageLookupKey, ShortDateLookupKey, StringLookupKey, TimeOfDayHMSLookupKey, TimeOfDayLookupKey, UppercaseStringLookupKey, YesNoBooleanLookupKey } from "./LookupKeys";
+import { LookupKey } from "./LookupKeys";
 
 /**
  * Abstract implementation of IDataTypeLocalizedFormatter.
@@ -72,9 +72,9 @@ export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocaliz
      * @param dataTypeLookupKey 
      * @param cultureId 
      */
-    public abstract Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string>;
+    public abstract Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string>;
     
-    protected prepString(value: any): IDataTypeResolution<string> {
+    protected prepString(value: any): DataTypeResolution<string> {
         if (value == null)    // null/undefined
             return { Value: '' };
         // filter out invalid values
@@ -114,12 +114,12 @@ export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocaliz
     }
 }
 /**
- * For StringLookupKey. Culture neutral.
+ * For LookupKey.String. Culture neutral.
  */
 export class StringLocalizedFormatter extends DataTypeLocalizedFormatterBase {
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return StringLookupKey;
+        return LookupKey.String;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -127,13 +127,13 @@ export class StringLocalizedFormatter extends DataTypeLocalizedFormatterBase {
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         return this.prepString(value);
     }
 }
 
 /**
- * For CapitalizeStringLookupKey.
+ * For LookupKey.Capitalize.
  * Changes the first letter to uppercase. Leaves the rest alone.
  * Uses the Javascript toLocaleUpperCase(cultureId) function
  */
@@ -141,7 +141,7 @@ export class CapitalizeStringLocalizedFormatter extends DataTypeLocalizedFormatt
 {
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return CapitalizeStringLookupKey;
+        return LookupKey.Capitalize;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -149,7 +149,7 @@ export class CapitalizeStringLocalizedFormatter extends DataTypeLocalizedFormatt
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let result = this.prepString(value);
         if (result.Value && result.Value.length > 0)
             result.Value = result.Value[0].toLocaleUpperCase(cultureId) +
@@ -158,7 +158,7 @@ export class CapitalizeStringLocalizedFormatter extends DataTypeLocalizedFormatt
     }    
 }
 /**
- * For UppercaseStringLookupKey.
+ * For LookupKey.Uppercase.
  * Converts all characters to uppercase.
  * Uses the Javascript toLocaleUpperCase(cultureId) function
  */
@@ -166,7 +166,7 @@ export class UppercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
 {
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return UppercaseStringLookupKey;
+        return LookupKey.Uppercase;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -174,7 +174,7 @@ export class UppercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let result = this.prepString(value);
         if (result.Value && result.Value.length > 0)
             result.Value = result.Value.toLocaleUpperCase(cultureId);
@@ -182,7 +182,7 @@ export class UppercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
     }    
 }
 /**
- * For LowercaseStringLookupKey.
+ * For LookupKey.Lowercase.
  * Converts all characters to lowercase.
  * Uses the Javascript toLocaleLowerCase(cultureId) function
  */
@@ -190,7 +190,7 @@ export class LowercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
 {
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return LowercaseStringLookupKey;
+        return LookupKey.Lowercase;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -198,7 +198,7 @@ export class LowercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let result = this.prepString(value);
         if (result.Value && result.Value.length > 0)
             result.Value = result.Value.toLocaleLowerCase(cultureId);
@@ -233,7 +233,7 @@ export abstract class NumberLocalizedFormatterBase extends DataTypeLocalizedForm
      */
     protected abstract GetDefaultOptions(): Intl.NumberFormatOptions;
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         return this.FormatNumber(value, cultureId);
     }    
 
@@ -248,7 +248,7 @@ export abstract class NumberLocalizedFormatterBase extends DataTypeLocalizedForm
      * @returns 
      */
     protected FormatNumber(value: any, cultureId: string,
-        options?: Intl.NumberFormatOptions | null | null): IDataTypeResolution<string> {
+        options?: Intl.NumberFormatOptions | null | null): DataTypeResolution<string> {
         if (typeof value === 'number')
             return {
                 Value: Intl.NumberFormat(cultureId, options ?? this.Options).format(value)
@@ -261,7 +261,7 @@ export abstract class NumberLocalizedFormatterBase extends DataTypeLocalizedForm
 }
 
 /**
- * For NumberLookupKey.
+ * For LookupKey.Number.
  * Converts any number using the Intl library's NumberFormat feature.
  */
 export class NumberLocalizedFormatter extends NumberLocalizedFormatterBase
@@ -272,7 +272,7 @@ export class NumberLocalizedFormatter extends NumberLocalizedFormatterBase
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return NumberLookupKey;
+        return LookupKey.Number;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -288,7 +288,7 @@ export class NumberLocalizedFormatter extends NumberLocalizedFormatterBase
 }
 
 /**
- * For IntegerLookupKey.
+ * For LookupKey.Integer.
  * Converts any number using the Intl library's NumberFormat feature.
  */
 export class IntegerLocalizedFormatter extends NumberLocalizedFormatterBase
@@ -299,7 +299,7 @@ export class IntegerLocalizedFormatter extends NumberLocalizedFormatterBase
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return IntegerLookupKey;
+        return LookupKey.Integer;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -314,7 +314,7 @@ export class IntegerLocalizedFormatter extends NumberLocalizedFormatterBase
         };
     }
 
-    // public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    // public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
     //     if (typeof value === 'number')
     //         value = Math.floor(value);
     //     super.Format(value, dataTypeLookupKey, cultureId);
@@ -322,7 +322,7 @@ export class IntegerLocalizedFormatter extends NumberLocalizedFormatterBase
 }
 
 /**
- * For CurrencyLookupKey.
+ * For LookupKey.Currency.
  * Formats the number as a currency. 
  * Converts any number using the Intl library's NumberFormat feature. 
  * It shows the currency symbol,
@@ -352,7 +352,7 @@ export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
 
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return CurrencyLookupKey;
+        return LookupKey.Currency;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -361,7 +361,7 @@ export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
     }
 
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let options = this.Options;
         if (options.currency === "DEFAULT") {
             options = { ...options, currency: this.ResolveCurrencyCode(cultureId) };
@@ -380,7 +380,7 @@ export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
 }
 
 /**
- * For PercentageLookupKey.
+ * For LookupKey.Percentage.
  * Converts any number using the Intl library's NumberFormat feature.
  * Expects the value 1 to be 100%.
  */
@@ -397,7 +397,7 @@ export class PercentageLocalizedFormatter extends NumberLocalizedFormatterBase
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return PercentageLookupKey;
+        return LookupKey.Percentage;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -408,7 +408,7 @@ export class PercentageLocalizedFormatter extends NumberLocalizedFormatterBase
 }
 
 /**
- * For Percentage100LookupKey.
+ * For LookupKey.Percentage100.
  * Converts any number using the Intl library's NumberFormat feature.
  * Expects the value 100 to be 100%.
  */
@@ -425,7 +425,7 @@ export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBas
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return Percentage100LookupKey;
+        return LookupKey.Percentage100;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -434,7 +434,7 @@ export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBas
     }
 
     // Intl library treats 1.0 as 100. So we adjust the value.
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         if (typeof value === 'number')
             value = value / 100.0;
         return super.Format(value, dataTypeLookupKey, cultureId);
@@ -469,7 +469,7 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
         trueLabell10n?: string, falseLabell10n?: string)
     {
         super();
-        this._dataTypeLookupKey = dataTypeLookupKey ?? BooleanLookupKey;
+        this._dataTypeLookupKey = dataTypeLookupKey ?? LookupKey.Boolean;
         let defaults = this.GetDefaultLabels();
         this._trueLabel = trueLabel ?? defaults.TrueLabel ?? 'true';
         this._falseLabel = falseLabel ?? defaults.FalseLabel ?? 'false';
@@ -534,7 +534,7 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
 
     protected abstract GetDefaultLabels(): DefaultLabelsForBoolean;    
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         if (typeof value === 'boolean') {
             return this.FormatBoolean(value, cultureId);
         }
@@ -543,7 +543,7 @@ export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFor
         else
             return { ErrorMessage: 'Not a boolean' }
     }
-    protected FormatBoolean(value: boolean, cultureId: string): IDataTypeResolution<string>
+    protected FormatBoolean(value: boolean, cultureId: string): DataTypeResolution<string>
     {
         let text = value ? this.TrueLabel : this.FalseLabel;
         let l10n = value ? this.TrueLabell10n : this.FalseLabell10n;
@@ -563,7 +563,7 @@ export interface DefaultLabelsForBoolean
 }
 
 /**
- * Supports BooleanLookupKey, and provides 'true' and 'false' labels
+ * Supports LookupKey.Boolean, and provides 'true' and 'false' labels
  * for all cultures unless you provide alternatives into the constructor
  * or setup localization with the TextLocalizerService.
  * It defaults to 'TRUE' as the localization key for true
@@ -584,7 +584,7 @@ export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
         trueLabel?: string, falseLabel?: string,
         trueLabell10n?: string, falseLabell10n?: string)
     {
-        super(dataTypeLookupKey ?? BooleanLookupKey, trueLabel, falseLabel,
+        super(dataTypeLookupKey ?? LookupKey.Boolean, trueLabel, falseLabel,
             trueLabell10n, falseLabell10n);
     }
 
@@ -630,7 +630,7 @@ export abstract class DateTimeLocalizedFormatterBase extends DataTypeLocalizedFo
      */
     protected abstract GetDefaultOptions(): Intl.DateTimeFormatOptions;
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): IDataTypeResolution<string> {
+    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         return this.FormatDateTime(value, cultureId);
     }    
 
@@ -645,7 +645,7 @@ export abstract class DateTimeLocalizedFormatterBase extends DataTypeLocalizedFo
      * @returns 
      */
     protected FormatDateTime(value: any, cultureId: string,
-        options?: Intl.DateTimeFormatOptions | null): IDataTypeResolution<string> {
+        options?: Intl.DateTimeFormatOptions | null): DataTypeResolution<string> {
         if (value instanceof Date)
             return {
                 Value: Intl.DateTimeFormat(cultureId, this.Options).format(value)
@@ -657,7 +657,7 @@ export abstract class DateTimeLocalizedFormatterBase extends DataTypeLocalizedFo
     }
 }
 /**
- * For DateTimeLookupKey. 
+ * For LookupKey.DateTime. 
  * Uses Intl library's DateTimeFormat to Y, M, D, hours, and minutes,
  * but not seconds in digits, unless you provide alternatives
  * in the constructor.
@@ -679,7 +679,7 @@ export class DateTimeLocalizedFormatter extends DateTimeLocalizedFormatterBase
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return DateTimeLookupKey;
+        return LookupKey.DateTime;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -689,7 +689,7 @@ export class DateTimeLocalizedFormatter extends DateTimeLocalizedFormatterBase
 
 }
 /**
- * For DateLookupKey and ShortDateLookupKey.
+ * For LookupKey.Date and LookupKey.ShortDate.
  * Uses Intl library's DateTimeFormat to Y, M, D as digits (short date format)
  * unless you provide alternatives in the constructor.
  */
@@ -708,7 +708,7 @@ export class DateLocalizedFormatter extends DateTimeLocalizedFormatterBase
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return [DateLookupKey, ShortDateLookupKey];
+        return [LookupKey.Date, LookupKey.ShortDate];
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -717,12 +717,12 @@ export class DateLocalizedFormatter extends DateTimeLocalizedFormatterBase
     }
 
     public Supports(dataTypeLookupKey: string, cultureId: string): boolean {
-        return (dataTypeLookupKey === ShortDateLookupKey || super.Supports(dataTypeLookupKey, cultureId));
+        return (dataTypeLookupKey === LookupKey.ShortDate || super.Supports(dataTypeLookupKey, cultureId));
     }
 
 }
 /**
- * For AbbrevDateLookupKey. 
+ * For LookupKey.AbbrevDate. 
  * Uses Intl library's DateTimeFormat to Month as abbreviated name, 
  * Y and D as digits (abbreviated date format)
  * unless you provide alternatives in the constructor.
@@ -742,7 +742,7 @@ export class AbbrevDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return AbbrevDateLookupKey;
+        return LookupKey.AbbrevDate;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -752,7 +752,7 @@ export class AbbrevDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
 
 }
 /**
- * For AbbrevDOWDateLookupKey. 
+ * For LookupKey.AbbrevDOWDate. 
  * Uses Intl library's DateTimeFormat to Month as abbreviated name, 
  * Day of week as abbreviated name, Y and D as digits (abbreviated date format)
  * unless you provide alternatives in the constructor.
@@ -773,7 +773,7 @@ export class AbbrevDOWDateLocalizedFormatter extends DateTimeLocalizedFormatterB
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return AbbrevDOWDateLookupKey;
+        return LookupKey.AbbrevDOWDate;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -783,7 +783,7 @@ export class AbbrevDOWDateLocalizedFormatter extends DateTimeLocalizedFormatterB
 
 }
 /**
- * For LongDateLookupKey. 
+ * For LookupKey.LongDate. 
  * Uses Intl library's DateTimeFormat to Month as full name, 
  * Y and D as digits (long date format)
  * unless you provide alternatives in the constructor.
@@ -803,7 +803,7 @@ export class LongDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return LongDateLookupKey;
+        return LookupKey.LongDate;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -813,7 +813,7 @@ export class LongDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
 
 }
 /**
- * For LongDOWDateLookupKey. 
+ * For LookupKey.LongDOWDate. 
  * Uses Intl library's DateTimeFormat to Month as full name, 
  * Day of week as full name, Y and D as digits (abbreviated date format)
  * unless you provide alternatives in the constructor.
@@ -834,7 +834,7 @@ export class LongDOWDateLocalizedFormatter extends DateTimeLocalizedFormatterBas
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return LongDOWDateLookupKey;
+        return LookupKey.LongDOWDate;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -863,7 +863,7 @@ export class TimeofDayLocalizedFormatter extends DateTimeLocalizedFormatterBase
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return TimeOfDayLookupKey;
+        return LookupKey.TimeOfDay;
     }
 
     protected SupportsCulture(cultureId: string): boolean
@@ -893,7 +893,7 @@ export class TimeofDayHMSLocalizedFormatter extends DateTimeLocalizedFormatterBa
     }
     protected get ExpectedLookupKeys(): string | Array<string>
     {
-        return TimeOfDayHMSLookupKey;
+        return LookupKey.TimeOfDayHMS;
     }
 
     protected SupportsCulture(cultureId: string): boolean

@@ -36,21 +36,6 @@ export interface ITextLocalizerService
      * @returns The Summary error message or null if not available.
      */
     GetSummaryMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null;
-
-    /**
-     * Utility to add an error message for a validator
-     * @param conditionType
-     * @param dataTypeLookupKey - optional. 
-     * @param cultureToText 
-     */
-    RegisterErrorMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
-    /**
-     * Utility to add an error message for a validator
-     * @param conditionType
-     * @param dataTypeLookupKey - optional. 
-     * @param cultureToText 
-     */
-    RegisterSummaryMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText): void
 }
 
 

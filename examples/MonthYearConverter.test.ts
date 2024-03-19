@@ -1,5 +1,5 @@
 import { DataTypeServices } from "../src/DataTypes/DataTypeServices";
-import { StringLookupKey } from "../src/DataTypes/LookupKeys";
+import { LookupKey } from "../src/DataTypes/LookupKeys";
 import { ComparersResult } from "../src/Interfaces/DataTypes";
 import { UTCMonthYearConverter, MonthYearLookupKey } from "./MonthYearConverter";
 
@@ -7,7 +7,7 @@ describe('UTCMonthYearConverter', () => {
     test('SupportsValue', () => {
         let testItem = new UTCMonthYearConverter();
         expect(testItem.SupportsValue(new Date(), MonthYearLookupKey)).toBe(true);
-        expect(testItem.SupportsValue(new Date(), StringLookupKey)).toBe(false);
+        expect(testItem.SupportsValue(new Date(), LookupKey.String)).toBe(false);
         expect(testItem.SupportsValue(new Date(), null)).toBe(false); // always requires MonthYearLookupKey            
         expect(testItem.SupportsValue(0, MonthYearLookupKey)).toBe(false);
         expect(testItem.SupportsValue(null, MonthYearLookupKey)).toBe(false);

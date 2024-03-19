@@ -70,7 +70,7 @@ export interface IValidationServices extends IBasicValidationServices {
     MessageTokenResolverService: IMessageTokenResolver;
 
     /**
-     * Factory for generating classes that implement IValueHost that use IValueHostDescriptor.
+     * Factory for generating classes that implement IValueHost that use ValueHostDescriptor.
      */
     ValueHostFactory: IValueHostFactory;
 

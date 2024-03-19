@@ -1,31 +1,32 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import {
-    type IRequiredTextConditionDescriptor,
-    RequiredTextConditionType, RequiredTextCondition
+    type RequiredTextConditionDescriptor,
+    RequiredTextCondition
 } from "../../src/Conditions/ConcreteConditions";
-import type { IConditionCore, IConditionDescriptor } from "../../src/Interfaces/Conditions";
+import type { IConditionCore, ConditionDescriptor } from "../../src/Interfaces/Conditions";
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
 
 describe('ConditionFactory.Create', () => {
     test('Create with registered Condition creates the correct instance', () => {
         let factory = new ConditionFactory();
-        expect(() => factory.Register<IRequiredTextConditionDescriptor>(
-            RequiredTextConditionType, (descriptor) => new RequiredTextCondition(descriptor))).not.toThrow();
-        let condition: IConditionCore<IRequiredTextConditionDescriptor> | null = null;
-        expect(() => condition = factory.Create<IRequiredTextConditionDescriptor>({
-            Type: RequiredTextConditionType,
+        expect(() => factory.Register<RequiredTextConditionDescriptor>(
+            ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor))).not.toThrow();
+        let condition: IConditionCore<RequiredTextConditionDescriptor> | null = null;
+        expect(() => condition = factory.Create<RequiredTextConditionDescriptor>({
+            Type: ConditionType.RequiredText,
             ValueHostId: null
         })).not.toThrow();
         expect(condition).not.toBeNull();
         expect(condition).toBeInstanceOf(RequiredTextCondition);
-        expect(condition!.Descriptor.Type).toBe(RequiredTextConditionType);
+        expect(condition!.Descriptor.Type).toBe(ConditionType.RequiredText);
         expect(condition!.Descriptor.ValueHostId).toBeNull();
 
     });
     test('Create with unregistered Condition throws', () => {
         let factory = new ConditionFactory();
-        expect(() => factory.Register<IRequiredTextConditionDescriptor>(
-            RequiredTextConditionType, (descriptor) => new RequiredTextCondition(descriptor))).not.toThrow();
-        let condition: IConditionCore<IConditionDescriptor> | null = null;
+        expect(() => factory.Register<RequiredTextConditionDescriptor>(
+            ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor))).not.toThrow();
+        let condition: IConditionCore<ConditionDescriptor> | null = null;
         expect(() => condition = factory.Create({
             Type: 'UnknownType',
             ValueHostId: null

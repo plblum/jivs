@@ -11,7 +11,7 @@
  * @param group1 - group name(s) to compare against group2
  * @param group2
  */
-export function ValidationGroupsMatch(group1: string | Array<string> | undefined | null,
+export function GroupsMatch(group1: string | Array<string> | undefined | null,
     group2: string | Array<string>| undefined | null): boolean
 {
     function AlwaysMatch(source: any): boolean

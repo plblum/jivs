@@ -1,40 +1,40 @@
 import { InputValueHostType, InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
-import { StringLookupKey } from "../../src/DataTypes/LookupKeys";
-import { IValueHostState, IValueHost, IValueHostDescriptor } from "../../src/Interfaces/ValueHost";
+import { ValueHostState, IValueHost, ValueHostDescriptor } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { MockValidationManager, MockValidationServices } from "../Mocks";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 /**
  * For testing the Factory's support of IValueHostGenerator implementations
  * with a custom IValueHostGenerator implementation
  */
-interface IFactoryTestsValueHostState extends IValueHostState
+interface IFactoryTestsValueHostState extends ValueHostState
 {
     Counter: number;    // incremented each time the state is cleaned    
 }
 
-class FactoryTestsValueHost extends ValueHostBase<IValueHostDescriptor, IFactoryTestsValueHostState>
+class FactoryTestsValueHost extends ValueHostBase<ValueHostDescriptor, IFactoryTestsValueHostState>
 {
-    constructor(valueHostsManager : IValueHostsManager, descriptor: IValueHostDescriptor, state: IFactoryTestsValueHostState) {
+    constructor(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IFactoryTestsValueHostState) {
         super(valueHostsManager, descriptor, state);
     }
 }
 
 const FactoryTestGeneratorType = 'FactoryTest';
 class FactoryTestsValueHostGenerator implements IValueHostGenerator {
-    public CanCreate(descriptor: IValueHostDescriptor): boolean {
+    public CanCreate(descriptor: ValueHostDescriptor): boolean {
         return descriptor.Type === FactoryTestGeneratorType;
     }
-    public Create(valueHostsManager : IValueHostsManager, descriptor: IValueHostDescriptor, state: IFactoryTestsValueHostState): IValueHost {
+    public Create(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IFactoryTestsValueHostState): IValueHost {
         return new FactoryTestsValueHost(valueHostsManager, descriptor, state);
     }
-    public CleanupState(state: IFactoryTestsValueHostState, descriptor: IValueHostDescriptor): void {
+    public CleanupState(state: IFactoryTestsValueHostState, descriptor: ValueHostDescriptor): void {
         state.Counter = 0;
     }
-    public CreateState(descriptor: IValueHostDescriptor): IFactoryTestsValueHostState {
+    public CreateState(descriptor: ValueHostDescriptor): IFactoryTestsValueHostState {
         let state: IFactoryTestsValueHostState = {
             Id: descriptor.Id,
             Value: descriptor.InitialValue,
@@ -62,16 +62,16 @@ describe('ValueHostFactory.Register', () => {
     });    
 });
 
-// Create(validationManager: IValidationManager, descriptor: IValueHostDescriptor, state: IValueHostState): IValueHost
+// Create(validationManager: IValidationManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost
 describe('ValueHostFactory.Create', () => {
     test('Create using FactoryTestValueHostGenerator creates FactoryTestValueHost', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let descriptor: IValueHostDescriptor = {
+        let descriptor: ValueHostDescriptor = {
             Id: 'Field1',
             Label: 'Label1',
             Type: FactoryTestGeneratorType,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -91,11 +91,11 @@ describe('ValueHostFactory.Create', () => {
     test('Create with null in parameters throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let descriptor: IValueHostDescriptor = {
+        let descriptor: ValueHostDescriptor = {
             Id: 'Field1',
             Label: 'Label1',
             Type: FactoryTestGeneratorType,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -114,11 +114,11 @@ describe('ValueHostFactory.Create', () => {
     test('Create with Descriptor.Type of null throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let descriptor: IValueHostDescriptor = {
+        let descriptor: ValueHostDescriptor = {
             Id: 'Field1',
             Label: 'Label1',
             Type: null!,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -136,11 +136,11 @@ describe('ValueHostFactory.Create', () => {
     test('Create with Descriptor.Type that has no matching registration throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let descriptor: IValueHostDescriptor = {
+        let descriptor: ValueHostDescriptor = {
             Id: 'Field1',
             Label: 'Label1',
             Type: 'Unregistered',
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -157,15 +157,15 @@ describe('ValueHostFactory.Create', () => {
     });        
 });
 
-// CleanupState(state: IValueHostState, descriptor: IValueHostDescriptor): void
+// CleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void
 describe('ValueHostFactory.CleanupState', () => {
     test('Changes State.Counter to 0', () => {
 
-        let descriptor: IValueHostDescriptor = {
+        let descriptor: ValueHostDescriptor = {
             Id: 'Field1',
             Label: 'Label1',
             Type: FactoryTestGeneratorType,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: 'DATA'
         };
 
@@ -188,17 +188,17 @@ describe('ValueHostFactory.CleanupState', () => {
 describe('ValueHostFactory.CreateState', () => {
     test('With InitialValue = undefined, creates with Value = undefined', () => {
 
-        let descriptor: IValueHostDescriptor = {
+        let descriptor: ValueHostDescriptor = {
             Id: 'Field1',
             Label: 'Label1',
             Type: FactoryTestGeneratorType,
-            DataType: StringLookupKey,
+            DataType: LookupKey.String,
             InitialValue: undefined
         };
 
         let testItem = new ValueHostFactory();
         testItem.Register(new FactoryTestsValueHostGenerator());
-        let state: IValueHostState | null = null;
+        let state: ValueHostState | null = null;
         expect(() => state = testItem.CreateState(descriptor)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.Id).toBe('Field1');

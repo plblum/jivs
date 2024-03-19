@@ -5,9 +5,9 @@
  * that compare two values.
  * In this example, the class is a TimeSpan with properties of Hours, Minutes, and Seconds.
  * You want its number representation to be in hours (a decimal value so 1hr 30m is 1.5).
- * You want to setup the the ValuesEqualCondition like this:
- * <IValuesEqualConditionDescriptor>{
- *   Type: "ValuesEqual",
+ * You want to setup the the EqualToCondition like this:
+ * <IEqualToConditionDescriptor>{
+ *   Type: "EqualTo",
  *   ValueHost1: "TextBox1", // your code supplies the textbox value to its ValueHost as a TimeSpan
  *   SecondValue: 1.5 // Compare to this number of hours
  * }
