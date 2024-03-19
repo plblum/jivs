@@ -65,17 +65,17 @@ supporting libraries (pending) are well-informed on those matters.
 	- Tokens that can show live data   
 	`The current value is {Value}.`
 	- Token values are localizable
-	- Token values can select a format.   
+	- Token values can select a format   
 	`The {Label:Uppercase} must be between {Minimum:AbbrevDate} and {Maximum:AbbrevDate}.`
 	- Message text itself is localizable
 	- Validators have two error messages. The first message, designed for proximity to the UI widget, is succinct, focusing on the issue without field context. The second, intended for a Validation Summary displayed elsewhere on the screen, includes the field name for clarity.
 	- You can setup default error messages, localized of course. This is particularly useful for Data Type Check validations, where distinct data types require specific guidance. For instance, use "Enter a date in the form MM/DD/YYYY" for dates, and "Enter a number using only digits" for numbers.
 	- Jivs can provide every error associated with a field, not just the initial one, ensuring thorough feedback and guidance.
 - Jivs provides built-in support for common data types—number, string, Boolean, and date—and accommodates unique usage scenarios through extensive customizability.
-	- Formatter Customization: Tailor how values are displayed to users, with localization. For instance, configure error messages to show dates in an abbreviated format rather than a short date format.
-	- Converter Customization: Adjust the data under validation to fit various contexts, such as interpreting a JavaScript Date object in multiple ways—anniversary, expiry, total days, date with time, or time alone.
-	- Identifier Customization: Integrate custom objects to be treated as standard data types, enabling complex comparisons. An object denoting "tomorrow" or "next month" can be identified as a Date for comparison purposes.
-	- Comparer Customization: Supports Conditions that compare two values so they can handler your non-standard data types. 
+	- Formatter customization: Tailor how values are displayed to users, with localization. For instance, configure error messages to show dates in an abbreviated format rather than a short date format.
+	- Converter customization: Adjust the data under validation to fit various contexts, such as interpreting a JavaScript Date object in multiple ways—anniversary, expiry, total days, date with time, or time alone.
+	- Identifier customization: Integrate custom objects to be treated as standard data types, enabling complex comparisons. An object denoting "tomorrow" or "next month" can be identified as a Date for comparison purposes.
+	- Comparer customization: Supports Conditions that compare two values so they can handler your non-standard data types. 
 
 
 ## Learning Jivs
@@ -536,7 +536,7 @@ When you want your own logic, there are several ways approach it.
 	```
 - Subclass from an abstract `Condition class` designed for the type of `Condition` you need. The abstract classes provide some useful methods to take advantage of. They also require a `ConditionDescriptor interface`, which means you can get additional values from the user passed in.
 	```ts
-	export interface MyConditionDescriptor implements RegExConditionBaseDescriptor
+	export interface MyConditionDescriptor extends RegExConditionBaseDescriptor
 	{
 	   AllowTwo?: boolean; // true means pattern is repeated with a comma separator
 	}
@@ -569,7 +569,7 @@ As you can see, all require that you supply a **ConditionType** value. That’s 
 	cf.Register<MyConditionDescriptor>(
 	        'MyCondition', (descriptor) => new MyCondition(descriptor));
 	```
-- If your class does not conform to the existing `ConditionFactory`, subclass it or implement the `IConditionFactory interface`. Always attach your factory to the `ValidationServices class`.
+- If your class does not conform to the existing `ConditionFactory`, subclass it or implement the `IConditionFactory interface`. Always attach your factory to the `ValidationServices class` in the `CreateValidationServices function`.
 - If you have a one-off, ignore the `ConditionFactory`. Instead, create it using the `InputValidatorDescriptor.ConditionCreator`. This property takes a function and returns either an instance of an `ICondition object` or null if there was nothing to setup.
 	```ts
 	[{
