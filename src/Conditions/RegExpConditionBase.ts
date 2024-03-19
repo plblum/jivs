@@ -5,7 +5,7 @@
  * Condition Category of "DataTypeCheck".
  * This base class is often used to develop specific Conditions that have a built-in regular expression,
  * such as USPhoneNumberCondition and EmailAddressCondition. Both are good examples of "DataTypeCheck" conditions.
- * @module Conditions/RegExpConditionBase
+ * @module Conditions/AbstractClasses/RegExpConditionBase
  */
 
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";

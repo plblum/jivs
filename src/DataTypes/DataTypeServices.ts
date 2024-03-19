@@ -1,5 +1,5 @@
 /**
- * {@link DataTypes/DataTypeServices} handles various data types of the values.
+ * {@link DataTypes/ConcreteClasses/DataTypeServices} handles various data types of the values.
  * It works in conjunction with the {@link DataTypes/LookupKeys! | DataType Lookup Keys }.
  * There are 4 features associated with any data type:
  * - Identify - These classes exist for all native datatypes. They handle when the LookupKey is unknown.
@@ -20,7 +20,7 @@
  *   most values for the default comparison function, these aren't often created.
  *   When they are, they are built on {@link DataTypes/Interfaces!IDataTypeComparer | IDataTypeComparer}.
  * The actual instance of this class is found on ValidationServices.DataTypeServices.
- * @module DataTypes/DataTypeServices
+ * @module DataTypes/ConcreteClasses/DataTypeServices
  */
 
 import { DefaultComparer } from "./DataTypeComparers";

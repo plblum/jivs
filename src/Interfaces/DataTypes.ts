@@ -1,5 +1,5 @@
 /**
- * @inheritDoc DataTypes/DataTypeServices!
+ * @inheritDoc DataTypes/ConcreteClasses/DataTypeServices!
  * @module DataTypes/Interfaces
  */
 

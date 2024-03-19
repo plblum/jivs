@@ -2,7 +2,7 @@
  * Factory for generating classes that implement IValueHost that use ValueHostDescriptor.
  * ValueHostDescriptor identifies the desired ValueHost class.
  * Most apps will use the standard InputValueHost class.
- * @module ValueHosts/Interfaces
+ * @module ValueHosts/Interfaces/ValueHostFactory
  */
 
 import { ValueHostDescriptor, ValueHostState, IValueHost } from "./ValueHost";

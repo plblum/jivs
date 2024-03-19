@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc ValueHosts/Interfaces!IMessageTokenResolver}
- * @module ValueHosts/MessageTokenResolver
+ * {@inheritDoc InputValidator/Interfaces!IMessageTokenResolver}
+ * @module InputValidator/ConcreteClasses/MessageTokenResolver
  */
 import type { DataTypeResolution } from "../Interfaces/DataTypes";
 import { IMessageTokenResolver, IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/InputValidator";
@@ -11,7 +11,7 @@ import { type IValueHostResolver } from "../Interfaces/ValueHostResolver";
 
 
 /**
- * {@inheritDoc ValueHosts/Interfaces!IMessageTokenResolver}
+ * {@inheritDoc InputValidator/Interfaces!IMessageTokenResolver}
  */
 export class MessageTokenResolver implements IMessageTokenResolver
 {

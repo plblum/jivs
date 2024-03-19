@@ -1,6 +1,6 @@
 /**
  * Base implementation of a Condition that evaluates a string as the native value.
- * @module Conditions/StringConditionBase
+ * @module Conditions/AbstractClasses/StringConditionBase
  */
 
 import { ConditionEvaluateResult } from "../Interfaces/Conditions";

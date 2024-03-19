@@ -1,7 +1,7 @@
 /**
  * ConditionBase is the base implementation of {@link Conditions/Interfaces!ICondition | ICondition}, 
  * tying it to {@link Conditions/Interfaces!ConditionDescriptor | ConditionDescriptor}
- * @module Conditions/ConditionBase
+ * @module Conditions/AbstractClasses/ConditionBase
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";

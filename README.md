@@ -42,7 +42,7 @@ supporting libraries (pending) are well-informed on those matters.
 -	Your app targets the browser and/or Node.js
 -	Your app needs to validate values, whether for user input or Model properties.
 
-### Setting Expectations:
+### Setting Expectations
 
 - **What Jivs Isn’t:** It doesn't come with UI widgets for displaying error messages or applying stylesheet changes. However, we're developing additional libraries to complement Jivs with these UI capabilities—stay tuned.
 - **What Jivs Excels At:** Its forte is value validation. This distinct focus from UI concerns allows for flexible UI development on any framework, such as React, which requires a unique approach to HTML manipulation. We plan to support both standard DOM and React-specific libraries.

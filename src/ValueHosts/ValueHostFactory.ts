@@ -4,7 +4,7 @@
  * Most apps will use the ValueHost and InputValueHost class implementations.
  * When adding a new ValueHost class, implement an IValueHostGenerator and register it
  * with the ValueHostFactory.
- * @module ValueHosts/ValueHostFactory
+ * @module ValueHosts/ConcreteClasses/ValueHostFactory
  */
 
 import { BusinessLogicInputValueHostGenerator } from "./BusinessLogicInputValueHost";
