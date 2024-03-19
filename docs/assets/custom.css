@@ -1,0 +1,170 @@
+ :root {
+    --radius-code: 4px;
+}
+@media (prefers-color-scheme: light) {
+    :root {
+        --color-tsd-typography-marker: #1e81d8;
+        --color-tsd-typography-marker-l2: #124f84;
+        --color-page-title: #1e81d8;     
+        --color-h2-line:    #1e81d8;     
+        --color-breadcrumb:    #1e81d8;            
+        --color-code-background: #ededed; 
+        }
+}    
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-tsd-typography-marker: #559cda;
+        --color-tsd-typography-marker-l2: #77befc;
+        --color-page-title: #559cda;
+        --color-h2-line:    #559cda;  
+        --color-breadcrumb:    #559cda;              
+        --color-code-background: #4b4b4b; 
+        }
+}    
+:root[data-theme=light] {
+    --color-tsd-typography-marker: #1e81d8;
+    --color-tsd-typography-marker-l2: #124f84;
+    --color-page-title: #1e81d8;     
+    --color-h2-line:    #1e81d8;     
+    --color-breadcrumb:    #1e81d8;      
+    --color-code-background: #ededed; 
+}
+:root[data-theme=dark] {
+    --color-tsd-typography-marker: #559cda;
+    --color-tsd-typography-marker-l2: #77befc;
+    --color-page-title: #559cda;
+    --color-h2-line:    #559cda;   
+    --color-breadcrumb:    #559cda;      
+    --color-code-background: #4b4b4b;
+    }
+
+.tsd-page-title
+{
+    position: sticky;
+    z-index: 1;
+    isolation: isolate;
+    background-color: rgb(228 232 255 / 80%); 
+    top: -1rem; /* breadcrumbs scroll off */
+}    
+
+/* Library title is hidden without breaking its used on other pages */
+.tsd-page-title:has(h2:first-child)
+{
+    display: none;
+}
+.tsd-page-title>h1
+{
+    font-size: clamp(10px, 16pt, 4vh);
+    margin: 5px 0;
+    padding-bottom: 10px;
+}
+.tsd-page-title>.tsd-breadcrumb
+{
+    font-size: clamp(8px, 9pt, 3vh);
+    color: var(--color-breadcrumb);
+}
+.tsd-page-title>.tsd-breadcrumb a
+{
+    color: var(--color-breadcrumb);
+}
+/* Member visibility settings */
+.tsd-filter-visibility>h4
+{
+    font-size: 12pt;
+}
+.tsd-filter-visibility .tsd-filter-options
+{
+    font-size: 11pt;
+}
+
+/** list bullets **/
+.tsd-typography>ul
+{
+    list-style: disc;
+}
+.tsd-typography ul>li::marker
+{
+    color: var(--color-tsd-typography-marker);
+}
+.tsd-typography summary::marker
+{
+    color: var(--color-tsd-typography-marker);
+}
+.tsd-typography>ul>li>ul
+{
+    list-style: circle;
+}
+.tsd-typography ul>li>ul>li::marker
+{
+    color: var(--color-tsd-typography-marker-l2);
+}
+.tsd-typography p :not(:is(pre))>code
+{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-code-background);
+    border-radius: var(--radius-code);
+}
+.tsd-typography li :not(:is(pre))>code
+{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-code-background);
+    border-radius: var(--radius-code);
+}
+.tsd-typography summary :not(:is(pre))>code
+{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-code-background);
+    border-radius: var(--radius-code);
+}
+.tsd-panel h2
+{
+    border-block-start: 5px solid var(--color-h2-line);
+    margin: 3rem 0 0 0;
+    padding: 5px 0 0 0;
+}
+.tsd-panel.tsd-typography li:not(:last-child)
+{
+    margin-bottom: 0.5rem;
+}
+/** paragraph after heading reduces padding after heading **/
+.tsd-panel > h3:has(+p) {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.tsd-page-navigation .tsd-accordion-details a
+{
+    color: var(--color-page-title);
+}
+.tsd-page-navigation .tsd-accordion-details ul
+{
+    padding-left:1.1em;
+}
+/* .tsd-page-navigation .tsd-accordion-details
+{
+    opacity: 0.5;
+}
+.tsd-page-navigation .tsd-accordion-details:hover
+{
+    opacity: 1.0;
+} */
+.page-menu, .site-menu
+{
+    opacity: 0.5; 
+    transition-property: opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-in;
+}
+.page-menu:hover, .site-menu:hover
+{
+    opacity: 1.0; 
+}
+/* The code type icons */
+.tsd-kind-icon
+{
+    scale: 0.8;
+}
+
+.tsd-hierarchy
+{
+    list-style: disc;
+}
