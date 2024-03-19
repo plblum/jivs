@@ -100,4 +100,14 @@ export enum ConditionType
      * Associated with CountMatchesCondition class.
      */
     CountMatches = "CountMatches",
+
+    /**
+     * Associated with StringNotEmptyCondition class.
+     */
+    StringNotEmpty = "StringNotEmpty",
+
+    /**
+     * Associated with NotNullCondition class.
+     */
+    NotNull = "NotNull"
 }

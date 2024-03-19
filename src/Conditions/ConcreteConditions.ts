@@ -90,6 +90,9 @@ export interface RequiredTextConditionDescriptor extends StringConditionDescript
 /**
  * For any input field/element whose native data is textual, including HTML's <select> elements,
  * which also have an index. That can be evaluated by RequiredIndexValidator
+ * It evaluates InputValueHost.InputValue, so that it can be evaluated as the user types into a textbox,
+ * prior to when you might update the InputValueHost.NativeValue.
+ * See also its NativeValue companion, StringNotEmptyCondition.
  */
 export class RequiredTextCondition extends InputValueConditionBase<RequiredTextConditionDescriptor>
 {
@@ -687,5 +690,83 @@ export class CountMatchesCondition extends EvaluateChildConditionResultsBase<Cou
         if (this.Descriptor.Maximum !== undefined && countMatches > this.Descriptor.Maximum)
             return ConditionEvaluateResult.NoMatch;
         return ConditionEvaluateResult.Match;
+    }
+}
+
+/**
+ * Descriptor for StringNotEmptyCondition.
+ */
+export interface StringNotEmptyConditionDescriptor extends OneValueConditionDescriptor {
+/**
+ * Normally a value of null is considered NoMatch so both an empty string and null are NoMatch.
+ * When this is set, it determines the value.
+ * If you want to consider null as valid, supply Match. If you don't want to evaluate null
+ * at all, supply Undetermined.
+ */    
+    NullValueResult?: ConditionEvaluateResult;
+}
+
+/**
+ * To evaluate the Native Value when it is expected to contain a string.
+ * Reports NoMatch when the value is an empty string ("").
+ * No whitespace trimming is applied. The value of the InputValue may need trimming,
+ * but the InputValue is expected to be the final value, already trimmed.
+ * See also its InputValue companion, RequiredTextCondition.
+ */
+export class StringNotEmptyCondition extends OneValueConditionBase<StringNotEmptyConditionDescriptor>
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.StringNotEmpty; }    
+
+    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.GetValue();
+        if (value === undefined) 
+            return ConditionEvaluateResult.Undetermined;
+        if (value === null)
+            return this.Descriptor.NullValueResult ?? ConditionEvaluateResult.NoMatch;
+
+        if (typeof value !== 'string')
+            return ConditionEvaluateResult.Undetermined;
+        let text = value;
+        if (text == '')
+            return ConditionEvaluateResult.NoMatch;
+        return ConditionEvaluateResult.Match;
+    }
+
+    protected get DefaultCategory(): ConditionCategory {
+        return ConditionCategory.Required;
+    }
+}
+
+/**
+ * Descriptor for NotNullCondition.
+ */
+export interface NotNullConditionDescriptor extends OneValueConditionDescriptor {
+
+}
+
+/**
+ * To evaluate the Native Value when it may contain a null,
+ * and null is not valid in this case.
+ * Reports NoMatch when the value is null.
+
+ * See also StringNotEmptyCondition which includes checking for null in addition to the empty string.
+ */
+export class NotNullCondition extends OneValueConditionBase<NotNullConditionDescriptor>
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.NotNull; }    
+
+    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.GetValue();
+        if (value === undefined) 
+            return ConditionEvaluateResult.Undetermined;
+        if (value === null)
+            return ConditionEvaluateResult.NoMatch;
+        return ConditionEvaluateResult.Match;
+    }
+
+    protected get DefaultCategory(): ConditionCategory {
+        return ConditionCategory.Required;
     }
 }

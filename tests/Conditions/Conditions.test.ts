@@ -9,7 +9,7 @@ import {
     LessThanOrEqualToCondition, StringLengthConditionDescriptor,  StringLengthCondition,
     RegExpConditionDescriptor, RegExpCondition, 
     AllMatchCondition, DataTypeCheckConditionDescriptor, DataTypeCheckCondition,
-    AnyMatchCondition, CountMatchesCondition, CountMatchesConditionDescriptor, AllMatchConditionDescriptor, AnyMatchConditionDescriptor
+    AnyMatchCondition, CountMatchesCondition, CountMatchesConditionDescriptor, AllMatchConditionDescriptor, AnyMatchConditionDescriptor, StringNotEmptyCondition, StringNotEmptyConditionDescriptor, NotNullCondition, NotNullConditionDescriptor
 } from "../../src/Conditions/ConcreteConditions";
 
 import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
@@ -380,7 +380,7 @@ describe('class RequiredTextCondition', () => {
             ValueHostId: 'Property1',
             Category: ConditionCategory.Contents
         };
-        let testItem = new DataTypeCheckCondition(descriptor);
+        let testItem = new RequiredTextCondition(descriptor);
         expect(testItem.Category).toBe(ConditionCategory.Contents);
     });
     test('GatherValueHostIds when all are assigned', () => {
@@ -3456,4 +3456,207 @@ describe('class CountMatchesCondition', () => {
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
     });            
+});
+
+describe('class StringNotEmptyCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(StringNotEmptyCondition.DefaultConditionType).toBe(ConditionType.StringNotEmpty);
+    });
+    function TestValue(valueToTest: any, nullValueResult: ConditionEvaluateResult | undefined,
+        expectedConditionEvaluateResult: ConditionEvaluateResult)
+    {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: StringNotEmptyConditionDescriptor = {
+            Type: ConditionType.StringNotEmpty,
+            ValueHostId: 'Property1',
+        };
+        if (nullValueResult !== undefined)
+            descriptor.NullValueResult = nullValueResult;
+        let testItem = new StringNotEmptyCondition(descriptor);
+        vh.SetValue(valueToTest);
+        expect(testItem.Evaluate(vh, vm)).toBe(expectedConditionEvaluateResult);
+    }
+    test('Evaluate with strings', () => {
+        TestValue('A', undefined, ConditionEvaluateResult.Match);    
+        TestValue(' A ', undefined, ConditionEvaluateResult.Match);
+        TestValue(' ', undefined, ConditionEvaluateResult.Match);   // not empty!
+        TestValue('', undefined, ConditionEvaluateResult.NoMatch);        
+    });
+    test('Evaluate with null', () => {
+        TestValue(null, undefined, ConditionEvaluateResult.NoMatch);    
+        TestValue(null, ConditionEvaluateResult.Match, ConditionEvaluateResult.Match);    
+        TestValue(null, ConditionEvaluateResult.NoMatch, ConditionEvaluateResult.NoMatch);    
+        TestValue(null, ConditionEvaluateResult.Undetermined, ConditionEvaluateResult.Undetermined);    
+    });    
+    test('Evaluate with non-string data types are always undetermined', () => {
+        TestValue(undefined, undefined, ConditionEvaluateResult.Undetermined);    
+        TestValue(0, undefined, ConditionEvaluateResult.Undetermined);    
+        TestValue({}, undefined, ConditionEvaluateResult.Undetermined);    
+        TestValue([], undefined, ConditionEvaluateResult.Undetermined);    
+        TestValue(false, undefined, ConditionEvaluateResult.Undetermined);    
+        TestValue(new Date(), undefined, ConditionEvaluateResult.Undetermined);    
+    });    
+
+    test('Evaluate with wrong ValueHost logs and throws', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: StringNotEmptyConditionDescriptor = {
+            Type: ConditionType.StringNotEmpty,
+            ValueHostId: 'UnknownProperty'
+        };
+        let testItem = new StringNotEmptyCondition(descriptor);
+        vh.SetValue('');
+        expect(() => testItem.Evaluate(null, vm)).toThrow(/Missing value/);
+        let logger = services.LoggerService as MockCapturingLogger;
+        expect(logger.EntryCount()).toBe(1);
+        expect(logger.GetLatest()!.Category).toBe(ConfigurationCategory);
+        expect(logger.GetLatest()!.Level).toBe(LoggingLevel.Error);
+    });
+    test('Category is Required', () => {
+        let descriptor: StringNotEmptyConditionDescriptor = {
+            Type: ConditionType.StringNotEmpty,
+            ValueHostId: 'Property1',
+        };
+        let testItem = new StringNotEmptyCondition(descriptor);
+        expect(testItem.Category).toBe(ConditionCategory.Required);
+    });
+    test('Category is overridden', () => {
+        let descriptor: StringNotEmptyConditionDescriptor = {
+            Type: ConditionType.StringNotEmpty,
+            ValueHostId: 'Property1',
+            Category: ConditionCategory.Contents
+        };
+        let testItem = new StringNotEmptyCondition(descriptor);
+        expect(testItem.Category).toBe(ConditionCategory.Contents);
+    });
+    test('GatherValueHostIds when all are assigned', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+
+        let descriptor: StringNotEmptyConditionDescriptor = {
+            Type: ConditionType.StringNotEmpty,
+            ValueHostId: 'Property1',
+        };
+        let condition = new StringNotEmptyCondition(descriptor);
+        let testItem = new Set<ValueHostId>();
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(testItem.size).toBe(1);
+        expect(testItem.has('Property1')).toBe(true);
+    });
+    test('GatherValueHostIds when none are assigned', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+
+        let descriptor: StringNotEmptyConditionDescriptor = {
+            Type: ConditionType.StringNotEmpty,
+            ValueHostId: null,
+        };
+        let condition = new StringNotEmptyCondition(descriptor);
+        let testItem = new Set<ValueHostId>();
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(testItem.size).toBe(0);
+    });
+});
+describe('class NotNullCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(NotNullCondition.DefaultConditionType).toBe(ConditionType.NotNull);
+    });
+    function TestValue(valueToTest: any, expectedConditionEvaluateResult: ConditionEvaluateResult)
+    {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: NotNullConditionDescriptor = {
+            Type: ConditionType.NotNull,
+            ValueHostId: 'Property1',
+        };
+
+        let testItem = new NotNullCondition(descriptor);
+        vh.SetValue(valueToTest);
+        expect(testItem.Evaluate(vh, vm)).toBe(expectedConditionEvaluateResult);
+    }
+
+    test('Evaluate with null results in NoMatch', () => {
+        TestValue(null,  ConditionEvaluateResult.NoMatch);    
+    });    
+    test('Evaluate with undefined results in Undetermined', () => {
+        TestValue(undefined,  ConditionEvaluateResult.Undetermined);    
+    });        
+    test('Evaluate without null or undefined results in Match', () => {
+        TestValue(0, ConditionEvaluateResult.Match);    
+        TestValue({}, ConditionEvaluateResult.Match);    
+        TestValue([],  ConditionEvaluateResult.Match);    
+        TestValue(false, ConditionEvaluateResult.Match);    
+        TestValue('', ConditionEvaluateResult.Match);
+        TestValue('', ConditionEvaluateResult.Match);            
+        TestValue(new Date(), ConditionEvaluateResult.Match);    
+    });    
+
+    test('Evaluate with wrong ValueHost logs and throws', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: NotNullConditionDescriptor = {
+            Type: ConditionType.NotNull,
+            ValueHostId: 'UnknownProperty'
+        };
+        let testItem = new NotNullCondition(descriptor);
+        vh.SetValue('');
+        expect(() => testItem.Evaluate(null, vm)).toThrow(/Missing value/);
+        let logger = services.LoggerService as MockCapturingLogger;
+        expect(logger.EntryCount()).toBe(1);
+        expect(logger.GetLatest()!.Category).toBe(ConfigurationCategory);
+        expect(logger.GetLatest()!.Level).toBe(LoggingLevel.Error);
+    });
+    test('Category is Required', () => {
+        let descriptor: NotNullConditionDescriptor = {
+            Type: ConditionType.NotNull,
+            ValueHostId: 'Property1',
+        };
+        let testItem = new NotNullCondition(descriptor);
+        expect(testItem.Category).toBe(ConditionCategory.Required);
+    });
+    test('Category is overridden', () => {
+        let descriptor: NotNullConditionDescriptor = {
+            Type: ConditionType.NotNull,
+            ValueHostId: 'Property1',
+            Category: ConditionCategory.Contents
+        };
+        let testItem = new NotNullCondition(descriptor);
+        expect(testItem.Category).toBe(ConditionCategory.Contents);
+    });
+    test('GatherValueHostIds when all are assigned', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+
+        let descriptor: NotNullConditionDescriptor = {
+            Type: ConditionType.NotNull,
+            ValueHostId: 'Property1',
+        };
+        let condition = new NotNullCondition(descriptor);
+        let testItem = new Set<ValueHostId>();
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(testItem.size).toBe(1);
+        expect(testItem.has('Property1')).toBe(true);
+    });
+    test('GatherValueHostIds when none are assigned', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+
+        let descriptor: NotNullConditionDescriptor = {
+            Type: ConditionType.NotNull,
+            ValueHostId: null,
+        };
+        let condition = new NotNullCondition(descriptor);
+        let testItem = new Set<ValueHostId>();
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(testItem.size).toBe(0);
+    });
 });
