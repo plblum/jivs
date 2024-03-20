@@ -8,8 +8,8 @@
  * - Formatter - These functions change the native value into something you can display to the user.
  *   They are associated with the error message tokens, such as "You entered {Value}." where the value
  *   is a Date object and needs to be shown in a localized format of short, abbreviated, or full.
- *   Uses DataTypeLocalizations to localizing the formatted string.
- *   Their function definition is fn(value: any) : DataTypeResolution<string>.
+ *   Uses {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter}
+ *   which returns a localized string.
  * - Converter - Change the native value into somethat used by a Condition.Evaluate function.
  *   This is essential for comparison Conditions. Comparison works automatically
  *   with string, number, and boolean native types. Converters exist to take a Date
@@ -27,22 +27,26 @@ import { DefaultComparer } from "./DataTypeComparers";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
 import { CultureLanguageCode, DeepClone } from '../Utilities/Utilities';
-import { IServicesAccessor, IValidationServices, ToIServicesAccessor } from "../Interfaces/ValidationServices";
+import { IValidationServices, ToIServicesAccessor } from "../Interfaces/ValidationServices";
 
 
 /**
  * A service that knows about data types providing tools for:
- * - Identifying them
+ * - Identifying them using {@link DataTypes/Interfaces!IDataTypeIdentifier | IDataTypeIdentifier} 
  * - Converting them into something better suited for comparisons and formatting
+ *  using {@link DataTypes/Interfaces!IDataTypeConverter | IDataTypeConverter} 
  * - Formatting them for the tokens of error messages
- * - Comparing them
+ *  using {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter} 
+ * - Comparing them  using {@link DataTypes/Interfaces!IDataTypeComparer | IDataTypeComparer} 
  * It works in conjunction with the DataType Lookup Keys {@link DataTypes/LookupKeys! | Lookup Keys }.
  * 
- * Formatting supports localization, keeping a list of one or more IDataTypeLocalizedFormatters,
- * for all supported cultures.
- * As you set it up, you must supply a list of one or more CultureIdFallback objects.
- * Each identifies a culture that you support and a fallback culture when the desired culture
- * didn't support the Format.
+ * Formatting uses localization. It uses IDataTypeLocalizedFormatter classes,
+ * which may handle multiple cultures. When searching for a formatter,
+ * it tries the ValidationServices.ActiveCultureID first and if no formatter
+ * is supplied for that culture, it has a chain of fallback cultures that you supply
+ * in the constructor.
+ * 
+ *  This class is available on {@link ValidationServices/ConcreteClass!ValidationServices.DataTypeServices}.
  */
 export class DataTypeServices implements IDataTypeServices {
     /**
@@ -131,8 +135,16 @@ export class DataTypeServices implements IDataTypeServices {
      * Converts the native value to a string that can be shown to the user.
      * Result includes the successfully converted value
      * or validation error information.
+     * 
+     * Formatting uses localization. It uses 
+     * {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter} classes,
+     * which may handle multiple cultures. When searching for a formatter,
+     * it tries the ValidationServices.ActiveCultureID first and if no formatter
+     * is supplied for that culture, it has a chain of fallback cultures that you supply
+     * in the constructor.
      * @param value
      * @param lookupKey - If not supplied, a lookup key is created based on the native value type.
+     * 
      * If you need alternative formatting or are supporting a user defined type,
      * always pass in the associated lookup key. They can be found in the LookupKeys module.
      * @returns successfully converted value or validation error information.
@@ -164,7 +176,9 @@ export class DataTypeServices implements IDataTypeServices {
     }
 
     /**
-      * Registers an IDataTypeLocalizedFormatter for use by the Format function.
+      * Registers an {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter}
+      * for use by the Format function.
+      * 
       * If the LookupKey was previously registered, its instance is replaced.
       * @param dtlf
       */
@@ -180,7 +194,8 @@ export class DataTypeServices implements IDataTypeServices {
         }
     }
     /**
-     * Removes the first IDataTypeLocalizedFormatter that supports both parameters.
+     * Removes the first {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter}
+     * that supports both parameters.
      * @param lookupKey 
      * @param cultureID 
      * @returns 
@@ -195,7 +210,8 @@ export class DataTypeServices implements IDataTypeServices {
     }
 
     /**
-     * Gets the IDataTypeLocalizedFormatter associated with the lookup key and this class's
+     * Gets the {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter}
+     * associated with the lookup key and this class's
      * own CultureID.
      * @param lookupKey
      * @returns A matching IDataTypeLocalizedFormatter or null if none match.
@@ -225,22 +241,47 @@ export class DataTypeServices implements IDataTypeServices {
 
     //#region CompareValues and IDataTypeComparer
     /**
-     * Compares two same-type values to see if they are equal or not.
+     * Compares two values to see if they are equal or not.
+     * 
      * It can return Equals and NotEquals for types that make no sense
      * to support greater than and less than.
+     * 
      * Otherwise it returns Equals, LessThan, or GreaterThan.
-     * Expect exceptions when invalid values are supplied.
-     * It identifies the ComparerHandler function.
+     * When value types are a mismatch or not supported,
+     * it returns Undetermined.
+     * 
+     * Also expect exceptions in some cases when invalid values are supplied.
      * If either value is null, it will either return Equals (both null)
      * or Undetermined.
+     * 
+     * Data Types will be convertered to make different types into
+     * a common type, objects into numbers (Dates in particular),
+     * and allow you to represent the value differently, such as getting
+     * just the month from the Date object for comparison.
+     * 
+     * Conversions use implementations of {@link DataTypes/Interfaces!IDataTypeConverter | IDataTypeConverter}.
+     * There is a default comparison function used here, which knows
+     * how to compare only numbers and strings. Most values can be converted
+     * to numbers or strings and will be supported by a DataTypeConverter.
+     * 
+     * For example, a Date object.
+     * If you need another way to convert - as Booleans do - you
+     * can implement {@link DataTypes/Interfaces!IDataTypeComparer | IDataTypeComparer}.
      * @param value1 
      * @param value2 
-     * @param lookupKey1 - Identifies the IDataTypeConverter and/or ComparerHandler function to use
-     *   together with value1. If null, the native data type of the value will be converted to a lookupKey
+     * @param lookupKey1 - Identifies the IDataTypeConverter to use
+     *   together with value1. 
+     *   If null, the native data type of the value will be converted to a lookupKey
      *   when String, Number, Boolean, Date object, or any IDataTypeIdentifier that you have registered
      *   with the DataTypeServices.
-     * @param lookupKey2 - Same idea as lookupKey1 but for value2. This value will not be used
-     * to find a ComparerHandler.
+     * @param lookupKey2 - Same idea as lookupKey1 but for value2.
+     * @returns For incompatible values where they couldn't be converted to
+     * something compatible, expect Undetermined.
+     * 
+     * For booleans and types where greater than and less then don't make sense,
+     * expect Equals and Not Equals.
+     * 
+     * For the rest, expect Equals, GreaterThan and LessThan.
      */
     public CompareValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult {
         function resolveLookupKey(v: any, key: string | null, part: string): string | null {
@@ -348,7 +389,8 @@ export class DataTypeServices implements IDataTypeServices {
      * When a value is supplied without a DataType Lookup Key, this resolves the
      * DataType Lookup Key. By default, it supports values of type number, boolean,
      * string and Date object.
-     * You can add your own data types by implementing IDataTypeIdentifier
+     * 
+     * You can add your own data types by implementing {@link DataTypes/Interfaces!IDataTypeIdentifier | IDataTypeIdentifier}
      * and registered you class with the DataTypeServices.
      * @param value 
      * @returns the found Lookup Key or "Unsupported".
@@ -359,7 +401,7 @@ export class DataTypeServices implements IDataTypeServices {
     }
 
     /**
-     * Registers an implementation of IDataTypeIdentifier.
+     * Registers an implementation of {@link DataTypes/Interfaces!IDataTypeIdentifier | IDataTypeIdentifier}.
      * The built-in implementations are preregistered.
      * @param identifier - If its DataTypeLookupKey matches an existing one (case insensitive),
      * the existing one is replaced.
@@ -395,7 +437,8 @@ export class DataTypeServices implements IDataTypeServices {
     //#region IConvertTo
 
     /**
-     * Registers a IDataTypeConverter. Always adds, never replaces.
+     * Registers a {@link DataTypes/Interfaces!IDataTypeConverter | IDataTypeConverter}. 
+     * Always adds, never replaces.
      * @param converter 
      */
     public RegisterDataTypeConverter(converter: IDataTypeConverter): void {
@@ -406,7 +449,8 @@ export class DataTypeServices implements IDataTypeServices {
     }
 
     /**
-     * Gets the first IDataTypeConverter that supports the value, or null if none are found.
+     * Gets the first {@link DataTypes/Interfaces!IDataTypeConverter | IDataTypeConverter}
+     *  that supports the value, or null if none are found.
      * @param value 
      * @param dataTypeLookupKey 
      * @returns 
@@ -428,7 +472,7 @@ export class DataTypeServices implements IDataTypeServices {
 /**
  * Identifies a CultureID ('en', 'en-US', 'en-GB', etc) that you are supporting.
  * Supplies a fallback CultureID if the culture requested did not have any support.
- * Used by DataTypeServices. Pass an array of these into the DataTypeServices constructor.
+ * Used by {@link DataTypeServices}. Pass an array of these into the DataTypeServices constructor.
  */
 export interface CultureIdFallback {
     /**
@@ -443,7 +487,6 @@ export interface CultureIdFallback {
 
     /**
      * Identifies another culture to check if a lookup key cannot be resolved.
-     * Caller should find another DataTypeLocalization for that culture.
      */
     FallbackCultureId?: string | null;
 }
