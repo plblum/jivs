@@ -39,7 +39,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./docs/
+          local-dir: ./coverage/lcov-report/
           server-dir: ${{ secrets.FTP_COVERAGE_PATH }}
           dry-run: true
 
