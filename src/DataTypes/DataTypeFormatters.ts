@@ -2,22 +2,22 @@
  * Provides conversion between a native type and its formatted and localized string 
  * representation. Each is associated with a lookup key.
  * For example, the Date object has several of these implementations.
- * LookupKey="Date" provides a localized short date pattern through DateLocalizedFormatter.
- * LookupKey="AbbrevDate" provides the same but in abbreviated date pattern through AbbrevDateLocalizedFormatter.
+ * LookupKey="Date" provides a localized short date pattern through DateFormatter.
+ * LookupKey="AbbrevDate" provides the same but in abbreviated date pattern through AbbrevDateFormatter.
  * Create implementations for each dataTypeLookupKey that needs localized formatting.
- * @module DataTypes/ConcreteClasses/DataTypeLocalizedFormatters
+ * @module DataTypes/ConcreteClasses/DataTypeFormatters
  */
 
-import { IDataTypeLocalizedFormatter, DataTypeResolution } from "../Interfaces/DataTypes";
+import { IDataTypeFormatter, DataTypeResolution } from "../Interfaces/DataTypes";
 import { IServicesAccessor, IValidationServices } from "../Interfaces/ValidationServices";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { CultureLanguageCode } from "../Utilities/Utilities";
 import { LookupKey } from "./LookupKeys";
 
 /**
- * Abstract implementation of IDataTypeLocalizedFormatter.
+ * Abstract implementation of IDataTypeFormatter.
  */
-export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocalizedFormatter, IServicesAccessor
+export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServicesAccessor
 {
     /**
      * Services accessor.
@@ -116,7 +116,7 @@ export abstract class DataTypeLocalizedFormatterBase implements IDataTypeLocaliz
 /**
  * For LookupKey.String. Culture neutral.
  */
-export class StringLocalizedFormatter extends DataTypeLocalizedFormatterBase {
+export class StringFormatter extends DataTypeFormatterBase {
     protected get ExpectedLookupKeys(): string | Array<string>
     {
         return LookupKey.String;
@@ -137,7 +137,7 @@ export class StringLocalizedFormatter extends DataTypeLocalizedFormatterBase {
  * Changes the first letter to uppercase. Leaves the rest alone.
  * Uses the Javascript toLocaleUpperCase(cultureId) function
  */
-export class CapitalizeStringLocalizedFormatter extends DataTypeLocalizedFormatterBase
+export class CapitalizeStringFormatter extends DataTypeFormatterBase
 {
     protected get ExpectedLookupKeys(): string | Array<string>
     {
@@ -162,7 +162,7 @@ export class CapitalizeStringLocalizedFormatter extends DataTypeLocalizedFormatt
  * Converts all characters to uppercase.
  * Uses the Javascript toLocaleUpperCase(cultureId) function
  */
-export class UppercaseStringLocalizedFormatter extends DataTypeLocalizedFormatterBase
+export class UppercaseStringFormatter extends DataTypeFormatterBase
 {
     protected get ExpectedLookupKeys(): string | Array<string>
     {
@@ -186,7 +186,7 @@ export class UppercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
  * Converts all characters to lowercase.
  * Uses the Javascript toLocaleLowerCase(cultureId) function
  */
-export class LowercaseStringLocalizedFormatter extends DataTypeLocalizedFormatterBase
+export class LowercaseStringFormatter extends DataTypeFormatterBase
 {
     protected get ExpectedLookupKeys(): string | Array<string>
     {
@@ -215,7 +215,7 @@ export class LowercaseStringLocalizedFormatter extends DataTypeLocalizedFormatte
  * Pass the options in the constructor or omit the options
  * for default formatting.
  */
-export abstract class NumberLocalizedFormatterBase extends DataTypeLocalizedFormatterBase
+export abstract class NumberFormatterBase extends DataTypeFormatterBase
 {
     constructor(options?: Intl.NumberFormatOptions | null)
     {
@@ -264,7 +264,7 @@ export abstract class NumberLocalizedFormatterBase extends DataTypeLocalizedForm
  * For LookupKey.Number.
  * Converts any number using the Intl library's NumberFormat feature.
  */
-export class NumberLocalizedFormatter extends NumberLocalizedFormatterBase
+export class NumberFormatter extends NumberFormatterBase
 {
     constructor(options?: Intl.NumberFormatOptions | null)
     {
@@ -291,7 +291,7 @@ export class NumberLocalizedFormatter extends NumberLocalizedFormatterBase
  * For LookupKey.Integer.
  * Converts any number using the Intl library's NumberFormat feature.
  */
-export class IntegerLocalizedFormatter extends NumberLocalizedFormatterBase
+export class IntegerFormatter extends NumberFormatterBase
 {
     constructor(options?: Intl.NumberFormatOptions | null)
     {
@@ -331,7 +331,7 @@ export class IntegerLocalizedFormatter extends NumberLocalizedFormatterBase
  * a CurrencyCode into the constructor, along with a list of
  * cultures that support the code.
  */
-export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
+export class CurrencyFormatter extends NumberFormatterBase
 {
     constructor(defaultCurrencyCode: string,
         options?: Intl.NumberFormatOptions | null,
@@ -384,7 +384,7 @@ export class CurrencyLocalizedFormatter extends NumberLocalizedFormatterBase
  * Converts any number using the Intl library's NumberFormat feature.
  * Expects the value 1 to be 100%.
  */
-export class PercentageLocalizedFormatter extends NumberLocalizedFormatterBase
+export class PercentageFormatter extends NumberFormatterBase
 {
     constructor(options?: Intl.NumberFormatOptions | null)
     {
@@ -412,7 +412,7 @@ export class PercentageLocalizedFormatter extends NumberLocalizedFormatterBase
  * Converts any number using the Intl library's NumberFormat feature.
  * Expects the value 100 to be 100%.
  */
-export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBase
+export class Percentage100Formatter extends NumberFormatterBase
 {
     constructor(options?: Intl.NumberFormatOptions | null)
     {
@@ -454,7 +454,7 @@ export class Percentage100LocalizedFormatter extends NumberLocalizedFormatterBas
  * translations. Then provide values for TrueLabel and FalseLabel
  * when registering this class in the DataTypeServices.
  */
-export abstract class BooleanLocalizedFormatterBase extends DataTypeLocalizedFormatterBase
+export abstract class BooleanFormatterBase extends DataTypeFormatterBase
 {
     /**
      * Constructor
@@ -570,7 +570,7 @@ export interface DefaultLabelsForBoolean
  * and 'FALSE' as the localization key for false.
  * LookupKey: "Boolean" or whatever the user supplies.
  */
-export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
+export class BooleanFormatter extends BooleanFormatterBase
 {
     /**
      * Constructor
@@ -612,7 +612,7 @@ export class BooleanLocalizedFormatter extends BooleanLocalizedFormatterBase
  * Pass the options in the constructor or omit the options
  * for default formatting.
  */
-export abstract class DateTimeLocalizedFormatterBase extends DataTypeLocalizedFormatterBase
+export abstract class DateTimeFormatterBase extends DataTypeFormatterBase
 {
     constructor(options?: Intl.DateTimeFormatOptions)
     {
@@ -662,7 +662,7 @@ export abstract class DateTimeLocalizedFormatterBase extends DataTypeLocalizedFo
  * but not seconds in digits, unless you provide alternatives
  * in the constructor.
  */
-export class DateTimeLocalizedFormatter extends DateTimeLocalizedFormatterBase
+export class DateTimeFormatter extends DateTimeFormatterBase
 {
     constructor(options?: Intl.DateTimeFormatOptions)
     {
@@ -693,7 +693,7 @@ export class DateTimeLocalizedFormatter extends DateTimeLocalizedFormatterBase
  * Uses Intl library's DateTimeFormat to Y, M, D as digits (short date format)
  * unless you provide alternatives in the constructor.
  */
-export class DateLocalizedFormatter extends DateTimeLocalizedFormatterBase
+export class DateFormatter extends DateTimeFormatterBase
 {
     constructor(options?: Intl.DateTimeFormatOptions)
     {
@@ -727,7 +727,7 @@ export class DateLocalizedFormatter extends DateTimeLocalizedFormatterBase
  * Y and D as digits (abbreviated date format)
  * unless you provide alternatives in the constructor.
  */
-export class AbbrevDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
+export class AbbrevDateFormatter extends DateTimeFormatterBase
 {
     constructor(options?: Intl.DateTimeFormatOptions)
     {
@@ -757,7 +757,7 @@ export class AbbrevDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
  * Day of week as abbreviated name, Y and D as digits (abbreviated date format)
  * unless you provide alternatives in the constructor.
  */
-export class AbbrevDOWDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
+export class AbbrevDOWDateFormatter extends DateTimeFormatterBase
 {
     constructor(options?: Intl.DateTimeFormatOptions)
     {
@@ -788,7 +788,7 @@ export class AbbrevDOWDateLocalizedFormatter extends DateTimeLocalizedFormatterB
  * Y and D as digits (long date format)
  * unless you provide alternatives in the constructor.
  */
-export class LongDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
+export class LongDateFormatter extends DateTimeFormatterBase
 {
     constructor(options?: Intl.DateTimeFormatOptions)
     {
@@ -818,7 +818,7 @@ export class LongDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
  * Day of week as full name, Y and D as digits (abbreviated date format)
  * unless you provide alternatives in the constructor.
  */
-export class LongDOWDateLocalizedFormatter extends DateTimeLocalizedFormatterBase
+export class LongDOWDateFormatter extends DateTimeFormatterBase
 {
     constructor(options?: Intl.DateTimeFormatOptions)
     {
@@ -849,7 +849,7 @@ export class LongDOWDateLocalizedFormatter extends DateTimeLocalizedFormatterBas
  * Uses Intl library's DateTimeFormat to show hours and minutes as digits,
  * omitted seconds, unless you provide alternatives in the constructor.
  */
-export class TimeofDayLocalizedFormatter extends DateTimeLocalizedFormatterBase
+export class TimeofDayFormatter extends DateTimeFormatterBase
 {
     constructor(options?: Intl.DateTimeFormatOptions)
     {
@@ -878,7 +878,7 @@ export class TimeofDayLocalizedFormatter extends DateTimeLocalizedFormatterBase
  * Uses Intl library's DateTimeFormat to show hours, minutes, and seconds as digits,
  * unless you provide alternatives in the constructor.
  */
-export class TimeofDayHMSLocalizedFormatter extends DateTimeLocalizedFormatterBase
+export class TimeofDayHMSFormatter extends DateTimeFormatterBase
 {
     constructor(options?: Intl.DateTimeFormatOptions)
     {

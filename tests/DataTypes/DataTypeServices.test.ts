@@ -3,10 +3,10 @@ import { UTCDateOnlyConverter } from '../../src/DataTypes/DataTypeConverters';
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, StringDataTypeIdentifier } from '../../src/DataTypes/DataTypeIdentifiers';
 import { NumberDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
 import { CultureIdFallback, DataTypeServices } from "../../src/DataTypes/DataTypeServices";
-import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier, IDataTypeLocalizedFormatter, DataTypeResolution } from "../../src/Interfaces/DataTypes";
-import { RegisterDataTypeIdentifiers, RegisterDataTypeLocalizedFormatters } from "../../starter_code/create_services";
+import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier, IDataTypeFormatter, DataTypeResolution } from "../../src/Interfaces/DataTypes";
+import { RegisterDataTypeIdentifiers, RegisterDataTypeFormatters } from "../../starter_code/create_services";
 import { BooleanDataTypeComparer } from '../../src/DataTypes/DataTypeComparers';
-import { BooleanLocalizedFormatter, NumberLocalizedFormatter } from '../../src/DataTypes/DataTypeLocalizedFormatters';
+import { BooleanFormatter, NumberFormatter } from '../../src/DataTypes/DataTypeFormatters';
 import { MockValidationManager, MockValidationServices } from '../Mocks';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 
@@ -25,9 +25,9 @@ describe('DataTypeServices constructor and properties', () => {
         {
             return this.GetCultureIdFallback(cultureId);
         }
-        public ExposedGetLocalizedFormatters(): Array<IDataTypeLocalizedFormatter>
+        public ExposedGetFormatters(): Array<IDataTypeFormatter>
         {
-            return this.GetLocalizedFormatters();
+            return this.GetFormatters();
         }
         public ExposedCleanupComparableValue(value: any, lookupKey: string | null): any
         {
@@ -52,7 +52,7 @@ describe('DataTypeServices constructor and properties', () => {
 
         expect(()=> testItem.ExposedCultureIdFallback).toThrow(/CultureIdFallback/)
         expect(testItem.ExposedGetDataTypeIdentifiers()).toEqual([]);
-        expect(testItem.ExposedGetLocalizedFormatters()).toEqual([]);
+        expect(testItem.ExposedGetFormatters()).toEqual([]);
         expect(testItem.ExposedGetDataTypeConverters()).toEqual([]);
         expect(testItem.ExposedGetDataTypeComparers()).toEqual([]);
         expect(() => testItem.Services).toThrow(/Attach/);
@@ -176,7 +176,7 @@ export function CreateDataTypeServicesWithManyCultures(activeCultureId: string, 
     dts.Services = services;
     RegisterDataTypeIdentifiers(dts);   // always
     if (registerFormatters)
-        RegisterDataTypeLocalizedFormatters(dts);
+        RegisterDataTypeFormatters(dts);
     return dts;
         
 }
@@ -191,7 +191,7 @@ describe('DataTypeServices.Format', () => {
         expect(() => testItem.Format(0, 'huh')).toThrow(/LookupKey/);
     });
 
-    class TestLocalizedFormatter implements IDataTypeLocalizedFormatter
+    class TestFormatter implements IDataTypeFormatter
     {
         constructor(supportedCultureIds: Array<string>, valueToReturn?: string)
         {
@@ -210,19 +210,19 @@ describe('DataTypeServices.Format', () => {
         
     }
 
-    test('Lookup Key in DataTypeLocalizedFormatter en', () => {
+    test('Lookup Key in DataTypeFormatter en', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en', true);
-        testItem.RegisterLocalizedFormatter(new TestLocalizedFormatter(['en'], 'EN TestKey'));
+        testItem.RegisterFormatter(new TestFormatter(['en'], 'EN TestKey'));
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'en TestKey' });
     });     
-    test('Lookup Key in DataTypeLocalizedFormatter en using fallback from en-GB', () => {
+    test('Lookup Key in DataTypeFormatter en using fallback from en-GB', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en-GB', true);
-        testItem.RegisterLocalizedFormatter(new TestLocalizedFormatter(['en'], 'EN TestKey'));
+        testItem.RegisterFormatter(new TestFormatter(['en'], 'EN TestKey'));
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'en TestKey' });
     });        
-    test('Lookup Key in DataTypeLocalizedFormatter en and en-GB gets from en-GB', () => {
+    test('Lookup Key in DataTypeFormatter en and en-GB gets from en-GB', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en-GB', true);
-        testItem.RegisterLocalizedFormatter(new TestLocalizedFormatter(['en', 'en-GB'], 'EN TestKey'));
+        testItem.RegisterFormatter(new TestFormatter(['en', 'en-GB'], 'EN TestKey'));
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'en-GB TestKey' });
     }); 
     test('Date to string using built-in Localization', () => {
@@ -689,13 +689,13 @@ describe('DataTypeServices utility methods', () => {
     });        
 });
 describe('Other functions in DataTypeServices', () => {
-    test('UnregisterLocalizedFormatter', () => {
+    test('UnregisterFormatter', () => {
         let testItem = new DataTypeServices();
-        testItem.RegisterLocalizedFormatter(new NumberLocalizedFormatter());
-        testItem.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(LookupKey.Boolean));
-        expect(testItem.UnregisterLocalizedFormatter(LookupKey.Number, 'en')).toBe(true);
-        expect(testItem.UnregisterLocalizedFormatter(LookupKey.Number, 'en')).toBe(false);
-        expect(testItem.UnregisterLocalizedFormatter(LookupKey.Boolean, 'en')).toBe(true);
-        expect(testItem.UnregisterLocalizedFormatter(LookupKey.Boolean, 'en')).toBe(false);
+        testItem.RegisterFormatter(new NumberFormatter());
+        testItem.RegisterFormatter(new BooleanFormatter(LookupKey.Boolean));
+        expect(testItem.UnregisterFormatter(LookupKey.Number, 'en')).toBe(true);
+        expect(testItem.UnregisterFormatter(LookupKey.Number, 'en')).toBe(false);
+        expect(testItem.UnregisterFormatter(LookupKey.Boolean, 'en')).toBe(true);
+        expect(testItem.UnregisterFormatter(LookupKey.Boolean, 'en')).toBe(false);
     });
 });

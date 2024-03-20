@@ -81,7 +81,7 @@ export class ValidationServices implements IValidationServices {
     /**
      * Service to text localization specific, effectively mapping
      * a text key to a language specific version of that text.
-     * Error messages and IDataTypeLocalizedFormatters use this.
+     * Error messages and IDataTypeFormatters use this.
      * Defaults to using TextLocalizerServices class.
      * If you use a third party localization system, you may prefer
      * to use that here. Implement ITextLocalizerService around

@@ -59,7 +59,7 @@ export interface IValidationServices extends IBasicValidationServices {
     /**
      * Service to text localization specific, effectively mapping
      * a text key to a language specific version of that text.
-     * Error messages and IDataTypeLocalizedFormatters use this.
+     * Error messages and IDataTypeFormatters use this.
      */
     TextLocalizerService: ITextLocalizerService;
 

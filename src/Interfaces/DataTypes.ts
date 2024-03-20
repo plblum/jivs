@@ -16,7 +16,7 @@ export interface ICoreDataTypeServices
  * Converts the native value to a string that can be shown to the user.
  * Result includes the successfully converted value
  * or validation error information.
- * Formatting uses localization. It uses IDataTypeLocalizedFormatter classes,
+ * Formatting uses localization. It uses IDataTypeFormatter classes,
  * which may handle multiple cultures. When searching for a formatter,
  * it tries the ValidationServices.ActiveCultureID first and if no formatter
  * is supplied for that culture, it has a chain of fallback cultures that you supply
@@ -155,13 +155,13 @@ export enum ComparersResult {
  * Provides conversion between a native type and its formatted and localized string 
  * representation. Each is associated with a lookup key.
  * For example, the Date object has several of these implementations.
- * LookupKey="Date" provides a localized short date pattern through DateLocalizedFormatter.
- * LookupKey="AbbrevDate" provides the same but in abbreviated date pattern through AbbrevDateLocalizedFormatter.
+ * LookupKey="Date" provides a localized short date pattern through DateFormatter.
+ * LookupKey="AbbrevDate" provides the same but in abbreviated date pattern through AbbrevDateFormatter.
  * Create implementations for each dataTypeLookupKey that needs localized formatting.
  * If you need access to ValidationServices, such as for text localization, implement
  * IServicesAccessor on your class.
  */
-export interface IDataTypeLocalizedFormatter
+export interface IDataTypeFormatter
 {
     /**
      * Evaluates the parameters to determine if its Format method should handle the value
