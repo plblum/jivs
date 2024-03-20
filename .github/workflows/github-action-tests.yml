@@ -1,11 +1,11 @@
 # credit https://joelhooks.com/jest-and-github-actions/
 on:
   push:
-    branches:
-      - feature*
-  pull_request:
-    branches:
-      - develop
+  #   branches:
+  #     - feature*
+  # pull_request:
+  #   branches:
+  #     - develop
 name: 🧪 Run Jest tests
 jobs:
   test:
