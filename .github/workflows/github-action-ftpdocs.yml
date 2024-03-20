@@ -15,5 +15,5 @@ jobs:
         username: PeterBlum
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./docs/
-        server-dir: TypeDoc/
+        server-dir: jivs.peterblum.com/TypeDoc/
         dry-run: true
