@@ -1,21 +1,10 @@
 // Less configuration
 var gulp = require('gulp');
-// var less = require('gulp-less');
+var jest = require('gulp-jest').default;
 
-// gulp.task('less', function(cb) {
-//   gulp
-//     .src('./src/styles.less')
-//     .pipe(less())
-//     .pipe(
-//       gulp.dest('./src/css/')
-//     );
-//   cb();
-// });
-
-// gulp.task(
-//   'default',
-//   gulp.series('less', function(cb) {
-//     gulp.watch('*.less', gulp.series('less'));
-//     cb();
-//   })
-// );
+gulp.task('jest', function () {
+  process.env.NODE_ENV = 'test';
+  return gulp.src('tests').pipe(jest({
+    "config": "./jest.config.js"
+  }));
+});
