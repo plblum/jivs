@@ -1,6 +1,5 @@
 on: push
 name: 🚀 Deploy docs to jivs.peterblum.com
-description: FTPs files from /docs to jivs.peterblum.com/typedoc, replacing existing
 jobs:
   web-deploy:
     name: 🎉 Deploy
