@@ -11,9 +11,9 @@ jobs:
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
-        server: sec720.servdns.com
-        username: PeterBlum
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./docs/
-        server-dir: jivs.peterblum.com/TypeDoc/
+        server-dir: ${{ secrets.FTP_TYPEDOCS_PATH }}
         dry-run: true
