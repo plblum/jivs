@@ -12,7 +12,8 @@
   "scripts": {
     "compile": "tsc",
     "test": "jest",
-    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'"
+    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'",
+    "typedoc": "typedoc --options typedoc.json"
   },
   "eslintConfig": {
     "env": {
