@@ -7,12 +7,15 @@ on:
   pull_request:
     branches:
       - develop
+      - main
 name: 🧪 Run Jest tests
 run-name: Run Jest tests initiated by @${{ github.actor }}
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Branch name
+        run: echo Running on branch ${GITHUB_REF##*/} and ${github.head_ref}
       - uses: actions/checkout@v4
       - name: Test using Node.js
         uses: actions/setup-node@v4
@@ -36,7 +39,7 @@ jobs:
             "target_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }'
       - name: 📂 Deploy coverage data
-        if: ${{ success() }}
+        if: ${{ success() && (github.head_ref == 'main') }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
