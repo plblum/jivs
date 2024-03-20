@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc InputValidator!}
- * @module ValueHosts/Interfaces
+ * {@inheritDoc InputValidator/ConcreteClasses!}
+ * @module InputValidator/Interfaces
  */
 import { IValueHostResolver } from "./ValueHostResolver";
 import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from "./Conditions";
@@ -219,7 +219,9 @@ export interface TokenLabelAndValue {
     TokenLabel: string,
     /**
      * The value to be used as a replacement. When the value isn't a string,
-     * it is converted to a string through IDataTypeLocalization.
+     * it is converted to a string through 
+     * {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter} classes
+     * registered with {@link DataTypes/ConcreteClasses/DataTypeServices!DataTypeServices | DataTypeServices}.
      */
     AssociatedValue: any,
     /**
@@ -262,7 +264,7 @@ export interface IInputValidatorFactory {
  * a javascript Date into "May 20, 2001". This function uses the 
  * Services.DataTypeServices to handle conversion and localization.
  * The "formatterkey" in {token:formatterkey} is actually the same
- * as a LookupKey in the DataTypeServices and its DataTypeLocalizations.
+ * as a {@link DataTypes/LookupKeys | LookupKey } used to identify a data type.
  * Tokens are supplied by implementers of IMessageTokenSource.
  */
 export interface IMessageTokenResolver {

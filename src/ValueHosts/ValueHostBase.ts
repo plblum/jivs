@@ -1,6 +1,6 @@
 /**
  * Standard implementation of IValueHost.
- * @module ValueHosts/ValueHostBase
+ * @module ValueHosts/AbstractClasses/ValueHostBase
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { AssertNotNull } from "../Utilities/ErrorHandling";

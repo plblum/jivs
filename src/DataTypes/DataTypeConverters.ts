@@ -6,7 +6,7 @@
  * In these cases, we are handling standard data types of Date, string, and number
  * to reshape them. For example, there is a string conversion to a lowercase string
  * that is for case insensitive comparisons.
- * @module DataTypes/DataTypeConverters
+ * @module DataTypes/ConcreteClasses/DataTypeConverters
  */
 
 import { IDataTypeConverter } from "../Interfaces/DataTypes";

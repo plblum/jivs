@@ -5,7 +5,7 @@
  * LookupKey="Date" provides a localized short date pattern through DateLocalizedFormatter.
  * LookupKey="AbbrevDate" provides the same but in abbreviated date pattern through AbbrevDateLocalizedFormatter.
  * Create implementations for each dataTypeLookupKey that needs localized formatting.
- * @module DataTypes/DataTypeLocalizedFormatters
+ * @module DataTypes/ConcreteClasses/DataTypeLocalizedFormatters
  */
 
 import { IDataTypeLocalizedFormatter, DataTypeResolution } from "../Interfaces/DataTypes";

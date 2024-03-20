@@ -36,7 +36,7 @@
  *   The consumer handles converting the input field/element value into its native value
  *   and supplies it with SetNativeValue or NativeValueUndetermined.
  * - Most Conditions look at the NativeValue via GetNativeValue.
- * @module ValueHost/Interfaces
+ * @module ValueHosts/Interfaces/ValueHost
  */
 
 

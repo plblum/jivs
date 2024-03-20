@@ -210,17 +210,17 @@ describe('DataTypeServices.Format', () => {
         
     }
 
-    test('Lookup Key in DataTypeLocalization en', () => {
+    test('Lookup Key in DataTypeLocalizedFormatter en', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en', true);
         testItem.RegisterLocalizedFormatter(new TestLocalizedFormatter(['en'], 'EN TestKey'));
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'en TestKey' });
     });     
-    test('Lookup Key in DataTypeLocalization en using fallback from en-GB', () => {
+    test('Lookup Key in DataTypeLocalizedFormatter en using fallback from en-GB', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en-GB', true);
         testItem.RegisterLocalizedFormatter(new TestLocalizedFormatter(['en'], 'EN TestKey'));
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'en TestKey' });
     });        
-    test('Lookup Key in DataTypeLocalization en and en-GB gets from en-GB', () => {
+    test('Lookup Key in DataTypeLocalizedFormatter en and en-GB gets from en-GB', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en-GB', true);
         testItem.RegisterLocalizedFormatter(new TestLocalizedFormatter(['en', 'en-GB'], 'EN TestKey'));
         expect(testItem.Format(10, 'TestKey')).toEqual({ Value: 'en-GB TestKey' });
