@@ -1,8 +1,8 @@
 on:
   push:
-    branches:
-      - main
-name: 🚀 Deploy docs to jivs.peterblum.com
+    # branches:
+    #   - main
+name: 🚀 Generate docs with TypeDoc and deploy
 jobs:
   web-deploy:
     name: 🎉 Deploy
@@ -10,7 +10,14 @@ jobs:
     steps:
     - name: 🚚 Get latest code
       uses: actions/checkout@v4
-    
+
+    - name: Generate using Node.js and TypeDoc
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - run: npm install
+    - run: npm run typedoc
+
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
