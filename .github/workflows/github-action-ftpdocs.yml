@@ -1,4 +1,7 @@
-on: push
+on:
+  push:
+    branches:
+      - main
 name: 🚀 Deploy docs to jivs.peterblum.com
 jobs:
   web-deploy:
@@ -16,4 +19,4 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./docs/
         server-dir: ${{ secrets.FTP_TYPEDOCS_PATH }}
-        dry-run: true
+        dry-run: false
