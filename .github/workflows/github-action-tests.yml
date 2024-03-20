@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./coverage/lcov-report/
           server-dir: ${{ secrets.FTP_COVERAGE_PATH }}
-          dry-run: true
+          dry-run: false
 
       - name: Tests 🚨
         if: ${{ failure() }}
