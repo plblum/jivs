@@ -1,17 +1,17 @@
 import {
-    AbbrevDOWDateLocalizedFormatter, AbbrevDateLocalizedFormatter, BooleanLocalizedFormatter, CapitalizeStringLocalizedFormatter, CurrencyLocalizedFormatter,
-    DataTypeLocalizedFormatterBase, DateLocalizedFormatter, DateTimeLocalizedFormatter, LongDOWDateLocalizedFormatter, LongDateLocalizedFormatter,
-    LowercaseStringLocalizedFormatter, NumberLocalizedFormatter, Percentage100LocalizedFormatter, PercentageLocalizedFormatter, StringLocalizedFormatter,
-    TimeofDayHMSLocalizedFormatter, TimeofDayLocalizedFormatter, UppercaseStringLocalizedFormatter
-} from './../../src/DataTypes/DataTypeLocalizedFormatters';
+    AbbrevDOWDateFormatter, AbbrevDateFormatter, BooleanFormatter, CapitalizeStringFormatter, CurrencyFormatter,
+    DataTypeFormatterBase, DateFormatter, DateTimeFormatter, LongDOWDateFormatter, LongDateFormatter,
+    LowercaseStringFormatter, NumberFormatter, Percentage100Formatter, PercentageFormatter, StringFormatter,
+    TimeofDayHMSFormatter, TimeofDayFormatter, UppercaseStringFormatter
+} from './../../src/DataTypes/DataTypeFormatters';
 
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
 import { MockValidationServices } from '../Mocks';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 
-describe('DataTypeLocalizedFormatterBase', () => {
-    class TestClass extends DataTypeLocalizedFormatterBase
+describe('DataTypeFormatterBase', () => {
+    class TestClass extends DataTypeFormatterBase
     {
         protected get ExpectedLookupKeys(): string {
             throw new Error('Method not implemented.');
@@ -37,17 +37,17 @@ describe('DataTypeLocalizedFormatterBase', () => {
     });
 })
 
-describe('StringLocalizedFormatter', () => {
+describe('StringFormatter', () => {
 
     test('Supports', () => {
-        let testItem = new StringLocalizedFormatter();
+        let testItem = new StringFormatter();
         expect(testItem.Supports(LookupKey.String, 'en')).toBe(true);
         expect(testItem.Supports(LookupKey.String, 'fr')).toBe(true);    
         expect(testItem.Supports(LookupKey.Number, 'en')).toBe(false);   
         expect(testItem.Supports(LookupKey.Uppercase, 'en')).toBe(false);        
     });
     test('en: Format with string parameter', () => {
-        let testItem = new StringLocalizedFormatter();
+        let testItem = new StringFormatter();
         let dts = testItem.Format('A', LookupKey.String, 'en');
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('A');
@@ -55,14 +55,14 @@ describe('StringLocalizedFormatter', () => {
     });
 
     test('fr: Format with string parameter', () => {
-        let testItem = new StringLocalizedFormatter();
+        let testItem = new StringFormatter();
         let dts = testItem.Format('A', LookupKey.String, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('A');
         expect(dts.ErrorMessage).toBeUndefined();
     });    
     test('Format with number parameter is converted to string', () => {
-        let testItem = new StringLocalizedFormatter();
+        let testItem = new StringFormatter();
         
         let dts = testItem.Format(15, LookupKey.String, 'en');
         expect(dts).not.toBeNull();
@@ -71,7 +71,7 @@ describe('StringLocalizedFormatter', () => {
         
     });
     test('Format with null parameter returns empty string', () => {
-        let testItem = new StringLocalizedFormatter();
+        let testItem = new StringFormatter();
         
         let dts = testItem.Format(null, LookupKey.String, 'en');
         expect(dts).not.toBeNull();
@@ -80,7 +80,7 @@ describe('StringLocalizedFormatter', () => {
         
     });
     test('Format with undefined parameter returns empty string', () => {
-        let testItem = new StringLocalizedFormatter();
+        let testItem = new StringFormatter();
         
         let dts = testItem.Format(undefined, LookupKey.String, 'en');
         expect(dts).not.toBeNull();
@@ -89,7 +89,7 @@ describe('StringLocalizedFormatter', () => {
         
     });
     test('Format with object parameter is an error', () => {
-        let testItem = new StringLocalizedFormatter();
+        let testItem = new StringFormatter();
         
         let dts = testItem.Format({}, LookupKey.String, 'en');
         expect(dts).not.toBeNull();
@@ -97,17 +97,17 @@ describe('StringLocalizedFormatter', () => {
         expect(dts.ErrorMessage).toBe('Not a string or primitive');
     });
 });
-describe('CapitalizeStringLocalizedFormatter', () => {
+describe('CapitalizeStringFormatter', () => {
 
     test('Supports', () => {
-        let testItem = new CapitalizeStringLocalizedFormatter();
+        let testItem = new CapitalizeStringFormatter();
         expect(testItem.Supports(LookupKey.Capitalize, 'en')).toBe(true);
         expect(testItem.Supports(LookupKey.Capitalize, 'fr')).toBe(true);    
         expect(testItem.Supports(LookupKey.Number, 'en')).toBe(false);   
         expect(testItem.Supports('anythingelse', 'en')).toBe(false);        
     });
     test('en: Format with string parameter', () => {
-        let testItem = new CapitalizeStringLocalizedFormatter();
+        let testItem = new CapitalizeStringFormatter();
         let dts = testItem.Format('A', LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('A');
@@ -125,7 +125,7 @@ describe('CapitalizeStringLocalizedFormatter', () => {
     });
 
     test('fr: Format with string parameter', () => {
-        let testItem = new CapitalizeStringLocalizedFormatter();
+        let testItem = new CapitalizeStringFormatter();
         let dts = testItem.Format('A', LookupKey.Capitalize, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('A');
@@ -141,7 +141,7 @@ describe('CapitalizeStringLocalizedFormatter', () => {
         expect(dts.Value).toBe('');
     });    
     test('Format with number parameter is converted to string', () => {
-        let testItem = new CapitalizeStringLocalizedFormatter();
+        let testItem = new CapitalizeStringFormatter();
         
         let dts = testItem.Format(15, LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
@@ -150,7 +150,7 @@ describe('CapitalizeStringLocalizedFormatter', () => {
         
     });
     test('Format with null parameter returns empty string', () => {
-        let testItem = new CapitalizeStringLocalizedFormatter();
+        let testItem = new CapitalizeStringFormatter();
         
         let dts = testItem.Format(null, LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
@@ -159,7 +159,7 @@ describe('CapitalizeStringLocalizedFormatter', () => {
         
     });
     test('Format with undefined parameter returns empty string', () => {
-        let testItem = new CapitalizeStringLocalizedFormatter();
+        let testItem = new CapitalizeStringFormatter();
         
         let dts = testItem.Format(undefined, LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
@@ -168,7 +168,7 @@ describe('CapitalizeStringLocalizedFormatter', () => {
         
     });
     test('Format with object parameter is an error', () => {
-        let testItem = new CapitalizeStringLocalizedFormatter();
+        let testItem = new CapitalizeStringFormatter();
         
         let dts = testItem.Format({}, LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
@@ -176,17 +176,17 @@ describe('CapitalizeStringLocalizedFormatter', () => {
         expect(dts.ErrorMessage).toBe('Not a string or primitive');
     });
 });
-describe('UppercaseStringLocalizedFormatter', () => {
+describe('UppercaseStringFormatter', () => {
 
     test('Supports', () => {
-        let testItem = new UppercaseStringLocalizedFormatter();
+        let testItem = new UppercaseStringFormatter();
         expect(testItem.Supports(LookupKey.Uppercase, 'en')).toBe(true);
         expect(testItem.Supports(LookupKey.Uppercase, 'fr')).toBe(true);    
         expect(testItem.Supports(LookupKey.Number, 'en')).toBe(false);   
         expect(testItem.Supports('anythingelse', 'en')).toBe(false);        
     });
     test('en: Format with string parameter', () => {
-        let testItem = new UppercaseStringLocalizedFormatter();
+        let testItem = new UppercaseStringFormatter();
         let dts = testItem.Format('A', LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('A');
@@ -207,7 +207,7 @@ describe('UppercaseStringLocalizedFormatter', () => {
     });
 
     test('fr: Format with string parameter', () => {
-        let testItem = new UppercaseStringLocalizedFormatter();
+        let testItem = new UppercaseStringFormatter();
         let dts = testItem.Format('A', LookupKey.Uppercase, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('A');
@@ -226,7 +226,7 @@ describe('UppercaseStringLocalizedFormatter', () => {
         expect(dts.Value).toBe('');
     });    
     test('Format with number parameter is converted to string', () => {
-        let testItem = new UppercaseStringLocalizedFormatter();
+        let testItem = new UppercaseStringFormatter();
         
         let dts = testItem.Format(15, LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
@@ -235,7 +235,7 @@ describe('UppercaseStringLocalizedFormatter', () => {
         
     });
     test('Format with null parameter returns empty string', () => {
-        let testItem = new UppercaseStringLocalizedFormatter();
+        let testItem = new UppercaseStringFormatter();
         
         let dts = testItem.Format(null, LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
@@ -244,7 +244,7 @@ describe('UppercaseStringLocalizedFormatter', () => {
         
     });
     test('Format with undefined parameter returns empty string', () => {
-        let testItem = new UppercaseStringLocalizedFormatter();
+        let testItem = new UppercaseStringFormatter();
         
         let dts = testItem.Format(undefined, LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
@@ -253,7 +253,7 @@ describe('UppercaseStringLocalizedFormatter', () => {
         
     });
     test('Format with object parameter is an error', () => {
-        let testItem = new UppercaseStringLocalizedFormatter();
+        let testItem = new UppercaseStringFormatter();
         
         let dts = testItem.Format({}, LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
@@ -261,17 +261,17 @@ describe('UppercaseStringLocalizedFormatter', () => {
         expect(dts.ErrorMessage).toBe('Not a string or primitive');
     });
 });
-describe('LowercaseStringLocalizedFormatter', () => {
+describe('LowercaseStringFormatter', () => {
 
     test('Supports', () => {
-        let testItem = new LowercaseStringLocalizedFormatter();
+        let testItem = new LowercaseStringFormatter();
         expect(testItem.Supports(LookupKey.Lowercase, 'en')).toBe(true);
         expect(testItem.Supports(LookupKey.Lowercase, 'fr')).toBe(true);    
         expect(testItem.Supports(LookupKey.Number, 'en')).toBe(false);   
         expect(testItem.Supports('anythingelse', 'en')).toBe(false);        
     });
     test('en: Format with string parameter', () => {
-        let testItem = new LowercaseStringLocalizedFormatter();
+        let testItem = new LowercaseStringFormatter();
         let dts = testItem.Format('A', LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('a');
@@ -292,7 +292,7 @@ describe('LowercaseStringLocalizedFormatter', () => {
     });
 
     test('fr: Format with string parameter', () => {
-        let testItem = new LowercaseStringLocalizedFormatter();
+        let testItem = new LowercaseStringFormatter();
         let dts = testItem.Format('A', LookupKey.Lowercase, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.Value).toBe('a');
@@ -311,7 +311,7 @@ describe('LowercaseStringLocalizedFormatter', () => {
         expect(dts.Value).toBe('');
     });    
     test('Format with number parameter is converted to string', () => {
-        let testItem = new LowercaseStringLocalizedFormatter();
+        let testItem = new LowercaseStringFormatter();
         
         let dts = testItem.Format(15, LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
@@ -320,7 +320,7 @@ describe('LowercaseStringLocalizedFormatter', () => {
         
     });
     test('Format with null parameter returns empty string', () => {
-        let testItem = new LowercaseStringLocalizedFormatter();
+        let testItem = new LowercaseStringFormatter();
         
         let dts = testItem.Format(null, LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
@@ -329,7 +329,7 @@ describe('LowercaseStringLocalizedFormatter', () => {
         
     });
     test('Format with undefined parameter returns empty string', () => {
-        let testItem = new LowercaseStringLocalizedFormatter();
+        let testItem = new LowercaseStringFormatter();
         
         let dts = testItem.Format(undefined, LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
@@ -338,7 +338,7 @@ describe('LowercaseStringLocalizedFormatter', () => {
         
     });
     test('Format with object parameter is an error', () => {
-        let testItem = new LowercaseStringLocalizedFormatter();
+        let testItem = new LowercaseStringFormatter();
         
         let dts = testItem.Format({}, LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
@@ -347,21 +347,21 @@ describe('LowercaseStringLocalizedFormatter', () => {
     });
 });
 
-describe('NumberLocalizedFormatter', () => {
+describe('NumberFormatter', () => {
     test('en: Supports LookupKey.Number is true, others false', () => {
-        let testItem = new NumberLocalizedFormatter();
+        let testItem = new NumberFormatter();
         
         expect(testItem.Supports(LookupKey.Number, 'en')).toBe(true);       
         expect(testItem.Supports('anythingelse', 'en')).toBe(false);              
     });
     test('Supports LookupKey.Number is true no matter the culture', () => {
-        let testItem = new NumberLocalizedFormatter();
+        let testItem = new NumberFormatter();
         
         expect(testItem.Supports(LookupKey.Number, 'fr')).toBe(true);        
         expect(testItem.Supports('anythingelse', 'fr')).toBe(false);
     });
     test('en culture with various valid numbers', () => {
-        let testItem = new NumberLocalizedFormatter();
+        let testItem = new NumberFormatter();
         
         let dts = testItem.Format(1, LookupKey.Number, 'en');
         expect(dts).not.toBeNull();
@@ -380,7 +380,7 @@ describe('NumberLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid numbers', () => {
-        let testItem = new NumberLocalizedFormatter();
+        let testItem = new NumberFormatter();
         
 
         let dts = testItem.Format(1, LookupKey.Number, 'fr');
@@ -399,7 +399,7 @@ describe('NumberLocalizedFormatter', () => {
         expect(dts.Value).toBe('-9,501');
     });    
     test('en culture with ways to output empty string', () => {
-        let testItem = new NumberLocalizedFormatter();
+        let testItem = new NumberFormatter();
         
 
         let dts = testItem.Format(null, LookupKey.Number, 'en');
@@ -412,7 +412,7 @@ describe('NumberLocalizedFormatter', () => {
         expect(dts.Value).toBe('');
     });
     test('Invalid type returns ErrorMessage', () => {
-        let testItem = new NumberLocalizedFormatter();
+        let testItem = new NumberFormatter();
         
 
         let dts = testItem.Format('A', LookupKey.Number, 'en');
@@ -426,22 +426,22 @@ describe('NumberLocalizedFormatter', () => {
         
     });
 });
-describe('CurrencyLocalizedFormatter', () => {
+describe('CurrencyFormatter', () => {
     test('en: Supports LookupKey.Currency is true. All others are false', () => {
-        let testItem = new CurrencyLocalizedFormatter('USD');
+        let testItem = new CurrencyFormatter('USD');
         
         expect(testItem.Supports(LookupKey.Currency, 'en')).toBe(true);       
         expect(testItem.Supports('anythingelse', 'en')).toBe(false);             
     });
     test('Supports LookupKey.Currency is true in all cultures', () => {
-        let testItem = new CurrencyLocalizedFormatter('USD');
+        let testItem = new CurrencyFormatter('USD');
         
         expect(testItem.Supports(LookupKey.Currency, 'fr')).toBe(true);        
         expect(testItem.Supports('anythingelse', 'fr')).toBe(false);
     });
 
     test('en culture with various valid numbers, using currencycode USD from global default', () => {
-        let testItem = new CurrencyLocalizedFormatter('USD');
+        let testItem = new CurrencyFormatter('USD');
         
         let dts = testItem.Format(1, LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
@@ -460,7 +460,7 @@ describe('CurrencyLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid numbers', () => {
-        let testItem = new CurrencyLocalizedFormatter('USD', null,
+        let testItem = new CurrencyFormatter('USD', null,
             {
                 'fr': 'EUR',
             });
@@ -481,7 +481,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.Value).toBe('-9,50\xA0€');
     });    
     test('fr-FR culture with various valid numbers', () => {
-        let testItem = new CurrencyLocalizedFormatter('USD', null,
+        let testItem = new CurrencyFormatter('USD', null,
             {
                 'fr-FR': 'EUR',
             });
@@ -502,7 +502,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.Value).toBe('-9,50\xA0€');
     });        
     test('When full culture is missing in constructor, fallback to countrycode culture', () => {
-        let testItem = new CurrencyLocalizedFormatter('EUR', null,
+        let testItem = new CurrencyFormatter('EUR', null,
             {
                 'fr': 'EUR',
             });
@@ -513,7 +513,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.ErrorMessage).toBeUndefined();
     });       
     test('With global default currency code of USD and currencycode is missing in constructor, use default currency code', () => {
-        let testItem = new CurrencyLocalizedFormatter('USD', null);
+        let testItem = new CurrencyFormatter('USD', null);
         
         let dts = testItem.Format(1, LookupKey.Currency, 'fr-FR');
         expect(dts).not.toBeNull();
@@ -522,7 +522,7 @@ describe('CurrencyLocalizedFormatter', () => {
 
     });         
     test('With EUR as default currency code, LookupKey.Currency uses EUR when currencycode is missing in constructor', () => {
-        let testItem = new CurrencyLocalizedFormatter('EUR', null);
+        let testItem = new CurrencyFormatter('EUR', null);
         
         let dts = testItem.Format(1, LookupKey.Currency, 'fr-FR');
         expect(dts).not.toBeNull();
@@ -535,7 +535,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.ErrorMessage).toBeUndefined();        
     });                    
     test('null and undefined input results in empty string', () => {
-        let testItem = new CurrencyLocalizedFormatter('USD');
+        let testItem = new CurrencyFormatter('USD');
         
         let dts = testItem.Format(null, LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
@@ -547,7 +547,7 @@ describe('CurrencyLocalizedFormatter', () => {
         expect(dts.Value).toBe('');
     });    
     test('Invalid type returns ErrorMessage', () => {
-        let testItem = new CurrencyLocalizedFormatter('USD');
+        let testItem = new CurrencyFormatter('USD');
         
         let dts = testItem.Format('A', LookupKey.Currency, 'en');
         expect(dts).not.toBeNull();
@@ -560,22 +560,22 @@ describe('CurrencyLocalizedFormatter', () => {
         
     });    
 });
-describe('PercentageLocalizedFormatter', () => {
+describe('PercentageFormatter', () => {
     test('en: Supports LookupKey.Percentage is true. All others false', () => {
-        let testItem = new PercentageLocalizedFormatter();
+        let testItem = new PercentageFormatter();
         
         expect(testItem.Supports(LookupKey.Percentage, 'en')).toBe(true);        
         expect(testItem.Supports('anythingelse', 'en')).toBe(false);
     });
     test('all cultures: Supports LookupKey.Percentage is true. All others false', () => {
-        let testItem = new PercentageLocalizedFormatter();
+        let testItem = new PercentageFormatter();
         
         expect(testItem.Supports(LookupKey.Percentage, 'fr')).toBe(true);        
         expect(testItem.Supports('anythingelse', 'fr')).toBe(false);
     });
 
     test('en culture with various valid numbers', () => {
-        let testItem = new PercentageLocalizedFormatter();
+        let testItem = new PercentageFormatter();
         
         let dts = testItem.Format(1, LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
@@ -594,7 +594,7 @@ describe('PercentageLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid numbers', () => {
-        let testItem = new PercentageLocalizedFormatter();
+        let testItem = new PercentageFormatter();
         
         let dts = testItem.Format(1, LookupKey.Percentage, 'fr');
         expect(dts).not.toBeNull();
@@ -612,7 +612,7 @@ describe('PercentageLocalizedFormatter', () => {
         expect(dts.Value).toBe('-9\xA0%');
     });    
     test('null and undefined empty string', () => {
-        let testItem = new PercentageLocalizedFormatter();
+        let testItem = new PercentageFormatter();
         
         let dts = testItem.Format(null, LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
@@ -624,7 +624,7 @@ describe('PercentageLocalizedFormatter', () => {
         expect(dts.Value).toBe('');
     });
     test('Invalid type returns ErrorMessage', () => {
-        let testItem = new PercentageLocalizedFormatter();
+        let testItem = new PercentageFormatter();
         
         let dts = testItem.Format('A', LookupKey.Percentage, 'en');
         expect(dts).not.toBeNull();
@@ -639,22 +639,22 @@ describe('PercentageLocalizedFormatter', () => {
 });
 
 
-describe('Percentage100LocalizedFormatter', () => {
+describe('Percentage100Formatter', () => {
     test('en: Supports LookupKey.Percentage100 is true. All others false', () => {
-        let testItem = new Percentage100LocalizedFormatter();
+        let testItem = new Percentage100Formatter();
         
         expect(testItem.Supports(LookupKey.Percentage100, 'en')).toBe(true);        
         expect(testItem.Supports('anythingelse', 'en')).toBe(false);
     });
     test('all cultures: Supports LookupKey.Percentage100 is true. All others false', () => {
-        let testItem = new Percentage100LocalizedFormatter();
+        let testItem = new Percentage100Formatter();
         
         expect(testItem.Supports(LookupKey.Percentage100, 'fr')).toBe(true);        
         expect(testItem.Supports('anythingelse', 'fr')).toBe(false);
     });
 
     test('en culture with various valid numbers', () => {
-        let testItem = new Percentage100LocalizedFormatter();
+        let testItem = new Percentage100Formatter();
         
         let dts = testItem.Format(100, LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
@@ -676,7 +676,7 @@ describe('Percentage100LocalizedFormatter', () => {
     });
 
     test('fr culture with various valid numbers', () => {
-        let testItem = new Percentage100LocalizedFormatter();
+        let testItem = new Percentage100Formatter();
         
         let dts = testItem.Format(100, LookupKey.Percentage100, 'fr');
         expect(dts).not.toBeNull();
@@ -697,7 +697,7 @@ describe('Percentage100LocalizedFormatter', () => {
         expect(dts.Value).toBe('-9\xA0%');
     });    
     test('null and undefined empty string', () => {
-        let testItem = new Percentage100LocalizedFormatter();
+        let testItem = new Percentage100Formatter();
         
         let dts = testItem.Format(null, LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
@@ -709,7 +709,7 @@ describe('Percentage100LocalizedFormatter', () => {
         expect(dts.Value).toBe('');
     });
     test('Invalid type returns ErrorMessage', () => {
-        let testItem = new Percentage100LocalizedFormatter();
+        let testItem = new Percentage100Formatter();
         
         let dts = testItem.Format('A', LookupKey.Percentage100, 'en');
         expect(dts).not.toBeNull();
@@ -722,22 +722,22 @@ describe('Percentage100LocalizedFormatter', () => {
     });
 });
 
-describe('BooleanLocalizedFormatter', () => {
+describe('BooleanFormatter', () => {
     test('en culture supports LookupKey.Boolean is true. All others are false', () => {
-        let testItem = new BooleanLocalizedFormatter(LookupKey.Boolean);
+        let testItem = new BooleanFormatter(LookupKey.Boolean);
         
         expect(testItem.Supports(LookupKey.Boolean, 'en')).toBe(true);        
         expect(testItem.Supports('anylookupkey', 'en')).toBe(false);
     });
     test('any culture supports LookupKey.Boolean is true. All others are false', () => {
-        let testItem = new BooleanLocalizedFormatter(LookupKey.Boolean);
+        let testItem = new BooleanFormatter(LookupKey.Boolean);
         
         expect(testItem.Supports(LookupKey.Boolean, 'fr')).toBe(true);        
         expect(testItem.Supports('anylookupkey', 'fr')).toBe(false);
     });
 
     test('Without TextLocalizationService, true and false are "true" and "false"', () => {
-        let testItem = new BooleanLocalizedFormatter(LookupKey.Boolean);
+        let testItem = new BooleanFormatter(LookupKey.Boolean);
         
         let dts = testItem.Format(true, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
@@ -749,7 +749,7 @@ describe('BooleanLocalizedFormatter', () => {
         expect(dts.Value).toBe('false');
     });
     test('Without TextLocalizationService, true and false are values supplied in the constructor', () => {
-        let testItem = new BooleanLocalizedFormatter(LookupKey.Boolean, "T", "F");
+        let testItem = new BooleanFormatter(LookupKey.Boolean, "T", "F");
         
         let dts = testItem.Format(true, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
@@ -771,7 +771,7 @@ describe('BooleanLocalizedFormatter', () => {
             'en': 'enFALSE',
             'es': 'esFALSE'
         });        
-        let testItem = new BooleanLocalizedFormatter(LookupKey.Boolean, 'true', 'false', 'TRUE', 'FALSE');
+        let testItem = new BooleanFormatter(LookupKey.Boolean, 'true', 'false', 'TRUE', 'FALSE');
         testItem.Services = services;
         
         let dts = testItem.Format(true, LookupKey.Boolean, 'en');    // uses global default
@@ -829,7 +829,7 @@ describe('BooleanLocalizedFormatter', () => {
         expect(dts.Value).toBe('false');                
     });    
     test('null or undefined returns empty string', () => {
-        let testItem = new BooleanLocalizedFormatter(LookupKey.Boolean);
+        let testItem = new BooleanFormatter(LookupKey.Boolean);
         
         let dts = testItem.Format(null, LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
@@ -841,7 +841,7 @@ describe('BooleanLocalizedFormatter', () => {
         expect(dts.Value).toBe('');
     });    
     test('Invalid type returns ErrorMessage', () => {
-        let testItem = new BooleanLocalizedFormatter(LookupKey.Boolean);
+        let testItem = new BooleanFormatter(LookupKey.Boolean);
         
         let dts = testItem.Format('A', LookupKey.Boolean, 'en');
         expect(dts).not.toBeNull();
@@ -854,22 +854,22 @@ describe('BooleanLocalizedFormatter', () => {
         
     });
 });
-describe('DateTimeLocalizedFormatter', () => {
+describe('DateTimeFormatter', () => {
     test('en: Supports LookupKey.DateTime is true. Others are false', () => {
-        let testItem = new DateTimeLocalizedFormatter();
+        let testItem = new DateTimeFormatter();
         
         expect(testItem.Supports(LookupKey.DateTime, 'en')).toBe(true);        
         expect(testItem.Supports('anythingelse', 'en')).toBe(false);
     });
     test('any culture: Supports LookupKey.DateTime is true. Others are false', () => {
-        let testItem = new DateTimeLocalizedFormatter();
+        let testItem = new DateTimeFormatter();
         
         expect(testItem.Supports(LookupKey.DateTime, 'fr')).toBe(true);        
         expect(testItem.Supports('otherlookupkeys', 'fr')).toBe(false);
     });
 
     test('en culture with various valid dates', () => {
-        let testItem = new DateTimeLocalizedFormatter();
+        let testItem = new DateTimeFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.DateTime, 'en');
@@ -888,7 +888,7 @@ describe('DateTimeLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid dates', () => {
-        let testItem = new DateTimeLocalizedFormatter();
+        let testItem = new DateTimeFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.DateTime, 'fr');
@@ -906,7 +906,7 @@ describe('DateTimeLocalizedFormatter', () => {
         expect(dts.Value).toBe('15/01/1980 16:04');
     });    
     test('null or undefined return empty string', () => {
-        let testItem = new DateTimeLocalizedFormatter();
+        let testItem = new DateTimeFormatter();
         
         let dts = testItem.Format(null, LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
@@ -920,7 +920,7 @@ describe('DateTimeLocalizedFormatter', () => {
         
     });
     test('Calues other than Date, null or undefined are errors', () => {
-        let testItem = new DateTimeLocalizedFormatter();
+        let testItem = new DateTimeFormatter();
         
         let dts = testItem.Format({}, LookupKey.DateTime, 'en');
         expect(dts).not.toBeNull();
@@ -944,22 +944,22 @@ describe('DateTimeLocalizedFormatter', () => {
                 
     });
 });
-describe('DateLocalizedFormatter', () => {
+describe('DateFormatter', () => {
     test('en: Supports LookupKey.Date is true. Others are false', () => {
-        let testItem = new DateLocalizedFormatter();
+        let testItem = new DateFormatter();
         
         expect(testItem.Supports(LookupKey.Date, 'en')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'en')).toBe(false);
     });
     test('all cultures: Supports LookupKey.Date is true. Others are false', () => {
-        let testItem = new DateLocalizedFormatter();
+        let testItem = new DateFormatter();
         
         expect(testItem.Supports(LookupKey.Date, 'fr')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'fr')).toBe(false);
     });
 
     test('en culture with various valid dates', () => {
-        let testItem = new DateLocalizedFormatter();
+        let testItem = new DateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.Date, 'en');
@@ -978,7 +978,7 @@ describe('DateLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid dates', () => {
-        let testItem = new DateLocalizedFormatter();
+        let testItem = new DateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.Date, 'fr');
@@ -996,7 +996,7 @@ describe('DateLocalizedFormatter', () => {
         expect(dts.Value).toBe('15/01/1980');
     });    
     test('null or undefined returns empty string', () => {
-        let testItem = new DateLocalizedFormatter();
+        let testItem = new DateFormatter();
         
         let dts = testItem.Format(null, LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
@@ -1010,7 +1010,7 @@ describe('DateLocalizedFormatter', () => {
         
     });
     test('Values other than Date, null or undefined are errors', () => {
-        let testItem = new DateLocalizedFormatter();
+        let testItem = new DateFormatter();
         
         let dts = testItem.Format({}, LookupKey.Date, 'en');
         expect(dts).not.toBeNull();
@@ -1035,21 +1035,21 @@ describe('DateLocalizedFormatter', () => {
     });
 
 });
-describe('AbbrevDateLocalizedFormatter', () => {
+describe('AbbrevDateFormatter', () => {
     test('en: Supports LookupKey.AbbrevDate is true. Others are false', () => {
-        let testItem = new AbbrevDateLocalizedFormatter();
+        let testItem = new AbbrevDateFormatter();
         
         expect(testItem.Supports(LookupKey.AbbrevDate, 'en')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'en')).toBe(false);        
     });
     test('fr: Supports LookupKey.AbbrevDate is true. Others are false', () => {
-        let testItem = new AbbrevDateLocalizedFormatter();
+        let testItem = new AbbrevDateFormatter();
         
         expect(testItem.Supports(LookupKey.AbbrevDate, 'fr')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'fr')).toBe(false);        
     });
     test('en culture with various valid dates', () => {
-        let testItem = new AbbrevDateLocalizedFormatter();
+        let testItem = new AbbrevDateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.AbbrevDate, 'en');
@@ -1068,7 +1068,7 @@ describe('AbbrevDateLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid dates', () => {
-        let testItem = new AbbrevDateLocalizedFormatter();
+        let testItem = new AbbrevDateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.AbbrevDate, 'fr');
@@ -1086,7 +1086,7 @@ describe('AbbrevDateLocalizedFormatter', () => {
         expect(dts.Value).toBe('15 janv. 1980');
     });    
     test('null or undefined returns empty string', () => {
-        let testItem = new AbbrevDateLocalizedFormatter();
+        let testItem = new AbbrevDateFormatter();
         
         let dts = testItem.Format(null, LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
@@ -1100,7 +1100,7 @@ describe('AbbrevDateLocalizedFormatter', () => {
         
     });
     test('Values other than Date, null or undefined are errors', () => {
-        let testItem = new AbbrevDateLocalizedFormatter();
+        let testItem = new AbbrevDateFormatter();
         
         let dts = testItem.Format({}, LookupKey.AbbrevDate, 'en');
         expect(dts).not.toBeNull();
@@ -1124,22 +1124,22 @@ describe('AbbrevDateLocalizedFormatter', () => {
                 
     });
 });
-describe('AbbrevDOWDateLocalizedFormatter', () => {
+describe('AbbrevDOWDateFormatter', () => {
     test('en: Supports LookupKey.AbbrevDOWDate is true. Others are false', () => {
-        let testItem = new AbbrevDOWDateLocalizedFormatter();
+        let testItem = new AbbrevDOWDateFormatter();
         
         expect(testItem.Supports(LookupKey.AbbrevDOWDate, 'en')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'en')).toBe(false);
     });
     test('all cultures: Supports LookupKey.AbbrevDOWDate is true. Others are false', () => {
-        let testItem = new AbbrevDOWDateLocalizedFormatter();
+        let testItem = new AbbrevDOWDateFormatter();
         
         expect(testItem.Supports(LookupKey.AbbrevDOWDate, 'fr')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'fr')).toBe(false);        
     });
 
     test('en culture with various valid dates', () => {
-        let testItem = new AbbrevDOWDateLocalizedFormatter();
+        let testItem = new AbbrevDOWDateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.AbbrevDOWDate, 'en');
@@ -1158,7 +1158,7 @@ describe('AbbrevDOWDateLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid dates', () => {
-        let testItem = new AbbrevDOWDateLocalizedFormatter();
+        let testItem = new AbbrevDOWDateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.AbbrevDOWDate, 'fr');
@@ -1176,7 +1176,7 @@ describe('AbbrevDOWDateLocalizedFormatter', () => {
         expect(dts.Value).toBe('ven. 18 janv. 1980');
     });    
     test('Null or undefined returns empty string', () => {
-        let testItem = new AbbrevDOWDateLocalizedFormatter();
+        let testItem = new AbbrevDOWDateFormatter();
         
         let dts = testItem.Format(null, LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
@@ -1190,7 +1190,7 @@ describe('AbbrevDOWDateLocalizedFormatter', () => {
         
     });
     test('Values other than Date, null or undefined are errors', () => {
-        let testItem = new AbbrevDOWDateLocalizedFormatter();
+        let testItem = new AbbrevDOWDateFormatter();
         
         let dts = testItem.Format({}, LookupKey.AbbrevDOWDate, 'en');
         expect(dts).not.toBeNull();
@@ -1214,21 +1214,21 @@ describe('AbbrevDOWDateLocalizedFormatter', () => {
                 
     });    
 });
-describe('LongDateLocalizedFormatter', () => {
+describe('LongDateFormatter', () => {
     test('en: Supports LookupKey.LongDate is true. Others are false', () => {
-        let testItem = new LongDateLocalizedFormatter();
+        let testItem = new LongDateFormatter();
         
         expect(testItem.Supports(LookupKey.LongDate, 'en')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'en')).toBe(false);        
     });
     test('fr: Supports LookupKey.LongDate is true. Others are false', () => {
-        let testItem = new LongDateLocalizedFormatter();
+        let testItem = new LongDateFormatter();
         
         expect(testItem.Supports(LookupKey.LongDate, 'fr')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'fr')).toBe(false);        
     });
     test('en culture with various valid dates', () => {
-        let testItem = new LongDateLocalizedFormatter();
+        let testItem = new LongDateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.LongDate, 'en');
@@ -1247,7 +1247,7 @@ describe('LongDateLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid dates', () => {
-        let testItem = new LongDateLocalizedFormatter();
+        let testItem = new LongDateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.LongDate, 'fr');
@@ -1265,7 +1265,7 @@ describe('LongDateLocalizedFormatter', () => {
         expect(dts.Value).toBe('15 janvier 1980');
     });    
     test('null or undefined returns empty string', () => {
-        let testItem = new LongDateLocalizedFormatter();
+        let testItem = new LongDateFormatter();
         
         let dts = testItem.Format(null, LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
@@ -1279,7 +1279,7 @@ describe('LongDateLocalizedFormatter', () => {
         
     });
     test('Values other than Date, null or undefined are errors', () => {
-        let testItem = new LongDateLocalizedFormatter();
+        let testItem = new LongDateFormatter();
         
         let dts = testItem.Format({}, LookupKey.LongDate, 'en');
         expect(dts).not.toBeNull();
@@ -1303,22 +1303,22 @@ describe('LongDateLocalizedFormatter', () => {
                 
     });
 });
-describe('LongDOWDateLocalizedFormatter', () => {
+describe('LongDOWDateFormatter', () => {
     test('en: Supports LookupKey.LongDOWDate is true. Others are false', () => {
-        let testItem = new LongDOWDateLocalizedFormatter();
+        let testItem = new LongDOWDateFormatter();
         
         expect(testItem.Supports(LookupKey.LongDOWDate, 'en')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'en')).toBe(false);        
     });
     test('fr: Supports LookupKey.LongDOWDate is true. Others are false', () => {
-        let testItem = new LongDOWDateLocalizedFormatter();
+        let testItem = new LongDOWDateFormatter();
         
         expect(testItem.Supports(LookupKey.LongDOWDate, 'fr')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'fr')).toBe(false);
     });
 
     test('en culture with various valid dates', () => {
-        let testItem = new LongDOWDateLocalizedFormatter();
+        let testItem = new LongDOWDateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.LongDOWDate, 'en');
@@ -1337,7 +1337,7 @@ describe('LongDOWDateLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid dates', () => {
-        let testItem = new LongDOWDateLocalizedFormatter();
+        let testItem = new LongDOWDateFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.LongDOWDate, 'fr');
@@ -1355,7 +1355,7 @@ describe('LongDOWDateLocalizedFormatter', () => {
         expect(dts.Value).toBe('vendredi 18 janvier 1980');
     });    
     test('null or undefined returns empty string', () => {
-        let testItem = new LongDOWDateLocalizedFormatter();
+        let testItem = new LongDOWDateFormatter();
         
         let dts = testItem.Format(null, LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
@@ -1369,7 +1369,7 @@ describe('LongDOWDateLocalizedFormatter', () => {
         
     });
     test('Values other than Date, null or undefined are errors', () => {
-        let testItem = new LongDOWDateLocalizedFormatter();
+        let testItem = new LongDOWDateFormatter();
         
         let dts = testItem.Format({}, LookupKey.LongDOWDate, 'en');
         expect(dts).not.toBeNull();
@@ -1393,21 +1393,21 @@ describe('LongDOWDateLocalizedFormatter', () => {
                 
     });        
 });
-describe('TimeofDayLocalizedFormatter', () => {
+describe('TimeofDayFormatter', () => {
     test('en: Supports LookupKey.TimeOfDay is true. Others are false', () => {
-        let testItem = new TimeofDayLocalizedFormatter();
+        let testItem = new TimeofDayFormatter();
         
         expect(testItem.Supports(LookupKey.TimeOfDay, 'en')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'en')).toBe(false);        
     });
     test('other cultures: Supports LookupKey.TimeOfDay is true. Others are false', () => {
-        let testItem = new TimeofDayLocalizedFormatter();
+        let testItem = new TimeofDayFormatter();
         
         expect(testItem.Supports(LookupKey.TimeOfDay, 'otherculture')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'otherculture')).toBe(false);        
     });
     test('en culture with various valid dates', () => {
-        let testItem = new TimeofDayLocalizedFormatter();
+        let testItem = new TimeofDayFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.TimeOfDay, 'en');
@@ -1426,7 +1426,7 @@ describe('TimeofDayLocalizedFormatter', () => {
     });
 
     test('fr culture with various valid dates', () => {
-        let testItem = new TimeofDayLocalizedFormatter();
+        let testItem = new TimeofDayFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.TimeOfDay, 'fr');
@@ -1445,7 +1445,7 @@ describe('TimeofDayLocalizedFormatter', () => {
         expect(dts.Value).toBe('16:04');
     });    
     test('null or undefined returns empty string', () => {
-        let testItem = new TimeofDayLocalizedFormatter();
+        let testItem = new TimeofDayFormatter();
         
         let dts = testItem.Format(null, LookupKey.TimeOfDay, 'en');
         expect(dts).not.toBeNull();
@@ -1459,7 +1459,7 @@ describe('TimeofDayLocalizedFormatter', () => {
         
     });
     test('values other than Date, null or undefined are errors', () => {
-        let testItem = new TimeofDayLocalizedFormatter();
+        let testItem = new TimeofDayFormatter();
         
         let dts = testItem.Format({}, LookupKey.TimeOfDay, 'en');
         expect(dts).not.toBeNull();
@@ -1483,22 +1483,22 @@ describe('TimeofDayLocalizedFormatter', () => {
                 
     });    
 });
-describe('TimeofDayHMSLocalizedFormatter', () => {
+describe('TimeofDayHMSFormatter', () => {
     test('en: Supports LookupKey.TimeOfDayHMS is true. Others are false', () => {
-        let testItem = new TimeofDayHMSLocalizedFormatter();
+        let testItem = new TimeofDayHMSFormatter();
         
         expect(testItem.Supports(LookupKey.TimeOfDayHMS, 'en')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'en')).toBe(false);        
     });
     test('other culture: Supports LookupKey.TimeOfDayHMS is true. Others are false', () => {
-        let testItem = new TimeofDayHMSLocalizedFormatter();
+        let testItem = new TimeofDayHMSFormatter();
         
         expect(testItem.Supports(LookupKey.TimeOfDayHMS, 'otherculture')).toBe(true);        
         expect(testItem.Supports('otherlookupkey', 'otherculture')).toBe(false);        
     });
 
     test('fr culture with various valid dates', () => {
-        let testItem = new TimeofDayHMSLocalizedFormatter();
+        let testItem = new TimeofDayHMSFormatter();
         
         let date1 = new Date(2000, 9, 31);
         let dts = testItem.Format(date1, LookupKey.TimeOfDayHMS, 'fr');
@@ -1516,7 +1516,7 @@ describe('TimeofDayHMSLocalizedFormatter', () => {
         expect(dts.Value).toBe('16:04:00');
     });    
     test('null or undefined returns empty string', () => {
-        let testItem = new TimeofDayHMSLocalizedFormatter();
+        let testItem = new TimeofDayHMSFormatter();
         
         let dts = testItem.Format(null, LookupKey.TimeOfDayHMS, 'en');
         expect(dts).not.toBeNull();
@@ -1530,7 +1530,7 @@ describe('TimeofDayHMSLocalizedFormatter', () => {
         
     });
     test('Values other than Date, null or undefined are errors', () => {
-        let testItem = new TimeofDayHMSLocalizedFormatter();
+        let testItem = new TimeofDayHMSFormatter();
         
         let dts = testItem.Format({}, LookupKey.TimeOfDayHMS, 'en');
         expect(dts).not.toBeNull();
