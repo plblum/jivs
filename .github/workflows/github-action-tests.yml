@@ -14,8 +14,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Branch name
-        run: echo Running on branch ${{ github.head_ref }} and ${{ github.base_ref }}
+      # - name: Branch name
+      #   run: echo Running on branch ${{ github.head_ref }} and ${{ github.base_ref }}
       - uses: actions/checkout@v4
       - name: Test using Node.js
         uses: actions/setup-node@v4
