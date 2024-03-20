@@ -1,8 +1,8 @@
 /**
  * At its core, the ValidationManager needs to manage ValueHosts.
- * That's the purpose of these classes. They avoid the weight of validation features,
+ * That's the purpose of these interfaces. They avoid the weight of validation features,
  * which are instead left to IValidationManager.
- * @module ValueHosts/Interfaces
+ * @module ValidationManager/Interfaces/ValueHostResolver
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";

@@ -1,17 +1,13 @@
 /**
- * @inheritDoc DataTypes/DataTypeServices!
+ * @inheritDoc DataTypes/ConcreteClasses/DataTypeServices!
  * @module DataTypes/Interfaces
  */
 
 import { IServicesAccessor } from "./ValidationServices";
 
 /**
- * DataTypeServices handles various data types of the values.
- * It provides:
- * - Conversion to formatted string for displaying a value to the user.
- *   Uses DataTypeLocalizations to localizing the formatted string.
- * - Comparing two same-type values for equals, not equals, less than, greater than.
- * This class is available on ValidationServices.DataTypeServices.
+ * Partial representation of DataTypeServices for systems that
+ * only use its Format feature.
  */
 export interface ICoreDataTypeServices
 {
@@ -20,6 +16,11 @@ export interface ICoreDataTypeServices
  * Converts the native value to a string that can be shown to the user.
  * Result includes the successfully converted value
  * or validation error information.
+ * Formatting uses localization. It uses IDataTypeLocalizedFormatter classes,
+ * which may handle multiple cultures. When searching for a formatter,
+ * it tries the ValidationServices.ActiveCultureID first and if no formatter
+ * is supplied for that culture, it has a chain of fallback cultures that you supply
+ * in the constructor.
  * @param value
  * @param lookupKey - If not supplied, a lookup key is created based on the native value type.
  * If you need alternative formatting or are supporting a user defined type,
@@ -32,19 +33,7 @@ export interface ICoreDataTypeServices
 export interface IDataTypeServices extends ICoreDataTypeServices, IServicesAccessor
 {
 /**
- * Compares two same-type values to see if they are equal or not.
- * It can return Equals and NotEquals for types that make no sense
- * to support greater than and less than.
- * Otherwise it returns Equals, LessThan, or GreaterThan.
- * Expect exceptions when invalid values are supplied.
- * It identifies the ComparerHandler function
- * @param value1 
- * @param value2 
- * @param lookupKey1 - Identifies the IDataTypeConverter and/or ComparerHandler function to use
- *   together with value1. If null, the native data type of the value will be converted to a lookupKey
- *   when String, Number, Boolean, Date object, or any IDataTypeIdentifier that you have registered
- *   with the DataTypeServices.
- * @param lookupKey2 - Same idea as lookupKey1 but for value2.
+ * {@inheritDoc DataTypes/ConcreteClasses/DataTypeServices!DataTypeServices.CompareValues}
  */    
     CompareValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult;
     

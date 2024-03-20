@@ -9,7 +9,7 @@
  * - Rules to disable the validator: Enabler condition, Enabled property and several ValidateOptions.
  * - Resolves error message tokens
   * Attached to InputValueHosts through their InputValueHostDescriptor.
-  * @module InputValidator
+  * @module InputValidator/ConcreteClasses
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";

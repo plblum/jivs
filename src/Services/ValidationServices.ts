@@ -6,7 +6,7 @@
  * Copy the /starter_code/create_services.ts file into your app.
  * It contains such a function, CreateValidationServices().
  * Edit that file to adjust your configuration.
- * @module ValidationServices
+ * @module ValidationServices/ConcreteClass
  */
 
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";

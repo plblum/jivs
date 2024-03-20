@@ -5,7 +5,7 @@
  * Boolean as "Boolean", and String as "String".
  * Each instance is registered with the DataTypeServices using the 
  * RegisterDataType.
- * @module DataTypes/DataTypeIdentifiers
+ * @module DataTypes/ConcreteClasses/DataTypeIdentifiers
  */
 import { IDataTypeIdentifier } from "../Interfaces/DataTypes";
 import { LookupKey } from "./LookupKeys";

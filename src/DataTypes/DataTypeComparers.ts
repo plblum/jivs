@@ -12,7 +12,7 @@
  * Default comparison is the DefaultComparer function below.
  * 
  * Expectation: Dates are handled by IDataTypeConverters. Thus no Comparer exists here.
- * @module DataTypes/DataTypeComparers
+ * @module DataTypes/ConcreteClasses/DataTypeComparers
  */
 
 import { ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";

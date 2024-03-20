@@ -1,6 +1,6 @@
 /**
  * Interfaces built around the concept of data validation.
- * @module ValueHosts/Interfaces
+ * @module Validation/Interfaces
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { InputValidateResult } from "./InputValidator";

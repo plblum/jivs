@@ -1,6 +1,6 @@
 /**
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
- * @module ValueHosts/BusinessLogicInputValueHost
+ * @module ValueHosts/ConcreteClasses/BusinessLogicInputValueHost
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";

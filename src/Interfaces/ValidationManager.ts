@@ -27,6 +27,9 @@
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { IValueHostsManager } from "./ValueHostResolver";
 import { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from "./Validation";
+import { IValidationManagerCallbacks } from "../ValueHosts/ValidationManager";
+import { IValidationServices } from "./ValidationServices";
+import { ValueHostDescriptor, ValueHostState } from "./ValueHost";
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -120,3 +123,45 @@ export interface ValidationManagerState {
     StateChangeCounter?: number;
 }
 
+
+/**
+ * Provides the configuration for the ValidationManager constructor
+ */
+export interface ValidationManagerConfig extends IValidationManagerCallbacks
+{
+    /**
+     * Provides services into the system. Dependency Injection and factories.
+     */
+    Services: IValidationServices;
+    /**
+     * Initial list of ValueHostDescriptors. Here's where all of the action is!
+     * Each ValueHostDescriptor describes one ValueHost (which is info about one value in your app),
+     * plus its validation rules.
+     * If rules need to be changed later, either create a new instance of ValidationManager
+     * or use its AddValueHost, UpdateValueHost, DiscardValueHost methods.
+     */
+    ValueHostDescriptors: Array<ValueHostDescriptor>;
+    /**
+     * The state for the ValidationManager itself.
+     * Its up to you to retain stateful information so that the service works statelessly.
+     * It will supply you with the changes to states through the OnStateChanged property.
+     * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
+     * the correct state.
+     * If you don't have any state, leave this null or undefined and ValidationManager will
+     * initialize its state.
+     */
+    SavedState?: ValidationManagerState | null;
+    /**
+     * The state for each ValueHost. The array may not have the same states for all the ValueHostDescriptors
+     * you are supplying. It will create defaults for those missing and discard those no longer in use.
+     * 
+     * Its up to you to retain stateful information so that the service works statelessly.
+     * It will supply you with the changes to states through the OnValueHostStateChanged property.
+     * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
+     * the correct state. You can also supply the state of an individual ValueHost when using
+     * the AddValueHost or UpdateValueHost methods.
+     * If you don't have any state, leave this null or undefined and ValidationManager will
+     * initialize its state.
+     */
+    SavedValueHostStates?: Array<ValueHostState> | null;
+}

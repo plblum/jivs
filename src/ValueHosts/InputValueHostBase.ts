@@ -1,6 +1,6 @@
 /**
  * Core implementation of IInputValueHost without specifics on validators, just the idea of validating.
- * @module ValueHosts/InputValueHostBase
+ * @module ValueHosts/AbstractClasses/InputValueHostBase
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { DeepEquals, GroupsMatch } from "../Utilities/Utilities";

@@ -1,7 +1,9 @@
 {
     "$schema": "https://typedoc.org/schema.json",
+    "name": "Jivs - JavaScript Input Validation Service",
     "entryPointStrategy": "expand",
     "entryPoints": ["src"],
     "out": "docs",
-    "useTsLinkResolution": true
+    "useTsLinkResolution": true,
+    "customCss": "typedoc/jivstheme.css"
 }  

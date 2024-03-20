@@ -2,7 +2,7 @@
  * Framework for evaluating the results from a list of conditions, where a rule determines what to
  * do with their results. In this case, the value of the current input field/element passed into 
  * Evaluate(vh) is ignored. All child conditions must specify their ValueHost sources explicitly.
- * @module Conditions/EvaluateChildConditionResultsBase
+ * @module Conditions/AbstractClasses/EvaluateChildConditionResultsBase
  */
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
