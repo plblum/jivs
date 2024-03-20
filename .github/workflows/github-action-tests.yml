@@ -8,6 +8,7 @@ on:
     branches:
       - develop
 name: 🧪 Run Jest tests
+run-name: Run Jest tests initiated by @${{ github.actor }}
 jobs:
   test:
     runs-on: ubuntu-latest
