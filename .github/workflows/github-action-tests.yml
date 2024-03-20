@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Branch name
-        run: echo Running on branch ${GITHUB_REF##*/} and ${github.head_ref}
+        run: echo Running on branch ${GITHUB_REF##*/} and ${{ github.head_ref }}
       - uses: actions/checkout@v4
       - name: Test using Node.js
         uses: actions/setup-node@v4
