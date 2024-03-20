@@ -11,7 +11,8 @@
   "typings": "lib/src/index.d.ts",
   "scripts": {
     "compile": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'"
   },
   "eslintConfig": {
     "env": {
