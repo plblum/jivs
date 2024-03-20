@@ -5,12 +5,12 @@
  *   By "best", think of a string data type. While you can use a Lookup Key of "String" (LookupKey.String const),
  *   it may actually be a phone number or email address. These are in fact data types.
  *   So you might want to create Lookup Keys for them, and where appropriate, provide a supporting
- *   IDataTypeLocalizedFormatter, IDataTypeConverter, and/or IDataTypeComparer.
+ *   IDataTypeFormatter, IDataTypeConverter, and/or IDataTypeComparer.
  * - DataTypeServices is a class that manages all things about data types and Lookup Keys.
- *   It is where you register any IDataTypeIdentifier, IDataTypeLocalizedFormatter, IDataTypeConverter, and/or IDataTypeComparer
+ *   It is where you register any IDataTypeIdentifier, IDataTypeFormatter, IDataTypeConverter, and/or IDataTypeComparer
  *   for your custom data types and Lookup Keys.
  * - Error message tokens, like "{Value}" and "{Minimum}", get native values replaced by formatted and localized strings.
- *   By default, they select a IDataTypeLocalizedFormatter from the ValueHostDescriptor.DataType property
+ *   By default, they select a IDataTypeFormatter from the ValueHostDescriptor.DataType property
  *   or the native data type itself. However, you may want different formatting.
  *   That comes from specifying a Lookup Key as part of the token like this: "{Value:AbbrevDate}" and "{Minimum:Uppercase}"
  * - Most Conditions have a ConversionLookupKey property to override any default conversion. 
@@ -25,7 +25,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "String"
      * | IDataTypeIdentifier            | StringDataTypeIdentifier
-     * | IDataTypeLocalizedFormatter    | StringLocalizedFormatter
+     * | IDataTypeFormatter    | StringFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
@@ -40,7 +40,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'number'
      * | Lookup Key                     | "Number"
      * | IDataTypeIdentifier            | NumberDataTypeIdentifier
-     * | IDataTypeLocalizedFormatter    | NumberLocalizedFormatter
+     * | IDataTypeFormatter    | NumberFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * @Group Native Data Type
@@ -54,13 +54,13 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'boolean'
      * | Lookup Key                     | "Boolean"
      * | IDataTypeIdentifier            | BooleanDataTypeIdentifier
-     * | IDataTypeLocalizedFormatter    | BooleanLocalizedFormatter
+     * | IDataTypeFormatter    | BooleanFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | BooleanComparer, returns only Equals and NotEquals
      * @Group Native Data Type
      * @remarks
      * This is used when no Lookup Key is supplied.
-     * If used, BooleanLocalizedFormatter needs your configuration to know the supported 
+     * If used, BooleanFormatter needs your configuration to know the supported 
      * cultures associated values for "true" and "false"
      */
     Boolean = 'Boolean',
@@ -70,7 +70,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "Date"
      * | IDataTypeIdentifier            | DateDataTypeIdentifier
-     * | IDataTypeLocalizedFormatter    | DateLocalizedFormatter
+     * | IDataTypeFormatter    | DateFormatter
      * | IDataTypeConverter             | UTCDateOnlyConverter
      * | IDataTypeComparer              | default
      * @Group Native Data Type
@@ -86,7 +86,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "DateTime"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | DateTimeLocalizedFormatter
+     * | IDataTypeFormatter    | DateTimeFormatter
      * | IDataTypeConverter             | DateTimeConverter
      * | IDataTypeComparer              | default
      * @Group Native Data Type
@@ -98,7 +98,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "LocalDate"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | DateLocalizedFormatter
+     * | IDataTypeFormatter    | DateFormatter
      * | IDataTypeConverter             | LocalDateOnlyConverter
      * | IDataTypeComparer              | default
      * @Group Native Data Type
@@ -113,7 +113,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "Capitalize"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | CapitalizeStringLocalizedFormatter
+     * | IDataTypeFormatter    | CapitalizeStringFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
@@ -128,7 +128,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "Uppercase"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | UppercaseStringLocalizedFormatter
+     * | IDataTypeFormatter    | UppercaseStringFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
@@ -143,7 +143,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "Lowercase"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | LowercaseStringLocalizedFormatter
+     * | IDataTypeFormatter    | LowercaseStringFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
@@ -158,7 +158,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "Integer"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | IntegerLocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | IntegerFormatter, uses Intl API
      * | IDataTypeConverter             | IntegerConverter, uses Math.round()
      * | IDataTypeComparer              | default
      * @Group Formatter
@@ -172,12 +172,12 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'number'
      * | Lookup Key                     | "Currency"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | CurrencyLocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | CurrencyFormatter, uses Intl API
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * @Group Formatter
      * @remarks
-     * CurrencyLocalizedFormatter needs your configuration to know the app's supported cultures
+     * CurrencyFormatter needs your configuration to know the app's supported cultures
      * and associated currency codes (like USD, EUR).
      */
     Currency = 'Currency',    // number with currency formatting, including negatives.
@@ -187,7 +187,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'number'
      * | Lookup Key                     | "Percentage"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | PercentageLocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | PercentageFormatter, uses Intl API
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * @Group Formatter
@@ -201,7 +201,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'number'
      * | Lookup Key                     | "Percentage100"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | Percentage100LocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | Percentage100Formatter, uses Intl API
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * @Group Formatter
@@ -216,7 +216,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "ShortDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeLocalizedFormatter    | DateLocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | DateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -230,7 +230,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "AbbrevDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeLocalizedFormatter    | AbbrevDateLocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | AbbrevDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -244,7 +244,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "LongDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeLocalizedFormatter    | LongDateLocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | LongDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -258,7 +258,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "AbbrevDOWDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeLocalizedFormatter    | AbbrevDOWDateLocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | AbbrevDOWDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -272,7 +272,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "LongDOWDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeLocalizedFormatter    | LongDOWDateLocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | LongDOWDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -286,7 +286,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "TimeOfDay"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeLocalizedFormatter    | TimeOfDayLocalizedFormatter, uses Intl API
+     * | IDataTypeFormatter    | TimeOfDayFormatter, uses Intl API
      * | IDataTypeConverter             | TimeOfDayOnlyConverter, as total minutes
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -300,7 +300,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "TimeOfDayHMS"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeLocalizedFormatter    | TimeOfDayHMSLocalizedFormatter, uses
+     * | IDataTypeFormatter    | TimeOfDayHMSFormatter, uses
      * | IDataTypeConverter             | TimeOfDayHMSOnlyConverter, as total seconds
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -315,14 +315,14 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'boolean'
      * | Lookup Key                     | "YesNoBoolean"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeLocalizedFormatter    | YesNoBooleanLocalizedFormatter
+     * | IDataTypeFormatter    | YesNoBooleanFormatter
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | BooleanComparer, returns Equals and NotEquals
      * @Group Formatter
      * @remarks
      * Converts boolean into "yes" and "no".
      * This LookupKey is a model for the user to create more language specific boolean values.
-     * If used, YesNoBooleanLocalizedFormatter needs your configuration to know the supported 
+     * If used, YesNoBooleanFormatter needs your configuration to know the supported 
      * cultures associated values for "yes" and "no"
      */
     YesNoBoolean = 'YesNoBoolean',
@@ -333,7 +333,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "TotalDays"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeLocalizedFormatter    | n/a
+     * | IDataTypeFormatter    | n/a
      * | IDataTypeConverter             | TotalDaysConverter
      * | IDataTypeComparer              | default
      * @Group Converter
@@ -348,7 +348,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "CaseInsensitive"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeLocalizedFormatter    | n/a
+     * | IDataTypeFormatter    | n/a
      * | IDataTypeConverter             | CaseInsensitiveConverter
      * | IDataTypeComparer              | default
      * 

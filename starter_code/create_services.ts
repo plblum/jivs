@@ -14,11 +14,11 @@ import { BooleanDataTypeComparer } from "../src/DataTypes/DataTypeComparers";
 import { CaseInsensitiveStringConverter, UTCDateOnlyConverter, DateTimeConverter, LocalDateOnlyConverter, TotalDaysConverter, IntegerConverter, TimeOfDayOnlyConverter, TimeOfDayHMSOnlyConverter } from "../src/DataTypes/DataTypeConverters";
 import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIdentifier, DateDataTypeIdentifier } from "../src/DataTypes/DataTypeIdentifiers";
 import {
-    StringLocalizedFormatter, NumberLocalizedFormatter, IntegerLocalizedFormatter, DateLocalizedFormatter, CapitalizeStringLocalizedFormatter,
-    UppercaseStringLocalizedFormatter, LowercaseStringLocalizedFormatter, DateTimeLocalizedFormatter, AbbrevDateLocalizedFormatter,
-    AbbrevDOWDateLocalizedFormatter, LongDateLocalizedFormatter, LongDOWDateLocalizedFormatter, TimeofDayLocalizedFormatter, TimeofDayHMSLocalizedFormatter,
-    BooleanLocalizedFormatter, CurrencyLocalizedFormatter, PercentageLocalizedFormatter, Percentage100LocalizedFormatter
-} from "../src/DataTypes/DataTypeLocalizedFormatters";
+    StringFormatter, NumberFormatter, IntegerFormatter, DateFormatter, CapitalizeStringFormatter,
+    UppercaseStringFormatter, LowercaseStringFormatter, DateTimeFormatter, AbbrevDateFormatter,
+    AbbrevDOWDateFormatter, LongDateFormatter, LongDOWDateFormatter, TimeofDayFormatter, TimeofDayHMSFormatter,
+    BooleanFormatter, CurrencyFormatter, PercentageFormatter, Percentage100Formatter
+} from "../src/DataTypes/DataTypeFormatters";
 import { CultureIdFallback, DataTypeServices } from "../src/DataTypes/DataTypeServices";
 import { LookupKey } from "../src/DataTypes/LookupKeys";
 import { LoggingLevel } from "../src/Interfaces/Logger";
@@ -128,7 +128,7 @@ export function RegisterConditions(cf: ConditionFactory): void
  * 3. Give data types their formatters for the tokens you use within error messages,
  *    like: "The value {Value} is above {Maximum}".
  *    These are localized, and should support the cultures you identified earlier.
- *    -> Use classes that implement IDataTypeLocalizedFormatter in RegisterDataTypeLocalizedFormatters()
+ *    -> Use classes that implement IDataTypeFormatter in RegisterDataTypeFormatters()
  * 
  * 4. Give data types ways to convert their values.
  *    Usually these convert their values to a number, string, or Date object.
@@ -141,7 +141,7 @@ export function RegisterConditions(cf: ConditionFactory): void
  *    comparison results of Equals or NotEquals (instead of default Equals, Lessthan, GreaterThan)
  *    -> Use classes that implement IDataTypeComparer in RegisterDataTypeComparers()
  * 
- * See the /examples/ folder for creating your own IDataTypeIdentifier, IDataTypeLocalizedFormatter,
+ * See the /examples/ folder for creating your own IDataTypeIdentifier, IDataTypeFormatter,
  * IDataTypeConverter, and IDataTypeComparer.
  * @param activeCultureID 
  * @param cultureConfig 
@@ -183,7 +183,7 @@ export function PopulateDataTypeServices(dts: DataTypeServices): void {
 
     RegisterDataTypeIdentifiers(dts);
 
-    RegisterDataTypeLocalizedFormatters(dts);
+    RegisterDataTypeFormatters(dts);
 
     RegisterDataTypeConverters(dts);
 
@@ -199,40 +199,40 @@ export function RegisterDataTypeIdentifiers(dts: DataTypeServices): void
     dts.RegisterDataTypeIdentifier(new BooleanDataTypeIdentifier());
     dts.RegisterDataTypeIdentifier(new DateDataTypeIdentifier());
 }
-// 3. IDataTypeLocalizedFormatter
-export function RegisterDataTypeLocalizedFormatters(dts: DataTypeServices): void
+// 3. IDataTypeFormatter
+export function RegisterDataTypeFormatters(dts: DataTypeServices): void
 {
     // Most of these can be modified through their constructor.
     // - Those that use the Intl library for localization let you pass options
     //   supported by Intl.NumberFormat or Intl.DateFormat.
     // - The Boolean and YesNo let you supply a list of cultures and their
     //   language specific values for "TrueLabel" and "FalseLabel"
-    dts.RegisterLocalizedFormatter(new StringLocalizedFormatter());
-    dts.RegisterLocalizedFormatter(new NumberLocalizedFormatter());     // options?: Intl.NumberFormatOptions
-    dts.RegisterLocalizedFormatter(new IntegerLocalizedFormatter());    // options?: Intl.NumberFormatOptions
-    dts.RegisterLocalizedFormatter(new DateLocalizedFormatter());       // options?: Intl.DateTimeFormatOptions
+    dts.RegisterFormatter(new StringFormatter());
+    dts.RegisterFormatter(new NumberFormatter());     // options?: Intl.NumberFormatOptions
+    dts.RegisterFormatter(new IntegerFormatter());    // options?: Intl.NumberFormatOptions
+    dts.RegisterFormatter(new DateFormatter());       // options?: Intl.DateTimeFormatOptions
 
     // less used - consider commenting out until you know they are neded
-    dts.RegisterLocalizedFormatter(new CapitalizeStringLocalizedFormatter());
-    dts.RegisterLocalizedFormatter(new UppercaseStringLocalizedFormatter());
-    dts.RegisterLocalizedFormatter(new LowercaseStringLocalizedFormatter());
-    dts.RegisterLocalizedFormatter(new DateTimeLocalizedFormatter());       // options?: Intl.DateTimeFormatOptions
-    dts.RegisterLocalizedFormatter(new AbbrevDateLocalizedFormatter());     // options?: Intl.DateTimeFormatOptions
-    dts.RegisterLocalizedFormatter(new AbbrevDOWDateLocalizedFormatter());  // options?: Intl.DateTimeFormatOptions
-    dts.RegisterLocalizedFormatter(new LongDateLocalizedFormatter());       // options?: Intl.DateTimeFormatOptions
-    dts.RegisterLocalizedFormatter(new LongDOWDateLocalizedFormatter());    // options?: Intl.DateTimeFormatOptions
-    dts.RegisterLocalizedFormatter(new TimeofDayLocalizedFormatter());      // options?: Intl.DateTimeFormatOptions
-    dts.RegisterLocalizedFormatter(new TimeofDayHMSLocalizedFormatter());   // options?: Intl.DateTimeFormatOptions
-    dts.RegisterLocalizedFormatter(new CurrencyLocalizedFormatter('USD'));  // set this to your currency code
+    dts.RegisterFormatter(new CapitalizeStringFormatter());
+    dts.RegisterFormatter(new UppercaseStringFormatter());
+    dts.RegisterFormatter(new LowercaseStringFormatter());
+    dts.RegisterFormatter(new DateTimeFormatter());       // options?: Intl.DateTimeFormatOptions
+    dts.RegisterFormatter(new AbbrevDateFormatter());     // options?: Intl.DateTimeFormatOptions
+    dts.RegisterFormatter(new AbbrevDOWDateFormatter());  // options?: Intl.DateTimeFormatOptions
+    dts.RegisterFormatter(new LongDateFormatter());       // options?: Intl.DateTimeFormatOptions
+    dts.RegisterFormatter(new LongDOWDateFormatter());    // options?: Intl.DateTimeFormatOptions
+    dts.RegisterFormatter(new TimeofDayFormatter());      // options?: Intl.DateTimeFormatOptions
+    dts.RegisterFormatter(new TimeofDayHMSFormatter());   // options?: Intl.DateTimeFormatOptions
+    dts.RegisterFormatter(new CurrencyFormatter('USD'));  // set this to your currency code
     // defaultCurrencyCode: 'USD', options?: Intl.NumberFormatOptions, cultureToCurrencyCode? { 'en-US' : 'USD', 'es-SP': 'EUR' }
 
-    dts.RegisterLocalizedFormatter(new PercentageLocalizedFormatter());     // options?: Intl.NumberFormatOptions
-    dts.RegisterLocalizedFormatter(new Percentage100LocalizedFormatter());  // options?: Intl.NumberFormatOptions
-    // NOTE: BooleanLocalizedFormatter has its strings localized in ValidationServices.TextLocalizerService
+    dts.RegisterFormatter(new PercentageFormatter());     // options?: Intl.NumberFormatOptions
+    dts.RegisterFormatter(new Percentage100Formatter());  // options?: Intl.NumberFormatOptions
+    // NOTE: BooleanFormatter has its strings localized in ValidationServices.TextLocalizerService
     // connected to the TrueLabell10n and FalseLabell10n properties.
-    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(LookupKey.Boolean)); // "true" and "false"
+    dts.RegisterFormatter(new BooleanFormatter(LookupKey.Boolean)); // "true" and "false"
    // Example of providing another set of labels for true/false by supplying a different lookup key
-    dts.RegisterLocalizedFormatter(new BooleanLocalizedFormatter(LookupKey.YesNoBoolean, 'yes', 'no')); 
+    dts.RegisterFormatter(new BooleanFormatter(LookupKey.YesNoBoolean, 'yes', 'no')); 
  
 }
 
@@ -263,7 +263,7 @@ export function CreateTextLocalizerService(): ITextLocalizerService
     // Feel free to replace this code in supporting your own
     // ITextLocalizerService implementation.
     // Here we provide localized text for "true", "false", "yes", and "no",
-    // all used by the BooleanLocalizedFormatter.
+    // all used by the BooleanFormatter.
     service.Register('TRUE', {
         '*': 'true',
         'en': 'true',

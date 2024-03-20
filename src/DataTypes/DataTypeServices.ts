@@ -8,7 +8,7 @@
  * - Formatter - These functions change the native value into something you can display to the user.
  *   They are associated with the error message tokens, such as "You entered {Value}." where the value
  *   is a Date object and needs to be shown in a localized format of short, abbreviated, or full.
- *   Uses {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter}
+ *   Uses {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter}
  *   which returns a localized string.
  * - Converter - Change the native value into somethat used by a Condition.Evaluate function.
  *   This is essential for comparison Conditions. Comparison works automatically
@@ -25,7 +25,7 @@
 
 import { DefaultComparer } from "./DataTypeComparers";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeLocalizedFormatter } from "../Interfaces/DataTypes";
+import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeFormatter } from "../Interfaces/DataTypes";
 import { CultureLanguageCode, DeepClone } from '../Utilities/Utilities';
 import { IValidationServices, ToIServicesAccessor } from "../Interfaces/ValidationServices";
 
@@ -36,11 +36,11 @@ import { IValidationServices, ToIServicesAccessor } from "../Interfaces/Validati
  * - Converting them into something better suited for comparisons and formatting
  *  using {@link DataTypes/Interfaces!IDataTypeConverter | IDataTypeConverter} 
  * - Formatting them for the tokens of error messages
- *  using {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter} 
+ *  using {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter} 
  * - Comparing them  using {@link DataTypes/Interfaces!IDataTypeComparer | IDataTypeComparer} 
  * It works in conjunction with the DataType Lookup Keys {@link DataTypes/LookupKeys! | Lookup Keys }.
  * 
- * Formatting uses localization. It uses IDataTypeLocalizedFormatter classes,
+ * Formatting uses localization. It uses IDataTypeFormatter classes,
  * which may handle multiple cultures. When searching for a formatter,
  * it tries the ValidationServices.ActiveCultureID first and if no formatter
  * is supplied for that culture, it has a chain of fallback cultures that you supply
@@ -84,7 +84,7 @@ export class DataTypeServices implements IDataTypeServices {
      */
     protected UpdateServices(services: IValidationServices): void
     {
-        this._dataTypeLocalizedFormatters?.forEach((dtf) => {
+        this._dataTypeFormatters?.forEach((dtf) => {
             let sa = ToIServicesAccessor(dtf);
             if (sa)
                 sa.Services = services;
@@ -130,14 +130,14 @@ export class DataTypeServices implements IDataTypeServices {
     }
 
 
-    //#region Format, IDataTypeLocalizedFormatter and AdditionalFormatters.    
+    //#region Format, IDataTypeFormatter and AdditionalFormatters.    
     /**
      * Converts the native value to a string that can be shown to the user.
      * Result includes the successfully converted value
      * or validation error information.
      * 
      * Formatting uses localization. It uses 
-     * {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter} classes,
+     * {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter} classes,
      * which may handle multiple cultures. When searching for a formatter,
      * it tries the ValidationServices.ActiveCultureID first and if no formatter
      * is supplied for that culture, it has a chain of fallback cultures that you supply
@@ -160,7 +160,7 @@ export class DataTypeServices implements IDataTypeServices {
             if (!cc)
         //!!! change this to logging error.
                 throw new Error(`Need to support CultureID ${cultureId} in DataTypeServices.`);
-            let dtlf = this.GetLocalizedFormatter(lookupKey, cultureId);
+            let dtlf = this.GetFormatter(lookupKey, cultureId);
             if (dtlf)
                 try {
                     return dtlf.Format(value, lookupKey, cultureId);
@@ -176,17 +176,17 @@ export class DataTypeServices implements IDataTypeServices {
     }
 
     /**
-      * Registers an {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter}
+      * Registers an {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter}
       * for use by the Format function.
       * 
       * If the LookupKey was previously registered, its instance is replaced.
       * @param dtlf
       */
-    public RegisterLocalizedFormatter(dtlf: IDataTypeLocalizedFormatter): void {
+    public RegisterFormatter(dtlf: IDataTypeFormatter): void {
         AssertNotNull(dtlf, 'dtlf');
-        if (!this._dataTypeLocalizedFormatters)
-            this._dataTypeLocalizedFormatters = [];
-        this._dataTypeLocalizedFormatters.push(dtlf);
+        if (!this._dataTypeFormatters)
+            this._dataTypeFormatters = [];
+        this._dataTypeFormatters.push(dtlf);
         if (this._services) {
             let sa = ToIServicesAccessor(dtlf);
             if (sa)
@@ -194,50 +194,50 @@ export class DataTypeServices implements IDataTypeServices {
         }
     }
     /**
-     * Removes the first {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter}
+     * Removes the first {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter}
      * that supports both parameters.
      * @param lookupKey 
      * @param cultureID 
      * @returns 
      */
-    public UnregisterLocalizedFormatter(lookupKey: string, cultureID: string): boolean {
-        let index = this.GetLocalizedFormatters().findIndex((dtlf) => dtlf.Supports(lookupKey, cultureID));
+    public UnregisterFormatter(lookupKey: string, cultureID: string): boolean {
+        let index = this.GetFormatters().findIndex((dtlf) => dtlf.Supports(lookupKey, cultureID));
         if (index >= 0) {
-            this._dataTypeLocalizedFormatters!.splice(index, 1);
+            this._dataTypeFormatters!.splice(index, 1);
             return true;
         }
         return false;
     }
 
     /**
-     * Gets the {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter}
+     * Gets the {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter}
      * associated with the lookup key and this class's
      * own CultureID.
      * @param lookupKey
-     * @returns A matching IDataTypeLocalizedFormatter or null if none match.
+     * @returns A matching IDataTypeFormatter or null if none match.
      */
-    public GetLocalizedFormatter(lookupKey: string, cultureId: string): IDataTypeLocalizedFormatter | null {
-        return this.GetLocalizedFormatters().find((dtlf) => dtlf.Supports(lookupKey, cultureId)) ?? null;
+    public GetFormatter(lookupKey: string, cultureId: string): IDataTypeFormatter | null {
+        return this.GetFormatters().find((dtlf) => dtlf.Supports(lookupKey, cultureId)) ?? null;
     }
 
     /**
      * If the user hasn't registered any, this registers the standard
-     * IDataTypeLocalizedFormatters.
+     * IDataTypeFormatters.
      */
-    protected GetLocalizedFormatters() : Array<IDataTypeLocalizedFormatter>
+    protected GetFormatters() : Array<IDataTypeFormatter>
     {
-        if (!this._dataTypeLocalizedFormatters) {
-            this._dataTypeLocalizedFormatters = [];
+        if (!this._dataTypeFormatters) {
+            this._dataTypeFormatters = [];
         }
-        return this._dataTypeLocalizedFormatters;
+        return this._dataTypeFormatters;
     }
 
     /**
-     * All registered IDataTypeLocalizedFormatters.
+     * All registered IDataTypeFormatters.
      */
-    private _dataTypeLocalizedFormatters: Array<IDataTypeLocalizedFormatter>|null = null;
+    private _dataTypeFormatters: Array<IDataTypeFormatter>|null = null;
 
-    //#endregion Format, IDataTypeLocalizedFormatter.
+    //#endregion Format, IDataTypeFormatter.
 
     //#region CompareValues and IDataTypeComparer
     /**

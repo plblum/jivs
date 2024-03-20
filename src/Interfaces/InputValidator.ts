@@ -220,7 +220,7 @@ export interface TokenLabelAndValue {
     /**
      * The value to be used as a replacement. When the value isn't a string,
      * it is converted to a string through 
-     * {@link DataTypes/Interfaces!IDataTypeLocalizedFormatter | IDataTypeLocalizedFormatter} classes
+     * {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter} classes
      * registered with {@link DataTypes/ConcreteClasses/DataTypeServices!DataTypeServices | DataTypeServices}.
      */
     AssociatedValue: any,
