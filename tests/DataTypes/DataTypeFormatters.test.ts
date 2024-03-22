@@ -3,7 +3,7 @@ import {
     DataTypeFormatterBase, DateFormatter, DateTimeFormatter, LongDOWDateFormatter, LongDateFormatter,
     LowercaseStringFormatter, NumberFormatter, Percentage100Formatter, PercentageFormatter, StringFormatter,
     TimeofDayHMSFormatter, TimeofDayFormatter, UppercaseStringFormatter
-} from './../../src/DataTypes/DataTypeFormatters';
+} from '../../src/DataTypes/DataTypeFormatters';
 
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
 import { MockValidationServices } from '../Mocks';

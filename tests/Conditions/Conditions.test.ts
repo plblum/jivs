@@ -652,7 +652,31 @@ describe('class RegExpCondition', () => {
         vh.SetValue('FirstLine\nABC\nLastLine');
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
-
+    test('Set Descriptor.Not = true. Evaluate returns Match if no match and NoMatch if matching', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RegExpConditionDescriptor = {
+            Type: ConditionType.RegExp,
+            ValueHostId: 'Property1',
+            ExpressionAsString: 'ABC',
+            Not: true
+        };
+        let testItem = new RegExpCondition(descriptor);
+        vh.SetValue('ABC');
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.SetValue('ABCDEF');
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.SetValue('zABC');
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.SetValue(' ABC ');   // trim
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.SetValue('abc'); // case sensitive failure
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.SetValue('AB\nC');
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });
     test('Evaluate influenced by Descriptor.Trim=false', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
@@ -692,6 +716,28 @@ describe('class RegExpCondition', () => {
         vh.SetInputValue(false);
         expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
+    test('With Not=true, Evaluate returns Undetermined for null, undefined, and non-string types', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RegExpConditionDescriptor = {
+            Type: ConditionType.RegExp,
+            ValueHostId: 'Property1',
+            ExpressionAsString: 'ABC',
+            Not: true
+        };
+        let testItem = new RegExpCondition(descriptor);
+        vh.SetInputValue(null);
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.SetInputValue(undefined);
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.SetInputValue(10);
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.SetInputValue(false);
+        expect(testItem.Evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+    });
+
     test('Descriptor lacks both Expression and ExpressionAsString. Throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);

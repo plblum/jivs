@@ -25,9 +25,15 @@
 
 import { DefaultComparer } from "./DataTypeComparers";
 import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeFormatter } from "../Interfaces/DataTypes";
+import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeFormatter, IDataTypeCheckGenerator } from "../Interfaces/DataTypes";
 import { CultureLanguageCode, DeepClone } from '../Utilities/Utilities';
 import { IValidationServices, ToIServicesAccessor } from "../Interfaces/ValidationServices";
+import { ICondition } from "../Interfaces/Conditions";
+import { LookupKey } from "./LookupKeys";
+import { IInputValueHost } from "../Interfaces/InputValueHost";
+import { ConditionType } from '../Conditions/ConditionTypes';
+import { DataTypeCheckConditionDescriptor } from "../Conditions/ConcreteConditions";
+import { CompareCategory, LoggingLevel, LookupKeyCategory } from "../Interfaces/Logger";
 
 
 /**
@@ -46,7 +52,7 @@ import { IValidationServices, ToIServicesAccessor } from "../Interfaces/Validati
  * is supplied for that culture, it has a chain of fallback cultures that you supply
  * in the constructor.
  * 
- *  This class is available on {@link ValidationServices/ConcreteClass!ValidationServices.DataTypeServices}.
+ * This class is available on {@link ValidationServices/ConcreteClass!ValidationServices.DataTypeServices}.
  */
 export class DataTypeServices implements IDataTypeServices {
     /**
@@ -67,7 +73,7 @@ export class DataTypeServices implements IDataTypeServices {
     public get Services(): IValidationServices
     {
         if (!this._services)
-            throw new CodingError('Attach to ValidationServices.DataTypeServices first.');
+            throw new CodingError('Assign Services property to ValidationServices.DataTypeServices first.');
         return this._services;
     }
     public set Services(services: IValidationServices)
@@ -150,29 +156,41 @@ export class DataTypeServices implements IDataTypeServices {
      * @returns successfully converted value or validation error information.
     */
     public Format(value: any, lookupKey?: string | null): DataTypeResolution<string> {
-        if (!lookupKey)
-            lookupKey = this.IdentifyLookupKey(value);
-        if (lookupKey === null)
-            throw new Error('Value type requires a LookupKey');
-        let cultureId: string | null = this.Services.ActiveCultureId;
-        while (cultureId) {
-            let cc = this.GetCultureIdFallback(cultureId);
-            if (!cc)
-        //!!! change this to logging error.
-                throw new Error(`Need to support CultureID ${cultureId} in DataTypeServices.`);
-            let dtlf = this.GetFormatter(lookupKey, cultureId);
-            if (dtlf)
-                try {
-                    return dtlf.Format(value, lookupKey, cultureId);
-                }
-                catch (e) {
-                    return { ErrorMessage: (e as Error).message };
-                }
-            cultureId = cc.FallbackCultureId ?? null;
-        }
+        try {
+            if (!lookupKey)
+                lookupKey = this.IdentifyLookupKey(value);
+            if (lookupKey === null)
+                throw new Error('Value type requires a LookupKey');
+            let cultureId: string | null = this.Services.ActiveCultureId;
+            while (cultureId) {
+                let cc = this.GetCultureIdFallback(cultureId);
+                if (!cc)
+                    throw new Error(`Need to support CultureID ${cultureId} in DataTypeServices.`);
+                let dtlf = this.GetFormatter(lookupKey, cultureId);
+                if (dtlf)
+                    try {
+                        return dtlf.Format(value, lookupKey, cultureId);
+                    }
+                    catch (e) {
+                        return { ErrorMessage: (e as Error).message };
+                    }
+                cultureId = cc.FallbackCultureId ?? null;
+            }
 
-        //!!! change this to logging error.
-        throw new Error(`Unsupported LookupKey ${lookupKey}`);
+            throw new Error(`Unsupported LookupKey ${lookupKey}`);
+        }
+        catch (e)
+        {
+            if (e instanceof Error) // should always be true. Mostly used for typecast
+            {
+                this.Services.LoggerService.Log(e.message, LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices');
+                return {
+                    ErrorMessage: e.message,
+                    Value: undefined
+                }
+            }
+            return { ErrorMessage: 'Unspecified'}
+        }
     }
 
     /**
@@ -301,31 +319,38 @@ export class DataTypeServices implements IDataTypeServices {
                 return ComparersResult.Undetermined;
             return null;    // not handled. Continue processing
         }
-
-        let testNullsResult = handleNullsAndUndefined(value1, value2);
-        if (testNullsResult != null)
-            return testNullsResult;
-
         let self = this;
-        lookupKey1 = resolveLookupKey(value1, lookupKey1, 'Left');
-        lookupKey2 = resolveLookupKey(value2, lookupKey2, 'Right');
+        try {
+            let testNullsResult = handleNullsAndUndefined(value1, value2);
+            if (testNullsResult != null)
+                return testNullsResult;
 
-        let comparer = this.GetDataTypeComparer(value1, value2);
-        if (comparer)
-            return comparer.Compare(value1, value2);
+            lookupKey1 = resolveLookupKey(value1, lookupKey1, 'Left');
+            lookupKey2 = resolveLookupKey(value2, lookupKey2, 'Right');
 
-        let cleanedUpValue1 = this.CleanupComparableValue(value1, lookupKey1);
-        let cleanedUpValue2 = this.CleanupComparableValue(value2, lookupKey2);
+            let comparer = this.GetDataTypeComparer(value1, value2);
+            if (comparer)
+                return comparer.Compare(value1, value2);
 
-        let testNullsResultCU = handleNullsAndUndefined(cleanedUpValue1, cleanedUpValue2);
-        if (testNullsResultCU != null)
-            return testNullsResultCU;
+            let cleanedUpValue1 = this.CleanupComparableValue(value1, lookupKey1);
+            let cleanedUpValue2 = this.CleanupComparableValue(value2, lookupKey2);
 
-        let comparerCU = this.GetDataTypeComparer(cleanedUpValue1, cleanedUpValue2);
-        if (comparerCU)
-            return comparerCU.Compare(cleanedUpValue1, cleanedUpValue2);
+            let testNullsResultCU = handleNullsAndUndefined(cleanedUpValue1, cleanedUpValue2);
+            if (testNullsResultCU != null)
+                return testNullsResultCU;
 
-        return DefaultComparer(cleanedUpValue1, cleanedUpValue2);
+            let comparerCU = this.GetDataTypeComparer(cleanedUpValue1, cleanedUpValue2);
+            if (comparerCU)
+                return comparerCU.Compare(cleanedUpValue1, cleanedUpValue2);
+
+            return DefaultComparer(cleanedUpValue1, cleanedUpValue2);
+        }
+        catch (e)
+        {
+            if (e instanceof Error)
+                this.Services.LoggerService.Log(e.message, LoggingLevel.Error, CompareCategory, 'DataTypeServices');
+            return ComparersResult.Undetermined;
+        }
     }
 
     protected CleanupComparableValue(value: any, lookupKey: string | null): any {
@@ -434,7 +459,7 @@ export class DataTypeServices implements IDataTypeServices {
 
     //#endregion IDataTypeIdentifiers
 
-    //#region IConvertTo
+    //#region IDataTypeConverter
 
     /**
      * Registers a {@link DataTypes/Interfaces!IDataTypeConverter | IDataTypeConverter}. 
@@ -466,7 +491,92 @@ export class DataTypeServices implements IDataTypeServices {
     }
     private _converters: Array<IDataTypeConverter> | null = null;
 
-    //#endregion IConvertTo
+    //#endregion IDataTypeConverter
+
+    //#region IDataTypeCheckGenerator
+    /**
+     * When true, data type check conditions are auto generated if not 
+     * supplied in the ValueHost's list of validators.
+     * Defaults to true.
+     */
+    public get AutoGenerateDataTypeConditionEnabled(): boolean
+    {
+        return this._autoGenerateDataTypeConditionEnabled;
+    }
+    public set AutoGenerateDataTypeConditionEnabled(value: boolean)
+    {
+        this._autoGenerateDataTypeConditionEnabled = value;
+    }
+    private _autoGenerateDataTypeConditionEnabled: boolean = true;
+    /**
+     * Works together with IDataTypeCheckGenerator to attempt to supply an ICondition
+     * suitable for the given data type lookup key that is used as a Data Type Check
+     * against the native value.
+     * 
+     * By default, automatic generation uses the DataTypeCheckCondition.
+     * 
+     * That condition determines an error when ValueHost.NativeValue is undefined,
+     * which is a result of a conversion of InputValue fails.
+     * 
+     * There are other ways to check a data type. Strings with a well 
+     * defined pattern will often be the same as they were between
+     * InputValue and NativeValue, aside from trimming spaces.
+     * So the NativeValue is a string that will need to be checked against
+     * a regular expression or some other rule that confirms the string matches requirements.
+     * 
+     * Thats when you create a IDataTypeCheckGenerator class and register it with
+     * DataTypeServices.
+     * 
+     * @param dataTypeLookupKey 
+     * @returns The Condition generated by a matching IDataTypeCheckGenerator,
+     * or a DataTypeCheckCondition if none was generated. If DataTypeCheckGenerator
+     * returns a null, it means do not generate the DataTypeCheckCondition and this function
+     * returns null itself.
+     */    
+    public AutoGenerateDataTypeCondition(valueHost: IInputValueHost, dataTypeLookupKey: LookupKey | string): ICondition | null
+    {
+        AssertNotNull(valueHost, 'valueHost');
+        AssertNotNull(dataTypeLookupKey, 'dataTypeLookupKey');
+        let generator = this.GetDataTypeCheckGenerator(dataTypeLookupKey);
+        if (generator !== null)
+            return generator.CreateCondition(valueHost, dataTypeLookupKey, this.Services.ConditionFactory); // may return null
+        let descriptor: DataTypeCheckConditionDescriptor = {
+            Type: ConditionType.DataTypeCheck,
+            ValueHostId: valueHost.GetId(),
+        };
+        return this.Services.ConditionFactory.Create(descriptor);
+    }
+
+    /**
+     * Registers a {@link DataTypes/Interfaces!IDataTypeCheckGenerator | IDataTypeCheckGenerator}. 
+     * Always adds, never replaces.
+     * @param checkGenerator 
+     */
+    public RegisterDataTypeCheckGenerator(checkGenerator: IDataTypeCheckGenerator): void {
+        AssertNotNull(checkGenerator, 'checkGenerator');
+        if (!this._checkGenerators)
+            this._checkGenerators = [];
+        this._checkGenerators.push(checkGenerator);
+    }
+
+    /**
+     * Gets the first {@link DataTypes/Interfaces!IDataTypeCheckGenerator | IDataTypeCheckGenerator}
+     *  that supports the value, or null if none are found.
+     * @param value 
+     * @param dataTypeLookupKey 
+     * @returns 
+     */
+    public GetDataTypeCheckGenerator(dataTypeLookupKey: LookupKey | string): IDataTypeCheckGenerator | null {
+        return this.GetDataTypeCheckGenerators().find((dtg) => dtg.SupportsValue(dataTypeLookupKey)) ?? null;
+    }
+    protected GetDataTypeCheckGenerators(): Array<IDataTypeCheckGenerator>
+    {
+        if (!this._checkGenerators)
+            this._checkGenerators = [];
+        return this._checkGenerators;
+    }
+    private _checkGenerators: Array<IDataTypeCheckGenerator> | null = null;    
+    //#endregion IDataTypeCheckGenerator
 }
 
 /**

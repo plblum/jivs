@@ -184,6 +184,17 @@ export interface RegExpConditionDescriptor extends RegExpConditionBaseDescriptor
      * It is an alternative to ExpressionAsString. If both are supplied, this takes precedence.
      */
     Expression?: RegExp;
+
+    /**
+     * Use the expression to find something wrong with the string instead of proving it to be valid.
+     * For example, if you want to tell the user "The period character is not allowed" and similar
+     * for invalid characters, you could have separate Validators using a regexp to detect the illegal
+     * character.
+     * When true, a string that matches the expression
+     * returns NoMatch instead of Match.
+     * When undefined, the value is false.
+     */
+    Not?: boolean;    
 }
 
 /**
@@ -215,6 +226,12 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
         }
         return this._savedRE;
     }
+    protected EvaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+        let found = this.GetRegExp(valueHostResolver).test(text);
+        if (this.Descriptor.Not)
+            found = !found;
+        return found ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
+    }    
 }
 
 
