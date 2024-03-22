@@ -1,5 +1,7 @@
 # Jivs - JavaScript Input Validation Service
 
+*For full documentation, go to [http://jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc)*
+
 Back in the day (2002-2013), I created a successful suite of Web
 Controls for ASP.NET WebForms which featured a complete replacement to
 its built-in input validation. I really learned a lot about what website
