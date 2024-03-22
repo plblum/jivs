@@ -41,4 +41,6 @@ export const ConfigurationCategory = 'Configuration';
 export const TypeMismatchCategory = 'Type Mismatch';
 export const FormattingCategory = 'Formatting';
 export const ValidationCategory = 'Validation';
+export const LookupKeyCategory = 'LookupKey';
+export const CompareCategory = 'Compare';
 

@@ -3,12 +3,19 @@ import { UTCDateOnlyConverter } from '../../src/DataTypes/DataTypeConverters';
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, StringDataTypeIdentifier } from '../../src/DataTypes/DataTypeIdentifiers';
 import { NumberDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
 import { CultureIdFallback, DataTypeServices } from "../../src/DataTypes/DataTypeServices";
-import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier, IDataTypeFormatter, DataTypeResolution } from "../../src/Interfaces/DataTypes";
+import { ComparersResult, IDataTypeComparer, IDataTypeConverter, IDataTypeIdentifier, IDataTypeFormatter, DataTypeResolution, IDataTypeCheckGenerator } from "../../src/Interfaces/DataTypes";
 import { RegisterDataTypeIdentifiers, RegisterDataTypeFormatters } from "../../starter_code/create_services";
 import { BooleanDataTypeComparer } from '../../src/DataTypes/DataTypeComparers';
 import { BooleanFormatter, NumberFormatter } from '../../src/DataTypes/DataTypeFormatters';
-import { MockValidationManager, MockValidationServices } from '../Mocks';
+import { MockCapturingLogger, MockValidationManager, MockValidationServices } from '../Mocks';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
+import { ICondition, IConditionFactory } from '../../src/Interfaces/Conditions';
+import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
+import exp from 'constants';
+import { DataTypeCheckCondition, RegExpCondition } from '../../src/Conditions/ConcreteConditions';
+import { InputValueHost } from '../../src/ValueHosts/InputValueHost';
+import { ConditionType } from '../../src/Conditions/ConditionTypes';
+import { CompareCategory, LoggingLevel, LookupKeyCategory } from '../../src/Interfaces/Logger';
 
 
 describe('DataTypeServices constructor and properties', () => {
@@ -55,7 +62,7 @@ describe('DataTypeServices constructor and properties', () => {
         expect(testItem.ExposedGetFormatters()).toEqual([]);
         expect(testItem.ExposedGetDataTypeConverters()).toEqual([]);
         expect(testItem.ExposedGetDataTypeComparers()).toEqual([]);
-        expect(() => testItem.Services).toThrow(/Attach/);
+        expect(() => testItem.Services).toThrow(/Assign/);
 
     });
 
@@ -182,13 +189,26 @@ export function CreateDataTypeServicesWithManyCultures(activeCultureId: string, 
 }
 // Format(value: any, lookupKey?: string): DataTypeResolution<string>
 describe('DataTypeServices.Format', () => {
-    test('No lookupKey not resolved by data type error', () => {
+    test('No lookupKey not resolved. Logs an error and returns an error message', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en');
-        expect(() => testItem.Format({})).toThrow(/LookupKey/);
+        let logger = testItem.Services.LoggerService as MockCapturingLogger;
+        let result: DataTypeResolution<string> | null = null;
+        expect(() => result = testItem.Format({})).not.toThrow();
+        expect(result).not.toBeNull();
+        expect(result!.Value).toBeUndefined();
+        expect(result!.ErrorMessage).toMatch(/LookupKey/);
+        expect(logger.FindMessage('LookupKey', LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices')).not.toBeNull();
     });
     test('Unsupported lookupKey error', () => {
         let testItem = CreateDataTypeServicesWithManyCultures('en');
-        expect(() => testItem.Format(0, 'huh')).toThrow(/LookupKey/);
+
+        let logger = testItem.Services.LoggerService as MockCapturingLogger;
+        let result: DataTypeResolution<string> | null = null;
+        expect(() => result = testItem.Format(0, 'huh')).not.toThrow();
+        expect(result).not.toBeNull();
+        expect(result!.Value).toBeUndefined();
+        expect(result!.ErrorMessage).toMatch(/LookupKey/);
+        expect(logger.FindMessage('LookupKey', LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices')).not.toBeNull();        
     });
 
     class TestFormatter implements IDataTypeFormatter
@@ -455,11 +475,27 @@ describe('DataTypeServices.CompareValues', () => {
         expect(testItem.CompareValues(date1, date2, null, null)).toBe(ComparersResult.GreaterThan);        
     });               
     
-    test('Unsupported data type for lookupKey assignment error', () => {
+    test('Unsupported data type for lookupKey using JavaScript object logs error and reports Undetermined', () => {
         let testItem = new DataTypeServices();
-        expect(() => testItem.CompareValues({}, 'A', null, null)).toThrow(/operand/);
-        expect(() => testItem.CompareValues(testItem /* some class */, 'A', null, null)).toThrow(/operand/);
+        testItem.Services = new MockValidationServices(true, true);
+        let result: ComparersResult | null = null;
+        expect(() => result = testItem.CompareValues({}, 'A', null, null)).not.toThrow();
+        expect(result).toBe(ComparersResult.Undetermined);
+        let logger = testItem.Services.LoggerService as MockCapturingLogger;
+        expect(logger.FindMessage('operand', LoggingLevel.Error, CompareCategory, 'DataTypeServices')).not.toBeNull();        
+
     });    
+    test('Unsupported data type for lookupKey using some class instance logs error and reports Undetermined', () => {
+        let testItem = new DataTypeServices();
+        testItem.Services = new MockValidationServices(true, true);
+        let result: ComparersResult | null = null;
+        expect(() => result = testItem.CompareValues(testItem /* some class */, 'A', null, null)).not.toThrow();
+        expect(result).toBe(ComparersResult.Undetermined);
+        let logger = testItem.Services.LoggerService as MockCapturingLogger;
+        expect(logger.FindMessage('operand', LoggingLevel.Error, CompareCategory, 'DataTypeServices')).not.toBeNull();        
+
+    });    
+
     test('Fallback to DefaultComparer for unsupported lookupKey', () => {
         let testItem = new DataTypeServices();
         testItem.RegisterDataTypeIdentifier(new StringDataTypeIdentifier());
@@ -524,7 +560,77 @@ describe('DataTypeServices.CompareValues', () => {
         expect(testItem.CompareValues(test1, test3, "HoldsDate", "HoldsDate")).toBe(ComparersResult.Equals);
     });      
 });
+class TestCheckGenerator implements IDataTypeCheckGenerator {
+    constructor(dataTypeLookupKey: string, returns: ICondition | null) {
+        this.DataTypeLookupKey = dataTypeLookupKey;
+        this.Returns = returns;
+    }
+    DataTypeLookupKey: string;
+    Returns: ICondition | null;
+    SupportsValue(dataTypeLookupKey: string): boolean {
+        return this.DataTypeLookupKey === dataTypeLookupKey;
+    }
+    CreateCondition(valueHost: IInputValueHost, dataTypeLookupKey: string,
+        conditionfactory: IConditionFactory): ICondition | null {
+        return this.Returns;
+    }
 
+}
+describe('DataTypeServices.RegisterDataTypeCheckGenerator', () => {
+
+
+    test('Invalid parameters', () => {
+        let testItem = new DataTypeServices();
+        expect(() => testItem.RegisterDataTypeCheckGenerator(null!)).toThrow(/checkGenerator/);
+    });
+    test('Register successful', () => {
+
+        let testItem = new DataTypeServices();
+        expect(() => testItem.RegisterDataTypeCheckGenerator(new TestCheckGenerator('ABC', null))).not.toThrow();
+        expect(testItem.GetDataTypeCheckGenerator('ABC')).not.toBeNull();
+        expect(testItem.GetDataTypeCheckGenerator('DEF')).toBeNull();
+    });
+});
+describe('DataTypeServices.AutoGenerateDataTypeCondition', ()=> {
+    test('Unregistered returns DataTypeCheckCondition', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'label');
+        let testItem = services.DataTypeServices;
+        let condition: ICondition | null = null;
+
+        expect(() => condition = testItem.AutoGenerateDataTypeCondition(vh, 'ANYTHING')).not.toThrow();
+        expect(condition).toBeInstanceOf(DataTypeCheckCondition);
+        // really should test for the Descriptor.ValueHostId to be 'Field1'
+        // and Type to be DataTypeCheck, but Descriptor is protected.
+    });
+    test('Registered with a class that returns a condition. Returns an instance of that condition for the same ValueHostId', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'label');
+        let testItem = services.DataTypeServices as DataTypeServices;
+        let condition: ICondition | null = new RegExpCondition({
+            Type: ConditionType.RegExp,
+            ExpressionAsString: 'test',
+            ValueHostId: vh.GetId()
+        });
+        testItem.RegisterDataTypeCheckGenerator(new TestCheckGenerator('ABC', condition));
+
+        expect(() => condition = testItem.AutoGenerateDataTypeCondition(vh, 'ABC')).not.toThrow();
+        expect(condition).toBeInstanceOf(RegExpCondition);
+    });    
+    test('Registered with a class that returns null. Returns null', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.AddInputValueHost('Field1', LookupKey.String, 'label');
+        let testItem = services.DataTypeServices as DataTypeServices;
+        let condition: ICondition | null = null;
+        testItem.RegisterDataTypeCheckGenerator(new TestCheckGenerator('ABC', condition));
+
+        expect(() => condition = testItem.AutoGenerateDataTypeCondition(vh, 'ABC')).not.toThrow();
+        expect(condition).toBeNull();
+    });       
+});
 describe('DataTypeServices utility methods', () => {
 
     // IdentifyLookupKey(value: any): string
