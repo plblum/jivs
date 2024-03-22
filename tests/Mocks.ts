@@ -429,16 +429,26 @@ export class MockCapturingLogger implements ILogger
     }
 
     /**
-     * Looks through all captures in order found. If any contain the message sent
-     * (case insensitive), it is returned. If none match, returns null.
+     * Looks through all captures in order found. If any contain all matching values, it is returned.
+     * messageSegment and sourceSegment allow a partial match (case insensitive).
+     * Null parameters are not used for searching.
      * @param messageSegment 
      */
-    public FindMessage(messageSegment: string): MockCapturedLog | null
+    public FindMessage(messageSegment: string | null, logLevel : LoggingLevel | null, category: string | null, sourceSegment: string | null): MockCapturedLog | null
     {
-        let re = new RegExp(messageSegment, 'i');
-        for (let capture of this.Captured)
-            if (re.test(capture.Message))
-                return capture;
+        let messageRE: RegExp | null = messageSegment ? new RegExp(messageSegment, 'i') : null;
+        let sourceRE : RegExp | null = sourceSegment ? new RegExp(sourceSegment, 'i') : null;        
+        for (let capture of this.Captured) {
+            if ((logLevel !== null) && (capture.Level !== logLevel))
+                continue;
+            if ((category !== null) && (capture.Category !== category))
+                continue;
+            if (messageRE && !messageRE.test(capture.Message))
+                continue;
+            if (sourceRE && capture.Source && !sourceRE.test(capture.Source))
+                continue;
+            return capture;
+        }
         return null;
     }
 }
