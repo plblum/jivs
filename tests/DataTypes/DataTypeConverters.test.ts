@@ -11,7 +11,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.SupportsValue("Test", LookupKey.String)).toBe(false);
             expect(testItem.SupportsValue(0, LookupKey.CaseInsensitive)).toBe(false);
             expect(testItem.SupportsValue(null, LookupKey.CaseInsensitive)).toBe(false);
-        })
+        });
         test('Convert', () => {
             let testItem = new CaseInsensitiveStringConverter();
             // Convert expects to be called after SupportsValue is true.
@@ -37,7 +37,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.SupportsValue(new Date(), null)).toBe(false);            
             expect(testItem.SupportsValue(0, LookupKey.DateTime)).toBe(false);
             expect(testItem.SupportsValue(null, LookupKey.DateTime)).toBe(false);
-        })
+        });
         test('Convert', () => {
             let testItem = new DateTimeConverter();
             // Convert expects to be called after SupportsValue is true.
@@ -75,7 +75,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.SupportsValue(new Date(), null)).toBe(true);            
             expect(testItem.SupportsValue(0, LookupKey.Date)).toBe(false);
             expect(testItem.SupportsValue(null, LookupKey.Date)).toBe(false);
-        })
+        });
         test('Convert', () => {
             let testItem = new UTCDateOnlyConverter();
             // Convert expects to be called after SupportsValue is true.
@@ -122,7 +122,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.SupportsValue(new Date(), null)).toBe(false); // always requires LookupKey.LocalDate            
             expect(testItem.SupportsValue(0, LookupKey.LocalDate)).toBe(false);
             expect(testItem.SupportsValue(null, LookupKey.LocalDate)).toBe(false);
-        })
+        });
         test('Convert', () => {
             let testItem = new LocalDateOnlyConverter();
             // Convert expects to be called after SupportsValue is true.
@@ -169,7 +169,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.SupportsValue(new Date(), null)).toBe(false);            
             expect(testItem.SupportsValue(0, LookupKey.TimeOfDay)).toBe(false);
             expect(testItem.SupportsValue(null, LookupKey.TimeOfDay)).toBe(false);
-        })
+        });
         test('Convert', () => {
             let testItem = new TimeOfDayOnlyConverter();
             // Convert expects to be called after SupportsValue is true.
@@ -209,7 +209,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.SupportsValue(new Date(), null)).toBe(false);            
             expect(testItem.SupportsValue(0, LookupKey.TimeOfDayHMS)).toBe(false);
             expect(testItem.SupportsValue(null, LookupKey.TimeOfDayHMS)).toBe(false);
-        })
+        });
         test('Convert', () => {
             let testItem = new TimeOfDayHMSOnlyConverter();
             // Convert expects to be called after SupportsValue is true.
@@ -252,7 +252,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.SupportsValue("", LookupKey.Integer)).toBe(false);
             expect(testItem.SupportsValue(5, LookupKey.String)).toBe(false);
             expect(testItem.SupportsValue(null, LookupKey.Integer)).toBe(false);
-        })
+        });
         test('Convert', () => {
             let testItem = new IntegerConverter();
             // Convert expects to be called after SupportsValue is true.
@@ -279,7 +279,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.SupportsValue("Test", LookupKey.String)).toBe(false);
             expect(testItem.SupportsValue(0, LookupKey.TotalDays)).toBe(false);
             expect(testItem.SupportsValue(null, LookupKey.TotalDays)).toBe(false);
-        })
+        });
         test('Convert', () => {
             let testItem = new TotalDaysConverter();
             // Convert expects to be called after SupportsValue is true.

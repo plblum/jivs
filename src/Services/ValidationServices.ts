@@ -53,7 +53,7 @@ export class ValidationServices implements IValidationServices {
      */
     public get ConditionFactory(): IConditionFactory {
         if (!this._conditionFactory)
-            throw new CodingError('Must assign ValidationServices.ConditionFactory.')
+            throw new CodingError('Must assign ValidationServices.ConditionFactory.');
         return this._conditionFactory;
     }
     public set ConditionFactory(factory: IConditionFactory) {
@@ -67,7 +67,7 @@ export class ValidationServices implements IValidationServices {
      */
     public get DataTypeServices(): IDataTypeServices {
         if (!this._dataTypeServices)
-            throw new CodingError('Must assign ValidationServices.DataTypeServices.')
+            throw new CodingError('Must assign ValidationServices.DataTypeServices.');
 
         return this._dataTypeServices;
     }
@@ -105,7 +105,7 @@ export class ValidationServices implements IValidationServices {
      */
     public get MessageTokenResolverService(): IMessageTokenResolver {
         if (!this._messageTokenResolverService)
-            throw new CodingError('Must assign ValidationServices.MessageTokenResolverService.')
+            throw new CodingError('Must assign ValidationServices.MessageTokenResolverService.');
 
         return this._messageTokenResolverService;
     }

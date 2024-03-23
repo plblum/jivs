@@ -35,7 +35,7 @@ describe('DataTypeFormatterBase', () => {
         expect(() => testItem.Services = services).not.toThrow();
         expect(testItem.Services).toBe(services);
     });
-})
+});
 
 describe('StringFormatter', () => {
 

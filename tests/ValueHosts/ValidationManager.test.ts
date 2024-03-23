@@ -790,7 +790,7 @@ function SetupValidationManager(descriptors?: Array<InputValueHostDescriptor> | 
     return {
         services: services,
         validationManager: vm
-    }
+    };
 }
 
 function TestIssueFound(actual: IssueFound, expected: Partial<IssueFound>): void {
@@ -813,7 +813,7 @@ function TestIssueFoundFromValidateResults(validateResults: Array<ValidateResult
         if (expectedIssuesFound) {
             for (let eif of expectedIssuesFound) {
                 if (!eif.ConditionType)
-                    throw new Error('Forgot to set ConditionType property on IssueFound')
+                    throw new Error('Forgot to set ConditionType property on IssueFound');
                 expect(issuesFound).not.toBeNull();
                 let type = eif.ConditionType!;
                 let issueFound = issuesFound.find((value) => value.ConditionType === type);
@@ -1218,7 +1218,7 @@ describe('ValidationManager.Validate, and IsValid, DoNotSaveNativeValue, GetIssu
         let changeMe = false;
         let callback = (vm: IValidationManager, validateResults: Array<ValidateResult>) => {
             changeMe = true;
-        }
+        };
         let descriptor = SetupInputValueHostDescriptor(0, [NeverMatchesConditionType]);
         let setup = SetupValidationManager([descriptor], null, {
             OnValidated: callback
@@ -1257,7 +1257,7 @@ describe('ValidationManager.UpdateState', () => {
         let descriptor = SetupInputValueHostDescriptor(0, [NeverMatchesConditionType]);
         let state: ITestExtendedState = {
             Value: initialValue
-        }
+        };
         let setup = SetupValidationManager([descriptor], state, {
             OnStateChanged: callback
         });
@@ -1342,7 +1342,7 @@ describe('ValidationManager.UpdateState', () => {
 describe('ToIValueHostResolverfunction', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostResolver = {
-            GetValueHost: (id) => { return <any>{} },
+            GetValueHost: (id) => { return <any>{}; },
             Services: new MockValidationServices(false, false),
         };
         expect(ToIValueHostResolver(testItem)).toBe(testItem);
@@ -1368,7 +1368,7 @@ describe('ToIValueHostResolverfunction', () => {
 describe('ToIValueHostsManager function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostsManager = {
-            GetValueHost: (id) => { return <any>{} },
+            GetValueHost: (id) => { return <any>{}; },
             Services: new MockValidationServices(false, false),
             NotifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
         };
@@ -1396,7 +1396,7 @@ describe('ToIValueHostsManagerAccessor function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostsManagerAccessor = {
             ValueHostsManager :{
-                GetValueHost: (id) => { return <any>{} },
+                GetValueHost: (id) => { return <any>{}; },
                 Services: new MockValidationServices(false, false),
                 NotifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
             }

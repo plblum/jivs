@@ -101,7 +101,7 @@ export class DataTypeServices implements IDataTypeServices {
 
     protected get CultureIdFallback(): Array<CultureIdFallback> {
         if (!this._cultureConfig || this._cultureConfig.length === 0)
-            throw new CodingError('Must establish the CultureIdFallback array in DataTypeServices.')
+            throw new CodingError('Must establish the CultureIdFallback array in DataTypeServices.');
         return this._cultureConfig;
     }
     private _cultureConfig: Array<CultureIdFallback> | null = null;
@@ -187,9 +187,9 @@ export class DataTypeServices implements IDataTypeServices {
                 return {
                     ErrorMessage: e.message,
                     Value: undefined
-                }
+                };
             }
-            return { ErrorMessage: 'Unspecified'}
+            return { ErrorMessage: 'Unspecified'};
         }
     }
 

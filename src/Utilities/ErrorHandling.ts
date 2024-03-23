@@ -16,7 +16,7 @@ export class InvalidTypeError extends Error
 {
     constructor(valueSupplied: any)
     {
-        super(`Type is not supported for this value: ${valueSupplied?.toString()}`)
+        super(`Type is not supported for this value: ${valueSupplied?.toString()}`);
     }
 }
 

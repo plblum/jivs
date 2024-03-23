@@ -220,7 +220,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
                         (this.Descriptor.Multiline ? 'm' : ''));
                 }
                 else
-                    throw new CodingError('RegExpConditionDescriptor does not have a regular expression assigned to Expression or ExpressionOrString properties.')
+                    throw new CodingError('RegExpConditionDescriptor does not have a regular expression assigned to Expression or ExpressionOrString properties.');
             }
             this._savedRE = re;
         }
@@ -410,7 +410,7 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
             TokenLabel: 'CompareTo',
             AssociatedValue: secondValue ?? null,
             Purpose: 'value'
-        })
+        });
         return list;
     }
     protected get DefaultCategory(): ConditionCategory {

@@ -178,7 +178,7 @@ describe('InputValidator.Condition', () => {
                         return ConditionEvaluateResult.Match;
                     },
                     Category: ConditionCategory.Undetermined
-                }
+                };
             }
         });
 
@@ -207,7 +207,7 @@ describe('InputValidator.Condition', () => {
                         return ConditionEvaluateResult.Match;
                     },
                     Category: ConditionCategory.Undetermined
-                }
+                };
             }
         });
 
@@ -264,7 +264,7 @@ describe('InputValidator.Enabler', () => {
                         return ConditionEvaluateResult.Match;
                     },
                     Category: ConditionCategory.Undetermined
-                }
+                };
             }
         });
 
@@ -293,7 +293,7 @@ describe('InputValidator.Enabler', () => {
                         return ConditionEvaluateResult.Match;
                     },
                     Category: ConditionCategory.Undetermined
-                }
+                };
             }
         });
 
@@ -932,7 +932,7 @@ describe('InputValidator.Validate', () => {
             services: services,
             vh: vh,
             testItem: testItem
-        }
+        };
     }
 
     test('Condition using Promise to evaluate as Match results in InputValidateResult setup as Match with no IssuesFound', async () => {
@@ -1029,7 +1029,7 @@ describe('GetValuesForTokens', () => {
                 AssociatedValue: 'Value1',
                 Purpose: 'value'
             }
-        ])
+        ]);
     });
     test('RangeCondition returns 4 tokens: Label, Value, Minimum, Maximum', () => {
         let config = SetupWithField1AndField2({
@@ -1064,7 +1064,7 @@ describe('GetValuesForTokens', () => {
                 AssociatedValue: 'Z',
                 Purpose: 'parameter'
             },
-        ])
+        ]);
     });
 });
 

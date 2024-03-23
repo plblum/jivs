@@ -57,7 +57,7 @@ function FinishPartialInputValueHostDescriptor(partialDescriptor: Partial<InputV
     InputValueHostDescriptor {
     let defaultIVH = CreateInputValueHostDescriptor(1, LookupKey.String);
     if (partialDescriptor) {
-        return { ...defaultIVH, ...partialDescriptor }
+        return { ...defaultIVH, ...partialDescriptor };
     }
     return defaultIVH;
 }
@@ -68,7 +68,7 @@ function FinishPartialInputValueHostDescriptors(partialDescriptors: Array<Partia
     if (partialDescriptors) {
         for (let i = 0; i < partialDescriptors.length; i++) {
             let vhd = partialDescriptors[i];
-            result.push(FinishPartialInputValueHostDescriptor(vhd))
+            result.push(FinishPartialInputValueHostDescriptor(vhd));
         }
     }
 
@@ -182,12 +182,12 @@ function SetupInputValueHostForValidate(
         ValidatorDescriptors: partialValidatorDescriptors ?
             FinishPartialInputValidatorDescriptors(partialValidatorDescriptors) :
             undefined
-    }
+    };
     if (vhGroup !== undefined)
         inputValueDescriptor.Group = vhGroup;
 
     let updatedState = FinishPartialInputValueHostState(
-        { ...{ InputValue: '' }, ...partialInputValueState })
+        { ...{ InputValue: '' }, ...partialInputValueState });
 
     return SetupInputValueHost(inputValueDescriptor, updatedState);
 }
@@ -389,12 +389,12 @@ describe('InputValueHost.SetValue with GetValue to check result and IsChanged pr
         let config = SetupInputValueHost();
         let testItem = config.valueHost;
         testItem.SetValue(initialValue);
-        let changedValues: Array<{ newValue: any, oldValue: any }> = []
+        let changedValues: Array<{ newValue: any, oldValue: any }> = [];
         config.validationManager.OnValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.GetValue(),
                 oldValue: oldValue
-            })
+            });
         };
 
         expect(() => testItem.SetValue(secondValue)).not.toThrow();
@@ -412,12 +412,12 @@ describe('InputValueHost.SetValue with GetValue to check result and IsChanged pr
         let config = SetupInputValueHost();
         let testItem = config.valueHost;
         testItem.SetValue(initialValue);
-        let changedValues: Array<{ newValue: any, oldValue: any }> = []
+        let changedValues: Array<{ newValue: any, oldValue: any }> = [];
         config.validationManager.OnValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.GetValue(),
                 oldValue: oldValue
-            })
+            });
         };
 
         expect(() => testItem.SetValue(initialValue)).not.toThrow();
@@ -434,12 +434,12 @@ describe('InputValueHost.SetValue with GetValue to check result and IsChanged pr
         let config = SetupInputValueHost();
         let testItem = config.valueHost;
         testItem.SetValue(initialValue);
-        let changedValues: Array<{ newValue: any, oldValue: any }> = []
+        let changedValues: Array<{ newValue: any, oldValue: any }> = [];
         config.validationManager.OnValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.GetValue(),
                 oldValue: oldValue
-            })
+            });
         };
 
         expect(() => testItem.SetValue(secondValue, { SkipValueChangedCallback: true })).not.toThrow();
@@ -456,12 +456,12 @@ describe('InputValueHost.SetValue with GetValue to check result and IsChanged pr
         let config = SetupInputValueHost();
         let testItem = config.valueHost;
         testItem.SetValue(initialValue);
-        let changedValues: Array<{ newValue: any, oldValue: any }> = []
+        let changedValues: Array<{ newValue: any, oldValue: any }> = [];
         config.validationManager.OnValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.GetValue(),
                 oldValue: oldValue
-            })
+            });
         };
 
         expect(() => testItem.SetValue(secondValue, { SkipValueChangedCallback: false })).not.toThrow();
@@ -481,7 +481,7 @@ describe('InputValueHost.SetValue with GetValue to check result and IsChanged pr
         let config = SetupInputValueHost();
         let testItem = config.valueHost;
         testItem.SetValue(initialValue);
-        let changedState: Array<InputValueHostState> = []
+        let changedState: Array<InputValueHostState> = [];
         config.validationManager.OnValueHostStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain as InputValueHostState);
         };
@@ -500,7 +500,7 @@ describe('InputValueHost.SetValue with GetValue to check result and IsChanged pr
         let config = SetupInputValueHost();
         let testItem = config.valueHost;
         testItem.SetValue(initialValue);
-        let changedState: Array<InputValueHostState> = []
+        let changedState: Array<InputValueHostState> = [];
         config.validationManager.OnValueHostStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain as InputValueHostState);
         };
@@ -1081,7 +1081,7 @@ describe('InputValueHost.Validate', () => {
         ];
         let state: Partial<InputValueHostState> = {};
         let config = SetupInputValueHostForValidate(ivDescriptors, state);
-        let results: Array<ValidateResult> = []
+        let results: Array<ValidateResult> = [];
         config.validationManager.OnValueHostValidated = (valueHost, validateResult) => {
             results.push(validateResult);
         };
@@ -1099,7 +1099,7 @@ describe('InputValueHost.Validate', () => {
         ];
         let state: Partial<InputValueHostState> = {};
         let config = SetupInputValueHostForValidate(ivDescriptors, state);
-        let results: Array<ValidateResult> = []
+        let results: Array<ValidateResult> = [];
         config.validationManager.OnValueHostValidated = (valueHost, validateResult) => {
             results.push(validateResult);
         };
@@ -1126,7 +1126,7 @@ describe('InputValueHost.Validate uses autogenerated DataTypeCheck condition', (
             '*': 'Error Found'
         });
 
-        let results: Array<ValidateResult> = []
+        let results: Array<ValidateResult> = [];
         config.validationManager.OnValueHostValidated = (valueHost, validateResult) => {
             results.push(validateResult);
         };
@@ -1155,7 +1155,7 @@ describe('InputValueHost.Validate uses autogenerated DataTypeCheck condition', (
             '*': 'Error Found'
         });
 
-        let results: Array<ValidateResult> = []
+        let results: Array<ValidateResult> = [];
         config.validationManager.OnValueHostValidated = (valueHost, validateResult) => {
             results.push(validateResult);
         };
@@ -1184,7 +1184,7 @@ describe('InputValueHost.Validate uses autogenerated DataTypeCheck condition', (
             '*': 'Error Found'
         });
 
-        let results: Array<ValidateResult> = []
+        let results: Array<ValidateResult> = [];
         config.validationManager.OnValueHostValidated = (valueHost, validateResult) => {
             results.push(validateResult);
         };
@@ -1217,7 +1217,7 @@ describe('InputValueHost.Validate uses autogenerated DataTypeCheck condition', (
             '*': 'Error Found'
         });
 
-        let results: Array<ValidateResult> = []
+        let results: Array<ValidateResult> = [];
         config.validationManager.OnValueHostValidated = (valueHost, validateResult) => {
             results.push(validateResult);
         };
@@ -1242,7 +1242,7 @@ describe('InputValueHost.Validate uses autogenerated DataTypeCheck condition', (
                     Type: phoneNumberConditionType,
                     Expression: /^\d\d\d \d\d\d\-\d{4}$/, // ### ###-####
                     ValueHostId: null
-               })
+               });
             }
 
         }
@@ -1266,8 +1266,8 @@ describe('InputValueHost.Validate uses autogenerated DataTypeCheck condition', (
                 DataType: phoneNumberLookupKey,
                 ValidatorDescriptors: []
             }
-        ]
-        let results: Array<ValidateResult> = []
+        ];
+        let results: Array<ValidateResult> = [];
         let vmConfig: ValidationManagerConfig = {
             Services: services,
             ValueHostDescriptors: descriptors,
@@ -1628,7 +1628,7 @@ function ValidateWithAsyncConditions(
             stateChangeCounter++;
             if (stateChangeCounter === doneAfterStateChangeCount)
                 done();
-        }
+        };
 
     let setup = TestValidateFunctionWithPromise(ivDescriptors, onValidateHandler, onStateChangedHandler);
     expect(setup.promises.length).toBe(expectedInputValidateResults.length);
@@ -1910,10 +1910,10 @@ describe('Validate with async Conditions', () => {
                             );
                             return promise;
                         }
-                    }
+                    };
                 },
                 ErrorMessage: 'Error'
-            }
+            };
             // expect the sync process does nothing and thus doesn't call onValidate,
             // but it does update the state for AsyncProcessing=true
             // Then when the promise completes, it also doesn't call onValidate
@@ -1946,7 +1946,7 @@ describe('InputValueHost.ClearValidation', () => {
         let ivDescriptor: InputValidatorDescriptor = {
             ConditionDescriptor: { Type: IsUndeterminedConditionType },
             ErrorMessage: ''
-        }
+        };
         let ivDescriptors: Array<Partial<InputValidatorDescriptor>> = [
             ivDescriptor
         ];
@@ -1984,7 +1984,7 @@ describe('InputValueHost.ClearValidation', () => {
         let ivDescriptor: InputValidatorDescriptor = {
             ConditionDescriptor: { Type: IsUndeterminedConditionType },
             ErrorMessage: ''
-        }
+        };
         let ivDescriptors: Array<Partial<InputValidatorDescriptor>> = [
             ivDescriptor
         ];
@@ -2003,7 +2003,7 @@ describe('InputValueHost.ClearValidation', () => {
         let ivDescriptor: InputValidatorDescriptor = {
             ConditionDescriptor: { Type: NeverMatchesConditionType },
             ErrorMessage: ''
-        }
+        };
         let ivDescriptors: Array<Partial<InputValidatorDescriptor>> = [
             ivDescriptor
         ];
@@ -2065,7 +2065,7 @@ describe('InputValueHost.DoNotSaveNativeValue', () => {
         let ivDescriptor: InputValidatorDescriptor = {
             ConditionDescriptor: { Type: NeverMatchesConditionType },
             ErrorMessage: ''
-        }
+        };
         let ivDescriptors: Array<Partial<InputValidatorDescriptor>> = [
             ivDescriptor
         ];
@@ -2342,7 +2342,7 @@ describe('InputValueHost.GetIssuesForInput', () => {
         config.valueHost.SetBusinessLogicError({
             ErrorMessage: 'ERROR',
             Severity: ValidationSeverity.Error
-        })
+        });
         let issuesFound: Array<IssueSnapshot> | null = null;
         expect(() => issuesFound = config.valueHost.GetIssuesForInput()).not.toThrow();
         expect(issuesFound).not.toBeNull();
@@ -2361,7 +2361,7 @@ describe('InputValueHost.GetIssuesForInput', () => {
         config.valueHost.SetBusinessLogicError({
             ErrorMessage: 'SEVERE',
             Severity: ValidationSeverity.Severe
-        })
+        });
         let issuesFound: Array<IssueSnapshot> | null = null;
         expect(() => issuesFound = config.valueHost.GetIssuesForInput()).not.toThrow();
         expect(issuesFound).not.toBeNull();
@@ -2380,7 +2380,7 @@ describe('InputValueHost.GetIssuesForInput', () => {
         config.valueHost.SetBusinessLogicError({
             ErrorMessage: 'WARNING',
             Severity: ValidationSeverity.Warning
-        })
+        });
         let issuesFound: Array<IssueSnapshot> | null = null;
         expect(() => issuesFound = config.valueHost.GetIssuesForInput()).not.toThrow();
         expect(issuesFound).not.toBeNull();
@@ -2410,7 +2410,7 @@ describe('InputValueHost.GetIssuesForInput', () => {
         config.valueHost.SetBusinessLogicError({
             ErrorMessage: 'BL_ERROR',
             Severity: ValidationSeverity.Error
-        })
+        });
         let issuesFound: Array<IssueSnapshot> | null = null;
         config.valueHost.Validate();
         expect(() => issuesFound = config.valueHost.GetIssuesForInput()).not.toThrow();
@@ -2487,7 +2487,7 @@ describe('InputValueHost.GetIssuesForSummary', () => {
         config.valueHost.SetBusinessLogicError({
             ErrorMessage: 'ERROR',
             Severity: ValidationSeverity.Error
-        })
+        });
         let issuesFound: Array<IssueSnapshot> | null = null;
         expect(() => issuesFound = config.valueHost.GetIssuesForSummary()).not.toThrow();
         expect(issuesFound).not.toBeNull();
@@ -2506,7 +2506,7 @@ describe('InputValueHost.GetIssuesForSummary', () => {
         config.valueHost.SetBusinessLogicError({
             ErrorMessage: 'SEVERE',
             Severity: ValidationSeverity.Severe
-        })
+        });
         let issuesFound: Array<IssueSnapshot> | null = null;
         expect(() => issuesFound = config.valueHost.GetIssuesForSummary()).not.toThrow();
         expect(issuesFound).not.toBeNull();
@@ -2525,7 +2525,7 @@ describe('InputValueHost.GetIssuesForSummary', () => {
         config.valueHost.SetBusinessLogicError({
             ErrorMessage: 'WARNING',
             Severity: ValidationSeverity.Warning
-        })
+        });
         let issuesFound: Array<IssueSnapshot> | null = null;
         expect(() => issuesFound = config.valueHost.GetIssuesForSummary()).not.toThrow();
         expect(issuesFound).not.toBeNull();
@@ -2555,7 +2555,7 @@ describe('InputValueHost.GetIssuesForSummary', () => {
         config.valueHost.SetBusinessLogicError({
             ErrorMessage: 'BL_ERROR',
             // use the default         Severity: ValidationSeverity.Error
-        })
+        });
         let issuesFound: Array<IssueSnapshot> | null = null;
         config.valueHost.Validate();
         expect(() => issuesFound = config.valueHost.GetIssuesForSummary()).not.toThrow();
@@ -3377,7 +3377,7 @@ describe('ToIInputValueHost function', () => {
                 IssuesFound: null,
                 ValidationResult: ValidationResult.NotAttempted,
                 InputValue: undefined
-            })
+            });
         expect(ToIInputValueHost(testItem)).toBe(testItem);
     });
     class TestIInputValueHostImplementation implements IInputValueHost {

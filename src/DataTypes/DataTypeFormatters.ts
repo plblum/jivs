@@ -79,7 +79,7 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
             return { Value: '' };
         // filter out invalid values
         if (typeof value === 'object')
-            return { ErrorMessage: 'Not a string or primitive' }
+            return { ErrorMessage: 'Not a string or primitive' };
         return {
             Value: value != null // null/undefined
                 ? value.toString() : ''
@@ -252,11 +252,11 @@ export abstract class NumberFormatterBase extends DataTypeFormatterBase
         if (typeof value === 'number')
             return {
                 Value: Intl.NumberFormat(cultureId, options ?? this.Options).format(value)
-            }
+            };
         else if (value == null)   // null/undefined
-            return { Value: '' }
+            return { Value: '' };
         else
-            return { ErrorMessage: 'Not a number' }
+            return { ErrorMessage: 'Not a number' };
     }
 }
 
@@ -539,9 +539,9 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
             return this.FormatBoolean(value, cultureId);
         }
         else if (value == null)   // null/undefined
-            return { Value: '' }
+            return { Value: '' };
         else
-            return { ErrorMessage: 'Not a boolean' }
+            return { ErrorMessage: 'Not a boolean' };
     }
     protected FormatBoolean(value: boolean, cultureId: string): DataTypeResolution<string>
     {
@@ -649,11 +649,11 @@ export abstract class DateTimeFormatterBase extends DataTypeFormatterBase
         if (value instanceof Date)
             return {
                 Value: Intl.DateTimeFormat(cultureId, this.Options).format(value)
-            }
+            };
         else if (value == null)   // null/undefined
-            return { Value: '' }
+            return { Value: '' };
         else
-            return { ErrorMessage: 'Not a date' }
+            return { ErrorMessage: 'Not a date' };
     }
 }
 /**

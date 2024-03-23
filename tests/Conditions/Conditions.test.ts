@@ -209,7 +209,7 @@ describe('class DataTypeCheckCondition', () => {
         };
         let condition = new DataTypeCheckCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
@@ -222,7 +222,7 @@ describe('class DataTypeCheckCondition', () => {
         };
         let condition = new DataTypeCheckCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -393,7 +393,7 @@ describe('class RequiredTextCondition', () => {
         };
         let condition = new RequiredTextCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
@@ -407,7 +407,7 @@ describe('class RequiredTextCondition', () => {
         };
         let condition = new RequiredTextCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -507,7 +507,7 @@ describe('class RequiredIndexCondition', () => {
         };
         let condition = new RequiredIndexCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
@@ -520,7 +520,7 @@ describe('class RequiredIndexCondition', () => {
         };
         let condition = new RequiredIndexCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -778,7 +778,7 @@ describe('class RegExpCondition', () => {
         };
         let condition = new RegExpCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
@@ -792,7 +792,7 @@ describe('class RegExpCondition', () => {
         };
         let condition = new RegExpCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -1114,7 +1114,7 @@ describe('class RangeCondition', () => {
         };
         let condition = new RangeCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
@@ -1130,7 +1130,7 @@ describe('class RangeCondition', () => {
         };
         let condition = new RangeCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -1394,7 +1394,7 @@ describe('class EqualToCondition', () => {
         };
         let condition = new EqualToCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
@@ -1410,7 +1410,7 @@ describe('class EqualToCondition', () => {
         };
         let condition = new EqualToCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -1605,7 +1605,7 @@ describe('class NotEqualToCondition', () => {
         };
         let condition = new NotEqualToCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
@@ -1621,7 +1621,7 @@ describe('class NotEqualToCondition', () => {
         };
         let condition = new NotEqualToCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -1791,7 +1791,7 @@ describe('class GreaterThanCondition', () => {
         };
         let condition = new GreaterThanCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
@@ -1807,7 +1807,7 @@ describe('class GreaterThanCondition', () => {
         };
         let condition = new GreaterThanCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });        
 });
@@ -1977,7 +1977,7 @@ describe('class GreaterThanOrEqualToCondition', () => {
         };
         let condition = new GreaterThanOrEqualToCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
@@ -1993,7 +1993,7 @@ describe('class GreaterThanOrEqualToCondition', () => {
         };
         let condition = new GreaterThanOrEqualToCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });            
 });
@@ -2164,7 +2164,7 @@ describe('class LessThanCondition', () => {
         };
         let condition = new LessThanCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
@@ -2180,7 +2180,7 @@ describe('class LessThanCondition', () => {
         };
         let condition = new LessThanCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });            
 });
@@ -2350,7 +2350,7 @@ describe('class LessThanOrEqualToCondition', () => {
         };
         let condition = new LessThanOrEqualToCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
@@ -2366,7 +2366,7 @@ describe('class LessThanOrEqualToCondition', () => {
         };
         let condition = new LessThanOrEqualToCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });            
 });
@@ -2626,7 +2626,7 @@ describe('class StringLengthCondition', () => {
         };
         let condition = new StringLengthCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
@@ -2640,7 +2640,7 @@ describe('class StringLengthCondition', () => {
         };
         let condition = new StringLengthCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });            
 });
@@ -2870,7 +2870,7 @@ describe('class AllMatchCondition', () => {
         };
         let condition = new AllMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
     test('GatherValueHostIds where each child has a different ValueHost. All are found in the results', () => {
@@ -2896,7 +2896,7 @@ describe('class AllMatchCondition', () => {
         };
         let condition = new AllMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(3);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
@@ -2925,7 +2925,7 @@ describe('class AllMatchCondition', () => {
         };
         let condition = new AllMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
@@ -2953,7 +2953,7 @@ describe('class AllMatchCondition', () => {
         };
         let condition = new AllMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
@@ -3208,7 +3208,7 @@ describe('class AnyMatchCondition', () => {
         };
         let condition = new AnyMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
     test('GatherValueHostIds where each child has a different ValueHost. All are found in the results', () => {
@@ -3234,7 +3234,7 @@ describe('class AnyMatchCondition', () => {
         };
         let condition = new AnyMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(3);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
@@ -3291,7 +3291,7 @@ describe('class AnyMatchCondition', () => {
         };
         let condition = new AnyMatchCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
@@ -3320,7 +3320,7 @@ describe('class CountMatchesCondition', () => {
         for (let conType of conditionTypes)
             descriptor.ConditionDescriptors.push({
                 Type: conType
-            })
+            });
         let testItem = new CountMatchesCondition(descriptor);
         expect(testItem.Evaluate(vh, vm)).toBe(expectedResult);
     }
@@ -3414,7 +3414,7 @@ describe('class CountMatchesCondition', () => {
         };
         let condition = new CountMatchesCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
     test('GatherValueHostIds where each child has a different ValueHost. All are found in the results', () => {
@@ -3440,7 +3440,7 @@ describe('class CountMatchesCondition', () => {
         };
         let condition = new CountMatchesCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(3);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
@@ -3469,7 +3469,7 @@ describe('class CountMatchesCondition', () => {
         };
         let condition = new CountMatchesCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
@@ -3497,7 +3497,7 @@ describe('class CountMatchesCondition', () => {
         };
         let condition = new CountMatchesCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
@@ -3590,7 +3590,7 @@ describe('class StringNotEmptyCondition', () => {
         };
         let condition = new StringNotEmptyCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
@@ -3604,7 +3604,7 @@ describe('class StringNotEmptyCondition', () => {
         };
         let condition = new StringNotEmptyCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -3688,7 +3688,7 @@ describe('class NotNullCondition', () => {
         };
         let condition = new NotNullCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
@@ -3702,7 +3702,7 @@ describe('class NotNullCondition', () => {
         };
         let condition = new NotNullCondition(descriptor);
         let testItem = new Set<ValueHostId>();
-        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow()
+        expect(() => condition.GatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });

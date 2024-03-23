@@ -280,12 +280,12 @@ describe('SetValue', () => {
         const finalValue = 200;
 
         let config = SetupValueHost({}, initialValue);
-        let changedValues: Array<{newValue: any, oldValue: any}> = []
+        let changedValues: Array<{newValue: any, oldValue: any}> = [];
         config.validationManager.OnValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.GetValue(),
                 oldValue: oldValue
-            })
+            });
         };
 
         let testItem = config.valueHost;
@@ -302,12 +302,12 @@ describe('SetValue', () => {
         const initialValue = 100;
 
         let config = SetupValueHost({}, initialValue);
-        let changedValues: Array<{newValue: any, oldValue: any}> = []
+        let changedValues: Array<{newValue: any, oldValue: any}> = [];
         config.validationManager.OnValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.GetValue(),
                 oldValue: oldValue
-            })
+            });
         };
 
         let testItem = config.valueHost;
@@ -323,12 +323,12 @@ describe('SetValue', () => {
         const finalValue = 200;
 
         let config = SetupValueHost({}, initialValue);
-        let changedValues: Array<{newValue: any, oldValue: any}> = []
+        let changedValues: Array<{newValue: any, oldValue: any}> = [];
         config.validationManager.OnValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.GetValue(),
                 oldValue: oldValue
-            })
+            });
         };
 
         let testItem = config.valueHost;
@@ -343,12 +343,12 @@ describe('SetValue', () => {
         const finalValue = 200;
 
         let config = SetupValueHost({}, initialValue);
-        let changedValues: Array<{newValue: any, oldValue: any}> = []
+        let changedValues: Array<{newValue: any, oldValue: any}> = [];
         config.validationManager.OnValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.GetValue(),
                 oldValue: oldValue
-            })
+            });
         };
 
         let testItem = config.valueHost;
@@ -368,7 +368,7 @@ describe('SetValue', () => {
         const finalValue = 200;
 
         let config = SetupValueHost({}, initialValue);
-        let changedState: Array<ValueHostState> = []
+        let changedState: Array<ValueHostState> = [];
         config.validationManager.OnValueHostStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };
@@ -386,7 +386,7 @@ describe('SetValue', () => {
         const initialValue = 100;
 
         let config = SetupValueHost({}, initialValue);
-        let changedState: Array<ValueHostState> = []
+        let changedState: Array<ValueHostState> = [];
         config.validationManager.OnValueHostStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };

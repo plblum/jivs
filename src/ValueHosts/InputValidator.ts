@@ -295,14 +295,14 @@ export class InputValidator implements IInputValidator {
                 return {
                     message: `Condition result: ${ConditionEvaluateResultStrings[resultState.ConditionEvaluateResult]} Issue found: ` +
                         (resultState ? JSON.stringify(resultState) : 'none'),
-                }
+                };
             });
         }
         function ResolveCER(cer: ConditionEvaluateResult): InputValidateResult {
             LogInfo(() => {
                 return {
                     message: `Condition evaluated as ${ConditionEvaluateResultStrings[cer]}`,
-                }
+                };
             });
             resultState.ConditionEvaluateResult = cer;
             switch (cer) {
@@ -323,7 +323,7 @@ export class InputValidator implements IInputValidator {
                         resolve(ResolveCER(resultingCER));
                     },
                     (reason) => {
-                        LogError(reason)
+                        LogError(reason);
                         reject(reason);
                     });
             });
@@ -338,7 +338,7 @@ export class InputValidator implements IInputValidator {
             LogInfo(() => {
                 return {
                     message: errorMessage,
-                }
+                };
             });
             resultState.Skipped = true;
             return resultState;                    
@@ -357,7 +357,7 @@ export class InputValidator implements IInputValidator {
         function LogError(message: string): void
         {
             self.Services.LoggerService.Log('Exception: ' + (message ?? 'Reason unspecified'),
-                LoggingLevel.Error, ValidationCategory, self.GetLogSourceText())            
+                LoggingLevel.Error, ValidationCategory, self.GetLogSourceText());            
         }
     }
 
@@ -432,7 +432,7 @@ export function CreateIssueFound(valueHost: IValueHost,
         Severity: ValidationSeverity.Error,
         ErrorMessage: '',
         SummaryMessage: undefined
-    }
+    };
 }
 
 //#region Factory

@@ -215,4 +215,4 @@ describe('RegisterDefaultValueHostGenerators', () => {
         expect(factory.IsRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(true);
         
     });
-})
+});

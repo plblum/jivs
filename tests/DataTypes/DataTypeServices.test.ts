@@ -57,7 +57,7 @@ describe('DataTypeServices constructor and properties', () => {
     test('Constructor with no parameters', () => {
         let testItem = new Publicified_DataTypeServices();
 
-        expect(()=> testItem.ExposedCultureIdFallback).toThrow(/CultureIdFallback/)
+        expect(()=> testItem.ExposedCultureIdFallback).toThrow(/CultureIdFallback/);
         expect(testItem.ExposedGetDataTypeIdentifiers()).toEqual([]);
         expect(testItem.ExposedGetFormatters()).toEqual([]);
         expect(testItem.ExposedGetDataTypeConverters()).toEqual([]);
@@ -171,7 +171,7 @@ describe('GetClosestCultureId', () => {
         expect(testItem.GetClosestCultureId('de')).toBeNull();
         expect(testItem.GetClosestCultureId('de-DE')).toBeNull();                
     });
-})
+});
 
 
 export function CreateDataTypeServicesWithManyCultures(activeCultureId: string, registerFormatters: boolean = false): DataTypeServices
