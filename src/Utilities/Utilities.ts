@@ -56,9 +56,12 @@ export function DeepEquals(obj1: any, obj2: any): boolean
     let keys1 = Object.keys(obj1);
     if (keys1.length !== Object.keys(obj2).length)
         return false;
+    /* eslint-disable no-prototype-builtins */
     return keys1.every(key => 
         obj2.hasOwnProperty(key) && DeepEquals(obj1[key], obj2[key])
     );  
+    /* eslint-ensable no-prototype-builtins */
+    
 }
 
 export function DeepClone(value: any): any {
@@ -77,9 +80,9 @@ export function DeepClone(value: any): any {
     
   }
 
-export function ObjectKeysCount(object: Object | null): number
+export function ObjectKeysCount(obj: object | null): number
 {
-    return object ? Object.keys(object).length : 0;
+    return obj ? Object.keys(obj).length : 0;
 }
 
 /**

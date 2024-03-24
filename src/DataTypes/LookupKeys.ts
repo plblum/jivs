@@ -357,5 +357,5 @@ export enum LookupKey {
      * For case insensitive string comparisons. Generally set this on the ConditionDescriptor's
      * ConversionLookupKey and SecondConversionLookupKey properties.
      */
-    CaseInsensitive = 'CaseInsensitive',
+    CaseInsensitive = 'CaseInsensitive'
 }

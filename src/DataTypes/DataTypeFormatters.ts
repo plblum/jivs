@@ -282,7 +282,7 @@ export class NumberFormatter extends NumberFormatterBase
 
     protected GetDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            signDisplay: "auto",
+            signDisplay: "auto"
         };
     }
 }
@@ -392,7 +392,7 @@ export class PercentageFormatter extends NumberFormatterBase
     }
     protected GetDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            style: "percent",
+            style: "percent"
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -420,7 +420,7 @@ export class Percentage100Formatter extends NumberFormatterBase
     }
     protected GetDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            style: "percent",
+            style: "percent"
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -674,7 +674,7 @@ export class DateTimeFormatter extends DateTimeFormatterBase
             month: "numeric",
             day: "numeric",
             hour: "numeric",
-            minute: "numeric",
+            minute: "numeric"
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -858,7 +858,7 @@ export class TimeofDayFormatter extends DateTimeFormatterBase
     protected GetDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
             hour: "numeric",
-            minute: "numeric",
+            minute: "numeric"
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>

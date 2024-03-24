@@ -18,7 +18,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
     /**
      * Used to extract full tokens.
      */
-    private readonly tokensInMessageRegEx = /\{[a-z]\w*(\:[a-z]\w*)?\}/ig;
+    private readonly tokensInMessageRegEx = /\{[a-z]\w*(:[a-z]\w*)?\}/ig;
     /**
      * Replaces tokens in the message with user friendly values
      * @param message 

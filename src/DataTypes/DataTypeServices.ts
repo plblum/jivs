@@ -542,7 +542,7 @@ export class DataTypeServices implements IDataTypeServices {
             return generator.CreateCondition(valueHost, dataTypeLookupKey, this.Services.ConditionFactory); // may return null
         let descriptor: DataTypeCheckConditionDescriptor = {
             Type: ConditionType.DataTypeCheck,
-            ValueHostId: valueHost.GetId(),
+            ValueHostId: valueHost.GetId()
         };
         return this.Services.ConditionFactory.Create(descriptor);
     }

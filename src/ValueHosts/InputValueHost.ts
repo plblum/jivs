@@ -214,7 +214,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             };
             LogInfo(() => {
                 return {
-                    message: errorMessage,
+                    message: errorMessage
                 };
             });
             return resultState;                    

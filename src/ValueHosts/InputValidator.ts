@@ -241,7 +241,7 @@ export class InputValidator implements IInputValidator {
 
         let resultState: InputValidateResult = {
             ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-            IssueFound: null,
+            IssueFound: null
         };
         try {
             // options that may bail out
@@ -294,14 +294,14 @@ export class InputValidator implements IInputValidator {
             LogInfo(() => {
                 return {
                     message: `Condition result: ${ConditionEvaluateResultStrings[resultState.ConditionEvaluateResult]} Issue found: ` +
-                        (resultState ? JSON.stringify(resultState) : 'none'),
+                        (resultState ? JSON.stringify(resultState) : 'none')
                 };
             });
         }
         function ResolveCER(cer: ConditionEvaluateResult): InputValidateResult {
             LogInfo(() => {
                 return {
-                    message: `Condition evaluated as ${ConditionEvaluateResultStrings[cer]}`,
+                    message: `Condition evaluated as ${ConditionEvaluateResultStrings[cer]}`
                 };
             });
             resultState.ConditionEvaluateResult = cer;
@@ -337,7 +337,7 @@ export class InputValidator implements IInputValidator {
             };
             LogInfo(() => {
                 return {
-                    message: errorMessage,
+                    message: errorMessage
                 };
             });
             resultState.Skipped = true;

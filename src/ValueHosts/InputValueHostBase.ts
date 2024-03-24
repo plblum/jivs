@@ -504,7 +504,7 @@ export abstract class InputValueHostBaseGenerator implements IValueHostGenerator
             Value: descriptor.InitialValue,
             ValidationResult: ValidationResult.NotAttempted,
             InputValue: undefined,
-            IssuesFound: null,
+            IssuesFound: null
         };
     }
 
