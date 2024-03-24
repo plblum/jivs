@@ -33,7 +33,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
     public get ValueHostsManager(): IValueHostsManager {
         return this._valueHostsManager;
     }
-    private _valueHostsManager: IValueHostsManager;
+    private readonly _valueHostsManager: IValueHostsManager;
 
     //#endregion IValueHostsManagerAccessor
     
@@ -49,7 +49,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
     protected get Descriptor(): TDescriptor {
         return this._descriptor;
     }
-    private _descriptor: TDescriptor;
+    private readonly _descriptor: TDescriptor;
 
     //#region IValueHost
     /**

@@ -43,7 +43,7 @@ export class NameToFunctionMapper<TValue, TResult> implements INameToFunctionMap
      * String matching is case insensitive. Expect all strings stored in this dictionary
      * to be lowercase.
      */
-    private _map = new Map<string, (...args: TValue[]) => TResult>();
+    private readonly _map = new Map<string, (...args: TValue[]) => TResult>();
     /**
      * Request the function associated with the key.
      * @param key - will be treated case insensitively

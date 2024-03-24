@@ -151,7 +151,7 @@ export interface IDataTypeConverter
  * @param dataTypeLookupKey
  * @returns true when its own Convert method should handle the value.
   */
-    supportsValue(value: any, dataTypeLookupKey: string | null): boolean;
+    supportsValue(value: any, dataTypeLookupKey: LookupKey | string | null): boolean;
 /**
  * Return the value representing the original value, but in the new data type,
  * specified by the generic T.
@@ -160,7 +160,7 @@ export interface IDataTypeConverter
  * @param value 
  * @param dataTypeLookupKey 
  */
-    convert(value: any, dataTypeLookupKey: string): number | Date | string | null | undefined;
+    convert(value: any, dataTypeLookupKey: LookupKey | string): number | Date | string | null | undefined;
 }
 
 /**
@@ -211,7 +211,7 @@ export interface IDataTypeFormatter
      * @param cultureId - Such as 'en-US' and 'en'
      * @returns Use its Format method when true. Do not use Format when false.
      */
-    supports(dataTypeLookupKey: string, cultureId: string): boolean;
+    supports(dataTypeLookupKey: LookupKey | string, cultureId: string): boolean;
 
     /**
      * Creates a formatted string for the value, applying the goals of the DataTypeLookupKey
@@ -220,7 +220,7 @@ export interface IDataTypeFormatter
      * @param dataTypeLookupKey 
      * @param cultureId 
      */
-    format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string>;
+    format(value: any, dataTypeLookupKey: LookupKey | string, cultureId: string): DataTypeResolution<string>;
 }
 
 /**
@@ -253,7 +253,7 @@ export interface IDataTypeCheckGenerator
  * @param dataTypeLookupKey
  * @returns when true, datatypeLookupKey is supported and CreateCondition can be used.
  */
-    supportsValue(dataTypeLookupKey: string): boolean;
+    supportsValue(dataTypeLookupKey: LookupKey | string): boolean;
 /**
  * Creates a Condition based on the DataTypeLookupKey that will handle the Data Type Check feature.
  * Most of the time, ICondition.ConditionCategory should be DataTypeCheck.
@@ -262,6 +262,6 @@ export interface IDataTypeCheckGenerator
  * @param conditionFactory
  * @returns A Condition instance to use or null to block auto-generation.
  */
-    createCondition(valueHost: IInputValueHost, dataTypeLookupKey: string,
+    createCondition(valueHost: IInputValueHost, dataTypeLookupKey: LookupKey | string,
         conditionFactory: IConditionFactory): ICondition | null;
 }

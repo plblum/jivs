@@ -16,7 +16,7 @@ module.exports = {
   },  
   rules: {
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],
     semi: "error",
     "no-extra-semi": "off",
     "@typescript-eslint/no-extra-semi": "error",    
@@ -103,6 +103,13 @@ module.exports = {
     "@typescript-eslint/no-this-alias": "off",
     "no-throw-literal": "off",
     "@typescript-eslint/no-throw-literal": "error",
-    "@typescript-eslint/no-unnecessary-condition": "off"
+    "@typescript-eslint/no-unnecessary-condition": "off",
+    "@typescript-eslint/no-unnecessary-type-constraint": "error",
+    "@typescript-eslint/no-unsafe-declaration-merging": "error",
+    "@typescript-eslint/no-unsafe-unary-minus": "error",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/prefer-function-type": "error",
+    "prefer-promise-reject-errors": "off",
+    "@typescript-eslint/prefer-readonly": "error"
   }
 };

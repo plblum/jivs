@@ -115,7 +115,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     {
         return this._config;
     }
-    private _config: ValidationManagerConfig;
+    private readonly _config: ValidationManagerConfig;
 
     /**
      * The ValidationManager and IValidationServices are crosslinked.
@@ -159,7 +159,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Value retained from the constructor to share with calls to AddValueHost,
      * giving new ValueHost instances their last state.
      */
-    private _lastValueHostStates: Array<ValueHostState>;
+    private readonly _lastValueHostStates: Array<ValueHostState>;
 
     /**
      * Use to change anything in ValidationManagerState without impacting the immutability 

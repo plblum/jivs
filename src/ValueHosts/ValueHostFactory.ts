@@ -72,7 +72,7 @@ export class ValueHostFactory implements IValueHostFactory {
         return this.resolveDescriptor(descriptor).createState(descriptor);
     }
 
-    private _descriptorResolvers: Array<IValueHostGenerator> = [];
+    private readonly _descriptorResolvers: Array<IValueHostGenerator> = [];
 
     /**
      * Add an ValueHostGenerator. The built-in generators are already registered.

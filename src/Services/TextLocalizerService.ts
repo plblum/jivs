@@ -170,5 +170,5 @@ export class TextLocalizerService implements ITextLocalizerService
      *   },
      * }
      */
-    private _l10nKeyMap: Map<string, CultureToText> = new Map<string, CultureToText>();
+    private readonly _l10nKeyMap: Map<string, CultureToText> = new Map<string, CultureToText>();
 }

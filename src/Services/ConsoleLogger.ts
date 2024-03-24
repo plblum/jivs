@@ -39,7 +39,7 @@ export class ConsoleLogger implements ILogger
     {
         return this._mainLogger;
     }
-    private _mainLogger: ILogger | null;
+    private readonly _mainLogger: ILogger | null;
     /**
      * Create a new log entry.
      * @param message

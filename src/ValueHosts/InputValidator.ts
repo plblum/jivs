@@ -51,7 +51,7 @@ export class InputValidator implements IInputValidator {
         this._valueHost = valueHost;
         this._descriptor = descriptor;
     }
-    private _valueHost: IInputValueHost;
+    private readonly _valueHost: IInputValueHost;
     /**
     * The business rules behind this validator.
     */
@@ -81,7 +81,7 @@ export class InputValidator implements IInputValidator {
      * and at that time, it must replace this instance with 
      * a new one and a new Descriptor instance.
      */
-    private _descriptor: InputValidatorDescriptor;
+    private readonly _descriptor: InputValidatorDescriptor;
 
 
     /**

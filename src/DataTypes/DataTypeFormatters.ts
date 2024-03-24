@@ -226,7 +226,7 @@ export abstract class NumberFormatterBase extends DataTypeFormatterBase
     {
         return this._options;
     }
-    private _options: Intl.NumberFormatOptions;
+    private readonly _options: Intl.NumberFormatOptions;
     /**
      * Provide the default NumberFormatOptions for use with
      * Intl.NumberFormat.
@@ -341,14 +341,14 @@ export class CurrencyFormatter extends NumberFormatterBase
         this._cultureToCurrencyCode = cultureToCurrencyCode ?? null;
         this._defaultCurrencyCode = defaultCurrencyCode;
     }
-    private _defaultCurrencyCode: string;
+    private readonly _defaultCurrencyCode: string;
     protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
             style: "currency",
             currency: "DEFAULT"
         };
     }
-    private _cultureToCurrencyCode: { [cultureId: string]: string } | null;
+    private readonly _cultureToCurrencyCode: { [cultureId: string]: string } | null;
 
     protected get ExpectedLookupKeys(): string | Array<string>
     {
@@ -480,7 +480,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._dataTypeLookupKey;
     }
-    private _dataTypeLookupKey: string;
+    private readonly _dataTypeLookupKey: string;
     /**
      * Text shown the user for a value of true.
     * To provide localization of "true" and "false", set up
@@ -492,7 +492,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._trueLabel;
     }
-    private _trueLabel: string;
+    private readonly _trueLabel: string;
 
     /**
      * Localization key for TrueLabel. Its value will be matched to an entry
@@ -505,7 +505,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._trueLabell10n;
     }
-    private _trueLabell10n: string | null;
+    private readonly _trueLabell10n: string | null;
     /**
      * Text shown the user for a value of false
     * To provide localization of "true" and "false", set up
@@ -517,7 +517,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._falseLabel;
     }
-    private _falseLabel: string;
+    private readonly _falseLabel: string;
 
     /**
      * Localization key for FalseLabel. Its value will be matched to an entry
@@ -530,7 +530,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._falseLabell10n;
     }
-    private _falseLabell10n: string | null;
+    private readonly _falseLabell10n: string | null;
 
     protected abstract getDefaultLabels(): DefaultLabelsForBoolean;    
 
@@ -623,7 +623,7 @@ export abstract class DateTimeFormatterBase extends DataTypeFormatterBase
     {
         return this._options;
     }
-    private _options: Intl.DateTimeFormatOptions;
+    private readonly _options: Intl.DateTimeFormatOptions;
     /**
      * Provide the default DateTimeFormatOptions for use with
      * Intl.DateTimeFormat.
@@ -716,7 +716,7 @@ export class DateFormatter extends DateTimeFormatterBase
         return true;
     }
 
-    public supports(dataTypeLookupKey: string, cultureId: string): boolean {
+    public supports(dataTypeLookupKey: LookupKey | string, cultureId: string): boolean {
         return (dataTypeLookupKey === LookupKey.ShortDate || super.supports(dataTypeLookupKey, cultureId));
     }
 

@@ -32,7 +32,7 @@ export class ConditionFactory implements IConditionFactory {
     // user supplies JSON string or object implementing ConditionDescriptor
     // and it returns an instance of IValidator.
 
-    private _map = new NameToFunctionMapper<ConditionDescriptor, ICondition>();
+    private readonly _map = new NameToFunctionMapper<ConditionDescriptor, ICondition>();
 
     /**
      * Add or replace a function to create an instance of the Condition

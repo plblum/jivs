@@ -63,7 +63,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
     public get Descriptor(): TConditionDescriptor {
         return this._descriptor;
     }
-    private _descriptor: TConditionDescriptor;
+    private readonly _descriptor: TConditionDescriptor;
 
     /**
      * Helps identify the purpose of the Condition. Impacts:
