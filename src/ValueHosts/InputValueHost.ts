@@ -220,7 +220,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             return resultState;                    
         }        
         function LogInfo(
-            fn: () => { message: string, source?: string })
+            fn: () => { message: string; source?: string })
         {
             if (self.Services.LoggerService.MinLevel >= LoggingLevel.Info)
             {

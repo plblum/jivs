@@ -23,7 +23,7 @@ export interface INameToFunctionMapper<TValue, TResult>
  * Returns undefined if not found.
  * @param key - will be treated case insensitively
  */    
-    Get(key: string): ((...args: TValue[]) => TResult) | undefined
+    Get(key: string): ((...args: TValue[]) => TResult) | undefined;
     
 /**
  * Adds or replaces an entry in the map

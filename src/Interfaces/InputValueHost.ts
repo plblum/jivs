@@ -72,7 +72,7 @@ export interface IInputValueHost extends IValueHost {
      * @param options - Provides guidance on which validators to include.
      * @returns IValidationResultDetails
      */
-    Validate(options?: ValidateOptions): ValidateResult
+    Validate(options?: ValidateOptions): ValidateResult;
 
     /**
      * Changes the validation state to itself initial: Undetermined

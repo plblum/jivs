@@ -497,7 +497,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
  * this ValidationManager.
  */
 interface IValueHostDescriptorsMap {
-    [valueHostId: ValueHostId]: ValueHostDescriptor
+    [valueHostId: ValueHostId]: ValueHostDescriptor;
 }
 
 /**
@@ -506,7 +506,7 @@ interface IValueHostDescriptorsMap {
  * in this ValidationManager.
  */
 interface IValueHostsMap {
-    [valueHostId: ValueHostId]: IValueHost
+    [valueHostId: ValueHostId]: IValueHost;
 }
 
 export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;

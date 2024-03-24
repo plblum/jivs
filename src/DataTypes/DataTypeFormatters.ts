@@ -556,10 +556,10 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
 }
 export interface DefaultLabelsForBoolean
 {
-    TrueLabel: string,
-    FalseLabel: string,
-    TrueLabell10n: string,
-    FalseLabell10n: string
+    TrueLabel: string;
+    FalseLabel: string;
+    TrueLabell10n: string;
+    FalseLabell10n: string;
 }
 
 /**

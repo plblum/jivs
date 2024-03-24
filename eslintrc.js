@@ -18,7 +18,18 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": "off",
     semi: "error",
     "comma-dangle": "off",
-    "@typescript-eslint/comma-dangle": "error"
+    "@typescript-eslint/comma-dangle": "error",
+    "@typescript-eslint/member-delimiter-style": ["error", {
+      "multiline": {
+        "delimiter": "semi",
+        "requireLast": true
+      },
+      "singleline": {
+        "delimiter": "semi",
+        "requireLast": false
+      },
+      "multilineDetection": "brackets"
+    }]
 
   }
 };

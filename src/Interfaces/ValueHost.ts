@@ -205,7 +205,7 @@ export interface ValueHostState {
  * @internal
  */
 interface CustomItems {
-    [key: string]: any
+    [key: string]: any;
 }
 
 /**

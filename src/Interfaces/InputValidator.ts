@@ -181,13 +181,13 @@ export interface InputValidateResult {
     /**
      * The result of Validate
      */
-    ConditionEvaluateResult: ConditionEvaluateResult,
+    ConditionEvaluateResult: ConditionEvaluateResult;
 
     /**
      * Assigned with issue details when an issue is found.
      * Null when no issue is found.
      */
-    IssueFound: IssueFound | null,
+    IssueFound: IssueFound | null;
 
     /**
      * When true, Validate bailed before evaluation due to Enabled or Enabler
@@ -216,14 +216,14 @@ export interface TokenLabelAndValue {
     /**
      * The text within the {} of the token. Used to match tokens.
      */
-    TokenLabel: string,
+    TokenLabel: string;
     /**
      * The value to be used as a replacement. When the value isn't a string,
      * it is converted to a string through 
      * {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter} classes
      * registered with {@link DataTypes/ConcreteClasses/DataTypeServices!DataTypeServices | DataTypeServices}.
      */
-    AssociatedValue: any,
+    AssociatedValue: any;
     /**
      * Provides additional guidance about the token's purpose so the
      * IMessageTokenResolver can apply additional formatting to the token,
