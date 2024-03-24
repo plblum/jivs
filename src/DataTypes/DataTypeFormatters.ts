@@ -8,11 +8,11 @@
  * @module DataTypes/ConcreteClasses/DataTypeFormatters
  */
 
-import { IDataTypeFormatter, DataTypeResolution } from "../Interfaces/DataTypes";
-import { IServicesAccessor, IValidationServices } from "../Interfaces/ValidationServices";
-import { CodingError } from "../Utilities/ErrorHandling";
-import { cultureLanguageCode } from "../Utilities/Utilities";
-import { LookupKey } from "./LookupKeys";
+import { IDataTypeFormatter, DataTypeResolution } from '../Interfaces/DataTypes';
+import { IServicesAccessor, IValidationServices } from '../Interfaces/ValidationServices';
+import { CodingError } from '../Utilities/ErrorHandling';
+import { cultureLanguageCode } from '../Utilities/Utilities';
+import { LookupKey } from './LookupKeys';
 
 /**
  * Abstract implementation of IDataTypeFormatter.
@@ -282,7 +282,7 @@ export class NumberFormatter extends NumberFormatterBase
 
     protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            signDisplay: "auto"
+            signDisplay: 'auto'
         };
     }
 }
@@ -309,7 +309,7 @@ export class IntegerFormatter extends NumberFormatterBase
 
     protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            signDisplay: "auto",
+            signDisplay: 'auto',
             maximumFractionDigits: 0
         };
     }
@@ -344,8 +344,8 @@ export class CurrencyFormatter extends NumberFormatterBase
     private readonly _defaultCurrencyCode: string;
     protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            style: "currency",
-            currency: "DEFAULT"
+            style: 'currency',
+            currency: 'DEFAULT'
         };
     }
     private readonly _cultureToCurrencyCode: { [cultureId: string]: string } | null;
@@ -363,7 +363,7 @@ export class CurrencyFormatter extends NumberFormatterBase
 
     public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let options = this.Options;
-        if (options.currency === "DEFAULT") {
+        if (options.currency === 'DEFAULT') {
             options = { ...options, currency: this.resolveCurrencyCode(cultureId) };
         }
         return this.formatNumber(value, cultureId, options);
@@ -392,7 +392,7 @@ export class PercentageFormatter extends NumberFormatterBase
     }
     protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            style: "percent"
+            style: 'percent'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -420,7 +420,7 @@ export class Percentage100Formatter extends NumberFormatterBase
     }
     protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            style: "percent"
+            style: 'percent'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -670,11 +670,11 @@ export class DateTimeFormatter extends DateTimeFormatterBase
     }
     protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "numeric",
-            day: "numeric",
-            hour: "numeric",
-            minute: "numeric"
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -701,9 +701,9 @@ export class DateFormatter extends DateTimeFormatterBase
     }
     protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "numeric",
-            day: "numeric"
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -735,9 +735,9 @@ export class AbbrevDateFormatter extends DateTimeFormatterBase
     }
     protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -765,10 +765,10 @@ export class AbbrevDOWDateFormatter extends DateTimeFormatterBase
     }
     protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            weekday: "short"
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            weekday: 'short'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -796,9 +796,9 @@ export class LongDateFormatter extends DateTimeFormatterBase
     }
     protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -826,10 +826,10 @@ export class LongDOWDateFormatter extends DateTimeFormatterBase
     }
     protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            weekday: "long"
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -857,8 +857,8 @@ export class TimeofDayFormatter extends DateTimeFormatterBase
     }
     protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            hour: "numeric",
-            minute: "numeric"
+            hour: 'numeric',
+            minute: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -886,9 +886,9 @@ export class TimeofDayHMSFormatter extends DateTimeFormatterBase
     }
     protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            hour: "numeric",
-            minute: "numeric",
-            second: "numeric"
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>

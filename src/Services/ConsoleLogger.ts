@@ -2,7 +2,7 @@
  * Concrete implemenation of ILogger that provides logging to the Console.
  * @module Logger/ConsoleLogger
  */
-import { ILogger, LoggingLevel } from "../Interfaces/Logger";
+import { ILogger, LoggingLevel } from '../Interfaces/Logger';
 
 
 /**

@@ -2,11 +2,11 @@
  * {@inheritDoc InputValidator/ConcreteClasses!}
  * @module InputValidator/Interfaces
  */
-import { IValueHostResolver } from "./ValueHostResolver";
-import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from "./Conditions";
-import { IInputValueHost } from "./InputValueHost";
-import { IssueFound, ValidateOptions, ValidationSeverity } from "./Validation";
-import { IGatherValueHostIds } from "./ValueHost";
+import { IValueHostResolver } from './ValueHostResolver';
+import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from './Conditions';
+import { IInputValueHost } from './InputValueHost';
+import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
+import { IGatherValueHostIds } from './ValueHost';
 
 /**
  * Represents a single validator for the value of an InputValueHost.

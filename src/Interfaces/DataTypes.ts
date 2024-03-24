@@ -3,10 +3,10 @@
  * @module DataTypes/Interfaces
  */
 
-import { LookupKey } from "../DataTypes/LookupKeys";
-import { ICondition, IConditionFactory } from "./Conditions";
-import { IInputValueHost } from "./InputValueHost";
-import { IServicesAccessor } from "./ValidationServices";
+import { LookupKey } from '../DataTypes/LookupKeys';
+import { ICondition, IConditionFactory } from './Conditions';
+import { IInputValueHost } from './InputValueHost';
+import { IServicesAccessor } from './ValidationServices';
 
 /**
  * Partial representation of DataTypeServices for systems that

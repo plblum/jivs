@@ -5,8 +5,8 @@
  * @module ValueHosts/Interfaces/ValueHostFactory
  */
 
-import { ValueHostDescriptor, ValueHostState, IValueHost } from "./ValueHost";
-import { IValueHostsManager } from "./ValueHostResolver";
+import { ValueHostDescriptor, ValueHostState, IValueHost } from './ValueHost';
+import { IValueHostsManager } from './ValueHostResolver';
 
 /**
  * Interface for creating ValueHostFactory classes.

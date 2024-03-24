@@ -3,9 +3,9 @@
  * Setup its instance on ValidationServices.ConditionFactory.
  * @module Conditions/ConditionFactory/ConcreteClasses
  */
-import { NameToFunctionMapper } from "../Utilities/NameToFunctionMap";
-import type { ConditionDescriptor, ICondition, IConditionCore, IConditionFactory } from "../Interfaces/Conditions";
-import { ConditionType } from "./ConditionTypes";
+import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
+import type { ConditionDescriptor, ICondition, IConditionCore, IConditionFactory } from '../Interfaces/Conditions';
+import { ConditionType } from './ConditionTypes';
 
 //#region ConditionFactory
 

@@ -65,7 +65,7 @@ export function deepEquals(obj1: any, obj2: any): boolean
 }
 
 export function deepClone(value: any): any {
-    if (typeof value !== "object" || value === null) {
+    if (typeof value !== 'object' || value === null) {
       return value;
     }
     if (value instanceof Date)

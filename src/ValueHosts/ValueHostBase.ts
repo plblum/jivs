@@ -2,13 +2,13 @@
  * Standard implementation of IValueHost.
  * @module ValueHosts/AbstractClasses/ValueHostBase
  */
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { assertNotNull } from "../Utilities/ErrorHandling";
-import { deepEquals, deepClone } from "../Utilities/Utilities";
-import type { IValidationServices } from "../Interfaces/ValidationServices";
-import type { IValueHost, SetValueOptions, ValueHostState, ValueHostDescriptor } from "../Interfaces/ValueHost";
-import type { IValueHostsManager, IValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
-import { IValueHostGenerator } from "../Interfaces/ValueHostFactory";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { assertNotNull } from '../Utilities/ErrorHandling';
+import { deepEquals, deepClone } from '../Utilities/Utilities';
+import type { IValidationServices } from '../Interfaces/ValidationServices';
+import type { IValueHost, SetValueOptions, ValueHostState, ValueHostDescriptor } from '../Interfaces/ValueHost';
+import type { IValueHostsManager, IValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
+import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 
 
 /**

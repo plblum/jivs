@@ -110,6 +110,8 @@ module.exports = {
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/prefer-function-type": "error",
     "prefer-promise-reject-errors": "off",
-    "@typescript-eslint/prefer-readonly": "error"
+    "@typescript-eslint/prefer-readonly": "error",
+    "quotes": "off",
+    "@typescript-eslint/quotes": ["error", "single" ]
   }
 };

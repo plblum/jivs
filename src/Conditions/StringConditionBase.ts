@@ -3,10 +3,10 @@
  * @module Conditions/AbstractClasses/StringConditionBase
  */
 
-import { ConditionEvaluateResult } from "../Interfaces/Conditions";
-import { IValueHost } from "../Interfaces/ValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { OneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
+import { ConditionEvaluateResult } from '../Interfaces/Conditions';
+import { IValueHost } from '../Interfaces/ValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { OneValueConditionDescriptor, OneValueConditionBase } from './OneValueConditionBase';
 
 /**
  * Base implementation of a Condition that evaluates a string as the native value.

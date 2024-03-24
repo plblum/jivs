@@ -9,25 +9,25 @@
  * @module Conditions/ConcreteConditions
  */
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
-import type { TokenLabelAndValue } from "../Interfaces/InputValidator";
-import { CodingError } from "../Utilities/ErrorHandling";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { LoggingLevel, ConfigurationCategory } from '../Interfaces/Logger';
+import type { TokenLabelAndValue } from '../Interfaces/InputValidator';
+import { CodingError } from '../Utilities/ErrorHandling';
 
-import type { IValueHost } from "../Interfaces/ValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
+import type { IValueHost } from '../Interfaces/ValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import {
     type ICondition,
     ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter
-} from "../Interfaces/Conditions";
-import { OneValueConditionDescriptor, OneValueConditionBase, TwoValueConditionDescriptor } from "./OneValueConditionBase";
-import { StringConditionDescriptor, StringConditionBase } from "./StringConditionBase";
-import { InputValueConditionBase } from "./InputValueConditionBase";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { EvaluateChildConditionResultsBase, EvaluateChildConditionResultsDescriptor } from "./EvaluateChildConditionResultsBase";
-import { RegExpConditionBaseDescriptor, RegExpConditionBase } from "./RegExpConditionBase";
-import { ComparersResult } from "../Interfaces/DataTypes";
-import { ConditionType } from "./ConditionTypes";
+} from '../Interfaces/Conditions';
+import { OneValueConditionDescriptor, OneValueConditionBase, TwoValueConditionDescriptor } from './OneValueConditionBase';
+import { StringConditionDescriptor, StringConditionBase } from './StringConditionBase';
+import { InputValueConditionBase } from './InputValueConditionBase';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { EvaluateChildConditionResultsBase, EvaluateChildConditionResultsDescriptor } from './EvaluateChildConditionResultsBase';
+import { RegExpConditionBaseDescriptor, RegExpConditionBase } from './RegExpConditionBase';
+import { ComparersResult } from '../Interfaces/DataTypes';
+import { ConditionType } from './ConditionTypes';
 
 
 /**
@@ -277,7 +277,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
                 null, lookupKey) :
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
-            services.LoggerService.log(`Type mismatch. Value cannot be compared to Minimum`,
+            services.LoggerService.log('Type mismatch. Value cannot be compared to Minimum',
                 LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -286,7 +286,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
                 null, lookupKey) :
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
-            services.LoggerService.log(`Type mismatch. Value cannot be compared to Maximum`,
+            services.LoggerService.log('Type mismatch. Value cannot be compared to Maximum',
                 LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -377,7 +377,7 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
             value, secondValue,
             this.Descriptor.ConversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
-            valueHostResolver.Services.LoggerService.log(`Type mismatch. Value cannot be compared to SecondValue`,
+            valueHostResolver.Services.LoggerService.log('Type mismatch. Value cannot be compared to SecondValue',
                 LoggingLevel.Warn, ConfigurationCategory, `${this.constructor.name} for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }

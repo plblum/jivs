@@ -8,10 +8,10 @@
  * @module Conditions/AbstractClasses/RegExpConditionBase
  */
 
-import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
-import { IValueHost } from "../Interfaces/ValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { StringConditionDescriptor, StringConditionBase } from "./StringConditionBase";
+import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
+import { IValueHost } from '../Interfaces/ValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { StringConditionDescriptor, StringConditionBase } from './StringConditionBase';
 
 /**
  * For any regular expression condition

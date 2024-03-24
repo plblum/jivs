@@ -5,12 +5,12 @@
  * @module Conditions/AbstractClasses/EvaluateChildConditionResultsBase
  */
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { ConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from "../Interfaces/Conditions";
-import { IValueHost, toIGatherValueHostIds } from "../Interfaces/ValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { CodingError } from "../Utilities/ErrorHandling";
-import { ConditionBase } from "./ConditionBase";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from '../Interfaces/Conditions';
+import { IValueHost, toIGatherValueHostIds } from '../Interfaces/ValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { CodingError } from '../Utilities/ErrorHandling';
+import { ConditionBase } from './ConditionBase';
 
 /**
  * Descriptor for all implementations of EvaluateChildConditionResultsBase.

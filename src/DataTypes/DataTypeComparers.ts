@@ -15,8 +15,8 @@
  * @module DataTypes/ConcreteClasses/DataTypeComparers
  */
 
-import { ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
-import { InvalidTypeError } from "../Utilities/ErrorHandling";
+import { ComparersResult, IDataTypeComparer } from '../Interfaces/DataTypes';
+import { InvalidTypeError } from '../Utilities/ErrorHandling';
 
 /**
  * Just the function for a Comparer that handles numbers and strings. 

@@ -3,12 +3,12 @@
  * @module ValueHosts/ConcreteClasses/BusinessLogicInputValueHost
  */
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { InputValueHostBaseDescriptor, InputValueHostBaseState, IInputValueHost } from "../Interfaces/InputValueHost";
-import { ValidateOptions, ValidateResult, ValidationResult, IssueFound, ValidationSeverity } from "../Interfaces/Validation";
-import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
-import { toIValidationManagerCallbacks } from "./ValidationManager";
-import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { InputValueHostBaseDescriptor, InputValueHostBaseState, IInputValueHost } from '../Interfaces/InputValueHost';
+import { ValidateOptions, ValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
+import { InputValueHostBase, InputValueHostBaseGenerator } from './InputValueHostBase';
+import { toIValidationManagerCallbacks } from './ValidationManager';
+import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 
 
 /**

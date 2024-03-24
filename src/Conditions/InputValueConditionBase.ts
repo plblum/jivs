@@ -4,14 +4,14 @@
  * @module Conditions/AbstractClasses/InputValueConditionBase
  */
 
-import { ConditionEvaluateResult } from "../Interfaces/Conditions";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { IValueHost } from "../Interfaces/ValueHost";
-import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
-import { CodingError } from "../Utilities/ErrorHandling";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { OneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
-import { toIInputValueHost } from "../ValueHosts/InputValueHost";
+import { ConditionEvaluateResult } from '../Interfaces/Conditions';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IValueHost } from '../Interfaces/ValueHost';
+import { LoggingLevel, ConfigurationCategory } from '../Interfaces/Logger';
+import { CodingError } from '../Utilities/ErrorHandling';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { OneValueConditionDescriptor, OneValueConditionBase } from './OneValueConditionBase';
+import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 
 /**
  * Abstract class for developing Conditions that use the value from ValueHost.GetInputValue.

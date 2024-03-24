@@ -7,7 +7,7 @@
  */
 
 
-import { assertNotNull } from "../Utilities/ErrorHandling";
+import { assertNotNull } from '../Utilities/ErrorHandling';
 
 
 /**

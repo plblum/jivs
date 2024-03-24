@@ -4,14 +4,14 @@
  * @module Conditions/AbstractClasses/ConditionBase
  */
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
-import type { IInputValueHost } from "../Interfaces/InputValueHost";
-import type { IGatherValueHostIds, IValueHost } from "../Interfaces/ValueHost";
-import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
-import { assertNotNull } from "../Utilities/ErrorHandling";
-import type { IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/InputValidator";
-import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
+import type { IInputValueHost } from '../Interfaces/InputValueHost';
+import type { IGatherValueHostIds, IValueHost } from '../Interfaces/ValueHost';
+import { LoggingLevel, ConfigurationCategory } from '../Interfaces/Logger';
+import { assertNotNull } from '../Utilities/ErrorHandling';
+import type { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/InputValidator';
+import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 
 /**
  * Base implementation of ICondition.

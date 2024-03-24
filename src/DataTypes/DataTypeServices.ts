@@ -23,17 +23,17 @@
  * @module DataTypes/ConcreteClasses/DataTypeServices
  */
 
-import { defaultComparer } from "./DataTypeComparers";
-import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeFormatter, IDataTypeCheckGenerator } from "../Interfaces/DataTypes";
+import { defaultComparer } from './DataTypeComparers';
+import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
+import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeFormatter, IDataTypeCheckGenerator } from '../Interfaces/DataTypes';
 import { cultureLanguageCode, deepClone } from '../Utilities/Utilities';
-import { IValidationServices, toIServicesAccessor } from "../Interfaces/ValidationServices";
-import { ICondition } from "../Interfaces/Conditions";
-import { LookupKey } from "./LookupKeys";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
+import { IValidationServices, toIServicesAccessor } from '../Interfaces/ValidationServices';
+import { ICondition } from '../Interfaces/Conditions';
+import { LookupKey } from './LookupKeys';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { ConditionType } from '../Conditions/ConditionTypes';
-import { DataTypeCheckConditionDescriptor } from "../Conditions/ConcreteConditions";
-import { CompareCategory, LoggingLevel, LookupKeyCategory } from "../Interfaces/Logger";
+import { DataTypeCheckConditionDescriptor } from '../Conditions/ConcreteConditions';
+import { CompareCategory, LoggingLevel, LookupKeyCategory } from '../Interfaces/Logger';
 
 
 /**

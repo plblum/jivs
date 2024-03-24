@@ -1,8 +1,8 @@
 /**
  * @module Services/TextLocalizerServices
  */
-import { CultureToText, ITextLocalizerService } from "../Interfaces/TextLocalizerService";
-import { cultureLanguageCode } from "../Utilities/Utilities";
+import { CultureToText, ITextLocalizerService } from '../Interfaces/TextLocalizerService';
+import { cultureLanguageCode } from '../Utilities/Utilities';
 
 /**
  * A service to offer text alternatives to the default text

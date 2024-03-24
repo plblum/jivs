@@ -24,12 +24,12 @@
  */
 
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IValueHostsManager } from "./ValueHostResolver";
-import { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from "./Validation";
-import { IValidationManagerCallbacks } from "../ValueHosts/ValidationManager";
-import { IValidationServices } from "./ValidationServices";
-import { ValueHostDescriptor, ValueHostState } from "./ValueHost";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { IValueHostsManager } from './ValueHostResolver';
+import { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from './Validation';
+import { IValidationManagerCallbacks } from '../ValueHosts/ValidationManager';
+import { IValidationServices } from './ValidationServices';
+import { ValueHostDescriptor, ValueHostState } from './ValueHost';
 
 /**
  * Interface from which to implement a ValidationManager.

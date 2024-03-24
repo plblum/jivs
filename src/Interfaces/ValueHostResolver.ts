@@ -5,9 +5,9 @@
  * @module ValidationManager/Interfaces/ValueHostResolver
  */
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IServicesAccessor } from "./ValidationServices";
-import type { IValueHost } from "./ValueHost";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { IServicesAccessor } from './ValidationServices';
+import type { IValueHost } from './ValueHost';
 
 /**
  * The fundamentals of managing ValueHosts involve just the ability

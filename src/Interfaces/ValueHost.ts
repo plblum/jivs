@@ -40,8 +40,8 @@
  */
 
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { IValueHostResolver, IValueHostsManager } from './ValueHostResolver';
 
 /**
  * Interface for creating ValueHosts.

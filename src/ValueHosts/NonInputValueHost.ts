@@ -2,11 +2,11 @@
  * {@inheritDoc NonInputValueHost}
  * @module ValueHosts/ConcreteClasses/NonInputValueHost
  */
-import { InputValueHostDescriptor } from "../Interfaces/InputValueHost";
-import { INonInputValueHost, NonInputValueHostDescriptor, NonInputValueHostState } from "../Interfaces/NonInputValueHost";
-import { ValueHostDescriptor } from "../Interfaces/ValueHost";
-import { IValueHostsManager } from "../Interfaces/ValueHostResolver";
-import { ValueHostBase, ValueHostBaseGenerator } from "./ValueHostBase";
+import { InputValueHostDescriptor } from '../Interfaces/InputValueHost';
+import { INonInputValueHost, NonInputValueHostDescriptor, NonInputValueHostState } from '../Interfaces/NonInputValueHost';
+import { ValueHostDescriptor } from '../Interfaces/ValueHost';
+import { IValueHostsManager } from '../Interfaces/ValueHostResolver';
+import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 
 
 /**

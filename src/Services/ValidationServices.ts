@@ -9,18 +9,18 @@
  * @module ValidationServices/ConcreteClass
  */
 
-import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import type { ILogger } from "../Interfaces/Logger";
-import type { IInputValidatorFactory, IMessageTokenResolver } from "../Interfaces/InputValidator";
-import type { IValidationServices } from "../Interfaces/ValidationServices";
-import type { IDataTypeServices } from "../Interfaces/DataTypes";
-import type { IConditionFactory } from "../Interfaces/Conditions";
-import { IValueHostFactory } from "../Interfaces/ValueHost";
-import { InputValidatorFactory } from "../ValueHosts/InputValidator";
-import { ValueHostFactory, registerStandardValueHostGenerators } from "../ValueHosts/ValueHostFactory";
-import { ConsoleLogger } from "./ConsoleLogger";
-import { ITextLocalizerService } from "../Interfaces/TextLocalizerService";
-import { TextLocalizerService } from "./TextLocalizerService";
+import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
+import type { ILogger } from '../Interfaces/Logger';
+import type { IInputValidatorFactory, IMessageTokenResolver } from '../Interfaces/InputValidator';
+import type { IValidationServices } from '../Interfaces/ValidationServices';
+import type { IDataTypeServices } from '../Interfaces/DataTypes';
+import type { IConditionFactory } from '../Interfaces/Conditions';
+import { IValueHostFactory } from '../Interfaces/ValueHost';
+import { InputValidatorFactory } from '../ValueHosts/InputValidator';
+import { ValueHostFactory, registerStandardValueHostGenerators } from '../ValueHosts/ValueHostFactory';
+import { ConsoleLogger } from './ConsoleLogger';
+import { ITextLocalizerService } from '../Interfaces/TextLocalizerService';
+import { TextLocalizerService } from './TextLocalizerService';
 
 /**
  * Supplies services and tools to be used as dependency injection

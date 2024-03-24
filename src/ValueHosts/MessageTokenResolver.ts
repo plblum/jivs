@@ -2,12 +2,12 @@
  * {@inheritDoc InputValidator/Interfaces!IMessageTokenResolver}
  * @module InputValidator/ConcreteClasses/MessageTokenResolver
  */
-import type { DataTypeResolution } from "../Interfaces/DataTypes";
-import { IMessageTokenResolver, IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/InputValidator";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { LoggingLevel, ConfigurationCategory, TypeMismatchCategory, FormattingCategory } from "../Interfaces/Logger";
-import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
+import type { DataTypeResolution } from '../Interfaces/DataTypes';
+import { IMessageTokenResolver, IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/InputValidator';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { LoggingLevel, ConfigurationCategory, TypeMismatchCategory, FormattingCategory } from '../Interfaces/Logger';
+import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
+import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 
 
 /**
@@ -30,7 +30,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
         assertNotNull(message, 'message');
         assertNotNull(valueHostResolver, 'valueHostResolver');
         if (!hosts || !hosts.length || hosts[0] == null)    // null/undefined
-            throw new CodingError(`hosts required`);
+            throw new CodingError('hosts required');
         const fnName = 'MessageTokenResolver.ResolveTokens';
         // capture all token patterns and build a list of CapturedTokens
         // If none found, return the message

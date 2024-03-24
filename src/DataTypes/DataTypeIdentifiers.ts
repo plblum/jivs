@@ -7,8 +7,8 @@
  * RegisterDataType.
  * @module DataTypes/ConcreteClasses/DataTypeIdentifiers
  */
-import { IDataTypeIdentifier } from "../Interfaces/DataTypes";
-import { LookupKey } from "./LookupKeys";
+import { IDataTypeIdentifier } from '../Interfaces/DataTypes';
+import { LookupKey } from './LookupKeys';
 /**
  * Identifies a value as a strings (typeof value === 'string'), and associates it
  * with the lookup key "String" (const LookupKey.String)

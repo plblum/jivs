@@ -3,11 +3,11 @@
  * The Descriptor introduces ValueHostId.
  * @module Conditions/AbstractClasses/OneValueConditionBase
  */
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { ConditionDescriptor } from "../Interfaces/Conditions";
-import { IValueHost } from "../Interfaces/ValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { ConditionBase } from "./ConditionBase";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ConditionDescriptor } from '../Interfaces/Conditions';
+import { IValueHost } from '../Interfaces/ValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { ConditionBase } from './ConditionBase';
 
 
 

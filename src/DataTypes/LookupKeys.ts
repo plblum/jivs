@@ -105,7 +105,7 @@ export enum LookupKey {
      * @remarks
      * For when the Date is not in UTC.
      */
-    LocalDate = "LocalDate",
+    LocalDate = 'LocalDate',
 
     /**
      * | Label                          | Value

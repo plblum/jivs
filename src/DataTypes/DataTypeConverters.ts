@@ -9,8 +9,8 @@
  * @module DataTypes/ConcreteClasses/DataTypeConverters
  */
 
-import { IDataTypeConverter } from "../Interfaces/DataTypes";
-import { LookupKey } from "./LookupKeys";
+import { IDataTypeConverter } from '../Interfaces/DataTypes';
+import { LookupKey } from './LookupKeys';
 /**
  * For string values to convert them into lowercase for case insensitive comparisons.
  * DataTypeLookupKey = "CaseInsensitive" or "Lowercase"

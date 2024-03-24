@@ -2,13 +2,13 @@
  * @inheritDoc ValueHosts/AbstractClasses/InputValueHostBase!
  * @module ValueHosts/Interfaces/InputValueHost
  */
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { InputValidatorDescriptor } from "./InputValidator";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { InputValidatorDescriptor } from './InputValidator';
 import {
     type ValidateOptions, type ValidateResult, ValidationResult,
     type BusinessLogicError, type IssueFound, type IssueSnapshot, StatefulValidateResult
-} from "./Validation";
-import type { IValueHost, SetValueOptions, ValueHostDescriptor, ValueHostState } from "./ValueHost";
+} from './Validation';
+import type { IValueHost, SetValueOptions, ValueHostDescriptor, ValueHostState } from './ValueHost';
 
 /**
 * Manages a value that may use input validation.

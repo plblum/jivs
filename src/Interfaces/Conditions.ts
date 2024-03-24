@@ -20,9 +20,9 @@
  * @module Conditions/Interfaces
  */
 
-import { IValueHostResolver } from "./ValueHostResolver";
-import { IValueHost } from "./ValueHost";
-import { ConditionType } from "../Conditions/ConditionTypes";
+import { IValueHostResolver } from './ValueHostResolver';
+import { IValueHost } from './ValueHost';
+import { ConditionType } from '../Conditions/ConditionTypes';
 
 /**
  * The basis for any condition that you want to work with these validators.
@@ -132,9 +132,9 @@ export enum ConditionEvaluateResult {
 }
 
 export const ConditionEvaluateResultStrings = [
-    "Undetermined",
-    "Match",
-    "NoMatch"
+    'Undetermined',
+    'Match',
+    'NoMatch'
 ];
 
 /**
