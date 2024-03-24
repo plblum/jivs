@@ -23,14 +23,14 @@ export interface INameToFunctionMapper<TValue, TResult>
  * Returns undefined if not found.
  * @param key - will be treated case insensitively
  */    
-    Get(key: string): ((...args: TValue[]) => TResult) | undefined;
+    get(key: string): ((...args: TValue[]) => TResult) | undefined;
     
 /**
  * Adds or replaces an entry in the map
  * @param key  - will be treated case insensitively
  * @param fnOrKey  - as a key, it will be treated case insensitively
  */    
-    Register(key: string, fnOrKey: ((...args: TValue[]) => TResult) | string): void;
+    register(key: string, fnOrKey: ((...args: TValue[]) => TResult) | string): void;
 }
 
 /**
@@ -49,7 +49,7 @@ export class NameToFunctionMapper<TValue, TResult> implements INameToFunctionMap
      * @param key - will be treated case insensitively
      * @returns function or undefined when the key is not found.
      */    
-    public Get(key: string): ((...args: TValue[]) => TResult) | undefined
+    public get(key: string): ((...args: TValue[]) => TResult) | undefined
     {
         assertNotNull(key, 'key');
         return this._map.get(key.toLowerCase());    // expect undefined result when not found
@@ -60,7 +60,7 @@ export class NameToFunctionMapper<TValue, TResult> implements INameToFunctionMap
  * @param key  - will be treated case insensitively
  * @param fnOrKey  - as a key, it will be treated case insensitively
  */    
-    public Register(key: string, fnOrKey: ((...args: TValue[]) => TResult) | string): void
+    public register(key: string, fnOrKey: ((...args: TValue[]) => TResult) | string): void
     {
         assertNotNull(key, 'key');
         assertNotNull(fnOrKey, 'fnOrKey');

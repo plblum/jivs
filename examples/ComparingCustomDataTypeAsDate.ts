@@ -81,7 +81,7 @@ export const RelativeDataLookupKey = "RelativeDate";
 export class RelativeDateIdentifier implements IDataTypeIdentifier
 {
     public get DataTypeLookupKey(): string { return RelativeDataLookupKey }
-    public SupportsValue(value: any): boolean {
+    public supportsValue(value: any): boolean {
         return value instanceof RelativeDate;
     }
 }
@@ -89,21 +89,21 @@ export class RelativeDateIdentifier implements IDataTypeIdentifier
 export class RelativeDateConverter implements IDataTypeConverter
 {
     // handles the value without any lookup key or with "RelativeDate"
-    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return value instanceof RelativeDate &&
             (!dataTypeLookupKey || (dataTypeLookupKey === RelativeDataLookupKey));
     }
-    public Convert(value: RelativeDate, dataTypeLookupKey: string): string | number | Date | null | undefined {
+    public convert(value: RelativeDate, dataTypeLookupKey: string): string | number | Date | null | undefined {
         return value.ResolvedDate;
     }
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService
-export function RegisterRelativeDate(validationServices: IValidationServices): void
+export function registerRelativeDate(validationServices: IValidationServices): void
 {
     let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
-    dataTypeServices.RegisterDataTypeIdentifier(new RelativeDateIdentifier());
-    dataTypeServices.RegisterDataTypeConverter(new RelativeDateConverter()); 
+    dataTypeServices.registerDataTypeIdentifier(new RelativeDateIdentifier());
+    dataTypeServices.registerDataTypeConverter(new RelativeDateConverter()); 
 
     // now whenever a Condition's value is RelativeDate, it gets identified as LookupKey="RelativeDate"
     // even without any LookupKey supplied.

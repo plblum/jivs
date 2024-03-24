@@ -42,22 +42,22 @@ import { MessageTokenResolver } from './../src/ValueHosts/MessageTokenResolver';
  * configure it. 
  */
 
-export function CreateValidationServices(): ValidationServices {
+export function createValidationServices(): ValidationServices {
     let vs = new ValidationServices();
 
     vs.ActiveCultureId = 'en'; // set this to your default culture
 
     // --- ConditionFactory ---------------------------
-    vs.ConditionFactory = CreateConditionFactory();
+    vs.ConditionFactory = createConditionFactory();
 
     // --- DataTypeServices services -------------------------------------
     // Plenty to configure here. See CreateDataTypeServices function below.
-    vs.DataTypeServices = CreateDataTypeServices();
+    vs.DataTypeServices = createDataTypeServices();
 
     // --- Text localization service
     // The built-in class, TextLocalizerService, doesn't use a third party localization
     // library. If you prefer one, create a class that implements ITextLocalizerService
-    vs.TextLocalizerService = CreateTextLocalizerService();
+    vs.TextLocalizerService = createTextLocalizerService();
 
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLogger and another, create the other
@@ -71,49 +71,49 @@ export function CreateValidationServices(): ValidationServices {
     return vs;
 }
 
-export function CreateConditionFactory(): ConditionFactory
+export function createConditionFactory(): ConditionFactory
 {
     let cf = new ConditionFactory();
-    RegisterConditions(cf);
+    registerConditions(cf);
     return cf;
 }
-export function RegisterConditions(cf: ConditionFactory): void
+export function registerConditions(cf: ConditionFactory): void
 {
     // Install the desired conditions
-    cf.Register<DataTypeCheckConditionDescriptor>(
+    cf.register<DataTypeCheckConditionDescriptor>(
         ConditionType.DataTypeCheck, (descriptor) => new DataTypeCheckCondition(descriptor));
-    cf.Register<RequiredTextConditionDescriptor>(
+    cf.register<RequiredTextConditionDescriptor>(
         ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor));
-    cf.Register<RequiredIndexConditionDescriptor>(
+    cf.register<RequiredIndexConditionDescriptor>(
         ConditionType.RequiredIndex, (descriptor) => new RequiredIndexCondition(descriptor));
-    cf.Register<RegExpConditionDescriptor>(
+    cf.register<RegExpConditionDescriptor>(
         ConditionType.RegExp, (descriptor) => new RegExpCondition(descriptor));
-    cf.Register<RangeConditionDescriptor>(
+    cf.register<RangeConditionDescriptor>(
         ConditionType.Range, (descriptor) => new RangeCondition(descriptor));
-    cf.Register<CompareToConditionDescriptor>(
+    cf.register<CompareToConditionDescriptor>(
         ConditionType.EqualTo, (descriptor) => new EqualToCondition(descriptor));
-    cf.Register<CompareToConditionDescriptor>
+    cf.register<CompareToConditionDescriptor>
         (ConditionType.NotEqualTo, (descriptor) => new NotEqualToCondition(descriptor));
-    cf.Register<CompareToConditionDescriptor>
+    cf.register<CompareToConditionDescriptor>
         (ConditionType.GreaterThan, (descriptor) => new GreaterThanCondition(descriptor));
-    cf.Register<CompareToConditionDescriptor>
+    cf.register<CompareToConditionDescriptor>
         (ConditionType.LessThan, (descriptor) => new LessThanCondition(descriptor));
-    cf.Register<CompareToConditionDescriptor>
+    cf.register<CompareToConditionDescriptor>
         (ConditionType.GreaterThanOrEqualTo, (descriptor) => new GreaterThanOrEqualToCondition(descriptor));
-    cf.Register<CompareToConditionDescriptor>
+    cf.register<CompareToConditionDescriptor>
         (ConditionType.LessThanOrEqualTo, (descriptor) => new LessThanOrEqualToCondition(descriptor));
-    cf.Register<StringLengthConditionDescriptor>
+    cf.register<StringLengthConditionDescriptor>
         (ConditionType.StringLength, (descriptor) => new StringLengthCondition(descriptor));
-    cf.Register<AllMatchConditionDescriptor>
+    cf.register<AllMatchConditionDescriptor>
         (ConditionType.And, (descriptor) => new AllMatchCondition(descriptor));
-    cf.Register<AnyMatchConditionDescriptor>
+    cf.register<AnyMatchConditionDescriptor>
         (ConditionType.Or, (descriptor) => new AnyMatchCondition(descriptor));
-    cf.Register<CountMatchesConditionDescriptor>
+    cf.register<CountMatchesConditionDescriptor>
         (ConditionType.CountMatches, (descriptor) => new CountMatchesCondition(descriptor));
     // aliases for users who don't deal well with boolean logic can relate
-    cf.Register<AllMatchConditionDescriptor>
+    cf.register<AllMatchConditionDescriptor>
         (ConditionType.All, (descriptor) => new AllMatchCondition(descriptor));
-    cf.Register<AnyMatchConditionDescriptor>
+    cf.register<AnyMatchConditionDescriptor>
         (ConditionType.Any, (descriptor) => new AnyMatchCondition(descriptor));
 }
 
@@ -146,16 +146,16 @@ export function RegisterConditions(cf: ConditionFactory): void
  * @param activeCultureID 
  * @param cultureConfig 
  */
-export function CreateDataTypeServices(activeCultureID?: string | null, cultureConfig?: Array<CultureIdFallback> | null): DataTypeServices {
-    let cc: Array<CultureIdFallback> = cultureConfig ?? ConfigureCultures();
+export function createDataTypeServices(activeCultureID?: string | null, cultureConfig?: Array<CultureIdFallback> | null): DataTypeServices {
+    let cc: Array<CultureIdFallback> = cultureConfig ?? configureCultures();
 
     let dts = new DataTypeServices(cc);
-    PopulateDataTypeServices(dts);
+    populateDataTypeServices(dts);
     return dts;
 }
 
 
-export function ConfigureCultures(): Array<CultureIdFallback>
+export function configureCultures(): Array<CultureIdFallback>
 {
    // 1. CultureIdFallback objects and the default culture
    return [
@@ -179,83 +179,83 @@ export function ConfigureCultures(): Array<CultureIdFallback>
         ];
 }
 
-export function PopulateDataTypeServices(dts: DataTypeServices): void {
+export function populateDataTypeServices(dts: DataTypeServices): void {
 
-    RegisterDataTypeIdentifiers(dts);
+    registerDataTypeIdentifiers(dts);
 
-    RegisterDataTypeFormatters(dts);
+    registerDataTypeFormatters(dts);
 
-    RegisterDataTypeConverters(dts);
+    registerDataTypeConverters(dts);
 
-    RegisterDataTypeComparers(dts);
+    registerDataTypeComparers(dts);
 }
 
 // 2. IDataTypeIdentifiers. 
-export function RegisterDataTypeIdentifiers(dts: DataTypeServices): void
+export function registerDataTypeIdentifiers(dts: DataTypeServices): void
 {
     // !!!Please retain: StringDataTypeIdentifier, NumberDataTypeIdentifier, BooleanDataTypeIdentifier, and DateDataTypeIdentifier
-    dts.RegisterDataTypeIdentifier(new NumberDataTypeIdentifier());
-    dts.RegisterDataTypeIdentifier(new StringDataTypeIdentifier());
-    dts.RegisterDataTypeIdentifier(new BooleanDataTypeIdentifier());
-    dts.RegisterDataTypeIdentifier(new DateDataTypeIdentifier());
+    dts.registerDataTypeIdentifier(new NumberDataTypeIdentifier());
+    dts.registerDataTypeIdentifier(new StringDataTypeIdentifier());
+    dts.registerDataTypeIdentifier(new BooleanDataTypeIdentifier());
+    dts.registerDataTypeIdentifier(new DateDataTypeIdentifier());
 }
 // 3. IDataTypeFormatter
-export function RegisterDataTypeFormatters(dts: DataTypeServices): void
+export function registerDataTypeFormatters(dts: DataTypeServices): void
 {
     // Most of these can be modified through their constructor.
     // - Those that use the Intl library for localization let you pass options
     //   supported by Intl.NumberFormat or Intl.DateFormat.
     // - The Boolean and YesNo let you supply a list of cultures and their
     //   language specific values for "TrueLabel" and "FalseLabel"
-    dts.RegisterFormatter(new StringFormatter());
-    dts.RegisterFormatter(new NumberFormatter());     // options?: Intl.NumberFormatOptions
-    dts.RegisterFormatter(new IntegerFormatter());    // options?: Intl.NumberFormatOptions
-    dts.RegisterFormatter(new DateFormatter());       // options?: Intl.DateTimeFormatOptions
+    dts.registerFormatter(new StringFormatter());
+    dts.registerFormatter(new NumberFormatter());     // options?: Intl.NumberFormatOptions
+    dts.registerFormatter(new IntegerFormatter());    // options?: Intl.NumberFormatOptions
+    dts.registerFormatter(new DateFormatter());       // options?: Intl.DateTimeFormatOptions
 
     // less used - consider commenting out until you know they are neded
-    dts.RegisterFormatter(new CapitalizeStringFormatter());
-    dts.RegisterFormatter(new UppercaseStringFormatter());
-    dts.RegisterFormatter(new LowercaseStringFormatter());
-    dts.RegisterFormatter(new DateTimeFormatter());       // options?: Intl.DateTimeFormatOptions
-    dts.RegisterFormatter(new AbbrevDateFormatter());     // options?: Intl.DateTimeFormatOptions
-    dts.RegisterFormatter(new AbbrevDOWDateFormatter());  // options?: Intl.DateTimeFormatOptions
-    dts.RegisterFormatter(new LongDateFormatter());       // options?: Intl.DateTimeFormatOptions
-    dts.RegisterFormatter(new LongDOWDateFormatter());    // options?: Intl.DateTimeFormatOptions
-    dts.RegisterFormatter(new TimeofDayFormatter());      // options?: Intl.DateTimeFormatOptions
-    dts.RegisterFormatter(new TimeofDayHMSFormatter());   // options?: Intl.DateTimeFormatOptions
-    dts.RegisterFormatter(new CurrencyFormatter('USD'));  // set this to your currency code
+    dts.registerFormatter(new CapitalizeStringFormatter());
+    dts.registerFormatter(new UppercaseStringFormatter());
+    dts.registerFormatter(new LowercaseStringFormatter());
+    dts.registerFormatter(new DateTimeFormatter());       // options?: Intl.DateTimeFormatOptions
+    dts.registerFormatter(new AbbrevDateFormatter());     // options?: Intl.DateTimeFormatOptions
+    dts.registerFormatter(new AbbrevDOWDateFormatter());  // options?: Intl.DateTimeFormatOptions
+    dts.registerFormatter(new LongDateFormatter());       // options?: Intl.DateTimeFormatOptions
+    dts.registerFormatter(new LongDOWDateFormatter());    // options?: Intl.DateTimeFormatOptions
+    dts.registerFormatter(new TimeofDayFormatter());      // options?: Intl.DateTimeFormatOptions
+    dts.registerFormatter(new TimeofDayHMSFormatter());   // options?: Intl.DateTimeFormatOptions
+    dts.registerFormatter(new CurrencyFormatter('USD'));  // set this to your currency code
     // defaultCurrencyCode: 'USD', options?: Intl.NumberFormatOptions, cultureToCurrencyCode? { 'en-US' : 'USD', 'es-SP': 'EUR' }
 
-    dts.RegisterFormatter(new PercentageFormatter());     // options?: Intl.NumberFormatOptions
-    dts.RegisterFormatter(new Percentage100Formatter());  // options?: Intl.NumberFormatOptions
+    dts.registerFormatter(new PercentageFormatter());     // options?: Intl.NumberFormatOptions
+    dts.registerFormatter(new Percentage100Formatter());  // options?: Intl.NumberFormatOptions
     // NOTE: BooleanFormatter has its strings localized in ValidationServices.TextLocalizerService
     // connected to the TrueLabell10n and FalseLabell10n properties.
-    dts.RegisterFormatter(new BooleanFormatter(LookupKey.Boolean)); // "true" and "false"
+    dts.registerFormatter(new BooleanFormatter(LookupKey.Boolean)); // "true" and "false"
    // Example of providing another set of labels for true/false by supplying a different lookup key
-    dts.RegisterFormatter(new BooleanFormatter(LookupKey.YesNoBoolean, 'yes', 'no')); 
+    dts.registerFormatter(new BooleanFormatter(LookupKey.YesNoBoolean, 'yes', 'no')); 
  
 }
 
 // 4. IDataTypeConverters
-export function RegisterDataTypeConverters(dts: DataTypeServices): void
+export function registerDataTypeConverters(dts: DataTypeServices): void
 {
-    dts.RegisterDataTypeConverter(new CaseInsensitiveStringConverter());
-    dts.RegisterDataTypeConverter(new UTCDateOnlyConverter());
-    dts.RegisterDataTypeConverter(new DateTimeConverter());
-    dts.RegisterDataTypeConverter(new LocalDateOnlyConverter());
-    dts.RegisterDataTypeConverter(new TimeOfDayOnlyConverter());
-    dts.RegisterDataTypeConverter(new TimeOfDayHMSOnlyConverter());
-    dts.RegisterDataTypeConverter(new IntegerConverter());
-    dts.RegisterDataTypeConverter(new TotalDaysConverter());
+    dts.registerDataTypeConverter(new CaseInsensitiveStringConverter());
+    dts.registerDataTypeConverter(new UTCDateOnlyConverter());
+    dts.registerDataTypeConverter(new DateTimeConverter());
+    dts.registerDataTypeConverter(new LocalDateOnlyConverter());
+    dts.registerDataTypeConverter(new TimeOfDayOnlyConverter());
+    dts.registerDataTypeConverter(new TimeOfDayHMSOnlyConverter());
+    dts.registerDataTypeConverter(new IntegerConverter());
+    dts.registerDataTypeConverter(new TotalDaysConverter());
 }
 
 // 5. IDataTypeComparers
-export function RegisterDataTypeComparers(dts: DataTypeServices): void
+export function registerDataTypeComparers(dts: DataTypeServices): void
 {
-    dts.RegisterDataTypeComparer(new BooleanDataTypeComparer());
+    dts.registerDataTypeComparer(new BooleanDataTypeComparer());
 }
 
-export function CreateTextLocalizerService(): ITextLocalizerService
+export function createTextLocalizerService(): ITextLocalizerService
 {
     let service = new TextLocalizerService();
     // the following is specific to TextLocalizerService class
@@ -264,22 +264,22 @@ export function CreateTextLocalizerService(): ITextLocalizerService
     // ITextLocalizerService implementation.
     // Here we provide localized text for "true", "false", "yes", and "no",
     // all used by the BooleanFormatter.
-    service.Register('TRUE', {
+    service.register('TRUE', {
         '*': 'true',
         'en': 'true',
         'es': 'verdadero'
     });
-    service.Register('FALSE', {
+    service.register('FALSE', {
         '*': 'false',
         'en': 'false',
         'es': 'falso'
     });    
-    service.Register('YES', {
+    service.register('YES', {
         '*': 'yes',
         'en': 'yes',
         'es': 'sí'
     });
-    service.Register('NO', {
+    service.register('NO', {
         '*': 'no',
         'en': 'no',
         'es': 'no'
@@ -300,56 +300,56 @@ export function CreateTextLocalizerService(): ITextLocalizerService
     // Guidance: Remember that error messages need to be easily understood and help the user fix the input.
     // 
     //!!!ALERT: This is a partial list of ConditionTypes and possible DataTypeLookupKeys
-    service.RegisterErrorMessage(ConditionType.RequiredText, null, {
+    service.registerErrorMessage(ConditionType.RequiredText, null, {
         '*': 'Requires a value.'
     });
-    service.RegisterSummaryMessage(ConditionType.RequiredText, null, {
+    service.registerSummaryMessage(ConditionType.RequiredText, null, {
         '*': '{Label} requires a value.'
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, null, {
+    service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
         '*': 'Invalid value.'   // this is a fallback for when all datatypelookup keys have failed. Its a terrible error message, very unhelpful. That's why we need data type specific versions.
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, null, {
+    service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
         '*': '{Label} has an invalid value.'
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
+    service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
+    service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
         '*': '{Label} has an invalid value. Enter a date.',
         'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
+    service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
         '*': 'Invalid value. Enter a number.',
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
+    service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
         '*': '{Label} has an invalid value. Enter a number.',
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
+    service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
         '*': 'Invalid value. Enter an integer.',
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
+    service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
         '*': '{Label} has an invalid value. Enter an integer.',
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
+    service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
+    service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
         '*': '{Label} has an invalid value. Enter a date.',
         'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
     });    
-    service.RegisterErrorMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
+    service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
         'en-GB': 'Invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
     });
-    service.RegisterSummaryMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
+    service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.AbbrevDate, {
         '*': '{Label} has an invalid value. Enter a date.',
         'en-US': '{Label} has an invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'

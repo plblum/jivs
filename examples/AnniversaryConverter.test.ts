@@ -4,28 +4,28 @@ import { ComparersResult } from "../src/Interfaces/DataTypes";
 import { UTCAnniversaryConverter, AnniversaryLookupKey } from "./AnniversaryConverter";
 
 describe('UTCAnniversaryConverter', () => {
-    test('SupportsValue', () => {
+    test('supportsValue', () => {
         let testItem = new UTCAnniversaryConverter();
-        expect(testItem.SupportsValue(new Date(), AnniversaryLookupKey)).toBe(true);
-        expect(testItem.SupportsValue(new Date(), LookupKey.String)).toBe(false);
-        expect(testItem.SupportsValue(new Date(), null)).toBe(false); // always requires AnniversaryLookupKey            
-        expect(testItem.SupportsValue(0, AnniversaryLookupKey)).toBe(false);
-        expect(testItem.SupportsValue(null, AnniversaryLookupKey)).toBe(false);
+        expect(testItem.supportsValue(new Date(), AnniversaryLookupKey)).toBe(true);
+        expect(testItem.supportsValue(new Date(), LookupKey.String)).toBe(false);
+        expect(testItem.supportsValue(new Date(), null)).toBe(false); // always requires AnniversaryLookupKey            
+        expect(testItem.supportsValue(0, AnniversaryLookupKey)).toBe(false);
+        expect(testItem.supportsValue(null, AnniversaryLookupKey)).toBe(false);
     })
-    test('Convert', () => {
+    test('convert', () => {
         let testItem = new UTCAnniversaryConverter();
-        // Convert expects to be called after SupportsValue is true.
+        // Convert expects to be called after supportsValue is true.
         // So no illegal values as parameters tested
         // Reminder that the year used in this Converter is 2004
         let test1 = new Date(Date.UTC(2000, 10, 5));
         let test1Anniversary = new Date(Date.UTC(2004, 10, 5));
         let test2 = new Date(Date.UTC(2023, 0, 2, 4, 30));
         let test2Anniversary = new Date(Date.UTC(2004, 0, 2));
-        expect(testItem.Convert(test1, AnniversaryLookupKey)).toBe(test1Anniversary.getTime());
-        expect(testItem.Convert(test2, AnniversaryLookupKey)).toBe(test2Anniversary.getTime());
+        expect(testItem.convert(test1, AnniversaryLookupKey)).toBe(test1Anniversary.getTime());
+        expect(testItem.convert(test2, AnniversaryLookupKey)).toBe(test2Anniversary.getTime());
         // dates with an illegal value will convert to undefined
         let illegalDate = new Date("foo");
-        expect(testItem.Convert(illegalDate, AnniversaryLookupKey)).toBeUndefined();
+        expect(testItem.convert(illegalDate, AnniversaryLookupKey)).toBeUndefined();
     });
     test('Within DataTypeServices', () => {
         let date1 = new Date(Date.UTC(2000, 10, 1));
@@ -37,17 +37,17 @@ describe('UTCAnniversaryConverter', () => {
         let date8 = new Date(Date.UTC(1976, 10, 1));
         
         let testItem = new DataTypeServices(); 
-        testItem.RegisterDataTypeConverter(new UTCAnniversaryConverter());
-        expect(testItem.CompareValues(date1, date1, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date1, date2, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date3, date1, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.LessThan);
-        expect(testItem.CompareValues(date8, date1, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date5, date8, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.GreaterThan); 
-        expect(testItem.CompareValues(date1, date3, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.GreaterThan);            
-        expect(testItem.CompareValues(date7, date8, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.GreaterThan);            
-        // these are due to the DataTypeServices.CompareValues function itself
-        expect(testItem.CompareValues(null, null, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
-        expect(testItem.CompareValues(date1, null, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Undetermined);
-        expect(testItem.CompareValues(null, date2, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Undetermined);
+        testItem.registerDataTypeConverter(new UTCAnniversaryConverter());
+        expect(testItem.compareValues(date1, date1, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
+        expect(testItem.compareValues(date1, date2, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
+        expect(testItem.compareValues(date3, date1, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.LessThan);
+        expect(testItem.compareValues(date8, date1, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
+        expect(testItem.compareValues(date5, date8, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.GreaterThan); 
+        expect(testItem.compareValues(date1, date3, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.GreaterThan);            
+        expect(testItem.compareValues(date7, date8, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.GreaterThan);            
+        // these are due to the DataTypeServices.compareValues function itself
+        expect(testItem.compareValues(null, null, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equals);
+        expect(testItem.compareValues(date1, null, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Undetermined);
+        expect(testItem.compareValues(null, date2, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Undetermined);
     });
 });               

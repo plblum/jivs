@@ -19,7 +19,7 @@ export class StringDataTypeIdentifier implements IDataTypeIdentifier
     {
         return LookupKey.String;
     }
-    public SupportsValue(value: any): boolean {
+    public supportsValue(value: any): boolean {
         return typeof value === 'string';
     }
     
@@ -34,7 +34,7 @@ export class NumberDataTypeIdentifier implements IDataTypeIdentifier
     {
         return LookupKey.Number;
     }
-    public SupportsValue(value: any): boolean {
+    public supportsValue(value: any): boolean {
         return typeof value === 'number';
     }
     
@@ -50,7 +50,7 @@ export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
     {
         return LookupKey.Boolean;
     }
-    public SupportsValue(value: any): boolean {
+    public supportsValue(value: any): boolean {
         return typeof value === 'boolean';
     }
     
@@ -69,7 +69,7 @@ export class DateDataTypeIdentifier implements IDataTypeIdentifier
     {
         return LookupKey.Date;
     }
-    public SupportsValue(value: any): boolean {
+    public supportsValue(value: any): boolean {
         return value instanceof Date;
     }
     

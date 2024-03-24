@@ -21,7 +21,7 @@ export interface IInputValueHost extends IValueHost {
      * an <input type="date"> returns a string, not a date.
      * Strings are not cleaned up, no trimming applied.
      */
-    GetInputValue(): any;
+    getInputValue(): any;
 
     /**
      * System consumer assigns the value it also assigns to the input field/element.
@@ -33,7 +33,7 @@ export interface IInputValueHost extends IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetInputValue(value: any, options?: SetValueOptions): void;
+    setInputValue(value: any, options?: SetValueOptions): void;
 
     /**
      * Sets both (native data type) Value and Input Value at the same time
@@ -52,7 +52,7 @@ export interface IInputValueHost extends IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
+    setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
 
     /**
      * When SetValue, SetValues, SetInputValue, or SetToUndefined occurs,
@@ -61,7 +61,7 @@ export interface IInputValueHost extends IValueHost {
      * @param valueHostIdThatChanged 
      * @param revalidate 
      */
-    OtherValueHostChangedNotification(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void;
+    otherValueHostChangedNotification(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void;
 
     /**
      * Runs validation against some of all validators.
@@ -72,13 +72,13 @@ export interface IInputValueHost extends IValueHost {
      * @param options - Provides guidance on which validators to include.
      * @returns IValidationResultDetails
      */
-    Validate(options?: ValidateOptions): ValidateResult;
+    validate(options?: ValidateOptions): ValidateResult;
 
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      */
-    ClearValidation(): void;
+    clearValidation(): void;
 
     /**
      * Value is setup by calling Validate(). It does not run Validate itself.
@@ -105,32 +105,32 @@ export interface IInputValueHost extends IValueHost {
      * Each time called, it adds to the existing list. Use ClearBusinessLogicErrors first if starting a fresh list.
      * @param error - An error to show.
      */
-    SetBusinessLogicError(error: BusinessLogicError): void;
+    setBusinessLogicError(error: BusinessLogicError): void;
 
     /**
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and ClearValidation.
      */
-    ClearBusinessLogicErrors(): void;
+    clearBusinessLogicErrors(): void;
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
      * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated.
      */
-    DoNotSaveNativeValue(): boolean;
+    doNotSaveNativeValue(): boolean;
 
     /**
      * The results of the latest Validate()
      * @returns Issues found or null if none.
      */
-    GetIssuesFound(): Array<IssueFound> | null;
+    getIssuesFound(): Array<IssueFound> | null;
 
     /**
      * Lists all error messages and supporting info about each validator
      * for use by a input field/element that shows its own error messages (InputValueHostState.ErrorMessage)
      * @returns 
      */
-    GetIssuesForInput(): Array<IssueSnapshot>;
+    getIssuesForInput(): Array<IssueSnapshot>;
 
     /**
      * A list of all issues to show in a Validation Summary widget optionally for a given group.
@@ -145,14 +145,14 @@ export interface IInputValueHost extends IValueHost {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    GetIssuesForSummary(group?: string): Array<IssueSnapshot>;
+    getIssuesForSummary(group?: string): Array<IssueSnapshot>;
 
     /**
      * Returns the ConversionErrorTokenValue supplied by the latest call
      * to SetValue or SetValues. Its null when not supplied or has been cleared.
      * Associated with the {ConversionError} token of the DataTypeCheckCondition.
      */
-    GetConversionErrorMessage(): string | null;
+    getConversionErrorMessage(): string | null;
 
     /**
      *Returns true if a Required condition is setup. UI can use it to 

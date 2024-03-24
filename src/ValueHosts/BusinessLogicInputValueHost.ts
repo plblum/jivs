@@ -24,7 +24,7 @@ export class BusinessLogicInputValueHost extends InputValueHostBase<InputValueHo
      * @param options 
      * @returns 
      */
-    public Validate(options?: ValidateOptions): ValidateResult {
+    public validate(options?: ValidateOptions): ValidateResult {
         let result: ValidateResult = {
             IssuesFound: null,
             ValidationResult: ValidationResult.Valid
@@ -65,7 +65,7 @@ export class BusinessLogicInputValueHost extends InputValueHostBase<InputValueHo
      * A service to provide all ValueHostIds that have been assigned to this Condition's
      * Descriptor.
      */
-    public GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
+    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
     {
         // nothing to do
     }
@@ -75,13 +75,13 @@ export const BusinessLogicValueHostId = '*';
 export const BusinessLogicInputValueHostType = 'BusinessLogic';
 export class BusinessLogicInputValueHostGenerator extends InputValueHostBaseGenerator {
 
-    public CanCreate(descriptor: InputValueHostBaseDescriptor): boolean {
+    public canCreate(descriptor: InputValueHostBaseDescriptor): boolean {
         return descriptor.Type === BusinessLogicInputValueHostType;
     }
-    public Create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostBaseDescriptor, state: InputValueHostBaseState): IInputValueHost {
+    public create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostBaseDescriptor, state: InputValueHostBaseState): IInputValueHost {
         return new BusinessLogicInputValueHost(valueHostsManager, descriptor, state);
     }
-    public CleanupState(state: InputValueHostBaseState, descriptor: InputValueHostBaseDescriptor): void {
+    public cleanupState(state: InputValueHostBaseState, descriptor: InputValueHostBaseDescriptor): void {
         // nothing to do
     }
 }

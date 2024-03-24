@@ -27,7 +27,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostId
      * @returns Identifies the ConditionEvaluationResult.
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
-    Validate(options: ValidateOptions): InputValidateResult | Promise<InputValidateResult>;
+    validate(options: ValidateOptions): InputValidateResult | Promise<InputValidateResult>;
 
     /**
      * Exposes the Condition behind the validator
@@ -67,6 +67,7 @@ export interface InputValidatorDescriptor {
     */
     ConditionDescriptor: ConditionDescriptor | null;
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     /**
      * Use to create the Condition instance yourself, especially to support
      * implementations of ICondition that don't implement IConditionCore<ConditionDescriptor>.
@@ -75,6 +76,7 @@ export interface InputValidatorDescriptor {
      * @returns 
      */
     ConditionCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
      * The ConditionDescriptor to create an Enabler Condition.
@@ -88,6 +90,8 @@ export interface InputValidatorDescriptor {
      * Leave null if EnablerCreator is asssigned.
      */
     EnablerDescriptor?: ConditionDescriptor | null | undefined;
+
+    /* eslint-disable @typescript-eslint/naming-convention */
     /**
      * Use to create the Condition instance yourself, especially to support
      * implementations of ICondition that don't implement IConditionCore<ConditionDescriptor>.
@@ -96,6 +100,7 @@ export interface InputValidatorDescriptor {
      * @returns 
      */
     EnablerCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
      * When false, validation is never run. This supersedes the Enabler too.
@@ -206,11 +211,11 @@ export interface IMessageTokenSource {
      * The TokenLabel doesn't provide {} because we may support additional
      * attributes within the token, like {Value:AbbrevDateFormat}
      */
-    GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver):
+    getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver):
         Array<TokenLabelAndValue>;
 }
 /**
- * Result from IMessageTokenSource.GetValuesForTokens
+ * Result from IMessageTokenSource.getValuesForTokens
  */
 export interface TokenLabelAndValue {
     /**
@@ -246,7 +251,7 @@ export interface TokenLabelAndValue {
  * This interface targets unit testing with mocks.
  */
 export interface IInputValidatorFactory {
-    Create(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor): IInputValidator;
+    create(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor): IInputValidator;
 }
 
 /**
@@ -276,6 +281,6 @@ export interface IMessageTokenResolver {
      * @param hosts 
      * @returns the message with formatting resolved
      */
-    ResolveTokens(message: string, valueHost: IInputValueHost,
+    resolveTokens(message: string, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver, ...hosts: Array<IMessageTokenSource>): string;
 }

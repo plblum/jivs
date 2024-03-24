@@ -38,7 +38,12 @@ module.exports = {
           leadingUnderscore: 'forbid',
           trailingUnderscore: 'forbid',
         },
-      
+        {
+          selector: 'method',
+          format: ['camelCase'],
+          leadingUnderscore: 'forbid',
+          trailingUnderscore: 'forbid',
+        },
       
     ]
   }

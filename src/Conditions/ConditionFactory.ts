@@ -22,9 +22,9 @@ export class ConditionFactory implements IConditionFactory {
      * @param descriptor 
      * @returns 
      */
-    public Create<TDescriptor extends ConditionDescriptor>
+    public create<TDescriptor extends ConditionDescriptor>
         (descriptor: TDescriptor): IConditionCore<TDescriptor> {
-        let fn = this._map.Get(descriptor.Type);
+        let fn = this._map.get(descriptor.Type);
         if (fn)
             return fn(descriptor) as IConditionCore<TDescriptor>;
         throw new Error(`Condition Type not supported: ${descriptor.Type}`);
@@ -40,9 +40,9 @@ export class ConditionFactory implements IConditionFactory {
      * @param type - Unique way to select the function. Uses ConditionDescriptor.Type.
      * @param fn - Expected to create an instance of a Condition.
      */
-    public Register<TDescriptor extends ConditionDescriptor>(type: ConditionType | string,
+    public register<TDescriptor extends ConditionDescriptor>(type: ConditionType | string,
         fn: (descriptor: TDescriptor) => IConditionCore<TDescriptor>): void {
-        this._map.Register(type, fn as any);
+        this._map.register(type, fn as any);
     }
 
     /**
@@ -50,8 +50,8 @@ export class ConditionFactory implements IConditionFactory {
      * @param conditionType 
      * @returns 
      */
-    public IsRegistered(conditionType: ConditionType | string): boolean {
-        return this._map.Get(conditionType) !== undefined;
+    public isRegistered(conditionType: ConditionType | string): boolean {
+        return this._map.get(conditionType) !== undefined;
     }
 }
 

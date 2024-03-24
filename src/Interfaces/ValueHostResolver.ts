@@ -19,7 +19,7 @@ export interface IValueHostResolver extends IServicesAccessor {
      * @param valueHostId - Matches to the IValueHost.Id property
      * Returns the instance or null if not found.
      */
-    GetValueHost(valueHostId: ValueHostId): IValueHost | null;
+    getValueHost(valueHostId: ValueHostId): IValueHost | null;
  
 }
 
@@ -36,7 +36,7 @@ export interface IValueHostsManager extends IValueHostResolver
      * will want to revalidate or set up a state to force revalidation.
      * This goes through those ValueHosts and notifies them.
      */
-    NotifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void;
+    notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void;
     
 }
 /**
@@ -48,7 +48,7 @@ export function toIValueHostResolver(source: any): IValueHostResolver | null
 {
     if (source && typeof source === 'object') {
         let test = source as IValueHostResolver;    
-        if (test.GetValueHost !== undefined &&
+        if (test.getValueHost !== undefined &&
             test.Services !== undefined)
             return test;
     }
@@ -64,7 +64,7 @@ export function toIValueHostsManager(source: any): IValueHostsManager | null
 {
     if (toIValueHostResolver(source)) {
         let test = source as IValueHostsManager;    
-        if (test.NotifyOtherValueHostsOfValueChange !== undefined)
+        if (test.notifyOtherValueHostsOfValueChange !== undefined)
             return test;
     }
     return null;

@@ -1,8 +1,8 @@
 import { BooleanDataTypeComparer, defaultComparer } from "../../src/DataTypes/DataTypeComparers";
 import { ComparersResult } from "../../src/Interfaces/DataTypes";
 
-// function DefaultComparer(value1: any, value2: any): ComparersResult
-describe('Comparers.DefaultComparer', () => {
+// function defaultComparer(value1: any, value2: any): ComparersResult
+describe('Comparers.defaultComparer', () => {
     test('Equal primitives', () => {
         expect(defaultComparer(0, 0)).toBe(ComparersResult.Equals);
         expect(defaultComparer(10, 10)).toBe(ComparersResult.Equals);
@@ -52,21 +52,21 @@ describe('Comparers.BooleanDataTypeComparer', () => {
     test('SupportsValues', () => {
         let testItem = new BooleanDataTypeComparer();
         // so long as one is boolean, true
-        expect(testItem.SupportsValues(true, false)).toBe(true);
-        expect(testItem.SupportsValues(false, true)).toBe(true);
-        expect(testItem.SupportsValues(null, false)).toBe(true);
-        expect(testItem.SupportsValues(true, null)).toBe(true);
-        expect(testItem.SupportsValues("A", "B")).toBe(false);
-        expect(testItem.SupportsValues("A", null)).toBe(false);
-        expect(testItem.SupportsValues(0, new Date())).toBe(false);
+        expect(testItem.supportsValues(true, false)).toBe(true);
+        expect(testItem.supportsValues(false, true)).toBe(true);
+        expect(testItem.supportsValues(null, false)).toBe(true);
+        expect(testItem.supportsValues(true, null)).toBe(true);
+        expect(testItem.supportsValues("A", "B")).toBe(false);
+        expect(testItem.supportsValues("A", null)).toBe(false);
+        expect(testItem.supportsValues(0, new Date())).toBe(false);
 
     });
     test('Equals', () => {
         let testItem = new BooleanDataTypeComparer();
         // only supply values are were approved by SupportsValues
         // This class allows just one to be a boolean
-        expect(testItem.Compare(true, true)).toBe(ComparersResult.Equals);
-        expect(testItem.Compare(false, false)).toBe(ComparersResult.Equals);
+        expect(testItem.compare(true, true)).toBe(ComparersResult.Equals);
+        expect(testItem.compare(false, false)).toBe(ComparersResult.Equals);
      });    
     test('Not Equals', () => {
         let testItem = new BooleanDataTypeComparer();
@@ -74,10 +74,10 @@ describe('Comparers.BooleanDataTypeComparer', () => {
         // This class allows just one to be a boolean, and if so, returns NotEquals
         // when the other is null.
 
-        expect(testItem.Compare(true, false)).toBe(ComparersResult.NotEquals);
-        expect(testItem.Compare(false, true)).toBe(ComparersResult.NotEquals);
-        expect(testItem.Compare(false, null)).toBe(ComparersResult.NotEquals);
-        expect(testItem.Compare(null, true)).toBe(ComparersResult.NotEquals);        
+        expect(testItem.compare(true, false)).toBe(ComparersResult.NotEquals);
+        expect(testItem.compare(false, true)).toBe(ComparersResult.NotEquals);
+        expect(testItem.compare(false, null)).toBe(ComparersResult.NotEquals);
+        expect(testItem.compare(null, true)).toBe(ComparersResult.NotEquals);        
     });      
     test('Undefined', () => {
         let testItem = new BooleanDataTypeComparer();
@@ -85,8 +85,8 @@ describe('Comparers.BooleanDataTypeComparer', () => {
         // This class allows just one to be a boolean, and if so, returns Undetermined
         // unless the other is null
 
-        expect(testItem.Compare(false, "A")).toBe(ComparersResult.Undetermined);
-        expect(testItem.Compare(10, true)).toBe(ComparersResult.Undetermined);  
-        expect(testItem.Compare(new Date(), true)).toBe(ComparersResult.Undetermined);        
+        expect(testItem.compare(false, "A")).toBe(ComparersResult.Undetermined);
+        expect(testItem.compare(10, true)).toBe(ComparersResult.Undetermined);  
+        expect(testItem.compare(new Date(), true)).toBe(ComparersResult.Undetermined);        
     });            
 });

@@ -17,11 +17,11 @@ export const AnniversaryLookupKey = 'Anniversary';  // when using a Date object 
  */
 export class UTCAnniversaryConverter implements IDataTypeConverter
 {
-    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return (dataTypeLookupKey === AnniversaryLookupKey) &&
             value instanceof Date;
     }
-    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
         if (isNaN(value.getTime()))
             return undefined;        
         let dateOnly = new Date(Date.UTC(2004, value.getUTCMonth(), value.getUTCDate()));
@@ -30,10 +30,10 @@ export class UTCAnniversaryConverter implements IDataTypeConverter
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService
-export function RegisterRelativeDate(validationServices: IValidationServices): void
+export function registerRelativeDate(validationServices: IValidationServices): void
 {
     let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
-    dataTypeServices.RegisterDataTypeConverter(new UTCAnniversaryConverter()); 
+    dataTypeServices.registerDataTypeConverter(new UTCAnniversaryConverter()); 
 
     // This gets used ONLY when the ValueHostDescriptor.DataType with "Anniversary".
     // When its time to compare, the UTCAnniversaryConverter is asked if it supports the value.

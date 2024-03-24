@@ -16,18 +16,18 @@ import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler
 import { IInputValidatorFactory, IMessageTokenResolver } from "../src/Interfaces/InputValidator";
 import { IDataTypeServices } from "../src/Interfaces/DataTypes";
 import { IValidationManager } from "../src/Interfaces/ValidationManager";
-import { CreateDataTypeServicesWithManyCultures } from "./DataTypes/DataTypeServices.test";
-import { RegisterConditions, PopulateDataTypeServices } from "../starter_code/create_services";
+import { createDataTypeServicesWithManyCultures } from "./DataTypes/DataTypeServices.test";
+import { registerConditions, populateDataTypeServices } from "../starter_code/create_services";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../src/ValueHosts/ValueHostFactory";
 import { InputValidatorFactory } from "../src/ValueHosts/InputValidator";
 import { ITextLocalizerService } from "../src/Interfaces/TextLocalizerService";
 import { TextLocalizerService } from "../src/Services/TextLocalizerService";
 
 
-export function CreateMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
+export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
 {
     let services = new MockValidationServices(false, false);
-    services.DataTypeServices = CreateDataTypeServicesWithManyCultures('en', registerLookupKeys);
+    services.DataTypeServices = createDataTypeServicesWithManyCultures('en', registerLookupKeys);
     return new MockValidationManager(services);
 }
 
@@ -50,30 +50,30 @@ export class MockValueHost implements IValueHost
     public get ValueHostsManager(): IValueHostsManager {
         return this._valueHostsManager;
     }
-    GetId(): string {
+    getId(): string {
         return this._id;
     }
-    GetLabel(): string {
+    getLabel(): string {
         return this._label;
     }
-    GetValue() {
+    getValue() {
         return this._value;
     }
-    SetValue(value: any, options?: SetValueOptions | undefined): void {
+    setValue(value: any, options?: SetValueOptions | undefined): void {
         this._value = value;
         if (options && options.Reset)
             this.IsChanged = false;
         else
             this.IsChanged = true;
     }
-    SetValueToUndefined(options?: SetValueOptions | undefined): void {
-        this.SetValue(undefined, options);
+    setValueToUndefined(options?: SetValueOptions | undefined): void {
+        this.setValue(undefined, options);
     }
-    GetDataType(): string | null {
+    getDataType(): string | null {
         return this._dataTypeLookupKey;
     }
 
-    SaveIntoState(key: string, value: any): void
+    saveIntoState(key: string, value: any): void
     {
         if (value !== undefined)
             this._savedItems[key] = value;
@@ -81,7 +81,7 @@ export class MockValueHost implements IValueHost
             delete this._savedItems[key];
     }
 
-    GetFromState(key: string): any | undefined
+    getFromState(key: string): any | undefined
     {
         return this._savedItems[key];
     }
@@ -100,69 +100,69 @@ export class MockInputValueHost extends MockValueHost
     _inputValue: any = undefined;
     _conversionErrorMessage: string | undefined;
 
-    public override SetValue(value: any, options?: SetValueOptions | undefined): void {
-        super.SetValue(value, options);
+    public override setValue(value: any, options?: SetValueOptions | undefined): void {
+        super.setValue(value, options);
         if (value === undefined && options && options.ConversionErrorTokenValue)
             this._conversionErrorMessage = options.ConversionErrorTokenValue;
         else
             this._conversionErrorMessage = undefined;        
     }
 
-    public GetInputValue() {
+    public getInputValue() {
         return this._inputValue;
     }
-    SetInputValue(value: any, options?: SetValueOptions | undefined): void {
+    setInputValue(value: any, options?: SetValueOptions | undefined): void {
         this._inputValue = value;
         this._conversionErrorMessage = undefined;
     }
-    SetValues(nativeValue: any, inputValue: any, options?: SetValueOptions | undefined): void {
-        this.SetValue(nativeValue);
-        this.SetInputValue(inputValue);
+    setValues(nativeValue: any, inputValue: any, options?: SetValueOptions | undefined): void {
+        this.setValue(nativeValue);
+        this.setInputValue(inputValue);
         if (nativeValue === undefined && options && options.ConversionErrorTokenValue)
             this._conversionErrorMessage = options.ConversionErrorTokenValue;
         else
             this._conversionErrorMessage = undefined;
     }
-    Validate(options?: ValidateOptions): ValidateResult {
+    validate(options?: ValidateOptions): ValidateResult {
         throw new Error("Method not implemented.");
     }
-    ClearValidation(): void {
+    clearValidation(): void {
         throw new Error("Method not implemented.");
     }
     IsValid: boolean = false;
 
-    DoNotSaveNativeValue(): boolean
+    doNotSaveNativeValue(): boolean
     {
         throw new Error("Method not implemented.");
     }
 
     ValidationResult: ValidationResult = ValidationResult.NotAttempted;
     
-    SetBusinessLogicError(error: BusinessLogicError): void {
+    setBusinessLogicError(error: BusinessLogicError): void {
         throw new Error("Method not implemented.");
     }
-    ClearBusinessLogicErrors(): void {
+    clearBusinessLogicErrors(): void {
         throw new Error("Method not implemented.");
     }
     
-    GetIssuesFound(): Array<IssueFound> | null {
+    getIssuesFound(): Array<IssueFound> | null {
         throw new Error("Method not implemented.");
     }    
-    GetIssuesForInput(): IssueSnapshot[] {
+    getIssuesForInput(): IssueSnapshot[] {
         throw new Error("Method not implemented.");
     }
-    GetIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
+    getIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
         throw new Error("Method not implemented.");
     }    
 
-    public GetConversionErrorMessage(): string | null
+    public getConversionErrorMessage(): string | null
     {
         return this._conversionErrorMessage ?? null;
     }
 
     RequiresInput: boolean = false;
     
-    OtherValueHostChangedNotification(valueHostIdThatChanged: string, revalidate: boolean): void {
+    otherValueHostChangedNotification(valueHostIdThatChanged: string, revalidate: boolean): void {
         // do nothing
     }
 }
@@ -192,11 +192,11 @@ export class MockValidationServices implements IValidationServices
         this._loggerService = new MockCapturingLogger();
 
         if (registerStandardConditions) {
-            RegisterConditions(this._conditionFactory as ConditionFactory);
-            RegisterTestingOnlyConditions(this._conditionFactory as ConditionFactory);
+            registerConditions(this._conditionFactory as ConditionFactory);
+            registerTestingOnlyConditions(this._conditionFactory as ConditionFactory);
         }
         if (registerStandardDataTypes)
-            PopulateDataTypeServices(this._dataTypeServices as DataTypeServices);
+            populateDataTypeServices(this._dataTypeServices as DataTypeServices);
     }
     public get ActiveCultureId(): string {
         return this._activeCultureID;
@@ -285,7 +285,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
  */    
     private _valueHosts: Map<string, IValueHost> = new Map<string, IValueHost>();  
     
-    public AddValueHost(id: string, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
+    public addValueHost(id: string, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
     {
         let vh = new MockValueHost(this, id, dataTypeLookupKey, label);
         this._valueHosts.set(id, vh);
@@ -293,7 +293,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         return vh;
     }
 
-    public AddInputValueHost(id: string, dataTypeLookupKey: string, label: string, inputValue?: any, nativeValue?: any): MockInputValueHost
+    public addInputValueHost(id: string, dataTypeLookupKey: string, label: string, inputValue?: any, nativeValue?: any): MockInputValueHost
     {
         let vh = new MockInputValueHost(this, id, dataTypeLookupKey, label);
         this._valueHosts.set(id, vh);
@@ -301,18 +301,18 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         vh._value = nativeValue;
         return vh;
     }
-    public AddInputValueHostWithDescriptor(descriptor: ValueHostDescriptor,
+    public addInputValueHostWithDescriptor(descriptor: ValueHostDescriptor,
         state: InputValueHostState | null): IInputValueHost
     {
         if (!state)
-            state = this.Services.ValueHostFactory.CreateState(descriptor) as InputValueHostState;
-        let vh = this.Services.ValueHostFactory.Create(this, descriptor, state) as IInputValueHost;
+            state = this.Services.ValueHostFactory.createState(descriptor) as InputValueHostState;
+        let vh = this.Services.ValueHostFactory.create(this, descriptor, state) as IInputValueHost;
         this._valueHosts.set(descriptor.Id, vh);    
   //      vh.SetValues(nativeValue, inputValue);
         return vh;
     }
 
-    public GetValueHost(valueHostId: string): IValueHost | null {
+    public getValueHost(valueHostId: string): IValueHost | null {
         return this._valueHosts.get(valueHostId) ?? null;
     }    
 
@@ -320,37 +320,37 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     public OnValueHostStateChangeHandler: ValueHostStateChangedHandler = (valueHost, stateToRetain) => {
         this._hostStateChanges.push(stateToRetain);  
     };
-    public GetHostStateChanges(): Array<ValueHostState>
+    public getHostStateChanges(): Array<ValueHostState>
     {
         return this._hostStateChanges;
     }    
 
-    Validate(options?: ValidateOptions): Array<ValidateResult> {
+    validate(options?: ValidateOptions): Array<ValidateResult> {
         throw new Error("Method not implemented.");
     }
-    ClearValidation(): void {
+    clearValidation(): void {
         throw new Error("Method not implemented.");
     }
 
     IsValid: boolean = true;        
 
-    DoNotSaveNativeValue(): boolean {
+    doNotSaveNativeValue(): boolean {
         throw new Error("Method not implemented.");
     }
-    NotifyOtherValueHostsOfValueChange(valueHostIdThatChanged: string, revalidate: boolean): void {
+    notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: string, revalidate: boolean): void {
         this._valueHosts.forEach((vh, key) => {
             if (vh instanceof InputValueHostBase)
-                vh.OtherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
+                vh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
         });
     }    
-    public SetBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void
+    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void
     {
         throw new Error("Method not implemented.");        
     }        
-    GetIssuesForInput(valueHostId: string): IssueSnapshot[] {
+    getIssuesForInput(valueHostId: string): IssueSnapshot[] {
         throw new Error("Method not implemented.");
     }
-    GetIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
+    getIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
         throw new Error("Method not implemented.");
     }
 
@@ -408,7 +408,7 @@ export class MockCapturingLogger implements ILogger
     public MinLevel: LoggingLevel = LoggingLevel.Warn;
     
     public Captured: Array<MockCapturedLog> = [];
-    public Log(message: string, level: LoggingLevel, category?: string | undefined, source?: string | undefined): void {
+    public log(message: string, level: LoggingLevel, category?: string | undefined, source?: string | undefined): void {
         if (level >= this.MinLevel)
             this.Captured.push({
                 Message: message,
@@ -417,11 +417,11 @@ export class MockCapturingLogger implements ILogger
                 Source : source
             });
     }
-    public EntryCount(): Number
+    public entryCount(): Number
     {
         return this.Captured.length;
     }
-    public GetLatest(): MockCapturedLog | null
+    public getLatest(): MockCapturedLog | null
     {
         if (this.Captured.length)
             return this.Captured[this.Captured.length - 1];
@@ -434,7 +434,7 @@ export class MockCapturingLogger implements ILogger
      * Null parameters are not used for searching.
      * @param messageSegment 
      */
-    public FindMessage(messageSegment: string | null, logLevel : LoggingLevel | null, category: string | null, sourceSegment: string | null): MockCapturedLog | null
+    public findMessage(messageSegment: string | null, logLevel : LoggingLevel | null, category: string | null, sourceSegment: string | null): MockCapturedLog | null
     {
         let messageRE: RegExp | null = messageSegment ? new RegExp(messageSegment, 'i') : null;
         let sourceRE : RegExp | null = sourceSegment ? new RegExp(sourceSegment, 'i') : null;        
@@ -466,13 +466,13 @@ export const AlwaysMatchesConditionType = "AlwaysMatches";
 
 export class AlwaysMatchesCondition extends ConditionBase<ConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.Descriptor.Type; }    
-    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Match;
     }
     protected get DefaultCategory(): ConditionCategory {
         return ConditionCategory.Undetermined;
     }    
-    public GatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
+    public gatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
         // does nothing
     }
 }
@@ -483,13 +483,13 @@ export const NeverMatchesConditionType2 = "NeverMatches2"; // two type names for
 export class NeverMatchesCondition extends ConditionBase<ConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.Descriptor.Type; }
 
-    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.NoMatch;
     }
     protected get DefaultCategory(): ConditionCategory {
         return ConditionCategory.Undetermined;
     }
-    public GatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
+    public gatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
         // does nothing
     }    
 }
@@ -499,13 +499,13 @@ export const IsUndeterminedConditionType = "AlwaysUndetermined";
 export class IsUndeterminedCondition extends ConditionBase<ConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.Descriptor.Type; }
     
-    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Undetermined;
     }
     protected get DefaultCategory(): ConditionCategory {
         return ConditionCategory.Undetermined;
     }    
-    public GatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
+    public gatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
         // does nothing
     }    
 }
@@ -514,22 +514,22 @@ export const ThrowsExceptionConditionType = "AlwaysThrows";
 
 export class ThrowsExceptionCondition extends ConditionBase<ConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.Descriptor.Type; }    
-    public Evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         throw new Error("Always Throws");
     }
     protected get DefaultCategory(): ConditionCategory {
         return ConditionCategory.Undetermined;
     }    
-    public GatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
+    public gatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
         // does nothing
     }    
 }
-export function RegisterTestingOnlyConditions(factory: ConditionFactory): void
+export function registerTestingOnlyConditions(factory: ConditionFactory): void
 {
-    factory.Register(AlwaysMatchesConditionType, (descriptor) => new AlwaysMatchesCondition(descriptor));
-    factory.Register(NeverMatchesConditionType, (descriptor) => new NeverMatchesCondition(descriptor));
-    factory.Register(IsUndeterminedConditionType, (descriptor) => new IsUndeterminedCondition(descriptor));
-    factory.Register(ThrowsExceptionConditionType, (descriptor) => new ThrowsExceptionCondition(descriptor));
+    factory.register(AlwaysMatchesConditionType, (descriptor) => new AlwaysMatchesCondition(descriptor));
+    factory.register(NeverMatchesConditionType, (descriptor) => new NeverMatchesCondition(descriptor));
+    factory.register(IsUndeterminedConditionType, (descriptor) => new IsUndeterminedCondition(descriptor));
+    factory.register(ThrowsExceptionConditionType, (descriptor) => new ThrowsExceptionCondition(descriptor));
     // yes, two conditions of the same class can be registered with different Type names.
-    factory.Register(NeverMatchesConditionType2, (descriptor) => new NeverMatchesCondition(descriptor));
+    factory.register(NeverMatchesConditionType2, (descriptor) => new NeverMatchesCondition(descriptor));
 }

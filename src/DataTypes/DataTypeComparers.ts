@@ -59,12 +59,12 @@ function assertPrimitive(value: any): void {
  */
 export class BooleanDataTypeComparer implements IDataTypeComparer
 {
-    public SupportsValues(value1: any, value2: any): boolean {
+    public supportsValues(value1: any, value2: any): boolean {
         let isBool1 = typeof value1 === 'boolean';
         let isBool2 = typeof value2 === 'boolean';
         return isBool1 || isBool2;
     }
-    public Compare(value1: any, value2: any): ComparersResult {
+    public compare(value1: any, value2: any): ComparersResult {
         let isBool1 = typeof value1 === 'boolean';
         let isBool2 = typeof value2 === 'boolean';
     

@@ -5,8 +5,8 @@ import { cultureLanguageCode, deepClone, deepEquals, groupsMatch } from "../../s
 
 
 
-// function ShallowEquals(obj1: any, obj2: any): boolean
-describe("Utilities.DeepEquals", () => {
+// function deepEquals(obj1: any, obj2: any): boolean
+describe("Utilities.deepEquals", () => {
     test("Equal primitives", () => {
         expect(deepEquals(0, 0)).toBe(true);
         expect(deepEquals(0.1, 0.1)).toBe(true);
@@ -83,8 +83,8 @@ describe("Utilities.DeepEquals", () => {
     });          
 });
 
-// function DeepClone<T>(value: any): any
-describe('Utilities.DeepClone', () => {
+// function deepClone<T>(value: any): any
+describe('Utilities.deepClone', () => {
     test('Primitives return the same', () => {
         expect(deepClone(0)).toBe(0);
         expect(deepClone(false)).toBe(false);
@@ -116,7 +116,7 @@ describe('Utilities.DeepClone', () => {
 
 // function GroupsMatch(group1: string | Array<string> | undefined | null,
 //    group2: string | Array<string>| undefined | null): boolean
-describe('Utilities.GroupsMatch', () => {
+describe('Utilities.groupsMatch', () => {
     test('Matching validation groups', () => {
         expect(groupsMatch(null, null)).toBe(true); 
         expect(groupsMatch(undefined, undefined)).toBe(true); 
@@ -147,7 +147,7 @@ describe('Utilities.GroupsMatch', () => {
     });    
 });
 
-describe('CultureLanguageCode', () => {
+describe('cultureLanguageCode', () => {
     test('Returns the country code as text before a dash', () => {
         expect(cultureLanguageCode('en-US')).toBe('en');
         expect(cultureLanguageCode('Abcdef-FR')).toBe('Abcdef');    // because we return everything verbatim if it lacks a dash

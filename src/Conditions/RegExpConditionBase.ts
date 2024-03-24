@@ -31,15 +31,15 @@ export interface RegExpConditionBaseDescriptor extends StringConditionDescriptor
 export abstract class RegExpConditionBase<TDescriptor extends RegExpConditionBaseDescriptor>
     extends StringConditionBase<TDescriptor>
 {
-    protected EvaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
 
-        return this.GetRegExp(valueHostResolver).test(text) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
+        return this.getRegExp(valueHostResolver).test(text) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
     /**
      * Return a RegExp for EvaluateString to use.
      * @param valueHostResolver 
      */
-    protected abstract GetRegExp(valueHostResolver: IValueHostResolver): RegExp;
+    protected abstract getRegExp(valueHostResolver: IValueHostResolver): RegExp;
 
     /**
      * Most of time, this represents a pattern that defines a data type, like USPhoneNumber and EmailAddress.

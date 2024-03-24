@@ -17,7 +17,7 @@ export interface ITextLocalizerService
      * Only supply '' if you are sure that registered data will always supply a value.
      * @returns The localized text or the fallback text.
      */
-    Localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null;
+    localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null;
 
     /**
      * Attempts to get the localized error message for the ConditionType and optional DataTypeLookupKey
@@ -26,7 +26,7 @@ export interface ITextLocalizerService
      * @param dataTypeLookupKey 
      * @returns The error message or null if not available.
      */
-    GetErrorMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null;
+    getErrorMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null;
 
     /**
      * Attempts to get the localized Summary error message for the ConditionType and optional DataTypeLookupKey
@@ -35,7 +35,7 @@ export interface ITextLocalizerService
      * @param dataTypeLookupKey 
      * @returns The Summary error message or null if not available.
      */
-    GetSummaryMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null;
+    getSummaryMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null;
 }
 
 

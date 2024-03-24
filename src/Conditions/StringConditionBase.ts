@@ -21,16 +21,16 @@ export abstract class StringConditionBase<TConditionDescriptor extends StringCon
      * This function checks both in valueHost to determine a string source.
      * @param valueHostResolver 
      */
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
-        let value = this.ResolveValue(valueHost);
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = this.resolveValue(valueHost);
         if (value === undefined)
             return ConditionEvaluateResult.Undetermined;
 
         let text = value as string;
         if (this.Descriptor.Trim ?? true)
             text = text.trim();
-        return this.EvaluateString(text, valueHost, valueHostResolver);
+        return this.evaluateString(text, valueHost, valueHostResolver);
     }
     /**
      * Applies the business rule against the string value (already trimmed if 
@@ -38,7 +38,7 @@ export abstract class StringConditionBase<TConditionDescriptor extends StringCon
      * @param text
      * @param valueHostResolver 
      */
-    protected abstract EvaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver):
+    protected abstract evaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver):
         ConditionEvaluateResult;
 
     /**
@@ -47,8 +47,8 @@ export abstract class StringConditionBase<TConditionDescriptor extends StringCon
      * @param valueHost 
      * @returns 
      */
-    protected ResolveValue(valueHost: IValueHost): string | undefined {
-        let value = valueHost.GetValue();
+    protected resolveValue(valueHost: IValueHost): string | undefined {
+        let value = valueHost.getValue();
         if (typeof value !== 'string')
             return undefined;
         return value;

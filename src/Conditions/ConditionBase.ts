@@ -53,7 +53,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * to a value host instead.
      * @param valueHostResolver 
      */
-    public abstract Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    public abstract evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
      * Data that supports the business rule defined in Evaluate.
@@ -87,7 +87,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * A service to provide all ValueHostIds that have been assigned to this Condition's
      * Descriptor.
      */
-    public abstract GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
+    public abstract gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
 
     /**
      * Implementation for IMessageTokenSource.
@@ -101,7 +101,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * @returns An array. If an empty array if there are no token to offer.
      * This base class has no tokens to offer.
      */
-    public GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         return [];
     }
 
@@ -110,8 +110,8 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * @param errorMessage 
      * @param valueHostResolver 
      */
-    protected LogInvalidPropertyData(propertyName: string, errorMessage: string, valueHostResolver: IValueHostResolver): void {
+    protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostResolver: IValueHostResolver): void {
         let fnName = this.constructor.name;
-        valueHostResolver.Services.LoggerService.Log(propertyName + ': ' + errorMessage, LoggingLevel.Error, ConfigurationCategory, fnName);
+        valueHostResolver.Services.LoggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, ConfigurationCategory, fnName);
     }
 }

@@ -25,16 +25,16 @@ class FactoryTestsValueHost extends ValueHostBase<ValueHostDescriptor, IFactoryT
 
 const FactoryTestGeneratorType = 'FactoryTest';
 class FactoryTestsValueHostGenerator implements IValueHostGenerator {
-    public CanCreate(descriptor: ValueHostDescriptor): boolean {
+    public canCreate(descriptor: ValueHostDescriptor): boolean {
         return descriptor.Type === FactoryTestGeneratorType;
     }
-    public Create(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IFactoryTestsValueHostState): IValueHost {
+    public create(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IFactoryTestsValueHostState): IValueHost {
         return new FactoryTestsValueHost(valueHostsManager, descriptor, state);
     }
-    public CleanupState(state: IFactoryTestsValueHostState, descriptor: ValueHostDescriptor): void {
+    public cleanupState(state: IFactoryTestsValueHostState, descriptor: ValueHostDescriptor): void {
         state.Counter = 0;
     }
-    public CreateState(descriptor: ValueHostDescriptor): IFactoryTestsValueHostState {
+    public createState(descriptor: ValueHostDescriptor): IFactoryTestsValueHostState {
         let state: IFactoryTestsValueHostState = {
             Id: descriptor.Id,
             Value: descriptor.InitialValue,
@@ -47,18 +47,18 @@ class FactoryTestsValueHostGenerator implements IValueHostGenerator {
 describe('ValueHostFactory.Register', () => {
     test('Add FactoryTestsValueHostGenerator', () => {
         let factory = new ValueHostFactory();
-        expect(factory.IsRegistered({ Type: FactoryTestGeneratorType, Id: '', Label: '' })).toBe(false);
-        expect(() => factory.Register(new FactoryTestsValueHostGenerator())).not.toThrow();
-        expect(factory.IsRegistered({ Type: FactoryTestGeneratorType, Id: '', Label: '' })).toBe(true);
+        expect(factory.isRegistered({ Type: FactoryTestGeneratorType, Id: '', Label: '' })).toBe(false);
+        expect(() => factory.register(new FactoryTestsValueHostGenerator())).not.toThrow();
+        expect(factory.isRegistered({ Type: FactoryTestGeneratorType, Id: '', Label: '' })).toBe(true);
     });
     test('Add Two Generators retains both', () => {
         let factory = new ValueHostFactory();
-        expect(factory.IsRegistered({ Type: FactoryTestGeneratorType, Id: '', Label: '' })).toBe(false);
-        expect(factory.IsRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(false);
-        expect(() => factory.Register(new FactoryTestsValueHostGenerator())).not.toThrow();
-        expect(() => factory.Register(new InputValueHostGenerator())).not.toThrow();
-        expect(factory.IsRegistered({ Type: FactoryTestGeneratorType, Id: '', Label: '' })).toBe(true);
-        expect(factory.IsRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(true);
+        expect(factory.isRegistered({ Type: FactoryTestGeneratorType, Id: '', Label: '' })).toBe(false);
+        expect(factory.isRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(false);
+        expect(() => factory.register(new FactoryTestsValueHostGenerator())).not.toThrow();
+        expect(() => factory.register(new InputValueHostGenerator())).not.toThrow();
+        expect(factory.isRegistered({ Type: FactoryTestGeneratorType, Id: '', Label: '' })).toBe(true);
+        expect(factory.isRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(true);
     });    
 });
 
@@ -81,12 +81,12 @@ describe('ValueHostFactory.Create', () => {
             Counter: 0
         };
         let testItem = new ValueHostFactory();
-        testItem.Register(new FactoryTestsValueHostGenerator());
+        testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.Create(vm, descriptor, state)).not.toThrow();
+        expect(() => valueHost = testItem.create(vm, descriptor, state)).not.toThrow();
         expect(valueHost).not.toBeNull();
-        expect(valueHost!.GetId()).toBe('Field1');
-        expect(valueHost!.GetValue()).toBe('Value');
+        expect(valueHost!.getId()).toBe('Field1');
+        expect(valueHost!.getValue()).toBe('Value');
     });
     test('Create with null in parameters throws', () => {
         let services = new MockValidationServices(false, false);
@@ -105,11 +105,11 @@ describe('ValueHostFactory.Create', () => {
             Counter: 0
         };
         let testItem = new ValueHostFactory();
-        testItem.Register(new FactoryTestsValueHostGenerator());
+        testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.Create(null!, descriptor, state)).toThrow(/valueHostsManager/);
-        expect(() => valueHost = testItem.Create(vm, null!, state)).toThrow(/descriptor/);
-        expect(() => valueHost = testItem.Create(vm, descriptor, null!)).toThrow(/state/);
+        expect(() => valueHost = testItem.create(null!, descriptor, state)).toThrow(/valueHostsManager/);
+        expect(() => valueHost = testItem.create(vm, null!, state)).toThrow(/descriptor/);
+        expect(() => valueHost = testItem.create(vm, descriptor, null!)).toThrow(/state/);
     });
     test('Create with Descriptor.Type of null throws', () => {
         let services = new MockValidationServices(false, false);
@@ -128,9 +128,9 @@ describe('ValueHostFactory.Create', () => {
             Counter: 0
         };
         let testItem = new ValueHostFactory();
-        testItem.Register(new FactoryTestsValueHostGenerator());
+        testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.Create(vm, descriptor, state)).toThrow(/ValueHostDescriptor\.Type/);
+        expect(() => valueHost = testItem.create(vm, descriptor, state)).toThrow(/ValueHostDescriptor\.Type/);
 
     });    
     test('Create with Descriptor.Type that has no matching registration throws', () => {
@@ -150,9 +150,9 @@ describe('ValueHostFactory.Create', () => {
             Counter: 0
         };
         let testItem = new ValueHostFactory();
-        testItem.Register(new FactoryTestsValueHostGenerator());
+        testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.Create(vm, descriptor, state)).toThrow(/Unsupported/);
+        expect(() => valueHost = testItem.create(vm, descriptor, state)).toThrow(/Unsupported/);
 
     });        
 });
@@ -175,9 +175,9 @@ describe('ValueHostFactory.CleanupState', () => {
             Counter: 1  // cleanup will set this to 0
         };
         let testItem = new ValueHostFactory();
-        testItem.Register(new FactoryTestsValueHostGenerator());
+        testItem.register(new FactoryTestsValueHostGenerator());
 
-        expect(() => testItem.CleanupState(state, descriptor)).not.toThrow();
+        expect(() => testItem.cleanupState(state, descriptor)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.Id).toBe('Field1');
         expect(state!.Value).toBe('Value');
@@ -197,9 +197,9 @@ describe('ValueHostFactory.CreateState', () => {
         };
 
         let testItem = new ValueHostFactory();
-        testItem.Register(new FactoryTestsValueHostGenerator());
+        testItem.register(new FactoryTestsValueHostGenerator());
         let state: ValueHostState | null = null;
-        expect(() => state = testItem.CreateState(descriptor)).not.toThrow();
+        expect(() => state = testItem.createState(descriptor)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.Id).toBe('Field1');
         expect(state!.Value).toBeUndefined();
@@ -210,9 +210,9 @@ describe('ValueHostFactory.CreateState', () => {
 describe('RegisterDefaultValueHostGenerators', () => {
     test('Ensure InputValueHostType gets registered', () => {
         let factory = new ValueHostFactory();
-        expect(factory.IsRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(false);
+        expect(factory.isRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(false);
         expect(() => registerStandardValueHostGenerators(factory)).not.toThrow();
-        expect(factory.IsRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(true);
+        expect(factory.isRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(true);
         
     });
 });

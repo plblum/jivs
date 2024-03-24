@@ -25,7 +25,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
      * @param hosts 
      * @returns the message with formatting resolved
      */
-    public ResolveTokens(message: string, valueHost: IInputValueHost, valueHostResolver: IValueHostResolver, ...hosts: Array<IMessageTokenSource>): string
+    public resolveTokens(message: string, valueHost: IInputValueHost, valueHostResolver: IValueHostResolver, ...hosts: Array<IMessageTokenSource>): string
     {
         assertNotNull(message, 'message');
         assertNotNull(valueHostResolver, 'valueHostResolver');
@@ -46,7 +46,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
         let revised = message;
         let allTavs: Array<TokenLabelAndValue> = [];
         hosts.forEach((tokenSource, index) => {
-            let tavs = tokenSource.GetValuesForTokens(valueHost, valueHostResolver);
+            let tavs = tokenSource.getValuesForTokens(valueHost, valueHostResolver);
             if (tavs)
                 allTavs = allTavs.concat(tavs);
         });
@@ -57,26 +57,26 @@ export class MessageTokenResolver implements IMessageTokenResolver
             for (let i = 0; !resolved && (i < allTavs.length); i++)
             {
                 let tav = allTavs[i];
-                if (capturedToken.IsMatch(tav))
+                if (capturedToken.isMatch(tav))
                 {
                     try {
-                        let replacement = capturedToken.Replacement(tav.AssociatedValue, valueHostResolver);
+                        let replacement = capturedToken.replacement(tav.AssociatedValue, valueHostResolver);
                         if (replacement.Value !== undefined)
                         {
-                            let finalized = this.FinalizeReplacement(replacement.Value, tav);
+                            let finalized = this.finalizeReplacement(replacement.Value, tav);
                             revised = revised.replace(capturedToken.full, finalized);
                             resolved = true;
                         }
                         else
                             if (replacement.ErrorMessage)
                             {
-                                valueHostResolver.Services.LoggerService.Log(`${capturedToken.full}: ${replacement.ErrorMessage}`,
+                                valueHostResolver.Services.LoggerService.log(`${capturedToken.full}: ${replacement.ErrorMessage}`,
                                     LoggingLevel.Error, ConfigurationCategory, fnName);   
                             }
                     }
                     catch (e)
                     {
-                        valueHostResolver.Services.LoggerService.Log(`${capturedToken.full}: ${(e as Error).message}`,
+                        valueHostResolver.Services.LoggerService.log(`${capturedToken.full}: ${(e as Error).message}`,
                             LoggingLevel.Error, TypeMismatchCategory, fnName); 
                     }
                 }
@@ -84,7 +84,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
             if (!resolved)
             {
                 //Log token was not replaced
-                valueHostResolver.Services.LoggerService.Log(`{${capturedToken.full}}: Token not replaced.`,
+                valueHostResolver.Services.LoggerService.log(`{${capturedToken.full}}: Token not replaced.`,
                     LoggingLevel.Warn, FormattingCategory, fnName); 
             }
         });
@@ -98,7 +98,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
  * enclosing the formatted value.
  * @param tav 
  */    
-    protected FinalizeReplacement(replacement: string, tav: TokenLabelAndValue): string
+    protected finalizeReplacement(replacement: string, tav: TokenLabelAndValue): string
     {
         return replacement;
     }
@@ -155,7 +155,7 @@ class CapturedToken
  * @param tav 
  * @returns 
  */    
-    public IsMatch(tav: TokenLabelAndValue): boolean
+    public isMatch(tav: TokenLabelAndValue): boolean
     {
         return tav.TokenLabel.toLowerCase() === this.token;
     }
@@ -165,8 +165,8 @@ class CapturedToken
  * @param validationManager 
  * @returns 
  */    
-    public Replacement(replacementValue: any, valueHostResolver: IValueHostResolver): DataTypeResolution<string>
+    public replacement(replacementValue: any, valueHostResolver: IValueHostResolver): DataTypeResolution<string>
     {
-        return valueHostResolver.Services.DataTypeServices.Format(replacementValue, this.formatterKey ?? undefined);
+        return valueHostResolver.Services.DataTypeServices.format(replacementValue, this.formatterKey ?? undefined);
     }
 }

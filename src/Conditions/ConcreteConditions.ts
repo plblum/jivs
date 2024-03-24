@@ -50,20 +50,20 @@ export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeChec
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.DataTypeCheck; }
     
-    protected EvaluateInputValue(value: any, valueHost: IInputValueHost,
+    protected evaluateInputValue(value: any, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         // value has already been proven to be something other than undefined...
-        return valueHost.GetValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
+        return valueHost.getValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
 
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
 
         list.push({
             TokenLabel: 'ConversionError',
-            AssociatedValue: valueHost.GetConversionErrorMessage() ?? null,
+            AssociatedValue: valueHost.getConversionErrorMessage() ?? null,
             Purpose: 'message'
         });
 
@@ -98,7 +98,7 @@ export class RequiredTextCondition extends InputValueConditionBase<RequiredTextC
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.RequiredText; }    
 
-    protected EvaluateInputValue(value: any, valueHost: IInputValueHost,
+    protected evaluateInputValue(value: any, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         // value of undefined has been rejected already, but still need to be sure we have a string
         if (typeof value !== 'string')
@@ -136,7 +136,7 @@ export class RequiredIndexCondition extends InputValueConditionBase<RequiredInde
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.RequiredIndex; }    
 
-    protected EvaluateInputValue(value: any, valueHost: IInputValueHost,
+    protected evaluateInputValue(value: any, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         // value of undefined has been rejected already, but still need to be sure we have a number
         if (typeof value !== 'number')
@@ -208,7 +208,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
     
     private _savedRE: RegExp | null = null; // cache the results. By design, any change to the Descriptor requires creating a new instance of the condition, discarding this
 
-    protected GetRegExp(valueHostResolver: IValueHostResolver): RegExp {
+    protected getRegExp(valueHostResolver: IValueHostResolver): RegExp {
         if (!this._savedRE) {
             let re: RegExp | null = this.Descriptor.Expression ?? null;
             if (!re) {
@@ -226,8 +226,8 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
         }
         return this._savedRE;
     }
-    protected EvaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
-        let found = this.GetRegExp(valueHostResolver).test(text);
+    protected evaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+        let found = this.getRegExp(valueHostResolver).test(text);
         if (this.Descriptor.Not)
             found = !found;
         return found ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
@@ -264,30 +264,30 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Range; }
     
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
-        let value = valueHost.GetValue();
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.getValue();
         if (value == null)  // includes undefined
             return ConditionEvaluateResult.Undetermined;
 
         let services = valueHostResolver.Services;
-        let lookupKey = this.Descriptor.ConversionLookupKey ?? valueHost.GetDataType();
+        let lookupKey = this.Descriptor.ConversionLookupKey ?? valueHost.getDataType();
         let lower = this.Descriptor.Minimum != null ?  // null/undefined
-            services.DataTypeServices.CompareValues(this.Descriptor.Minimum, value,
+            services.DataTypeServices.compareValues(this.Descriptor.Minimum, value,
                 null, lookupKey) :
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
-            services.LoggerService.Log(`Type mismatch. Value cannot be compared to Minimum`,
-                LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.GetId()}`);
+            services.LoggerService.log(`Type mismatch. Value cannot be compared to Minimum`,
+                LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
         let upper = this.Descriptor.Maximum != null ?  // null/undefined
-            services.DataTypeServices.CompareValues(this.Descriptor.Maximum, value,
+            services.DataTypeServices.compareValues(this.Descriptor.Maximum, value,
                 null, lookupKey) :
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
-            services.LoggerService.Log(`Type mismatch. Value cannot be compared to Maximum`,
-                LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.GetId()}`);
+            services.LoggerService.log(`Type mismatch. Value cannot be compared to Maximum`,
+                LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
         if (lower === ComparersResult.Equals || lower === ComparersResult.LessThan)
@@ -297,9 +297,9 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
 
         return ConditionEvaluateResult.NoMatch;
     }
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
 
         list.push({
@@ -345,62 +345,62 @@ export interface CompareToConditionDescriptor extends TwoValueConditionDescripto
  */
 export abstract class CompareToConditionBase<TDescriptor extends CompareToConditionDescriptor> extends OneValueConditionBase<TDescriptor>
 {
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
-        let value = valueHost.GetValue();
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.getValue();
         if (value == null)  // null/undefined
             return ConditionEvaluateResult.Undetermined;
         let secondValue: any;
         let secondValueLookupKey: string | null = null;
         if (this.Descriptor.SecondValueHostId) {
-            let vh2 = this.GetValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
+            let vh2 = this.getValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
             if (!vh2) {
                 const msg = 'SecondValueHostId is unknown';
-                this.LogInvalidPropertyData('SecondValueHostId', msg, valueHostResolver);
+                this.logInvalidPropertyData('SecondValueHostId', msg, valueHostResolver);
                 throw new Error(msg);
             }
-            secondValue = vh2.GetValue();
-            secondValueLookupKey = this.Descriptor.SecondConversionLookupKey ?? vh2.GetDataType();
+            secondValue = vh2.getValue();
+            secondValueLookupKey = this.Descriptor.SecondConversionLookupKey ?? vh2.getDataType();
         }
         if (secondValue == null)  // null/undefined
         {
             if (this.Descriptor.SecondValue == null)    // null/undefined
             {
                 const msg = 'SecondValue lacks value to evaluate';
-                this.LogInvalidPropertyData('SecondValue', msg, valueHostResolver);
+                this.logInvalidPropertyData('SecondValue', msg, valueHostResolver);
                 throw new Error(msg);
             }
             secondValue = this.Descriptor.SecondValue;
         }
 
-        let comparison = valueHostResolver.Services.DataTypeServices.CompareValues(
+        let comparison = valueHostResolver.Services.DataTypeServices.compareValues(
             value, secondValue,
-            this.Descriptor.ConversionLookupKey ?? valueHost.GetDataType(), secondValueLookupKey);
+            this.Descriptor.ConversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
-            valueHostResolver.Services.LoggerService.Log(`Type mismatch. Value cannot be compared to SecondValue`,
-                LoggingLevel.Warn, ConfigurationCategory, `${this.constructor.name} for ${valueHost.GetId()}`);
+            valueHostResolver.Services.LoggerService.log(`Type mismatch. Value cannot be compared to SecondValue`,
+                LoggingLevel.Warn, ConfigurationCategory, `${this.constructor.name} for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
-        return this.CompareTwoValues(comparison);
+        return this.compareTwoValues(comparison);
     }
-    protected abstract CompareTwoValues(comparison: ComparersResult):
+    protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void {
-        super.GatherValueHostIds(collection, valueHostResolver);
+    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void {
+        super.gatherValueHostIds(collection, valueHostResolver);
         if (this.Descriptor.SecondValueHostId)
             collection.add(this.Descriptor.SecondValueHostId);
     }
 
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
         let secondValue: any;
         if (this.Descriptor.SecondValueHostId) {
-            let vh = this.GetValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
+            let vh = this.getValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
             if (vh)
-                secondValue = vh.GetValue();
+                secondValue = vh.getValue();
         }
         if (secondValue == null)  // includes undefined
         {
@@ -424,7 +424,7 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
 export class EqualToCondition extends CompareToConditionBase<EqualToConditionDescriptor> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.EqualTo; }
     
-    protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         return comparison === ComparersResult.Equals ?
             ConditionEvaluateResult.Match :
             ConditionEvaluateResult.NoMatch;
@@ -441,7 +441,7 @@ export interface EqualToConditionDescriptor extends CompareToConditionDescriptor
 export class NotEqualToCondition extends CompareToConditionBase<NotEqualToConditionDescriptor> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.NotEqualTo; }
     
-    protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
 
         return comparison !== ComparersResult.Equals ?
             ConditionEvaluateResult.Match :
@@ -460,7 +460,7 @@ export interface NotEqualToConditionDescriptor extends CompareToConditionDescrip
 export class GreaterThanCondition extends CompareToConditionBase<GreaterThanConditionDescriptor> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThan; }
     
-    protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
             case ComparersResult.GreaterThan:
                 return ConditionEvaluateResult.Match;
@@ -483,7 +483,7 @@ export interface GreaterThanConditionDescriptor extends CompareToConditionDescri
 export class LessThanCondition extends CompareToConditionBase<LessThanConditionDescriptor> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.LessThan; }
     
-    protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
             case ComparersResult.LessThan:
                 return ConditionEvaluateResult.Match;
@@ -506,7 +506,7 @@ export interface LessThanConditionDescriptor extends CompareToConditionDescripto
 export class GreaterThanOrEqualToCondition extends CompareToConditionBase<GreaterThanOrEqualToConditionDescriptor> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqualTo; }
     
-    protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
             case ComparersResult.GreaterThan:
             case ComparersResult.Equals:
@@ -530,7 +530,7 @@ export interface GreaterThanOrEqualToConditionDescriptor extends CompareToCondit
 export class LessThanOrEqualToCondition extends CompareToConditionBase<LessThanOrEqualToConditionDescriptor> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqualTo; }    
 
-    protected CompareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
             case ComparersResult.LessThan:
             case ComparersResult.Equals:
@@ -573,9 +573,9 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.StringLength; }
     
-    protected EvaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let len = text.length;  // already trimmed
-        valueHost.SaveIntoState('Len', len);
+        valueHost.saveIntoState('Len', len);
         if (this.Descriptor.Minimum != null)    // null/undefined
             if (len < this.Descriptor.Minimum)
                 return ConditionEvaluateResult.NoMatch;
@@ -585,14 +585,14 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
         return ConditionEvaluateResult.Match;
     }
 
-    public override GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.GetValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
 
         list.push({
             TokenLabel: 'Length',
-            AssociatedValue: valueHost.GetFromState('Len') ?? 0,
+            AssociatedValue: valueHost.getFromState('Len') ?? 0,
             Purpose: 'parameter'
         });
         list.push({
@@ -625,9 +625,9 @@ export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatc
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.And; }
     
-    protected EvaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         for (let condition of conditions)
-            switch (this.CleanupChildResult(condition.Evaluate(null, valueHostResolver))) {
+            switch (this.cleanupChildResult(condition.evaluate(null, valueHostResolver))) {
                 case ConditionEvaluateResult.NoMatch:
                     return ConditionEvaluateResult.NoMatch;
                 case ConditionEvaluateResult.Undetermined:
@@ -649,10 +649,10 @@ export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatc
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Or; }
 
-    protected EvaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let countMatches = 0;
         for (let condition of conditions)
-            switch (this.CleanupChildResult(condition.Evaluate(null, valueHostResolver))) {
+            switch (this.cleanupChildResult(condition.evaluate(null, valueHostResolver))) {
                 case ConditionEvaluateResult.Match:
                     countMatches++;
                     break;
@@ -691,10 +691,10 @@ export class CountMatchesCondition extends EvaluateChildConditionResultsBase<Cou
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.CountMatches; }
     
-    protected EvaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let countMatches = 0;
         for (let condition of conditions)
-            switch (this.CleanupChildResult(condition.Evaluate(null, valueHostResolver))) {
+            switch (this.cleanupChildResult(condition.evaluate(null, valueHostResolver))) {
                 case ConditionEvaluateResult.Match:
                     countMatches++;
                     break;
@@ -734,9 +734,9 @@ export class StringNotEmptyCondition extends OneValueConditionBase<StringNotEmpt
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.StringNotEmpty; }    
 
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
-        let value = valueHost.GetValue();
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.getValue();
         if (value === undefined) 
             return ConditionEvaluateResult.Undetermined;
         if (value === null)
@@ -773,9 +773,9 @@ export class NotNullCondition extends OneValueConditionBase<NotNullConditionDesc
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.NotNull; }    
 
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
-        let value = valueHost.GetValue();
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.getValue();
         if (value === undefined) 
             return ConditionEvaluateResult.Undetermined;
         if (value === null)
