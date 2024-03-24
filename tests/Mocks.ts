@@ -18,7 +18,7 @@ import { IDataTypeServices } from "../src/Interfaces/DataTypes";
 import { IValidationManager } from "../src/Interfaces/ValidationManager";
 import { CreateDataTypeServicesWithManyCultures } from "./DataTypes/DataTypeServices.test";
 import { RegisterConditions, PopulateDataTypeServices } from "../starter_code/create_services";
-import { RegisterStandardValueHostGenerators, ValueHostFactory } from "../src/ValueHosts/ValueHostFactory";
+import { registerStandardValueHostGenerators, ValueHostFactory } from "../src/ValueHosts/ValueHostFactory";
 import { InputValidatorFactory } from "../src/ValueHosts/InputValidator";
 import { ITextLocalizerService } from "../src/Interfaces/TextLocalizerService";
 import { TextLocalizerService } from "../src/Services/TextLocalizerService";
@@ -177,7 +177,7 @@ export class MockValidationServices implements IValidationServices
         registerStandardDataTypes: boolean)
     {
         let factory = new ValueHostFactory();
-        RegisterStandardValueHostGenerators(factory);
+        registerStandardValueHostGenerators(factory);
         this._valueHostFactory = factory;
         this._inputValidatorFactory = new InputValidatorFactory();
 

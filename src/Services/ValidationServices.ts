@@ -9,7 +9,7 @@
  * @module ValidationServices/ConcreteClass
  */
 
-import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
+import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import type { ILogger } from "../Interfaces/Logger";
 import type { IInputValidatorFactory, IMessageTokenResolver } from "../Interfaces/InputValidator";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
@@ -17,7 +17,7 @@ import type { IDataTypeServices } from "../Interfaces/DataTypes";
 import type { IConditionFactory } from "../Interfaces/Conditions";
 import { IValueHostFactory } from "../Interfaces/ValueHost";
 import { InputValidatorFactory } from "../ValueHosts/InputValidator";
-import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../ValueHosts/ValueHostFactory";
+import { ValueHostFactory, registerStandardValueHostGenerators } from "../ValueHosts/ValueHostFactory";
 import { ConsoleLogger } from "./ConsoleLogger";
 import { ITextLocalizerService } from "../Interfaces/TextLocalizerService";
 import { TextLocalizerService } from "./TextLocalizerService";
@@ -57,7 +57,7 @@ export class ValidationServices implements IValidationServices {
         return this._conditionFactory;
     }
     public set ConditionFactory(factory: IConditionFactory) {
-        AssertNotNull(factory, 'factory');
+        assertNotNull(factory, 'factory');
         this._conditionFactory = factory;
     }
     private _conditionFactory!: IConditionFactory;
@@ -72,7 +72,7 @@ export class ValidationServices implements IValidationServices {
         return this._dataTypeServices;
     }
     public set DataTypeServices(services: IDataTypeServices) {
-        AssertNotNull(services, 'services');
+        assertNotNull(services, 'services');
         this._dataTypeServices = services;
         services.Services = this;
     }
@@ -110,7 +110,7 @@ export class ValidationServices implements IValidationServices {
         return this._messageTokenResolverService;
     }
     public set MessageTokenResolverService(service: IMessageTokenResolver) {
-        AssertNotNull(service, 'service');
+        assertNotNull(service, 'service');
         this._messageTokenResolverService = service;
     }
     private _messageTokenResolverService!: IMessageTokenResolver;
@@ -126,7 +126,7 @@ export class ValidationServices implements IValidationServices {
         return this._loggerService;
     }
     public set LoggerService(service: ILogger) {
-        AssertNotNull(service, 'service');
+        assertNotNull(service, 'service');
         this._loggerService = service;
     }
     private _loggerService!: ILogger;
@@ -139,13 +139,13 @@ export class ValidationServices implements IValidationServices {
     public get ValueHostFactory(): IValueHostFactory {
         if (!this._valueHostFactory) {
             let factory = new ValueHostFactory();
-            RegisterStandardValueHostGenerators(factory);
+            registerStandardValueHostGenerators(factory);
             this._valueHostFactory = factory;
         }
         return this._valueHostFactory;
     }
     public set ValueHostFactory(factory: IValueHostFactory) {
-        AssertNotNull(factory, 'factory');
+        assertNotNull(factory, 'factory');
         this._valueHostFactory = factory;
     }
     private _valueHostFactory: IValueHostFactory | null = null;
@@ -163,7 +163,7 @@ export class ValidationServices implements IValidationServices {
         return this._inputValidatorFactory;
     }
     public set InputValidatorFactory(factory: InputValidatorFactory) {
-        AssertNotNull(factory, 'factory');
+        assertNotNull(factory, 'factory');
         this._inputValidatorFactory = factory;
     }
     private _inputValidatorFactory: IInputValidatorFactory | null = null;

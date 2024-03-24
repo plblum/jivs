@@ -3,8 +3,8 @@
  * @module ValueHosts/AbstractClasses/ValueHostBase
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
-import { DeepEquals, DeepClone } from "../Utilities/Utilities";
+import { assertNotNull } from "../Utilities/ErrorHandling";
+import { deepEquals, deepClone } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
 import type { IValueHost, SetValueOptions, ValueHostState, ValueHostDescriptor } from "../Interfaces/ValueHost";
 import type { IValueHostsManager, IValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
@@ -22,9 +22,9 @@ import { IValueHostGenerator } from "../Interfaces/ValueHostFactory";
 export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TState extends ValueHostState>
     implements IValueHost, IValueHostsManagerAccessor {
     constructor(valueHostsManager: IValueHostsManager, descriptor: TDescriptor, state: TState) {
-        AssertNotNull(valueHostsManager, 'valueHostsManager');
-        AssertNotNull(descriptor, 'descriptor');
-        AssertNotNull(state, 'state');
+        assertNotNull(valueHostsManager, 'valueHostsManager');
+        assertNotNull(descriptor, 'descriptor');
+        assertNotNull(state, 'state');
         this._valueHostsManager = valueHostsManager;
         this._descriptor = descriptor;
         this._state = state;
@@ -102,7 +102,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
         if (!options)
             options = {};
         let oldValue: any = this.State.Value;   // even undefined is supported
-        let changed = !DeepEquals(value, oldValue);
+        let changed = !deepEquals(value, oldValue);
         this.UpdateState((stateToUpdate) => {
             if (changed) {
                 stateToUpdate.Value = value;
@@ -142,7 +142,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
     protected UseOnValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void
     {
         if (changed && (!options || !options.SkipValueChangedCallback))
-            ToIValueHostCallbacks(this.ValueHostsManager)?.OnValueChanged?.(this, oldValue);        
+            toIValueHostCallbacks(this.ValueHostsManager)?.OnValueChanged?.(this, oldValue);        
     }
 /**
  * A name of a data type used to lookup supporting services specific to the data type.
@@ -197,12 +197,12 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
      */
     public UpdateState(updater: (stateToUpdate: TState) => TState,
         source: IValueHost): boolean {
-        AssertNotNull(updater, 'updater');
-        let toUpdate = DeepClone(this.State);
+        assertNotNull(updater, 'updater');
+        let toUpdate = deepClone(this.State);
         let updated = updater(toUpdate);
-        if (!DeepEquals(this.State, updated)) {
+        if (!deepEquals(this.State, updated)) {
             this._state = updated;
-            ToIValueHostCallbacks(this.ValueHostsManager)?.OnValueHostStateChanged?.(source, updated);
+            toIValueHostCallbacks(this.ValueHostsManager)?.OnValueHostStateChanged?.(source, updated);
             return true;
         }
         return false;
@@ -267,7 +267,7 @@ export interface IValueHostCallbacks {
  * @param source 
  * @returns source typecasted to IValueHostCallbacks if appropriate or null if not.
  */
-export function ToIValueHostCallbacks(source: any): IValueHostCallbacks | null
+export function toIValueHostCallbacks(source: any): IValueHostCallbacks | null
 {
     if (source && typeof source === 'object')
     {

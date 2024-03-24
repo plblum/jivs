@@ -10,15 +10,15 @@
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ConfigurationCategory, LoggingLevel, ValidationCategory } from "../Interfaces/Logger";
-import { ObjectKeysCount, GroupsMatch } from "../Utilities/Utilities";
-import { ToIValidationManagerCallbacks } from "./ValidationManager";
+import { objectKeysCount, groupsMatch } from "../Utilities/Utilities";
+import { toIValidationManagerCallbacks } from "./ValidationManager";
 import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
 import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
 import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from "../Interfaces/Validation";
 import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
 import { InputValidateResult, IInputValidator, InputValidatorDescriptor } from "../Interfaces/InputValidator";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
+import { assertNotNull } from "../Utilities/ErrorHandling";
 
 
 /**
@@ -64,8 +64,8 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             IssuesFound: null
         };
 
-        if (!GroupsMatch(options.Group, this.Descriptor.Group))
-            return Bailout(`Group names do not match "${options.Group}" vs "${this.Descriptor.Group?.toString()}"`);      
+        if (!groupsMatch(options.Group, this.Descriptor.Group))
+            return bailout(`Group names do not match "${options.Group}" vs "${this.Descriptor.Group?.toString()}"`);      
         
         try {
             try {
@@ -82,7 +82,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                     // from this validator. When this completes, it updates the state again.
                     if (potentialIVR instanceof Promise)
                     {
-                        ProcessPromise(potentialIVR);
+                        processPromise(potentialIVR);
                         continue;
                     }
                 // synchronous (normal) processing
@@ -121,24 +121,24 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             catch (e)
             {
                 if (e instanceof Error)
-                    LogError(e.message);
+                    logError(e.message);
                 // resume normal processing with Undetermined state
                 result.ValidationResult = ValidationResult.Undetermined;
             }                  
-            if (UpdateStateWithResult(result))
-                ToIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
+            if (updateStateWithResult(result))
+                toIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
             return result;
         }
   
         finally {
-            LogInfo(() => {
+            logInfo(() => {
                 return {
                     message: `Input Validation result: ${ValidationResultString[result.ValidationResult]} Issues found:` +
                         (result.IssuesFound ? JSON.stringify(result.IssuesFound) : 'none')
                 };
             });
         }
-        function UpdateStateWithResult(result: ValidateResult): boolean
+        function updateStateWithResult(result: ValidateResult): boolean
         {
             return self.UpdateState((stateToUpdate) => {
                 stateToUpdate.ValidationResult = result.ValidationResult;
@@ -152,9 +152,9 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                 return stateToUpdate;
             }, self);
         }
-        function ProcessPromise(promise: Promise<InputValidateResult>): void
+        function processPromise(promise: Promise<InputValidateResult>): void
         {
-            function CompleteThePromise(finish: () => void)
+            function completeThePromise(finish: () => void)
             {
                 // remove the promise from result.Pending.
                 // We use result.Pending == null to mean no async processes remain.
@@ -169,7 +169,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                     finish();
                 }
             }
-            function DeleteAsyncProcessFlag()
+            function deleteAsyncProcessFlag()
             {
                 if (!result.Pending)
                     self.UpdateState((stateToUpdate) => {
@@ -182,44 +182,44 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             result.Pending.push(promise);
             promise.then(
             (ivr) => {
-                    CompleteThePromise(() => {
+                    completeThePromise(() => {
                         // the only way we modify the issues, validation result, or State
                         if (ivr.ConditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
                             result.ValidationResult = ValidationResult.Invalid;
                             if (!result.IssuesFound)
                                 result.IssuesFound = [];
                             result.IssuesFound.push(ivr.IssueFound!);
-                            if (UpdateStateWithResult(result))
-                                ToIValidationManagerCallbacks(self.ValueHostsManager)?.OnValueHostValidated?.(self, result);
+                            if (updateStateWithResult(result))
+                                toIValidationManagerCallbacks(self.ValueHostsManager)?.OnValueHostValidated?.(self, result);
                         }
                         else
-                            DeleteAsyncProcessFlag();
+                            deleteAsyncProcessFlag();
                     });
             },
             (failureInfo) => {
-                CompleteThePromise(() => { 
-                    DeleteAsyncProcessFlag();
-                    LogError(failureInfo ? failureInfo.toString() : 'unspecified');
+                completeThePromise(() => { 
+                    deleteAsyncProcessFlag();
+                    logError(failureInfo ? failureInfo.toString() : 'unspecified');
                 });
             }
         );
         // no change to the ValidationResult here            
         }
 
-        function Bailout(errorMessage: string): ValidateResult
+        function bailout(errorMessage: string): ValidateResult
         {
             let resultState: ValidateResult = {
                 ValidationResult: ValidationResult.Undetermined,
                 IssuesFound: null
             };
-            LogInfo(() => {
+            logInfo(() => {
                 return {
                     message: errorMessage
                 };
             });
             return resultState;                    
         }        
-        function LogInfo(
+        function logInfo(
             fn: () => { message: string; source?: string })
         {
             if (self.Services.LoggerService.MinLevel >= LoggingLevel.Info)
@@ -230,7 +230,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                     parms.source ?? `ValueHost ID ${self.Descriptor.Id}`);
             }
         }        
-        function LogError(message: string): void
+        function logError(message: string): void
         {
             self.Services.LoggerService.Log('Exception: ' + (message ?? 'Reason unspecified'),
                 LoggingLevel.Error, ValidationCategory, self.Descriptor.Id);
@@ -330,7 +330,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
  * @param source 
  * @returns source typecasted to IInputValueHost if appropriate or null if not.
  */
-export function ToIInputValueHost(source: any): IInputValueHost | null
+export function toIInputValueHost(source: any): IInputValueHost | null
 {
     if (source instanceof InputValueHostBase)
         return source as IInputValueHost;
@@ -368,8 +368,8 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
  * @param descriptor 
  */    
     public CleanupState(state: InputValueHostState, descriptor: InputValueHostDescriptor): void {
-        AssertNotNull(state, 'state');
-        AssertNotNull(descriptor, 'descriptor');
+        assertNotNull(state, 'state');
+        assertNotNull(descriptor, 'descriptor');
         let descriptorChanged = false;
         let oldStateCount = 0;
         let issuesFound: Array<IssueFound> | null = null;
@@ -398,7 +398,7 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
                     descriptorChanged = true;
             });
         }
-        if (!descriptorChanged && (oldStateCount === ObjectKeysCount(state.IssuesFound)))
+        if (!descriptorChanged && (oldStateCount === objectKeysCount(state.IssuesFound)))
             return;
 
         state.IssuesFound = issuesFound as (Array<IssueFound> | null);

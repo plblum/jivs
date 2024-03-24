@@ -3,7 +3,7 @@ import {
     RequiredTextConditionDescriptor, RequiredTextCondition, RegExpConditionDescriptor, RegExpCondition,
 } from "../../src/Conditions/ConcreteConditions";
 import { InputValidator } from "../../src/ValueHosts/InputValidator";
-import { InputValueHost, InputValueHostGenerator, InputValueHostType, ToIInputValueHost } from "../../src/ValueHosts/InputValueHost";
+import { InputValueHost, InputValueHostGenerator, InputValueHostType, toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
 import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationServices, MockValidationManager, NeverMatchesConditionType, NeverMatchesConditionType2, NeverMatchesCondition, RegisterTestingOnlyConditions } from "../Mocks";
@@ -17,7 +17,7 @@ import {
 import { InputValidateResult, IInputValidator, InputValidatorDescriptor, IInputValidatorFactory } from "../../src/Interfaces/InputValidator";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { SetValueOptions, IValueHost, ValueHostState, ValueHostDescriptor } from "../../src/Interfaces/ValueHost";
-import { IInputValueHostCallbacks, ToIInputValueHostCallbacks, ValueHostValidatedHandler } from "../../src/ValueHosts/InputValueHostBase";
+import { IInputValueHostCallbacks, toIInputValueHostCallbacks, ValueHostValidatedHandler } from "../../src/ValueHosts/InputValueHostBase";
 import { ValueHostStateChangedHandler } from "../../src/ValueHosts/ValueHostBase";
 import { CreateValidationServices } from "../../starter_code/create_services";
 import { ConditionWithPromiseTester } from "./InputValidator.test";
@@ -3378,7 +3378,7 @@ describe('ToIInputValueHost function', () => {
                 ValidationResult: ValidationResult.NotAttempted,
                 InputValue: undefined
             });
-        expect(ToIInputValueHost(testItem)).toBe(testItem);
+        expect(toIInputValueHost(testItem)).toBe(testItem);
     });
     class TestIInputValueHostImplementation implements IInputValueHost {
         GetInputValue() {
@@ -3453,17 +3453,17 @@ describe('ToIInputValueHost function', () => {
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIInputValueHostImplementation();
 
-        expect(ToIInputValueHost(testItem)).toBe(testItem);
+        expect(toIInputValueHost(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(ToIInputValueHost(testItem)).toBeNull();
+        expect(toIInputValueHost(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(ToIInputValueHost(null)).toBeNull();
+        expect(toIInputValueHost(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(ToIInputValueHost(100)).toBeNull();
+        expect(toIInputValueHost(100)).toBeNull();
     });
 });
 
@@ -3471,7 +3471,7 @@ describe('ToIInputValueHostCallbacks function', () => {
     test('Passing actual InputValueHost matches interface returns same object.', () => {
         let testItem = new MockValidationManager(new MockValidationServices(false, false));
 
-        expect(ToIInputValueHostCallbacks(testItem)).toBe(testItem);
+        expect(toIInputValueHostCallbacks(testItem)).toBe(testItem);
     });
     class TestIInputValueHostCallbacksImplementation implements IInputValueHostCallbacks {
         OnValueChanged(vh: IValueHost, old: any) { }
@@ -3482,16 +3482,16 @@ describe('ToIInputValueHostCallbacks function', () => {
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIInputValueHostCallbacksImplementation();
 
-        expect(ToIInputValueHostCallbacks(testItem)).toBe(testItem);
+        expect(toIInputValueHostCallbacks(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(ToIInputValueHostCallbacks(testItem)).toBeNull();
+        expect(toIInputValueHostCallbacks(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(ToIInputValueHostCallbacks(null)).toBeNull();
+        expect(toIInputValueHostCallbacks(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(ToIInputValueHostCallbacks(100)).toBeNull();
+        expect(toIInputValueHostCallbacks(100)).toBeNull();
     });
 });

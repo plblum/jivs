@@ -7,7 +7,7 @@
  */
 
 
-import { AssertNotNull } from "../Utilities/ErrorHandling";
+import { assertNotNull } from "../Utilities/ErrorHandling";
 
 
 /**
@@ -51,7 +51,7 @@ export class NameToFunctionMapper<TValue, TResult> implements INameToFunctionMap
      */    
     public Get(key: string): ((...args: TValue[]) => TResult) | undefined
     {
-        AssertNotNull(key, 'key');
+        assertNotNull(key, 'key');
         return this._map.get(key.toLowerCase());    // expect undefined result when not found
     }
 
@@ -62,8 +62,8 @@ export class NameToFunctionMapper<TValue, TResult> implements INameToFunctionMap
  */    
     public Register(key: string, fnOrKey: ((...args: TValue[]) => TResult) | string): void
     {
-        AssertNotNull(key, 'key');
-        AssertNotNull(fnOrKey, 'fnOrKey');
+        assertNotNull(key, 'key');
+        assertNotNull(fnOrKey, 'fnOrKey');
 
         let fn: (value: TValue) => TResult;
         if (typeof fnOrKey === 'string') {

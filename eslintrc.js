@@ -29,7 +29,17 @@ module.exports = {
         "requireLast": false
       },
       "multilineDetection": "brackets"
-    }]
-
+    }],
+    "@typescript-eslint/method-signature-style": ["off", 'method'],
+    "@typescript-eslint/naming-convention": ["error",
+        {
+          selector: 'function',
+          format: ['camelCase'],
+          leadingUnderscore: 'forbid',
+          trailingUnderscore: 'forbid',
+        },
+      
+      
+    ]
   }
 };

@@ -2,8 +2,8 @@ import type { IValidationServices } from "../../src/Interfaces/ValidationService
 import {
     type ValueHostState, type IValueHost, ValueHostDescriptor
 } from "../../src/Interfaces/ValueHost";
-import { IValueHostCallbacks, ToIValueHostCallbacks, ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
-import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
+import { IValueHostCallbacks, toIValueHostCallbacks, ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
+import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { MockValidationServices, MockValidationManager } from "../Mocks";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
@@ -513,18 +513,18 @@ describe('ToIValueHostCallbacks function', () => {
             OnValueChanged: null,
             OnValueHostStateChanged: null
         };
-        expect(ToIValueHostCallbacks(testItem)).toBe(testItem);
+        expect(toIValueHostCallbacks(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem: IValueHostCallbacks = {
 
         };
-        expect(ToIValueHostCallbacks(testItem)).toBeNull();
+        expect(toIValueHostCallbacks(testItem)).toBeNull();
     });    
     test('null returns null.', () => {
-        expect(ToIValueHostCallbacks(null)).toBeNull();
+        expect(toIValueHostCallbacks(null)).toBeNull();
     });        
     test('Non-object returns null.', () => {
-        expect(ToIValueHostCallbacks(100)).toBeNull();
+        expect(toIValueHostCallbacks(100)).toBeNull();
     });        
 });

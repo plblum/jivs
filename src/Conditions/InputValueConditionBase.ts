@@ -11,7 +11,7 @@ import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { OneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
-import { ToIInputValueHost } from "../ValueHosts/InputValueHost";
+import { toIInputValueHost } from "../ValueHosts/InputValueHost";
 
 /**
  * Abstract class for developing Conditions that use the value from ValueHost.GetInputValue.
@@ -28,7 +28,7 @@ export abstract class InputValueConditionBase<TDescriptor extends OneValueCondit
      */
     public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
-        if (!ToIInputValueHost(valueHost)) {
+        if (!toIInputValueHost(valueHost)) {
             valueHostResolver.Services.LoggerService.Log('Invalid ValueHost used. Must be an InputValueHost',
                 LoggingLevel.Error, ConfigurationCategory, 'InputValueConditionBase.Evaluate');
             throw new CodingError('Invalid ValueHost used. Must be an InputValueHost');

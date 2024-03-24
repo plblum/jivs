@@ -1,5 +1,5 @@
 import { NonInputValueHostDescriptor, NonInputValueHostState, INonInputValueHost } from "../../src/Interfaces/NonInputValueHost";
-import { IGatherValueHostIds, ToIGatherValueHostIds } from "../../src/Interfaces/ValueHost";
+import { IGatherValueHostIds, toIGatherValueHostIds } from "../../src/Interfaces/ValueHost";
 import { NonInputValueHost, NonInputValueHostType, NonInputValueHostGenerator } from "../../src/ValueHosts/NonInputValueHost";
 import { MockValidationServices, MockValidationManager, NeverMatchesConditionType } from "../Mocks";
 
@@ -133,16 +133,16 @@ describe('ToIGatherValueHostIds function', () => {
         let testItem: IGatherValueHostIds = {
             GatherValueHostIds: (a, b) => { }
         };
-        expect(ToIGatherValueHostIds(testItem)).toBe(testItem);
+        expect(toIGatherValueHostIds(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(ToIGatherValueHostIds(testItem)).toBeNull();
+        expect(toIGatherValueHostIds(testItem)).toBeNull();
     });    
     test('null returns null.', () => {
-        expect(ToIGatherValueHostIds(null)).toBeNull();
+        expect(toIGatherValueHostIds(null)).toBeNull();
     });        
     test('Non-object returns null.', () => {
-        expect(ToIGatherValueHostIds(100)).toBeNull();
+        expect(toIGatherValueHostIds(100)).toBeNull();
     });        
 });

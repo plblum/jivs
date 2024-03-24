@@ -14,14 +14,14 @@
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
-import { ToIGatherValueHostIds, type IValueHost } from "../Interfaces/ValueHost";
-import { type IValueHostResolver, type IValueHostsManager, ToIValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
+import { toIGatherValueHostIds, type IValueHost } from "../Interfaces/ValueHost";
+import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from "../Interfaces/ValueHostResolver";
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings } from "../Interfaces/Conditions";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from "../Interfaces/Validation";
 import type { InputValidateResult, IInputValidator, InputValidatorDescriptor, IInputValidatorFactory, IMessageTokenSource, TokenLabelAndValue  } from "../Interfaces/InputValidator";
 import { LoggingLevel, ConfigurationCategory, ValidationCategory } from "../Interfaces/Logger";
-import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
+import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
 
 /**
  * An IInputValidator implementation that represents a single validator 
@@ -46,8 +46,8 @@ export class InputValidator implements IInputValidator {
     // As a rule, InputValueHost discards InputValidator when anything contained in these objects
     // has changed.
     constructor(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor) {
-        AssertNotNull(valueHost, 'valueHost');
-        AssertNotNull(descriptor, 'descriptor');
+        assertNotNull(valueHost, 'valueHost');
+        assertNotNull(descriptor, 'descriptor');
         this._valueHost = valueHost;
         this._descriptor = descriptor;
     }
@@ -70,7 +70,7 @@ export class InputValidator implements IInputValidator {
 
     protected get ValueHostsManager(): IValueHostsManager
     {
-        let vh = ToIValueHostsManagerAccessor(this.ValueHost)?.ValueHostsManager;
+        let vh = toIValueHostsManagerAccessor(this.ValueHost)?.ValueHostsManager;
         if (vh)
             return vh;
         throw new CodingError('ValueHost must implement IValueHostsManagerAccessor');
@@ -236,7 +236,7 @@ export class InputValidator implements IInputValidator {
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
     public Validate(options: ValidateOptions): InputValidateResult | Promise<InputValidateResult> {
-        AssertNotNull(options, 'options');
+        assertNotNull(options, 'options');
         let self = this;
 
         let resultState: InputValidateResult = {
@@ -246,14 +246,14 @@ export class InputValidator implements IInputValidator {
         try {
             // options that may bail out
             if (options.Preliminary && this.Condition.Category === ConditionCategory.Required)
-                return Bailout('Preliminary option skips Required conditions');
+                return bailout('Preliminary option skips Required conditions');
 
             if (options.DuringEdit && this.Condition.Category !== ConditionCategory.Required)
-                return Bailout('DuringEdit option limited to Required conditions');
+                return bailout('DuringEdit option limited to Required conditions');
                 
             // enabled
             if (!this.Enabled)
-                return Bailout('Descriptor.Enabled is false');
+                return bailout('Descriptor.Enabled is false');
 
             // enabler
             let enabler = this.Enabler;
@@ -265,7 +265,7 @@ export class InputValidator implements IInputValidator {
                 switch (result) {
                     case ConditionEvaluateResult.NoMatch:
                     case ConditionEvaluateResult.Undetermined:
-                        return Bailout(`Enabler evaluated as ${ConditionEvaluateResultStrings[result]}`);
+                        return bailout(`Enabler evaluated as ${ConditionEvaluateResultStrings[result]}`);
                 }
             }
 
@@ -275,31 +275,31 @@ export class InputValidator implements IInputValidator {
             // Support Async evaluation by letting Evaluate return a promise
             // When an async process returns, it must take NO action
             // if the value of State.ValidationResult is not still AsyncProcessing.
-                return ProcessPromise(pendingCER);
+                return processPromise(pendingCER);
             }
             else
-                return ResolveCER(pendingCER as ConditionEvaluateResult);
+                return resolveCER(pendingCER as ConditionEvaluateResult);
 
         }
         catch (e)
         {
             if (e instanceof Error)
-                LogError(e.message);
+                logError(e.message);
             // resume normal processing with Undetermined state
             resultState.ConditionEvaluateResult = ConditionEvaluateResult.Undetermined;
             resultState.IssueFound = null;
             return resultState;
         }
         finally {
-            LogInfo(() => {
+            logInfo(() => {
                 return {
                     message: `Condition result: ${ConditionEvaluateResultStrings[resultState.ConditionEvaluateResult]} Issue found: ` +
                         (resultState ? JSON.stringify(resultState) : 'none')
                 };
             });
         }
-        function ResolveCER(cer: ConditionEvaluateResult): InputValidateResult {
-            LogInfo(() => {
+        function resolveCER(cer: ConditionEvaluateResult): InputValidateResult {
+            logInfo(() => {
                 return {
                     message: `Condition evaluated as ${ConditionEvaluateResultStrings[cer]}`
                 };
@@ -307,7 +307,7 @@ export class InputValidator implements IInputValidator {
             resultState.ConditionEvaluateResult = cer;
             switch (cer) {
                 case ConditionEvaluateResult.NoMatch:
-                    let issueFound = CreateIssueFound(self.ValueHost, self);   // setup for ValidationResult.Undetermined
+                    let issueFound = createIssueFound(self.ValueHost, self);   // setup for ValidationResult.Undetermined
                     issueFound.Severity = self.Severity;
                     self.UpdateStateForNoMatch(issueFound, self.ValueHost);
                     resultState.IssueFound = issueFound;
@@ -315,27 +315,27 @@ export class InputValidator implements IInputValidator {
             }
             return resultState;
         }        
-        function ProcessPromise(promiseCER: Promise<ConditionEvaluateResult>): Promise<InputValidateResult>
+        function processPromise(promiseCER: Promise<ConditionEvaluateResult>): Promise<InputValidateResult>
         {
             let wrapperPromise = new Promise<InputValidateResult>((resolve, reject) => {
                 promiseCER.then(
                     (resultingCER) => {
-                        resolve(ResolveCER(resultingCER));
+                        resolve(resolveCER(resultingCER));
                     },
                     (reason) => {
-                        LogError(reason);
+                        logError(reason);
                         reject(reason);
                     });
             });
             return wrapperPromise;            
         }
-        function Bailout(errorMessage: string): InputValidateResult
+        function bailout(errorMessage: string): InputValidateResult
         {
             let resultState: InputValidateResult = {
                 ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
                 IssueFound: null
             };
-            LogInfo(() => {
+            logInfo(() => {
                 return {
                     message: errorMessage
                 };
@@ -343,7 +343,7 @@ export class InputValidator implements IInputValidator {
             resultState.Skipped = true;
             return resultState;                    
         }
-        function LogInfo(
+        function logInfo(
             fn: () => { message: string; source?: string })
         {
             if (self.Services.LoggerService.MinLevel >= LoggingLevel.Info)
@@ -354,7 +354,7 @@ export class InputValidator implements IInputValidator {
                     parms.source ?? `Validation with ${self.GetLogSourceText()}`);
             }
         }
-        function LogError(message: string): void
+        function logError(message: string): void
         {
             self.Services.LoggerService.Log('Exception: ' + (message ?? 'Reason unspecified'),
                 LoggingLevel.Error, ValidationCategory, self.GetLogSourceText());            
@@ -387,7 +387,7 @@ export class InputValidator implements IInputValidator {
      */
     public GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
     {
-        ToIGatherValueHostIds(this.Condition)?.GatherValueHostIds?.(collection, valueHostResolver);
+        toIGatherValueHostIds(this.Condition)?.GatherValueHostIds?.(collection, valueHostResolver);
     }
         
     /**
@@ -424,7 +424,7 @@ export class InputValidator implements IInputValidator {
 }
 
 
-export function CreateIssueFound(valueHost: IValueHost,
+export function createIssueFound(valueHost: IValueHost,
     validator: IInputValidator): IssueFound {
     return {
         ValueHostId: valueHost.GetId(),

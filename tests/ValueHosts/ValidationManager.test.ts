@@ -1,7 +1,7 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { ValidationServices } from "../../src/Services/ValidationServices";
-import { IValidationManagerCallbacks, ToIValidationManagerCallbacks, ValidationManager, ValidationManagerStateChangedHandler } from "../../src/ValueHosts/ValidationManager";
+import { IValidationManagerCallbacks, toIValidationManagerCallbacks, ValidationManager, ValidationManagerStateChangedHandler } from "../../src/ValueHosts/ValidationManager";
 import { IValueHost, ValueHostDescriptor, ValueHostState } from "../../src/Interfaces/ValueHost";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationManager, MockValidationServices, NeverMatchesConditionType, RegisterTestingOnlyConditions } from "../Mocks";
 import { InputValueHostType, InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
@@ -12,8 +12,8 @@ import { ValidateResult, ValidationResult, IssueFound, ValidationSeverity, Issue
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import { IValidationManager, ValidationManagerConfig, ValidationManagerState } from '../../src/Interfaces/ValidationManager';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
-import { DeepClone } from '../../src/Utilities/Utilities';
-import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, ToIValueHostResolver, ToIValueHostsManager, ToIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
+import { deepClone } from '../../src/Utilities/Utilities';
+import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, toIValueHostResolver, toIValueHostsManager, toIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
 import { NonInputValueHost } from '../../src/ValueHosts/NonInputValueHost';
 import { CreateDataTypeServices, RegisterConditions } from '../../starter_code/create_services';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -445,7 +445,7 @@ describe('ValidationManager.AddValueHost', () => {
             ]
         };
         testItem.AddValueHost(descriptor, null);
-        let copiedLastState = DeepClone(savedValueHostState) as InputValueHostState;
+        let copiedLastState = deepClone(savedValueHostState) as InputValueHostState;
         savedValueHostState.Value = 20;
 
         TestValueHostState(testItem, 'Field1', copiedLastState);        
@@ -626,7 +626,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         };
         testItem.UpdateValueHost(descriptor, updateState);
 
-        let savedState = DeepClone(updateState);
+        let savedState = deepClone(updateState);
         updateState.Value = 100;
      
         // ensure ValueHost is InputValueHost and has an initial state
@@ -1345,24 +1345,24 @@ describe('ToIValueHostResolverfunction', () => {
             GetValueHost: (id) => { return <any>{}; },
             Services: new MockValidationServices(false, false),
         };
-        expect(ToIValueHostResolver(testItem)).toBe(testItem);
+        expect(toIValueHostResolver(testItem)).toBe(testItem);
     });
     test('ValidationManager matches and returns itself.', () => {
         let testItem = new ValidationManager({
             Services: new ValidationServices(),
             ValueHostDescriptors: []
         });
-        expect(ToIValueHostResolver(testItem)).toBe(testItem);
+        expect(toIValueHostResolver(testItem)).toBe(testItem);
     });    
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(ToIValueHostResolver(testItem)).toBeNull();
+        expect(toIValueHostResolver(testItem)).toBeNull();
     });    
     test('null returns null.', () => {
-        expect(ToIValueHostResolver(null)).toBeNull();
+        expect(toIValueHostResolver(null)).toBeNull();
     });        
     test('Non-object returns null.', () => {
-        expect(ToIValueHostResolver(100)).toBeNull();
+        expect(toIValueHostResolver(100)).toBeNull();
     });        
 });
 describe('ToIValueHostsManager function', () => {
@@ -1372,24 +1372,24 @@ describe('ToIValueHostsManager function', () => {
             Services: new MockValidationServices(false, false),
             NotifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
         };
-        expect(ToIValueHostsManager(testItem)).toBe(testItem);
+        expect(toIValueHostsManager(testItem)).toBe(testItem);
     });
     test('ValidationManager matches and returns itself.', () => {
         let testItem = new ValidationManager({
             Services: new ValidationServices(),
             ValueHostDescriptors: []
         });
-        expect(ToIValueHostsManager(testItem)).toBe(testItem);
+        expect(toIValueHostsManager(testItem)).toBe(testItem);
     });    
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(ToIValueHostsManager(testItem)).toBeNull();
+        expect(toIValueHostsManager(testItem)).toBeNull();
     });    
     test('null returns null.', () => {
-        expect(ToIValueHostsManager(null)).toBeNull();
+        expect(toIValueHostsManager(null)).toBeNull();
     });        
     test('Non-object returns null.', () => {
-        expect(ToIValueHostsManager(100)).toBeNull();
+        expect(toIValueHostsManager(100)).toBeNull();
     });        
 });
 describe('ToIValueHostsManagerAccessor function', () => {
@@ -1401,7 +1401,7 @@ describe('ToIValueHostsManagerAccessor function', () => {
                 NotifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
             }
         };
-        expect(ToIValueHostsManagerAccessor(testItem)).toBe(testItem);
+        expect(toIValueHostsManagerAccessor(testItem)).toBe(testItem);
     });
     test('ValueHost matches and returns itself.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
@@ -1413,17 +1413,17 @@ describe('ToIValueHostsManagerAccessor function', () => {
             Id: 'Field1',
             Value: undefined
         });
-        expect(ToIValueHostsManagerAccessor(testItem)).toBe(testItem);
+        expect(toIValueHostsManagerAccessor(testItem)).toBe(testItem);
     });    
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(ToIValueHostsManagerAccessor(testItem)).toBeNull();
+        expect(toIValueHostsManagerAccessor(testItem)).toBeNull();
     });    
     test('null returns null.', () => {
-        expect(ToIValueHostsManagerAccessor(null)).toBeNull();
+        expect(toIValueHostsManagerAccessor(null)).toBeNull();
     });        
     test('Non-object returns null.', () => {
-        expect(ToIValueHostsManagerAccessor(100)).toBeNull();
+        expect(toIValueHostsManagerAccessor(100)).toBeNull();
     });        
 });
 describe('ToIValidationManagerCallbacks function', () => {
@@ -1436,23 +1436,23 @@ describe('ToIValidationManagerCallbacks function', () => {
             OnStateChanged: (vm, state) => { },
             OnValidated: (vm, results) => { }
         };
-        expect(ToIValidationManagerCallbacks(testItem)).toBe(testItem);
+        expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
     });
     test('ValidationManager matches and returns itself.', () => {
         let testItem = new ValidationManager({
             Services: new ValidationServices(),
             ValueHostDescriptors: []
         });
-        expect(ToIValidationManagerCallbacks(testItem)).toBe(testItem);
+        expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
     });    
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(ToIValidationManagerCallbacks(testItem)).toBeNull();
+        expect(toIValidationManagerCallbacks(testItem)).toBeNull();
     });    
     test('null returns null.', () => {
-        expect(ToIValidationManagerCallbacks(null)).toBeNull();
+        expect(toIValidationManagerCallbacks(null)).toBeNull();
     });        
     test('Non-object returns null.', () => {
-        expect(ToIValidationManagerCallbacks(100)).toBeNull();
+        expect(toIValidationManagerCallbacks(100)).toBeNull();
     });        
 });

@@ -9,7 +9,7 @@ import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult,
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
 import type { IGatherValueHostIds, IValueHost } from "../Interfaces/ValueHost";
 import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
+import { assertNotNull } from "../Utilities/ErrorHandling";
 import type { IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/InputValidator";
 import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 
@@ -23,7 +23,7 @@ import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 export abstract class ConditionBase<TConditionDescriptor extends ConditionDescriptor>
     implements IConditionCore<TConditionDescriptor>, IMessageTokenSource, IGatherValueHostIds {
     constructor(descriptor: TConditionDescriptor) {
-        AssertNotNull(descriptor, 'descriptor');
+        assertNotNull(descriptor, 'descriptor');
         this._descriptor = descriptor;
     }
     /**

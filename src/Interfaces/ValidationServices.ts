@@ -86,7 +86,7 @@ export interface IValidationServices extends IBasicValidationServices {
  * If not, it returns null.
  * @param source 
  */
-export function ToIServicesAccessor(source: any): IServicesAccessor | null {
+export function toIServicesAccessor(source: any): IServicesAccessor | null {
     if (source && typeof source === 'object') {
         let test = source as IServicesAccessor;       
         if ("Services" in test)

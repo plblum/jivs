@@ -1,7 +1,7 @@
 import { BusinessLogicInputValueHostGenerator, BusinessLogicValueHostId } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { BusinessLogicInputValueHost, BusinessLogicInputValueHostType } from "../../src/ValueHosts/BusinessLogicInputValueHost";
 import { MockValidationManager, MockValidationServices } from "../Mocks";
-import { ObjectKeysCount } from '../../src/Utilities/Utilities';
+import { objectKeysCount } from '../../src/Utilities/Utilities';
 import { InputValueHostBaseDescriptor, InputValueHostBaseState, IInputValueHost } from '../../src/Interfaces/InputValueHost';
 import { ValidationResult, ValidateResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
 
@@ -76,7 +76,7 @@ describe('BusinessLogicInputValueHost.Validate', () => {
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
-        expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
+        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
         expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "ERROR",
@@ -95,7 +95,7 @@ describe('BusinessLogicInputValueHost.Validate', () => {
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
-        expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
+        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
         expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "ERROR",
@@ -114,7 +114,7 @@ describe('BusinessLogicInputValueHost.Validate', () => {
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
-        expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
+        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
         expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "ERROR",
@@ -133,7 +133,7 @@ describe('BusinessLogicInputValueHost.Validate', () => {
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
         expect(vr!.IssuesFound).not.toBeNull();
-        expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
+        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
         expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "WARNING",
@@ -153,7 +153,7 @@ describe('BusinessLogicInputValueHost.Validate', () => {
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
-        expect(ObjectKeysCount(vr!.IssuesFound)).toBe(1);
+        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
         expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "EC1",
             ErrorMessage: "ERROR",
@@ -176,7 +176,7 @@ describe('BusinessLogicInputValueHost.Validate', () => {
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
         expect(vr!.IssuesFound).not.toBeNull();
-        expect(ObjectKeysCount(vr!.IssuesFound)).toBe(2);
+        expect(objectKeysCount(vr!.IssuesFound)).toBe(2);
         expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "WARNING",
@@ -205,7 +205,7 @@ describe('BusinessLogicInputValueHost.Validate', () => {
         expect(vr).not.toBeNull();
         expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
         expect(vr!.IssuesFound).not.toBeNull();
-        expect(ObjectKeysCount(vr!.IssuesFound)).toBe(2);
+        expect(objectKeysCount(vr!.IssuesFound)).toBe(2);
         expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
             ConditionType: "GENERATED_0",
             ErrorMessage: "WARNING",

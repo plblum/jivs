@@ -1,7 +1,7 @@
 import { InputValueHostType, InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
 import { ValueHostState, IValueHost, ValueHostDescriptor } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
-import { ValueHostFactory, RegisterStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
+import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { MockValidationManager, MockValidationServices } from "../Mocks";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
@@ -211,7 +211,7 @@ describe('RegisterDefaultValueHostGenerators', () => {
     test('Ensure InputValueHostType gets registered', () => {
         let factory = new ValueHostFactory();
         expect(factory.IsRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(false);
-        expect(() => RegisterStandardValueHostGenerators(factory)).not.toThrow();
+        expect(() => registerStandardValueHostGenerators(factory)).not.toThrow();
         expect(factory.IsRegistered({ Type: InputValueHostType, Id: '', Label: '' })).toBe(true);
         
     });

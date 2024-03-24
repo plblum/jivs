@@ -11,7 +11,7 @@
 import { IDataTypeFormatter, DataTypeResolution } from "../Interfaces/DataTypes";
 import { IServicesAccessor, IValidationServices } from "../Interfaces/ValidationServices";
 import { CodingError } from "../Utilities/ErrorHandling";
-import { CultureLanguageCode } from "../Utilities/Utilities";
+import { cultureLanguageCode } from "../Utilities/Utilities";
 import { LookupKey } from "./LookupKeys";
 
 /**
@@ -94,7 +94,7 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
      */
     protected MatchingLookupKeys(luk1: string, luk2: string | Array<string>): boolean
     {
-        function Try(a: string, b: string): boolean
+        function isMatch(a: string, b: string): boolean
         {
             if (a.length === b.length)    // to avoid converting two strings when its obvious we don't need to
             {
@@ -105,10 +105,10 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
         if (Array.isArray(luk2))
         {
             for (let i = 0; i < luk2.length; i++)
-                if (Try(luk1, luk2[i]))
+                if (isMatch(luk1, luk2[i]))
                     return true;
         }
-        else if (Try(luk1, luk2))
+        else if (isMatch(luk1, luk2))
             return true;
         return false;
     }
@@ -373,7 +373,7 @@ export class CurrencyFormatter extends NumberFormatterBase
         let currencyCode = this._defaultCurrencyCode;
         if (this._cultureToCurrencyCode)
             currencyCode = this._cultureToCurrencyCode[cultureId] ??
-                this._cultureToCurrencyCode[CultureLanguageCode(cultureId)] ??
+                this._cultureToCurrencyCode[cultureLanguageCode(cultureId)] ??
                 this._defaultCurrencyCode;
         return currencyCode;
     }

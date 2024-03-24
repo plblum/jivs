@@ -23,11 +23,11 @@
  * @module DataTypes/ConcreteClasses/DataTypeServices
  */
 
-import { DefaultComparer } from "./DataTypeComparers";
-import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
+import { defaultComparer } from "./DataTypeComparers";
+import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeFormatter, IDataTypeCheckGenerator } from "../Interfaces/DataTypes";
-import { CultureLanguageCode, DeepClone } from '../Utilities/Utilities';
-import { IValidationServices, ToIServicesAccessor } from "../Interfaces/ValidationServices";
+import { cultureLanguageCode, deepClone } from '../Utilities/Utilities';
+import { IValidationServices, toIServicesAccessor } from "../Interfaces/ValidationServices";
 import { ICondition } from "../Interfaces/Conditions";
 import { LookupKey } from "./LookupKeys";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
@@ -62,7 +62,7 @@ export class DataTypeServices implements IDataTypeServices {
      */
     constructor(cultureFallbacks?: Array<CultureIdFallback> | null) {
         if (cultureFallbacks && cultureFallbacks.length > 0)
-            this._cultureConfig = DeepClone(cultureFallbacks) as Array<CultureIdFallback>;
+            this._cultureConfig = deepClone(cultureFallbacks) as Array<CultureIdFallback>;
     }
 
     /**
@@ -78,7 +78,7 @@ export class DataTypeServices implements IDataTypeServices {
     }
     public set Services(services: IValidationServices)
     {
-        AssertNotNull(services, 'services');
+        assertNotNull(services, 'services');
         this._services = services;
         this.UpdateServices(services);
     }
@@ -91,7 +91,7 @@ export class DataTypeServices implements IDataTypeServices {
     protected UpdateServices(services: IValidationServices): void
     {
         this._dataTypeFormatters?.forEach((dtf) => {
-            let sa = ToIServicesAccessor(dtf);
+            let sa = toIServicesAccessor(dtf);
             if (sa)
                 sa.Services = services;
         });
@@ -123,7 +123,7 @@ export class DataTypeServices implements IDataTypeServices {
     protected GetClosestCultureIdFallback(cultureId: string): CultureIdFallback | null {
         let cc = this.GetCultureIdFallback(cultureId);
         if (!cc) {
-            let lang = CultureLanguageCode(cultureId);
+            let lang = cultureLanguageCode(cultureId);
             if (lang !== cultureId) {
                 cc = this.GetCultureIdFallback(lang);
             }
@@ -201,12 +201,12 @@ export class DataTypeServices implements IDataTypeServices {
       * @param dtlf
       */
     public RegisterFormatter(dtlf: IDataTypeFormatter): void {
-        AssertNotNull(dtlf, 'dtlf');
+        assertNotNull(dtlf, 'dtlf');
         if (!this._dataTypeFormatters)
             this._dataTypeFormatters = [];
         this._dataTypeFormatters.push(dtlf);
         if (this._services) {
-            let sa = ToIServicesAccessor(dtlf);
+            let sa = toIServicesAccessor(dtlf);
             if (sa)
                 sa.Services = this._services;
         }
@@ -343,7 +343,7 @@ export class DataTypeServices implements IDataTypeServices {
             if (comparerCU)
                 return comparerCU.Compare(cleanedUpValue1, cleanedUpValue2);
 
-            return DefaultComparer(cleanedUpValue1, cleanedUpValue2);
+            return defaultComparer(cleanedUpValue1, cleanedUpValue2);
         }
         catch (e)
         {
@@ -381,7 +381,7 @@ export class DataTypeServices implements IDataTypeServices {
      * @param comparer
      */
     public RegisterDataTypeComparer(comparer: IDataTypeComparer): void {
-        AssertNotNull(comparer, 'comparer');
+        assertNotNull(comparer, 'comparer');
 
         if (!this._comparers)
             this._comparers = [];
@@ -432,7 +432,7 @@ export class DataTypeServices implements IDataTypeServices {
      * the existing one is replaced.
      */
     public RegisterDataTypeIdentifier(identifier: IDataTypeIdentifier): void {
-        AssertNotNull(identifier, 'identifier');
+        assertNotNull(identifier, 'identifier');
         let existingPos = this.GetDataTypeIdentifiers().findIndex((idt) => idt.DataTypeLookupKey.toLowerCase() === identifier.DataTypeLookupKey.toLowerCase());
         if (existingPos < 0)
             this._dataTypeIdentifiers!.push(identifier);
@@ -467,7 +467,7 @@ export class DataTypeServices implements IDataTypeServices {
      * @param converter 
      */
     public RegisterDataTypeConverter(converter: IDataTypeConverter): void {
-        AssertNotNull(converter, 'converter');
+        assertNotNull(converter, 'converter');
         if (!this._converters)
             this._converters = [];
         this._converters.push(converter);
@@ -535,8 +535,8 @@ export class DataTypeServices implements IDataTypeServices {
      */    
     public AutoGenerateDataTypeCondition(valueHost: IInputValueHost, dataTypeLookupKey: LookupKey | string): ICondition | null
     {
-        AssertNotNull(valueHost, 'valueHost');
-        AssertNotNull(dataTypeLookupKey, 'dataTypeLookupKey');
+        assertNotNull(valueHost, 'valueHost');
+        assertNotNull(dataTypeLookupKey, 'dataTypeLookupKey');
         let generator = this.GetDataTypeCheckGenerator(dataTypeLookupKey);
         if (generator !== null)
             return generator.CreateCondition(valueHost, dataTypeLookupKey, this.Services.ConditionFactory); // may return null
@@ -553,7 +553,7 @@ export class DataTypeServices implements IDataTypeServices {
      * @param checkGenerator 
      */
     public RegisterDataTypeCheckGenerator(checkGenerator: IDataTypeCheckGenerator): void {
-        AssertNotNull(checkGenerator, 'checkGenerator');
+        assertNotNull(checkGenerator, 'checkGenerator');
         if (!this._checkGenerators)
             this._checkGenerators = [];
         this._checkGenerators.push(checkGenerator);

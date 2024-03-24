@@ -295,7 +295,7 @@ export interface IGatherValueHostIds {
  * If not, it returns null.
  * @param source 
  */
-export function ToIGatherValueHostIds(source: any): IGatherValueHostIds | null {
+export function toIGatherValueHostIds(source: any): IGatherValueHostIds | null {
     if (source && typeof source === 'object') {
         let test = source as IGatherValueHostIds;       
         if (test.GatherValueHostIds !== undefined)

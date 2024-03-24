@@ -27,9 +27,9 @@ import { InvalidTypeError } from "../Utilities/ErrorHandling";
  * @param value1 
  * @param value2 
  */
-export function DefaultComparer(value1: any, value2: any): ComparersResult {
-    AssertPrimitive(value1);
-    AssertPrimitive(value2);
+export function defaultComparer(value1: any, value2: any): ComparersResult {
+    assertPrimitive(value1);
+    assertPrimitive(value2);
     if (value1 === value2)
         return ComparersResult.Equals;
     if (typeof value1 === typeof value2) {
@@ -40,7 +40,7 @@ export function DefaultComparer(value1: any, value2: any): ComparersResult {
     return ComparersResult.Undetermined;
 }
 
-function AssertPrimitive(value: any): void {
+function assertPrimitive(value: any): void {
     if ((value != null) &&
         (typeof value === 'object' || Array.isArray(value)))
         throw new InvalidTypeError(value);

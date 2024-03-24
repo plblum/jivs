@@ -1,25 +1,25 @@
-import { BooleanDataTypeComparer, DefaultComparer } from "../../src/DataTypes/DataTypeComparers";
+import { BooleanDataTypeComparer, defaultComparer } from "../../src/DataTypes/DataTypeComparers";
 import { ComparersResult } from "../../src/Interfaces/DataTypes";
 
 // function DefaultComparer(value1: any, value2: any): ComparersResult
 describe('Comparers.DefaultComparer', () => {
     test('Equal primitives', () => {
-        expect(DefaultComparer(0, 0)).toBe(ComparersResult.Equals);
-        expect(DefaultComparer(10, 10)).toBe(ComparersResult.Equals);
-        expect(DefaultComparer(true, true)).toBe(ComparersResult.Equals);
-        expect(DefaultComparer(false, false)).toBe(ComparersResult.Equals);
-        expect(DefaultComparer('10', '10')).toBe(ComparersResult.Equals);
-        expect(DefaultComparer(null, null)).toBe(ComparersResult.Equals);
-        expect(DefaultComparer(undefined, undefined)).toBe(ComparersResult.Equals);
+        expect(defaultComparer(0, 0)).toBe(ComparersResult.Equals);
+        expect(defaultComparer(10, 10)).toBe(ComparersResult.Equals);
+        expect(defaultComparer(true, true)).toBe(ComparersResult.Equals);
+        expect(defaultComparer(false, false)).toBe(ComparersResult.Equals);
+        expect(defaultComparer('10', '10')).toBe(ComparersResult.Equals);
+        expect(defaultComparer(null, null)).toBe(ComparersResult.Equals);
+        expect(defaultComparer(undefined, undefined)).toBe(ComparersResult.Equals);
     });
     test('Undetermined with different type primitives', () => {
-        expect(DefaultComparer(0, '0')).toBe(ComparersResult.Undetermined); 
-        expect(DefaultComparer(0, undefined)).toBe(ComparersResult.Undetermined); 
-        expect(DefaultComparer(0, false)).toBe(ComparersResult.Undetermined);  
-        expect(DefaultComparer('0', 0)).toBe(ComparersResult.Undetermined); 
-        expect(DefaultComparer(undefined, 0)).toBe(ComparersResult.Undetermined); 
-        expect(DefaultComparer(false, 0)).toBe(ComparersResult.Undetermined); 
-        expect(DefaultComparer(null, undefined)).toBe(ComparersResult.Undetermined); 
+        expect(defaultComparer(0, '0')).toBe(ComparersResult.Undetermined); 
+        expect(defaultComparer(0, undefined)).toBe(ComparersResult.Undetermined); 
+        expect(defaultComparer(0, false)).toBe(ComparersResult.Undetermined);  
+        expect(defaultComparer('0', 0)).toBe(ComparersResult.Undetermined); 
+        expect(defaultComparer(undefined, 0)).toBe(ComparersResult.Undetermined); 
+        expect(defaultComparer(false, 0)).toBe(ComparersResult.Undetermined); 
+        expect(defaultComparer(null, undefined)).toBe(ComparersResult.Undetermined); 
     });
 // there are no cases with same type primitives that support NotEquals
     test('Not Equal with same type primitives', () => {
@@ -28,22 +28,22 @@ describe('Comparers.DefaultComparer', () => {
     });
     
     test('InvalidTypeErrors', () => {
-        expect(() => DefaultComparer({}, 0)).toThrow(/^Type is/);
-        expect(() => DefaultComparer(0, {})).toThrow(/^Type is/);
-        expect(() => DefaultComparer([], 0)).toThrow(/^Type is/);
-        expect(() => DefaultComparer(0, [])).toThrow(/^Type is/);
+        expect(() => defaultComparer({}, 0)).toThrow(/^Type is/);
+        expect(() => defaultComparer(0, {})).toThrow(/^Type is/);
+        expect(() => defaultComparer([], 0)).toThrow(/^Type is/);
+        expect(() => defaultComparer(0, [])).toThrow(/^Type is/);
     });
     test('GreaterThan primitives', () => {
-        expect(DefaultComparer(0, 1)).toBe(ComparersResult.LessThan);
-        expect(DefaultComparer(0.4, 0.44)).toBe(ComparersResult.LessThan);
-        expect(DefaultComparer(false, true)).toBe(ComparersResult.LessThan);
-        expect(DefaultComparer('A', 'B')).toBe(ComparersResult.LessThan);
+        expect(defaultComparer(0, 1)).toBe(ComparersResult.LessThan);
+        expect(defaultComparer(0.4, 0.44)).toBe(ComparersResult.LessThan);
+        expect(defaultComparer(false, true)).toBe(ComparersResult.LessThan);
+        expect(defaultComparer('A', 'B')).toBe(ComparersResult.LessThan);
     });    
     test('GreaterThan primitives', () => {
-        expect(DefaultComparer(1, 0)).toBe(ComparersResult.GreaterThan);
-        expect(DefaultComparer(0.44, 0.4)).toBe(ComparersResult.GreaterThan);
-        expect(DefaultComparer(true, false)).toBe(ComparersResult.GreaterThan);
-        expect(DefaultComparer('B', 'A')).toBe(ComparersResult.GreaterThan);
+        expect(defaultComparer(1, 0)).toBe(ComparersResult.GreaterThan);
+        expect(defaultComparer(0.44, 0.4)).toBe(ComparersResult.GreaterThan);
+        expect(defaultComparer(true, false)).toBe(ComparersResult.GreaterThan);
+        expect(defaultComparer('B', 'A')).toBe(ComparersResult.GreaterThan);
     });        
 });
 

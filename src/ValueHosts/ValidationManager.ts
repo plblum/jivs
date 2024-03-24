@@ -5,15 +5,15 @@
  * @module ValidationManager/ConcreteClasses
  */
 import { BusinessLogicInputValueHostType, BusinessLogicValueHostId } from "./BusinessLogicInputValueHost";
-import { DeepClone, DeepEquals } from "../Utilities/Utilities";
+import { deepClone, deepEquals } from "../Utilities/Utilities";
 import type { IValidationServices } from "../Interfaces/ValidationServices";
 import type { IValueHost, ValueHostDescriptor, ValueHostState } from "../Interfaces/ValueHost";
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ValueChangedHandler, ValueHostStateChangedHandler } from "./ValueHostBase";
 import type { IInputValueHost } from "../Interfaces/InputValueHost";
 import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from "../Interfaces/Validation";
-import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
+import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, toIInputValueHostCallbacks } from "./InputValueHostBase";
+import { assertNotNull } from "../Utilities/ErrorHandling";
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig } from "../Interfaces/ValidationManager";
 
 
@@ -90,12 +90,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * ```
      */
     constructor(config: ValidationManagerConfig) {
-        AssertNotNull(config, 'config');
-        AssertNotNull(config.Services, 'services');
+        assertNotNull(config, 'config');
+        assertNotNull(config.Services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         let savedServices = config.Services ?? null;
         config.Services = null as any; // to ignore during DeepClone
-        let internalConfig = DeepClone(config) as ValidationManagerConfig;
+        let internalConfig = deepClone(config) as ValidationManagerConfig;
         config.Services = savedServices;
         internalConfig.Services = savedServices;
 
@@ -171,10 +171,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @returns true when the state did change. false when it did not.
      */
     public UpdateState(updater: (stateToUpdate: TState) => TState): boolean {
-        AssertNotNull(updater, 'updater');
-        let toUpdate = DeepClone(this.State);
+        assertNotNull(updater, 'updater');
+        let toUpdate = deepClone(this.State);
         let updated = updater(toUpdate);
-        if (!DeepEquals(this.State, updated)) {
+        if (!deepEquals(this.State, updated)) {
             this._state = updated;
             this.OnStateChanged?.(this, updated);
             return true;
@@ -194,7 +194,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * When neither state was supplied, a default state is created.
      */
     public AddValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
-        AssertNotNull(descriptor, 'descriptor');
+        assertNotNull(descriptor, 'descriptor');
         if (!this._valueHostDescriptors[descriptor.Id])
             return this.ApplyDescriptor(descriptor, initialState);
 
@@ -210,7 +210,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * It will be run through ValueHostFactory.CleanupState first.
      */
     public UpdateValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
-        AssertNotNull(descriptor, 'descriptor');
+        assertNotNull(descriptor, 'descriptor');
         if (this._valueHostDescriptors[descriptor.Id])
             return this.ApplyDescriptor(descriptor, initialState);
 
@@ -222,7 +222,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param descriptor 
      */
     public DiscardValueHost(descriptor: ValueHostDescriptor): void {
-        AssertNotNull(descriptor, 'descriptor');
+        assertNotNull(descriptor, 'descriptor');
         if (this._valueHostDescriptors[descriptor.Id]) {
             delete this._valueHosts[descriptor.Id];
             delete this._valueHostDescriptors[descriptor.Id];
@@ -253,7 +253,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         if (!existingState && this._lastValueHostStates)
             existingState = this._lastValueHostStates.find((state) => state.Id === descriptor.Id) ?? null;
         if (existingState) {
-            let cleanedState = DeepClone(existingState) as ValueHostState;  // clone to allow changes during Cleanup
+            let cleanedState = deepClone(existingState) as ValueHostState;  // clone to allow changes during Cleanup
             factory.CleanupState(cleanedState, descriptor);
             // User may have supplied the state without
             // all of the properties we normally use.
@@ -538,9 +538,9 @@ export interface IValidationManagerCallbacks extends IInputValueHostCallbacks {
  * @param source 
  * @returns source typecasted to IValidationManagerCallbacks if appropriate or null if not.
  */
-export function ToIValidationManagerCallbacks(source: any): IValidationManagerCallbacks | null
+export function toIValidationManagerCallbacks(source: any): IValidationManagerCallbacks | null
 {
-    if (ToIInputValueHostCallbacks(source))
+    if (toIInputValueHostCallbacks(source))
     {
         let test = source as IValidationManagerCallbacks;     
         if (test.OnStateChanged !== undefined &&

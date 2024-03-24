@@ -3,11 +3,11 @@
  * @module ValueHosts/AbstractClasses/InputValueHostBase
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
-import { DeepEquals, GroupsMatch } from "../Utilities/Utilities";
+import { deepEquals, groupsMatch } from "../Utilities/Utilities";
 import { type SetValueOptions} from "../Interfaces/ValueHost";
-import { IValueHostCallbacks, ToIValueHostCallbacks, ValueHostBase } from "./ValueHostBase";
+import { IValueHostCallbacks, toIValueHostCallbacks, ValueHostBase } from "./ValueHostBase";
 import { type IValueHostGenerator } from "../Interfaces/ValueHostFactory";
-import { IValueHostResolver, IValueHostsManager, ToIValueHostsManager } from "../Interfaces/ValueHostResolver";
+import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { IInputValueHost, InputValueHostBaseDescriptor, InputValueHostBaseState } from "../Interfaces/InputValueHost";
 import { BusinessLogicError, IssueFound, IssueSnapshot, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from "../Interfaces/Validation";
 
@@ -50,7 +50,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         if (!options)
             options = {};        
         let oldValue: any = this.State.Value;
-        let changed = !DeepEquals(value, oldValue);
+        let changed = !deepEquals(value, oldValue);
         this.UpdateState((stateToUpdate) => {
             if (changed) {
                 stateToUpdate.ValidationResult = ValidationResult.ValueChangedButUnvalidated;
@@ -91,7 +91,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         if (!options)
             options = {};        
         let oldValue: any = this.State.InputValue;
-        let changed = !DeepEquals(value, oldValue);
+        let changed = !deepEquals(value, oldValue);
         this.UpdateState((stateToUpdate) => {
             if (changed) {
                 stateToUpdate.ValidationResult = ValidationResult.ValueChangedButUnvalidated;
@@ -127,9 +127,9 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         if (!options)
             options = options ?? {};
         let oldNative: any = this.State.Value;
-        let nativeChanged = !DeepEquals(nativeValue, oldNative);
+        let nativeChanged = !deepEquals(nativeValue, oldNative);
         let oldInput: any = this.State.InputValue;
-        let inputChanged = !DeepEquals(inputValue, oldInput);
+        let inputChanged = !deepEquals(inputValue, oldInput);
         let changed = nativeChanged || inputChanged;
         this.UpdateState((stateToUpdate) => {
             if (changed) {
@@ -169,7 +169,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     }
 
     protected NotifyOthersOfChange(options: SetValueOptions): void {
-        ToIValueHostsManager(this.ValueHostsManager)?.NotifyOtherValueHostsOfValueChange?.(
+        toIValueHostsManager(this.ValueHostsManager)?.NotifyOtherValueHostsOfValueChange?.(
             this.GetId(), options.Validate === true);
     }
     /**
@@ -396,7 +396,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         let id = this.GetId();
         let list: Array<IssueSnapshot> = [];
 
-        if (this.State?.IssuesFound && GroupsMatch(group, this.State.Group)) {
+        if (this.State?.IssuesFound && groupsMatch(group, this.State.Group)) {
             for (let valKey in this.State.IssuesFound) {
                 let issue = this.State.IssuesFound[valKey];
                 list.push({
@@ -472,9 +472,9 @@ export interface IInputValueHostCallbacks extends IValueHostCallbacks {
  * @param source 
  * @returns source typecasted to IInputValueHostCallbacks if appropriate or null if not.
  */
-export function ToIInputValueHostCallbacks(source: any): IInputValueHostCallbacks | null
+export function toIInputValueHostCallbacks(source: any): IInputValueHostCallbacks | null
 {
-    if (ToIValueHostCallbacks(source))
+    if (toIValueHostCallbacks(source))
     {
         let test = source as IInputValueHostCallbacks;
         if (test.OnInputValueChanged !== undefined &&

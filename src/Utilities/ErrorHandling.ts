@@ -25,7 +25,7 @@ export class InvalidTypeError extends Error
  * @param valueToCheck 
  * @param memberName - Used in the error message. Defaults to 'parameter'.
  */
-export function AssertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
+export function assertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
 {
     if (valueToCheck == null)   // includes undefined
         throw new CodingError(`${memberName} required`);

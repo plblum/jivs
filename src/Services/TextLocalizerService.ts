@@ -2,7 +2,7 @@
  * @module Services/TextLocalizerServices
  */
 import { CultureToText, ITextLocalizerService } from "../Interfaces/TextLocalizerService";
-import { CultureLanguageCode } from "../Utilities/Utilities";
+import { cultureLanguageCode } from "../Utilities/Utilities";
 
 /**
  * A service to offer text alternatives to the default text
@@ -46,7 +46,7 @@ export class TextLocalizerService implements ITextLocalizerService
         let mapped = this._l10nKeyMap.get(l10nKey);
         if (mapped)
         {
-            let text = mapped[CultureLanguageCode(cultureIdToMatch)];
+            let text = mapped[cultureLanguageCode(cultureIdToMatch)];
             if (text !== undefined)
                 return text;
             text = mapped['*'];

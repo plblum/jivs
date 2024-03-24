@@ -7,7 +7,7 @@
 
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { ConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from "../Interfaces/Conditions";
-import { IValueHost, ToIGatherValueHostIds } from "../Interfaces/ValueHost";
+import { IValueHost, toIGatherValueHostIds } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { CodingError } from "../Utilities/ErrorHandling";
 import { ConditionBase } from "./ConditionBase";
@@ -80,7 +80,7 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
     {
         let conditions = this.Conditions(valueHostResolver);
         for (let condition of conditions)
-            ToIGatherValueHostIds(condition)?.GatherValueHostIds?.(collection, valueHostResolver);
+            toIGatherValueHostIds(condition)?.GatherValueHostIds?.(collection, valueHostResolver);
     }        
     protected get DefaultCategory(): ConditionCategory {
         return ConditionCategory.Children;

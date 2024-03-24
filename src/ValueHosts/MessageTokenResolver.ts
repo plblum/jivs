@@ -6,7 +6,7 @@ import type { DataTypeResolution } from "../Interfaces/DataTypes";
 import { IMessageTokenResolver, IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/InputValidator";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { LoggingLevel, ConfigurationCategory, TypeMismatchCategory, FormattingCategory } from "../Interfaces/Logger";
-import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
+import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
 import { type IValueHostResolver } from "../Interfaces/ValueHostResolver";
 
 
@@ -27,8 +27,8 @@ export class MessageTokenResolver implements IMessageTokenResolver
      */
     public ResolveTokens(message: string, valueHost: IInputValueHost, valueHostResolver: IValueHostResolver, ...hosts: Array<IMessageTokenSource>): string
     {
-        AssertNotNull(message, 'message');
-        AssertNotNull(valueHostResolver, 'valueHostResolver');
+        assertNotNull(message, 'message');
+        assertNotNull(valueHostResolver, 'valueHostResolver');
         if (!hosts || !hosts.length || hosts[0] == null)    // null/undefined
             throw new CodingError(`hosts required`);
         const fnName = 'MessageTokenResolver.ResolveTokens';

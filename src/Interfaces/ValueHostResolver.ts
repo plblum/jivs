@@ -44,7 +44,7 @@ export interface IValueHostsManager extends IValueHostResolver
  * @param source 
  * @returns source typecasted to IValueHostResolver if appropriate or null if not.
  */
-export function ToIValueHostResolver(source: any): IValueHostResolver | null
+export function toIValueHostResolver(source: any): IValueHostResolver | null
 {
     if (source && typeof source === 'object') {
         let test = source as IValueHostResolver;    
@@ -60,9 +60,9 @@ export function ToIValueHostResolver(source: any): IValueHostResolver | null
  * @param source 
  * @returns source typecasted to IValueHostsManager if appropriate or null if not.
  */
-export function ToIValueHostsManager(source: any): IValueHostsManager | null
+export function toIValueHostsManager(source: any): IValueHostsManager | null
 {
-    if (ToIValueHostResolver(source)) {
+    if (toIValueHostResolver(source)) {
         let test = source as IValueHostsManager;    
         if (test.NotifyOtherValueHostsOfValueChange !== undefined)
             return test;
@@ -84,7 +84,7 @@ export interface IValueHostsManagerAccessor
  * @param source 
  * @returns source typecasted to IValueHostsManagerAccessor if appropriate or null if not.
  */
-export function ToIValueHostsManagerAccessor(source: any): IValueHostsManagerAccessor | null
+export function toIValueHostsManagerAccessor(source: any): IValueHostsManagerAccessor | null
 {
     if (source && typeof source === 'object') {
         let test = source as IValueHostsManagerAccessor;     

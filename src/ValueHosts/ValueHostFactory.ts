@@ -9,7 +9,7 @@
 
 import { BusinessLogicInputValueHostGenerator } from "./BusinessLogicInputValueHost";
 import { InputValueHostGenerator } from "./InputValueHost";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
+import { assertNotNull } from "../Utilities/ErrorHandling";
 import type { ValueHostState, IValueHost, ValueHostDescriptor } from "../Interfaces/ValueHost";
 import type { IValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { NonInputValueHostGenerator } from "./NonInputValueHost";
@@ -26,9 +26,9 @@ export class ValueHostFactory implements IValueHostFactory {
      * @param state 
      */
     public Create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost {
-        AssertNotNull(valueHostsManager, 'valueHostsManager');
-        AssertNotNull(descriptor, 'descriptor');
-        AssertNotNull(state, 'state');
+        assertNotNull(valueHostsManager, 'valueHostsManager');
+        assertNotNull(descriptor, 'descriptor');
+        assertNotNull(state, 'state');
         let generator = this.ResolveDescriptor(descriptor);
         // // we are going to modify the state without notifying the parent.
         // // This is intentional --- removed. Leave it to caller
@@ -60,7 +60,7 @@ export class ValueHostFactory implements IValueHostFactory {
      * @param descriptor 
      */
     public CleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void {
-        AssertNotNull(descriptor, 'descriptor');
+        assertNotNull(descriptor, 'descriptor');
         this.ResolveDescriptor(descriptor).CleanupState(state, descriptor);
     }
     /**
@@ -68,7 +68,7 @@ export class ValueHostFactory implements IValueHostFactory {
      * @param descriptor 
      */
     public CreateState(descriptor: ValueHostDescriptor): ValueHostState {
-        AssertNotNull(descriptor, 'descriptor');
+        assertNotNull(descriptor, 'descriptor');
         return this.ResolveDescriptor(descriptor).CreateState(descriptor);
     }
 
@@ -98,7 +98,7 @@ export class ValueHostFactory implements IValueHostFactory {
 }
 
 
-export function RegisterStandardValueHostGenerators(factory: ValueHostFactory): void {
+export function registerStandardValueHostGenerators(factory: ValueHostFactory): void {
     factory.Register(new InputValueHostGenerator());
     factory.Register(new NonInputValueHostGenerator());
     factory.Register(new BusinessLogicInputValueHostGenerator());
