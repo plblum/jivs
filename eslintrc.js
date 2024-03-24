@@ -96,6 +96,13 @@ module.exports = {
     "@typescript-eslint/no-duplicate-type-constituents": "error",
     "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-floating-promises": "error",
-    "@typescript-eslint/no-for-in-array": "error"
+    "@typescript-eslint/no-for-in-array": "error",
+    "@typescript-eslint/no-import-type-side-effects": "error",
+    "@typescript-eslint/no-inferrable-types": "off",
+    "@typescript-eslint/no-namespace": "error",
+    "@typescript-eslint/no-this-alias": "off",
+    "no-throw-literal": "off",
+    "@typescript-eslint/no-throw-literal": "error",
+    "@typescript-eslint/no-unnecessary-condition": "off"
   }
 };

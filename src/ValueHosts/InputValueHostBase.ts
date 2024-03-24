@@ -4,9 +4,9 @@
  */
 import { ValueHostId } from "../DataTypes/BasicTypes";
 import { deepEquals, groupsMatch } from "../Utilities/Utilities";
-import { type SetValueOptions} from "../Interfaces/ValueHost";
+import type { SetValueOptions} from "../Interfaces/ValueHost";
 import { IValueHostCallbacks, toIValueHostCallbacks, ValueHostBase } from "./ValueHostBase";
-import { type IValueHostGenerator } from "../Interfaces/ValueHostFactory";
+import type { IValueHostGenerator } from "../Interfaces/ValueHostFactory";
 import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from "../Interfaces/ValueHostResolver";
 import { IInputValueHost, InputValueHostBaseDescriptor, InputValueHostBaseState } from "../Interfaces/InputValueHost";
 import { BusinessLogicError, IssueFound, IssueSnapshot, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from "../Interfaces/Validation";
@@ -360,7 +360,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         let id = this.getId();
         let list: Array<IssueSnapshot> = [];
 
-        if (this.State?.IssuesFound) {
+        if (this.State.IssuesFound) {
             for (let issue of this.State.IssuesFound) {
                 list.push({
                     Id: id,
@@ -391,7 +391,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         let id = this.getId();
         let list: Array<IssueSnapshot> = [];
 
-        if (this.State?.IssuesFound && groupsMatch(group, this.State.Group)) {
+        if (this.State.IssuesFound && groupsMatch(group, this.State.Group)) {
             for (let issue of this.State.IssuesFound) {
                 list.push({
                     Id: id,

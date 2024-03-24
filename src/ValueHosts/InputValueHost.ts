@@ -322,9 +322,8 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
     public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
     {
         let validators = this.validators();
-        if (validators)
-            for (let validator of validators)
-                validator.gatherValueHostIds(collection, valueHostResolver);
+        for (let validator of validators)
+            validator.gatherValueHostIds(collection, valueHostResolver);
     }
 }
 /**

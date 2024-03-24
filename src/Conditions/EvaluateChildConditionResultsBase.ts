@@ -80,7 +80,7 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
     {
         let conditions = this.conditions(valueHostResolver);
         for (let condition of conditions)
-            toIGatherValueHostIds(condition)?.gatherValueHostIds?.(collection, valueHostResolver);
+            toIGatherValueHostIds(condition)?.gatherValueHostIds(collection, valueHostResolver);
     }        
     protected get DefaultCategory(): ConditionCategory {
         return ConditionCategory.Children;

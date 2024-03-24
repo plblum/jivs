@@ -7,7 +7,7 @@ import { IMessageTokenResolver, IMessageTokenSource, TokenLabelAndValue } from "
 import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { LoggingLevel, ConfigurationCategory, TypeMismatchCategory, FormattingCategory } from "../Interfaces/Logger";
 import { assertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { type IValueHostResolver } from "../Interfaces/ValueHostResolver";
+import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 
 
 /**

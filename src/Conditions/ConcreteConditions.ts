@@ -14,7 +14,7 @@ import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
 import type { TokenLabelAndValue } from "../Interfaces/InputValidator";
 import { CodingError } from "../Utilities/ErrorHandling";
 
-import { type IValueHost } from "../Interfaces/ValueHost";
+import type { IValueHost } from "../Interfaces/ValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import {
     type ICondition,

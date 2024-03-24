@@ -294,7 +294,7 @@ export class InputValidator implements IInputValidator {
             logInfo(() => {
                 return {
                     message: `Condition result: ${ConditionEvaluateResultStrings[resultState.ConditionEvaluateResult]} Issue found: ` +
-                        (resultState ? JSON.stringify(resultState) : 'none')
+                        JSON.stringify(resultState)
                 };
             });
         }
@@ -387,7 +387,7 @@ export class InputValidator implements IInputValidator {
      */
     public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
     {
-        toIGatherValueHostIds(this.Condition)?.gatherValueHostIds?.(collection, valueHostResolver);
+        toIGatherValueHostIds(this.Condition)?.gatherValueHostIds(collection, valueHostResolver);
     }
         
     /**

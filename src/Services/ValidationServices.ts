@@ -60,7 +60,7 @@ export class ValidationServices implements IValidationServices {
         assertNotNull(factory, 'factory');
         this._conditionFactory = factory;
     }
-    private _conditionFactory!: IConditionFactory;
+    private _conditionFactory: IConditionFactory | null = null;
 
     /**
      * Service to get the IDataTypeServices instance associated with the dataTypeLabel.
@@ -76,7 +76,7 @@ export class ValidationServices implements IValidationServices {
         this._dataTypeServices = services;
         services.Services = this;
     }
-    private _dataTypeServices!: IDataTypeServices;
+    private _dataTypeServices: IDataTypeServices | null = null;
 
     /**
      * Service to text localization specific, effectively mapping
@@ -113,7 +113,7 @@ export class ValidationServices implements IValidationServices {
         assertNotNull(service, 'service');
         this._messageTokenResolverService = service;
     }
-    private _messageTokenResolverService!: IMessageTokenResolver;
+    private _messageTokenResolverService: IMessageTokenResolver | null = null;
 
     /**
      * Service to get the ILogger instance that replaces
@@ -129,7 +129,7 @@ export class ValidationServices implements IValidationServices {
         assertNotNull(service, 'service');
         this._loggerService = service;
     }
-    private _loggerService!: ILogger;
+    private _loggerService: ILogger | null = null;
 
     //#region ValueHostFactory
     /**
