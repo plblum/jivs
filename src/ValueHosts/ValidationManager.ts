@@ -107,8 +107,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
             this._state.StateChangeCounter = 0;
         this._lastValueHostStates = internalConfig.SavedValueHostStates ?? [];
         let descriptors = internalConfig.ValueHostDescriptors ?? [];
-        for (let key in descriptors) {
-            this.addValueHost(descriptors[key], null);
+        for (let descriptor of descriptors) {
+            this.addValueHost(descriptor, null);
         }
     }
     protected get Config(): ValidationManagerConfig

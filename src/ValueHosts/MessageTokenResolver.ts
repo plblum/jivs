@@ -18,7 +18,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
     /**
      * Used to extract full tokens.
      */
-    private readonly tokensInMessageRegEx = /\{[a-z]\w*(:[a-z]\w*)?\}/ig;
+    private readonly _tokensInMessageRegEx = /\{[a-z]\w*(:[a-z]\w*)?\}/ig;
     /**
      * Replaces tokens in the message with user friendly values
      * @param message 
@@ -34,7 +34,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
         const fnName = 'MessageTokenResolver.ResolveTokens';
         // capture all token patterns and build a list of CapturedTokens
         // If none found, return the message
-        let foundTokens = message.match(this.tokensInMessageRegEx);
+        let foundTokens = message.match(this._tokensInMessageRegEx);
         if (!foundTokens)
             return message;
 

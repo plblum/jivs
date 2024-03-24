@@ -52,7 +52,7 @@ export class BusinessLogicInputValueHost extends InputValueHostBase<InputValueHo
             {
                 result.IssuesFound = iif;
                 result.ValidationResult = errorFound ? ValidationResult.Invalid : ValidationResult.Valid;
-            };
+            }
         }
         toIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
         return result;

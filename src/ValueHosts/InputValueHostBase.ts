@@ -361,8 +361,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         let list: Array<IssueSnapshot> = [];
 
         if (this.State?.IssuesFound) {
-            for (let valKey in this.State.IssuesFound) {
-                let issue = this.State.IssuesFound[valKey];
+            for (let issue of this.State.IssuesFound) {
                 list.push({
                     Id: id,
                     Severity: issue.Severity,
@@ -393,8 +392,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         let list: Array<IssueSnapshot> = [];
 
         if (this.State?.IssuesFound && groupsMatch(group, this.State.Group)) {
-            for (let valKey in this.State.IssuesFound) {
-                let issue = this.State.IssuesFound[valKey];
+            for (let issue of this.State.IssuesFound) {
                 list.push({
                     Id: id,
                     Severity: issue.Severity,

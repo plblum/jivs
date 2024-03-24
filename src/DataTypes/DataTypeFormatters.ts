@@ -43,7 +43,7 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
     /**
      * The DataTypeLookup key(s) that this class supports.
      */
-    protected abstract get ExpectedLookupKeys(): string | Array<string> | Array<string>;
+    protected abstract get ExpectedLookupKeys(): string | Array<string>;
 
     /**
      * Return true so long as the CultureId is supported by this class.
@@ -248,7 +248,7 @@ export abstract class NumberFormatterBase extends DataTypeFormatterBase
      * @returns 
      */
     protected formatNumber(value: any, cultureId: string,
-        options?: Intl.NumberFormatOptions | null | null): DataTypeResolution<string> {
+        options?: Intl.NumberFormatOptions | null): DataTypeResolution<string> {
         if (typeof value === 'number')
             return {
                 Value: Intl.NumberFormat(cultureId, options ?? this.Options).format(value)

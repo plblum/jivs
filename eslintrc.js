@@ -5,7 +5,8 @@ module.exports = {
   // ignore patterns are in separate eslintignore file
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 2016
+    ecmaVersion: 2016,
+    project: [ './tsconfig.json']
   },
   plugins: ["@typescript-eslint"],
   env: {
@@ -17,6 +18,8 @@ module.exports = {
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": "off",
     semi: "error",
+    "no-extra-semi": "off",
+    "@typescript-eslint/no-extra-semi": "error",    
     "comma-dangle": "off",
     "@typescript-eslint/comma-dangle": "error",
     "@typescript-eslint/member-delimiter-style": ["error", {
@@ -43,8 +46,56 @@ module.exports = {
           format: ['camelCase'],
           leadingUnderscore: 'forbid',
           trailingUnderscore: 'forbid',
-        },
-      
-    ]
+      },
+      {
+        selector: 'interface',
+        format: ['PascalCase'],
+        leadingUnderscore: 'forbid',
+        trailingUnderscore: 'forbid',
+      },        
+      {
+        selector: 'class',
+        format: ['PascalCase'],
+        leadingUnderscore: 'forbid',
+        trailingUnderscore: 'forbid',
+      },         
+        { // this means a field in Peter's lingo.
+          selector: 'classProperty',
+          modifiers: [ 'private' ],
+          format: ['camelCase'],
+          leadingUnderscore: 'require',
+          trailingUnderscore: 'forbid',
+      },
+      {
+        selector: 'parameter',
+        format: ['camelCase'],
+        leadingUnderscore: 'forbid',
+        trailingUnderscore: 'forbid',
+      },  
+ 
+      // { // let and var variables
+      //   selector: 'variable',
+      //   format: ['camelCase'],
+      //   leadingUnderscore: 'forbid',
+      //   trailingUnderscore: 'forbid',
+      // },        
+      { // global const
+        selector: 'variable',
+        modifiers: [ 'const', 'global' ],
+        format: ['PascalCase'],
+        leadingUnderscore: 'forbid',
+        trailingUnderscore: 'forbid',
+      },              
+    ],
+    "no-array-constructor": "off",
+    "@typescript-eslint/no-array-constructor": "error",
+    "@typescript-eslint/no-array-delete": "error",
+    "@typescript-eslint/no-confusing-non-null-assertion": "error",
+    "@typescript-eslint/no-confusing-void-expression": "error",
+    "@typescript-eslint/no-duplicate-enum-values": "error",
+    "@typescript-eslint/no-duplicate-type-constituents": "error",
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-for-in-array": "error"
   }
 };
