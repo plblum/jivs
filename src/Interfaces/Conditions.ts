@@ -20,9 +20,9 @@
  * @module Conditions/Interfaces
  */
 
-import { IValueHostResolver } from "./ValueHostResolver";
-import { IValueHost } from "./ValueHost";
-import { ConditionType } from "../Conditions/ConditionTypes";
+import { IValueHostResolver } from './ValueHostResolver';
+import { IValueHost } from './ValueHost';
+import { ConditionType } from '../Conditions/ConditionTypes';
 
 /**
  * The basis for any condition that you want to work with these validators.
@@ -59,7 +59,7 @@ export interface ICondition {
      * - Undetermined - Cannot invoke the rule. Usually data incompatible with use within the rule,
      *    like the value is null, undefined, or the wrong data type.
      */
-    Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
      * Helps identify the purpose of the Condition. Impacts:
@@ -132,9 +132,9 @@ export enum ConditionEvaluateResult {
 }
 
 export const ConditionEvaluateResultStrings = [
-    "Undetermined",
-    "Match",
-    "NoMatch"
+    'Undetermined',
+    'Match',
+    'NoMatch'
 ];
 
 /**
@@ -224,5 +224,5 @@ export interface IConditionFactory {
      * @param descriptor 
      * @returns 
      */
-    Create(descriptor: ConditionDescriptor): ICondition;
+    create(descriptor: ConditionDescriptor): ICondition;
 }

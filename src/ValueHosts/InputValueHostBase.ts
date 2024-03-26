@@ -2,14 +2,14 @@
  * Core implementation of IInputValueHost without specifics on validators, just the idea of validating.
  * @module ValueHosts/AbstractClasses/InputValueHostBase
  */
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { DeepEquals, GroupsMatch } from "../Utilities/Utilities";
-import { type SetValueOptions} from "../Interfaces/ValueHost";
-import { IValueHostCallbacks, ToIValueHostCallbacks, ValueHostBase } from "./ValueHostBase";
-import { type IValueHostGenerator } from "../Interfaces/ValueHostFactory";
-import { IValueHostResolver, IValueHostsManager, ToIValueHostsManager } from "../Interfaces/ValueHostResolver";
-import { IInputValueHost, InputValueHostBaseDescriptor, InputValueHostBaseState } from "../Interfaces/InputValueHost";
-import { BusinessLogicError, IssueFound, IssueSnapshot, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from "../Interfaces/Validation";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { deepEquals, groupsMatch } from '../Utilities/Utilities';
+import type { SetValueOptions} from '../Interfaces/ValueHost';
+import { IValueHostCallbacks, toIValueHostCallbacks, ValueHostBase } from './ValueHostBase';
+import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
+import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostResolver';
+import { IInputValueHost, InputValueHostBaseDescriptor, InputValueHostBaseState } from '../Interfaces/InputValueHost';
+import { BusinessLogicError, IssueFound, IssueSnapshot, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from '../Interfaces/Validation';
 
 
 /**
@@ -46,24 +46,24 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
     */
-    public SetValue(value: any, options?: SetValueOptions): void {
+    public setValue(value: any, options?: SetValueOptions): void {
         if (!options)
             options = {};        
         let oldValue: any = this.State.Value;
-        let changed = !DeepEquals(value, oldValue);
-        this.UpdateState((stateToUpdate) => {
+        let changed = !deepEquals(value, oldValue);
+        this.updateState((stateToUpdate) => {
             if (changed) {
                 stateToUpdate.ValidationResult = ValidationResult.ValueChangedButUnvalidated;
                 stateToUpdate.Value = value;
             }
-            this.UpdateChangeCounterInState(stateToUpdate, changed, options!);
-            this.UpdateConversionErrorMessage(stateToUpdate, value, options!);
+            this.updateChangeCounterInState(stateToUpdate, changed, options!);
+            this.updateConversionErrorMessage(stateToUpdate, value, options!);
 
             return stateToUpdate;
         }, this);
-        this.ProcessValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
-        this.NotifyOthersOfChange(options);
-        this.UseOnValueChanged(changed, oldValue, options);
+        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
+        this.notifyOthersOfChange(options);
+        this.useOnValueChanged(changed, oldValue, options);
     }
 
     /**
@@ -72,7 +72,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * an <input type="date"> returns a string, not a date.
      * Strings are not cleaned up, no trimming applied.
      */
-    public GetInputValue(): any {
+    public getInputValue(): any {
         return this.State.InputValue;
     }
 
@@ -87,23 +87,23 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
     */
-    public SetInputValue(value: any, options?: SetValueOptions): void {
+    public setInputValue(value: any, options?: SetValueOptions): void {
         if (!options)
             options = {};        
         let oldValue: any = this.State.InputValue;
-        let changed = !DeepEquals(value, oldValue);
-        this.UpdateState((stateToUpdate) => {
+        let changed = !deepEquals(value, oldValue);
+        this.updateState((stateToUpdate) => {
             if (changed) {
                 stateToUpdate.ValidationResult = ValidationResult.ValueChangedButUnvalidated;
                 stateToUpdate.InputValue = value;
             }
-            this.UpdateChangeCounterInState(stateToUpdate, changed, options!);
-            this.UpdateConversionErrorMessage(stateToUpdate, undefined, {});
+            this.updateChangeCounterInState(stateToUpdate, changed, options!);
+            this.updateConversionErrorMessage(stateToUpdate, undefined, {});
             return stateToUpdate;
         }, this);
-        this.ProcessValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
-        this.NotifyOthersOfChange(options);
-        this.UseOnValueChanged(changed, oldValue, options);
+        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
+        this.notifyOthersOfChange(options);
+        this.useOnValueChanged(changed, oldValue, options);
     }
 
     /**
@@ -123,15 +123,15 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    public SetValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {
+    public setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {
         if (!options)
             options = options ?? {};
         let oldNative: any = this.State.Value;
-        let nativeChanged = !DeepEquals(nativeValue, oldNative);
+        let nativeChanged = !deepEquals(nativeValue, oldNative);
         let oldInput: any = this.State.InputValue;
-        let inputChanged = !DeepEquals(inputValue, oldInput);
+        let inputChanged = !deepEquals(inputValue, oldInput);
         let changed = nativeChanged || inputChanged;
-        this.UpdateState((stateToUpdate) => {
+        this.updateState((stateToUpdate) => {
             if (changed) {
                 // effectively clear past validation
                 stateToUpdate.ValidationResult = ValidationResult.ValueChangedButUnvalidated;
@@ -140,18 +140,18 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
                 stateToUpdate.Value = nativeValue;
                 stateToUpdate.InputValue = inputValue;
             }
-            this.UpdateChangeCounterInState(stateToUpdate, changed, options!);
-            this.UpdateConversionErrorMessage(stateToUpdate, nativeValue, options!);
+            this.updateChangeCounterInState(stateToUpdate, changed, options!);
+            this.updateConversionErrorMessage(stateToUpdate, nativeValue, options!);
             return stateToUpdate;
         }, this);
 
-        this.ProcessValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
-        this.NotifyOthersOfChange(options);
-        this.UseOnValueChanged(nativeChanged, oldNative, options);
-        this.UseOnValueChanged(inputChanged, oldInput, options);
+        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
+        this.notifyOthersOfChange(options);
+        this.useOnValueChanged(nativeChanged, oldNative, options);
+        this.useOnValueChanged(inputChanged, oldInput, options);
     }
 
-    protected UpdateConversionErrorMessage(stateToUpdate: InputValueHostBaseState,
+    protected updateConversionErrorMessage(stateToUpdate: InputValueHostBaseState,
         nativeValue: any, options: SetValueOptions): void {
         if ((nativeValue === undefined) && options.ConversionErrorTokenValue)
             stateToUpdate.ConversionErrorTokenValue = options.ConversionErrorTokenValue;
@@ -159,18 +159,18 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
             delete stateToUpdate.ConversionErrorTokenValue;
     }
 
-    protected ProcessValidationOptions(options: SetValueOptions): void {
+    protected processValidationOptions(options: SetValueOptions): void {
         if (options.Validate) {
             if (this.State.ValidationResult === ValidationResult.ValueChangedButUnvalidated)
-                this.Validate(); // Result isn't ignored. Its automatically updates state and notifies parent
+                this.validate(); // Result isn't ignored. Its automatically updates state and notifies parent
         }
         else if (options.Reset)
-            this.ClearValidation();
+            this.clearValidation();
     }
 
-    protected NotifyOthersOfChange(options: SetValueOptions): void {
-        ToIValueHostsManager(this.ValueHostsManager)?.NotifyOtherValueHostsOfValueChange?.(
-            this.GetId(), options.Validate === true);
+    protected notifyOthersOfChange(options: SetValueOptions): void {
+        toIValueHostsManager(this.ValueHostsManager)?.notifyOtherValueHostsOfValueChange?.(
+            this.getId(), options.Validate === true);
     }
     /**
      * When SetValue, SetValues, SetInputValue, or SetToUndefined occurs,
@@ -179,8 +179,8 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * @param valueHostIdThatChanged 
      * @param revalidate 
      */
-    public OtherValueHostChangedNotification(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void {
-        if (valueHostIdThatChanged === this.GetId())
+    public otherValueHostChangedNotification(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void {
+        if (valueHostIdThatChanged === this.getId())
             return; // mostly to call out this case isn't desirable.
         if (this.ValidationResult === ValidationResult.NotAttempted)
             return; // validation didn't previously run, so no change now
@@ -193,7 +193,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
             // it assumes that the Descriptor is immutable, so there cannot be any changes to ValueHosts
             // without creating a new instance of this ValueHost
             this._associatedValueHosts = new Set<ValueHostId>();
-            this.GatherValueHostIds(this._associatedValueHosts, this.ValueHostsManager);
+            this.gatherValueHostIds(this._associatedValueHosts, this.ValueHostsManager);
 
         }
 
@@ -201,10 +201,10 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
             // change the ValidationResult to ValueChangedButUnvalidated when revalidate is false
             // call Validate() when revalidate is true
             if (revalidate)
-                this.Validate();
+                this.validate();
             else {
-                this.UpdateState((stateToUpdate) => {
-                    this.ClearValidationStateChanges(stateToUpdate);
+                this.updateState((stateToUpdate) => {
+                    this.clearValidationStateChanges(stateToUpdate);
                     stateToUpdate.ValidationResult = ValidationResult.ValueChangedButUnvalidated;
                     return stateToUpdate;
                 }, this);
@@ -216,7 +216,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * A service to provide all ValueHostIds that have been assigned to this Condition's
      * Descriptor.
      */
-    public abstract GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
+    public abstract gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
 
     //#endregion IInputValueHost
 
@@ -231,7 +231,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * @param options - Provides guidance on which validators to include.
     * @returns IValidationResultDetails if at least one is invalid or null if all valid.
     */
-    public abstract Validate(options?: ValidateOptions): ValidateResult;
+    public abstract validate(options?: ValidateOptions): ValidateResult;
 
     /**
      * Value is setup by calling Validate(). It does not run Validate itself.
@@ -262,14 +262,14 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      */
-    public ClearValidation(): void {
-        this.UpdateState((stateToUpdate) => {
-            this.ClearValidationStateChanges(stateToUpdate);
+    public clearValidation(): void {
+        this.updateState((stateToUpdate) => {
+            this.clearValidationStateChanges(stateToUpdate);
             return stateToUpdate;
         }, this);
     }
 
-    protected ClearValidationStateChanges(stateToUpdate: TState): void {
+    protected clearValidationStateChanges(stateToUpdate: TState): void {
         stateToUpdate.ValidationResult = ValidationResult.NotAttempted;
         stateToUpdate.IssuesFound = null;
         delete stateToUpdate.AsyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
@@ -280,7 +280,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
      * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated.
      */
-    public DoNotSaveNativeValue(): boolean {
+    public doNotSaveNativeValue(): boolean {
         switch (this.ValidationResult) {
             case ValidationResult.Invalid:
             case ValidationResult.ValueChangedButUnvalidated:
@@ -301,9 +301,9 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * Each time called, it adds to the existing list. Use ClearBusinessLogicErrors first if starting a fresh list.
      * @param error - A business logic error to show.
      */
-    public SetBusinessLogicError(error: BusinessLogicError): void {
+    public setBusinessLogicError(error: BusinessLogicError): void {
         if (error) {
-            this.UpdateState((stateToUpdate) => {
+            this.updateState((stateToUpdate) => {
                 if (!stateToUpdate.BusinessLogicErrors)
                     stateToUpdate.BusinessLogicErrors = [];
                 stateToUpdate.BusinessLogicErrors.push(error);
@@ -317,9 +317,9 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and ClearValidation.
      */
-    public ClearBusinessLogicErrors(): void {
+    public clearBusinessLogicErrors(): void {
         if (this.BusinessLogicErrors)
-            this.UpdateState((stateToUpdate) => {
+            this.updateState((stateToUpdate) => {
                 delete stateToUpdate.BusinessLogicErrors;
                 return stateToUpdate;
             }, this);
@@ -334,11 +334,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     //#endregion business logic errors
 
     //#region access to validation results    
-    public GetIssueFound(conditionType: string): IssueFound | null {
-        //!! Not sure this is the correct approach.
-        // We may only want the caller to have access to the picture of all
-        // with error messages.
-        // However, this should remain protected as it is used internally
+    public getIssueFound(conditionType: string): IssueFound | null {
         if (!conditionType)
             return null;
 
@@ -351,7 +347,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * The results of the latest Validate()
      * @returns Issues found or null if none.
      */
-    public GetIssuesFound(): Array<IssueFound> | null {
+    public getIssuesFound(): Array<IssueFound> | null {
         return this.State.IssuesFound;
     }
 
@@ -360,13 +356,12 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * for use by a input field/element that shows its own error messages (InputValueHostState.ErrorMessage)
      * @returns 
      */
-    public GetIssuesForInput(): Array<IssueSnapshot> {
-        let id = this.GetId();
+    public getIssuesForInput(): Array<IssueSnapshot> {
+        let id = this.getId();
         let list: Array<IssueSnapshot> = [];
 
-        if (this.State?.IssuesFound) {
-            for (let valKey in this.State.IssuesFound) {
-                let issue = this.State.IssuesFound[valKey];
+        if (this.State.IssuesFound) {
+            for (let issue of this.State.IssuesFound) {
                 list.push({
                     Id: id,
                     Severity: issue.Severity,
@@ -374,7 +369,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
                 });
             }
         }
-        this.AddBusinessLogicErrorsToSnapshotList(list);
+        this.addBusinessLogicErrorsToSnapshotList(list);
 
         return list;
     }
@@ -392,13 +387,12 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    public GetIssuesForSummary(group?: string): Array<IssueSnapshot> {
-        let id = this.GetId();
+    public getIssuesForSummary(group?: string): Array<IssueSnapshot> {
+        let id = this.getId();
         let list: Array<IssueSnapshot> = [];
 
-        if (this.State?.IssuesFound && GroupsMatch(group, this.State.Group)) {
-            for (let valKey in this.State.IssuesFound) {
-                let issue = this.State.IssuesFound[valKey];
+        if (this.State.IssuesFound && groupsMatch(group, this.State.Group)) {
+            for (let issue of this.State.IssuesFound) {
                 list.push({
                     Id: id,
                     Severity: issue.Severity,
@@ -406,15 +400,15 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
                 });
             }
         }
-        this.AddBusinessLogicErrorsToSnapshotList(list);
+        this.addBusinessLogicErrorsToSnapshotList(list);
 
         return list;
     }
-    private AddBusinessLogicErrorsToSnapshotList(list: Array<IssueSnapshot>): void {
+    private addBusinessLogicErrorsToSnapshotList(list: Array<IssueSnapshot>): void {
         if (this.BusinessLogicErrors) {
             for (let error of this.BusinessLogicErrors) {
                 list.push({
-                    Id: this.GetId(),
+                    Id: this.getId(),
                     Severity: error.Severity ?? ValidationSeverity.Error,
                     ErrorMessage: error.ErrorMessage
                 });
@@ -427,7 +421,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * to SetValue or SetValues. Its null when not supplied or has been cleared.
      * Associated with the {ConversionError} token of the DataTypeCheckCondition.
      */
-    public GetConversionErrorMessage(): string | null {
+    public getConversionErrorMessage(): string | null {
         return this.State.ConversionErrorTokenValue ?? null;
     }
     /**
@@ -472,9 +466,9 @@ export interface IInputValueHostCallbacks extends IValueHostCallbacks {
  * @param source 
  * @returns source typecasted to IInputValueHostCallbacks if appropriate or null if not.
  */
-export function ToIInputValueHostCallbacks(source: any): IInputValueHostCallbacks | null
+export function toIInputValueHostCallbacks(source: any): IInputValueHostCallbacks | null
 {
-    if (ToIValueHostCallbacks(source))
+    if (toIValueHostCallbacks(source))
     {
         let test = source as IInputValueHostCallbacks;
         if (test.OnInputValueChanged !== undefined &&
@@ -486,9 +480,9 @@ export function ToIInputValueHostCallbacks(source: any): IInputValueHostCallback
 
 
 export abstract class InputValueHostBaseGenerator implements IValueHostGenerator {
-    public abstract CanCreate(descriptor: InputValueHostBaseDescriptor): boolean;
+    public abstract canCreate(descriptor: InputValueHostBaseDescriptor): boolean;
 
-    public abstract Create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostBaseDescriptor, state: InputValueHostBaseState): IInputValueHost;
+    public abstract create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostBaseDescriptor, state: InputValueHostBaseState): IInputValueHost;
 
     /**
      * Looking for changes to the ValidationDescriptors to impact IssuesFound.
@@ -497,14 +491,14 @@ export abstract class InputValueHostBaseGenerator implements IValueHostGenerator
      * @param state 
      * @param descriptor 
      */
-    public abstract CleanupState(state: InputValueHostBaseState, descriptor: InputValueHostBaseDescriptor): void;
-    public CreateState(descriptor: InputValueHostBaseDescriptor): InputValueHostBaseState {
+    public abstract cleanupState(state: InputValueHostBaseState, descriptor: InputValueHostBaseDescriptor): void;
+    public createState(descriptor: InputValueHostBaseDescriptor): InputValueHostBaseState {
         return {
             Id: descriptor.Id,
             Value: descriptor.InitialValue,
             ValidationResult: ValidationResult.NotAttempted,
             InputValue: undefined,
-            IssuesFound: null,
+            IssuesFound: null
         };
     }
 

@@ -1,5 +1,5 @@
 import { NonInputValueHostDescriptor, NonInputValueHostState, INonInputValueHost } from "../../src/Interfaces/NonInputValueHost";
-import { IGatherValueHostIds, ToIGatherValueHostIds } from "../../src/Interfaces/ValueHost";
+import { IGatherValueHostIds, toIGatherValueHostIds } from "../../src/Interfaces/ValueHost";
 import { NonInputValueHost, NonInputValueHostType, NonInputValueHostGenerator } from "../../src/ValueHosts/NonInputValueHost";
 import { MockValidationServices, MockValidationManager, NeverMatchesConditionType } from "../Mocks";
 
@@ -19,10 +19,10 @@ describe('NonInputValueHost constructor', () => {
 
         expect(testItem!.ValueHostsManager).toBe(vm);
 
-        expect(testItem!.GetId()).toBe('Field1');
-        expect(testItem!.GetLabel()).toBe('Label1');
-        expect(testItem!.GetDataType()).toBeNull();
-        expect(testItem!.GetValue()).toBeUndefined();
+        expect(testItem!.getId()).toBe('Field1');
+        expect(testItem!.getLabel()).toBe('Label1');
+        expect(testItem!.getDataType()).toBeNull();
+        expect(testItem!.getValue()).toBeUndefined();
         expect(testItem!.IsChanged).toBe(false);
     });
 });
@@ -30,7 +30,7 @@ describe('NonInputValueHost constructor', () => {
 describe('NonInputValueHostGenerator members', () => {
     test('CanCreate returns true for NonInputValueHostType', () => {
         let testItem = new NonInputValueHostGenerator();
-        expect(testItem.CanCreate({
+        expect(testItem.canCreate({
             Type: NonInputValueHostType,
             Id: 'Field1',
             Label: ''
@@ -38,7 +38,7 @@ describe('NonInputValueHostGenerator members', () => {
     });
     test('CanCreate returns false for unexpected type', () => {
         let testItem = new NonInputValueHostGenerator();
-        expect(testItem.CanCreate({
+        expect(testItem.canCreate({
             Type: 'Unexpected',
             Id: 'Field1',
             Label: ''
@@ -46,7 +46,7 @@ describe('NonInputValueHostGenerator members', () => {
     });
     test('CanCreate returns true for Type not defined and lack of ValidatorDescriptors property', () => {
         let testItem = new NonInputValueHostGenerator();
-        expect(testItem.CanCreate({
+        expect(testItem.canCreate({
             Id: 'Field1',
             Label: ''
         })).toBe(true);
@@ -54,7 +54,7 @@ describe('NonInputValueHostGenerator members', () => {
 
     test('CanCreate returns true for Type=undefined and lack of ValidatorDescriptors property', () => {
         let testItem = new NonInputValueHostGenerator();
-        expect(testItem.CanCreate({
+        expect(testItem.canCreate({
             Type: undefined,
             Id: 'Field1',
             Label: ''
@@ -63,7 +63,7 @@ describe('NonInputValueHostGenerator members', () => {
 
     test('CanCreate returns false for Type not defined and presence of ValidatorDescriptors property (using null as a value)', () => {
         let testItem = new NonInputValueHostGenerator();
-        expect(testItem.CanCreate(<any>{
+        expect(testItem.canCreate(<any>{
             Id: 'Field1',
             Label: '',
             ValidatorDescriptors: null
@@ -71,7 +71,7 @@ describe('NonInputValueHostGenerator members', () => {
     });        
     test('CanCreate returns false for Type not defined and presence of ValidatorDescriptors property using [] as a value', () => {
         let testItem = new NonInputValueHostGenerator();
-        expect(testItem.CanCreate(<any>{
+        expect(testItem.canCreate(<any>{
             Id: 'Field1',
             Label: '',
             ValidatorDescriptors: []
@@ -91,11 +91,11 @@ describe('NonInputValueHostGenerator members', () => {
         };
         let testItem = new NonInputValueHostGenerator();
         let vh: INonInputValueHost | null = null;
-        expect(() => vh = testItem.Create(vm, descriptor, state)).not.toThrow();
+        expect(() => vh = testItem.create(vm, descriptor, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(NonInputValueHost);
-        expect(vh!.GetId()).toBe(descriptor.Id);    // check Descriptor values
-        expect(vh!.GetValue()).toBe("ABC");
+        expect(vh!.getId()).toBe(descriptor.Id);    // check Descriptor values
+        expect(vh!.getValue()).toBe("ABC");
     });
     test('CleanupState existing state takes no action. Returns the same data', () => {
         let originalState: NonInputValueHostState = {
@@ -109,7 +109,7 @@ describe('NonInputValueHostGenerator members', () => {
             Label: ''
         };
         let testItem = new NonInputValueHostGenerator();
-        expect(() => testItem.CleanupState(state, descriptor)).not.toThrow();
+        expect(() => testItem.cleanupState(state, descriptor)).not.toThrow();
         expect(state).toEqual(originalState);
     });
  
@@ -122,7 +122,7 @@ describe('NonInputValueHostGenerator members', () => {
             InitialValue: 'TEST'
         };
         let state: NonInputValueHostState | null = null;
-        expect(() => state = testItem.CreateState(descriptor)).not.toThrow();
+        expect(() => state = testItem.createState(descriptor)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.Id).toBe(descriptor.Id);
         expect(state!.Value).toBe(descriptor.InitialValue);
@@ -131,18 +131,18 @@ describe('NonInputValueHostGenerator members', () => {
 describe('ToIGatherValueHostIds function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IGatherValueHostIds = {
-            GatherValueHostIds: (a, b) => { }
+            gatherValueHostIds: (a, b) => { }
         };
-        expect(ToIGatherValueHostIds(testItem)).toBe(testItem);
+        expect(toIGatherValueHostIds(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(ToIGatherValueHostIds(testItem)).toBeNull();
+        expect(toIGatherValueHostIds(testItem)).toBeNull();
     });    
     test('null returns null.', () => {
-        expect(ToIGatherValueHostIds(null)).toBeNull();
+        expect(toIGatherValueHostIds(null)).toBeNull();
     });        
     test('Non-object returns null.', () => {
-        expect(ToIGatherValueHostIds(100)).toBeNull();
+        expect(toIGatherValueHostIds(100)).toBeNull();
     });        
 });

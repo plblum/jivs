@@ -99,15 +99,15 @@ export enum ConditionType
     /**
      * Associated with CountMatchesCondition class.
      */
-    CountMatches = "CountMatches",
+    CountMatches = 'CountMatches',
 
     /**
      * Associated with StringNotEmptyCondition class.
      */
-    StringNotEmpty = "StringNotEmpty",
+    StringNotEmpty = 'StringNotEmpty',
 
     /**
      * Associated with NotNullCondition class.
      */
-    NotNull = "NotNull"
+    NotNull = 'NotNull'
 }

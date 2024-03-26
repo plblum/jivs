@@ -23,17 +23,17 @@
  * @module DataTypes/ConcreteClasses/DataTypeServices
  */
 
-import { DefaultComparer } from "./DataTypeComparers";
-import { AssertNotNull, CodingError } from "../Utilities/ErrorHandling";
-import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeFormatter, IDataTypeCheckGenerator } from "../Interfaces/DataTypes";
-import { CultureLanguageCode, DeepClone } from '../Utilities/Utilities';
-import { IValidationServices, ToIServicesAccessor } from "../Interfaces/ValidationServices";
-import { ICondition } from "../Interfaces/Conditions";
-import { LookupKey } from "./LookupKeys";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
+import { defaultComparer } from './DataTypeComparers';
+import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
+import { DataTypeResolution, IDataTypeServices, IDataTypeIdentifier, IDataTypeConverter, ComparersResult, IDataTypeComparer, IDataTypeFormatter, IDataTypeCheckGenerator } from '../Interfaces/DataTypes';
+import { cultureLanguageCode, deepClone } from '../Utilities/Utilities';
+import { IValidationServices, toIServicesAccessor } from '../Interfaces/ValidationServices';
+import { ICondition } from '../Interfaces/Conditions';
+import { LookupKey } from './LookupKeys';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { ConditionType } from '../Conditions/ConditionTypes';
-import { DataTypeCheckConditionDescriptor } from "../Conditions/ConcreteConditions";
-import { CompareCategory, LoggingLevel, LookupKeyCategory } from "../Interfaces/Logger";
+import { DataTypeCheckConditionDescriptor } from '../Conditions/ConcreteConditions';
+import { CompareCategory, LoggingLevel, LookupKeyCategory } from '../Interfaces/Logger';
 
 
 /**
@@ -62,7 +62,7 @@ export class DataTypeServices implements IDataTypeServices {
      */
     constructor(cultureFallbacks?: Array<CultureIdFallback> | null) {
         if (cultureFallbacks && cultureFallbacks.length > 0)
-            this._cultureConfig = DeepClone(cultureFallbacks) as Array<CultureIdFallback>;
+            this._cultureConfig = deepClone(cultureFallbacks) as Array<CultureIdFallback>;
     }
 
     /**
@@ -78,9 +78,9 @@ export class DataTypeServices implements IDataTypeServices {
     }
     public set Services(services: IValidationServices)
     {
-        AssertNotNull(services, 'services');
+        assertNotNull(services, 'services');
         this._services = services;
-        this.UpdateServices(services);
+        this.updateServices(services);
     }
     private _services: IValidationServices | null = null;
 
@@ -88,10 +88,10 @@ export class DataTypeServices implements IDataTypeServices {
      * Changes the services on all implementations of IServicesAccessor
      * @param services 
      */
-    protected UpdateServices(services: IValidationServices): void
+    protected updateServices(services: IValidationServices): void
     {
         this._dataTypeFormatters?.forEach((dtf) => {
-            let sa = ToIServicesAccessor(dtf);
+            let sa = toIServicesAccessor(dtf);
             if (sa)
                 sa.Services = services;
         });
@@ -101,7 +101,7 @@ export class DataTypeServices implements IDataTypeServices {
 
     protected get CultureIdFallback(): Array<CultureIdFallback> {
         if (!this._cultureConfig || this._cultureConfig.length === 0)
-            throw new CodingError('Must establish the CultureIdFallback array in DataTypeServices.')
+            throw new CodingError('Must establish the CultureIdFallback array in DataTypeServices.');
         return this._cultureConfig;
     }
     private _cultureConfig: Array<CultureIdFallback> | null = null;
@@ -114,23 +114,23 @@ export class DataTypeServices implements IDataTypeServices {
      * @returns the found cultureID, so you know if it exactly matched or just 
      * got the language. If no match, returns null.
      */
-    public GetClosestCultureId(cultureId: string): string | null {
-        let cc = this.GetClosestCultureIdFallback(cultureId);
+    public getClosestCultureId(cultureId: string): string | null {
+        let cc = this.getClosestCultureIdFallback(cultureId);
         if (cc)
             return cc.CultureId;
         return null;
     }
-    protected GetClosestCultureIdFallback(cultureId: string): CultureIdFallback | null {
-        let cc = this.GetCultureIdFallback(cultureId);
+    protected getClosestCultureIdFallback(cultureId: string): CultureIdFallback | null {
+        let cc = this.getCultureIdFallback(cultureId);
         if (!cc) {
-            let lang = CultureLanguageCode(cultureId);
+            let lang = cultureLanguageCode(cultureId);
             if (lang !== cultureId) {
-                cc = this.GetCultureIdFallback(lang);
+                cc = this.getCultureIdFallback(lang);
             }
         }
         return cc ?? null;
     }    
-    protected GetCultureIdFallback(cultureId: string): CultureIdFallback | null
+    protected getCultureIdFallback(cultureId: string): CultureIdFallback | null
     {
         return this.CultureIdFallback.find((cc) => cc.CultureId === cultureId) ?? null;
     }
@@ -155,21 +155,21 @@ export class DataTypeServices implements IDataTypeServices {
      * always pass in the associated lookup key. They can be found in the LookupKeys module.
      * @returns successfully converted value or validation error information.
     */
-    public Format(value: any, lookupKey?: string | null): DataTypeResolution<string> {
+    public format(value: any, lookupKey?: string | null): DataTypeResolution<string> {
         try {
             if (!lookupKey)
-                lookupKey = this.IdentifyLookupKey(value);
+                lookupKey = this.identifyLookupKey(value);
             if (lookupKey === null)
                 throw new Error('Value type requires a LookupKey');
             let cultureId: string | null = this.Services.ActiveCultureId;
             while (cultureId) {
-                let cc = this.GetCultureIdFallback(cultureId);
+                let cc = this.getCultureIdFallback(cultureId);
                 if (!cc)
                     throw new Error(`Need to support CultureID ${cultureId} in DataTypeServices.`);
-                let dtlf = this.GetFormatter(lookupKey, cultureId);
+                let dtlf = this.getFormatter(lookupKey, cultureId);
                 if (dtlf)
                     try {
-                        return dtlf.Format(value, lookupKey, cultureId);
+                        return dtlf.format(value, lookupKey, cultureId);
                     }
                     catch (e) {
                         return { ErrorMessage: (e as Error).message };
@@ -183,13 +183,13 @@ export class DataTypeServices implements IDataTypeServices {
         {
             if (e instanceof Error) // should always be true. Mostly used for typecast
             {
-                this.Services.LoggerService.Log(e.message, LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices');
+                this.Services.LoggerService.log(e.message, LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices');
                 return {
                     ErrorMessage: e.message,
                     Value: undefined
-                }
+                };
             }
-            return { ErrorMessage: 'Unspecified'}
+            return { ErrorMessage: 'Unspecified'};
         }
     }
 
@@ -200,13 +200,13 @@ export class DataTypeServices implements IDataTypeServices {
       * If the LookupKey was previously registered, its instance is replaced.
       * @param dtlf
       */
-    public RegisterFormatter(dtlf: IDataTypeFormatter): void {
-        AssertNotNull(dtlf, 'dtlf');
+    public registerFormatter(dtlf: IDataTypeFormatter): void {
+        assertNotNull(dtlf, 'dtlf');
         if (!this._dataTypeFormatters)
             this._dataTypeFormatters = [];
         this._dataTypeFormatters.push(dtlf);
         if (this._services) {
-            let sa = ToIServicesAccessor(dtlf);
+            let sa = toIServicesAccessor(dtlf);
             if (sa)
                 sa.Services = this._services;
         }
@@ -218,8 +218,8 @@ export class DataTypeServices implements IDataTypeServices {
      * @param cultureID 
      * @returns 
      */
-    public UnregisterFormatter(lookupKey: string, cultureID: string): boolean {
-        let index = this.GetFormatters().findIndex((dtlf) => dtlf.Supports(lookupKey, cultureID));
+    public unregisterFormatter(lookupKey: string, cultureID: string): boolean {
+        let index = this.getFormatters().findIndex((dtlf) => dtlf.supports(lookupKey, cultureID));
         if (index >= 0) {
             this._dataTypeFormatters!.splice(index, 1);
             return true;
@@ -234,15 +234,15 @@ export class DataTypeServices implements IDataTypeServices {
      * @param lookupKey
      * @returns A matching IDataTypeFormatter or null if none match.
      */
-    public GetFormatter(lookupKey: string, cultureId: string): IDataTypeFormatter | null {
-        return this.GetFormatters().find((dtlf) => dtlf.Supports(lookupKey, cultureId)) ?? null;
+    public getFormatter(lookupKey: string, cultureId: string): IDataTypeFormatter | null {
+        return this.getFormatters().find((dtlf) => dtlf.supports(lookupKey, cultureId)) ?? null;
     }
 
     /**
      * If the user hasn't registered any, this registers the standard
      * IDataTypeFormatters.
      */
-    protected GetFormatters() : Array<IDataTypeFormatter>
+    protected getFormatters() : Array<IDataTypeFormatter>
     {
         if (!this._dataTypeFormatters) {
             this._dataTypeFormatters = [];
@@ -301,12 +301,12 @@ export class DataTypeServices implements IDataTypeServices {
      * 
      * For the rest, expect Equals, GreaterThan and LessThan.
      */
-    public CompareValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult {
+    public compareValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult {
         function resolveLookupKey(v: any, key: string | null, part: string): string | null {
             if (v != null) // null/undefined
             {
                 if (!key)
-                    key = self.IdentifyLookupKey(v);
+                    key = self.identifyLookupKey(v);
                 if (!key)
                     throw new Error(`${part} operand value has an unknown datatype. Supply the appropriate DataTypeLookupKey and/or register an IDataTypeConverter`);
             }
@@ -328,35 +328,35 @@ export class DataTypeServices implements IDataTypeServices {
             lookupKey1 = resolveLookupKey(value1, lookupKey1, 'Left');
             lookupKey2 = resolveLookupKey(value2, lookupKey2, 'Right');
 
-            let comparer = this.GetDataTypeComparer(value1, value2);
+            let comparer = this.getDataTypeComparer(value1, value2);
             if (comparer)
-                return comparer.Compare(value1, value2);
+                return comparer.compare(value1, value2);
 
-            let cleanedUpValue1 = this.CleanupComparableValue(value1, lookupKey1);
-            let cleanedUpValue2 = this.CleanupComparableValue(value2, lookupKey2);
+            let cleanedUpValue1 = this.cleanupComparableValue(value1, lookupKey1);
+            let cleanedUpValue2 = this.cleanupComparableValue(value2, lookupKey2);
 
             let testNullsResultCU = handleNullsAndUndefined(cleanedUpValue1, cleanedUpValue2);
             if (testNullsResultCU != null)
                 return testNullsResultCU;
 
-            let comparerCU = this.GetDataTypeComparer(cleanedUpValue1, cleanedUpValue2);
+            let comparerCU = this.getDataTypeComparer(cleanedUpValue1, cleanedUpValue2);
             if (comparerCU)
-                return comparerCU.Compare(cleanedUpValue1, cleanedUpValue2);
+                return comparerCU.compare(cleanedUpValue1, cleanedUpValue2);
 
-            return DefaultComparer(cleanedUpValue1, cleanedUpValue2);
+            return defaultComparer(cleanedUpValue1, cleanedUpValue2);
         }
         catch (e)
         {
             if (e instanceof Error)
-                this.Services.LoggerService.Log(e.message, LoggingLevel.Error, CompareCategory, 'DataTypeServices');
+                this.Services.LoggerService.log(e.message, LoggingLevel.Error, CompareCategory, 'DataTypeServices');
             return ComparersResult.Undetermined;
         }
     }
 
-    protected CleanupComparableValue(value: any, lookupKey: string | null): any {
-        let dtc = this.GetDataTypeConverter(value, lookupKey);
+    protected cleanupComparableValue(value: any, lookupKey: string | null): any {
+        let dtc = this.getDataTypeConverter(value, lookupKey);
         if (dtc) {
-            value = dtc.Convert(value, lookupKey!);
+            value = dtc.convert(value, lookupKey!);
             switch (typeof value) {
                 case 'number':
                 case 'string':
@@ -367,7 +367,7 @@ export class DataTypeServices implements IDataTypeServices {
                 case 'object':  // try again. For example, we got a date. Need it to be a number
                     if (value === null)
                         return value;
-                    value = this.CleanupComparableValue(value, null);
+                    value = this.cleanupComparableValue(value, null);
                     break;
                 default:
                     throw new CodingError('Type converted to unsupported value.');
@@ -380,8 +380,8 @@ export class DataTypeServices implements IDataTypeServices {
      * Registers an IDataTypeComparer implementation.
      * @param comparer
      */
-    public RegisterDataTypeComparer(comparer: IDataTypeComparer): void {
-        AssertNotNull(comparer, 'comparer');
+    public registerDataTypeComparer(comparer: IDataTypeComparer): void {
+        assertNotNull(comparer, 'comparer');
 
         if (!this._comparers)
             this._comparers = [];
@@ -394,11 +394,11 @@ export class DataTypeServices implements IDataTypeServices {
      * @param value2 
      * @returns 
      */
-    protected GetDataTypeComparer(value1: any, value2: any): IDataTypeComparer | null {
-        return this.GetDataTypeComparers().find((dtc) => dtc.SupportsValues(value1, value2)) ?? null;
+    protected getDataTypeComparer(value1: any, value2: any): IDataTypeComparer | null {
+        return this.getDataTypeComparers().find((dtc) => dtc.supportsValues(value1, value2)) ?? null;
     }
 
-    protected GetDataTypeComparers(): Array<IDataTypeComparer>
+    protected getDataTypeComparers(): Array<IDataTypeComparer>
     {
         if (!this._comparers)
             this._comparers = [];
@@ -420,8 +420,8 @@ export class DataTypeServices implements IDataTypeServices {
      * @param value 
      * @returns the found Lookup Key or "Unsupported".
      */
-    public IdentifyLookupKey(value: any): string | null {
-        let idt = this.GetDataTypeIdentifier(value);
+    public identifyLookupKey(value: any): string | null {
+        let idt = this.getDataTypeIdentifier(value);
         return idt ? idt.DataTypeLookupKey : null;
     }
 
@@ -431,9 +431,9 @@ export class DataTypeServices implements IDataTypeServices {
      * @param identifier - If its DataTypeLookupKey matches an existing one (case insensitive),
      * the existing one is replaced.
      */
-    public RegisterDataTypeIdentifier(identifier: IDataTypeIdentifier): void {
-        AssertNotNull(identifier, 'identifier');
-        let existingPos = this.GetDataTypeIdentifiers().findIndex((idt) => idt.DataTypeLookupKey.toLowerCase() === identifier.DataTypeLookupKey.toLowerCase());
+    public registerDataTypeIdentifier(identifier: IDataTypeIdentifier): void {
+        assertNotNull(identifier, 'identifier');
+        let existingPos = this.getDataTypeIdentifiers().findIndex((idt) => idt.DataTypeLookupKey.toLowerCase() === identifier.DataTypeLookupKey.toLowerCase());
         if (existingPos < 0)
             this._dataTypeIdentifiers!.push(identifier);
         else
@@ -446,10 +446,10 @@ export class DataTypeServices implements IDataTypeServices {
      * @param value 
      * @returns 
      */
-    protected GetDataTypeIdentifier(value: any): IDataTypeIdentifier | null {
-        return this.GetDataTypeIdentifiers().find((idt) => idt.SupportsValue(value)) ?? null;
+    protected getDataTypeIdentifier(value: any): IDataTypeIdentifier | null {
+        return this.getDataTypeIdentifiers().find((idt) => idt.supportsValue(value)) ?? null;
     }
-    protected GetDataTypeIdentifiers(): Array<IDataTypeIdentifier>
+    protected getDataTypeIdentifiers(): Array<IDataTypeIdentifier>
     {
         if (!this._dataTypeIdentifiers)
             this._dataTypeIdentifiers = [];
@@ -466,8 +466,8 @@ export class DataTypeServices implements IDataTypeServices {
      * Always adds, never replaces.
      * @param converter 
      */
-    public RegisterDataTypeConverter(converter: IDataTypeConverter): void {
-        AssertNotNull(converter, 'converter');
+    public registerDataTypeConverter(converter: IDataTypeConverter): void {
+        assertNotNull(converter, 'converter');
         if (!this._converters)
             this._converters = [];
         this._converters.push(converter);
@@ -480,10 +480,10 @@ export class DataTypeServices implements IDataTypeServices {
      * @param dataTypeLookupKey 
      * @returns 
      */
-    public GetDataTypeConverter(value: any, dataTypeLookupKey: string | null): IDataTypeConverter | null {
-        return this.GetDataTypeConverters().find((dtc) => dtc.SupportsValue(value, dataTypeLookupKey)) ?? null;
+    public getDataTypeConverter(value: any, dataTypeLookupKey: string | null): IDataTypeConverter | null {
+        return this.getDataTypeConverters().find((dtc) => dtc.supportsValue(value, dataTypeLookupKey)) ?? null;
     }
-    protected GetDataTypeConverters(): Array<IDataTypeConverter>
+    protected getDataTypeConverters(): Array<IDataTypeConverter>
     {
         if (!this._converters)
             this._converters = [];
@@ -533,18 +533,18 @@ export class DataTypeServices implements IDataTypeServices {
      * returns a null, it means do not generate the DataTypeCheckCondition and this function
      * returns null itself.
      */    
-    public AutoGenerateDataTypeCondition(valueHost: IInputValueHost, dataTypeLookupKey: LookupKey | string): ICondition | null
+    public autoGenerateDataTypeCondition(valueHost: IInputValueHost, dataTypeLookupKey: LookupKey | string): ICondition | null
     {
-        AssertNotNull(valueHost, 'valueHost');
-        AssertNotNull(dataTypeLookupKey, 'dataTypeLookupKey');
-        let generator = this.GetDataTypeCheckGenerator(dataTypeLookupKey);
+        assertNotNull(valueHost, 'valueHost');
+        assertNotNull(dataTypeLookupKey, 'dataTypeLookupKey');
+        let generator = this.getDataTypeCheckGenerator(dataTypeLookupKey);
         if (generator !== null)
-            return generator.CreateCondition(valueHost, dataTypeLookupKey, this.Services.ConditionFactory); // may return null
+            return generator.createCondition(valueHost, dataTypeLookupKey, this.Services.ConditionFactory); // may return null
         let descriptor: DataTypeCheckConditionDescriptor = {
             Type: ConditionType.DataTypeCheck,
-            ValueHostId: valueHost.GetId(),
+            ValueHostId: valueHost.getId()
         };
-        return this.Services.ConditionFactory.Create(descriptor);
+        return this.Services.ConditionFactory.create(descriptor);
     }
 
     /**
@@ -552,8 +552,8 @@ export class DataTypeServices implements IDataTypeServices {
      * Always adds, never replaces.
      * @param checkGenerator 
      */
-    public RegisterDataTypeCheckGenerator(checkGenerator: IDataTypeCheckGenerator): void {
-        AssertNotNull(checkGenerator, 'checkGenerator');
+    public registerDataTypeCheckGenerator(checkGenerator: IDataTypeCheckGenerator): void {
+        assertNotNull(checkGenerator, 'checkGenerator');
         if (!this._checkGenerators)
             this._checkGenerators = [];
         this._checkGenerators.push(checkGenerator);
@@ -566,10 +566,10 @@ export class DataTypeServices implements IDataTypeServices {
      * @param dataTypeLookupKey 
      * @returns 
      */
-    public GetDataTypeCheckGenerator(dataTypeLookupKey: LookupKey | string): IDataTypeCheckGenerator | null {
-        return this.GetDataTypeCheckGenerators().find((dtg) => dtg.SupportsValue(dataTypeLookupKey)) ?? null;
+    public getDataTypeCheckGenerator(dataTypeLookupKey: LookupKey | string): IDataTypeCheckGenerator | null {
+        return this.getDataTypeCheckGenerators().find((dtg) => dtg.supportsValue(dataTypeLookupKey)) ?? null;
     }
-    protected GetDataTypeCheckGenerators(): Array<IDataTypeCheckGenerator>
+    protected getDataTypeCheckGenerators(): Array<IDataTypeCheckGenerator>
     {
         if (!this._checkGenerators)
             this._checkGenerators = [];

@@ -15,8 +15,8 @@
  * @module DataTypes/ConcreteClasses/DataTypeComparers
  */
 
-import { ComparersResult, IDataTypeComparer } from "../Interfaces/DataTypes";
-import { InvalidTypeError } from "../Utilities/ErrorHandling";
+import { ComparersResult, IDataTypeComparer } from '../Interfaces/DataTypes';
+import { InvalidTypeError } from '../Utilities/ErrorHandling';
 
 /**
  * Just the function for a Comparer that handles numbers and strings. 
@@ -27,9 +27,9 @@ import { InvalidTypeError } from "../Utilities/ErrorHandling";
  * @param value1 
  * @param value2 
  */
-export function DefaultComparer(value1: any, value2: any): ComparersResult {
-    AssertPrimitive(value1);
-    AssertPrimitive(value2);
+export function defaultComparer(value1: any, value2: any): ComparersResult {
+    assertPrimitive(value1);
+    assertPrimitive(value2);
     if (value1 === value2)
         return ComparersResult.Equals;
     if (typeof value1 === typeof value2) {
@@ -40,7 +40,7 @@ export function DefaultComparer(value1: any, value2: any): ComparersResult {
     return ComparersResult.Undetermined;
 }
 
-function AssertPrimitive(value: any): void {
+function assertPrimitive(value: any): void {
     if ((value != null) &&
         (typeof value === 'object' || Array.isArray(value)))
         throw new InvalidTypeError(value);
@@ -59,12 +59,12 @@ function AssertPrimitive(value: any): void {
  */
 export class BooleanDataTypeComparer implements IDataTypeComparer
 {
-    public SupportsValues(value1: any, value2: any): boolean {
+    public supportsValues(value1: any, value2: any): boolean {
         let isBool1 = typeof value1 === 'boolean';
         let isBool2 = typeof value2 === 'boolean';
         return isBool1 || isBool2;
     }
-    public Compare(value1: any, value2: any): ComparersResult {
+    public compare(value1: any, value2: any): ComparersResult {
         let isBool1 = typeof value1 === 'boolean';
         let isBool2 = typeof value2 === 'boolean';
     

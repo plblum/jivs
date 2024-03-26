@@ -39,6 +39,6 @@
     "allowUnreachableCode": true,
 
   },
-  "include": [ "src", "types"], 
-  "exclude": ["tests", "examples"]
+  "include": [ "src", "types", "tests"], 
+  "exclude": [ "examples"]
 }

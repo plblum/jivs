@@ -2,11 +2,11 @@
  * {@inheritDoc InputValidator/ConcreteClasses!}
  * @module InputValidator/Interfaces
  */
-import { IValueHostResolver } from "./ValueHostResolver";
-import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from "./Conditions";
-import { IInputValueHost } from "./InputValueHost";
-import { IssueFound, ValidateOptions, ValidationSeverity } from "./Validation";
-import { IGatherValueHostIds } from "./ValueHost";
+import { IValueHostResolver } from './ValueHostResolver';
+import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from './Conditions';
+import { IInputValueHost } from './InputValueHost';
+import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
+import { IGatherValueHostIds } from './ValueHost';
 
 /**
  * Represents a single validator for the value of an InputValueHost.
@@ -27,7 +27,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostId
      * @returns Identifies the ConditionEvaluationResult.
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
-    Validate(options: ValidateOptions): InputValidateResult | Promise<InputValidateResult>;
+    validate(options: ValidateOptions): InputValidateResult | Promise<InputValidateResult>;
 
     /**
      * Exposes the Condition behind the validator
@@ -67,6 +67,7 @@ export interface InputValidatorDescriptor {
     */
     ConditionDescriptor: ConditionDescriptor | null;
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     /**
      * Use to create the Condition instance yourself, especially to support
      * implementations of ICondition that don't implement IConditionCore<ConditionDescriptor>.
@@ -75,6 +76,7 @@ export interface InputValidatorDescriptor {
      * @returns 
      */
     ConditionCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
      * The ConditionDescriptor to create an Enabler Condition.
@@ -88,6 +90,8 @@ export interface InputValidatorDescriptor {
      * Leave null if EnablerCreator is asssigned.
      */
     EnablerDescriptor?: ConditionDescriptor | null | undefined;
+
+    /* eslint-disable @typescript-eslint/naming-convention */
     /**
      * Use to create the Condition instance yourself, especially to support
      * implementations of ICondition that don't implement IConditionCore<ConditionDescriptor>.
@@ -96,6 +100,7 @@ export interface InputValidatorDescriptor {
      * @returns 
      */
     EnablerCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
      * When false, validation is never run. This supersedes the Enabler too.
@@ -181,13 +186,13 @@ export interface InputValidateResult {
     /**
      * The result of Validate
      */
-    ConditionEvaluateResult: ConditionEvaluateResult,
+    ConditionEvaluateResult: ConditionEvaluateResult;
 
     /**
      * Assigned with issue details when an issue is found.
      * Null when no issue is found.
      */
-    IssueFound: IssueFound | null,
+    IssueFound: IssueFound | null;
 
     /**
      * When true, Validate bailed before evaluation due to Enabled or Enabler
@@ -206,24 +211,39 @@ export interface IMessageTokenSource {
      * The TokenLabel doesn't provide {} because we may support additional
      * attributes within the token, like {Value:AbbrevDateFormat}
      */
-    GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver):
+    getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver):
         Array<TokenLabelAndValue>;
 }
+
 /**
- * Result from IMessageTokenSource.GetValuesForTokens
+ * Determines if the source implements IMessageTokenSource, and returns it typecasted.
+ * If not, it returns null.
+ * @param source 
+ */
+export function toIMessageTokenSource(source: any): IMessageTokenSource | null {
+    if (source && typeof source === 'object') {
+        let test = source as IMessageTokenSource;       
+        if (test.getValuesForTokens !== undefined)
+            return test;
+    }
+    return null;
+}
+
+/**
+ * Result from IMessageTokenSource.getValuesForTokens
  */
 export interface TokenLabelAndValue {
     /**
      * The text within the {} of the token. Used to match tokens.
      */
-    TokenLabel: string,
+    TokenLabel: string;
     /**
      * The value to be used as a replacement. When the value isn't a string,
      * it is converted to a string through 
      * {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter} classes
      * registered with {@link DataTypes/ConcreteClasses/DataTypeServices!DataTypeServices | DataTypeServices}.
      */
-    AssociatedValue: any,
+    AssociatedValue: any;
     /**
      * Provides additional guidance about the token's purpose so the
      * IMessageTokenResolver can apply additional formatting to the token,
@@ -246,7 +266,7 @@ export interface TokenLabelAndValue {
  * This interface targets unit testing with mocks.
  */
 export interface IInputValidatorFactory {
-    Create(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor): IInputValidator;
+    create(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor): IInputValidator;
 }
 
 /**
@@ -276,6 +296,6 @@ export interface IMessageTokenResolver {
      * @param hosts 
      * @returns the message with formatting resolved
      */
-    ResolveTokens(message: string, valueHost: IInputValueHost,
+    resolveTokens(message: string, valueHost: IInputValueHost,
         valueHostResolver: IValueHostResolver, ...hosts: Array<IMessageTokenSource>): string;
 }

@@ -2,8 +2,8 @@
  * Interfaces built around the concept of data validation.
  * @module Validation/Interfaces
  */
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { InputValidateResult } from "./InputValidator";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { InputValidateResult } from './InputValidator';
 
 /**
  * Parameter for the Validate method on InputValueHost and ValidationManager.
@@ -107,12 +107,12 @@ export enum ValidationResult {
     Invalid
 }
 export const ValidationResultString = [
-    "NotAttempted",
-    "ValueChangedButUnvalidated",
-    "Undetermined",
-    "AsyncProcessing",
-    "Valid",
-    "Invalid"
+    'NotAttempted',
+    'ValueChangedButUnvalidated',
+    'Undetermined',
+    'AsyncProcessing',
+    'Valid',
+    'Invalid'
 ];
 
 /**

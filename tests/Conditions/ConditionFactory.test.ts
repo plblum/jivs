@@ -9,10 +9,10 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 describe('ConditionFactory.Create', () => {
     test('Create with registered Condition creates the correct instance', () => {
         let factory = new ConditionFactory();
-        expect(() => factory.Register<RequiredTextConditionDescriptor>(
+        expect(() => factory.register<RequiredTextConditionDescriptor>(
             ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor))).not.toThrow();
         let condition: IConditionCore<RequiredTextConditionDescriptor> | null = null;
-        expect(() => condition = factory.Create<RequiredTextConditionDescriptor>({
+        expect(() => condition = factory.create<RequiredTextConditionDescriptor>({
             Type: ConditionType.RequiredText,
             ValueHostId: null
         })).not.toThrow();
@@ -24,10 +24,10 @@ describe('ConditionFactory.Create', () => {
     });
     test('Create with unregistered Condition throws', () => {
         let factory = new ConditionFactory();
-        expect(() => factory.Register<RequiredTextConditionDescriptor>(
+        expect(() => factory.register<RequiredTextConditionDescriptor>(
             ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor))).not.toThrow();
         let condition: IConditionCore<ConditionDescriptor> | null = null;
-        expect(() => condition = factory.Create({
+        expect(() => condition = factory.create({
             Type: 'UnknownType',
             ValueHostId: null
         })).toThrow(/not supported/);

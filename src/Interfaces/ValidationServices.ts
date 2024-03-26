@@ -3,12 +3,12 @@
  * @module ValidationServices/Interfaces
  */
 
-import { IConditionFactory } from "./Conditions";
-import { IDataTypeServices } from "./DataTypes";
-import { IInputValidatorFactory, IMessageTokenResolver } from "./InputValidator";
-import { ILogger } from "./Logger";
-import { ITextLocalizerService } from "./TextLocalizerService";
-import { IValueHostFactory } from "./ValueHost";
+import { IConditionFactory } from './Conditions';
+import { IDataTypeServices } from './DataTypes';
+import { IInputValidatorFactory, IMessageTokenResolver } from './InputValidator';
+import { ILogger } from './Logger';
+import { ITextLocalizerService } from './TextLocalizerService';
+import { IValueHostFactory } from './ValueHost';
 
 /**
  * Interface to have access to services.
@@ -86,10 +86,10 @@ export interface IValidationServices extends IBasicValidationServices {
  * If not, it returns null.
  * @param source 
  */
-export function ToIServicesAccessor(source: any): IServicesAccessor | null {
+export function toIServicesAccessor(source: any): IServicesAccessor | null {
     if (source && typeof source === 'object') {
         let test = source as IServicesAccessor;       
-        if ("Services" in test)
+        if ('Services' in test)
             return test;
     }
     return null;

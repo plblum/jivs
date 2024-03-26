@@ -4,17 +4,17 @@
  * Its methods provide validation and the results of validation.
  * @module ValidationManager/ConcreteClasses
  */
-import { BusinessLogicInputValueHostType, BusinessLogicValueHostId } from "./BusinessLogicInputValueHost";
-import { DeepClone, DeepEquals } from "../Utilities/Utilities";
-import type { IValidationServices } from "../Interfaces/ValidationServices";
-import type { IValueHost, ValueHostDescriptor, ValueHostState } from "../Interfaces/ValueHost";
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { ValueChangedHandler, ValueHostStateChangedHandler } from "./ValueHostBase";
-import type { IInputValueHost } from "../Interfaces/InputValueHost";
-import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from "../Interfaces/Validation";
-import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, ToIInputValueHostCallbacks } from "./InputValueHostBase";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
-import type { ValidationManagerState, IValidationManager, ValidationManagerConfig } from "../Interfaces/ValidationManager";
+import { BusinessLogicInputValueHostType, BusinessLogicValueHostId } from './BusinessLogicInputValueHost';
+import { deepClone, deepEquals } from '../Utilities/Utilities';
+import type { IValidationServices } from '../Interfaces/ValidationServices';
+import type { IValueHost, ValueHostDescriptor, ValueHostState } from '../Interfaces/ValueHost';
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueChangedHandler, ValueHostStateChangedHandler } from './ValueHostBase';
+import type { IInputValueHost } from '../Interfaces/InputValueHost';
+import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from '../Interfaces/Validation';
+import { InputValueHostBase, ValueHostValidatedHandler, InputValueChangedHandler, IInputValueHostCallbacks, toIInputValueHostCallbacks } from './InputValueHostBase';
+import { assertNotNull } from '../Utilities/ErrorHandling';
+import type { ValidationManagerState, IValidationManager, ValidationManagerConfig } from '../Interfaces/ValidationManager';
 
 
 /**
@@ -90,12 +90,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * ```
      */
     constructor(config: ValidationManagerConfig) {
-        AssertNotNull(config, 'config');
-        AssertNotNull(config.Services, 'services');
+        assertNotNull(config, 'config');
+        assertNotNull(config.Services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         let savedServices = config.Services ?? null;
         config.Services = null as any; // to ignore during DeepClone
-        let internalConfig = DeepClone(config) as ValidationManagerConfig;
+        let internalConfig = deepClone(config) as ValidationManagerConfig;
         config.Services = savedServices;
         internalConfig.Services = savedServices;
 
@@ -107,15 +107,15 @@ export class ValidationManager<TState extends ValidationManagerState> implements
             this._state.StateChangeCounter = 0;
         this._lastValueHostStates = internalConfig.SavedValueHostStates ?? [];
         let descriptors = internalConfig.ValueHostDescriptors ?? [];
-        for (let key in descriptors) {
-            this.AddValueHost(descriptors[key], null);
+        for (let descriptor of descriptors) {
+            this.addValueHost(descriptor, null);
         }
     }
     protected get Config(): ValidationManagerConfig
     {
         return this._config;
     }
-    private _config: ValidationManagerConfig;
+    private readonly _config: ValidationManagerConfig;
 
     /**
      * The ValidationManager and IValidationServices are crosslinked.
@@ -159,7 +159,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Value retained from the constructor to share with calls to AddValueHost,
      * giving new ValueHost instances their last state.
      */
-    private _lastValueHostStates: Array<ValueHostState>;
+    private readonly _lastValueHostStates: Array<ValueHostState>;
 
     /**
      * Use to change anything in ValidationManagerState without impacting the immutability 
@@ -170,11 +170,11 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param updater - Your function to change and return a state instance.
      * @returns true when the state did change. false when it did not.
      */
-    public UpdateState(updater: (stateToUpdate: TState) => TState): boolean {
-        AssertNotNull(updater, 'updater');
-        let toUpdate = DeepClone(this.State);
+    public updateState(updater: (stateToUpdate: TState) => TState): boolean {
+        assertNotNull(updater, 'updater');
+        let toUpdate = deepClone(this.State);
         let updated = updater(toUpdate);
-        if (!DeepEquals(this.State, updated)) {
+        if (!deepEquals(this.State, updated)) {
             this._state = updated;
             this.OnStateChanged?.(this, updated);
             return true;
@@ -193,10 +193,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * When null, the state supplied in the ValidationManager constructor will be used if available.
      * When neither state was supplied, a default state is created.
      */
-    public AddValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
-        AssertNotNull(descriptor, 'descriptor');
+    public addValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
+        assertNotNull(descriptor, 'descriptor');
         if (!this._valueHostDescriptors[descriptor.Id])
-            return this.ApplyDescriptor(descriptor, initialState);
+            return this.applyDescriptor(descriptor, initialState);
 
         throw new Error(`Property ${descriptor.Id} already assigned.`);
     }
@@ -209,20 +209,20 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.CleanupState first.
      */
-    public UpdateValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
-        AssertNotNull(descriptor, 'descriptor');
+    public updateValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
+        assertNotNull(descriptor, 'descriptor');
         if (this._valueHostDescriptors[descriptor.Id])
-            return this.ApplyDescriptor(descriptor, initialState);
+            return this.applyDescriptor(descriptor, initialState);
 
-        return this.AddValueHost(descriptor, initialState);
+        return this.addValueHost(descriptor, initialState);
     }
     /**
      * Discards a ValueHost. 
      * Does not trigger any notifications.
      * @param descriptor 
      */
-    public DiscardValueHost(descriptor: ValueHostDescriptor): void {
-        AssertNotNull(descriptor, 'descriptor');
+    public discardValueHost(descriptor: ValueHostDescriptor): void {
+        assertNotNull(descriptor, 'descriptor');
         if (this._valueHostDescriptors[descriptor.Id]) {
             delete this._valueHosts[descriptor.Id];
             delete this._valueHostDescriptors[descriptor.Id];
@@ -244,17 +244,17 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * It will be run through ValueHostFactory.CleanupState first.
      * @returns 
      */
-    protected ApplyDescriptor(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
+    protected applyDescriptor(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
         let factory = this.Services.ValueHostFactory; // functions in here throw exceptions if descriptor is unsupported
-        let state: ValueHostState;
+        let state: ValueHostState | undefined = undefined;
         let existingState = initialState;
-        let defaultState = factory.CreateState(descriptor);
+        let defaultState = factory.createState(descriptor);
 
         if (!existingState && this._lastValueHostStates)
             existingState = this._lastValueHostStates.find((state) => state.Id === descriptor.Id) ?? null;
         if (existingState) {
-            let cleanedState = DeepClone(existingState) as ValueHostState;  // clone to allow changes during Cleanup
-            factory.CleanupState(cleanedState, descriptor);
+            let cleanedState = deepClone(existingState) as ValueHostState;  // clone to allow changes during Cleanup
+            factory.cleanupState(cleanedState, descriptor);
             // User may have supplied the state without
             // all of the properties we normally use.
             // Ensure all properties defined by CreateState exist, even if their value is undefined
@@ -263,7 +263,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         }
         else
             state = defaultState;
-        let vh = factory.Create(this, descriptor, state);
+        let vh = factory.create(this, descriptor, state);
 
         this._valueHosts[descriptor.Id] = vh;
         this._valueHostDescriptors[descriptor.Id] = descriptor;
@@ -275,7 +275,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param valueHostId - Matches to the IValueHost.Id property
      * Returns the instance or null if not found.
      */
-    public GetValueHost(valueHostId: ValueHostId): IValueHost | null {
+    public getValueHost(valueHostId: ValueHostId): IValueHost | null {
         return this._valueHosts[valueHostId] ?? null;
     }
 
@@ -285,13 +285,13 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * will want to revalidate or set up a state to force revalidation.
      * This goes through those ValueHosts and notifies them.
      */
-    public NotifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void {
-        for (let ivh of this.InputValueHost())
-            if (ivh.GetId() !== valueHostIdThatChanged)
-                ivh.OtherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
+    public notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void {
+        for (let ivh of this.inputValueHost())
+            if (ivh.getId() !== valueHostIdThatChanged)
+                ivh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
     }
 
-    protected * InputValueHost(): Generator<IInputValueHost> {
+    protected * inputValueHost(): Generator<IInputValueHost> {
         for (let key in this._valueHosts) {
             let vh = this._valueHosts[key];
             if (vh instanceof InputValueHostBase)
@@ -307,14 +307,14 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param options - Provides guidance on which validators to include.
      * @returns Array of ValidateResult with empty array if all are valid
      */
-    public Validate(options?: ValidateOptions): Array<ValidateResult> //!!!PENDING change this to ValidateResults with IsValid and DoNotSave in addition to this array
+    public validate(options?: ValidateOptions): Array<ValidateResult> //!!!PENDING change this to ValidateResults with IsValid and DoNotSave in addition to this array
     {
         if (!options)
             options = {};
         let list: Array<ValidateResult> = [];
 
-        for (let vh of this.InputValueHost()) {
-            list.push(vh.Validate(options));
+        for (let vh of this.inputValueHost()) {
+            list.push(vh.validate(options));
         }
         if (!options || !options.OmitCallback)
             this.OnValidated?.(this, list);
@@ -325,9 +325,9 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      */
-    public ClearValidation(): void {
-        for (let vh of this.InputValueHost()) {
-            vh.ClearValidation();
+    public clearValidation(): void {
+        for (let vh of this.inputValueHost()) {
+            vh.clearValidation();
         }
     }
 
@@ -340,7 +340,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Recommend using DoNotSaveNativeValue for more clarity.
      */
     public get IsValid(): boolean {
-        for (let vh of this.InputValueHost())
+        for (let vh of this.inputValueHost())
             if (!vh.IsValid)
                 return false;
         return true;
@@ -351,9 +351,9 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated
      * on individual validators.
      */
-    public DoNotSaveNativeValue(): boolean {
-        for (let vh of this.InputValueHost()) {
-            if (vh.DoNotSaveNativeValue())
+    public doNotSaveNativeValue(): boolean {
+        for (let vh of this.inputValueHost()) {
+            if (vh.doNotSaveNativeValue())
                 return true;
         }
         return false;
@@ -369,23 +369,23 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * error that lacks an AssociatedValueHostId.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      */
-    public SetBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void {
+    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void {
 
-        for (let vh of this.InputValueHost()) {
-            vh.ClearBusinessLogicErrors();
+        for (let vh of this.inputValueHost()) {
+            vh.clearBusinessLogicErrors();
         }
         if (errors)
             for (let error of errors) {
-                let vh = this.GetValueHost(error.AssociatedValueHostId ?? BusinessLogicValueHostId);
+                let vh = this.getValueHost(error.AssociatedValueHostId ?? BusinessLogicValueHostId);
                 if (!vh && !error.AssociatedValueHostId) {
-                    vh = this.AddValueHost({
+                    vh = this.addValueHost({
                         Type: BusinessLogicInputValueHostType,
                         Label: '*',
                         Id: BusinessLogicValueHostId
                     }, null);
                 }
                 if (vh instanceof InputValueHostBase)
-                    vh.SetBusinessLogicError(error);
+                    vh.setBusinessLogicError(error);
             }
     }
     /**
@@ -401,10 +401,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    public GetIssuesForInput(valueHostId: ValueHostId): Array<IssueSnapshot> {
-        let vh = this.GetValueHost(valueHostId);
+    public getIssuesForInput(valueHostId: ValueHostId): Array<IssueSnapshot> {
+        let vh = this.getValueHost(valueHostId);
         if (vh && vh instanceof InputValueHostBase)
-            return vh.GetIssuesForInput();
+            return vh.getIssuesForInput();
         return [];
     }
     /**
@@ -419,10 +419,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    public GetIssuesForSummary(group?: string): Array<IssueSnapshot> {
+    public getIssuesForSummary(group?: string): Array<IssueSnapshot> {
         let list: Array<IssueSnapshot> = [];
-        for (let vh of this.InputValueHost()) {
-            list = list.concat(vh.GetIssuesForSummary(group));
+        for (let vh of this.inputValueHost()) {
+            list = list.concat(vh.getIssuesForSummary(group));
         }
         return list;
     }
@@ -497,7 +497,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
  * this ValidationManager.
  */
 interface IValueHostDescriptorsMap {
-    [valueHostId: ValueHostId]: ValueHostDescriptor
+    [valueHostId: ValueHostId]: ValueHostDescriptor;
 }
 
 /**
@@ -506,7 +506,7 @@ interface IValueHostDescriptorsMap {
  * in this ValidationManager.
  */
 interface IValueHostsMap {
-    [valueHostId: ValueHostId]: IValueHost
+    [valueHostId: ValueHostId]: IValueHost;
 }
 
 export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;
@@ -538,9 +538,9 @@ export interface IValidationManagerCallbacks extends IInputValueHostCallbacks {
  * @param source 
  * @returns source typecasted to IValidationManagerCallbacks if appropriate or null if not.
  */
-export function ToIValidationManagerCallbacks(source: any): IValidationManagerCallbacks | null
+export function toIValidationManagerCallbacks(source: any): IValidationManagerCallbacks | null
 {
-    if (ToIInputValueHostCallbacks(source))
+    if (toIInputValueHostCallbacks(source))
     {
         let test = source as IValidationManagerCallbacks;     
         if (test.OnStateChanged !== undefined &&

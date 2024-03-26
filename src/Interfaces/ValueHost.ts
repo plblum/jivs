@@ -40,8 +40,8 @@
  */
 
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IValueHostResolver, IValueHostsManager } from "./ValueHostResolver";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { IValueHostResolver, IValueHostsManager } from './ValueHostResolver';
 
 /**
  * Interface for creating ValueHosts.
@@ -52,13 +52,13 @@ export interface IValueHost {
      * Consuming systems use this ID to locate the ValueHost
      * for which they will transfer a value, via ValueHostsManager.GetValueHost(this id)
      */
-    GetId(): ValueHostId;
+    getId(): ValueHostId;
 
     /**
      * The UI-ready label for this value, to be shown in error messages
      * that have the {Label} token.
      */
-    GetLabel(): string;
+    getLabel(): string;
 
     /**
      * Gets the value. It is expected to be in its native data type,
@@ -67,7 +67,7 @@ export interface IValueHost {
      * Returns undefined if the native value could not be resolved
      * from the input value.
      */
-    GetValue(): any;
+    getValue(): any;
 
     /**
      * Replaces the value and optionally validates.
@@ -83,7 +83,7 @@ export interface IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
     */
-    SetValue(value: any, options?: SetValueOptions): void;
+    setValue(value: any, options?: SetValueOptions): void;
 
     /**
      * Identifies that the value is undetermined. For example,
@@ -98,13 +98,13 @@ export interface IValueHost {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
      */
-    SetValueToUndefined(options?: SetValueOptions): void;
+    setValueToUndefined(options?: SetValueOptions): void;
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
      * See the DataTypeServices. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
      */
-    GetDataType(): string | null;
+    getDataType(): string | null;
 
     /**
      * Adds a custom entry into the ValueHost's state
@@ -112,13 +112,13 @@ export interface IValueHost {
      * @param key 
      * @param value 
      */
-    SaveIntoState(key: string, value: any): void;
+    saveIntoState(key: string, value: any): void;
     /**
      * Use to retrieve a value from the state that was stored
      * with SaveIntoState().
      * @param key 
      */
-    GetFromState(key: string): any | undefined;
+    getFromState(key: string): any | undefined;
 
     /**
      * Determines how the validation system sees the Value in terms of editing.
@@ -205,7 +205,7 @@ export interface ValueHostState {
  * @internal
  */
 interface CustomItems {
-    [key: string]: any
+    [key: string]: any;
 }
 
 /**
@@ -287,7 +287,7 @@ export interface IGatherValueHostIds {
      * A service to provide all ValueHostIds that have been assigned to this Condition's
      * Descriptor.
      */
-    GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
+    gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
 }
 
 /**
@@ -295,10 +295,10 @@ export interface IGatherValueHostIds {
  * If not, it returns null.
  * @param source 
  */
-export function ToIGatherValueHostIds(source: any): IGatherValueHostIds | null {
+export function toIGatherValueHostIds(source: any): IGatherValueHostIds | null {
     if (source && typeof source === 'object') {
         let test = source as IGatherValueHostIds;       
-        if (test.GatherValueHostIds !== undefined)
+        if (test.gatherValueHostIds !== undefined)
             return test;
     }
     return null;
@@ -317,7 +317,7 @@ export interface IValueHostFactory {
      * @param descriptor - determines the class. All classes supported here must ValueHostDescriptor to get their setup.
      * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.CreateState() to create an initial value.
      */
-    Create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
+    create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
     /**
      * Adjusts the state from a previous time to conform to the Descriptor.
      * For example, if the Descriptor had a rule change, some data in the state may
@@ -325,10 +325,10 @@ export interface IValueHostFactory {
      * @param state 
      * @param descriptor 
      */
-    CleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
+    cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
     /**
      * Creates an initialized State object
      * @param descriptor 
      */
-    CreateState(descriptor: ValueHostDescriptor): ValueHostState;
+    createState(descriptor: ValueHostDescriptor): ValueHostState;
 }

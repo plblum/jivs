@@ -24,12 +24,12 @@
  */
 
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IValueHostsManager } from "./ValueHostResolver";
-import { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from "./Validation";
-import { IValidationManagerCallbacks } from "../ValueHosts/ValidationManager";
-import { IValidationServices } from "./ValidationServices";
-import { ValueHostDescriptor, ValueHostState } from "./ValueHost";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { IValueHostsManager } from './ValueHostResolver';
+import { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from './Validation';
+import { IValidationManagerCallbacks } from '../ValueHosts/ValidationManager';
+import { IValidationServices } from './ValidationServices';
+import { ValueHostDescriptor, ValueHostState } from './ValueHost';
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -45,12 +45,12 @@ export interface IValidationManager extends IValueHostsManager {
      * Important to set options.BeforeSubmit to true if invoking Validate prior to submitting.
      * @returns Array of ValidateResult with empty array if all are valid
      */
-    Validate(options?: ValidateOptions): Array<ValidateResult>;
+    validate(options?: ValidateOptions): Array<ValidateResult>;
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      */
-    ClearValidation(): void;
+    clearValidation(): void;
 
     /**
      * Value is setup by calling Validate(). It does not run Validate itself.
@@ -68,7 +68,7 @@ export interface IValidationManager extends IValueHostsManager {
      * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated
      * on individual validators.
      */
-    DoNotSaveNativeValue(): boolean;
+    doNotSaveNativeValue(): boolean;
 
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
@@ -78,7 +78,7 @@ export interface IValidationManager extends IValueHostsManager {
      * Each time its called, all previous business logic errors are abandoned.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      */
-    SetBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void;
+    setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void;
 
     /**
      * Lists all issues found (error messages and supporting info) for a single InputValueHost
@@ -92,7 +92,7 @@ export interface IValidationManager extends IValueHostsManager {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    GetIssuesForInput(valueHostId: ValueHostId): Array<IssueSnapshot>;
+    getIssuesForInput(valueHostId: ValueHostId): Array<IssueSnapshot>;
 
     /**
      * A list of all issues to show in a Validation Summary widget optionally for a given group.
@@ -107,7 +107,7 @@ export interface IValidationManager extends IValueHostsManager {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    GetIssuesForSummary(group?: string): Array<IssueSnapshot>;
+    getIssuesForSummary(group?: string): Array<IssueSnapshot>;
 }
 
 /**

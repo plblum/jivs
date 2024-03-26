@@ -4,14 +4,14 @@
  * @module Conditions/AbstractClasses/InputValueConditionBase
  */
 
-import { ConditionEvaluateResult } from "../Interfaces/Conditions";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { IValueHost } from "../Interfaces/ValueHost";
-import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
-import { CodingError } from "../Utilities/ErrorHandling";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { OneValueConditionDescriptor, OneValueConditionBase } from "./OneValueConditionBase";
-import { ToIInputValueHost } from "../ValueHosts/InputValueHost";
+import { ConditionEvaluateResult } from '../Interfaces/Conditions';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IValueHost } from '../Interfaces/ValueHost';
+import { LoggingLevel, ConfigurationCategory } from '../Interfaces/Logger';
+import { CodingError } from '../Utilities/ErrorHandling';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { OneValueConditionDescriptor, OneValueConditionBase } from './OneValueConditionBase';
+import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 
 /**
  * Abstract class for developing Conditions that use the value from ValueHost.GetInputValue.
@@ -26,19 +26,19 @@ export abstract class InputValueConditionBase<TDescriptor extends OneValueCondit
      * This function checks both in valueHost to determine a string source.
      * @param valueHostResolver 
      */
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.EnsurePrimaryValueHost(valueHost, valueHostResolver);
-        if (!ToIInputValueHost(valueHost)) {
-            valueHostResolver.Services.LoggerService.Log('Invalid ValueHost used. Must be an InputValueHost',
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+        if (!toIInputValueHost(valueHost)) {
+            valueHostResolver.Services.LoggerService.log('Invalid ValueHost used. Must be an InputValueHost',
                 LoggingLevel.Error, ConfigurationCategory, 'InputValueConditionBase.Evaluate');
             throw new CodingError('Invalid ValueHost used. Must be an InputValueHost');
         }
         let iValueHost = valueHost as unknown as IInputValueHost;
-        let value = iValueHost.GetInputValue();
+        let value = iValueHost.getInputValue();
         if (value === undefined)
             return ConditionEvaluateResult.Undetermined;
 
-        return this.EvaluateInputValue(value, iValueHost, valueHostResolver);
+        return this.evaluateInputValue(value, iValueHost, valueHostResolver);
     }
-    protected abstract EvaluateInputValue(value: any, valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
+    protected abstract evaluateInputValue(value: any, valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
 }
