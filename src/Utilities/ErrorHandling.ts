@@ -16,7 +16,7 @@ export class InvalidTypeError extends Error
 {
     constructor(valueSupplied: any)
     {
-        super(`Type is not supported for this value: ${valueSupplied?.toString()}`)
+        super(`Type is not supported for this value: ${valueSupplied?.toString()}`);
     }
 }
 
@@ -25,7 +25,7 @@ export class InvalidTypeError extends Error
  * @param valueToCheck 
  * @param memberName - Used in the error message. Defaults to 'parameter'.
  */
-export function AssertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
+export function assertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
 {
     if (valueToCheck == null)   // includes undefined
         throw new CodingError(`${memberName} required`);

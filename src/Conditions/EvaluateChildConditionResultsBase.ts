@@ -5,12 +5,12 @@
  * @module Conditions/AbstractClasses/EvaluateChildConditionResultsBase
  */
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { ConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from "../Interfaces/Conditions";
-import { IValueHost, ToIGatherValueHostIds } from "../Interfaces/ValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { CodingError } from "../Utilities/ErrorHandling";
-import { ConditionBase } from "./ConditionBase";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from '../Interfaces/Conditions';
+import { IValueHost, toIGatherValueHostIds } from '../Interfaces/ValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { CodingError } from '../Utilities/ErrorHandling';
+import { ConditionBase } from './ConditionBase';
 
 /**
  * Descriptor for all implementations of EvaluateChildConditionResultsBase.
@@ -37,38 +37,38 @@ export interface EvaluateChildConditionResultsDescriptor extends ConditionDescri
 export abstract class EvaluateChildConditionResultsBase<TDescriptor extends EvaluateChildConditionResultsDescriptor>
     extends ConditionBase<TDescriptor>
 {
-    public Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        let conditions = this.Conditions(valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        let conditions = this.conditions(valueHostResolver);
         if (conditions.length === 0)
             return ConditionEvaluateResult.Undetermined;
-        return this.EvaluateChildren(conditions, valueHostResolver);
+        return this.evaluateChildren(conditions, valueHostResolver);
     }
 
-    protected Conditions(valueHostResolver: IValueHostResolver): Array<ICondition> {
+    protected conditions(valueHostResolver: IValueHostResolver): Array<ICondition> {
         if (!this._conditions) {
-            this._conditions = this.GenerateConditions(valueHostResolver);
+            this._conditions = this.generateConditions(valueHostResolver);
         }
         return this._conditions;
     }
-    protected GenerateConditions(valueHostResolver: IValueHostResolver): Array<ICondition> {
+    protected generateConditions(valueHostResolver: IValueHostResolver): Array<ICondition> {
         let conditions: Array<ICondition> = [];
         for (let condDescriptor of this.Descriptor.ConditionDescriptors) {
             // expect exceptions here for invalid Descriptors
-            let condition = valueHostResolver.Services.ConditionFactory.Create(condDescriptor);
+            let condition = valueHostResolver.Services.ConditionFactory.create(condDescriptor);
             conditions.push(condition);
         }
         return conditions;
     }
     private _conditions: Array<ICondition> | null = null;
 
-    protected abstract EvaluateChildren(conditions: Array<ICondition>, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
+    protected abstract evaluateChildren(conditions: Array<ICondition>, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
 
     /**
      * Utility for EvaluateChildren to apply the Descriptor.TreatUndeterminedAs
      * @param childResult 
      * @returns 
      */
-    protected CleanupChildResult(childResult: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
+    protected cleanupChildResult(childResult: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
         if (childResult instanceof Promise)
             throw new CodingError('Promises are not supported for child conditions at this time.');
         if (childResult === ConditionEvaluateResult.Undetermined)
@@ -76,11 +76,11 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
         return childResult;
     }
 
-    public GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
+    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
     {
-        let conditions = this.Conditions(valueHostResolver);
+        let conditions = this.conditions(valueHostResolver);
         for (let condition of conditions)
-            ToIGatherValueHostIds(condition)?.GatherValueHostIds?.(collection, valueHostResolver);
+            toIGatherValueHostIds(condition)?.gatherValueHostIds(collection, valueHostResolver);
     }        
     protected get DefaultCategory(): ConditionCategory {
         return ConditionCategory.Children;

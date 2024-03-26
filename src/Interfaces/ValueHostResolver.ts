@@ -5,9 +5,9 @@
  * @module ValidationManager/Interfaces/ValueHostResolver
  */
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { IServicesAccessor } from "./ValidationServices";
-import { type IValueHost } from "./ValueHost";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { IServicesAccessor } from './ValidationServices';
+import type { IValueHost } from './ValueHost';
 
 /**
  * The fundamentals of managing ValueHosts involve just the ability
@@ -19,7 +19,7 @@ export interface IValueHostResolver extends IServicesAccessor {
      * @param valueHostId - Matches to the IValueHost.Id property
      * Returns the instance or null if not found.
      */
-    GetValueHost(valueHostId: ValueHostId): IValueHost | null;
+    getValueHost(valueHostId: ValueHostId): IValueHost | null;
  
 }
 
@@ -36,7 +36,7 @@ export interface IValueHostsManager extends IValueHostResolver
      * will want to revalidate or set up a state to force revalidation.
      * This goes through those ValueHosts and notifies them.
      */
-    NotifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void;
+    notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void;
     
 }
 /**
@@ -44,11 +44,11 @@ export interface IValueHostsManager extends IValueHostResolver
  * @param source 
  * @returns source typecasted to IValueHostResolver if appropriate or null if not.
  */
-export function ToIValueHostResolver(source: any): IValueHostResolver | null
+export function toIValueHostResolver(source: any): IValueHostResolver | null
 {
     if (source && typeof source === 'object') {
         let test = source as IValueHostResolver;    
-        if (test.GetValueHost !== undefined &&
+        if (test.getValueHost !== undefined &&
             test.Services !== undefined)
             return test;
     }
@@ -60,11 +60,11 @@ export function ToIValueHostResolver(source: any): IValueHostResolver | null
  * @param source 
  * @returns source typecasted to IValueHostsManager if appropriate or null if not.
  */
-export function ToIValueHostsManager(source: any): IValueHostsManager | null
+export function toIValueHostsManager(source: any): IValueHostsManager | null
 {
-    if (ToIValueHostResolver(source)) {
+    if (toIValueHostResolver(source)) {
         let test = source as IValueHostsManager;    
-        if (test.NotifyOtherValueHostsOfValueChange !== undefined)
+        if (test.notifyOtherValueHostsOfValueChange !== undefined)
             return test;
     }
     return null;
@@ -84,7 +84,7 @@ export interface IValueHostsManagerAccessor
  * @param source 
  * @returns source typecasted to IValueHostsManagerAccessor if appropriate or null if not.
  */
-export function ToIValueHostsManagerAccessor(source: any): IValueHostsManagerAccessor | null
+export function toIValueHostsManagerAccessor(source: any): IValueHostsManagerAccessor | null
 {
     if (source && typeof source === 'object') {
         let test = source as IValueHostsManagerAccessor;     

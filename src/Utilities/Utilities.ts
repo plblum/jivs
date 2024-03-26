@@ -11,16 +11,16 @@
  * @param group1 - group name(s) to compare against group2
  * @param group2
  */
-export function GroupsMatch(group1: string | Array<string> | undefined | null,
+export function groupsMatch(group1: string | Array<string> | undefined | null,
     group2: string | Array<string>| undefined | null): boolean
 {
-    function AlwaysMatch(source: any): boolean
+    function alwaysMatch(source: any): boolean
     {
         return (source == null) // supports both null and undefined
             || (source === '') || (source === '*') ||
             (Array.isArray(source) && source.length === 0);
     }
-    function AsArray(source: any): Array<string>
+    function asArray(source: any): Array<string>
     {
         if (typeof source === 'string')
             return [source.toLowerCase()];
@@ -29,21 +29,21 @@ export function GroupsMatch(group1: string | Array<string> | undefined | null,
         return [];  // should not get here
     }
 
-    if (AlwaysMatch(group1) || AlwaysMatch(group2))
+    if (alwaysMatch(group1) || alwaysMatch(group2))
         return true;
-    let requestedGroups = AsArray(group1);
-    let hasGroups = AsArray(group2);
+    let requestedGroups = asArray(group1);
+    let hasGroups = asArray(group2);
     // just need to find one match between the two arrays, case insensitive
     for (let i = 0; i < requestedGroups.length; i++)
         if (hasGroups.includes(requestedGroups[i]) ||
-            AlwaysMatch(requestedGroups[i]))    // [''], [null], etc
+            alwaysMatch(requestedGroups[i]))    // [''], [null], etc
             return true;
 
     return false;
 }
 
 
-export function DeepEquals(obj1: any, obj2: any): boolean
+export function deepEquals(obj1: any, obj2: any): boolean
 {
     if (obj1 === null || obj2 === null)
         return Object.is(obj1, obj2);
@@ -56,13 +56,16 @@ export function DeepEquals(obj1: any, obj2: any): boolean
     let keys1 = Object.keys(obj1);
     if (keys1.length !== Object.keys(obj2).length)
         return false;
+    /* eslint-disable no-prototype-builtins */
     return keys1.every(key => 
-        obj2.hasOwnProperty(key) && DeepEquals(obj1[key], obj2[key])
+        obj2.hasOwnProperty(key) && deepEquals(obj1[key], obj2[key])
     );  
+    /* eslint-ensable no-prototype-builtins */
+    
 }
 
-export function DeepClone(value: any): any {
-    if (typeof value !== "object" || value === null) {
+export function deepClone(value: any): any {
+    if (typeof value !== 'object' || value === null) {
       return value;
     }
     if (value instanceof Date)
@@ -70,16 +73,16 @@ export function DeepClone(value: any): any {
     let clone = new value.constructor();
 
     for (const key in value) {
-        clone[key] = DeepClone(value[key]);
+        clone[key] = deepClone(value[key]);
     }
 
     return clone;
     
   }
 
-export function ObjectKeysCount(object: Object | null): number
+export function objectKeysCount(obj: object | null): number
 {
-    return object ? Object.keys(object).length : 0;
+    return obj ? Object.keys(obj).length : 0;
 }
 
 /**
@@ -88,7 +91,7 @@ export function ObjectKeysCount(object: Object | null): number
  * @param cultureId 
  * @returns 
  */
-export function CultureLanguageCode(cultureId: string): string
+export function cultureLanguageCode(cultureId: string): string
 {
     let pos = cultureId.indexOf('-');
     if (pos > 0)

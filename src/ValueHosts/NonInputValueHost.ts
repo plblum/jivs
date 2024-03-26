@@ -2,11 +2,11 @@
  * {@inheritDoc NonInputValueHost}
  * @module ValueHosts/ConcreteClasses/NonInputValueHost
  */
-import { InputValueHostDescriptor } from "../Interfaces/InputValueHost";
-import { INonInputValueHost, NonInputValueHostDescriptor, NonInputValueHostState } from "../Interfaces/NonInputValueHost";
-import { ValueHostDescriptor } from "../Interfaces/ValueHost";
-import { IValueHostsManager } from "../Interfaces/ValueHostResolver";
-import { ValueHostBase, ValueHostBaseGenerator } from "./ValueHostBase";
+import { InputValueHostDescriptor } from '../Interfaces/InputValueHost';
+import { INonInputValueHost, NonInputValueHostDescriptor, NonInputValueHostState } from '../Interfaces/NonInputValueHost';
+import { ValueHostDescriptor } from '../Interfaces/ValueHost';
+import { IValueHostsManager } from '../Interfaces/ValueHostResolver';
+import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 
 
 /**
@@ -43,7 +43,7 @@ export const NonInputValueHostType = 'NonInput';
  */
 export class NonInputValueHostGenerator extends ValueHostBaseGenerator {
 
-    public CanCreate(descriptor: ValueHostDescriptor): boolean {
+    public canCreate(descriptor: ValueHostDescriptor): boolean {
         if (descriptor.Type != null)    // null/undefined
             return descriptor.Type === NonInputValueHostType;
         let test = descriptor as unknown as InputValueHostDescriptor;
@@ -51,11 +51,11 @@ export class NonInputValueHostGenerator extends ValueHostBaseGenerator {
             return true;
         return false;
     }
-    public Create(valueHostsManager: IValueHostsManager, descriptor: NonInputValueHostDescriptor, state: NonInputValueHostState): INonInputValueHost {
+    public create(valueHostsManager: IValueHostsManager, descriptor: NonInputValueHostDescriptor, state: NonInputValueHostState): INonInputValueHost {
         return new NonInputValueHost(valueHostsManager, descriptor, state);
     }
 
-    public CleanupState(state: NonInputValueHostState, descriptor: NonInputValueHostDescriptor): void {
+    public cleanupState(state: NonInputValueHostState, descriptor: NonInputValueHostDescriptor): void {
         // nothing needed.
     }
 }

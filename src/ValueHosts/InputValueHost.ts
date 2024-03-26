@@ -8,17 +8,17 @@
  *   quite different from the value intended to be stored in the Model/Entity.
  * @module ValueHosts/ConcreteClasses/InputValueHost
  */
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { ConfigurationCategory, LoggingLevel, ValidationCategory } from "../Interfaces/Logger";
-import { ObjectKeysCount, GroupsMatch } from "../Utilities/Utilities";
-import { ToIValidationManagerCallbacks } from "./ValidationManager";
-import { IValueHostResolver, IValueHostsManager } from "../Interfaces/ValueHostResolver";
-import { ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
-import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from "../Interfaces/InputValueHost";
-import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from "../Interfaces/Validation";
-import { InputValueHostBase, InputValueHostBaseGenerator } from "./InputValueHostBase";
-import { InputValidateResult, IInputValidator, InputValidatorDescriptor } from "../Interfaces/InputValidator";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ConfigurationCategory, LoggingLevel, ValidationCategory } from '../Interfaces/Logger';
+import { objectKeysCount, groupsMatch } from '../Utilities/Utilities';
+import { toIValidationManagerCallbacks } from './ValidationManager';
+import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
+import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
+import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from '../Interfaces/InputValueHost';
+import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from '../Interfaces/Validation';
+import { InputValueHostBase, InputValueHostBaseGenerator } from './InputValueHostBase';
+import { InputValidateResult, IInputValidator, InputValidatorDescriptor } from '../Interfaces/InputValidator';
+import { assertNotNull } from '../Utilities/ErrorHandling';
 
 
 /**
@@ -51,7 +51,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
      * @param options - Provides guidance on which validators to include.
      * @returns IValidationResultDetails if at least one is invalid or null if all valid.
      */
-    public Validate(options?: ValidateOptions): ValidateResult {
+    public validate(options?: ValidateOptions): ValidateResult {
         let self = this;
         if (!options)
             options = {};
@@ -64,25 +64,25 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             IssuesFound: null
         };
 
-        if (!GroupsMatch(options.Group, this.Descriptor.Group))
-            return Bailout(`Group names do not match "${options.Group}" vs "${this.Descriptor.Group?.toString()}"`);      
+        if (!groupsMatch(options.Group, this.Descriptor.Group))
+            return bailout(`Group names do not match "${options.Group}" vs "${this.Descriptor.Group?.toString()}"`);      
         
         try {
             try {
-                let validators = this.Validators();
+                let validators = this.validators();
                 let stop = false;
                 let validatorsInUse = 0;
 
                 for (let i = 0; !stop && i < validators.length; i++) {
                     let iv = validators[i];
-                    let potentialIVR = iv.Validate(options);
+                    let potentialIVR = iv.validate(options);
                     // promises will update the results later
                     // All other validators in this loop will still finish
                     // by updating the state. The state is just missing the results
                     // from this validator. When this completes, it updates the state again.
                     if (potentialIVR instanceof Promise)
                     {
-                        ProcessPromise(potentialIVR);
+                        processPromise(potentialIVR);
                         continue;
                     }
                 // synchronous (normal) processing
@@ -113,7 +113,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                         if (inputValResult.ConditionEvaluateResult === ConditionEvaluateResult.Match)
                             result.ValidationResult = ValidationResult.Valid;    // may be overwritten by a later validator
 
-                };
+                }
                 if (validatorsInUse === 0)
                     result.ValidationResult = ValidationResult.Valid; 
 
@@ -121,26 +121,26 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             catch (e)
             {
                 if (e instanceof Error)
-                    LogError(e.message);
+                    logError(e.message);
                 // resume normal processing with Undetermined state
                 result.ValidationResult = ValidationResult.Undetermined;
             }                  
-            if (UpdateStateWithResult(result))
-                ToIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
+            if (updateStateWithResult(result))
+                toIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
             return result;
         }
   
         finally {
-            LogInfo(() => {
+            logInfo(() => {
                 return {
                     message: `Input Validation result: ${ValidationResultString[result.ValidationResult]} Issues found:` +
                         (result.IssuesFound ? JSON.stringify(result.IssuesFound) : 'none')
-                }
+                };
             });
         }
-        function UpdateStateWithResult(result: ValidateResult): boolean
+        function updateStateWithResult(result: ValidateResult): boolean
         {
-            return self.UpdateState((stateToUpdate) => {
+            return self.updateState((stateToUpdate) => {
                 stateToUpdate.ValidationResult = result.ValidationResult;
                 stateToUpdate.IssuesFound = result.IssuesFound;
                 if (options!.Group)
@@ -152,9 +152,9 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                 return stateToUpdate;
             }, self);
         }
-        function ProcessPromise(promise: Promise<InputValidateResult>): void
+        function processPromise(promise: Promise<InputValidateResult>): void
         {
-            function CompleteThePromise(finish: () => void)
+            function completeThePromise(finish: () => void): void
             {
                 // remove the promise from result.Pending.
                 // We use result.Pending == null to mean no async processes remain.
@@ -162,6 +162,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                 if (result.Pending && result.Pending.includes(promise))
                 {
                     let index = result.Pending.indexOf(promise);
+                    /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
                     result.Pending.splice(index, 1);
                     if (result.Pending.length === 0)
                         delete result.Pending;
@@ -169,10 +170,10 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                     finish();
                 }
             }
-            function DeleteAsyncProcessFlag()
+            function deleteAsyncProcessFlag() : void
             {
                 if (!result.Pending)
-                    self.UpdateState((stateToUpdate) => {
+                    self.updateState((stateToUpdate) => {
                         delete stateToUpdate.AsyncProcessing;
                         return stateToUpdate;
                     }, self);
@@ -182,57 +183,57 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             result.Pending.push(promise);
             promise.then(
             (ivr) => {
-                    CompleteThePromise(() => {
+                    completeThePromise(() => {
                         // the only way we modify the issues, validation result, or State
                         if (ivr.ConditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
                             result.ValidationResult = ValidationResult.Invalid;
                             if (!result.IssuesFound)
                                 result.IssuesFound = [];
                             result.IssuesFound.push(ivr.IssueFound!);
-                            if (UpdateStateWithResult(result))
-                                ToIValidationManagerCallbacks(self.ValueHostsManager)?.OnValueHostValidated?.(self, result);
+                            if (updateStateWithResult(result))
+                                toIValidationManagerCallbacks(self.ValueHostsManager)?.OnValueHostValidated?.(self, result);
                         }
                         else
-                            DeleteAsyncProcessFlag();
+                            deleteAsyncProcessFlag();
                     });
             },
             (failureInfo) => {
-                CompleteThePromise(() => { 
-                    DeleteAsyncProcessFlag();
-                    LogError(failureInfo ? failureInfo.toString() : 'unspecified');
+                completeThePromise(() => { 
+                    deleteAsyncProcessFlag();
+                    logError(failureInfo ? failureInfo.toString() : 'unspecified');
                 });
             }
         );
         // no change to the ValidationResult here            
         }
 
-        function Bailout(errorMessage: string): ValidateResult
+        function bailout(errorMessage: string): ValidateResult
         {
             let resultState: ValidateResult = {
                 ValidationResult: ValidationResult.Undetermined,
                 IssuesFound: null
             };
-            LogInfo(() => {
+            logInfo(() => {
                 return {
-                    message: errorMessage,
-                }
+                    message: errorMessage
+                };
             });
             return resultState;                    
         }        
-        function LogInfo(
-            fn: () => { message: string, source?: string })
+        function logInfo(
+            fn: () => { message: string; source?: string }): void
         {
             if (self.Services.LoggerService.MinLevel >= LoggingLevel.Info)
             {
                 let parms = fn();
-                self.Services.LoggerService.Log(parms.message, LoggingLevel.Info,
+                self.Services.LoggerService.log(parms.message, LoggingLevel.Info,
                     ValidationCategory,
                     parms.source ?? `ValueHost ID ${self.Descriptor.Id}`);
             }
         }        
-        function LogError(message: string): void
+        function logError(message: string): void
         {
-            self.Services.LoggerService.Log('Exception: ' + (message ?? 'Reason unspecified'),
+            self.Services.LoggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
                 LoggingLevel.Error, ValidationCategory, self.Descriptor.Id);
         }
     }
@@ -242,9 +243,9 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
      * Provides the list of IInputValidator instances derived
      * from the ValidatorDescriptors. Lazy loads the instances.
      */
-    protected Validators(): Array<IInputValidator> {
+    protected validators(): Array<IInputValidator> {
         if (this._validators === null)
-            this._validators = this.GenerateValidators();
+            this._validators = this.generateValidators();
         return this._validators;
     }
     // populated by Validators() when null. Set to null by UpdateValueHostDescriptor
@@ -256,45 +257,46 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
      * Sorts the by Category so Required is always first, DataTypeCheck is just after Required.
      * @returns 
      */
-    protected GenerateValidators(): Array<IInputValidator> {
+    protected generateValidators(): Array<IInputValidator> {
         let factory = this.Services.InputValidatorFactory;
         let validators: Array<IInputValidator> = [];
         let needsDataTypeCheck = true;
         this.Descriptor.ValidatorDescriptors?.forEach((valDesc) => {
-            let pv = factory.Create(this, valDesc);
+            let pv = factory.create(this, valDesc);
             validators.push(pv);
             if (needsDataTypeCheck && pv.Condition.Category === ConditionCategory.DataTypeCheck)
                 needsDataTypeCheck = false;
         });
         if (needsDataTypeCheck)
-            this.TryAutoGenerateDataTypeCheckCondition(validators);
-        return this.OrderValidators(validators);
+            this.tryAutoGenerateDataTypeCheckCondition(validators);
+        return this.orderValidators(validators);
     }
-    protected OrderValidators(unordered: Array<IInputValidator>): Array<IInputValidator>
+    protected orderValidators(unordered: Array<IInputValidator>): Array<IInputValidator>
     {
-        let fn = (a: IInputValidator, b: IInputValidator) => a.Condition.Category - b.Condition.Category;
+        let fn = (a: IInputValidator, b: IInputValidator) : number => a.Condition.Category - b.Condition.Category;
         if (unordered.toSorted)    // recently introduced API, so provide fallback
             return unordered.toSorted(fn);
         else
             return unordered.sort(fn);
     }
-    protected TryAutoGenerateDataTypeCheckCondition(validators: Array<IInputValidator>): boolean
+    protected tryAutoGenerateDataTypeCheckCondition(validators: Array<IInputValidator>): boolean
     {
         let created = false;
         if (this.Services.DataTypeServices.AutoGenerateDataTypeConditionEnabled) {
-            let lookupKey = this.GetDataType();
+            let lookupKey = this.getDataType();
             if (lookupKey) {
-                let dtcCondition = this.Services.DataTypeServices.AutoGenerateDataTypeCondition(this, lookupKey)
+                let dtcCondition = this.Services.DataTypeServices.autoGenerateDataTypeCondition(this, lookupKey);
                 if (dtcCondition != null) {
                     let descriptor: InputValidatorDescriptor = {
+                        /* eslint-disable-next-line @typescript-eslint/naming-convention */
                         ConditionCreator: (requester) => dtcCondition,
                         ConditionDescriptor: null,
                         ErrorMessage: null, // expecting TextLocalizationService to contribute based on ConditionType + DataTypeLookupKey
                         Severity: ValidationSeverity.Severe
                     };
-                    validators.push(this.Services.InputValidatorFactory.Create(this, descriptor));
-                    this.Services.LoggerService.Log(`Added ${dtcCondition.ConditionType} Condition for Data Type Check`,
-                        LoggingLevel.Info, ConfigurationCategory, `InputValidator on ${this.GetId()}`);
+                    validators.push(this.Services.InputValidatorFactory.create(this, descriptor));
+                    this.Services.LoggerService.log(`Added ${dtcCondition.ConditionType} Condition for Data Type Check`,
+                        LoggingLevel.Info, ConfigurationCategory, `InputValidator on ${this.getId()}`);
                     created = true;
                 }
             }
@@ -308,7 +310,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
     public get RequiresInput(): boolean
     {
         // by design, Validators are sorted with Required first. So only check the first
-        let validators = this.Validators();
+        let validators = this.validators();
 
         return validators != null && validators.length > 0 &&
             (validators[0].Condition.Category === ConditionCategory.Required);
@@ -317,12 +319,11 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
      * A service to provide all ValueHostIds that have been assigned to this Condition's
      * Descriptor.
      */
-    public GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
+    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
     {
-        let validators = this.Validators();
-        if (validators)
-            for (let validator of validators)
-                validator.GatherValueHostIds(collection, valueHostResolver);
+        let validators = this.validators();
+        for (let validator of validators)
+            validator.gatherValueHostIds(collection, valueHostResolver);
     }
 }
 /**
@@ -330,7 +331,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
  * @param source 
  * @returns source typecasted to IInputValueHost if appropriate or null if not.
  */
-export function ToIInputValueHost(source: any): IInputValueHost | null
+export function toIInputValueHost(source: any): IInputValueHost | null
 {
     if (source instanceof InputValueHostBase)
         return source as IInputValueHost;
@@ -338,10 +339,10 @@ export function ToIInputValueHost(source: any): IInputValueHost | null
     {
         let test = source as IInputValueHost;    
         // some select members of IInputValueHost
-        if (test.GetInputValue !== undefined && 
-            test.SetInputValue !== undefined &&
-            test.Validate !== undefined &&
-            test.GetIssuesForInput !== undefined)
+        if (test.getInputValue !== undefined && 
+            test.setInputValue !== undefined &&
+            test.validate !== undefined &&
+            test.getIssuesForInput !== undefined)
             return test;
     }
     return null;
@@ -349,7 +350,7 @@ export function ToIInputValueHost(source: any): IInputValueHost | null
 
 export const InputValueHostType = 'Input';
 export class InputValueHostGenerator extends InputValueHostBaseGenerator {
-    public CanCreate(descriptor: InputValueHostDescriptor): boolean {
+    public canCreate(descriptor: InputValueHostDescriptor): boolean {
         if (descriptor.Type != null)    // null/undefined
             return descriptor.Type === InputValueHostType;
 
@@ -357,7 +358,7 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
             return false;
         return true;
     }
-    public Create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostDescriptor, state: InputValueHostState): IInputValueHost {
+    public create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostDescriptor, state: InputValueHostState): IInputValueHost {
         return new InputValueHost(valueHostsManager, descriptor, state);
     }
 /**
@@ -367,9 +368,9 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
  * @param state 
  * @param descriptor 
  */    
-    public CleanupState(state: InputValueHostState, descriptor: InputValueHostDescriptor): void {
-        AssertNotNull(state, 'state');
-        AssertNotNull(descriptor, 'descriptor');
+    public cleanupState(state: InputValueHostState, descriptor: InputValueHostDescriptor): void {
+        assertNotNull(state, 'state');
+        assertNotNull(descriptor, 'descriptor');
         let descriptorChanged = false;
         let oldStateCount = 0;
         let issuesFound: Array<IssueFound> | null = null;
@@ -398,7 +399,7 @@ export class InputValueHostGenerator extends InputValueHostBaseGenerator {
                     descriptorChanged = true;
             });
         }
-        if (!descriptorChanged && (oldStateCount === ObjectKeysCount(state.IssuesFound)))
+        if (!descriptorChanged && (oldStateCount === objectKeysCount(state.IssuesFound)))
             return;
 
         state.IssuesFound = issuesFound as (Array<IssueFound> | null);

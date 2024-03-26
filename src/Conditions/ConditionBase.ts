@@ -4,14 +4,14 @@
  * @module Conditions/AbstractClasses/ConditionBase
  */
 
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from "../Interfaces/Conditions";
-import type { IInputValueHost } from "../Interfaces/InputValueHost";
-import type { IGatherValueHostIds, IValueHost } from "../Interfaces/ValueHost";
-import { LoggingLevel, ConfigurationCategory } from "../Interfaces/Logger";
-import { AssertNotNull } from "../Utilities/ErrorHandling";
-import type { IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/InputValidator";
-import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
+import type { IInputValueHost } from '../Interfaces/InputValueHost';
+import type { IGatherValueHostIds, IValueHost } from '../Interfaces/ValueHost';
+import { LoggingLevel, ConfigurationCategory } from '../Interfaces/Logger';
+import { assertNotNull } from '../Utilities/ErrorHandling';
+import type { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/InputValidator';
+import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 
 /**
  * Base implementation of ICondition.
@@ -23,7 +23,7 @@ import type { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 export abstract class ConditionBase<TConditionDescriptor extends ConditionDescriptor>
     implements IConditionCore<TConditionDescriptor>, IMessageTokenSource, IGatherValueHostIds {
     constructor(descriptor: TConditionDescriptor) {
-        AssertNotNull(descriptor, 'descriptor');
+        assertNotNull(descriptor, 'descriptor');
         this._descriptor = descriptor;
     }
     /**
@@ -53,7 +53,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * to a value host instead.
      * @param valueHostResolver 
      */
-    public abstract Evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    public abstract evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
      * Data that supports the business rule defined in Evaluate.
@@ -63,7 +63,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
     public get Descriptor(): TConditionDescriptor {
         return this._descriptor;
     }
-    private _descriptor: TConditionDescriptor;
+    private readonly _descriptor: TConditionDescriptor;
 
     /**
      * Helps identify the purpose of the Condition. Impacts:
@@ -87,7 +87,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * A service to provide all ValueHostIds that have been assigned to this Condition's
      * Descriptor.
      */
-    public abstract GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
+    public abstract gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
 
     /**
      * Implementation for IMessageTokenSource.
@@ -101,7 +101,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * @returns An array. If an empty array if there are no token to offer.
      * This base class has no tokens to offer.
      */
-    public GetValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         return [];
     }
 
@@ -110,8 +110,8 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * @param errorMessage 
      * @param valueHostResolver 
      */
-    protected LogInvalidPropertyData(propertyName: string, errorMessage: string, valueHostResolver: IValueHostResolver): void {
+    protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostResolver: IValueHostResolver): void {
         let fnName = this.constructor.name;
-        valueHostResolver.Services.LoggerService.Log(propertyName + ': ' + errorMessage, LoggingLevel.Error, ConfigurationCategory, fnName);
+        valueHostResolver.Services.LoggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, ConfigurationCategory, fnName);
     }
 }

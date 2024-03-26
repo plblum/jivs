@@ -1,8 +1,8 @@
 /**
  * @module Services/TextLocalizerServices
  */
-import { CultureToText, ITextLocalizerService } from "../Interfaces/TextLocalizerService";
-import { CultureLanguageCode } from "../Utilities/Utilities";
+import { CultureToText, ITextLocalizerService } from '../Interfaces/TextLocalizerService';
+import { cultureLanguageCode } from '../Utilities/Utilities';
 
 /**
  * A service to offer text alternatives to the default text
@@ -38,7 +38,7 @@ export class TextLocalizerService implements ITextLocalizerService
      * Only supply '' if you are sure that registered data will always supply a value.
      * @returns The localized text or the fallback text.
      */
-    public Localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null
+    public localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null
     {
         if (!l10nKey)   // including '', null and undefined
             return fallback;
@@ -46,7 +46,7 @@ export class TextLocalizerService implements ITextLocalizerService
         let mapped = this._l10nKeyMap.get(l10nKey);
         if (mapped)
         {
-            let text = mapped[CultureLanguageCode(cultureIdToMatch)];
+            let text = mapped[cultureLanguageCode(cultureIdToMatch)];
             if (text !== undefined)
                 return text;
             text = mapped['*'];
@@ -63,11 +63,11 @@ export class TextLocalizerService implements ITextLocalizerService
      * @param dataTypeLookupKey 
      * @returns The error message or null if not available.
      */
-    public GetErrorMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null
+    public getErrorMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null
     {
-        let text = this.Localize(cultureIdToMatch, this.GetErrorMessagel10nText(conditionType, dataTypeLookupKey), null);
+        let text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(conditionType, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
-            text = this.Localize(cultureIdToMatch, this.GetErrorMessagel10nText(conditionType, null), null);
+            text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(conditionType, null), null);
         return text;
     }
     /**
@@ -76,7 +76,7 @@ export class TextLocalizerService implements ITextLocalizerService
      * @param dataTypeLookupKey 
      * @returns 
      */
-    protected GetErrorMessagel10nText(conditionType: string, dataTypeLookupKey: string | null): string
+    protected getErrorMessagel10nText(conditionType: string, dataTypeLookupKey: string | null): string
     {
         let l10nText = 'EM-' + conditionType;
         if (dataTypeLookupKey)
@@ -91,11 +91,11 @@ export class TextLocalizerService implements ITextLocalizerService
      * @param dataTypeLookupKey 
      * @returns The Summary error message or null if not available.
      */
-    public GetSummaryMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null
+    public getSummaryMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null
     {
-        let text = this.Localize(cultureIdToMatch, this.GetSummaryMessagel10nText(conditionType, dataTypeLookupKey), null);
+        let text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(conditionType, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
-            text = this.Localize(cultureIdToMatch, this.GetSummaryMessagel10nText(conditionType, null), null);
+            text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(conditionType, null), null);
         return text;
     }
     /**
@@ -104,7 +104,7 @@ export class TextLocalizerService implements ITextLocalizerService
      * @param dataTypeLookupKey 
      * @returns 
      */
-    protected GetSummaryMessagel10nText(conditionType: string, dataTypeLookupKey: string | null): string
+    protected getSummaryMessagel10nText(conditionType: string, dataTypeLookupKey: string | null): string
     {
         let l10nText = 'SEM-' + conditionType;
         if (dataTypeLookupKey)
@@ -120,7 +120,7 @@ export class TextLocalizerService implements ITextLocalizerService
      * @param cultureToText - keys are language codes from cultureId, like 'en'.
      * values are the actual text to output.
      */
-    public Register(l10nKey: string, cultureToText: CultureToText): void
+    public register(l10nKey: string, cultureToText: CultureToText): void
     {
         this._l10nKeyMap.set(l10nKey, cultureToText);
     }
@@ -134,9 +134,9 @@ export class TextLocalizerService implements ITextLocalizerService
      * @param dataTypeLookupKey - optional. 
      * @param cultureToText 
      */
-    public RegisterErrorMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
+    public registerErrorMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
     {
-        this.Register(this.GetErrorMessagel10nText(conditionType, dataTypeLookupKey), cultureToText);
+        this.register(this.getErrorMessagel10nText(conditionType, dataTypeLookupKey), cultureToText);
     }
     /**
      * Utility to add a summary error message for a validator
@@ -147,9 +147,9 @@ export class TextLocalizerService implements ITextLocalizerService
      * @param dataTypeLookupKey - optional. 
      * @param cultureToText 
      */
-    public RegisterSummaryMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
+    public registerSummaryMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
     {
-        this.Register(this.GetSummaryMessagel10nText(conditionType, dataTypeLookupKey), cultureToText);
+        this.register(this.getSummaryMessagel10nText(conditionType, dataTypeLookupKey), cultureToText);
     }    
 
     /**
@@ -170,5 +170,5 @@ export class TextLocalizerService implements ITextLocalizerService
      *   },
      * }
      */
-    private _l10nKeyMap: Map<string, CultureToText> = new Map<string, CultureToText>();
+    private readonly _l10nKeyMap: Map<string, CultureToText> = new Map<string, CultureToText>();
 }

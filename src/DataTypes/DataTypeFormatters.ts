@@ -8,11 +8,11 @@
  * @module DataTypes/ConcreteClasses/DataTypeFormatters
  */
 
-import { IDataTypeFormatter, DataTypeResolution } from "../Interfaces/DataTypes";
-import { IServicesAccessor, IValidationServices } from "../Interfaces/ValidationServices";
-import { CodingError } from "../Utilities/ErrorHandling";
-import { CultureLanguageCode } from "../Utilities/Utilities";
-import { LookupKey } from "./LookupKeys";
+import { IDataTypeFormatter, DataTypeResolution } from '../Interfaces/DataTypes';
+import { IServicesAccessor, IValidationServices } from '../Interfaces/ValidationServices';
+import { CodingError } from '../Utilities/ErrorHandling';
+import { cultureLanguageCode } from '../Utilities/Utilities';
+import { LookupKey } from './LookupKeys';
 
 /**
  * Abstract implementation of IDataTypeFormatter.
@@ -43,13 +43,13 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
     /**
      * The DataTypeLookup key(s) that this class supports.
      */
-    protected abstract get ExpectedLookupKeys(): string | Array<string> | Array<string>;
+    protected abstract get ExpectedLookupKeys(): string | Array<string>;
 
     /**
      * Return true so long as the CultureId is supported by this class.
      * @param cultureId 
      */
-    protected abstract SupportsCulture(cultureId: string): boolean;
+    protected abstract supportsCulture(cultureId: string): boolean;
     /**
      * Evaluates the parameters to determine if its Format method should handle the value
      * with those same parameters.
@@ -60,9 +60,9 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
      * @param cultureId - Such as 'en-US' and 'en'
      * @returns Use its Format method when true. Do not use Format when false.
      */
-    public Supports(dataTypeLookupKey: string, cultureId: string): boolean {
-        return this.MatchingLookupKeys(dataTypeLookupKey, this.ExpectedLookupKeys) &&
-            this.SupportsCulture(cultureId);
+    public supports(dataTypeLookupKey: string, cultureId: string): boolean {
+        return this.matchingLookupKeys(dataTypeLookupKey, this.ExpectedLookupKeys) &&
+            this.supportsCulture(cultureId);
     }
 
     /**
@@ -72,14 +72,14 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
      * @param dataTypeLookupKey 
      * @param cultureId 
      */
-    public abstract Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string>;
+    public abstract format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string>;
     
     protected prepString(value: any): DataTypeResolution<string> {
         if (value == null)    // null/undefined
             return { Value: '' };
         // filter out invalid values
         if (typeof value === 'object')
-            return { ErrorMessage: 'Not a string or primitive' }
+            return { ErrorMessage: 'Not a string or primitive' };
         return {
             Value: value != null // null/undefined
                 ? value.toString() : ''
@@ -92,9 +92,9 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
      * @param luk2 
      * @returns 
      */
-    protected MatchingLookupKeys(luk1: string, luk2: string | Array<string>): boolean
+    protected matchingLookupKeys(luk1: string, luk2: string | Array<string>): boolean
     {
-        function Try(a: string, b: string): boolean
+        function isMatch(a: string, b: string): boolean
         {
             if (a.length === b.length)    // to avoid converting two strings when its obvious we don't need to
             {
@@ -105,10 +105,10 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
         if (Array.isArray(luk2))
         {
             for (let i = 0; i < luk2.length; i++)
-                if (Try(luk1, luk2[i]))
+                if (isMatch(luk1, luk2[i]))
                     return true;
         }
-        else if (Try(luk1, luk2))
+        else if (isMatch(luk1, luk2))
             return true;
         return false;
     }
@@ -122,12 +122,12 @@ export class StringFormatter extends DataTypeFormatterBase {
         return LookupKey.String;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         return this.prepString(value);
     }
 }
@@ -144,12 +144,12 @@ export class CapitalizeStringFormatter extends DataTypeFormatterBase
         return LookupKey.Capitalize;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let result = this.prepString(value);
         if (result.Value && result.Value.length > 0)
             result.Value = result.Value[0].toLocaleUpperCase(cultureId) +
@@ -169,12 +169,12 @@ export class UppercaseStringFormatter extends DataTypeFormatterBase
         return LookupKey.Uppercase;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let result = this.prepString(value);
         if (result.Value && result.Value.length > 0)
             result.Value = result.Value.toLocaleUpperCase(cultureId);
@@ -193,12 +193,12 @@ export class LowercaseStringFormatter extends DataTypeFormatterBase
         return LookupKey.Lowercase;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let result = this.prepString(value);
         if (result.Value && result.Value.length > 0)
             result.Value = result.Value.toLocaleLowerCase(cultureId);
@@ -220,21 +220,21 @@ export abstract class NumberFormatterBase extends DataTypeFormatterBase
     constructor(options?: Intl.NumberFormatOptions | null)
     {
         super();
-        this._options = options ?? this.GetDefaultOptions();
+        this._options = options ?? this.getDefaultOptions();
     }
     protected get Options(): Intl.NumberFormatOptions
     {
         return this._options;
     }
-    private _options: Intl.NumberFormatOptions;
+    private readonly _options: Intl.NumberFormatOptions;
     /**
      * Provide the default NumberFormatOptions for use with
      * Intl.NumberFormat.
      */
-    protected abstract GetDefaultOptions(): Intl.NumberFormatOptions;
+    protected abstract getDefaultOptions(): Intl.NumberFormatOptions;
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-        return this.FormatNumber(value, cultureId);
+    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+        return this.formatNumber(value, cultureId);
     }    
 
     /**
@@ -247,16 +247,16 @@ export abstract class NumberFormatterBase extends DataTypeFormatterBase
      * or DefaultOptions function.
      * @returns 
      */
-    protected FormatNumber(value: any, cultureId: string,
-        options?: Intl.NumberFormatOptions | null | null): DataTypeResolution<string> {
+    protected formatNumber(value: any, cultureId: string,
+        options?: Intl.NumberFormatOptions | null): DataTypeResolution<string> {
         if (typeof value === 'number')
             return {
                 Value: Intl.NumberFormat(cultureId, options ?? this.Options).format(value)
-            }
+            };
         else if (value == null)   // null/undefined
-            return { Value: '' }
+            return { Value: '' };
         else
-            return { ErrorMessage: 'Not a number' }
+            return { ErrorMessage: 'Not a number' };
     }
 }
 
@@ -275,14 +275,14 @@ export class NumberFormatter extends NumberFormatterBase
         return LookupKey.Number;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
-    protected GetDefaultOptions(): Intl.NumberFormatOptions {
+    protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            signDisplay: "auto",
+            signDisplay: 'auto'
         };
     }
 }
@@ -302,14 +302,14 @@ export class IntegerFormatter extends NumberFormatterBase
         return LookupKey.Integer;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
-    protected GetDefaultOptions(): Intl.NumberFormatOptions {
+    protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            signDisplay: "auto",
+            signDisplay: 'auto',
             maximumFractionDigits: 0
         };
     }
@@ -341,39 +341,39 @@ export class CurrencyFormatter extends NumberFormatterBase
         this._cultureToCurrencyCode = cultureToCurrencyCode ?? null;
         this._defaultCurrencyCode = defaultCurrencyCode;
     }
-    private _defaultCurrencyCode: string;
-    protected GetDefaultOptions(): Intl.NumberFormatOptions {
+    private readonly _defaultCurrencyCode: string;
+    protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            style: "currency",
-            currency: "DEFAULT"
+            style: 'currency',
+            currency: 'DEFAULT'
         };
     }
-    private _cultureToCurrencyCode: { [cultureId: string]: string } | null;
+    private readonly _cultureToCurrencyCode: { [cultureId: string]: string } | null;
 
     protected get ExpectedLookupKeys(): string | Array<string>
     {
         return LookupKey.Currency;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         let options = this.Options;
-        if (options.currency === "DEFAULT") {
-            options = { ...options, currency: this.ResolveCurrencyCode(cultureId) };
+        if (options.currency === 'DEFAULT') {
+            options = { ...options, currency: this.resolveCurrencyCode(cultureId) };
         }
-        return this.FormatNumber(value, cultureId, options);
+        return this.formatNumber(value, cultureId, options);
     }    
-    protected ResolveCurrencyCode(cultureId: string): string
+    protected resolveCurrencyCode(cultureId: string): string
     {
         let currencyCode = this._defaultCurrencyCode;
         if (this._cultureToCurrencyCode)
             currencyCode = this._cultureToCurrencyCode[cultureId] ??
-                this._cultureToCurrencyCode[CultureLanguageCode(cultureId)] ??
+                this._cultureToCurrencyCode[cultureLanguageCode(cultureId)] ??
                 this._defaultCurrencyCode;
         return currencyCode;
     }
@@ -390,9 +390,9 @@ export class PercentageFormatter extends NumberFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.NumberFormatOptions {
+    protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            style: "percent",
+            style: 'percent'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -400,7 +400,7 @@ export class PercentageFormatter extends NumberFormatterBase
         return LookupKey.Percentage;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
@@ -418,9 +418,9 @@ export class Percentage100Formatter extends NumberFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.NumberFormatOptions {
+    protected getDefaultOptions(): Intl.NumberFormatOptions {
         return {
-            style: "percent",
+            style: 'percent'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -428,16 +428,16 @@ export class Percentage100Formatter extends NumberFormatterBase
         return LookupKey.Percentage100;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
     // Intl library treats 1.0 as 100. So we adjust the value.
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         if (typeof value === 'number')
             value = value / 100.0;
-        return super.Format(value, dataTypeLookupKey, cultureId);
+        return super.format(value, dataTypeLookupKey, cultureId);
     }        
 }
 
@@ -470,7 +470,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         super();
         this._dataTypeLookupKey = dataTypeLookupKey ?? LookupKey.Boolean;
-        let defaults = this.GetDefaultLabels();
+        let defaults = this.getDefaultLabels();
         this._trueLabel = trueLabel ?? defaults.TrueLabel ?? 'true';
         this._falseLabel = falseLabel ?? defaults.FalseLabel ?? 'false';
         this._trueLabell10n = trueLabell10n ?? defaults.TrueLabell10n ?? null;
@@ -480,7 +480,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._dataTypeLookupKey;
     }
-    private _dataTypeLookupKey: string;
+    private readonly _dataTypeLookupKey: string;
     /**
      * Text shown the user for a value of true.
     * To provide localization of "true" and "false", set up
@@ -492,7 +492,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._trueLabel;
     }
-    private _trueLabel: string;
+    private readonly _trueLabel: string;
 
     /**
      * Localization key for TrueLabel. Its value will be matched to an entry
@@ -505,7 +505,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._trueLabell10n;
     }
-    private _trueLabell10n: string | null;
+    private readonly _trueLabell10n: string | null;
     /**
      * Text shown the user for a value of false
     * To provide localization of "true" and "false", set up
@@ -517,7 +517,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._falseLabel;
     }
-    private _falseLabel: string;
+    private readonly _falseLabel: string;
 
     /**
      * Localization key for FalseLabel. Its value will be matched to an entry
@@ -530,25 +530,25 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     {
         return this._falseLabell10n;
     }
-    private _falseLabell10n: string | null;
+    private readonly _falseLabell10n: string | null;
 
-    protected abstract GetDefaultLabels(): DefaultLabelsForBoolean;    
+    protected abstract getDefaultLabels(): DefaultLabelsForBoolean;    
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
         if (typeof value === 'boolean') {
-            return this.FormatBoolean(value, cultureId);
+            return this.formatBoolean(value, cultureId);
         }
         else if (value == null)   // null/undefined
-            return { Value: '' }
+            return { Value: '' };
         else
-            return { ErrorMessage: 'Not a boolean' }
+            return { ErrorMessage: 'Not a boolean' };
     }
-    protected FormatBoolean(value: boolean, cultureId: string): DataTypeResolution<string>
+    protected formatBoolean(value: boolean, cultureId: string): DataTypeResolution<string>
     {
         let text = value ? this.TrueLabel : this.FalseLabel;
         let l10n = value ? this.TrueLabell10n : this.FalseLabell10n;
         if (this.HasServices) {
-            text = this.Services.TextLocalizerService.Localize(
+            text = this.Services.TextLocalizerService.localize(
                 cultureId, l10n, text)!;
         }
         return { Value: text };
@@ -556,10 +556,10 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
 }
 export interface DefaultLabelsForBoolean
 {
-    TrueLabel: string,
-    FalseLabel: string,
-    TrueLabell10n: string,
-    FalseLabell10n: string
+    TrueLabel: string;
+    FalseLabel: string;
+    TrueLabell10n: string;
+    FalseLabell10n: string;
 }
 
 /**
@@ -588,12 +588,12 @@ export class BooleanFormatter extends BooleanFormatterBase
             trueLabell10n, falseLabell10n);
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
-    protected GetDefaultLabels(): DefaultLabelsForBoolean {
+    protected getDefaultLabels(): DefaultLabelsForBoolean {
         return {
             TrueLabel: 'true',
             FalseLabel: 'false',
@@ -617,21 +617,21 @@ export abstract class DateTimeFormatterBase extends DataTypeFormatterBase
     constructor(options?: Intl.DateTimeFormatOptions)
     {
         super();
-        this._options = options ?? this.GetDefaultOptions();
+        this._options = options ?? this.getDefaultOptions();
     }
     protected get Options(): Intl.DateTimeFormatOptions
     {
         return this._options;
     }
-    private _options: Intl.DateTimeFormatOptions;
+    private readonly _options: Intl.DateTimeFormatOptions;
     /**
      * Provide the default DateTimeFormatOptions for use with
      * Intl.DateTimeFormat.
      */
-    protected abstract GetDefaultOptions(): Intl.DateTimeFormatOptions;
+    protected abstract getDefaultOptions(): Intl.DateTimeFormatOptions;
 
-    public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-        return this.FormatDateTime(value, cultureId);
+    public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+        return this.formatDateTime(value, cultureId);
     }    
 
     /**
@@ -644,16 +644,16 @@ export abstract class DateTimeFormatterBase extends DataTypeFormatterBase
      * or DefaultOptions function.
      * @returns 
      */
-    protected FormatDateTime(value: any, cultureId: string,
+    protected formatDateTime(value: any, cultureId: string,
         options?: Intl.DateTimeFormatOptions | null): DataTypeResolution<string> {
         if (value instanceof Date)
             return {
                 Value: Intl.DateTimeFormat(cultureId, this.Options).format(value)
-            }
+            };
         else if (value == null)   // null/undefined
-            return { Value: '' }
+            return { Value: '' };
         else
-            return { ErrorMessage: 'Not a date' }
+            return { ErrorMessage: 'Not a date' };
     }
 }
 /**
@@ -668,13 +668,13 @@ export class DateTimeFormatter extends DateTimeFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.DateTimeFormatOptions {
+    protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "numeric",
-            day: "numeric",
-            hour: "numeric",
-            minute: "numeric",
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -682,7 +682,7 @@ export class DateTimeFormatter extends DateTimeFormatterBase
         return LookupKey.DateTime;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
@@ -699,11 +699,11 @@ export class DateFormatter extends DateTimeFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.DateTimeFormatOptions {
+    protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "numeric",
-            day: "numeric"
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -711,13 +711,13 @@ export class DateFormatter extends DateTimeFormatterBase
         return [LookupKey.Date, LookupKey.ShortDate];
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
 
-    public Supports(dataTypeLookupKey: string, cultureId: string): boolean {
-        return (dataTypeLookupKey === LookupKey.ShortDate || super.Supports(dataTypeLookupKey, cultureId));
+    public supports(dataTypeLookupKey: LookupKey | string, cultureId: string): boolean {
+        return (dataTypeLookupKey === LookupKey.ShortDate || super.supports(dataTypeLookupKey, cultureId));
     }
 
 }
@@ -733,11 +733,11 @@ export class AbbrevDateFormatter extends DateTimeFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.DateTimeFormatOptions {
+    protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -745,7 +745,7 @@ export class AbbrevDateFormatter extends DateTimeFormatterBase
         return LookupKey.AbbrevDate;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
@@ -763,12 +763,12 @@ export class AbbrevDOWDateFormatter extends DateTimeFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.DateTimeFormatOptions {
+    protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            weekday: "short"
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            weekday: 'short'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -776,7 +776,7 @@ export class AbbrevDOWDateFormatter extends DateTimeFormatterBase
         return LookupKey.AbbrevDOWDate;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
@@ -794,11 +794,11 @@ export class LongDateFormatter extends DateTimeFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.DateTimeFormatOptions {
+    protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -806,7 +806,7 @@ export class LongDateFormatter extends DateTimeFormatterBase
         return LookupKey.LongDate;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
@@ -824,12 +824,12 @@ export class LongDOWDateFormatter extends DateTimeFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.DateTimeFormatOptions {
+    protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            weekday: "long"
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -837,7 +837,7 @@ export class LongDOWDateFormatter extends DateTimeFormatterBase
         return LookupKey.LongDOWDate;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
@@ -855,10 +855,10 @@ export class TimeofDayFormatter extends DateTimeFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.DateTimeFormatOptions {
+    protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            hour: "numeric",
-            minute: "numeric",
+            hour: 'numeric',
+            minute: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -866,7 +866,7 @@ export class TimeofDayFormatter extends DateTimeFormatterBase
         return LookupKey.TimeOfDay;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }
@@ -884,11 +884,11 @@ export class TimeofDayHMSFormatter extends DateTimeFormatterBase
     {
         super(options);
     }
-    protected GetDefaultOptions(): Intl.DateTimeFormatOptions {
+    protected getDefaultOptions(): Intl.DateTimeFormatOptions {
         return {
-            hour: "numeric",
-            minute: "numeric",
-            second: "numeric"
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric'
         };
     }
     protected get ExpectedLookupKeys(): string | Array<string>
@@ -896,7 +896,7 @@ export class TimeofDayHMSFormatter extends DateTimeFormatterBase
         return LookupKey.TimeOfDayHMS;
     }
 
-    protected SupportsCulture(cultureId: string): boolean
+    protected supportsCulture(cultureId: string): boolean
     {
         return true;
     }

@@ -1,16 +1,16 @@
-import { AssertNotNull } from "../../src/Utilities/ErrorHandling";
+import { assertNotNull } from "../../src/Utilities/ErrorHandling";
 
-// function AssertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
+// function assertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
 describe("Utilities.AssertNotNull tests", () => {
     test("null or undefined is exception", () => {
-        expect(() => AssertNotNull(null, 'parm')).toThrow('parm required');
-        expect(() => AssertNotNull(undefined, 'parm')).toThrow('parm required');
-    })
+        expect(() => assertNotNull(null, 'parm')).toThrow('parm required');
+        expect(() => assertNotNull(undefined, 'parm')).toThrow('parm required');
+    });
     test("values that do not throw an exception", () => {
-        expect(() => AssertNotNull(0, 'parm')).not.toThrow();
-        expect(() => AssertNotNull(false, 'parm')).not.toThrow();
-        expect(() => AssertNotNull('', 'parm')).not.toThrow();
-        expect(() => AssertNotNull({}, 'parm')).not.toThrow();
-        expect(() => AssertNotNull([], 'parm')).not.toThrow();
-   }) 
+        expect(() => assertNotNull(0, 'parm')).not.toThrow();
+        expect(() => assertNotNull(false, 'parm')).not.toThrow();
+        expect(() => assertNotNull('', 'parm')).not.toThrow();
+        expect(() => assertNotNull({}, 'parm')).not.toThrow();
+        expect(() => assertNotNull([], 'parm')).not.toThrow();
+   }); 
 });

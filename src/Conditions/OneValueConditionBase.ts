@@ -3,11 +3,11 @@
  * The Descriptor introduces ValueHostId.
  * @module Conditions/AbstractClasses/OneValueConditionBase
  */
-import { ValueHostId } from "../DataTypes/BasicTypes";
-import { ConditionDescriptor } from "../Interfaces/Conditions";
-import { IValueHost } from "../Interfaces/ValueHost";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { ConditionBase } from "./ConditionBase";
+import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ConditionDescriptor } from '../Interfaces/Conditions';
+import { IValueHost } from '../Interfaces/ValueHost';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { ConditionBase } from './ConditionBase';
 
 
 
@@ -30,22 +30,22 @@ export abstract class OneValueConditionBase<TConditionDescriptor extends OneValu
      * @param valueHostResolver 
      * @returns 
      */
-    protected EnsurePrimaryValueHost(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): IValueHost   // IValueHost
+    protected ensurePrimaryValueHost(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): IValueHost   // IValueHost
     {
         if (this.Descriptor.ValueHostId) {
-            valueHost = this.GetValueHost(this.Descriptor.ValueHostId, valueHostResolver);
+            valueHost = this.getValueHost(this.Descriptor.ValueHostId, valueHostResolver);
             if (!valueHost)
-                this.LogInvalidPropertyData('ValueHostId', 'ValueHostId is unknown', valueHostResolver);
+                this.logInvalidPropertyData('ValueHostId', 'ValueHostId is unknown', valueHostResolver);
         }
         if (valueHost)
             return valueHost;
         throw new Error('Missing value for ValueHostId.');
     }
-    protected GetValueHost(valueHostId: ValueHostId, valueHostResolver: IValueHostResolver): IValueHost | null {
-        return valueHostResolver.GetValueHost(valueHostId);
+    protected getValueHost(valueHostId: ValueHostId, valueHostResolver: IValueHostResolver): IValueHost | null {
+        return valueHostResolver.getValueHost(valueHostId);
     }
 
-    public GatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void {
+    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void {
         if (this.Descriptor.ValueHostId)
             collection.add(this.Descriptor.ValueHostId);
     }

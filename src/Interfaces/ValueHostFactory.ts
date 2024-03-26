@@ -5,8 +5,8 @@
  * @module ValueHosts/Interfaces/ValueHostFactory
  */
 
-import { ValueHostDescriptor, ValueHostState, IValueHost } from "./ValueHost";
-import { IValueHostsManager } from "./ValueHostResolver";
+import { ValueHostDescriptor, ValueHostState, IValueHost } from './ValueHost';
+import { IValueHostsManager } from './ValueHostResolver';
 
 /**
  * Interface for creating ValueHostFactory classes.
@@ -18,7 +18,7 @@ export interface IValueHostFactory {
      * @param descriptor - determines the class. All classes supported here must ValueHostDescriptor to get their setup.
      * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.CreateState() to create an initial value.
      */
-    Create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
+    create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
     /**
      * Adjusts the state from a previous time to conform to the Descriptor.
      * For example, if the Descriptor had a rule change, some data in the state may
@@ -26,12 +26,12 @@ export interface IValueHostFactory {
      * @param state 
      * @param descriptor 
      */
-    CleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
+    cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
     /**
      * Creates an initialized State object
      * @param descriptor 
      */
-    CreateState(descriptor: ValueHostDescriptor): ValueHostState;
+    createState(descriptor: ValueHostDescriptor): ValueHostState;
 }
 
 /**
@@ -44,14 +44,14 @@ export interface IValueHostGenerator {
      * @param descriptor 
      * @returns Can create when true.
      */
-    CanCreate(descriptor: ValueHostDescriptor): boolean;
+    canCreate(descriptor: ValueHostDescriptor): boolean;
     /**
      * Creates the instance.
      * @param valueHostsManager 
      * @param descriptor 
      * @param state 
      */
-    Create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
+    create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
     /**
      * Adjusts the state from a previous time to conform to the Descriptor.
      * For example, if the Descriptor had a rule change, some data in the state may
@@ -59,10 +59,10 @@ export interface IValueHostGenerator {
      * @param state 
      * @param descriptor 
      */
-    CleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
+    cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
     /**
      * Creates an initialized State object
      * @param descriptor 
      */
-    CreateState(descriptor: ValueHostDescriptor): ValueHostState;
+    createState(descriptor: ValueHostDescriptor): ValueHostState;
 }

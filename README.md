@@ -81,7 +81,7 @@ supporting libraries (pending) are well-informed on those matters.
 
 
 ## Learning Jivs
-Jivs source code is heavily and meaningfully commented, and its all exposed through TypeDoc in its \docs folder. Use this section for an orientation.
+[Jivs source code](https://github.com/plblum/jivs) is heavily and meaningfully commented, and its all available in TypeDoc format at [jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc). Use this section for an orientation.
 
 ### Quick terminology overview
 Here are a few terms used.

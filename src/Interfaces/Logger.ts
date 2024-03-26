@@ -24,7 +24,7 @@ export interface ILogger
      * @param category - optional string used by logger to categorize the data.
      * @param source - A way to identify the source of this message, such as function name or class name + method name.
      */
-    Log(message: string, level: LoggingLevel, category?: string, source?: string): void;
+    log(message: string, level: LoggingLevel, category?: string, source?: string): void;
 }
 
 export enum LoggingLevel

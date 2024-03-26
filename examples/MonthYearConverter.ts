@@ -18,11 +18,11 @@ export const MonthYearLookupKey = 'MonthYear'; // "expiry" when using a Date obj
  */
 export class UTCMonthYearConverter implements IDataTypeConverter
 {
-    public SupportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return (dataTypeLookupKey === MonthYearLookupKey) &&
             value instanceof Date;
     }
-    public Convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
         if (isNaN(value.getTime()))
             return undefined;        
         let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), 1));
@@ -31,10 +31,10 @@ export class UTCMonthYearConverter implements IDataTypeConverter
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService
-export function RegisterRelativeDate(validationServices: IValidationServices): void
+export function registerRelativeDate(validationServices: IValidationServices): void
 {
     let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
-    dataTypeServices.RegisterDataTypeConverter(new UTCMonthYearConverter()); 
+    dataTypeServices.registerDataTypeConverter(new UTCMonthYearConverter()); 
 
     // This gets used ONLY when the ValueHostDescriptor.DataType with "MonthYear".
     // When its time to compare, the UTCMonthYearConverter is asked if it supports the value.

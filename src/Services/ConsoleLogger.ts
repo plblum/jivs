@@ -2,7 +2,7 @@
  * Concrete implemenation of ILogger that provides logging to the Console.
  * @module Logger/ConsoleLogger
  */
-import { ILogger, LoggingLevel } from "../Interfaces/Logger";
+import { ILogger, LoggingLevel } from '../Interfaces/Logger';
 
 
 /**
@@ -39,7 +39,7 @@ export class ConsoleLogger implements ILogger
     {
         return this._mainLogger;
     }
-    private _mainLogger: ILogger | null;
+    private readonly _mainLogger: ILogger | null;
     /**
      * Create a new log entry.
      * @param message
@@ -47,7 +47,7 @@ export class ConsoleLogger implements ILogger
      * @param category - optional string used by logger to categorize the data.
      * @param source - A way to identify the source of this message, such as function name or class name + method name.
      */
-    public Log(message: string, level: LoggingLevel, category?: string, source?: string): void {
+    public log(message: string, level: LoggingLevel, category?: string, source?: string): void {
         if (this.MinLevel > level)
             return;
         let msgTemplate = '%s %s "%s"'; // expects source, category, message
@@ -70,7 +70,7 @@ export class ConsoleLogger implements ILogger
                 break;
         }
         if (this._mainLogger)
-            this._mainLogger.Log(message, level, category, source);
+            this._mainLogger.log(message, level, category, source);
     }
 }
 
