@@ -246,7 +246,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      */
     protected applyDescriptor(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
         let factory = this.Services.ValueHostFactory; // functions in here throw exceptions if descriptor is unsupported
-        let state: ValueHostState;
+        let state: ValueHostState | undefined = undefined;
         let existingState = initialState;
         let defaultState = factory.createState(descriptor);
 

@@ -19,7 +19,7 @@ import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerA
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings } from '../Interfaces/Conditions';
 import type { IInputValueHost } from '../Interfaces/InputValueHost';
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
-import type { InputValidateResult, IInputValidator, InputValidatorDescriptor, IInputValidatorFactory, IMessageTokenSource, TokenLabelAndValue  } from '../Interfaces/InputValidator';
+import { type InputValidateResult, type IInputValidator, type InputValidatorDescriptor, type IInputValidatorFactory, type IMessageTokenSource, type TokenLabelAndValue, toIMessageTokenSource  } from '../Interfaces/InputValidator';
 import { LoggingLevel, ConfigurationCategory, ValidationCategory } from '../Interfaces/Logger';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 
@@ -344,7 +344,7 @@ export class InputValidator implements IInputValidator {
             return resultState;                    
         }
         function logInfo(
-            fn: () => { message: string; source?: string })
+            fn: () => { message: string; source?: string }): void
         {
             if (self.Services.LoggerService.MinLevel >= LoggingLevel.Info)
             {
@@ -412,7 +412,7 @@ export class InputValidator implements IInputValidator {
                 Purpose: 'value'
             }
         ];
-        if ((<any>this.Condition)['getValuesForTokens'])   // since we cannot test for the IMessageTokenSource interface at runtime
+        if (toIMessageTokenSource(this.Condition))   // since we cannot test for the IMessageTokenSource interface at runtime
             tlv = tlv.concat((this.Condition as unknown as IMessageTokenSource).getValuesForTokens(valueHost, valueHostResolver));
         return tlv;
     }

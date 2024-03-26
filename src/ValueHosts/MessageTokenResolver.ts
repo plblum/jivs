@@ -124,15 +124,15 @@ class CapturedToken
  * The complete token including curly braces.
  * This string will be replaced in the message.
  */    
-    full: string;
+    public full: string;
 /**
  * The token found in full, always lowercase.
  */    
-    token: string;
+    public token: string;
 /**
  * The formatterkey found in full (lowercase) or null if none.
  */    
-    formatterKey: string | null;
+    public formatterKey: string | null;
     
     private extractParts(full: string): void
     {

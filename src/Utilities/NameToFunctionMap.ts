@@ -65,6 +65,7 @@ export class NameToFunctionMapper<TValue, TResult> implements INameToFunctionMap
         assertNotNull(key, 'key');
         assertNotNull(fnOrKey, 'fnOrKey');
 
+        /* eslint-disable-next-line @typescript-eslint/init-declarations */
         let fn: (value: TValue) => TResult;
         if (typeof fnOrKey === 'string') {
             fnOrKey = fnOrKey.toLowerCase();

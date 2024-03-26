@@ -214,6 +214,21 @@ export interface IMessageTokenSource {
     getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver):
         Array<TokenLabelAndValue>;
 }
+
+/**
+ * Determines if the source implements IMessageTokenSource, and returns it typecasted.
+ * If not, it returns null.
+ * @param source 
+ */
+export function toIMessageTokenSource(source: any): IMessageTokenSource | null {
+    if (source && typeof source === 'object') {
+        let test = source as IMessageTokenSource;       
+        if (test.getValuesForTokens !== undefined)
+            return test;
+    }
+    return null;
+}
+
 /**
  * Result from IMessageTokenSource.getValuesForTokens
  */

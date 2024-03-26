@@ -350,7 +350,7 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
         let value = valueHost.getValue();
         if (value == null)  // null/undefined
             return ConditionEvaluateResult.Undetermined;
-        let secondValue: any;
+        let secondValue: any = undefined;
         let secondValueLookupKey: string | null = null;
         if (this.Descriptor.SecondValueHostId) {
             let vh2 = this.getValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
@@ -396,7 +396,7 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
-        let secondValue: any;
+        let secondValue: any = undefined;
         if (this.Descriptor.SecondValueHostId) {
             let vh = this.getValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
             if (vh)

@@ -154,7 +154,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
         }
         function processPromise(promise: Promise<InputValidateResult>): void
         {
-            function completeThePromise(finish: () => void)
+            function completeThePromise(finish: () => void): void
             {
                 // remove the promise from result.Pending.
                 // We use result.Pending == null to mean no async processes remain.
@@ -170,7 +170,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                     finish();
                 }
             }
-            function deleteAsyncProcessFlag()
+            function deleteAsyncProcessFlag() : void
             {
                 if (!result.Pending)
                     self.updateState((stateToUpdate) => {
@@ -221,7 +221,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             return resultState;                    
         }        
         function logInfo(
-            fn: () => { message: string; source?: string })
+            fn: () => { message: string; source?: string }): void
         {
             if (self.Services.LoggerService.MinLevel >= LoggingLevel.Info)
             {
@@ -273,7 +273,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
     }
     protected orderValidators(unordered: Array<IInputValidator>): Array<IInputValidator>
     {
-        let fn = (a: IInputValidator, b: IInputValidator) => a.Condition.Category - b.Condition.Category;
+        let fn = (a: IInputValidator, b: IInputValidator) : number => a.Condition.Category - b.Condition.Category;
         if (unordered.toSorted)    // recently introduced API, so provide fallback
             return unordered.toSorted(fn);
         else
