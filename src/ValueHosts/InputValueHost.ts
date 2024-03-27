@@ -19,6 +19,7 @@ import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, 
 import { InputValueHostBase, InputValueHostBaseGenerator } from './InputValueHostBase';
 import { InputValidateResult, IInputValidator, InputValidatorDescriptor } from '../Interfaces/InputValidator';
 import { assertNotNull } from '../Utilities/ErrorHandling';
+import { ValueHostType } from '../Interfaces/ValueHostFactory';
 
 
 /**
@@ -348,11 +349,11 @@ export function toIInputValueHost(source: any): IInputValueHost | null
     return null;
 }
 
-export const InputValueHostType = 'Input';
+
 export class InputValueHostGenerator extends InputValueHostBaseGenerator {
     public canCreate(descriptor: InputValueHostDescriptor): boolean {
         if (descriptor.type != null)    // null/undefined
-            return descriptor.type === InputValueHostType;
+            return descriptor.type === ValueHostType.Input;
 
         if (descriptor.validatorDescriptors === undefined)
             return false;

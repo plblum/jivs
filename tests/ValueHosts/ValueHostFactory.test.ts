@@ -1,10 +1,10 @@
-import { InputValueHostType, InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
+import { InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
 import { ValueHostState, IValueHost, ValueHostDescriptor } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { MockValidationManager, MockValidationServices } from "../Mocks";
-import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
+import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 /**
@@ -54,11 +54,11 @@ describe('ValueHostFactory.register', () => {
     test('Add Two Generators retains both', () => {
         let factory = new ValueHostFactory();
         expect(factory.isRegistered({ type: FactoryTestGeneratorType, id: '', label: '' })).toBe(false);
-        expect(factory.isRegistered({ type: InputValueHostType, id: '', label: '' })).toBe(false);
+        expect(factory.isRegistered({ type: ValueHostType.Input, id: '', label: '' })).toBe(false);
         expect(() => factory.register(new FactoryTestsValueHostGenerator())).not.toThrow();
         expect(() => factory.register(new InputValueHostGenerator())).not.toThrow();
         expect(factory.isRegistered({ type: FactoryTestGeneratorType, id: '', label: '' })).toBe(true);
-        expect(factory.isRegistered({ type: InputValueHostType, id: '', label: '' })).toBe(true);
+        expect(factory.isRegistered({ type: ValueHostType.Input, id: '', label: '' })).toBe(true);
     });    
 });
 
@@ -210,9 +210,9 @@ describe('ValueHostFactory.createState', () => {
 describe('registerDefaultValueHostGenerators', () => {
     test('Ensure InputValueHostType gets registered', () => {
         let factory = new ValueHostFactory();
-        expect(factory.isRegistered({ type: InputValueHostType, id: '', label: '' })).toBe(false);
+        expect(factory.isRegistered({ type: ValueHostType.Input, id: '', label: '' })).toBe(false);
         expect(() => registerStandardValueHostGenerators(factory)).not.toThrow();
-        expect(factory.isRegistered({ type: InputValueHostType, id: '', label: '' })).toBe(true);
+        expect(factory.isRegistered({ type: ValueHostType.Input, id: '', label: '' })).toBe(true);
         
     });
 });
