@@ -1,18 +1,18 @@
 import { ValueHostId } from "../../src/DataTypes/BasicTypes";
 import {
-    type RequiredTextConditionDescriptor, type RequiredIndexConditionDescriptor, type RangeConditionDescriptor, type CompareToConditionDescriptor,
+    type RequiredTextConditionDescriptor, type RangeConditionDescriptor, type CompareToConditionDescriptor,
     RequiredTextCondition,
-    RequiredIndexCondition,
     RangeCondition, EqualToCondition, 
     NotEqualToCondition, GreaterThanCondition,
     GreaterThanOrEqualToCondition,  LessThanCondition, 
     LessThanOrEqualToCondition, StringLengthConditionDescriptor,  StringLengthCondition,
     RegExpConditionDescriptor, RegExpCondition, 
     AllMatchCondition, DataTypeCheckConditionDescriptor, DataTypeCheckCondition,
-    AnyMatchCondition, CountMatchesCondition, CountMatchesConditionDescriptor, AllMatchConditionDescriptor, AnyMatchConditionDescriptor, StringNotEmptyCondition, StringNotEmptyConditionDescriptor, NotNullCondition, NotNullConditionDescriptor
+    AnyMatchCondition, CountMatchesCondition,
+    CountMatchesConditionDescriptor, AllMatchConditionDescriptor, AnyMatchConditionDescriptor, StringNotEmptyCondition, StringNotEmptyConditionDescriptor, NotNullCondition, NotNullConditionDescriptor
 } from "../../src/Conditions/ConcreteConditions";
 
-import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/Logger";
 
 import {
     MockValidationServices, MockValidationManager, MockCapturingLogger,
@@ -82,7 +82,7 @@ describe('ConditionBase class additional cases', () => {
         };
         let testItem = new RequiredTextCondition(descriptor);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue('');
+        vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
 });
@@ -237,16 +237,102 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
-            trim: true
+            valueHostId: 'Property1'
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.setInputValue('A');
+        vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue(' A');
+        vh.setValue(' A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(' ');   // no trimming built in for evaluate
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
+
     test('evaluate returns NoMatch', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RequiredTextConditionDescriptor = {
+            type: ConditionType.RequiredText,
+            valueHostId: 'Property1'
+        };
+        let testItem = new RequiredTextCondition(descriptor);
+        vh.setValue('');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+ 
+    test('evaluate not influenced by Descriptor.emptyString value because that is only used by evaluateDuringEdit', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RequiredTextConditionDescriptor = {
+            type: ConditionType.RequiredText,
+            valueHostId: 'Property1',
+            emptyValue: 'EMPTY'
+        };
+        let testItem = new RequiredTextCondition(descriptor);
+        vh.setValue('A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(' A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue('');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(' ');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue('EMPTY');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(' EMPTY');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });
+    test('evaluate not influenced by Descriptor.Trim=true because trim is for evaluateDuringEdit', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RequiredTextConditionDescriptor = {
+            type: ConditionType.RequiredText,
+            valueHostId: 'Property1',
+            trim: true,
+        };
+        let testItem = new RequiredTextCondition(descriptor);
+        vh.setValue('A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(' A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue('');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(' ');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+
+    });
+    function testNullValueResult(nullValueResult: ConditionEvaluateResult) : void
+    {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RequiredTextConditionDescriptor = {
+            type: ConditionType.RequiredText,
+            valueHostId: 'Property1',
+            nullValueResult: nullValueResult
+        };
+        let testItem = new RequiredTextCondition(descriptor);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(nullValueResult);
+
+    }
+    test('evaluate returns Match for null when Descriptor.nullValueResult = Match', () => {
+        testNullValueResult(ConditionEvaluateResult.Match);
+    });
+    test('evaluate returns NoMatch for null when Descriptor.nullValueResult = NoMatch', () => {
+        testNullValueResult(ConditionEvaluateResult.NoMatch);
+    });
+    test('evaluate returns Undetermined for null when Descriptor.nullValueResult = Undefined', () => {
+        testNullValueResult(ConditionEvaluateResult.Undetermined);
+    });    
+    test('evaluate returns Undetermined for undefined, and non-string types', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -257,12 +343,43 @@ describe('class RequiredTextCondition', () => {
             trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.setInputValue('');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setInputValue(' ');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(10);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
-    test('evaluate influenced by Descriptor.EmptyString value', () => {
+
+    test('evaluateDuringEdits returns Match', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RequiredTextConditionDescriptor = {
+            type: ConditionType.RequiredText,
+            valueHostId: 'Property1',
+            trim: true
+        };
+        let testItem = new RequiredTextCondition(descriptor);
+        expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
+    });
+    test('evaluateDuringEdits returns NoMatch', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RequiredTextConditionDescriptor = {
+            type: ConditionType.RequiredText,
+            valueHostId: 'Property1',
+            trim: true
+        };
+        let testItem = new RequiredTextCondition(descriptor);
+        expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits(' ', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+    test('evaluateDuringEdits influenced by Descriptor.EmptyString value', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -274,20 +391,14 @@ describe('class RequiredTextCondition', () => {
             emptyValue: 'EMPTY'
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.setInputValue('A');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue(' A');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue('');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setInputValue(' ');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setInputValue('EMPTY');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setInputValue(' EMPTY');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits(' ', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('EMPTY', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits(' EMPTY', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
     });
-    test('evaluate influenced by Descriptor.Trim=false', () => {
+    test('evaluateDuringEdits influenced by Descriptor.Trim=false', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -299,18 +410,12 @@ describe('class RequiredTextCondition', () => {
             emptyValue: 'EMPTY'
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.setInputValue('A');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue(' A');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue('');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setInputValue(' ');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue('EMPTY');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setInputValue(' EMPTY');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits(' ', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('EMPTY', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits(' EMPTY', vh, services)).toBe(ConditionEvaluateResult.Match);
     });
     test('Descriptor.Trim undefined works like Trim=true', () => {
         let services = new MockValidationServices(false, false);
@@ -322,50 +427,10 @@ describe('class RequiredTextCondition', () => {
             valueHostId: 'Property1',
         };
         let testItem = new RequiredTextCondition(descriptor);
-        vh.setInputValue('A');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue(' A');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-    });
-    test('evaluate returns Undetermined for null, undefined, and non-string types', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let descriptor: RequiredTextConditionDescriptor = {
-            type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
-            trim: true
-        };
-        let testItem = new RequiredTextCondition(descriptor);
-        vh.setInputValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(undefined);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(10);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
     });
 
-    test('evaluate with wrong ValueHost (not InputValueHost) logs and throws', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let descriptor: RequiredTextConditionDescriptor = {
-            type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
-            trim: true
-        };
-        let testItem = new RequiredTextCondition(descriptor);
-        vh.setValue('');
-        expect(() => testItem.evaluate(null, vm)).toThrow(/InputValueHost/);
-        let logger = services.loggerService as MockCapturingLogger;
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.category).toBe(ConfigurationCategory);
-        expect(logger.getLatest()!.level).toBe(LoggingLevel.Error);
-    });
     test('category is Required', () => {
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
@@ -406,119 +471,6 @@ describe('class RequiredTextCondition', () => {
             valueHostId: null,
         };
         let condition = new RequiredTextCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
-        expect(testItem.size).toBe(0);
-    });
-});
-
-describe('class RequiredIndexCondition', () => {
-    test('DefaultConditionType', () => {
-        expect(RequiredIndexCondition.DefaultConditionType).toBe(ConditionType.RequiredIndex);
-    });
-    test('evaluate returns Match', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1'
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        vh.setInputValue(1);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue(2);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-    });
-    test('evaluate returns NoMatch', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        vh.setInputValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-    });
-    test('evaluate influenced by Descriptor.UnselectedIndexValue value', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-            unselectedIndexValue: -1
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        vh.setInputValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue(-1);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-    });
-
-    test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1'
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        vh.setInputValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(undefined);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue('string');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-    });
-    test('category is Required', () => {
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        expect(testItem.category).toBe(ConditionCategory.Required);
-    });
-    test('category is overridden', () => {
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-            category: ConditionCategory.Contents
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        expect(testItem.category).toBe(ConditionCategory.Contents);
-    });
-    test('gatherValueHostIds when all are assigned', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-        };
-        let condition = new RequiredIndexCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
-        expect(testItem.size).toBe(1);
-        expect(testItem.has('Property1')).toBe(true);
-    });
-    test('gatherValueHostIds when none are assigned', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: null,
-        };
-        let condition = new RequiredIndexCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
@@ -546,7 +498,7 @@ describe('class RegExpCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('zABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(' ABC ');   // trim
+        vh.setValue(' ABC ');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('abc'); // case sensitive failure
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -571,7 +523,7 @@ describe('class RegExpCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('zabc');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(' AbC ');   // trim
+        vh.setValue(' AbC ');   
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('ab');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -596,8 +548,8 @@ describe('class RegExpCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('zABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(' ABC ');   // trim
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(' ABC ');  // trim is not used unless duringEdit=true
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('FirstLine\nABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('FirstLine\nABC\nLastLine');
@@ -621,8 +573,8 @@ describe('class RegExpCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('zABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(' ABC ');   // trim
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(' ABC ');  // trim is not used unless duringEdit=true
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('FirstLine\nABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('FirstLine\nABC\nLastLine');
@@ -645,8 +597,8 @@ describe('class RegExpCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('zABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(' ABC ');   // trim
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(' ABC ');   // trim is not used unless duringEdit=true
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('FirstLine\nABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('FirstLine\nABC\nLastLine');
@@ -677,7 +629,7 @@ describe('class RegExpCondition', () => {
         vh.setValue('AB\nC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
-    test('evaluate influenced by Descriptor.Trim=false', () => {
+    test('evaluate not influenced by Descriptor.Trim=true', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -687,12 +639,12 @@ describe('class RegExpCondition', () => {
             type: ConditionType.RegExp,
             valueHostId: 'Property1',
             expressionAsString: '^ABC$',
-            trim: false
+            trim: true
         };
         let testItem = new RegExpCondition(descriptor);
         vh.setValue('ABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(' ABC ');   // trim
+        vh.setValue(' ABC ');  // trim is not used unless duringEdit=true
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
 
@@ -751,6 +703,74 @@ describe('class RegExpCondition', () => {
         vh.setValue('ABC');
         expect(() => testItem.evaluate(vh, vm)).toThrow(/regular expression/);
     });
+
+    test('With duringEdit = true and supportsDuringEdit=true, text must exactly match ABC case insensitively for match', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RegExpConditionDescriptor = {
+            type: ConditionType.RegExp,
+            valueHostId: 'Property1',
+            expressionAsString: '^ABC$',
+            ignoreCase: true,
+            supportsDuringEdit: true
+        };
+        let testItem = new RegExpCondition(descriptor);
+        expect(testItem.evaluateDuringEdits('ABC', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('ABCDEF', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('zABC', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+         // trimming defaults to true
+        expect(testItem.evaluateDuringEdits(' ABC ', vh, services)).toBe(ConditionEvaluateResult.Match);
+        // case sensitive 
+        expect(testItem.evaluateDuringEdits('abc', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('AB\nC', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+    test('With duringEdit = true and supportsDuringEdit=false, always return Undetermined', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RegExpConditionDescriptor = {
+            type: ConditionType.RegExp,
+            valueHostId: 'Property1',
+            expressionAsString: '^ABC$',
+            ignoreCase: true,
+            supportsDuringEdit: false
+        };
+        let testItem = new RegExpCondition(descriptor);
+        expect(testItem.evaluateDuringEdits('ABC', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluateDuringEdits('ABCDEF', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluateDuringEdits('zABC', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
+         // trimming defaults to true
+        expect(testItem.evaluateDuringEdits(' ABC ', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
+        // case sensitive 
+        expect(testItem.evaluateDuringEdits('abc', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluateDuringEdits('AB\nC', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
+    });
+    test('With duringEdit = true and supportsDuringEdit=true and trim=false, text must exactly match trimmed ABC case insensitively for match', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: RegExpConditionDescriptor = {
+            type: ConditionType.RegExp,
+            valueHostId: 'Property1',
+            expressionAsString: '^ABC$',
+            ignoreCase: true,
+            supportsDuringEdit: true,
+            trim: false
+        };
+        let testItem = new RegExpCondition(descriptor);
+        expect(testItem.evaluateDuringEdits('ABC', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('ABCDEF', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('zABC', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits(' ABC ', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        // case sensitive 
+        expect(testItem.evaluateDuringEdits('abc', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('AB\nC', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+
     test('category is DataTypeCheck', () => {
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
@@ -2393,14 +2413,20 @@ describe('class StringLengthCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('1');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(' 1');  // trim option does not matter
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('12');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('1234');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(' 1234 ');  // trim option does not mattern
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('12345');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('123456');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue('12345 ');  // trim option doesn't matter
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
     });
     test('evaluate when Min is assigned, Max is null. Match when >= Min', () => {
         let services = new MockValidationServices(false, true);
@@ -2499,6 +2525,77 @@ describe('class StringLengthCondition', () => {
         vh.setValue(' 1234 ');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
+    test('With duringEdit = true and supportsDuringEdit=true and trim undefined (means true) match according to the rules, ', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: StringLengthConditionDescriptor = {
+            type: ConditionType.StringLength,
+            valueHostId: 'Property1',
+            minimum: 2,
+            maximum: 5,
+            supportsDuringEdit: true
+            // trim: undefined means enabled
+        };
+        let testItem = new StringLengthCondition(descriptor);
+        vh.setInputValue('---- does not matter ----');
+        expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('1', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits(' 1', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('12', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('1234', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits(' 1234 ', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('12345', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('123456', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('12345 ', vh, services)).toBe(ConditionEvaluateResult.Match);                
+    });
+
+    test('With duringEdit = true and supportsDuringEdit=true and trim = false, match according to the rules, ', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: StringLengthConditionDescriptor = {
+            type: ConditionType.StringLength,
+            valueHostId: 'Property1',
+            minimum: 2,
+            maximum: 5,
+            supportsDuringEdit: true,
+            trim: false
+        };
+        let testItem = new StringLengthCondition(descriptor);
+        vh.setInputValue('---- does not matter ----');
+        expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('1', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits(' 1', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('12', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('1234', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits(' 1234 ', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('12345', vh, services)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluateDuringEdits('123456', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluateDuringEdits('12345 ', vh, services)).toBe(ConditionEvaluateResult.NoMatch);                
+    });
+
+    test('With duringEdit = true and supportsDuringEdit=false, always return Undetermined, ', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: StringLengthConditionDescriptor = {
+            type: ConditionType.StringLength,
+            valueHostId: 'Property1',
+            minimum: 2,
+            maximum: 5,
+            supportsDuringEdit: false
+        };
+        let testItem = new StringLengthCondition(descriptor);
+        vh.setInputValue('---- does not matter ----');
+        expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluateDuringEdits('12', vh, services)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluateDuringEdits('123456', vh, services)).toBe(ConditionEvaluateResult.Undetermined);              
+    });
+
     test('getValuesForTokens without calling evaluate and establishing length', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -2843,6 +2940,30 @@ describe('class AllMatchCondition', () => {
         let testItem = new AllMatchCondition(descriptor);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
+    test('Parent ValueHost used by child RequiredTextCondition', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: AllMatchConditionDescriptor = {
+            type: ConditionType.And,
+            conditionDescriptors: [{
+                type: ConditionType.RequiredText,
+                // valueHostId omitted meaning it must use parent ValueHost
+            },
+            {
+                type: AlwaysMatchesConditionType
+            },
+            <RegExpConditionDescriptor>{
+                type: ConditionType.RegExp,
+                // valueHostId omitted meaning it must use parent ValueHost
+                expressionAsString: 'ABC'
+            }            ],
+        };
+        vh.setValue('ABC');    // for RequiredTextCondition and RegExpCondition to match
+        let testItem = new AllMatchCondition(descriptor);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });    
     test('category is Children', () => {
         let descriptor: AllMatchConditionDescriptor = {
             type: ConditionType.And,
@@ -3560,7 +3681,7 @@ describe('class StringNotEmptyCondition', () => {
         expect(() => testItem.evaluate(null, vm)).toThrow(/Missing value/);
         let logger = services.loggerService as MockCapturingLogger;
         expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.category).toBe(ConfigurationCategory);
+        expect(logger.getLatest()!.category).toBe(LoggingCategory.Configuration);
         expect(logger.getLatest()!.level).toBe(LoggingLevel.Error);
     });
     test('category is Required', () => {
@@ -3658,7 +3779,7 @@ describe('class NotNullCondition', () => {
         expect(() => testItem.evaluate(null, vm)).toThrow(/Missing value/);
         let logger = services.loggerService as MockCapturingLogger;
         expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.category).toBe(ConfigurationCategory);
+        expect(logger.getLatest()!.category).toBe(LoggingCategory.Configuration);
         expect(logger.getLatest()!.level).toBe(LoggingLevel.Error);
     });
     test('category is Required', () => {

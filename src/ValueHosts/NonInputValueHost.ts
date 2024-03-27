@@ -5,6 +5,7 @@
 import { InputValueHostDescriptor } from '../Interfaces/InputValueHost';
 import { INonInputValueHost, NonInputValueHostDescriptor, NonInputValueHostState } from '../Interfaces/NonInputValueHost';
 import { ValueHostDescriptor } from '../Interfaces/ValueHost';
+import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 
@@ -35,7 +36,6 @@ export class NonInputValueHost extends ValueHostBase<NonInputValueHostDescriptor
     }
 }
 
-export const NonInputValueHostType = 'NonInput';
 /**
  * Supports NonInputValueHost class. Used when the Descriptor.Type = NonInputValueHostType
  * or when the Type property is null/undefined and there are no InputValueHost specific
@@ -45,7 +45,7 @@ export class NonInputValueHostGenerator extends ValueHostBaseGenerator {
 
     public canCreate(descriptor: ValueHostDescriptor): boolean {
         if (descriptor.type != null)    // null/undefined
-            return descriptor.type === NonInputValueHostType;
+            return descriptor.type === ValueHostType.NonInput;
         let test = descriptor as unknown as InputValueHostDescriptor;
         if (test.validatorDescriptors === undefined)
             return true;

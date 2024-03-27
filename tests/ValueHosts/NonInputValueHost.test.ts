@@ -1,6 +1,7 @@
 import { NonInputValueHostDescriptor, NonInputValueHostState, INonInputValueHost } from "../../src/Interfaces/NonInputValueHost";
 import { IGatherValueHostIds, toIGatherValueHostIds } from "../../src/Interfaces/ValueHost";
-import { NonInputValueHost, NonInputValueHostType, NonInputValueHostGenerator } from "../../src/ValueHosts/NonInputValueHost";
+import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
+import { NonInputValueHost, NonInputValueHostGenerator } from "../../src/ValueHosts/NonInputValueHost";
 import { MockValidationServices, MockValidationManager, NeverMatchesConditionType } from "../Mocks";
 
 describe('NonInputValueHost constructor', () => {
@@ -10,7 +11,7 @@ describe('NonInputValueHost constructor', () => {
         let testItem: NonInputValueHost | null = null;
         expect(() => testItem = new NonInputValueHost(vm, {
             id: 'Field1',
-            type: NonInputValueHostType,
+            type: ValueHostType.NonInput,
             label: 'Label1'
         }, {
             id: 'Field1',
@@ -28,10 +29,10 @@ describe('NonInputValueHost constructor', () => {
 });
 
 describe('NonInputValueHostGenerator members', () => {
-    test('CanCreate returns true for NonInputValueHostType', () => {
+    test('CanCreate returns true for ValueHostType.NonInput', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate({
-            type: NonInputValueHostType,
+            type: ValueHostType.NonInput,
             id: 'Field1',
             label: ''
         })).toBe(true);
@@ -82,7 +83,7 @@ describe('NonInputValueHostGenerator members', () => {
         let vm = new MockValidationManager(services);        
         let descriptor: NonInputValueHostDescriptor = {
             id: 'Field1',
-            type: NonInputValueHostType,
+            type: ValueHostType.NonInput,
             label: ''
         };
         let state: NonInputValueHostState = {
@@ -105,7 +106,7 @@ describe('NonInputValueHostGenerator members', () => {
         let state = { ...originalState };
         let descriptor: NonInputValueHostDescriptor = {
             id: 'Field1',
-            type: NonInputValueHostType,
+            type: ValueHostType.NonInput,
             label: ''
         };
         let testItem = new NonInputValueHostGenerator();
@@ -117,7 +118,7 @@ describe('NonInputValueHostGenerator members', () => {
         let testItem = new NonInputValueHostGenerator();
         let descriptor: NonInputValueHostDescriptor = {
             id: 'Field1',
-            type: NonInputValueHostType,
+            type: ValueHostType.NonInput,
             label: '',
             initialValue: 'TEST'
         };

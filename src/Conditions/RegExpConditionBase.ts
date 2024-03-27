@@ -9,8 +9,8 @@
  */
 
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
+import { IValidationServices } from '../Interfaces/ValidationServices';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { StringConditionDescriptor, StringConditionBase } from './StringConditionBase';
 
 /**
@@ -31,15 +31,15 @@ export interface RegExpConditionBaseDescriptor extends StringConditionDescriptor
 export abstract class RegExpConditionBase<TDescriptor extends RegExpConditionBaseDescriptor>
     extends StringConditionBase<TDescriptor>
 {
-    protected evaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateString(text: string, valueHost: IValueHost, services: IValidationServices): ConditionEvaluateResult {
 
-        return this.getRegExp(valueHostResolver).test(text) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
+        return this.getRegExp(services).test(text) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
     /**
      * Return a RegExp for EvaluateString to use.
      * @param valueHostResolver 
      */
-    protected abstract getRegExp(valueHostResolver: IValueHostResolver): RegExp;
+    protected abstract getRegExp(services: IValidationServices): RegExp;
 
     /**
      * Most of time, this represents a pattern that defines a data type, like USPhoneNumber and EmailAddress.

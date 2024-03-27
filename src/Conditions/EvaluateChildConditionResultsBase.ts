@@ -37,11 +37,17 @@ export interface EvaluateChildConditionResultsDescriptor extends ConditionDescri
 export abstract class EvaluateChildConditionResultsBase<TDescriptor extends EvaluateChildConditionResultsDescriptor>
     extends ConditionBase<TDescriptor>
 {
+    /**
+     * 
+     * @param valueHost - this is passed down to the child ValueHosts
+     * @param valueHostResolver 
+     * @returns 
+     */
     public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         let conditions = this.conditions(valueHostResolver);
         if (conditions.length === 0)
             return ConditionEvaluateResult.Undetermined;
-        return this.evaluateChildren(conditions, valueHostResolver);
+        return this.evaluateChildren(conditions, valueHost, valueHostResolver);
     }
 
     protected conditions(valueHostResolver: IValueHostResolver): Array<ICondition> {
@@ -61,7 +67,7 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
     }
     private _conditions: Array<ICondition> | null = null;
 
-    protected abstract evaluateChildren(conditions: Array<ICondition>, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
+    protected abstract evaluateChildren(conditions: Array<ICondition>, parentValueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
 
     /**
      * Utility for EvaluateChildren to apply the Descriptor.treatUndeterminedAs
