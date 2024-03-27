@@ -40,10 +40,10 @@ export class ValidationServices implements IValidationServices {
        This value is the starting point to search through localizations.
        If not supplied, it defaults to 'en'.
      */
-    public get ActiveCultureId(): string {
+    public get activeCultureId(): string {
         return this._activeCultureID ?? 'en';
     }
-    public set ActiveCultureId(cultureID: string) {
+    public set activeCultureId(cultureID: string) {
         this._activeCultureID = cultureID;
     }
     private _activeCultureID: string | null = null;
@@ -51,12 +51,12 @@ export class ValidationServices implements IValidationServices {
     /**
      * Factory to create Condition objects.
      */
-    public get ConditionFactory(): IConditionFactory {
+    public get conditionFactory(): IConditionFactory {
         if (!this._conditionFactory)
             throw new CodingError('Must assign ValidationServices.ConditionFactory.');
         return this._conditionFactory;
     }
-    public set ConditionFactory(factory: IConditionFactory) {
+    public set conditionFactory(factory: IConditionFactory) {
         assertNotNull(factory, 'factory');
         this._conditionFactory = factory;
     }
@@ -65,16 +65,16 @@ export class ValidationServices implements IValidationServices {
     /**
      * Service to get the IDataTypeServices instance associated with the dataTypeLabel.
      */
-    public get DataTypeServices(): IDataTypeServices {
+    public get dataTypeServices(): IDataTypeServices {
         if (!this._dataTypeServices)
             throw new CodingError('Must assign ValidationServices.DataTypeServices.');
 
         return this._dataTypeServices;
     }
-    public set DataTypeServices(services: IDataTypeServices) {
+    public set dataTypeServices(services: IDataTypeServices) {
         assertNotNull(services, 'services');
         this._dataTypeServices = services;
-        services.Services = this;
+        services.services = this;
     }
     private _dataTypeServices: IDataTypeServices | null = null;
 
@@ -87,13 +87,13 @@ export class ValidationServices implements IValidationServices {
      * to use that here. Implement ITextLocalizerService around
      * that third party library.
      */
-    public get TextLocalizerService(): ITextLocalizerService
+    public get textLocalizerService(): ITextLocalizerService
     {
         if (!this._textLocalizerService)
             this._textLocalizerService = new TextLocalizerService();
         return this._textLocalizerService;
     }
-    public set TextLocalizerService(service: ITextLocalizerService)
+    public set textLocalizerService(service: ITextLocalizerService)
     {
         this._textLocalizerService = service;
     }
@@ -103,13 +103,13 @@ export class ValidationServices implements IValidationServices {
      * Service to get the IMessageTokenResolver instance that replaces
      * tokens in messages.
      */
-    public get MessageTokenResolverService(): IMessageTokenResolver {
+    public get messageTokenResolverService(): IMessageTokenResolver {
         if (!this._messageTokenResolverService)
             throw new CodingError('Must assign ValidationServices.MessageTokenResolverService.');
 
         return this._messageTokenResolverService;
     }
-    public set MessageTokenResolverService(service: IMessageTokenResolver) {
+    public set messageTokenResolverService(service: IMessageTokenResolver) {
         assertNotNull(service, 'service');
         this._messageTokenResolverService = service;
     }
@@ -120,12 +120,12 @@ export class ValidationServices implements IValidationServices {
      * tokens in messages.
      * Defaults to using ConsoleLogger.
      */
-    public get LoggerService(): ILogger {
+    public get loggerService(): ILogger {
         if (!this._loggerService)
             this._loggerService = new ConsoleLogger();
         return this._loggerService;
     }
-    public set LoggerService(service: ILogger) {
+    public set loggerService(service: ILogger) {
         assertNotNull(service, 'service');
         this._loggerService = service;
     }
@@ -136,7 +136,7 @@ export class ValidationServices implements IValidationServices {
      * The ValueHostFactory to use.
      * It supplies a default if not setup by the user.
      */
-    public get ValueHostFactory(): IValueHostFactory {
+    public get valueHostFactory(): IValueHostFactory {
         if (!this._valueHostFactory) {
             let factory = new ValueHostFactory();
             registerStandardValueHostGenerators(factory);
@@ -144,7 +144,7 @@ export class ValidationServices implements IValidationServices {
         }
         return this._valueHostFactory;
     }
-    public set ValueHostFactory(factory: IValueHostFactory) {
+    public set valueHostFactory(factory: IValueHostFactory) {
         assertNotNull(factory, 'factory');
         this._valueHostFactory = factory;
     }
@@ -157,12 +157,12 @@ export class ValidationServices implements IValidationServices {
      * The InputValidatorFactory to use.
      * It supplies a default if not setup by the user.
      */
-    public get InputValidatorFactory(): IInputValidatorFactory {
+    public get inputValidatorFactory(): IInputValidatorFactory {
         if (!this._inputValidatorFactory)
             this._inputValidatorFactory = new InputValidatorFactory();
         return this._inputValidatorFactory;
     }
-    public set InputValidatorFactory(factory: InputValidatorFactory) {
+    public set inputValidatorFactory(factory: InputValidatorFactory) {
         assertNotNull(factory, 'factory');
         this._inputValidatorFactory = factory;
     }

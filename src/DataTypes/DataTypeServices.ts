@@ -10,7 +10,7 @@
  *   is a Date object and needs to be shown in a localized format of short, abbreviated, or full.
  *   Uses {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter}
  *   which returns a localized string.
- * - Converter - Change the native value into somethat used by a Condition.Evaluate function.
+ * - Converter - Change the native value into somethat used by a Condition.evaluate() function.
  *   This is essential for comparison Conditions. Comparison works automatically
  *   with string, number, and boolean native types. Converters exist to take a Date
  *   or user defined class to a string, number, or boolean.
@@ -48,17 +48,17 @@ import { CompareCategory, LoggingLevel, LookupKeyCategory } from '../Interfaces/
  * 
  * Formatting uses localization. It uses IDataTypeFormatter classes,
  * which may handle multiple cultures. When searching for a formatter,
- * it tries the ValidationServices.ActiveCultureID first and if no formatter
+ * it tries the ValidationServices.activeCultureID first and if no formatter
  * is supplied for that culture, it has a chain of fallback cultures that you supply
  * in the constructor.
  * 
- * This class is available on {@link ValidationServices/ConcreteClass!ValidationServices.DataTypeServices}.
+ * This class is available on {@link ValidationServices/ConcreteClass!ValidationServices.dataTypeServices}.
  */
 export class DataTypeServices implements IDataTypeServices {
     /**
      * Constructor
      * @param cultureFallbacks - All of the cultures that you intend to support, along with fallback Cultures
-     * If null, it will create a single entry from the ValidationServices.ActiveCultureID
+     * If null, it will create a single entry from the ValidationServices.activeCultureID
      */
     constructor(cultureFallbacks?: Array<CultureIdFallback> | null) {
         if (cultureFallbacks && cultureFallbacks.length > 0)
@@ -70,13 +70,13 @@ export class DataTypeServices implements IDataTypeServices {
      * Note: Not passed into the constructor because this object should be created before
      * ValidationServices itself. So it gets assigned when ValidationService.DataTypeServices is assigned a value.
      */
-    public get Services(): IValidationServices
+    public get services(): IValidationServices
     {
         if (!this._services)
             throw new CodingError('Assign Services property to ValidationServices.DataTypeServices first.');
         return this._services;
     }
-    public set Services(services: IValidationServices)
+    public set services(services: IValidationServices)
     {
         assertNotNull(services, 'services');
         this._services = services;
@@ -93,13 +93,13 @@ export class DataTypeServices implements IDataTypeServices {
         this._dataTypeFormatters?.forEach((dtf) => {
             let sa = toIServicesAccessor(dtf);
             if (sa)
-                sa.Services = services;
+                sa.services = services;
         });
         if (!this._cultureConfig || this._cultureConfig.length === 0)
-            this._cultureConfig = [{ CultureId: services.ActiveCultureId }];        
+            this._cultureConfig = [{ cultureId: services.activeCultureId }];        
     }
 
-    protected get CultureIdFallback(): Array<CultureIdFallback> {
+    protected get cultureIdFallback(): Array<CultureIdFallback> {
         if (!this._cultureConfig || this._cultureConfig.length === 0)
             throw new CodingError('Must establish the CultureIdFallback array in DataTypeServices.');
         return this._cultureConfig;
@@ -117,7 +117,7 @@ export class DataTypeServices implements IDataTypeServices {
     public getClosestCultureId(cultureId: string): string | null {
         let cc = this.getClosestCultureIdFallback(cultureId);
         if (cc)
-            return cc.CultureId;
+            return cc.cultureId;
         return null;
     }
     protected getClosestCultureIdFallback(cultureId: string): CultureIdFallback | null {
@@ -132,11 +132,11 @@ export class DataTypeServices implements IDataTypeServices {
     }    
     protected getCultureIdFallback(cultureId: string): CultureIdFallback | null
     {
-        return this.CultureIdFallback.find((cc) => cc.CultureId === cultureId) ?? null;
+        return this.cultureIdFallback.find((cc) => cc.cultureId === cultureId) ?? null;
     }
 
 
-    //#region Format, IDataTypeFormatter and AdditionalFormatters.    
+    //#region format, IDataTypeFormatter and AdditionalFormatters.    
     /**
      * Converts the native value to a string that can be shown to the user.
      * Result includes the successfully converted value
@@ -145,7 +145,7 @@ export class DataTypeServices implements IDataTypeServices {
      * Formatting uses localization. It uses 
      * {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter} classes,
      * which may handle multiple cultures. When searching for a formatter,
-     * it tries the ValidationServices.ActiveCultureID first and if no formatter
+     * it tries the ValidationServices.activeCultureID first and if no formatter
      * is supplied for that culture, it has a chain of fallback cultures that you supply
      * in the constructor.
      * @param value
@@ -161,7 +161,7 @@ export class DataTypeServices implements IDataTypeServices {
                 lookupKey = this.identifyLookupKey(value);
             if (lookupKey === null)
                 throw new Error('Value type requires a LookupKey');
-            let cultureId: string | null = this.Services.ActiveCultureId;
+            let cultureId: string | null = this.services.activeCultureId;
             while (cultureId) {
                 let cc = this.getCultureIdFallback(cultureId);
                 if (!cc)
@@ -172,9 +172,9 @@ export class DataTypeServices implements IDataTypeServices {
                         return dtlf.format(value, lookupKey, cultureId);
                     }
                     catch (e) {
-                        return { ErrorMessage: (e as Error).message };
+                        return { errorMessage: (e as Error).message };
                     }
-                cultureId = cc.FallbackCultureId ?? null;
+                cultureId = cc.fallbackCultureId ?? null;
             }
 
             throw new Error(`Unsupported LookupKey ${lookupKey}`);
@@ -183,19 +183,19 @@ export class DataTypeServices implements IDataTypeServices {
         {
             if (e instanceof Error) // should always be true. Mostly used for typecast
             {
-                this.Services.LoggerService.log(e.message, LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices');
+                this.services.loggerService.log(e.message, LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices');
                 return {
-                    ErrorMessage: e.message,
-                    Value: undefined
+                    errorMessage: e.message,
+                    value: undefined
                 };
             }
-            return { ErrorMessage: 'Unspecified'};
+            return { errorMessage: 'Unspecified'};
         }
     }
 
     /**
       * Registers an {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter}
-      * for use by the Format function.
+      * for use by the format() function.
       * 
       * If the LookupKey was previously registered, its instance is replaced.
       * @param dtlf
@@ -208,7 +208,7 @@ export class DataTypeServices implements IDataTypeServices {
         if (this._services) {
             let sa = toIServicesAccessor(dtlf);
             if (sa)
-                sa.Services = this._services;
+                sa.services = this._services;
         }
     }
     /**
@@ -255,9 +255,9 @@ export class DataTypeServices implements IDataTypeServices {
      */
     private _dataTypeFormatters: Array<IDataTypeFormatter>|null = null;
 
-    //#endregion Format, IDataTypeFormatter.
+    //#endregion format, IDataTypeFormatter.
 
-    //#region CompareValues and IDataTypeComparer
+    //#region compareValues() and IDataTypeComparer
     /**
      * Compares two values to see if they are equal or not.
      * 
@@ -348,7 +348,7 @@ export class DataTypeServices implements IDataTypeServices {
         catch (e)
         {
             if (e instanceof Error)
-                this.Services.LoggerService.log(e.message, LoggingLevel.Error, CompareCategory, 'DataTypeServices');
+                this.services.loggerService.log(e.message, LoggingLevel.Error, CompareCategory, 'DataTypeServices');
             return ComparersResult.Undetermined;
         }
     }
@@ -422,7 +422,7 @@ export class DataTypeServices implements IDataTypeServices {
      */
     public identifyLookupKey(value: any): string | null {
         let idt = this.getDataTypeIdentifier(value);
-        return idt ? idt.DataTypeLookupKey : null;
+        return idt ? idt.dataTypeLookupKey : null;
     }
 
     /**
@@ -433,7 +433,7 @@ export class DataTypeServices implements IDataTypeServices {
      */
     public registerDataTypeIdentifier(identifier: IDataTypeIdentifier): void {
         assertNotNull(identifier, 'identifier');
-        let existingPos = this.getDataTypeIdentifiers().findIndex((idt) => idt.DataTypeLookupKey.toLowerCase() === identifier.DataTypeLookupKey.toLowerCase());
+        let existingPos = this.getDataTypeIdentifiers().findIndex((idt) => idt.dataTypeLookupKey.toLowerCase() === identifier.dataTypeLookupKey.toLowerCase());
         if (existingPos < 0)
             this._dataTypeIdentifiers!.push(identifier);
         else
@@ -499,11 +499,11 @@ export class DataTypeServices implements IDataTypeServices {
      * supplied in the ValueHost's list of validators.
      * Defaults to true.
      */
-    public get AutoGenerateDataTypeConditionEnabled(): boolean
+    public get autoGenerateDataTypeConditionEnabled(): boolean
     {
         return this._autoGenerateDataTypeConditionEnabled;
     }
-    public set AutoGenerateDataTypeConditionEnabled(value: boolean)
+    public set autoGenerateDataTypeConditionEnabled(value: boolean)
     {
         this._autoGenerateDataTypeConditionEnabled = value;
     }
@@ -533,18 +533,18 @@ export class DataTypeServices implements IDataTypeServices {
      * returns a null, it means do not generate the DataTypeCheckCondition and this function
      * returns null itself.
      */    
-    public autoGenerateDataTypeCondition(valueHost: IInputValueHost, dataTypeLookupKey: LookupKey | string): ICondition | null
+    public autoGenerateDataTypeCondition(valueHost: IInputValueHost, dataTypeLookupKey: string): ICondition | null
     {
         assertNotNull(valueHost, 'valueHost');
         assertNotNull(dataTypeLookupKey, 'dataTypeLookupKey');
         let generator = this.getDataTypeCheckGenerator(dataTypeLookupKey);
         if (generator !== null)
-            return generator.createCondition(valueHost, dataTypeLookupKey, this.Services.ConditionFactory); // may return null
+            return generator.createCondition(valueHost, dataTypeLookupKey, this.services.conditionFactory); // may return null
         let descriptor: DataTypeCheckConditionDescriptor = {
-            Type: ConditionType.DataTypeCheck,
-            ValueHostId: valueHost.getId()
+            type: ConditionType.DataTypeCheck,
+            valueHostId: valueHost.getId()
         };
-        return this.Services.ConditionFactory.create(descriptor);
+        return this.services.conditionFactory.create(descriptor);
     }
 
     /**
@@ -562,11 +562,10 @@ export class DataTypeServices implements IDataTypeServices {
     /**
      * Gets the first {@link DataTypes/Interfaces!IDataTypeCheckGenerator | IDataTypeCheckGenerator}
      *  that supports the value, or null if none are found.
-     * @param value 
      * @param dataTypeLookupKey 
      * @returns 
      */
-    public getDataTypeCheckGenerator(dataTypeLookupKey: LookupKey | string): IDataTypeCheckGenerator | null {
+    public getDataTypeCheckGenerator(dataTypeLookupKey: string): IDataTypeCheckGenerator | null {
         return this.getDataTypeCheckGenerators().find((dtg) => dtg.supportsValue(dataTypeLookupKey)) ?? null;
     }
     protected getDataTypeCheckGenerators(): Array<IDataTypeCheckGenerator>
@@ -593,10 +592,10 @@ export interface CultureIdFallback {
      * If this needs to change, it is OK if you set it and the Adaptor reconfigure,
      * or to create a new instance and use it.
      */
-    CultureId: string;
+    cultureId: string;
 
     /**
      * Identifies another culture to check if a lookup key cannot be resolved.
      */
-    FallbackCultureId?: string | null;
+    fallbackCultureId?: string | null;
 }

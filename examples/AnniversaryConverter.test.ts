@@ -14,7 +14,7 @@ describe('UTCAnniversaryConverter', () => {
     })
     test('convert', () => {
         let testItem = new UTCAnniversaryConverter();
-        // Convert expects to be called after supportsValue is true.
+        // convert expects to be called after supportsValue is true.
         // So no illegal values as parameters tested
         // Reminder that the year used in this Converter is 2004
         let test1 = new Date(Date.UTC(2000, 10, 5));

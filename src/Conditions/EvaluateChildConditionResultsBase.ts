@@ -20,13 +20,13 @@ export interface EvaluateChildConditionResultsDescriptor extends ConditionDescri
      * Conditions for this condition to evaluate and apply its rules based on those results.
      * When left empty, the condition evaluates as Undetermined.
      */
-    ConditionDescriptors: Array<ConditionDescriptor>;
+    conditionDescriptors: Array<ConditionDescriptor>;
 
     /**
      * When a child condition evaluates as Undetermined, this indicates how to handle it.
      * Defaults to Undetermined.
      */
-    TreatUndeterminedAs?: ConditionEvaluateResult;
+    treatUndeterminedAs?: ConditionEvaluateResult;
 }
 
 /**
@@ -52,9 +52,9 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
     }
     protected generateConditions(valueHostResolver: IValueHostResolver): Array<ICondition> {
         let conditions: Array<ICondition> = [];
-        for (let condDescriptor of this.Descriptor.ConditionDescriptors) {
+        for (let condDescriptor of this.descriptor.conditionDescriptors) {
             // expect exceptions here for invalid Descriptors
-            let condition = valueHostResolver.Services.ConditionFactory.create(condDescriptor);
+            let condition = valueHostResolver.services.conditionFactory.create(condDescriptor);
             conditions.push(condition);
         }
         return conditions;
@@ -64,7 +64,7 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
     protected abstract evaluateChildren(conditions: Array<ICondition>, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
 
     /**
-     * Utility for EvaluateChildren to apply the Descriptor.TreatUndeterminedAs
+     * Utility for EvaluateChildren to apply the Descriptor.treatUndeterminedAs
      * @param childResult 
      * @returns 
      */
@@ -72,7 +72,7 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
         if (childResult instanceof Promise)
             throw new CodingError('Promises are not supported for child conditions at this time.');
         if (childResult === ConditionEvaluateResult.Undetermined)
-            return this.Descriptor.TreatUndeterminedAs ?? ConditionEvaluateResult.Undetermined;
+            return this.descriptor.treatUndeterminedAs ?? ConditionEvaluateResult.Undetermined;
         return childResult;
     }
 
@@ -82,7 +82,7 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
         for (let condition of conditions)
             toIGatherValueHostIds(condition)?.gatherValueHostIds(collection, valueHostResolver);
     }        
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Children;
     }
 }

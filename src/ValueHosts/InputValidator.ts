@@ -27,7 +27,7 @@ import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
  * An IInputValidator implementation that represents a single validator 
  * for the value of an InputValueHost.
  * It is stateless.
- * Basically you want to call Validate() to get all of the results
+ * Basically you want to call validate() to get all of the results
  * of a validation, including ValidationResult, error messages,
  * severity, and more.
  * That data ends up in the ValidationManager as part of its state,
@@ -55,22 +55,22 @@ export class InputValidator implements IInputValidator {
     /**
     * The business rules behind this validator.
     */
-    protected get Descriptor(): InputValidatorDescriptor {
+    protected get descriptor(): InputValidatorDescriptor {
         return this._descriptor;
     }
 
-    protected get Services(): IValidationServices {
-        return this.ValueHostsManager.Services;
+    protected get services(): IValidationServices {
+        return this.valueHostsManager.services;
     }
 
-    protected get ValueHost(): IInputValueHost
+    protected get valueHost(): IInputValueHost
     {
         return this._valueHost;
     }
 
-    protected get ValueHostsManager(): IValueHostsManager
+    protected get valueHostsManager(): IValueHostsManager
     {
-        let vh = toIValueHostsManagerAccessor(this.ValueHost)?.ValueHostsManager;
+        let vh = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
         if (vh)
             return vh;
         throw new CodingError('ValueHost must implement IValueHostsManagerAccessor');
@@ -86,29 +86,29 @@ export class InputValidator implements IInputValidator {
 
     /**
      * Condition used to validate the data.
-     * Run by Validate, but only if the Validator is enabled (Severity<>Off and Enabler == Match)
+     * Run by validate(), but only if the Validator is enabled (Severity<>Off and Enabler == Match)
      * The actual Condition instance is created by the caller
      * and supplied in the InputValidatorDescriptor.
      */
-    public get Condition(): ICondition {
+    public get condition(): ICondition {
         if (!this._condition) {
             try {
-                if (this.Descriptor.ConditionCreator) {
-                    if (this.Descriptor.ConditionDescriptor)
+                if (this.descriptor.conditionCreator) {
+                    if (this.descriptor.conditionDescriptor)
                         throw new Error('Cannot assign both ConditionDescriptor and ConditionCreator');
-                    this._condition = this.Descriptor.ConditionCreator(this.Descriptor);
+                    this._condition = this.descriptor.conditionCreator(this.descriptor);
                     if (!this._condition)
                         throw new Error('ConditionCreator function must return an instance');
                 }
-                else if (this.Descriptor.ConditionDescriptor)
-                    this._condition = this.Services.ConditionFactory.create(this.Descriptor.ConditionDescriptor);
+                else if (this.descriptor.conditionDescriptor)
+                    this._condition = this.services.conditionFactory.create(this.descriptor.conditionDescriptor);
                 else
                     throw new Error('Condition must be setup');
             }
             catch (e)
             {
                 if (e instanceof Error)
-                    this.Services.LoggerService.log(e.message, LoggingLevel.Error, ConfigurationCategory, this.getLogSourceText());
+                    this.services.loggerService.log(e.message, LoggingLevel.Error, ConfigurationCategory, this.getLogSourceText());
                 throw e;
             }
         }
@@ -120,23 +120,23 @@ export class InputValidator implements IInputValidator {
      * Condition used to enable or disable this validator based on rules.
      * Severity = Off takes precedence.
      */
-    protected get Enabler(): ICondition | null {
+    protected get enabler(): ICondition | null {
         if (!this._enabler)
             try {
-                if (this.Descriptor.EnablerCreator) {
-                    if (this.Descriptor.EnablerDescriptor)
+                if (this.descriptor.enablerCreator) {
+                    if (this.descriptor.enablerDescriptor)
                         throw new Error('Cannot assign both EnablerDescriptor and EnablerCreator');                    
-                    this._enabler = this.Descriptor.EnablerCreator(this.Descriptor);
+                    this._enabler = this.descriptor.enablerCreator(this.descriptor);
                     if (!this._enabler)
                         throw new Error('EnablerCreator function must return an instance');
                 }
-                else if (this.Descriptor.EnablerDescriptor)
-                    this._enabler = this.Services.ConditionFactory.create(this.Descriptor.EnablerDescriptor);
+                else if (this.descriptor.enablerDescriptor)
+                    this._enabler = this.services.conditionFactory.create(this.descriptor.enablerDescriptor);
             }
             catch (e)
             {
                 if (e instanceof Error)
-                    this.Services.LoggerService.log(e.message, LoggingLevel.Error, ConfigurationCategory, this.getLogSourceText());
+                    this.services.loggerService.log(e.message, LoggingLevel.Error, ConfigurationCategory, this.getLogSourceText());
                 throw e;
             }
         return this._enabler;
@@ -147,8 +147,8 @@ export class InputValidator implements IInputValidator {
      * Determined from the Descriptor.Enabled.
      * Does not use the Enabler.
      */
-    public get Enabled(): boolean {
-        let value = this.Descriptor.Enabled;
+    public get enabled(): boolean {
+        let value = this.descriptor.enabled;
         if (typeof value == 'function')
             value = value(this);
         if (value == null)  // null/undefined
@@ -159,12 +159,12 @@ export class InputValidator implements IInputValidator {
     /**
      * Determined from Descriptor.Severity.
      */
-    protected get Severity(): ValidationSeverity {
-        let value = this.Descriptor.Severity;
+    protected get severity(): ValidationSeverity {
+        let value = this.descriptor.severity;
         if (typeof value == 'function')
             value = value(this);
         if (value == null)  // null/undefined
-            switch (this.Condition.Category)
+            switch (this.condition.category)
             {
                 case ConditionCategory.Required:
                 case ConditionCategory.DataTypeCheck:
@@ -177,50 +177,50 @@ export class InputValidator implements IInputValidator {
     }
 
     /**
-     * Resolves the ErrorMessage as a template - before it has its tokens processed.
+     * Resolves the errorMessage as a template - before it has its tokens processed.
      * It uses several sources to get the template. The first to have text is used.
-     * 1. Descriptor.ErrorMessagel10n gets data from TextLocalizerService with Descriptor.ErrorMessage as fallback
-     * 2. Descriptor.ErrorMessage
+     * 1. Descriptor.ErrorMessagel10n gets data from TextLocalizerService with Descriptor.errorMessage as fallback
+     * 2. Descriptor.errorMessage
      * 3. TextLocalizerService.GetErrorMessage
-     * @returns Error message from ErrorMessage property with localization applied
+     * @returns Error message from errorMessage property with localization applied
      * if ErrorMessagel10n is setup.
      */
     protected getErrorMessageTemplate(): string {
-        let direct = this.Descriptor.ErrorMessage;
+        let direct = this.descriptor.errorMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        if (this.Descriptor.ErrorMessagel10n)
-            msg = this.Services.TextLocalizerService.localize(this.Services.ActiveCultureId,
-                this.Descriptor.ErrorMessagel10n, msg);
+        if (this.descriptor.errorMessagel10n)
+            msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
+                this.descriptor.errorMessagel10n, msg);
         if (msg == null)  // null/undefined
         {// fallback: see if TextLocalizerService has an entry specific to the ConditionType and DataTypeLookupKey.
-            msg = this.Services.TextLocalizerService.getErrorMessage(this.Services.ActiveCultureId,
-                this.Condition.ConditionType, this.ValueHost.getDataType());
+            msg = this.services.textLocalizerService.getErrorMessage(this.services.activeCultureId,
+                this.condition.conditionType, this.valueHost.getDataType());
         }
         if (msg == null)
-            throw new Error('Must supply a value for Descriptor.ErrorMessage');
+            throw new Error('Must supply a value for Descriptor.errorMessage');
         return msg;
     }
 
     /**
-     * Resolves the SummaryMessage as a template - before it has its tokens processed.
+     * Resolves the summaryMessage as a template - before it has its tokens processed.
      * Falls back to use GetErrorMessageTemplate if Descriptor doesn't supply a value.
-     * @returns Error message from SummaryMessage property with localization applied
+     * @returns Error message from summaryMessage property with localization applied
      * if SummaryMessagel10n is setup.
      */
     protected getSummaryMessageTemplate(): string {
-        let direct = this.Descriptor.SummaryMessage;
+        let direct = this.descriptor.summaryMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        if (this.Descriptor.SummaryMessagel10n)
-            msg = this.Services.TextLocalizerService.localize(this.Services.ActiveCultureId,
-                this.Descriptor.SummaryMessagel10n, msg ?? '');
+        if (this.descriptor.summaryMessagel10n)
+            msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
+                this.descriptor.summaryMessagel10n, msg ?? '');
         if (msg == null)  // null/undefined
         {// fallback: see if TextLocalizerService has an entry specific to the ConditionType and DataTypeLookupKey.
-            msg = this.Services.TextLocalizerService.getSummaryMessage(this.Services.ActiveCultureId,
-                this.Condition.ConditionType, this.ValueHost.getDataType());
+            msg = this.services.textLocalizerService.getSummaryMessage(this.services.activeCultureId,
+                this.condition.conditionType, this.valueHost.getDataType());
         }        
         if (msg == null)
             return this.getErrorMessageTemplate();
@@ -240,28 +240,28 @@ export class InputValidator implements IInputValidator {
         let self = this;
 
         let resultState: InputValidateResult = {
-            ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-            IssueFound: null
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            issueFound: null
         };
         try {
             // options that may bail out
-            if (options.Preliminary && this.Condition.Category === ConditionCategory.Required)
+            if (options.preliminary && this.condition.category === ConditionCategory.Required)
                 return bailout('Preliminary option skips Required conditions');
 
-            if (options.DuringEdit && this.Condition.Category !== ConditionCategory.Required)
+            if (options.duringEdit && this.condition.category !== ConditionCategory.Required)
                 return bailout('DuringEdit option limited to Required conditions');
                 
             // enabled
-            if (!this.Enabled)
+            if (!this.enabled)
                 return bailout('Descriptor.Enabled is false');
 
             // enabler
-            let enabler = this.Enabler;
+            let enabler = this.enabler;
             if (enabler) { // Many enablers don't use the current value host.
-                // When that is the case, their ConditionDescriptor.ValueHostId
+                // When that is the case, their ConditionDescriptor.valueHostId
                 // must be setup to retrieve the correct one.
                 // ValueHostId takes precedence.
-                let result = enabler.evaluate(this.ValueHost, this.ValueHostsManager);         
+                let result = enabler.evaluate(this.valueHost, this.valueHostsManager);         
                 switch (result) {
                     case ConditionEvaluateResult.NoMatch:
                     case ConditionEvaluateResult.Undetermined:
@@ -269,10 +269,10 @@ export class InputValidator implements IInputValidator {
                 }
             }
 
-            let pendingCER = this.Condition.evaluate(this.ValueHost, this.ValueHostsManager);
+            let pendingCER = this.condition.evaluate(this.valueHost, this.valueHostsManager);
 
             if (pendingCER instanceof Promise) {
-            // Support Async evaluation by letting Evaluate return a promise
+            // Support Async evaluation by letting evaluate() return a promise
             // When an async process returns, it must take NO action
             // if the value of State.ValidationResult is not still AsyncProcessing.
                 return processPromise(pendingCER);
@@ -286,14 +286,14 @@ export class InputValidator implements IInputValidator {
             if (e instanceof Error)
                 logError(e.message);
             // resume normal processing with Undetermined state
-            resultState.ConditionEvaluateResult = ConditionEvaluateResult.Undetermined;
-            resultState.IssueFound = null;
+            resultState.conditionEvaluateResult = ConditionEvaluateResult.Undetermined;
+            resultState.issueFound = null;
             return resultState;
         }
         finally {
             logInfo(() => {
                 return {
-                    message: `Condition result: ${ConditionEvaluateResultStrings[resultState.ConditionEvaluateResult]} Issue found: ` +
+                    message: `Condition result: ${ConditionEvaluateResultStrings[resultState.conditionEvaluateResult]} Issue found: ` +
                         JSON.stringify(resultState)
                 };
             });
@@ -304,13 +304,13 @@ export class InputValidator implements IInputValidator {
                     message: `Condition evaluated as ${ConditionEvaluateResultStrings[cer]}`
                 };
             });
-            resultState.ConditionEvaluateResult = cer;
+            resultState.conditionEvaluateResult = cer;
             switch (cer) {
                 case ConditionEvaluateResult.NoMatch:
-                    let issueFound = createIssueFound(self.ValueHost, self);   // setup for ValidationResult.Undetermined
-                    issueFound.Severity = self.Severity;
-                    self.updateStateForNoMatch(issueFound, self.ValueHost);
-                    resultState.IssueFound = issueFound;
+                    let issueFound = createIssueFound(self.valueHost, self);   // setup for ValidationResult.Undetermined
+                    issueFound.severity = self.severity;
+                    self.updateStateForNoMatch(issueFound, self.valueHost);
+                    resultState.issueFound = issueFound;
                     break;
             }
             return resultState;
@@ -332,52 +332,52 @@ export class InputValidator implements IInputValidator {
         function bailout(errorMessage: string): InputValidateResult
         {
             let resultState: InputValidateResult = {
-                ConditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-                IssueFound: null
+                conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+                issueFound: null
             };
             logInfo(() => {
                 return {
                     message: errorMessage
                 };
             });
-            resultState.Skipped = true;
+            resultState.skipped = true;
             return resultState;                    
         }
         function logInfo(
             fn: () => { message: string; source?: string }): void
         {
-            if (self.Services.LoggerService.MinLevel >= LoggingLevel.Info)
+            if (self.services.loggerService.minLevel >= LoggingLevel.Info)
             {
                 let parms = fn();
-                self.Services.LoggerService.log(parms.message, LoggingLevel.Info,
+                self.services.loggerService.log(parms.message, LoggingLevel.Info,
                     ValidationCategory,
                     parms.source ?? `Validation with ${self.getLogSourceText()}`);
             }
         }
         function logError(message: string): void
         {
-            self.Services.LoggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
+            self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
                 LoggingLevel.Error, ValidationCategory, self.getLogSourceText());            
         }
     }
 
     /**
-     * Validate found NoMatch. Update the InputValidatorState's properties to show
+     * validate() found NoMatch. Update the InputValidatorState's properties to show
      * the current ValidationResult and error messages.
-     * @param stateToUpdate - this is a COPY of the State, as supplied by UpdateState.
+     * @param stateToUpdate - this is a COPY of the State, as supplied by updateState().
      * Do not modify the actual instance as it is immutable.
      * @param value 
      */
     protected updateStateForNoMatch(stateToUpdate: IssueFound,
         value: IValueHost): void {
-        let services = this.Services;
-        stateToUpdate.Severity = this.Severity;
+        let services = this.services;
+        stateToUpdate.severity = this.severity;
         let errorMessage = this.getErrorMessageTemplate();
-        stateToUpdate.ErrorMessage = services.MessageTokenResolverService.resolveTokens(
-            errorMessage, this.ValueHost, this.ValueHostsManager, this);
+        stateToUpdate.errorMessage = services.messageTokenResolverService.resolveTokens(
+            errorMessage, this.valueHost, this.valueHostsManager, this);
         let summaryMessage = this.getSummaryMessageTemplate();
-        stateToUpdate.SummaryMessage = summaryMessage ?
-            services.MessageTokenResolverService.resolveTokens(summaryMessage, this._valueHost, this.ValueHostsManager, this) :
+        stateToUpdate.summaryMessage = summaryMessage ?
+            services.messageTokenResolverService.resolveTokens(summaryMessage, this._valueHost, this.valueHostsManager, this) :
             undefined;
     }
 
@@ -387,7 +387,7 @@ export class InputValidator implements IInputValidator {
      */
     public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
     {
-        toIGatherValueHostIds(this.Condition)?.gatherValueHostIds(collection, valueHostResolver);
+        toIGatherValueHostIds(this.condition)?.gatherValueHostIds(collection, valueHostResolver);
     }
         
     /**
@@ -402,18 +402,18 @@ export class InputValidator implements IInputValidator {
     public getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let tlv: Array<TokenLabelAndValue> = [
             {
-                TokenLabel: 'Label',
-                AssociatedValue: valueHost.getLabel(),
-                Purpose: 'label'
+                tokenLabel: 'Label',
+                associatedValue: valueHost.getLabel(),
+                purpose: 'label'
             },
             {
-                TokenLabel: 'Value',
-                AssociatedValue: valueHost.getValue() ?? this._valueHost.getInputValue(),
-                Purpose: 'value'
+                tokenLabel: 'Value',
+                associatedValue: valueHost.getValue() ?? this._valueHost.getInputValue(),
+                purpose: 'value'
             }
         ];
-        if (toIMessageTokenSource(this.Condition))   // since we cannot test for the IMessageTokenSource interface at runtime
-            tlv = tlv.concat((this.Condition as unknown as IMessageTokenSource).getValuesForTokens(valueHost, valueHostResolver));
+        if (toIMessageTokenSource(this.condition))   // since we cannot test for the IMessageTokenSource interface at runtime
+            tlv = tlv.concat((this.condition as unknown as IMessageTokenSource).getValuesForTokens(valueHost, valueHostResolver));
         return tlv;
     }
 
@@ -427,11 +427,11 @@ export class InputValidator implements IInputValidator {
 export function createIssueFound(valueHost: IValueHost,
     validator: IInputValidator): IssueFound {
     return {
-        ValueHostId: valueHost.getId(),
-        ConditionType: validator.Condition.ConditionType,
-        Severity: ValidationSeverity.Error,
-        ErrorMessage: '',
-        SummaryMessage: undefined
+        valueHostId: valueHost.getId(),
+        conditionType: validator.condition.conditionType,
+        severity: ValidationSeverity.Error,
+        errorMessage: '',
+        summaryMessage: undefined
     };
 }
 

@@ -21,19 +21,19 @@ function setupInputValueHost(
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
     let defaultDescriptor: InputValueHostBaseDescriptor = {
-        Type: BusinessLogicInputValueHostType,
-        Id: BusinessLogicValueHostId,
-        Label: '*',
+        type: BusinessLogicInputValueHostType,
+        id: BusinessLogicValueHostId,
+        label: '*',
     };
     let updatedDescriptor: InputValueHostBaseDescriptor = (!descriptor) ?
         defaultDescriptor :
         { ...defaultDescriptor, ...descriptor };
     let defaultState: InputValueHostBaseState = {
-        Id: 'Field1',
-        Value: undefined,
-        InputValue: undefined,
-        IssuesFound: null,
-        ValidationResult: ValidationResult.NotAttempted
+        id: 'Field1',
+        value: undefined,
+        inputValue: undefined,
+        issuesFound: null,
+        validationResult: ValidationResult.NotAttempted
     };
     let updatedState: InputValueHostBaseState = (!state) ?
         defaultState :
@@ -49,174 +49,174 @@ function setupInputValueHost(
     };
 }
 
-describe('BusinessLogicInputValueHost.Validate', () => {
+describe('BusinessLogicInputValueHost.validate', () => {
     test('No BusinessLogicErrors results in ValidationResult.Valid', () => {
         let config = setupInputValueHost();
         let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
-        expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
-        expect(vr!.IssuesFound).toBeNull();
+        expect(vr!.validationResult).toBe(ValidationResult.Valid);
+        expect(vr!.issuesFound).toBeNull();
     });
     test('Has group which is ignored. No BusinessLogicErrors results in ValidationResult.Valid', () => {
         let config = setupInputValueHost();
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate({ Group: 'GROUPA' })).not.toThrow();
+        expect(() => vr = config.valueHost.validate({ group: 'GROUPA' })).not.toThrow();
         expect(vr).not.toBeNull();
-        expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
-        expect(vr!.IssuesFound).toBeNull();
+        expect(vr!.validationResult).toBe(ValidationResult.Valid);
+        expect(vr!.issuesFound).toBeNull();
     });    
     test('One BusinessLogicErrors with only ErrorMesage results in ValidationResult.Invalid and one IssueFound because Severity=undefined means Severity=Error', () => {
         let config = setupInputValueHost();
         config.valueHost.setBusinessLogicError({
-            ErrorMessage: 'ERROR',
+            errorMessage: 'ERROR',
         });
         let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
-        expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
-        expect(vr!.IssuesFound).not.toBeNull();
-        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
-            ConditionType: "GENERATED_0",
-            ErrorMessage: "ERROR",
-            Severity: ValidationSeverity.Error,
-            ValueHostId: BusinessLogicValueHostId
+        expect(vr!.validationResult).toBe(ValidationResult.Invalid);
+        expect(vr!.issuesFound).not.toBeNull();
+        expect(objectKeysCount(vr!.issuesFound)).toBe(1);
+        expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
+            conditionType: "GENERATED_0",
+            errorMessage: "ERROR",
+            severity: ValidationSeverity.Error,
+            valueHostId: BusinessLogicValueHostId
         });
     });    
     test('One BusinessLogicErrors with only ErrorMesage and Severity=Error results in ValidationResult.Invalid and one IssueFound', () => {
         let config = setupInputValueHost();
         config.valueHost.setBusinessLogicError({
-            ErrorMessage: 'ERROR',
-            Severity: ValidationSeverity.Error
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error
         });
         let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
-        expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
-        expect(vr!.IssuesFound).not.toBeNull();
-        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
-            ConditionType: "GENERATED_0",
-            ErrorMessage: "ERROR",
-            Severity: ValidationSeverity.Error,
-            ValueHostId: BusinessLogicValueHostId
+        expect(vr!.validationResult).toBe(ValidationResult.Invalid);
+        expect(vr!.issuesFound).not.toBeNull();
+        expect(objectKeysCount(vr!.issuesFound)).toBe(1);
+        expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
+            conditionType: "GENERATED_0",
+            errorMessage: "ERROR",
+            severity: ValidationSeverity.Error,
+            valueHostId: BusinessLogicValueHostId
         });
     });        
     test('One BusinessLogicErrors with only ErrorMesage and Severity=Severe results in ValidationResult.Invalid and one IssueFound', () => {
         let config = setupInputValueHost();
         config.valueHost.setBusinessLogicError({
-            ErrorMessage: 'ERROR',
-            Severity: ValidationSeverity.Severe
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Severe
         });
         let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
-        expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
-        expect(vr!.IssuesFound).not.toBeNull();
-        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
-            ConditionType: "GENERATED_0",
-            ErrorMessage: "ERROR",
-            Severity: ValidationSeverity.Severe,
-            ValueHostId: BusinessLogicValueHostId
+        expect(vr!.validationResult).toBe(ValidationResult.Invalid);
+        expect(vr!.issuesFound).not.toBeNull();
+        expect(objectKeysCount(vr!.issuesFound)).toBe(1);
+        expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
+            conditionType: "GENERATED_0",
+            errorMessage: "ERROR",
+            severity: ValidationSeverity.Severe,
+            valueHostId: BusinessLogicValueHostId
         });
     });            
     test('One BusinessLogicErrors with only ErrorMesage and Severity=Warning results in ValidationResult.Valid and one IssueFound', () => {
         let config = setupInputValueHost();
         config.valueHost.setBusinessLogicError({
-            ErrorMessage: 'WARNING',
-            Severity: ValidationSeverity.Warning
+            errorMessage: 'WARNING',
+            severity: ValidationSeverity.Warning
         });
         let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
-        expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
-        expect(vr!.IssuesFound).not.toBeNull();
-        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
-            ConditionType: "GENERATED_0",
-            ErrorMessage: "WARNING",
-            Severity: ValidationSeverity.Warning,
-            ValueHostId: BusinessLogicValueHostId
+        expect(vr!.validationResult).toBe(ValidationResult.Valid);
+        expect(vr!.issuesFound).not.toBeNull();
+        expect(objectKeysCount(vr!.issuesFound)).toBe(1);
+        expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
+            conditionType: "GENERATED_0",
+            errorMessage: "WARNING",
+            severity: ValidationSeverity.Warning,
+            valueHostId: BusinessLogicValueHostId
         });
     });            
     test('One BusinessLogicErrors with ErrorMesage, ErrorCode="EC1" and Severity=Error results in ValidationResult.Invalid and one IssueFound identified as "EC1"', () => {
         let config = setupInputValueHost();
         config.valueHost.setBusinessLogicError({
-            ErrorMessage: 'ERROR',
-            Severity: ValidationSeverity.Error,
-            ErrorCode: "EC1"
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error,
+            errorCode: "EC1"
         });
         let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
-        expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
-        expect(vr!.IssuesFound).not.toBeNull();
-        expect(objectKeysCount(vr!.IssuesFound)).toBe(1);
-        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
-            ConditionType: "EC1",
-            ErrorMessage: "ERROR",
-            Severity: ValidationSeverity.Error,
-            ValueHostId: BusinessLogicValueHostId
+        expect(vr!.validationResult).toBe(ValidationResult.Invalid);
+        expect(vr!.issuesFound).not.toBeNull();
+        expect(objectKeysCount(vr!.issuesFound)).toBe(1);
+        expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
+            conditionType: "EC1",
+            errorMessage: "ERROR",
+            severity: ValidationSeverity.Error,
+            valueHostId: BusinessLogicValueHostId
         });
     });          
     test('2 BusinessLogicErrors (Warning, Error) results in ValidationResult.Invalid and two IssueFounds', () => {
         let config = setupInputValueHost();
         config.valueHost.setBusinessLogicError({
-            ErrorMessage: 'WARNING',
-            Severity: ValidationSeverity.Warning
+            errorMessage: 'WARNING',
+            severity: ValidationSeverity.Warning
         });
         config.valueHost.setBusinessLogicError({
-            ErrorMessage: 'ERROR',
-            Severity: ValidationSeverity.Error
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error
         });        
         let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
-        expect(vr!.ValidationResult).toBe(ValidationResult.Invalid);
-        expect(vr!.IssuesFound).not.toBeNull();
-        expect(objectKeysCount(vr!.IssuesFound)).toBe(2);
-        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
-            ConditionType: "GENERATED_0",
-            ErrorMessage: "WARNING",
-            Severity: ValidationSeverity.Warning,
-            ValueHostId: BusinessLogicValueHostId
+        expect(vr!.validationResult).toBe(ValidationResult.Invalid);
+        expect(vr!.issuesFound).not.toBeNull();
+        expect(objectKeysCount(vr!.issuesFound)).toBe(2);
+        expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
+            conditionType: "GENERATED_0",
+            errorMessage: "WARNING",
+            severity: ValidationSeverity.Warning,
+            valueHostId: BusinessLogicValueHostId
         });
-        expect(vr!.IssuesFound![1]).toEqual(<IssueFound>{
-            ConditionType: "GENERATED_1",
-            ErrorMessage: "ERROR",
-            Severity: ValidationSeverity.Error,
-            ValueHostId: BusinessLogicValueHostId
+        expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
+            conditionType: "GENERATED_1",
+            errorMessage: "ERROR",
+            severity: ValidationSeverity.Error,
+            valueHostId: BusinessLogicValueHostId
         });        
     });            
     test('2 BusinessLogicErrors (Warning, Warning) results in ValidationResult.Valid and two IssueFounds', () => {
         let config = setupInputValueHost();
         config.valueHost.setBusinessLogicError({
-            ErrorMessage: 'WARNING',
-            Severity: ValidationSeverity.Warning
+            errorMessage: 'WARNING',
+            severity: ValidationSeverity.Warning
         });
         config.valueHost.setBusinessLogicError({
-            ErrorMessage: 'WARNING2',
-            Severity: ValidationSeverity.Warning
+            errorMessage: 'WARNING2',
+            severity: ValidationSeverity.Warning
         });        
         let vr: ValidateResult | null = null;
         expect(() => vr = config.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
-        expect(vr!.ValidationResult).toBe(ValidationResult.Valid);
-        expect(vr!.IssuesFound).not.toBeNull();
-        expect(objectKeysCount(vr!.IssuesFound)).toBe(2);
-        expect(vr!.IssuesFound![0]).toEqual(<IssueFound>{
-            ConditionType: "GENERATED_0",
-            ErrorMessage: "WARNING",
-            Severity: ValidationSeverity.Warning,
-            ValueHostId: BusinessLogicValueHostId
+        expect(vr!.validationResult).toBe(ValidationResult.Valid);
+        expect(vr!.issuesFound).not.toBeNull();
+        expect(objectKeysCount(vr!.issuesFound)).toBe(2);
+        expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
+            conditionType: "GENERATED_0",
+            errorMessage: "WARNING",
+            severity: ValidationSeverity.Warning,
+            valueHostId: BusinessLogicValueHostId
         });
-        expect(vr!.IssuesFound![1]).toEqual(<IssueFound>{
-            ConditionType: "GENERATED_1",
-            ErrorMessage: "WARNING2",
-            Severity: ValidationSeverity.Warning,
-            ValueHostId: BusinessLogicValueHostId
+        expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
+            conditionType: "GENERATED_1",
+            errorMessage: "WARNING2",
+            severity: ValidationSeverity.Warning,
+            valueHostId: BusinessLogicValueHostId
         });        
     });                
 });
@@ -225,77 +225,77 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
     test('CanCreate returns true for BusinessLogicInputValueHostType', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         expect(testItem.canCreate({
-            Type: BusinessLogicInputValueHostType,
-            Id: 'Field1',
-            Label: '',
+            type: BusinessLogicInputValueHostType,
+            id: 'Field1',
+            label: '',
         })).toBe(true);
     });
     test('CanCreate returns false for unexpected type', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         expect(testItem.canCreate({
-            Type: 'Unexpected',
-            Id: 'Field1',
-            Label: '',
+            type: 'Unexpected',
+            id: 'Field1',
+            label: '',
         })).toBe(false);
     });
-    test('Create returns instance of InputValueHost with VM, Descriptor and State established', () => {
+    test('create returns instance of InputValueHost with VM, Descriptor and State established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let descriptor: InputValueHostBaseDescriptor = {
-            Id: 'Field1',
-            Type: BusinessLogicInputValueHostType,
-            Label: '',
+            id: 'Field1',
+            type: BusinessLogicInputValueHostType,
+            label: '',
         };
         let state: InputValueHostBaseState = {
-            Id: 'Field1',
-            IssuesFound: null,
-            ValidationResult: ValidationResult.NotAttempted,
-            Value: undefined,
-            InputValue: 'TEST'
+            id: 'Field1',
+            issuesFound: null,
+            validationResult: ValidationResult.NotAttempted,
+            value: undefined,
+            inputValue: 'TEST'
         };
         let testItem = new BusinessLogicInputValueHostGenerator();
         let vh: IInputValueHost | null = null;
         expect(() => vh = testItem.create(vm, descriptor, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(BusinessLogicInputValueHost);
-        expect(vh!.getId()).toBe(descriptor.Id);    // check Descriptor value
+        expect(vh!.getId()).toBe(descriptor.id);    // check Descriptor value
         expect(vh!.getInputValue()).toBe('TEST');  // check State value
     });
-    test('CleanupState existing state has no IssuesFound. Returns the same data', () => {
+    test('cleanupState existing state has no IssuesFound. Returns the same data', () => {
         let originalState: InputValueHostBaseState = {
-            Id: 'Field1',
-            IssuesFound: null,
-            ValidationResult: ValidationResult.Valid,
-            InputValue: 'ABC',
-            Value: 10
+            id: 'Field1',
+            issuesFound: null,
+            validationResult: ValidationResult.Valid,
+            inputValue: 'ABC',
+            value: 10
         };
         let state = { ...originalState };
         let descriptor: InputValueHostBaseDescriptor = {
-            Id: 'Field1',
-            Type: BusinessLogicInputValueHostType,
-            Label: '',
+            id: 'Field1',
+            type: BusinessLogicInputValueHostType,
+            label: '',
         };
         let testItem = new BusinessLogicInputValueHostGenerator();
         expect(() => testItem.cleanupState(state, descriptor)).not.toThrow();
         expect(state).toEqual(originalState);
     });
 
-    test('CreateState returns instance with ID and InitialValue from Descriptor', () => {
+    test('createState returns instance with ID and InitialValue from Descriptor', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         let descriptor: InputValueHostBaseDescriptor = {
-            Id: 'Field1',
-            Type: BusinessLogicInputValueHostType,
-            Label: '',
-            InitialValue: 'TEST',
+            id: 'Field1',
+            type: BusinessLogicInputValueHostType,
+            label: '',
+            initialValue: 'TEST',
         };
         let state: InputValueHostBaseState | null = null;
         expect(() => state = testItem.createState(descriptor)).not.toThrow();
         expect(state).not.toBeNull();
-        expect(state!.Id).toBe(descriptor.Id);
-        expect(state!.ValidationResult).toBe(ValidationResult.NotAttempted);
-        expect(state!.InputValue).toBeUndefined();
-        expect(state!.Group).toBeUndefined();
-        expect(state!.Value).toBe(descriptor.InitialValue);
-        expect(state!.IssuesFound).toBeNull();
+        expect(state!.id).toBe(descriptor.id);
+        expect(state!.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(state!.inputValue).toBeUndefined();
+        expect(state!.group).toBeUndefined();
+        expect(state!.value).toBe(descriptor.initialValue);
+        expect(state!.issuesFound).toBeNull();
     });
 });

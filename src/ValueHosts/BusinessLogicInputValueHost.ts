@@ -26,38 +26,38 @@ export class BusinessLogicInputValueHost extends InputValueHostBase<InputValueHo
      */
     public validate(options?: ValidateOptions): ValidateResult {
         let result: ValidateResult = {
-            IssuesFound: null,
-            ValidationResult: ValidationResult.Valid
+            issuesFound: null,
+            validationResult: ValidationResult.Valid
         };
-        if (this.BusinessLogicErrors)
+        if (this.businessLogicErrors)
         {
             let iif: Array<IssueFound> = [];
             let issueCount = 0; // used to generate unique keys in IssueCount. They are fake ConditionTypes.
             let errorFound = false;
 
-            for (let error of this.BusinessLogicErrors)
+            for (let error of this.businessLogicErrors)
             {
-                let errorCode = error.ErrorCode ?? `GENERATED_${issueCount}`;
-                if (error.Severity !== ValidationSeverity.Warning)
+                let errorCode = error.errorCode ?? `GENERATED_${issueCount}`;
+                if (error.severity !== ValidationSeverity.Warning)
                     errorFound = true;
                 iif.push({
-                    ConditionType: errorCode,
-                    ErrorMessage: error.ErrorMessage,
-                    Severity: error.Severity ?? ValidationSeverity.Error,
-                    ValueHostId: '*'
+                    conditionType: errorCode,
+                    errorMessage: error.errorMessage,
+                    severity: error.severity ?? ValidationSeverity.Error,
+                    valueHostId: '*'
                 });
                 issueCount++;
             }
             if (issueCount)
             {
-                result.IssuesFound = iif;
-                result.ValidationResult = errorFound ? ValidationResult.Invalid : ValidationResult.Valid;
+                result.issuesFound = iif;
+                result.validationResult = errorFound ? ValidationResult.Invalid : ValidationResult.Valid;
             }
         }
-        toIValidationManagerCallbacks(this.ValueHostsManager)?.OnValueHostValidated?.(this, result);
+        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
         return result;
     }
-    public get RequiresInput(): boolean
+    public get requiresInput(): boolean
     {
         return false;
     }
@@ -76,7 +76,7 @@ export const BusinessLogicInputValueHostType = 'BusinessLogic';
 export class BusinessLogicInputValueHostGenerator extends InputValueHostBaseGenerator {
 
     public canCreate(descriptor: InputValueHostBaseDescriptor): boolean {
-        return descriptor.Type === BusinessLogicInputValueHostType;
+        return descriptor.type === BusinessLogicInputValueHostType;
     }
     public create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostBaseDescriptor, state: InputValueHostBaseState): IInputValueHost {
         return new BusinessLogicInputValueHost(valueHostsManager, descriptor, state);

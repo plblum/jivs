@@ -62,14 +62,14 @@ export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeChec
         // same order of precidence as in Evaluate
 
         list.push({
-            TokenLabel: 'ConversionError',
-            AssociatedValue: valueHost.getConversionErrorMessage() ?? null,
-            Purpose: 'message'
+            tokenLabel: 'ConversionError',
+            associatedValue: valueHost.getConversionErrorMessage() ?? null,
+            purpose: 'message'
         });
 
         return list;
     }
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.DataTypeCheck;
     }
 }
@@ -84,7 +84,7 @@ export interface RequiredTextConditionDescriptor extends StringConditionDescript
      * So a value of "DEFAULT" matches to both "DEFAULT" and "".
      * When undefined, it means ''.
      */
-    EmptyValue?: string;
+    emptyValue?: string;
 }
 
 /**
@@ -104,14 +104,14 @@ export class RequiredTextCondition extends InputValueConditionBase<RequiredTextC
         if (typeof value !== 'string')
             return ConditionEvaluateResult.Undetermined;
         let text = value;
-        if (this.Descriptor.Trim ?? true)
+        if (this.descriptor.trim ?? true)
             text = text.trim();
-        if (text == '' || text === this.Descriptor.EmptyValue)
+        if (text == '' || text === this.descriptor.emptyValue)
             return ConditionEvaluateResult.NoMatch;
         return ConditionEvaluateResult.Match;
     }
 
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Required;
     }
 }
@@ -125,7 +125,7 @@ export interface RequiredIndexConditionDescriptor extends OneValueConditionDescr
      * The index that means nothing is selected.
      * Defaults to 0.
      */
-    UnselectedIndexValue?: number;
+    unselectedIndexValue?: number;
 }
 
 /**
@@ -141,10 +141,10 @@ export class RequiredIndexCondition extends InputValueConditionBase<RequiredInde
         // value of undefined has been rejected already, but still need to be sure we have a number
         if (typeof value !== 'number')
             return ConditionEvaluateResult.Undetermined;
-        let unselected = this.Descriptor.UnselectedIndexValue ?? 0;
+        let unselected = this.descriptor.unselectedIndexValue ?? 0;
         return value === unselected ? ConditionEvaluateResult.NoMatch : ConditionEvaluateResult.Match;
     }
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Required;
     }
 }
@@ -154,36 +154,36 @@ export class RequiredIndexCondition extends InputValueConditionBase<RequiredInde
  */
 export interface RegExpConditionDescriptor extends RegExpConditionBaseDescriptor {
     /**
-     * Used either ExpressionAsString or Expression for the expression.
-     * When using ExpressionAsString, it is combined with IgnoreCase and Global to create
+     * Used either expressionAsString or expression for the expression.
+     * When using expressionAsString, it is combined with IgnoreCase and Global to create
      * the regular expression.
      * Expressions must be compatible with JavaScript RegExp. Tests ignore captures and matches.
      * Expect RegExp.test() to evaluate.
      */
-    ExpressionAsString?: string;
+    expressionAsString?: string;
     /**
-     * Used together with ExpressionAsString to set the case insensitive search option on the Regexp when true.
+     * Used together with expressionAsString to set the case insensitive search option on the Regexp when true.
      * If undefined, it is treated as false.
      */
-    IgnoreCase?: boolean;
+    ignoreCase?: boolean;
     /**
-     * Used together with ExpressionAsString to set the global search option on the Regexp when true.
+     * Used together with expressionAsString to set the global search option on the Regexp when true.
      * If undefined, it is treated as false.
      */
-    Global?: boolean;
+    global?: boolean;
 
     /**
-     * Used together with ExpressionAsString to set the multiline option on the Regexp when true.
+     * Used together with expressionAsString to set the multiline option on the Regexp when true.
      * When used, ^ and $ match to newlines, not just start and end of the full string.
      * If undefined, it is treated as false.
      */
-    Multiline?: boolean;
+    multiline?: boolean;
 
     /**
      * Actual JavaScript Regular Expression object, complete with its flags.
-     * It is an alternative to ExpressionAsString. If both are supplied, this takes precedence.
+     * It is an alternative to expressionAsString. If both are supplied, this takes precedence.
      */
-    Expression?: RegExp;
+    expression?: RegExp;
 
     /**
      * Use the expression to find something wrong with the string instead of proving it to be valid.
@@ -194,7 +194,7 @@ export interface RegExpConditionDescriptor extends RegExpConditionBaseDescriptor
      * returns NoMatch instead of Match.
      * When undefined, the value is false.
      */
-    Not?: boolean;    
+    not?: boolean;    
 }
 
 /**
@@ -210,17 +210,17 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
 
     protected getRegExp(valueHostResolver: IValueHostResolver): RegExp {
         if (!this._savedRE) {
-            let re: RegExp | null = this.Descriptor.Expression ?? null;
+            let re: RegExp | null = this.descriptor.expression ?? null;
             if (!re) {
-                if (this.Descriptor.ExpressionAsString) {
+                if (this.descriptor.expressionAsString) {
                     // this may throw an exception due to bad expression pattern
-                    re = new RegExp(this.Descriptor.ExpressionAsString,
-                        (this.Descriptor.IgnoreCase ? 'i' : '') +
-                        (this.Descriptor.Global ? 'g' : '') +
-                        (this.Descriptor.Multiline ? 'm' : ''));
+                    re = new RegExp(this.descriptor.expressionAsString,
+                        (this.descriptor.ignoreCase ? 'i' : '') +
+                        (this.descriptor.global ? 'g' : '') +
+                        (this.descriptor.multiline ? 'm' : ''));
                 }
                 else
-                    throw new CodingError('RegExpConditionDescriptor does not have a regular expression assigned to Expression or ExpressionOrString properties.');
+                    throw new CodingError('RegExpConditionDescriptor does not have a regular expression assigned to expression or ExpressionOrString properties.');
             }
             this._savedRE = re;
         }
@@ -228,7 +228,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
     }
     protected evaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let found = this.getRegExp(valueHostResolver).test(text);
-        if (this.Descriptor.Not)
+        if (this.descriptor.not)
             found = !found;
         return found ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }    
@@ -243,13 +243,13 @@ export interface RangeConditionDescriptor extends OneValueConditionDescriptor, S
      * Native data type representing the minimum of the range.
      * When undefined or null, no minimum, like LessThanOrEqualToConditon.
      */
-    Minimum: any;
+    minimum: any;
 
     /**
      * Native data type representing the maximum of the range.
      * When undefined or null, no maximum, like GreaterThanOrEqualToConditon.
      */
-    Maximum: any;
+    maximum: any;
 }
 
 /**
@@ -270,23 +270,23 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
         if (value == null)  // includes undefined
             return ConditionEvaluateResult.Undetermined;
 
-        let services = valueHostResolver.Services;
-        let lookupKey = this.Descriptor.ConversionLookupKey ?? valueHost.getDataType();
-        let lower = this.Descriptor.Minimum != null ?  // null/undefined
-            services.DataTypeServices.compareValues(this.Descriptor.Minimum, value,
+        let services = valueHostResolver.services;
+        let lookupKey = this.descriptor.conversionLookupKey ?? valueHost.getDataType();
+        let lower = this.descriptor.minimum != null ?  // null/undefined
+            services.dataTypeServices.compareValues(this.descriptor.minimum, value,
                 null, lookupKey) :
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
-            services.LoggerService.log('Type mismatch. Value cannot be compared to Minimum',
+            services.loggerService.log('Type mismatch. Value cannot be compared to Minimum',
                 LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
-        let upper = this.Descriptor.Maximum != null ?  // null/undefined
-            services.DataTypeServices.compareValues(this.Descriptor.Maximum, value,
+        let upper = this.descriptor.maximum != null ?  // null/undefined
+            services.dataTypeServices.compareValues(this.descriptor.maximum, value,
                 null, lookupKey) :
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
-            services.LoggerService.log('Type mismatch. Value cannot be compared to Maximum',
+            services.loggerService.log('Type mismatch. Value cannot be compared to Maximum',
                 LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -303,18 +303,18 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
         // same order of precidence as in Evaluate
 
         list.push({
-            TokenLabel: 'Minimum',
-            AssociatedValue: this.Descriptor.Minimum ?? null,
-            Purpose: 'parameter'
+            tokenLabel: 'Minimum',
+            associatedValue: this.descriptor.minimum ?? null,
+            purpose: 'parameter'
         });
         list.push({
-            TokenLabel: 'Maximum',
-            AssociatedValue: this.Descriptor.Maximum ?? null,
-            Purpose: 'parameter'
+            tokenLabel: 'Maximum',
+            associatedValue: this.descriptor.maximum ?? null,
+            purpose: 'parameter'
         });
         return list;
     }
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Comparison;
     }
 }
@@ -325,21 +325,21 @@ export interface CompareToConditionDescriptor extends TwoValueConditionDescripto
     /**
      * Native data type representing the minimum of the range.
      */
-    SecondValue?: any;
+    secondValue?: any;
     /**
-     * Associated with SecondValue/SecondValueHostId only.
+     * Associated with secondValue/secondValueHostId only.
      * Assign to a LookupKey that is associated with a DataTypeConverter.
      * Use it to convert the value prior to comparing, to handle special cases like
      * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Round"),
      * just the Day or Month or any other number in a Date object ("Day", "Month").
      */
-    SecondConversionLookupKey?: string | null;
+    secondConversionLookupKey?: string | null;
 }
 
 /**
  * Compare the native datatype value against a second value.
  * The second value can be supplied in the Descriptor.Value property
- * or as another ValueHost identified in Descriptor.SecondValueHostId.
+ * or as another ValueHost identified in Descriptor.secondValueHostId.
  * Subclasses implement the actual comparison operator (equals, greater than, etc)
  * Supports tokens: {CompareTo}, the value from the second value host.
  */
@@ -352,32 +352,32 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
             return ConditionEvaluateResult.Undetermined;
         let secondValue: any = undefined;
         let secondValueLookupKey: string | null = null;
-        if (this.Descriptor.SecondValueHostId) {
-            let vh2 = this.getValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
+        if (this.descriptor.secondValueHostId) {
+            let vh2 = this.getValueHost(this.descriptor.secondValueHostId, valueHostResolver);
             if (!vh2) {
-                const msg = 'SecondValueHostId is unknown';
-                this.logInvalidPropertyData('SecondValueHostId', msg, valueHostResolver);
+                const msg = 'secondValueHostId is unknown';
+                this.logInvalidPropertyData('secondValueHostId', msg, valueHostResolver);
                 throw new Error(msg);
             }
             secondValue = vh2.getValue();
-            secondValueLookupKey = this.Descriptor.SecondConversionLookupKey ?? vh2.getDataType();
+            secondValueLookupKey = this.descriptor.secondConversionLookupKey ?? vh2.getDataType();
         }
         if (secondValue == null)  // null/undefined
         {
-            if (this.Descriptor.SecondValue == null)    // null/undefined
+            if (this.descriptor.secondValue == null)    // null/undefined
             {
-                const msg = 'SecondValue lacks value to evaluate';
-                this.logInvalidPropertyData('SecondValue', msg, valueHostResolver);
+                const msg = 'secondValue lacks value to evaluate';
+                this.logInvalidPropertyData('secondValue', msg, valueHostResolver);
                 throw new Error(msg);
             }
-            secondValue = this.Descriptor.SecondValue;
+            secondValue = this.descriptor.secondValue;
         }
 
-        let comparison = valueHostResolver.Services.DataTypeServices.compareValues(
+        let comparison = valueHostResolver.services.dataTypeServices.compareValues(
             value, secondValue,
-            this.Descriptor.ConversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
+            this.descriptor.conversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
-            valueHostResolver.Services.LoggerService.log('Type mismatch. Value cannot be compared to SecondValue',
+            valueHostResolver.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
                 LoggingLevel.Warn, ConfigurationCategory, `${this.constructor.name} for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -388,8 +388,8 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
 
     public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void {
         super.gatherValueHostIds(collection, valueHostResolver);
-        if (this.Descriptor.SecondValueHostId)
-            collection.add(this.Descriptor.SecondValueHostId);
+        if (this.descriptor.secondValueHostId)
+            collection.add(this.descriptor.secondValueHostId);
     }
 
     public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
@@ -397,23 +397,23 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
         let secondValue: any = undefined;
-        if (this.Descriptor.SecondValueHostId) {
-            let vh = this.getValueHost(this.Descriptor.SecondValueHostId, valueHostResolver);
+        if (this.descriptor.secondValueHostId) {
+            let vh = this.getValueHost(this.descriptor.secondValueHostId, valueHostResolver);
             if (vh)
                 secondValue = vh.getValue();
         }
         if (secondValue == null)  // includes undefined
         {
-            secondValue = this.Descriptor.SecondValue;
+            secondValue = this.descriptor.secondValue;
         }
         list.push({
-            TokenLabel: 'CompareTo',
-            AssociatedValue: secondValue ?? null,
-            Purpose: 'value'
+            tokenLabel: 'CompareTo',
+            associatedValue: secondValue ?? null,
+            purpose: 'value'
         });
         return list;
     }
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Comparison;
     }
 }
@@ -555,13 +555,13 @@ export interface StringLengthConditionDescriptor extends StringConditionDescript
      * Native data type representing the minimum of the range.
      * When undefined or null, no minimum, like LessThanOrEqualToConditon.
      */
-    Minimum?: number | null;
+    minimum?: number | null;
 
     /**
      * Native data type representing the maximum of the range.
      * When undefined or null, no maximum, like GreaterThanOrEqualToConditon.
      */
-    Maximum?: number | null;
+    maximum?: number | null;
 }
 
 /**
@@ -576,11 +576,11 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
     protected evaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let len = text.length;  // already trimmed
         valueHost.saveIntoState('Len', len);
-        if (this.Descriptor.Minimum != null)    // null/undefined
-            if (len < this.Descriptor.Minimum)
+        if (this.descriptor.minimum != null)    // null/undefined
+            if (len < this.descriptor.minimum)
                 return ConditionEvaluateResult.NoMatch;
-        if (this.Descriptor.Maximum != null)    // null/undefined
-            if (len > this.Descriptor.Maximum)
+        if (this.descriptor.maximum != null)    // null/undefined
+            if (len > this.descriptor.maximum)
                 return ConditionEvaluateResult.NoMatch;
         return ConditionEvaluateResult.Match;
     }
@@ -591,23 +591,23 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
         // same order of precidence as in Evaluate
 
         list.push({
-            TokenLabel: 'Length',
-            AssociatedValue: valueHost.getFromState('Len') ?? 0,
-            Purpose: 'parameter'
+            tokenLabel: 'Length',
+            associatedValue: valueHost.getFromState('Len') ?? 0,
+            purpose: 'parameter'
         });
         list.push({
-            TokenLabel: 'Minimum',
-            AssociatedValue: this.Descriptor.Minimum ?? null,
-            Purpose: 'parameter'
+            tokenLabel: 'Minimum',
+            associatedValue: this.descriptor.minimum ?? null,
+            purpose: 'parameter'
         });
         list.push({
-            TokenLabel: 'Maximum',
-            AssociatedValue: this.Descriptor.Maximum ?? null,
-            Purpose: 'parameter'
+            tokenLabel: 'Maximum',
+            associatedValue: this.descriptor.maximum ?? null,
+            purpose: 'parameter'
         });
         return list;
     }
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Comparison;
     }
 }
@@ -619,7 +619,7 @@ export interface AllMatchConditionDescriptor extends EvaluateChildConditionResul
 
 /**
  * All Children must evaluate as Match for a result of Match.
- * If any are still Undetermined after TreatUndeterminedAs is applied, this results as Undetermined.
+ * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
  */
 export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatchConditionDescriptor>
 {
@@ -643,7 +643,7 @@ export interface AnyMatchConditionDescriptor extends EvaluateChildConditionResul
 }
 /**
  * At least one Child Condition must evaluate as Match for a result of Match.
- * If any are still Undetermined after TreatUndeterminedAs is applied, this results as Undetermined.
+ * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
  */
 export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatchConditionDescriptor>
 {
@@ -674,12 +674,12 @@ export interface CountMatchesConditionDescriptor extends EvaluateChildConditionR
      * that is a special case. Its more likely the user wants to count
      * at least 1.
      */
-    Minimum?: number;
+    minimum?: number;
     /**
      * Must have no more than this many matches.
      * When undefined, there is no Maximum.
      */
-    Maximum?: number;
+    maximum?: number;
 }
 
 /**
@@ -701,10 +701,10 @@ export class CountMatchesCondition extends EvaluateChildConditionResultsBase<Cou
                 case ConditionEvaluateResult.Undetermined:
                     return ConditionEvaluateResult.Undetermined;
             }
-        let minimum = this.Descriptor.Minimum ?? 1;
+        let minimum = this.descriptor.minimum ?? 1;
         if (minimum !== undefined && countMatches < minimum)
             return ConditionEvaluateResult.NoMatch;
-        if (this.Descriptor.Maximum !== undefined && countMatches > this.Descriptor.Maximum)
+        if (this.descriptor.maximum !== undefined && countMatches > this.descriptor.maximum)
             return ConditionEvaluateResult.NoMatch;
         return ConditionEvaluateResult.Match;
     }
@@ -720,7 +720,7 @@ export interface StringNotEmptyConditionDescriptor extends OneValueConditionDesc
  * If you want to consider null as valid, supply Match. If you don't want to evaluate null
  * at all, supply Undetermined.
  */    
-    NullValueResult?: ConditionEvaluateResult;
+    nullValueResult?: ConditionEvaluateResult;
 }
 
 /**
@@ -740,7 +740,7 @@ export class StringNotEmptyCondition extends OneValueConditionBase<StringNotEmpt
         if (value === undefined) 
             return ConditionEvaluateResult.Undetermined;
         if (value === null)
-            return this.Descriptor.NullValueResult ?? ConditionEvaluateResult.NoMatch;
+            return this.descriptor.nullValueResult ?? ConditionEvaluateResult.NoMatch;
 
         if (typeof value !== 'string')
             return ConditionEvaluateResult.Undetermined;
@@ -750,7 +750,7 @@ export class StringNotEmptyCondition extends OneValueConditionBase<StringNotEmpt
         return ConditionEvaluateResult.Match;
     }
 
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Required;
     }
 }
@@ -783,7 +783,7 @@ export class NotNullCondition extends OneValueConditionBase<NotNullConditionDesc
         return ConditionEvaluateResult.Match;
     }
 
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Required;
     }
 }

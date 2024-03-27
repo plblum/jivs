@@ -24,31 +24,31 @@ describe('DataTypeServices constructor and properties', () => {
         constructor(cultureConfig?: Array<CultureIdFallback> | null) {
             super(cultureConfig);
         }
-        public get ExposedCultureIdFallback(): Array<CultureIdFallback>
+        public get exposedCultureIdFallback(): Array<CultureIdFallback>
         {
-            return this.CultureIdFallback;
+            return this.cultureIdFallback;
         }
-        public ExposedGetCultureIdFallback(cultureId: string): CultureIdFallback | null
+        public exposedGetCultureIdFallback(cultureId: string): CultureIdFallback | null
         {
             return this.getCultureIdFallback(cultureId);
         }
-        public ExposedGetFormatters(): Array<IDataTypeFormatter>
+        public exposedGetFormatters(): Array<IDataTypeFormatter>
         {
             return this.getFormatters();
         }
-        public ExposedCleanupComparableValue(value: any, lookupKey: string | null): any
+        public exposedCleanupComparableValue(value: any, lookupKey: string | null): any
         {
             return this.cleanupComparableValue(value, lookupKey);
         }
-        public ExposedGetDataTypeComparers(): Array<IDataTypeComparer>
+        public exposedGetDataTypeComparers(): Array<IDataTypeComparer>
         {
             return this.getDataTypeComparers();
         }
-        public ExposedGetDataTypeIdentifiers(): Array<IDataTypeIdentifier>
+        public exposedGetDataTypeIdentifiers(): Array<IDataTypeIdentifier>
         {
             return this.getDataTypeIdentifiers();
         }
-        public ExposedGetDataTypeConverters(): Array<IDataTypeConverter>
+        public exposedGetDataTypeConverters(): Array<IDataTypeConverter>
         {
             return this.getDataTypeConverters();
         }
@@ -57,56 +57,56 @@ describe('DataTypeServices constructor and properties', () => {
     test('Constructor with no parameters', () => {
         let testItem = new Publicified_DataTypeServices();
 
-        expect(()=> testItem.ExposedCultureIdFallback).toThrow(/CultureIdFallback/);
-        expect(testItem.ExposedGetDataTypeIdentifiers()).toEqual([]);
-        expect(testItem.ExposedGetFormatters()).toEqual([]);
-        expect(testItem.ExposedGetDataTypeConverters()).toEqual([]);
-        expect(testItem.ExposedGetDataTypeComparers()).toEqual([]);
-        expect(() => testItem.Services).toThrow(/Assign/);
+        expect(()=> testItem.exposedCultureIdFallback).toThrow(/CultureIdFallback/);
+        expect(testItem.exposedGetDataTypeIdentifiers()).toEqual([]);
+        expect(testItem.exposedGetFormatters()).toEqual([]);
+        expect(testItem.exposedGetDataTypeConverters()).toEqual([]);
+        expect(testItem.exposedGetDataTypeComparers()).toEqual([]);
+        expect(() => testItem.services).toThrow(/Assign/);
 
     });
 
     test('Attach Services returns the same instance', () => {
         let services = new MockValidationServices(false, false);
         let testItem = new Publicified_DataTypeServices();
-        expect(() => testItem.Services = services).not.toThrow();
+        expect(() => testItem.services = services).not.toThrow();
         let x: any;
-        expect(() => x = testItem.Services).not.toThrow();
+        expect(() => x = testItem.services).not.toThrow();
         expect(x).toBe(services);
-        expect(testItem.ExposedCultureIdFallback).toEqual([{
-            CultureId: 'en'
+        expect(testItem.exposedCultureIdFallback).toEqual([{
+            cultureId: 'en'
         }]);        
     });
-    test('Attach Services supports use of ActiveCultureID', () => {
+    test('Attach Services supports use of activeCultureID', () => {
         let services = new MockValidationServices(false, false);
         let testItem = new Publicified_DataTypeServices();
-        services.ActiveCultureId = 'fr';
-        testItem.Services = services;
+        services.activeCultureId = 'fr';
+        testItem.services = services;
 
-        expect(testItem.ExposedCultureIdFallback).toEqual([{
-            CultureId: 'fr'
+        expect(testItem.exposedCultureIdFallback).toEqual([{
+            cultureId: 'fr'
         }]);        
     });    
-    test('Constructor with CultureFallbacks can retrieve the fr CultureFallback', () => {
+    test('Constructor with Culture Fallbacks can retrieve the fr Culture Fallback', () => {
         let ccs: Array<CultureIdFallback> = [
             {
-                CultureId: 'en',
-                FallbackCultureId: null
+                cultureId: 'en',
+                fallbackCultureId: null
             },
             {
-                CultureId: 'fr',
-                FallbackCultureId: 'en'
+                cultureId: 'fr',
+                fallbackCultureId: 'en'
             }
         ];
         let services = new MockValidationServices(false, false);
         let testItem = new Publicified_DataTypeServices(ccs);
-        testItem.Services = services;
+        testItem.services = services;
 
-        expect(testItem.ExposedCultureIdFallback).toEqual(ccs);
-        services.ActiveCultureId = 'fr';
-        expect(testItem.ExposedGetCultureIdFallback('fr')).toEqual({
-            CultureId: 'fr',
-            FallbackCultureId: 'en'
+        expect(testItem.exposedCultureIdFallback).toEqual(ccs);
+        services.activeCultureId = 'fr';
+        expect(testItem.exposedGetCultureIdFallback('fr')).toEqual({
+            cultureId: 'fr',
+            fallbackCultureId: 'en'
         });
     });        
 });
@@ -115,24 +115,24 @@ function createCultureIdFallbacksForEn(): Array<CultureIdFallback>
 {
     return [
         {
-            CultureId: 'en',
-            FallbackCultureId: null
+            cultureId: 'en',
+            fallbackCultureId: null
         },
         {
-            CultureId: 'fr',
-            FallbackCultureId: 'en'
+            cultureId: 'fr',
+            fallbackCultureId: 'en'
         },
         {
-            CultureId: 'fr-FR',
-            FallbackCultureId: 'fr'
+            cultureId: 'fr-FR',
+            fallbackCultureId: 'fr'
         },
         {
-            CultureId: 'en-US',
-            FallbackCultureId: 'en'
+            cultureId: 'en-US',
+            fallbackCultureId: 'en'
         },
         {
-            CultureId: 'en-GB',
-            FallbackCultureId: 'en-US'
+            cultureId: 'en-GB',
+            fallbackCultureId: 'en-US'
         },        
     ];
 }
@@ -140,25 +140,25 @@ function createCultureIdFallbacksForFR(): Array<CultureIdFallback>
 {
     return [
         {
-            CultureId: 'fr',
-            FallbackCultureId: null
+            cultureId: 'fr',
+            fallbackCultureId: null
         },
         {
-            CultureId: 'en',
-            FallbackCultureId: 'fr'
+            cultureId: 'en',
+            fallbackCultureId: 'fr'
         },
         {
-            CultureId: 'fr-FR',
-            FallbackCultureId: 'fr'
+            cultureId: 'fr-FR',
+            fallbackCultureId: 'fr'
         },
         {
-            CultureId: 'en-US',
-            FallbackCultureId: 'en'
+            cultureId: 'en-US',
+            fallbackCultureId: 'en'
         },
         
     ];
 }
-describe('GetClosestCultureId', () => {
+describe('getClosestCultureId', () => {
     test('Various', () => {
         let ccs = createCultureIdFallbacksForEn();
         let testItem = new DataTypeServices(ccs);
@@ -177,37 +177,37 @@ describe('GetClosestCultureId', () => {
 export function createDataTypeServicesWithManyCultures(activeCultureId: string, registerFormatters: boolean = false): DataTypeServices
 {
     let services = new MockValidationServices(false, false);
-    services.ActiveCultureId = activeCultureId;
+    services.activeCultureId = activeCultureId;
     let ccs = createCultureIdFallbacksForEn();
     let dts = new DataTypeServices(ccs);
-    dts.Services = services;
+    dts.services = services;
     registerDataTypeIdentifiers(dts);   // always
     if (registerFormatters)
         registerDataTypeFormatters(dts);
     return dts;
         
 }
-// Format(value: any, lookupKey?: string): DataTypeResolution<string>
-describe('DataTypeServices.Format', () => {
+// format(value: any, lookupKey?: string): DataTypeResolution<string>
+describe('DataTypeServices.format', () => {
     test('No lookupKey not resolved. Logs an error and returns an error message', () => {
         let testItem = createDataTypeServicesWithManyCultures('en');
-        let logger = testItem.Services.LoggerService as MockCapturingLogger;
+        let logger = testItem.services.loggerService as MockCapturingLogger;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format({})).not.toThrow();
         expect(result).not.toBeNull();
-        expect(result!.Value).toBeUndefined();
-        expect(result!.ErrorMessage).toMatch(/LookupKey/);
+        expect(result!.value).toBeUndefined();
+        expect(result!.errorMessage).toMatch(/LookupKey/);
         expect(logger.findMessage('LookupKey', LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices')).not.toBeNull();
     });
     test('Unsupported lookupKey error', () => {
         let testItem = createDataTypeServicesWithManyCultures('en');
 
-        let logger = testItem.Services.LoggerService as MockCapturingLogger;
+        let logger = testItem.services.loggerService as MockCapturingLogger;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format(0, 'huh')).not.toThrow();
         expect(result).not.toBeNull();
-        expect(result!.Value).toBeUndefined();
-        expect(result!.ErrorMessage).toMatch(/LookupKey/);
+        expect(result!.value).toBeUndefined();
+        expect(result!.errorMessage).toMatch(/LookupKey/);
         expect(logger.findMessage('LookupKey', LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices')).not.toBeNull();        
     });
 
@@ -225,7 +225,7 @@ describe('DataTypeServices.Format', () => {
             return this._supportedCultureIds.includes(cultureId);
         }
         format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-            return { Value: `${cultureId} TestKey` };
+            return { value: `${cultureId} TestKey` };
         }
         
     }
@@ -233,53 +233,53 @@ describe('DataTypeServices.Format', () => {
     test('Lookup Key in DataTypeFormatter en', () => {
         let testItem = createDataTypeServicesWithManyCultures('en', true);
         testItem.registerFormatter(new TestFormatter(['en'], 'EN TestKey'));
-        expect(testItem.format(10, 'TestKey')).toEqual({ Value: 'en TestKey' });
+        expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en TestKey' });
     });     
     test('Lookup Key in DataTypeFormatter en using fallback from en-GB', () => {
         let testItem = createDataTypeServicesWithManyCultures('en-GB', true);
         testItem.registerFormatter(new TestFormatter(['en'], 'EN TestKey'));
-        expect(testItem.format(10, 'TestKey')).toEqual({ Value: 'en TestKey' });
+        expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en TestKey' });
     });        
     test('Lookup Key in DataTypeFormatter en and en-GB gets from en-GB', () => {
         let testItem = createDataTypeServicesWithManyCultures('en-GB', true);
         testItem.registerFormatter(new TestFormatter(['en', 'en-GB'], 'EN TestKey'));
-        expect(testItem.format(10, 'TestKey')).toEqual({ Value: 'en-GB TestKey' });
+        expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en-GB TestKey' });
     }); 
-    test('Date to string using built-in Localization', () => {
+    test('Date to string using built-in localization', () => {
         let testItem = createDataTypeServicesWithManyCultures('en', true);
         let date = new Date(2000, 0, 11);
-        testItem.Services.ActiveCultureId = 'en-GB';
-        expect(testItem.format(date)).toEqual({ Value: '11/01/2000' });
-        testItem.Services.ActiveCultureId = 'en';
-        expect(testItem.format(date)).toEqual({ Value: '1/11/2000' });
-        testItem.Services.ActiveCultureId = 'fr';
-        expect(testItem.format(date)).toEqual({ Value: '11/01/2000' });
+        testItem.services.activeCultureId = 'en-GB';
+        expect(testItem.format(date)).toEqual({ value: '11/01/2000' });
+        testItem.services.activeCultureId = 'en';
+        expect(testItem.format(date)).toEqual({ value: '1/11/2000' });
+        testItem.services.activeCultureId = 'fr';
+        expect(testItem.format(date)).toEqual({ value: '11/01/2000' });
     });    
-    test('Number to string using built-in Localization', () => {
+    test('Number to string using built-in localization', () => {
         let testItem = createDataTypeServicesWithManyCultures('en', true);
         let value = 4000.932;
-        testItem.Services.ActiveCultureId = 'en-GB';
-        expect(testItem.format(value)).toEqual({ Value: '4,000.932' });
-        testItem.Services.ActiveCultureId = 'en';
-        expect(testItem.format(value)).toEqual({ Value: '4,000.932' });
-        testItem.Services.ActiveCultureId = 'fr';
-        expect(testItem.format(value)).toEqual({ Value: '4\u{202F}000,932' });
+        testItem.services.activeCultureId = 'en-GB';
+        expect(testItem.format(value)).toEqual({ value: '4,000.932' });
+        testItem.services.activeCultureId = 'en';
+        expect(testItem.format(value)).toEqual({ value: '4,000.932' });
+        testItem.services.activeCultureId = 'fr';
+        expect(testItem.format(value)).toEqual({ value: '4\u{202F}000,932' });
     });        
-    test('String to string using built-in Localization. Expect no changes', () => {
+    test('String to string using built-in localization. Expect no changes', () => {
         let testItem = createDataTypeServicesWithManyCultures('en', true);
         let value = 'abcZYX';
-        testItem.Services.ActiveCultureId = 'en-GB';
-        expect(testItem.format(value)).toEqual({ Value: value });
-        testItem.Services.ActiveCultureId = 'en';
-        expect(testItem.format(value)).toEqual({ Value: value });
-        testItem.Services.ActiveCultureId = 'fr';
-        expect(testItem.format(value)).toEqual({ Value: value });
+        testItem.services.activeCultureId = 'en-GB';
+        expect(testItem.format(value)).toEqual({ value: value });
+        testItem.services.activeCultureId = 'en';
+        expect(testItem.format(value)).toEqual({ value: value });
+        testItem.services.activeCultureId = 'fr';
+        expect(testItem.format(value)).toEqual({ value: value });
     });
     test('Lookup Key supplied not compatible with native data type error', () => {
         let testItem = createDataTypeServicesWithManyCultures('en', true);
-        expect(testItem.format(10, LookupKey.Date).ErrorMessage).not.toBeUndefined();
-        expect(testItem.format(10, LookupKey.Boolean).ErrorMessage).not.toBeUndefined();
-        expect(testItem.format('10', LookupKey.Number).ErrorMessage).not.toBeUndefined();
+        expect(testItem.format(10, LookupKey.Date).errorMessage).not.toBeUndefined();
+        expect(testItem.format(10, LookupKey.Boolean).errorMessage).not.toBeUndefined();
+        expect(testItem.format('10', LookupKey.Number).errorMessage).not.toBeUndefined();
     });         
 });
 // RegisterDataTypeComparer(comparer: IDataTypeComparer): void
@@ -296,7 +296,7 @@ describe('DataTypeServices.RegisterDataTypeComparer', () => {
     }
     class TestIdentifier implements IDataTypeIdentifier
     {
-        DataTypeLookupKey: string = "TEST";
+        dataTypeLookupKey: string = "TEST";
         supportsValue(value: any): boolean {
             return value instanceof TestDataType;
         }
@@ -365,8 +365,8 @@ describe('DataTypeServices.RegisterDataTypeComparer', () => {
         expect(testItem.compareValues(test1, test4, "TEST", "TEST")).toBe(ComparersResult.LessThan);
     });
 });
-// CompareValues(value1: any, value2: any, lookupKey: string | null): ComparersResult
-describe('DataTypeServices.CompareValues', () => {
+// compareValues(value1: any, value2: any, lookupKey: string | null): ComparersResult
+describe('DataTypeServices.compareValues', () => {
     test('Number value resolves lookupKey and correctly handles comparisons', () => {
         let testItem = new DataTypeServices();
         testItem.registerDataTypeIdentifier(new NumberDataTypeIdentifier());
@@ -385,7 +385,7 @@ describe('DataTypeServices.CompareValues', () => {
         }
         class SupportTestDataType implements IDataTypeIdentifier
         {
-            DataTypeLookupKey: string = "TEST";
+            dataTypeLookupKey: string = "TEST";
             supportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }
@@ -447,7 +447,7 @@ describe('DataTypeServices.CompareValues', () => {
         }
         class SupportTestDataType implements IDataTypeIdentifier
         {
-            DataTypeLookupKey: string = "TEST";
+            dataTypeLookupKey: string = "TEST";
             supportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }
@@ -477,21 +477,21 @@ describe('DataTypeServices.CompareValues', () => {
     
     test('Unsupported data type for lookupKey using JavaScript object logs error and reports Undetermined', () => {
         let testItem = new DataTypeServices();
-        testItem.Services = new MockValidationServices(true, true);
+        testItem.services = new MockValidationServices(true, true);
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compareValues({}, 'A', null, null)).not.toThrow();
         expect(result).toBe(ComparersResult.Undetermined);
-        let logger = testItem.Services.LoggerService as MockCapturingLogger;
+        let logger = testItem.services.loggerService as MockCapturingLogger;
         expect(logger.findMessage('operand', LoggingLevel.Error, CompareCategory, 'DataTypeServices')).not.toBeNull();        
 
     });    
     test('Unsupported data type for lookupKey using some class instance logs error and reports Undetermined', () => {
         let testItem = new DataTypeServices();
-        testItem.Services = new MockValidationServices(true, true);
+        testItem.services = new MockValidationServices(true, true);
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compareValues(testItem /* some class */, 'A', null, null)).not.toThrow();
         expect(result).toBe(ComparersResult.Undetermined);
-        let logger = testItem.Services.LoggerService as MockCapturingLogger;
+        let logger = testItem.services.loggerService as MockCapturingLogger;
         expect(logger.findMessage('operand', LoggingLevel.Error, CompareCategory, 'DataTypeServices')).not.toBeNull();        
 
     });    
@@ -512,14 +512,14 @@ describe('DataTypeServices.CompareValues', () => {
                 this._value = new Date(Date.UTC(year, month, day));
             }
             private _value: Date;
-            get Value(): Date
+            get value(): Date
             {
                 return this._value;
             }
         }
         class HoldsDateIdentifier implements IDataTypeIdentifier
         {
-            DataTypeLookupKey = "HoldsDate";
+            dataTypeLookupKey = "HoldsDate";
             supportsValue(value: any): boolean {
                 return value instanceof HoldsDate;
             }
@@ -530,7 +530,7 @@ describe('DataTypeServices.CompareValues', () => {
                 return value instanceof HoldsDate && dataTypeLookupKey === "HoldsDate";
             }
             convert(value: HoldsDate, dataTypeLookupKey: string): string | number | Date | null | undefined {
-                return value.Value;
+                return value.value;
             }
         }
 
@@ -596,23 +596,23 @@ describe('DataTypeServices.AutoGenerateDataTypeCondition', ()=> {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost('Field1', LookupKey.String, 'label');
-        let testItem = services.DataTypeServices;
+        let testItem = services.dataTypeServices;
         let condition: ICondition | null = null;
 
         expect(() => condition = testItem.autoGenerateDataTypeCondition(vh, 'ANYTHING')).not.toThrow();
         expect(condition).toBeInstanceOf(DataTypeCheckCondition);
-        // really should test for the Descriptor.ValueHostId to be 'Field1'
+        // really should test for the Descriptor.valueHostId to be 'Field1'
         // and Type to be DataTypeCheck, but Descriptor is protected.
     });
     test('Registered with a class that returns a condition. Returns an instance of that condition for the same ValueHostId', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost('Field1', LookupKey.String, 'label');
-        let testItem = services.DataTypeServices as DataTypeServices;
+        let testItem = services.dataTypeServices as DataTypeServices;
         let condition: ICondition | null = new RegExpCondition({
-            Type: ConditionType.RegExp,
-            ExpressionAsString: 'test',
-            ValueHostId: vh.getId()
+            type: ConditionType.RegExp,
+            expressionAsString: 'test',
+            valueHostId: vh.getId()
         });
         testItem.registerDataTypeCheckGenerator(new TestCheckGenerator('ABC', condition));
 
@@ -623,7 +623,7 @@ describe('DataTypeServices.AutoGenerateDataTypeCondition', ()=> {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost('Field1', LookupKey.String, 'label');
-        let testItem = services.DataTypeServices as DataTypeServices;
+        let testItem = services.dataTypeServices as DataTypeServices;
         let condition: ICondition | null = null;
         testItem.registerDataTypeCheckGenerator(new TestCheckGenerator('ABC', condition));
 
@@ -648,7 +648,7 @@ describe('DataTypeServices utility methods', () => {
         class TestDataType {}
         class TestIdentifier implements IDataTypeIdentifier
         {
-            DataTypeLookupKey: string = 'TEST';
+            dataTypeLookupKey: string = 'TEST';
             supportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }
@@ -668,7 +668,7 @@ describe('DataTypeServices utility methods', () => {
         class TestDataType {}
         class TestIdentifier implements IDataTypeIdentifier
         {
-            DataTypeLookupKey: string = LookupKey.Date;  // will replace Dates...
+            dataTypeLookupKey: string = LookupKey.Date;  // will replace Dates...
             supportsValue(value: any): boolean {
                 return value instanceof TestDataType;
             }

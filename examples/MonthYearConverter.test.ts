@@ -14,7 +14,7 @@ describe('UTCMonthYearConverter', () => {
     })
     test('convert', () => {
         let testItem = new UTCMonthYearConverter();
-        // Convert expects to be called after supportsValue is true.
+        // convert expects to be called after supportsValue is true.
         // So no illegal values as parameters tested
         let test1 = new Date(Date.UTC(2000, 10, 5));
         let test1montyear = new Date(Date.UTC(2000, 10, 1));

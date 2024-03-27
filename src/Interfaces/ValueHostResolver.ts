@@ -49,7 +49,7 @@ export function toIValueHostResolver(source: any): IValueHostResolver | null
     if (source && typeof source === 'object') {
         let test = source as IValueHostResolver;    
         if (test.getValueHost !== undefined &&
-            test.Services !== undefined)
+            test.services !== undefined)
             return test;
     }
     return null;
@@ -76,7 +76,7 @@ export function toIValueHostsManager(source: any): IValueHostsManager | null
  */
 export interface IValueHostsManagerAccessor
 {
-    ValueHostsManager: IValueHostsManager;
+    valueHostsManager: IValueHostsManager;
 }
 
 /**
@@ -88,7 +88,7 @@ export function toIValueHostsManagerAccessor(source: any): IValueHostsManagerAcc
 {
     if (source && typeof source === 'object') {
         let test = source as IValueHostsManagerAccessor;     
-        if (test.ValueHostsManager !== undefined)
+        if (test.valueHostsManager !== undefined)
             return test;
     }
     return null;

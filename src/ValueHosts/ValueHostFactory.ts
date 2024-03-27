@@ -33,7 +33,7 @@ export class ValueHostFactory implements IValueHostFactory {
         // // we are going to modify the state without notifying the parent.
         // // This is intentional --- removed. Leave it to caller
         // if (!state && descriptor.InitialValue !== undefined) {
-        //     state = generator.CreateState(descriptor);
+        //     state = generator.createState(descriptor);
         // }        
         return generator.create(valueHostsManager, descriptor, state);
     }
@@ -43,13 +43,13 @@ export class ValueHostFactory implements IValueHostFactory {
      * @returns 
      */
     private resolveDescriptor(descriptor: ValueHostDescriptor): IValueHostGenerator {
-        if (!descriptor.Type)
+        if (!descriptor.type)
             throw new Error('ValueHostDescriptor.Type field required');
         for (const generator of this._descriptorResolvers) {
             if (generator.canCreate(descriptor))
                 return generator;
         }
-        throw new Error(`Unsupported ValueHostDescriptor ${descriptor.Type}`);
+        throw new Error(`Unsupported ValueHostDescriptor ${descriptor.type}`);
     }
 
     /**

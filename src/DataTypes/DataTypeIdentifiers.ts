@@ -15,7 +15,7 @@ import { LookupKey } from './LookupKeys';
  */
 export class StringDataTypeIdentifier implements IDataTypeIdentifier
 {
-    public get DataTypeLookupKey(): string
+    public get dataTypeLookupKey(): string
     {
         return LookupKey.String;
     }
@@ -30,7 +30,7 @@ export class StringDataTypeIdentifier implements IDataTypeIdentifier
  */
 export class NumberDataTypeIdentifier implements IDataTypeIdentifier
 {
-    public get DataTypeLookupKey(): string
+    public get dataTypeLookupKey(): string
     {
         return LookupKey.Number;
     }
@@ -46,7 +46,7 @@ export class NumberDataTypeIdentifier implements IDataTypeIdentifier
  */
 export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
 {
-    public get DataTypeLookupKey(): string
+    public get dataTypeLookupKey(): string
     {
         return LookupKey.Boolean;
     }
@@ -65,7 +65,7 @@ export class BooleanDataTypeIdentifier implements IDataTypeIdentifier
  */
 export class DateDataTypeIdentifier implements IDataTypeIdentifier
 {
-    public get DataTypeLookupKey(): string
+    public get dataTypeLookupKey(): string
     {
         return LookupKey.Date;
     }

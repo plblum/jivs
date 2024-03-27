@@ -42,12 +42,12 @@ import type { ValidationManagerState, IValidationManager, ValidationManagerConfi
  * Try to keep validation rules separate from your UI's code.
  * 
  * All Descriptors are considered immutable. If you need to make a change, you can
- * create a new instance of ValidationManager, or call its AddValueHost, UpdateValueHost,
- * or DiscardValueHost methods to keep the existing instance.
+ * create a new instance of ValidationManager, or call its addValueHost, updateValueHost,
+ * or discardValueHost methods to keep the existing instance.
  * 
  * ValidationManager's job is:
  * - Create and retain all ValueHosts.
- * - Provide access to all ValueHosts with its GetValueHost function.
+ * - Provide access to all ValueHosts with its getValueHost() function.
  * - Retain State objects that reflects the states of all ValueHost instances.
  *   This system can operate in a stateless way, so long as you keep
  *   these objects and pass them back via the Configuration object.
@@ -91,27 +91,27 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      */
     constructor(config: ValidationManagerConfig) {
         assertNotNull(config, 'config');
-        assertNotNull(config.Services, 'services');
+        assertNotNull(config.services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
-        let savedServices = config.Services ?? null;
-        config.Services = null as any; // to ignore during DeepClone
+        let savedServices = config.services ?? null;
+        config.services = null as any; // to ignore during DeepClone
         let internalConfig = deepClone(config) as ValidationManagerConfig;
-        config.Services = savedServices;
-        internalConfig.Services = savedServices;
+        config.services = savedServices;
+        internalConfig.services = savedServices;
 
         this._config = internalConfig;
         this._valueHostDescriptors = {};
         this._valueHosts = {};
-        this._state = internalConfig.SavedState ?? {};
-        if (typeof this._state.StateChangeCounter !== 'number')
-            this._state.StateChangeCounter = 0;
-        this._lastValueHostStates = internalConfig.SavedValueHostStates ?? [];
-        let descriptors = internalConfig.ValueHostDescriptors ?? [];
+        this._state = internalConfig.savedState ?? {};
+        if (typeof this._state.stateChangeCounter !== 'number')
+            this._state.stateChangeCounter = 0;
+        this._lastValueHostStates = internalConfig.savedValueHostStates ?? [];
+        let descriptors = internalConfig.valueHostDescriptors ?? [];
         for (let descriptor of descriptors) {
             this.addValueHost(descriptor, null);
         }
     }
-    protected get Config(): ValidationManagerConfig
+    protected get config(): ValidationManagerConfig
     {
         return this._config;
     }
@@ -122,8 +122,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * A instance of ValidationManager is passed to the IValidationServices's constructor
      * and that constructor sets this property.
      */
-    public get Services(): IValidationServices {
-        return this._config.Services!;
+    public get services(): IValidationServices {
+        return this._config.services!;
     }
 
 
@@ -131,7 +131,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * ValueHosts for all ValueHostDescriptors.
      * Always replace a ValueHost when the associated Descriptor or State are changed.
      */
-    protected get ValueHosts(): IValueHostsMap {
+    protected get valueHosts(): IValueHostsMap {
         return this._valueHosts;
     }
 
@@ -140,7 +140,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * ValueHostDescriptors supplied by the caller (business logic).
      * Always replace a ValueHost when its Descriptor changes.
      */
-    protected get ValueHostDescriptors(): IValueHostDescriptorsMap {
+    protected get valueHostDescriptors(): IValueHostDescriptorsMap {
         return this._valueHostDescriptors;
     }
     private _valueHostDescriptors: IValueHostDescriptorsMap = {};
@@ -150,13 +150,13 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * A copy of this is expected to be retained (redux/localstorage/etc)
      * by the caller to support recreating the ValidationManager in a stateless situation.
      */
-    protected get State(): ValidationManagerState {
+    protected get state(): ValidationManagerState {
         return this._state;
     }
     private _state: ValidationManagerState;
 
     /**
-     * Value retained from the constructor to share with calls to AddValueHost,
+     * Value retained from the constructor to share with calls to addValueHost,
      * giving new ValueHost instances their last state.
      */
     private readonly _lastValueHostStates: Array<ValueHostState>;
@@ -172,11 +172,11 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      */
     public updateState(updater: (stateToUpdate: TState) => TState): boolean {
         assertNotNull(updater, 'updater');
-        let toUpdate = deepClone(this.State);
+        let toUpdate = deepClone(this.state);
         let updated = updater(toUpdate);
-        if (!deepEquals(this.State, updated)) {
+        if (!deepEquals(this.state, updated)) {
             this._state = updated;
-            this.OnStateChanged?.(this, updated);
+            this.onStateChanged?.(this, updated);
             return true;
         }
         return false;
@@ -189,16 +189,16 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param descriptor 
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
-     * It will be run through ValueHostFactory.CleanupState first.
+     * It will be run through ValueHostFactory.cleanupState() first.
      * When null, the state supplied in the ValidationManager constructor will be used if available.
      * When neither state was supplied, a default state is created.
      */
     public addValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
         assertNotNull(descriptor, 'descriptor');
-        if (!this._valueHostDescriptors[descriptor.Id])
+        if (!this._valueHostDescriptors[descriptor.id])
             return this.applyDescriptor(descriptor, initialState);
 
-        throw new Error(`Property ${descriptor.Id} already assigned.`);
+        throw new Error(`Property ${descriptor.id} already assigned.`);
     }
     /**
      * Replaces a ValueHostDescriptor for an already added ValueHost. 
@@ -207,11 +207,11 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param descriptor 
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
-     * It will be run through ValueHostFactory.CleanupState first.
+     * It will be run through ValueHostFactory.cleanupState() first.
      */
     public updateValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
         assertNotNull(descriptor, 'descriptor');
-        if (this._valueHostDescriptors[descriptor.Id])
+        if (this._valueHostDescriptors[descriptor.id])
             return this.applyDescriptor(descriptor, initialState);
 
         return this.addValueHost(descriptor, initialState);
@@ -223,12 +223,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      */
     public discardValueHost(descriptor: ValueHostDescriptor): void {
         assertNotNull(descriptor, 'descriptor');
-        if (this._valueHostDescriptors[descriptor.Id]) {
-            delete this._valueHosts[descriptor.Id];
-            delete this._valueHostDescriptors[descriptor.Id];
+        if (this._valueHostDescriptors[descriptor.id]) {
+            delete this._valueHosts[descriptor.id];
+            delete this._valueHostDescriptors[descriptor.id];
             if (this._lastValueHostStates)
             {
-                let pos = this._lastValueHostStates.findIndex((state) => state.Id === descriptor.Id);
+                let pos = this._lastValueHostStates.findIndex((state) => state.id === descriptor.id);
                 if (pos > -1)
                     this._lastValueHostStates.splice(pos, 1);
             }
@@ -241,23 +241,23 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param descriptor 
      * @param initialState - When not null, this ValueHost state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
-     * It will be run through ValueHostFactory.CleanupState first.
+     * It will be run through ValueHostFactory.cleanupState() first.
      * @returns 
      */
     protected applyDescriptor(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
-        let factory = this.Services.ValueHostFactory; // functions in here throw exceptions if descriptor is unsupported
+        let factory = this.services.valueHostFactory; // functions in here throw exceptions if descriptor is unsupported
         let state: ValueHostState | undefined = undefined;
         let existingState = initialState;
         let defaultState = factory.createState(descriptor);
 
         if (!existingState && this._lastValueHostStates)
-            existingState = this._lastValueHostStates.find((state) => state.Id === descriptor.Id) ?? null;
+            existingState = this._lastValueHostStates.find((state) => state.id === descriptor.id) ?? null;
         if (existingState) {
             let cleanedState = deepClone(existingState) as ValueHostState;  // clone to allow changes during Cleanup
             factory.cleanupState(cleanedState, descriptor);
             // User may have supplied the state without
             // all of the properties we normally use.
-            // Ensure all properties defined by CreateState exist, even if their value is undefined
+            // Ensure all properties defined by createState() exist, even if their value is undefined
             // so that we have consistency. 
             state = { ...defaultState, ...cleanedState };
         }
@@ -265,13 +265,13 @@ export class ValidationManager<TState extends ValidationManagerState> implements
             state = defaultState;
         let vh = factory.create(this, descriptor, state);
 
-        this._valueHosts[descriptor.Id] = vh;
-        this._valueHostDescriptors[descriptor.Id] = descriptor;
+        this._valueHosts[descriptor.id] = vh;
+        this._valueHostDescriptors[descriptor.id] = descriptor;
         return vh;
     }
 
     /**
-     * Retrieves the ValueHost associated with ValueHostID
+     * Retrieves the ValueHost associated with valueHostId
      * @param valueHostId - Matches to the IValueHost.Id property
      * Returns the instance or null if not found.
      */
@@ -307,7 +307,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param options - Provides guidance on which validators to include.
      * @returns Array of ValidateResult with empty array if all are valid
      */
-    public validate(options?: ValidateOptions): Array<ValidateResult> //!!!PENDING change this to ValidateResults with IsValid and DoNotSave in addition to this array
+    public validate(options?: ValidateOptions): Array<ValidateResult> //!!!PENDING change this to ValidateResults with isValid and DoNotSave in addition to this array
     {
         if (!options)
             options = {};
@@ -316,8 +316,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         for (let vh of this.inputValueHost()) {
             list.push(vh.validate(options));
         }
-        if (!options || !options.OmitCallback)
-            this.OnValidated?.(this, list);
+        if (!options || !options.omitCallback)
+            this.onValidated?.(this, list);
         return list;
     }
 
@@ -332,22 +332,22 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     }
 
     /**
-     * Value is setup by calling Validate(). It does not run Validate itself.
+     * Value is setup by calling validate(). It does not run validate() itself.
      * Returns false only when any InputValueHost has a ValidationResult of Invalid. 
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using DoNotSaveNativeValue for more clarity.
+     * Recommend using doNotSaveNativeValue for more clarity.
      */
-    public get IsValid(): boolean {
+    public get isValid(): boolean {
         for (let vh of this.inputValueHost())
-            if (!vh.IsValid)
+            if (!vh.isValid)
                 return false;
         return true;
     }
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
-     * based on the latest call to Validate(). (It does not run Validate().)
+     * based on the latest call to validate(). (It does not run validate().)
      * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated
      * on individual validators.
      */
@@ -362,8 +362,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (GetIssuesForSummary) and optionally for an individual ValueHostId,
-     * by specifying that ValueHostID in AssociatedValueHostId.
+     * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
+     * by specifying that valueHostId in AssociatedValueHostId.
      * Each time its called, all previous business logic errors are abandoned.
      * Internally, a BusinessLogicInputValueHost is added to the list of ValueHosts to hold any
      * error that lacks an AssociatedValueHostId.
@@ -376,12 +376,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         }
         if (errors)
             for (let error of errors) {
-                let vh = this.getValueHost(error.AssociatedValueHostId ?? BusinessLogicValueHostId);
-                if (!vh && !error.AssociatedValueHostId) {
+                let vh = this.getValueHost(error.associatedValueHostId ?? BusinessLogicValueHostId);
+                if (!vh && !error.associatedValueHostId) {
                     vh = this.addValueHost({
-                        Type: BusinessLogicInputValueHostType,
-                        Label: '*',
-                        Id: BusinessLogicValueHostId
+                        type: BusinessLogicInputValueHostType,
+                        label: '*',
+                        id: BusinessLogicValueHostId
                     }, null);
                 }
                 if (vh instanceof InputValueHostBase)
@@ -396,7 +396,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
@@ -414,7 +414,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
@@ -432,17 +432,17 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * React example: React component useState feature retains this value
      * and needs to know when to call its setState function with the stateToRetain
      */
-    public get OnStateChanged(): ValidationManagerStateChangedHandler | null {
-        return this.Config.OnStateChanged ?? null;
+    public get onStateChanged(): ValidationManagerStateChangedHandler | null {
+        return this.config.onStateChanged ?? null;
     }
     /**
-     * Called when ValidationManager's Validate method has returned.
+     * Called when ValidationManager's validate() function has returned.
      * Supplies the result to the callback.
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
      * Use to change the disabled state of the submit button based on validity.
      */
-    public get OnValidated(): ValidationManagerValidatedHandler | null {
-        return this.Config.OnValidated ?? null;
+    public get onValidated(): ValidationManagerValidatedHandler | null {
+        return this.config.onValidated ?? null;
     }
     /**
      * Called when any ValueHost had its ValueHostState changed.
@@ -451,11 +451,11 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * You can setup the same callback on individual ValueHosts.
      * Here, it aggregates all ValueHost notifications.
      */
-    public get OnValueHostStateChanged(): ValueHostStateChangedHandler | null {
-        return this.Config.OnValueHostStateChanged ?? null;
+    public get onValueHostStateChanged(): ValueHostStateChangedHandler | null {
+        return this.config.onValueHostStateChanged ?? null;
     }
     /**
-     * Called when ValueHost's Validate method has returned.
+     * Called when ValueHost's validate() function has returned.
      * Supplies the result to the callback.
      * Examples: Use to notify the validation related aspects of the component to refresh, 
      * such as showing error messages and changing style sheets.
@@ -463,28 +463,28 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * You can setup the same callback on individual ValueHosts.
      * Here, it aggregates all ValueHost notifications.
      */
-    public get OnValueHostValidated(): ValueHostValidatedHandler | null {
-        return this.Config.OnValueHostValidated ?? null;
+    public get onValueHostValidated(): ValueHostValidatedHandler | null {
+        return this.config.onValueHostValidated ?? null;
     }
     /**
      * Called when the ValueHost's Value property has changed.
-     * If setup, you can prevent it from being fired with the options parameter of SetValue
+     * If setup, you can prevent it from being fired with the options parameter of setValue()
      * to avoid round trips where you already know the details.
      * You can setup the same callback on individual ValueHosts.
      * Here, it aggregates all ValueHost notifications.
      */
-    public get OnValueChanged(): ValueChangedHandler | null {
-        return this.Config.OnValueChanged ?? null;
+    public get onValueChanged(): ValueChangedHandler | null {
+        return this.config.onValueChanged ?? null;
     }
     /**
      * Called when the InputValueHost's InputValue property has changed.
-     * If setup, you can prevent it from being fired with the options parameter of SetValue
+     * If setup, you can prevent it from being fired with the options parameter of setValue()
      * to avoid round trips where you already know the details.
      * You can setup the same callback on individual InputValueHosts.
      * Here, it aggregates all InputValueHost notifications.
      */
-    public get OnInputValueChanged(): InputValueChangedHandler | null {
-        return this.Config.OnInputValueChanged ?? null;
+    public get onInputValueChanged(): InputValueChangedHandler | null {
+        return this.config.onInputValueChanged ?? null;
     }
     //#endregion IValidationManagerCallbacks
 }
@@ -492,7 +492,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
 /**
  * All ValueHostDescriptors for this ValidationManager.
  * Caller may pass this in via the ValidationManager constructor
- * or build it out via ValidationManager.AddValueHost.
+ * or build it out via ValidationManager.addValueHost.
  * Each entry must have a companion in ValueHost and ValueHostState in
  * this ValidationManager.
  */
@@ -523,14 +523,14 @@ export interface IValidationManagerCallbacks extends IInputValueHostCallbacks {
      * React example: React component useState feature retains this value
      * and needs to know when to call the setState function with the stateToRetain
      */
-    OnStateChanged?: ValidationManagerStateChangedHandler | null;
+    onStateChanged?: ValidationManagerStateChangedHandler | null;
     /**
-     * Called when ValidationManager's Validate method has returned.
+     * Called when ValidationManager's validate() function has returned.
      * Supplies the result to the callback.
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
      * Use to change the disabled state of the submit button based on validity.
      */
-    OnValidated?: ValidationManagerValidatedHandler | null;
+    onValidated?: ValidationManagerValidatedHandler | null;
 }
 
 /**
@@ -543,8 +543,8 @@ export function toIValidationManagerCallbacks(source: any): IValidationManagerCa
     if (toIInputValueHostCallbacks(source))
     {
         let test = source as IValidationManagerCallbacks;     
-        if (test.OnStateChanged !== undefined &&
-            test.OnValidated !== undefined)
+        if (test.onStateChanged !== undefined &&
+            test.onValidated !== undefined)
             return test;
     }
     return null;

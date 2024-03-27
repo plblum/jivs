@@ -24,10 +24,10 @@ export class ConditionFactory implements IConditionFactory {
      */
     public create<TDescriptor extends ConditionDescriptor>
         (descriptor: TDescriptor): IConditionCore<TDescriptor> {
-        let fn = this._map.get(descriptor.Type);
+        let fn = this._map.get(descriptor.type);
         if (fn)
             return fn(descriptor) as IConditionCore<TDescriptor>;
-        throw new Error(`Condition Type not supported: ${descriptor.Type}`);
+        throw new Error(`Condition Type not supported: ${descriptor.type}`);
     }
     // user supplies JSON string or object implementing ConditionDescriptor
     // and it returns an instance of IValidator.
@@ -40,7 +40,7 @@ export class ConditionFactory implements IConditionFactory {
      * @param type - Unique way to select the function. Uses ConditionDescriptor.Type.
      * @param fn - Expected to create an instance of a Condition.
      */
-    public register<TDescriptor extends ConditionDescriptor>(type: ConditionType | string,
+    public register<TDescriptor extends ConditionDescriptor>(type: string,
         fn: (descriptor: TDescriptor) => IConditionCore<TDescriptor>): void {
         this._map.register(type, fn as any);
     }
@@ -50,7 +50,7 @@ export class ConditionFactory implements IConditionFactory {
      * @param conditionType 
      * @returns 
      */
-    public isRegistered(conditionType: ConditionType | string): boolean {
+    public isRegistered(conditionType: string): boolean {
         return this._map.get(conditionType) !== undefined;
     }
 }
