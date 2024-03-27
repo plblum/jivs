@@ -26,11 +26,6 @@ export enum ConditionType
     RequiredText = 'RequiredText',
 
     /**
-     * Associated with RequiredIndexCondition class.
-     */
-    RequiredIndex = 'RequiredIndex',
-
-    /**
      * Associated with RegExpCondition class.
      */
     RegExp = 'RegExp',
