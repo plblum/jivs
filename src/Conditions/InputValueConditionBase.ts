@@ -1,6 +1,6 @@
 /**
- * Base implementation for developing Conditions that use the value from ValueHost.GetInputValue.
- * Most classes use ValueHost.GetValue (the native value).
+ * Base implementation for developing Conditions that use the value from ValueHost.getInputValue().
+ * Most classes use ValueHost.getValue() (the native value).
  * @module Conditions/AbstractClasses/InputValueConditionBase
  */
 
@@ -14,8 +14,8 @@ import { OneValueConditionDescriptor, OneValueConditionBase } from './OneValueCo
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 
 /**
- * Abstract class for developing Conditions that use the value from ValueHost.GetInputValue.
- * Most classes use ValueHost.GetValue (the native value).
+ * Abstract class for developing Conditions that use the value from ValueHost.getInputValue().
+ * Most classes use ValueHost.getValue() (the native value).
  */
 export abstract class InputValueConditionBase<TDescriptor extends OneValueConditionDescriptor>
     extends OneValueConditionBase<TDescriptor>

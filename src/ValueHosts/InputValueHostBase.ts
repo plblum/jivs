@@ -40,8 +40,8 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
       * to most Conditions during validation.
       * @param value 
     * @param options - 
-    * Validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when Validate=true) and sets IsChanged to false.
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
@@ -61,7 +61,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
 
             return stateToUpdate;
         }, this);
-        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
+        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(changed, oldValue, options);
     }
@@ -81,8 +81,8 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     * Its used with RequiredCondition and DataTypeCondition.
     * @param value
     * @param options - 
-    * Validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when Validate=true) and sets IsChanged to false.
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
@@ -101,7 +101,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
             this.updateConversionErrorMessage(stateToUpdate, undefined, {});
             return stateToUpdate;
         }, this);
-        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
+        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(changed, oldValue, options);
     }
@@ -117,8 +117,8 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * @param inputValue - Can be undefined to indicate there is no value.
      * All other values, including null and the empty string, are considered real data.
     * @param options - 
-    * Validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when Validate=true) and sets IsChanged to false.
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
@@ -145,7 +145,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
             return stateToUpdate;
         }, this);
 
-        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second UpdateState
+        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(nativeChanged, oldNative, options);
         this.useOnValueChanged(inputChanged, oldInput, options);
@@ -173,9 +173,9 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
             this.getId(), options.validate === true);
     }
     /**
-     * When SetValue, SetValues, SetInputValue, or SetToUndefined occurs,
+     * When setValue(), setValues(), setInputValue(), or SetToUndefined occurs,
      * all other InputValueHosts get notified here so they can rerun validation
-     * when any of their Conditions specify the ValueHostID that changed.
+     * when any of their Conditions specify the valueHostId that changed.
      * @param valueHostIdThatChanged 
      * @param revalidate 
      */
@@ -199,7 +199,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
 
         if (this._associatedValueHosts.has(valueHostIdThatChanged)) {
             // change the ValidationResult to ValueChangedButUnvalidated when revalidate is false
-            // call Validate() when revalidate is true
+            // call validate() when revalidate is true
             if (revalidate)
                 this.validate();
             else {
@@ -234,7 +234,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     public abstract validate(options?: ValidateOptions): ValidateResult;
 
     /**
-     * Value is setup by calling Validate(). It does not run Validate itself.
+     * Value is setup by calling validate(). It does not run validate() itself.
      * Returns false when State.ValidationResult is Invalid. Any other ValidationResult
      * return true.
      * This follows an old style validation rule of everything is valid when not explicitly
@@ -246,7 +246,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         return this.validationResult !== ValidationResult.Invalid;
     }
     /**
-     * Validation result. Prior to calling Validate() (or SetValue's validate option),
+     * Validation result. Prior to calling validate() (or setValue()'s validate option),
      * it is Undetermined.
      */
     public get validationResult(): ValidationResult {
@@ -297,8 +297,8 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
      * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
-     * by specifying that ValueHostID in AssociatedValueHostId.
-     * Each time called, it adds to the existing list. Use ClearBusinessLogicErrors first if starting a fresh list.
+     * by specifying that valueHostId in AssociatedValueHostId.
+     * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
      * @param error - A business logic error to show.
      */
     public setBusinessLogicError(error: BusinessLogicError): void {
@@ -315,7 +315,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     }
     /**
      * Removes any business logic errors. Generally called automatically by
-     * ValidationManager as calls are made to SetBusinessLogicErrors and ClearValidation.
+     * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
      */
     public clearBusinessLogicErrors(): void {
         if (this.businessLogicErrors)
@@ -344,7 +344,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
             null;
     }
     /**
-     * The results of the latest Validate()
+     * The results of the latest validate()
      * @returns Issues found or null if none.
      */
     public getIssuesFound(): Array<IssueFound> | null {
@@ -353,7 +353,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
 
     /**
      * Lists all error messages and supporting info about each validator
-     * for use by a input field/element that shows its own error messages (InputValueHostState.ErrorMessage)
+     * for use by a input field/element that shows its own error messages (InputValueHostState.errorMessage)
      * @returns 
      */
     public getIssuesForInput(): Array<IssueSnapshot> {
@@ -382,7 +382,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
@@ -418,7 +418,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     //#endregion validation results
     /**
      * Returns the ConversionErrorTokenValue supplied by the latest call
-     * to SetValue or SetValues. Its null when not supplied or has been cleared.
+     * to setValue() or setValues(). Its null when not supplied or has been cleared.
      * Associated with the {ConversionError} token of the DataTypeCheckCondition.
      */
     public getConversionErrorMessage(): string | null {
@@ -441,7 +441,7 @@ export type InputValueChangedHandler = (valueHost: IInputValueHost, oldValue: an
  */
 export interface IInputValueHostCallbacks extends IValueHostCallbacks {
     /**
-     * Called when ValueHost's Validate method has finished, and made
+     * Called when ValueHost's validate() function has finished, and made
      * changes to the state. (No point in notifying code intended to update the UI
      * if nothing changed.)
      * Supplies the result to the callback.
@@ -454,7 +454,7 @@ export interface IInputValueHostCallbacks extends IValueHostCallbacks {
     onValueHostValidated?: ValueHostValidatedHandler | null;
     /**
      * Called when the InputValueHost's InputValue property has changed.
-     * If setup, you can prevent it from being fired with the options parameter of SetValue
+     * If setup, you can prevent it from being fired with the options parameter of setValue()
      * to avoid round trips where you already know the details.
      * You can setup the same callback on individual InputValueHosts.
      * Here, it aggregates all InputValueHost notifications.

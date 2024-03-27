@@ -42,7 +42,7 @@ export abstract class StringConditionBase<TConditionDescriptor extends StringCon
         ConditionEvaluateResult;
 
     /**
-     * Supplies the value found in ValueHost from GetValue.
+     * Supplies the value found in ValueHost from getValue().
      * It wants a string and will only return a string or undefined.
      * @param valueHost 
      * @returns 

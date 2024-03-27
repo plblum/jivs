@@ -55,7 +55,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
     /**
      * Provides a unique identity for this ValueHost.
      * Consuming systems use this ID to locate the ValueHost
-     * for which they will transfer a value, via ValueHostsManager.GetValueHost(this id)
+     * for which they will transfer a value, via ValueHostsManager.getValueHost(this id)
      */
     public getId(): valueHostId {
         return this.descriptor.id;
@@ -90,8 +90,8 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
     * All other values, including null and the empty string, are considered real data.
     * When undefined, IsChanged will still be changed to true unless options.Reset = true.
     * @param options - 
-    * Validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when Validate=true) and sets IsChanged to false.
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
@@ -121,8 +121,8 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
      * Note this does not reset IsChanged to false without explicitly 
      * specifying options.Reset = true;
     * @param options - 
-    * Validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when Validate=true) and sets IsChanged to false.
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
@@ -156,10 +156,10 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
     /**
      * Determines how the validation system sees the Value in terms of editing.
      * When true, it was changed. When false, it was not.
-     * The SetValue/SetInputValue/SetValues functions are the only ones to change this flag.
+     * The setValue()/setInputValue()/setValues() functions are the only ones to change this flag.
      * They all set it to true automatically except set it to false when the option.Reset is true.
-     * The ValueHost.Validate function may skip validation of an InputValueHost when IsChanged is false,
-     * depending on the options for Validate. For example, calling validate immediately after loading
+     * The ValueHost.validate() function may skip validation of an InputValueHost when IsChanged is false,
+     * depending on the options for validate. For example, calling validate immediately after loading
      * up the form, you want to avoid showing Required validators. Those should appear only
      * if the user edits, or when the user attempts to submit.
      */
@@ -255,7 +255,7 @@ export interface IValueHostCallbacks {
 
     /**
      * Called when the ValueHost's Value property has changed.
-     * If setup, you can prevent it from being fired with the options parameter of SetValue
+     * If setup, you can prevent it from being fired with the options parameter of setValue()
      * to avoid round trips where you already know the details.
      * You can setup the same callback on individual ValueHosts.
      * Here, it aggregates all ValueHost notifications.

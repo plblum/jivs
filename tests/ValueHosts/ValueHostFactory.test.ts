@@ -44,7 +44,7 @@ class FactoryTestsValueHostGenerator implements IValueHostGenerator {
     }
 
 }
-describe('ValueHostFactory.Register', () => {
+describe('ValueHostFactory.register', () => {
     test('Add FactoryTestsValueHostGenerator', () => {
         let factory = new ValueHostFactory();
         expect(factory.isRegistered({ type: FactoryTestGeneratorType, id: '', label: '' })).toBe(false);
@@ -62,9 +62,9 @@ describe('ValueHostFactory.Register', () => {
     });    
 });
 
-// Create(validationManager: IValidationManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost
-describe('ValueHostFactory.Create', () => {
-    test('Create using FactoryTestValueHostGenerator creates FactoryTestValueHost', () => {
+// create(validationManager: IValidationManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost
+describe('ValueHostFactory.create', () => {
+    test('create using FactoryTestValueHostGenerator creates FactoryTestValueHost', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let descriptor: ValueHostDescriptor = {
@@ -88,7 +88,7 @@ describe('ValueHostFactory.Create', () => {
         expect(valueHost!.getId()).toBe('Field1');
         expect(valueHost!.getValue()).toBe('Value');
     });
-    test('Create with null in parameters throws', () => {
+    test('create with null in parameters throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let descriptor: ValueHostDescriptor = {
@@ -111,7 +111,7 @@ describe('ValueHostFactory.Create', () => {
         expect(() => valueHost = testItem.create(vm, null!, state)).toThrow(/descriptor/);
         expect(() => valueHost = testItem.create(vm, descriptor, null!)).toThrow(/state/);
     });
-    test('Create with Descriptor.Type of null throws', () => {
+    test('create with Descriptor.Type of null throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let descriptor: ValueHostDescriptor = {
@@ -133,7 +133,7 @@ describe('ValueHostFactory.Create', () => {
         expect(() => valueHost = testItem.create(vm, descriptor, state)).toThrow(/ValueHostDescriptor\.Type/);
 
     });    
-    test('Create with Descriptor.Type that has no matching registration throws', () => {
+    test('create with Descriptor.Type that has no matching registration throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let descriptor: ValueHostDescriptor = {
@@ -157,8 +157,8 @@ describe('ValueHostFactory.Create', () => {
     });        
 });
 
-// CleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void
-describe('ValueHostFactory.CleanupState', () => {
+// cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void
+describe('ValueHostFactory.cleanupState', () => {
     test('Changes State.Counter to 0', () => {
 
         let descriptor: ValueHostDescriptor = {
@@ -185,7 +185,7 @@ describe('ValueHostFactory.CleanupState', () => {
     });
     
 });
-describe('ValueHostFactory.CreateState', () => {
+describe('ValueHostFactory.createState', () => {
     test('With InitialValue = undefined, creates with Value = undefined', () => {
 
         let descriptor: ValueHostDescriptor = {
@@ -207,7 +207,7 @@ describe('ValueHostFactory.CreateState', () => {
         expect(x.Counter).toBe(0);
     });
 });
-describe('RegisterDefaultValueHostGenerators', () => {
+describe('registerDefaultValueHostGenerators', () => {
     test('Ensure InputValueHostType gets registered', () => {
         let factory = new ValueHostFactory();
         expect(factory.isRegistered({ type: InputValueHostType, id: '', label: '' })).toBe(false);

@@ -49,7 +49,7 @@ function setupInputValueHost(
     };
 }
 
-describe('BusinessLogicInputValueHost.Validate', () => {
+describe('BusinessLogicInputValueHost.validate', () => {
     test('No BusinessLogicErrors results in ValidationResult.Valid', () => {
         let config = setupInputValueHost();
         let vr: ValidateResult | null = null;
@@ -238,7 +238,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             label: '',
         })).toBe(false);
     });
-    test('Create returns instance of InputValueHost with VM, Descriptor and State established', () => {
+    test('create returns instance of InputValueHost with VM, Descriptor and State established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let descriptor: InputValueHostBaseDescriptor = {
@@ -261,7 +261,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(vh!.getId()).toBe(descriptor.id);    // check Descriptor value
         expect(vh!.getInputValue()).toBe('TEST');  // check State value
     });
-    test('CleanupState existing state has no IssuesFound. Returns the same data', () => {
+    test('cleanupState existing state has no IssuesFound. Returns the same data', () => {
         let originalState: InputValueHostBaseState = {
             id: 'Field1',
             issuesFound: null,
@@ -280,7 +280,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(state).toEqual(originalState);
     });
 
-    test('CreateState returns instance with ID and InitialValue from Descriptor', () => {
+    test('createState returns instance with ID and InitialValue from Descriptor', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         let descriptor: InputValueHostBaseDescriptor = {
             id: 'Field1',

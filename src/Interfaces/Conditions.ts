@@ -9,7 +9,7 @@
  * calling an API function, and using the result to determine how evaluation went.
  * 
  * Key interfaces:
- * - {@link ICondition} - Provides the Evaluate function for implementations.
+ * - {@link ICondition} - Provides the evaluate() function for implementations.
  * - {@link ConditionDescriptor} - A description of the rules for evaluation, such
  *   as ValueHostId="TextBox1", Type (of Condition to use)="Range",
  *   Minimum=3, and Maximum=5.
@@ -28,7 +28,7 @@ import { ConditionType } from '../Conditions/ConditionTypes';
  * The basis for any condition that you want to work with these validators.
  * There are a number of implementations based on its subclass IConditionCore,
  * all which allow a Descriptor approach of configuration.
- * Implement this directly when you want to handle all of the work in the Evaluate
+ * Implement this directly when you want to handle all of the work in the evaluate()
  * function yourself, and supply your own way of configuring.
  */
 export interface ICondition {
@@ -46,10 +46,10 @@ export interface ICondition {
      * Evaluate something against the rules defined in the implementation. Return whether
      * the data was consistent or violates the rules, or the data couldn't be used to run the rule. 
      * @param valueHost - Most values are found amongst the ValueHosts in the ValueHostsManager.
-     * Conditions can look them up using ValueHostsManager.GetValueHost().GetValue or GetInputValue.
+     * Conditions can look them up using ValueHostsManager.getValueHost().getValue() or getInputValue().
      * This parameter is used as an optimization, both to avoid that lookup and to avoid
      * the user typing in a ValueHostId when creating the Condition instance.
-     * InputValidator.Validate knows to pass the ValueHostId that hosts the InputValidator.
+     * InputValidator.validate() knows to pass the ValueHostId that hosts the InputValidator.
      * Expect this to be null in other cases, such as when Condition is a child of the AllMatchCondition
      * and its peers. In otherwords, support both ways.
      * @param valueHostResolver - Its primary use is to lookup ValueHosts to get their data.
@@ -69,7 +69,7 @@ export interface ICondition {
      * * Sets InputValidatorDescriptor.Severity when undefined, where Required
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
-     * override it with ConditionDescriptor.Category.
+     * override it with ConditionDescriptor.category.
      */
     category: ConditionCategory;
 }
@@ -115,7 +115,7 @@ export interface ConditionDescriptor {
 export interface IConditionCore<TConditionDescriptor extends ConditionDescriptor> extends ICondition {
 
     /**
-     * Data that supports the business rule defined in Evaluate.
+     * Data that supports the business rule defined in evaluate().
      * Consider this immutable.
      * Expect to create a new Condition instance if its data needs to be changed.
      */
@@ -123,7 +123,7 @@ export interface IConditionCore<TConditionDescriptor extends ConditionDescriptor
 }
 
 /**
- * The result of a condition's Evaluate method.
+ * The result of a condition's evaluate() method.
  */
 export enum ConditionEvaluateResult {
     Undetermined,
@@ -191,7 +191,7 @@ export enum ConditionCategory {
 }
 
 /**
- * Conditions that compare values using DataTypeServices.CompareValues
+ * Conditions that compare values using DataTypeServices.compareValues()
  * will provide LookupKeys from the ValueHost.DataType. 
  * Often the comparison needs a little more work done to the value.
  * Examples:
@@ -200,7 +200,7 @@ export enum ConditionCategory {
  *   Conversion would get the total days/months/years (instead of milliseconds).
  * Implement this interface to provide ConversionLookupKey to
  * the ConditionDescriptor. If ConversionLookupKey is assigned, pass it
- * to CompareValues instead of ValueHost.DataType.
+ * to compareValues() instead of ValueHost.DataType.
  * Some LookupKeys that might be used: CaseInsensitive, Integer, TotalDays
  */
 export interface SupportsDataTypeConverter extends ConditionDescriptor

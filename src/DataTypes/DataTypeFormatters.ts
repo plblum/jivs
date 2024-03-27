@@ -51,14 +51,14 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
      */
     protected abstract supportsCulture(cultureId: string): boolean;
     /**
-     * Evaluates the parameters to determine if its Format method should handle the value
+     * Evaluates the parameters to determine if its format() method should handle the value
      * with those same parameters.
      * It should always match the DataTypeLookupKey. 
      * It does not have to evaluate the cultureID, as there are implementations
-     * where the Format function handles eve
+     * where the format() function handles eve
      * @param dataTypeLookupKey 
      * @param cultureId - Such as 'en-US' and 'en'
-     * @returns Use its Format method when true. Do not use Format when false.
+     * @returns Use its format() method when true. Do not use format() when false.
      */
     public supports(dataTypeLookupKey: string, cultureId: string): boolean {
         return this.matchingLookupKeys(dataTypeLookupKey, this.expectedLookupKeys) &&
@@ -314,10 +314,10 @@ export class IntegerFormatter extends NumberFormatterBase
         };
     }
 
-    // public Format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+    // public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
     //     if (typeof value === 'number')
     //         value = Math.floor(value);
-    //     super.Format(value, dataTypeLookupKey, cultureId);
+    //     super.format(value, dataTypeLookupKey, cultureId);
     // }
 }
 

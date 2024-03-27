@@ -56,8 +56,8 @@ class PublicifiedInputValidator extends InputValidator {
  * @param descriptor - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
  * ConditionDescriptor - RequiredTextConditiontType, ValueHostId: null
- * ErrorMessage: 'Local'
- * SummaryMessage: 'Summary'
+ * errorMessage: 'Local'
+ * summaryMessage: 'Summary'
  * @returns An object with all of the parts that were setup including 
  * ValidationManager, Services, two ValueHosts, the complete Descriptor,
  * and the InputValidator.
@@ -148,7 +148,7 @@ describe('Inputvalidator.constructor and initial property values', () => {
 
     });
 });
-describe('InputValidator.Condition', () => {
+describe('InputValidator.condition', () => {
     test('Successful creation of RequiredTextCondition using ConditionDescriptor', () => {
         let config = setupWithField1AndField2({
             conditionDescriptor: <RequiredTextConditionDescriptor>
@@ -224,7 +224,7 @@ describe('InputValidator.Condition', () => {
         expect(() => condition = config.inputValidator.condition).toThrow(/instance/);
     });
 });
-describe('InputValidator.Enabler', () => {
+describe('InputValidator.enabler', () => {
     test('InputValidatorDescriptor has no Enabler assigned sets Enabler to null', () => {
         let config = setupWithField1AndField2({});
 
@@ -310,7 +310,7 @@ describe('InputValidator.Enabler', () => {
         expect(() => enabler = config.inputValidator.ExposeEnabler()).toThrow(/instance/);
     });
 });
-describe('InputValidator.Enabled', () => {
+describe('InputValidator.enabled', () => {
     test('Descriptor.Enabled = true, Enabled=true', () => {
         let config = setupWithField1AndField2({
             enabled: true
@@ -346,7 +346,7 @@ describe('InputValidator.Enabled', () => {
 });
 
 
-describe('InputValidator.Severity', () => {
+describe('InputValidator.severity', () => {
     test('Descriptor.Severity = Error, Severity=Error', () => {
         let config = setupWithField1AndField2({
             severity: ValidationSeverity.Error
@@ -461,8 +461,8 @@ function setupForLocalization(activeCultureID: string): PublicifiedInputValidato
     config.services.activeCultureId = activeCultureID;
     return config.inputValidator;
 }
-describe('InputValidator.GetErrorMessageTemplate', () => {
-    test('Descriptor.ErrorMessage = string, return the same string', () => {
+describe('InputValidator.getErrorMessageTemplate', () => {
+    test('Descriptor.errorMessage = string, return the same string', () => {
         let config = setupWithField1AndField2({
             errorMessage: 'Test',
         });
@@ -470,7 +470,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
         expect(config.inputValidator.ExposeGetErrorMessageTemplate()).toBe('Test');
     });
 
-    test('Descriptor.ErrorMessage = function, GetErrorMessageTemplate= result of function', () => {
+    test('Descriptor.errorMessage = function, getErrorMessageTemplate= result of function', () => {
         let config = setupWithField1AndField2({
             errorMessage: (iv: IInputValidator) => errorMessageForFn
         });
@@ -478,12 +478,12 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
         let errorMessageForFn = 'Test';
         expect(config.inputValidator.ExposeGetErrorMessageTemplate()).toBe('Test');
     });
-    test('Descriptor.ErrorMessage = function, throws when function returns null', () => {
+    test('Descriptor.errorMessage = function, throws when function returns null', () => {
         let config = setupWithField1AndField2({
             errorMessage: (iv: IInputValidator) => null!
         });
 
-        expect(() => config.inputValidator.ExposeGetErrorMessageTemplate()).toThrow(/Descriptor\.ErrorMessage/);
+        expect(() => config.inputValidator.ExposeGetErrorMessageTemplate()).toThrow(/Descriptor\.errorMessage/);
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
@@ -501,16 +501,16 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('esErrorMessage');
     });
 
-    test('TextLocalizationService not setup for fr language and active culture of fr uses ErrorMessage property', () => {
+    test('TextLocalizationService not setup for fr language and active culture of fr uses errorMessage property', () => {
         let testItem = setupForLocalization('fr');
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');
     });
-    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses ErrorMessage property', () => {
+    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses errorMessage property', () => {
         let testItem = setupForLocalization('fr-FR');
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('EM-fallback');
     });
 
-    test('TextLocalizationService.GetErrorMessage used because ErrorMessage is not supplied', () => {
+    test('TextLocalizationService.GetErrorMessage used because errorMessage is not supplied', () => {
       
         let config = setupWithField1AndField2({
             errorMessage: null,
@@ -524,7 +524,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
     
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
     });    
-    test('TextLocalizationService.GetErrorMessage is not used because ErrorMessage is supplied', () => {
+    test('TextLocalizationService.GetErrorMessage is not used because errorMessage is supplied', () => {
       
         let config = setupWithField1AndField2({
             errorMessage: 'supplied',
@@ -581,7 +581,7 @@ describe('InputValidator.GetErrorMessageTemplate', () => {
     }); 
 });
 describe('InputValidator.GetSummaryMessageTemplate', () => {
-    test('Descriptor.SummaryMessage = string, return the same string', () => {
+    test('Descriptor.summaryMessage = string, return the same string', () => {
         let config = setupWithField1AndField2({
             errorMessage: 'Local',
             summaryMessage: 'Summary',
@@ -589,7 +589,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
 
         expect(config.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
     });
-    test('Descriptor.SummaryMessage = null, return ErrorMessage', () => {
+    test('Descriptor.summaryMessage = null, return errorMessage', () => {
         let config = setupWithField1AndField2({
             errorMessage: 'Local',
             summaryMessage: null,
@@ -597,7 +597,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
 
         expect(config.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Local');
     });
-    test('Descriptor.SummaryMessage = undefined, return ErrorMessage', () => {
+    test('Descriptor.summaryMessage = undefined, return errorMessage', () => {
         let config = setupWithField1AndField2({
             errorMessage: 'Local',
             summaryMessage: undefined
@@ -605,7 +605,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
 
         expect(config.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Local');
     });
-    test('Descriptor.SummaryMessage = function, GetSummaryMessageTemplate= result of function', () => {
+    test('Descriptor.summaryMessage = function, GetSummaryMessageTemplate= result of function', () => {
         let config = setupWithField1AndField2({
             errorMessage: 'Local',
             summaryMessage: (iv: IInputValidator) => summaryMessageForFn
@@ -614,7 +614,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
         let summaryMessageForFn = 'Summary';
         expect(config.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
     });
-    test('Descriptor.SummaryMessage = function that returns null GetSummaryMessageTemplate = ErrorMessage', () => {
+    test('Descriptor.summaryMessage = function that returns null GetSummaryMessageTemplate = errorMessage', () => {
         let config = setupWithField1AndField2({
             errorMessage: 'Local',
             summaryMessage: (iv: IInputValidator) => null!
@@ -638,15 +638,15 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('esSummaryMessage');
     });
 
-    test('TextLocalizationService not setup for fr language and active culture of fr uses SummaryMessage property', () => {
+    test('TextLocalizationService not setup for fr language and active culture of fr uses summaryMessage property', () => {
         let testItem = setupForLocalization('fr');
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
-    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses SummaryMessage property', () => {
+    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses summaryMessage property', () => {
         let testItem = setupForLocalization('fr-FR');
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
-    test('TextLocalizationService.GetSummaryMessage used because SummaryMessage is not supplied', () => {
+    test('TextLocalizationService.GetSummaryMessage used because summaryMessage is not supplied', () => {
       
         let config = setupWithField1AndField2({
             summaryMessage: null,
@@ -660,7 +660,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
     
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     });    
-    test('TextLocalizationService.GetSummaryMessage is not used because SummaryMessage is supplied', () => {
+    test('TextLocalizationService.GetSummaryMessage is not used because summaryMessage is supplied', () => {
       
         let config = setupWithField1AndField2({
             summaryMessage: 'supplied',
@@ -716,8 +716,8 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     }); 
 });
-// Validate(group?: string): IssueFound | null
-describe('InputValidator.Validate', () => {
+// validate(group?: string): IssueFound | null
+describe('InputValidator.validate', () => {
 
     test('No issue found. Returns ConditionEvaluateResult.Match', () => {
         let config = setupWithField1AndField2();
@@ -775,13 +775,13 @@ describe('InputValidator.Validate', () => {
         expect(issueFound!.errorMessage).toBe(expectedErrorMessage);
         expect(issueFound!.summaryMessage).toBe(expectedSummaryMessage);
     }
-    test('Issue found. Only ErrorMessage supplied. Summary is the same as ErrorMessage', () => {
+    test('Issue found. Only errorMessage supplied. Summary is the same as errorMessage', () => {
         testErrorMessages('Local', null, 'Local', 'Local');
     });
-    test('Issue found. ErrorMessage and SummaryMessage supplied. Issue reflects them', () => {
+    test('Issue found. errorMessage and summaryMessage supplied. Issue reflects them', () => {
         testErrorMessages('Local', 'Summary', 'Local', 'Summary');
     });
-    test('Issue found. ErrorMessage and SummaryMessage supplied each with tokens. Error messages both have correctly replaced the tokens.', () => {
+    test('Issue found. errorMessage and summaryMessage supplied each with tokens. Error messages both have correctly replaced the tokens.', () => {
         testErrorMessages('{Label} Local', '{Label} Summary', 'Label1 Local', 'Label1 Summary');
     });
     function testConditionHasIssueButDisabledReturnsNull(descriptorChanges: Partial<InputValidatorDescriptor>): void {
@@ -838,7 +838,7 @@ describe('InputValidator.Validate', () => {
             expect(vrResult!.issueFound).not.toBeNull();
         else
             expect(vrResult!.issueFound).toBeNull();
-        // 2 info level log entries: first Condition second Validate result
+        // 2 info level log entries: first Condition second validate result
         expect(logger.entryCount()).toBe(logCount);
     }
     test('Issue exists. Enabler = Match. Returns Issue with correct error messages', () => {
@@ -1068,7 +1068,7 @@ describe('getValuesForTokens', () => {
     });
 });
 
-describe('InputValidatorFactory.Create', () => {
+describe('InputValidatorFactory.create', () => {
     test('Returns an InputValidator', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);

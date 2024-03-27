@@ -2,7 +2,7 @@
  * Base implementation for Conditions that evaluate a string against a regular expression.
  * Very versatile tool for strings, as so many data types are strings with specific patterns
  * that the regular expression can identify. In fact, many of these implementations fit into the
- * Condition Category of "DataTypeCheck".
+ * Condition category of "DataTypeCheck".
  * This base class is often used to develop specific Conditions that have a built-in regular expression,
  * such as USPhoneNumberCondition and EmailAddressCondition. Both are good examples of "DataTypeCheck" conditions.
  * @module Conditions/AbstractClasses/RegExpConditionBase
@@ -44,7 +44,7 @@ export abstract class RegExpConditionBase<TDescriptor extends RegExpConditionBas
     /**
      * Most of time, this represents a pattern that defines a data type, like USPhoneNumber and EmailAddress.
      * Sometimes, the user develops a regular expression with another purpose, like checking an area code
-     * of a USPhoneNumber. They should set ConditionDescriptor.Category to Contents
+     * of a USPhoneNumber. They should set ConditionDescriptor.category to Contents
      */
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.DataTypeCheck;

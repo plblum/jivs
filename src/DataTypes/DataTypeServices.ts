@@ -10,7 +10,7 @@
  *   is a Date object and needs to be shown in a localized format of short, abbreviated, or full.
  *   Uses {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter}
  *   which returns a localized string.
- * - Converter - Change the native value into somethat used by a Condition.Evaluate function.
+ * - Converter - Change the native value into somethat used by a Condition.evaluate() function.
  *   This is essential for comparison Conditions. Comparison works automatically
  *   with string, number, and boolean native types. Converters exist to take a Date
  *   or user defined class to a string, number, or boolean.
@@ -48,7 +48,7 @@ import { CompareCategory, LoggingLevel, LookupKeyCategory } from '../Interfaces/
  * 
  * Formatting uses localization. It uses IDataTypeFormatter classes,
  * which may handle multiple cultures. When searching for a formatter,
- * it tries the ValidationServices.ActiveCultureID first and if no formatter
+ * it tries the ValidationServices.activeCultureID first and if no formatter
  * is supplied for that culture, it has a chain of fallback cultures that you supply
  * in the constructor.
  * 
@@ -58,7 +58,7 @@ export class DataTypeServices implements IDataTypeServices {
     /**
      * Constructor
      * @param cultureFallbacks - All of the cultures that you intend to support, along with fallback Cultures
-     * If null, it will create a single entry from the ValidationServices.ActiveCultureID
+     * If null, it will create a single entry from the ValidationServices.activeCultureID
      */
     constructor(cultureFallbacks?: Array<CultureIdFallback> | null) {
         if (cultureFallbacks && cultureFallbacks.length > 0)
@@ -136,7 +136,7 @@ export class DataTypeServices implements IDataTypeServices {
     }
 
 
-    //#region Format, IDataTypeFormatter and AdditionalFormatters.    
+    //#region format, IDataTypeFormatter and AdditionalFormatters.    
     /**
      * Converts the native value to a string that can be shown to the user.
      * Result includes the successfully converted value
@@ -145,7 +145,7 @@ export class DataTypeServices implements IDataTypeServices {
      * Formatting uses localization. It uses 
      * {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter} classes,
      * which may handle multiple cultures. When searching for a formatter,
-     * it tries the ValidationServices.ActiveCultureID first and if no formatter
+     * it tries the ValidationServices.activeCultureID first and if no formatter
      * is supplied for that culture, it has a chain of fallback cultures that you supply
      * in the constructor.
      * @param value
@@ -195,7 +195,7 @@ export class DataTypeServices implements IDataTypeServices {
 
     /**
       * Registers an {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter}
-      * for use by the Format function.
+      * for use by the format() function.
       * 
       * If the LookupKey was previously registered, its instance is replaced.
       * @param dtlf
@@ -255,9 +255,9 @@ export class DataTypeServices implements IDataTypeServices {
      */
     private _dataTypeFormatters: Array<IDataTypeFormatter>|null = null;
 
-    //#endregion Format, IDataTypeFormatter.
+    //#endregion format, IDataTypeFormatter.
 
-    //#region CompareValues and IDataTypeComparer
+    //#region compareValues() and IDataTypeComparer
     /**
      * Compares two values to see if they are equal or not.
      * 

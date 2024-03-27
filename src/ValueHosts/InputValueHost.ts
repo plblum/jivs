@@ -2,7 +2,7 @@
  * A ValueHost that supports input validation.
  * It is associated with the input field/element itself.
  * It provides:
- * - Validate function which returns Validation Results in the form of a list of IssuesFound.
+ * - validate() function which returns Validation Results in the form of a list of IssuesFound.
  * - A list of InputValidators, each for a single validation rule and containing their own error messages
  * - An additional value that can be validated, the value directly from the Input, which is often
  *   quite different from the value intended to be stored in the Model/Entity.
@@ -23,7 +23,7 @@ import { assertNotNull } from '../Utilities/ErrorHandling';
 
 /**
  * Standard implementation of IInputValueHost. It owns a list of InputValidators
- * which support its Validate method.
+ * which support its validate() function.
  * Use ValueHostDescriptor.Type = "Input" for the ValidationManager to use this class.
  * 
 * Each instance depends on a few things, all passed into the constructor:
@@ -305,7 +305,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
     }
     /**
      * Resolves from the generated InputValidators by checking the first for
-     * Condition.Category = Required
+     * Condition.category = Required
      */
     public get requiresInput(): boolean
     {

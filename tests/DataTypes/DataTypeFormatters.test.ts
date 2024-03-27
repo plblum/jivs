@@ -39,14 +39,14 @@ describe('DataTypeFormatterBase', () => {
 
 describe('StringFormatter', () => {
 
-    test('Supports', () => {
+    test('supports', () => {
         let testItem = new StringFormatter();
         expect(testItem.supports(LookupKey.String, 'en')).toBe(true);
         expect(testItem.supports(LookupKey.String, 'fr')).toBe(true);    
         expect(testItem.supports(LookupKey.Number, 'en')).toBe(false);   
         expect(testItem.supports(LookupKey.Uppercase, 'en')).toBe(false);        
     });
-    test('en: Format with string parameter', () => {
+    test('en: format with string parameter', () => {
         let testItem = new StringFormatter();
         let dts = testItem.format('A', LookupKey.String, 'en');
         expect(dts).not.toBeNull();
@@ -54,14 +54,14 @@ describe('StringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
     });
 
-    test('fr: Format with string parameter', () => {
+    test('fr: format with string parameter', () => {
         let testItem = new StringFormatter();
         let dts = testItem.format('A', LookupKey.String, 'fr');
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('A');
         expect(dts.errorMessage).toBeUndefined();
     });    
-    test('Format with number parameter is converted to string', () => {
+    test('format with number parameter is converted to string', () => {
         let testItem = new StringFormatter();
         
         let dts = testItem.format(15, LookupKey.String, 'en');
@@ -70,7 +70,7 @@ describe('StringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with null parameter returns empty string', () => {
+    test('format with null parameter returns empty string', () => {
         let testItem = new StringFormatter();
         
         let dts = testItem.format(null, LookupKey.String, 'en');
@@ -79,7 +79,7 @@ describe('StringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with undefined parameter returns empty string', () => {
+    test('format with undefined parameter returns empty string', () => {
         let testItem = new StringFormatter();
         
         let dts = testItem.format(undefined, LookupKey.String, 'en');
@@ -88,7 +88,7 @@ describe('StringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with object parameter is an error', () => {
+    test('format with object parameter is an error', () => {
         let testItem = new StringFormatter();
         
         let dts = testItem.format({}, LookupKey.String, 'en');
@@ -99,14 +99,14 @@ describe('StringFormatter', () => {
 });
 describe('CapitalizeStringFormatter', () => {
 
-    test('Supports', () => {
+    test('supports', () => {
         let testItem = new CapitalizeStringFormatter();
         expect(testItem.supports(LookupKey.Capitalize, 'en')).toBe(true);
         expect(testItem.supports(LookupKey.Capitalize, 'fr')).toBe(true);    
         expect(testItem.supports(LookupKey.Number, 'en')).toBe(false);   
         expect(testItem.supports('anythingelse', 'en')).toBe(false);        
     });
-    test('en: Format with string parameter', () => {
+    test('en: format with string parameter', () => {
         let testItem = new CapitalizeStringFormatter();
         let dts = testItem.format('A', LookupKey.Capitalize, 'en');
         expect(dts).not.toBeNull();
@@ -124,7 +124,7 @@ describe('CapitalizeStringFormatter', () => {
         expect(dts.value).toBe('');               
     });
 
-    test('fr: Format with string parameter', () => {
+    test('fr: format with string parameter', () => {
         let testItem = new CapitalizeStringFormatter();
         let dts = testItem.format('A', LookupKey.Capitalize, 'fr');
         expect(dts).not.toBeNull();
@@ -140,7 +140,7 @@ describe('CapitalizeStringFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
     });    
-    test('Format with number parameter is converted to string', () => {
+    test('format with number parameter is converted to string', () => {
         let testItem = new CapitalizeStringFormatter();
         
         let dts = testItem.format(15, LookupKey.Capitalize, 'en');
@@ -149,7 +149,7 @@ describe('CapitalizeStringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with null parameter returns empty string', () => {
+    test('format with null parameter returns empty string', () => {
         let testItem = new CapitalizeStringFormatter();
         
         let dts = testItem.format(null, LookupKey.Capitalize, 'en');
@@ -158,7 +158,7 @@ describe('CapitalizeStringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with undefined parameter returns empty string', () => {
+    test('format with undefined parameter returns empty string', () => {
         let testItem = new CapitalizeStringFormatter();
         
         let dts = testItem.format(undefined, LookupKey.Capitalize, 'en');
@@ -167,7 +167,7 @@ describe('CapitalizeStringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with object parameter is an error', () => {
+    test('format with object parameter is an error', () => {
         let testItem = new CapitalizeStringFormatter();
         
         let dts = testItem.format({}, LookupKey.Capitalize, 'en');
@@ -178,14 +178,14 @@ describe('CapitalizeStringFormatter', () => {
 });
 describe('UppercaseStringFormatter', () => {
 
-    test('Supports', () => {
+    test('supports', () => {
         let testItem = new UppercaseStringFormatter();
         expect(testItem.supports(LookupKey.Uppercase, 'en')).toBe(true);
         expect(testItem.supports(LookupKey.Uppercase, 'fr')).toBe(true);    
         expect(testItem.supports(LookupKey.Number, 'en')).toBe(false);   
         expect(testItem.supports('anythingelse', 'en')).toBe(false);        
     });
-    test('en: Format with string parameter', () => {
+    test('en: format with string parameter', () => {
         let testItem = new UppercaseStringFormatter();
         let dts = testItem.format('A', LookupKey.Uppercase, 'en');
         expect(dts).not.toBeNull();
@@ -206,7 +206,7 @@ describe('UppercaseStringFormatter', () => {
         expect(dts.value).toBe('');               
     });
 
-    test('fr: Format with string parameter', () => {
+    test('fr: format with string parameter', () => {
         let testItem = new UppercaseStringFormatter();
         let dts = testItem.format('A', LookupKey.Uppercase, 'fr');
         expect(dts).not.toBeNull();
@@ -225,7 +225,7 @@ describe('UppercaseStringFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
     });    
-    test('Format with number parameter is converted to string', () => {
+    test('format with number parameter is converted to string', () => {
         let testItem = new UppercaseStringFormatter();
         
         let dts = testItem.format(15, LookupKey.Uppercase, 'en');
@@ -234,7 +234,7 @@ describe('UppercaseStringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with null parameter returns empty string', () => {
+    test('format with null parameter returns empty string', () => {
         let testItem = new UppercaseStringFormatter();
         
         let dts = testItem.format(null, LookupKey.Uppercase, 'en');
@@ -243,7 +243,7 @@ describe('UppercaseStringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with undefined parameter returns empty string', () => {
+    test('format with undefined parameter returns empty string', () => {
         let testItem = new UppercaseStringFormatter();
         
         let dts = testItem.format(undefined, LookupKey.Uppercase, 'en');
@@ -252,7 +252,7 @@ describe('UppercaseStringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with object parameter is an error', () => {
+    test('format with object parameter is an error', () => {
         let testItem = new UppercaseStringFormatter();
         
         let dts = testItem.format({}, LookupKey.Uppercase, 'en');
@@ -263,14 +263,14 @@ describe('UppercaseStringFormatter', () => {
 });
 describe('LowercaseStringFormatter', () => {
 
-    test('Supports', () => {
+    test('supports', () => {
         let testItem = new LowercaseStringFormatter();
         expect(testItem.supports(LookupKey.Lowercase, 'en')).toBe(true);
         expect(testItem.supports(LookupKey.Lowercase, 'fr')).toBe(true);    
         expect(testItem.supports(LookupKey.Number, 'en')).toBe(false);   
         expect(testItem.supports('anythingelse', 'en')).toBe(false);        
     });
-    test('en: Format with string parameter', () => {
+    test('en: format with string parameter', () => {
         let testItem = new LowercaseStringFormatter();
         let dts = testItem.format('A', LookupKey.Lowercase, 'en');
         expect(dts).not.toBeNull();
@@ -291,7 +291,7 @@ describe('LowercaseStringFormatter', () => {
         expect(dts.value).toBe('');               
     });
 
-    test('fr: Format with string parameter', () => {
+    test('fr: format with string parameter', () => {
         let testItem = new LowercaseStringFormatter();
         let dts = testItem.format('A', LookupKey.Lowercase, 'fr');
         expect(dts).not.toBeNull();
@@ -310,7 +310,7 @@ describe('LowercaseStringFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
     });    
-    test('Format with number parameter is converted to string', () => {
+    test('format with number parameter is converted to string', () => {
         let testItem = new LowercaseStringFormatter();
         
         let dts = testItem.format(15, LookupKey.Lowercase, 'en');
@@ -319,7 +319,7 @@ describe('LowercaseStringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with null parameter returns empty string', () => {
+    test('format with null parameter returns empty string', () => {
         let testItem = new LowercaseStringFormatter();
         
         let dts = testItem.format(null, LookupKey.Lowercase, 'en');
@@ -328,7 +328,7 @@ describe('LowercaseStringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with undefined parameter returns empty string', () => {
+    test('format with undefined parameter returns empty string', () => {
         let testItem = new LowercaseStringFormatter();
         
         let dts = testItem.format(undefined, LookupKey.Lowercase, 'en');
@@ -337,7 +337,7 @@ describe('LowercaseStringFormatter', () => {
         expect(dts.errorMessage).toBeUndefined();
         
     });
-    test('Format with object parameter is an error', () => {
+    test('format with object parameter is an error', () => {
         let testItem = new LowercaseStringFormatter();
         
         let dts = testItem.format({}, LookupKey.Lowercase, 'en');
@@ -348,13 +348,13 @@ describe('LowercaseStringFormatter', () => {
 });
 
 describe('NumberFormatter', () => {
-    test('en: Supports LookupKey.Number is true, others false', () => {
+    test('en: supports LookupKey.Number is true, others false', () => {
         let testItem = new NumberFormatter();
         
         expect(testItem.supports(LookupKey.Number, 'en')).toBe(true);       
         expect(testItem.supports('anythingelse', 'en')).toBe(false);              
     });
-    test('Supports LookupKey.Number is true no matter the culture', () => {
+    test('supports LookupKey.Number is true no matter the culture', () => {
         let testItem = new NumberFormatter();
         
         expect(testItem.supports(LookupKey.Number, 'fr')).toBe(true);        
@@ -411,7 +411,7 @@ describe('NumberFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
     });
-    test('Invalid type returns ErrorMessage', () => {
+    test('Invalid type returns errorMessage', () => {
         let testItem = new NumberFormatter();
         
 
@@ -427,13 +427,13 @@ describe('NumberFormatter', () => {
     });
 });
 describe('CurrencyFormatter', () => {
-    test('en: Supports LookupKey.Currency is true. All others are false', () => {
+    test('en: supports LookupKey.Currency is true. All others are false', () => {
         let testItem = new CurrencyFormatter('USD');
         
         expect(testItem.supports(LookupKey.Currency, 'en')).toBe(true);       
         expect(testItem.supports('anythingelse', 'en')).toBe(false);             
     });
-    test('Supports LookupKey.Currency is true in all cultures', () => {
+    test('supports LookupKey.Currency is true in all cultures', () => {
         let testItem = new CurrencyFormatter('USD');
         
         expect(testItem.supports(LookupKey.Currency, 'fr')).toBe(true);        
@@ -546,7 +546,7 @@ describe('CurrencyFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
     });    
-    test('Invalid type returns ErrorMessage', () => {
+    test('Invalid type returns errorMessage', () => {
         let testItem = new CurrencyFormatter('USD');
         
         let dts = testItem.format('A', LookupKey.Currency, 'en');
@@ -561,13 +561,13 @@ describe('CurrencyFormatter', () => {
     });    
 });
 describe('PercentageFormatter', () => {
-    test('en: Supports LookupKey.Percentage is true. All others false', () => {
+    test('en: supports LookupKey.Percentage is true. All others false', () => {
         let testItem = new PercentageFormatter();
         
         expect(testItem.supports(LookupKey.Percentage, 'en')).toBe(true);        
         expect(testItem.supports('anythingelse', 'en')).toBe(false);
     });
-    test('all cultures: Supports LookupKey.Percentage is true. All others false', () => {
+    test('all cultures: supports LookupKey.Percentage is true. All others false', () => {
         let testItem = new PercentageFormatter();
         
         expect(testItem.supports(LookupKey.Percentage, 'fr')).toBe(true);        
@@ -623,7 +623,7 @@ describe('PercentageFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
     });
-    test('Invalid type returns ErrorMessage', () => {
+    test('Invalid type returns errorMessage', () => {
         let testItem = new PercentageFormatter();
         
         let dts = testItem.format('A', LookupKey.Percentage, 'en');
@@ -640,13 +640,13 @@ describe('PercentageFormatter', () => {
 
 
 describe('Percentage100Formatter', () => {
-    test('en: Supports LookupKey.Percentage100 is true. All others false', () => {
+    test('en: supports LookupKey.Percentage100 is true. All others false', () => {
         let testItem = new Percentage100Formatter();
         
         expect(testItem.supports(LookupKey.Percentage100, 'en')).toBe(true);        
         expect(testItem.supports('anythingelse', 'en')).toBe(false);
     });
-    test('all cultures: Supports LookupKey.Percentage100 is true. All others false', () => {
+    test('all cultures: supports LookupKey.Percentage100 is true. All others false', () => {
         let testItem = new Percentage100Formatter();
         
         expect(testItem.supports(LookupKey.Percentage100, 'fr')).toBe(true);        
@@ -708,7 +708,7 @@ describe('Percentage100Formatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
     });
-    test('Invalid type returns ErrorMessage', () => {
+    test('Invalid type returns errorMessage', () => {
         let testItem = new Percentage100Formatter();
         
         let dts = testItem.format('A', LookupKey.Percentage100, 'en');
@@ -840,7 +840,7 @@ describe('BooleanFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('');
     });    
-    test('Invalid type returns ErrorMessage', () => {
+    test('Invalid type returns errorMessage', () => {
         let testItem = new BooleanFormatter(LookupKey.Boolean);
         
         let dts = testItem.format('A', LookupKey.Boolean, 'en');
@@ -855,13 +855,13 @@ describe('BooleanFormatter', () => {
     });
 });
 describe('DateTimeFormatter', () => {
-    test('en: Supports LookupKey.DateTime is true. Others are false', () => {
+    test('en: supports LookupKey.DateTime is true. Others are false', () => {
         let testItem = new DateTimeFormatter();
         
         expect(testItem.supports(LookupKey.DateTime, 'en')).toBe(true);        
         expect(testItem.supports('anythingelse', 'en')).toBe(false);
     });
-    test('any culture: Supports LookupKey.DateTime is true. Others are false', () => {
+    test('any culture: supports LookupKey.DateTime is true. Others are false', () => {
         let testItem = new DateTimeFormatter();
         
         expect(testItem.supports(LookupKey.DateTime, 'fr')).toBe(true);        
@@ -945,13 +945,13 @@ describe('DateTimeFormatter', () => {
     });
 });
 describe('DateFormatter', () => {
-    test('en: Supports LookupKey.Date is true. Others are false', () => {
+    test('en: supports LookupKey.Date is true. Others are false', () => {
         let testItem = new DateFormatter();
         
         expect(testItem.supports(LookupKey.Date, 'en')).toBe(true);        
         expect(testItem.supports('otherlookupkey', 'en')).toBe(false);
     });
-    test('all cultures: Supports LookupKey.Date is true. Others are false', () => {
+    test('all cultures: supports LookupKey.Date is true. Others are false', () => {
         let testItem = new DateFormatter();
         
         expect(testItem.supports(LookupKey.Date, 'fr')).toBe(true);        
@@ -1036,13 +1036,13 @@ describe('DateFormatter', () => {
 
 });
 describe('AbbrevDateFormatter', () => {
-    test('en: Supports LookupKey.AbbrevDate is true. Others are false', () => {
+    test('en: supports LookupKey.AbbrevDate is true. Others are false', () => {
         let testItem = new AbbrevDateFormatter();
         
         expect(testItem.supports(LookupKey.AbbrevDate, 'en')).toBe(true);        
         expect(testItem.supports('otherlookupkey', 'en')).toBe(false);        
     });
-    test('fr: Supports LookupKey.AbbrevDate is true. Others are false', () => {
+    test('fr: supports LookupKey.AbbrevDate is true. Others are false', () => {
         let testItem = new AbbrevDateFormatter();
         
         expect(testItem.supports(LookupKey.AbbrevDate, 'fr')).toBe(true);        
@@ -1125,13 +1125,13 @@ describe('AbbrevDateFormatter', () => {
     });
 });
 describe('AbbrevDOWDateFormatter', () => {
-    test('en: Supports LookupKey.AbbrevDOWDate is true. Others are false', () => {
+    test('en: supports LookupKey.AbbrevDOWDate is true. Others are false', () => {
         let testItem = new AbbrevDOWDateFormatter();
         
         expect(testItem.supports(LookupKey.AbbrevDOWDate, 'en')).toBe(true);        
         expect(testItem.supports('otherlookupkey', 'en')).toBe(false);
     });
-    test('all cultures: Supports LookupKey.AbbrevDOWDate is true. Others are false', () => {
+    test('all cultures: supports LookupKey.AbbrevDOWDate is true. Others are false', () => {
         let testItem = new AbbrevDOWDateFormatter();
         
         expect(testItem.supports(LookupKey.AbbrevDOWDate, 'fr')).toBe(true);        
@@ -1215,13 +1215,13 @@ describe('AbbrevDOWDateFormatter', () => {
     });    
 });
 describe('LongDateFormatter', () => {
-    test('en: Supports LookupKey.LongDate is true. Others are false', () => {
+    test('en: supports LookupKey.LongDate is true. Others are false', () => {
         let testItem = new LongDateFormatter();
         
         expect(testItem.supports(LookupKey.LongDate, 'en')).toBe(true);        
         expect(testItem.supports('otherlookupkey', 'en')).toBe(false);        
     });
-    test('fr: Supports LookupKey.LongDate is true. Others are false', () => {
+    test('fr: supports LookupKey.LongDate is true. Others are false', () => {
         let testItem = new LongDateFormatter();
         
         expect(testItem.supports(LookupKey.LongDate, 'fr')).toBe(true);        
@@ -1304,13 +1304,13 @@ describe('LongDateFormatter', () => {
     });
 });
 describe('LongDOWDateFormatter', () => {
-    test('en: Supports LookupKey.LongDOWDate is true. Others are false', () => {
+    test('en: supports LookupKey.LongDOWDate is true. Others are false', () => {
         let testItem = new LongDOWDateFormatter();
         
         expect(testItem.supports(LookupKey.LongDOWDate, 'en')).toBe(true);        
         expect(testItem.supports('otherlookupkey', 'en')).toBe(false);        
     });
-    test('fr: Supports LookupKey.LongDOWDate is true. Others are false', () => {
+    test('fr: supports LookupKey.LongDOWDate is true. Others are false', () => {
         let testItem = new LongDOWDateFormatter();
         
         expect(testItem.supports(LookupKey.LongDOWDate, 'fr')).toBe(true);        
@@ -1394,13 +1394,13 @@ describe('LongDOWDateFormatter', () => {
     });        
 });
 describe('TimeofDayFormatter', () => {
-    test('en: Supports LookupKey.TimeOfDay is true. Others are false', () => {
+    test('en: supports LookupKey.TimeOfDay is true. Others are false', () => {
         let testItem = new TimeofDayFormatter();
         
         expect(testItem.supports(LookupKey.TimeOfDay, 'en')).toBe(true);        
         expect(testItem.supports('otherlookupkey', 'en')).toBe(false);        
     });
-    test('other cultures: Supports LookupKey.TimeOfDay is true. Others are false', () => {
+    test('other cultures: supports LookupKey.TimeOfDay is true. Others are false', () => {
         let testItem = new TimeofDayFormatter();
         
         expect(testItem.supports(LookupKey.TimeOfDay, 'otherculture')).toBe(true);        
@@ -1484,13 +1484,13 @@ describe('TimeofDayFormatter', () => {
     });    
 });
 describe('TimeofDayHMSFormatter', () => {
-    test('en: Supports LookupKey.TimeOfDayHMS is true. Others are false', () => {
+    test('en: supports LookupKey.TimeOfDayHMS is true. Others are false', () => {
         let testItem = new TimeofDayHMSFormatter();
         
         expect(testItem.supports(LookupKey.TimeOfDayHMS, 'en')).toBe(true);        
         expect(testItem.supports('otherlookupkey', 'en')).toBe(false);        
     });
-    test('other culture: Supports LookupKey.TimeOfDayHMS is true. Others are false', () => {
+    test('other culture: supports LookupKey.TimeOfDayHMS is true. Others are false', () => {
         let testItem = new TimeofDayHMSFormatter();
         
         expect(testItem.supports(LookupKey.TimeOfDayHMS, 'otherculture')).toBe(true);        

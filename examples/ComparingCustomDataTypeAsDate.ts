@@ -8,9 +8,9 @@
  * In this example, the class calculates a date relative today with properties of Days, Months, and Years.
  * You want to setup the the EqualToCondition like this:
  * <IEqualToConditionDescriptor>{
- *   Type: "EqualTo",
- *   ValueHost1: "TextBox1", // your code supplies the textbox value to its ValueHost as a RelativeDate
- *   SecondValue: new Date(2000, 0, 1) // Compare to this date
+ *   type: "EqualTo",
+ *   valueHostId: "TextBox1", // your code supplies the textbox value to its ValueHost as a RelativeDate
+ *   secondValue: new Date(2000, 0, 1) // Compare to this date
  * }
  * 
  * We need to teach this library about your RelativeDate class.
@@ -108,7 +108,7 @@ export function registerRelativeDate(validationServices: IValidationServices): v
     // now whenever a Condition's value is RelativeDate, it gets identified as LookupKey="RelativeDate"
     // even without any LookupKey supplied.
     // When its time to compare, the RelativeDateConverter is asked if it supports the value.
-    // When they do, the comparision immediately calls Convert and now has a Date value.
+    // When they do, the comparision immediately calls convert and now has a Date value.
     // The DataTypeServices knows to convert Date to a number, so it can be used by the 
     // default converter (DefaultConverter function supports comparing numbers)
 }

@@ -59,16 +59,6 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
 
 }
 
-// beforeEach(() => {
-//     let factory = new ValueHostFactory();
-//     factory.Register(new PublicifiedValueHostBaseGenerator());
-//     valGlobals.SetValueHostFactory(factory);
-// });
-// afterEach(() => {
-//     let factory = new ValueHostFactory();
-//     RegisterStandardValueHostGenerators(factory);
-//     valGlobals.SetValueHostFactory(factory);
-// });
 /**
  * Returns an ValueHost (PublicifiedValueHost subclass) ready for testing.
  * @param descriptor - Provide just the properties that you want to test.
@@ -173,7 +163,7 @@ describe('constructor and resulting property values', () => {
     });
 });
 
-describe('UpdateState', () => {
+describe('updateState', () => {
     test('Update value with +1 results in new instance of State and report to ValidationManager',
         () => {
             let initialValue = 100;
@@ -230,7 +220,7 @@ describe('UpdateState', () => {
         });    
 });
 
-describe('SetValue', () => {
+describe('setValue', () => {
     test('Value was changed. State changes.', () => {
         const initialValue = 100;
         const finalValue = 200;
@@ -398,7 +388,7 @@ describe('SetValue', () => {
         expect(changedState.length).toBe(0);
     });        
 });
-describe('SetValueToUndefined', () => {
+describe('setValueToUndefined', () => {
     test('Value was changed. State changes.', () => {
         const initialValue = 100;
         const finalValue = undefined;
@@ -428,7 +418,7 @@ describe('SetValueToUndefined', () => {
     });    
 });
 
-describe('ValueHostBase.SaveIntoStore and GetFromStore', () => {
+describe('ValueHostBase.saveIntoStore and getFromStore', () => {
     test('Save 10 and get it back.', () => {
 
         let config = setupValueHost({});
@@ -507,7 +497,7 @@ describe('ValueHostBase.SaveIntoStore and GetFromStore', () => {
     });        
 });
 
-describe('ToIValueHostCallbacks function', () => {
+describe('toIValueHostCallbacks function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostCallbacks = {
             onValueChanged: null,

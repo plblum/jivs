@@ -154,26 +154,26 @@ export class RequiredIndexCondition extends InputValueConditionBase<RequiredInde
  */
 export interface RegExpConditionDescriptor extends RegExpConditionBaseDescriptor {
     /**
-     * Used either ExpressionAsString or Expression for the expression.
-     * When using ExpressionAsString, it is combined with IgnoreCase and Global to create
+     * Used either expressionAsString or expression for the expression.
+     * When using expressionAsString, it is combined with IgnoreCase and Global to create
      * the regular expression.
      * Expressions must be compatible with JavaScript RegExp. Tests ignore captures and matches.
      * Expect RegExp.test() to evaluate.
      */
     expressionAsString?: string;
     /**
-     * Used together with ExpressionAsString to set the case insensitive search option on the Regexp when true.
+     * Used together with expressionAsString to set the case insensitive search option on the Regexp when true.
      * If undefined, it is treated as false.
      */
     ignoreCase?: boolean;
     /**
-     * Used together with ExpressionAsString to set the global search option on the Regexp when true.
+     * Used together with expressionAsString to set the global search option on the Regexp when true.
      * If undefined, it is treated as false.
      */
     global?: boolean;
 
     /**
-     * Used together with ExpressionAsString to set the multiline option on the Regexp when true.
+     * Used together with expressionAsString to set the multiline option on the Regexp when true.
      * When used, ^ and $ match to newlines, not just start and end of the full string.
      * If undefined, it is treated as false.
      */
@@ -181,7 +181,7 @@ export interface RegExpConditionDescriptor extends RegExpConditionBaseDescriptor
 
     /**
      * Actual JavaScript Regular Expression object, complete with its flags.
-     * It is an alternative to ExpressionAsString. If both are supplied, this takes precedence.
+     * It is an alternative to expressionAsString. If both are supplied, this takes precedence.
      */
     expression?: RegExp;
 
@@ -220,7 +220,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
                         (this.descriptor.multiline ? 'm' : ''));
                 }
                 else
-                    throw new CodingError('RegExpConditionDescriptor does not have a regular expression assigned to Expression or ExpressionOrString properties.');
+                    throw new CodingError('RegExpConditionDescriptor does not have a regular expression assigned to expression or ExpressionOrString properties.');
             }
             this._savedRE = re;
         }
@@ -327,7 +327,7 @@ export interface CompareToConditionDescriptor extends TwoValueConditionDescripto
      */
     secondValue?: any;
     /**
-     * Associated with SecondValue/SecondValueHostId only.
+     * Associated with secondValue/secondValueHostId only.
      * Assign to a LookupKey that is associated with a DataTypeConverter.
      * Use it to convert the value prior to comparing, to handle special cases like
      * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Round"),
@@ -339,7 +339,7 @@ export interface CompareToConditionDescriptor extends TwoValueConditionDescripto
 /**
  * Compare the native datatype value against a second value.
  * The second value can be supplied in the Descriptor.Value property
- * or as another ValueHost identified in Descriptor.SecondValueHostId.
+ * or as another ValueHost identified in Descriptor.secondValueHostId.
  * Subclasses implement the actual comparison operator (equals, greater than, etc)
  * Supports tokens: {CompareTo}, the value from the second value host.
  */
@@ -355,8 +355,8 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
         if (this.descriptor.secondValueHostId) {
             let vh2 = this.getValueHost(this.descriptor.secondValueHostId, valueHostResolver);
             if (!vh2) {
-                const msg = 'SecondValueHostId is unknown';
-                this.logInvalidPropertyData('SecondValueHostId', msg, valueHostResolver);
+                const msg = 'secondValueHostId is unknown';
+                this.logInvalidPropertyData('secondValueHostId', msg, valueHostResolver);
                 throw new Error(msg);
             }
             secondValue = vh2.getValue();
@@ -366,8 +366,8 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
         {
             if (this.descriptor.secondValue == null)    // null/undefined
             {
-                const msg = 'SecondValue lacks value to evaluate';
-                this.logInvalidPropertyData('SecondValue', msg, valueHostResolver);
+                const msg = 'secondValue lacks value to evaluate';
+                this.logInvalidPropertyData('secondValue', msg, valueHostResolver);
                 throw new Error(msg);
             }
             secondValue = this.descriptor.secondValue;
@@ -377,7 +377,7 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
             value, secondValue,
             this.descriptor.conversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
-            valueHostResolver.services.loggerService.log('Type mismatch. Value cannot be compared to SecondValue',
+            valueHostResolver.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
                 LoggingLevel.Warn, ConfigurationCategory, `${this.constructor.name} for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -619,7 +619,7 @@ export interface AllMatchConditionDescriptor extends EvaluateChildConditionResul
 
 /**
  * All Children must evaluate as Match for a result of Match.
- * If any are still Undetermined after TreatUndeterminedAs is applied, this results as Undetermined.
+ * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
  */
 export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatchConditionDescriptor>
 {
@@ -643,7 +643,7 @@ export interface AnyMatchConditionDescriptor extends EvaluateChildConditionResul
 }
 /**
  * At least one Child Condition must evaluate as Match for a result of Match.
- * If any are still Undetermined after TreatUndeterminedAs is applied, this results as Undetermined.
+ * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
  */
 export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatchConditionDescriptor>
 {

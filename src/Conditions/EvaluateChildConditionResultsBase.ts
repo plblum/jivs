@@ -64,7 +64,7 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
     protected abstract evaluateChildren(conditions: Array<ICondition>, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
 
     /**
-     * Utility for EvaluateChildren to apply the Descriptor.TreatUndeterminedAs
+     * Utility for EvaluateChildren to apply the Descriptor.treatUndeterminedAs
      * @param childResult 
      * @returns 
      */

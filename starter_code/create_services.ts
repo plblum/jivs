@@ -286,12 +286,12 @@ export function createTextLocalizerService(): ITextLocalizerService
     });    
 
     // Validator error messages can use these instead of having to be setup on individual InputValidatorDescriptors.
-    // So long as you don't supply a value to the InputValidatorDescriptor.ErrorMessage property, it will
+    // So long as you don't supply a value to the InputValidatorDescriptor.errorMessage property, it will
     // create a lookup key using this pattern, and see if the TextLocalizerService has a value for it.
     // EM-ConditionType-DataTypeLookupKey
     // and a fallback:
     // EM-ConditionType
-    // Similar for SummaryMessage, only with SEM- prefix:
+    // Similar for summaryMessage, only with SEM- prefix:
     // SEM-ConditionType-DataTypeLookupKey
     // SEM-ConditionType
     // 

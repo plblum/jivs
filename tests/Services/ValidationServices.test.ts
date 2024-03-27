@@ -25,59 +25,59 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
     });
 });
 describe('Replace factories and services', () => {
-    test('Replace ConditionFactory', () => {
+    test('Replace conditionFactory', () => {
         let replacement = new ConditionFactory();
 
         let testItem = new ValidationServices();
         testItem.conditionFactory = replacement;
         expect(testItem.conditionFactory).toBe(replacement);
     });
-    test('Replace DataTypeServices', () => {
+    test('Replace dataTypeServices', () => {
         let replacement = new DataTypeServices();
         let testItem = new ValidationServices();
         testItem.dataTypeServices = replacement;
         expect(testItem.dataTypeServices).toBe(replacement);
     });
-    test('Replace TextLocalizerService', () => {
+    test('Replace textLocalizerService', () => {
         let replacement = new TextLocalizerService();
 
         let testItem = new ValidationServices();
         testItem.textLocalizerService = replacement;
         expect(testItem.textLocalizerService).toBe(replacement);
     });    
-    test('Replace MessageTokenResolverService', () => {
+    test('Replace messageTokenResolverService', () => {
         let replacement = new MessageTokenResolver();
 
         let testItem = new ValidationServices();
         testItem.messageTokenResolverService = replacement;
         expect(testItem.messageTokenResolverService).toBe(replacement);
     });
-    test('Replace LoggerService', () => {
+    test('Replace loggerService', () => {
         let replacement = new MockCapturingLogger();
         let testItem = new ValidationServices();
         testItem.loggerService = replacement;
         expect(testItem.loggerService).toBe(replacement);
     });    
-    test('Replace ValueHostFactory', () => {
+    test('Replace valueHostFactory', () => {
         let replacement = new ValueHostFactory();
         let testItem = new ValidationServices();
         testItem.valueHostFactory = replacement;
         expect(testItem.valueHostFactory).toBe(replacement);
     });    
-    test('Replace InputValidatorFactory', () => {
+    test('Replace inputValidatorFactory', () => {
         let replacement = new InputValidatorFactory();
         let testItem = new ValidationServices();
         testItem.inputValidatorFactory = replacement;
         expect(testItem.inputValidatorFactory).toBe(replacement);
     });    
-    test('Replace ActiveCultureID', () => {
+    test('Replace activeCultureID', () => {
         let replacement = 'fr';
         let testItem = new ValidationServices();
         testItem.activeCultureId = replacement;
         expect(testItem.activeCultureId).toBe(replacement);
     });    
 });
-describe('ValueHostFactory', () => {
+describe('valueHostFactory property', () => {
     test('Set and Get', () => {
         let testItem = new ValidationServices();
         let factory = new ValueHostFactory();
@@ -93,7 +93,7 @@ describe('ValueHostFactory', () => {
     });
   
 });
-describe('InputValidatorFactory', () => {
+describe('inputValidatorFactory property', () => {
     test('Set and Get', () => {
         let testItem = new ValidationServices();
         let factory = new InputValidatorFactory();

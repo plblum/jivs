@@ -21,7 +21,7 @@ export interface ICoreDataTypeServices
  * or validation error information.
  * Formatting uses localization. It uses IDataTypeFormatter classes,
  * which may handle multiple cultures. When searching for a formatter,
- * it tries the ValidationServices.ActiveCultureID first and if no formatter
+ * it tries the ValidationServices.activeCultureID first and if no formatter
  * is supplied for that culture, it has a chain of fallback cultures that you supply
  * in the constructor.
  * @param value
@@ -36,7 +36,7 @@ export interface ICoreDataTypeServices
 export interface IDataTypeServices extends ICoreDataTypeServices, IServicesAccessor
 {
 /**
- * {@inheritDoc DataTypes/ConcreteClasses/DataTypeServices!DataTypeServices.CompareValues}
+ * {@inheritDoc DataTypes/ConcreteClasses/DataTypeServices!DataTypeServices.compareValues}
  */    
     compareValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult;
     
@@ -93,7 +93,7 @@ export interface DataTypeResolution<T>
 {
     /**
      * If assigned, it is the resolved value.
-     * If undefined, the value failed to resolve and the ErrorMessage is setup.
+     * If undefined, the value failed to resolve and the errorMessage is setup.
      */
     value?: T;
     /**
@@ -145,11 +145,11 @@ export interface IDataTypeConverter
  * If the dataTypeLookupKey is null or '', evaluate the value itself,
  * such as checking its class (using 'instanceof') or for properties of an interface
  * that you are using.
- * Don't look for valid data within the object. The Convert function is responsible
+ * Don't look for valid data within the object. The convert() function is responsible
  * for reporting invalid data in supported values.
  * @param value
  * @param dataTypeLookupKey
- * @returns true when its own Convert method should handle the value.
+ * @returns true when its own convert() method should handle the value.
   */
     supportsValue(value: any, dataTypeLookupKey: LookupKey | string | null): boolean;
 /**
@@ -201,15 +201,15 @@ export enum ComparersResult {
 export interface IDataTypeFormatter
 {
     /**
-     * Evaluates the parameters to determine if its Format method should handle the value
+     * Evaluates the parameters to determine if its format() method should handle the value
      * with those same parameters.
      * It should always match the DataTypeLookupKey. 
      * It does not have to evaluate the cultureID, as there are implementations
-     * where the Format function handles every culture or isn't
+     * where the format() function handles every culture or isn't
      * using culture at all.
      * @param dataTypeLookupKey 
      * @param cultureId - Such as 'en-US' and 'en'
-     * @returns Use its Format method when true. Do not use Format when false.
+     * @returns Use its format() method when true. Do not use format() when false.
      */
     supports(dataTypeLookupKey: LookupKey | string, cultureId: string): boolean;
 

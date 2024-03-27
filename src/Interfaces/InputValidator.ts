@@ -11,7 +11,7 @@ import { IGatherValueHostIds } from './ValueHost';
 /**
  * Represents a single validator for the value of an InputValueHost.
  * It is stateless.
- * Basically you want to call Validate() to get all of the results
+ * Basically you want to call validate() to get all of the results
  * of a validation, including ValidationResult, error messages,
  * severity, and more.
  * That data ends up in the ValidationManager as part of its state,
@@ -130,7 +130,7 @@ export interface InputValidatorDescriptor {
      * It should already be localized, except for the tokens.
      * It can contain HTML tags if the platform supports them. In that case,
      * be sure to use HTML encoded characters.
-     * The string shown to the actual user is stored in InputValidatorState.ErrorMessage.
+     * The string shown to the actual user is stored in InputValidatorState.errorMessage.
      * Values:
      * * String - The error message with tokens and optional HTML tags.
      * * function - Returns the error message, given the InputValidator,
@@ -145,19 +145,19 @@ export interface InputValidatorDescriptor {
     errorMessage?: undefined | null | string | ((host: IInputValidator) => string);
 
     /**
-     * Localization key for ErrorMessage. Its value will be matched to an entry
+     * Localization key for errorMessage. Its value will be matched to an entry
      * made to ValidationServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
-     * the value from the ErrorMessage property is used.
+     * the value from the errorMessage property is used.
      */
     errorMessagel10n?: string | null | undefined;
     /**
-     * Variation of the ErrorMessage intended to be displayed in a Validation Summary area.
+     * Variation of the errorMessage intended to be displayed in a Validation Summary area.
      * A summary is usually not near the field with the error. 
      * As a result, it helps to shape the message differently, usually by including
      * the Label token. "{Label} is required."
      * Values:
-     * * undefined and null - use the ErrorMessage as the template.
+     * * undefined and null - use the errorMessage as the template.
      * * String - The error message with tokens and optional HTML tags.
      * * function - Returns the error message, given the InputValidator,
      *   allowing you to replace or customize the message during validation.
@@ -171,20 +171,20 @@ export interface InputValidatorDescriptor {
     summaryMessage?: undefined | null | string | ((host: IInputValidator) => string);
 
     /**
-     * Localization key for SummaryMessage. Its value will be matched to an entry
+     * Localization key for summaryMessage. Its value will be matched to an entry
      * made to ValidationServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
-     * the value from the ErrorMessage property is used.
+     * the value from the errorMessage property is used.
      */
     summaryMessagel10n?: string | null | undefined;
 }
 
 /**
- * Result of the Validate function.
+ * Result of the validate() function.
  */
 export interface InputValidateResult {
     /**
-     * The result of Validate
+     * The result of validate()
      */
     conditionEvaluateResult: ConditionEvaluateResult;
 
@@ -195,7 +195,7 @@ export interface InputValidateResult {
     issueFound: IssueFound | null;
 
     /**
-     * When true, Validate bailed before evaluation due to Enabled or Enabler
+     * When true, validate() bailed before evaluation due to Enabled or Enabler
      */
     skipped?: boolean;
 }

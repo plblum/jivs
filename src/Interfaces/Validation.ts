@@ -6,7 +6,7 @@ import { ValueHostId } from '../DataTypes/BasicTypes';
 import { InputValidateResult } from './InputValidator';
 
 /**
- * Parameter for the Validate method on InputValueHost and ValidationManager.
+ * Parameter for the validate() function on InputValueHost and ValidationManager.
  * It provides additional guidance on how to get the validators involved.
  */
 export interface ValidateOptions
@@ -17,7 +17,7 @@ export interface ValidateOptions
      * For example, the ValidationManager handles two forms at once. Give
      * the InputValueHostDescriptor.Group a name for each form. Then make their submit command
      * pass in the same group name.
-     * When Group is undefined or "*", Validate does not check group names. All InputValueHosts 
+     * When Group is undefined or "*", validate() does not check group names. All InputValueHosts 
      * within the ValidationManager are validated.
      * When assigned, only InputValueHosts with a matching group name (case insensitive) will be involved.
      */
@@ -42,14 +42,14 @@ export interface ValidateOptions
     duringEdit?: boolean;
     /**
      * If you have setup a callback, whether on the ValidationManager or ValueHost,
-     * you may not want it to fire when you expressly call Validate.
+     * you may not want it to fire when you expressly call validate().
      * In that case, set this to true.
      */
     omitCallback?: boolean;
 }
 
 /**
- * Result of the Validate function that will be saved in InputValueHostState
+ * Result of the validate() function that will be saved in InputValueHostState
  */
 export interface StatefulValidateResult {
     /**
@@ -63,11 +63,11 @@ export interface StatefulValidateResult {
     issuesFound: Array<IssueFound> | null;
 }
 /**
- * Result of the Validate function.
+ * Result of the validate() function.
  */
 export interface ValidateResult extends StatefulValidateResult {
     /**
-     * Any promises returned by InputValidator.Validate
+     * Any promises returned by InputValidator.validate()
      * These still need to finish before supplying their evaluation results.
      * When either null or undefined, nothing is pending.
      * There should never be an empty array as the presence of an array
@@ -83,7 +83,7 @@ export interface ValidateResult extends StatefulValidateResult {
  */
 export enum ValidationResult {
     /**
-     * Indicates that Validate has yet to be attempted
+     * Indicates that validate() has yet to be attempted
      * Once attempted, it will always be one of the other results
      */
     NotAttempted,
@@ -145,7 +145,7 @@ export enum ValidationSeverity {
 }
 
 /**
- * Snapshot of the results of Validate when there are errors/warnings ("Issues")
+ * Snapshot of the results of validate() when there are errors/warnings ("Issues")
  */
 export interface IssueFound {
     /**
@@ -175,7 +175,7 @@ export interface IssueFound {
      * user friendly name of the ValueHost due to being a distance from the input field/element.
      * With all of the processing for tokens and added formatting 
      * (for example, HTML tags around some tokens if the platform supports HTML).
-     * If null/undefined, summary viewer should use ErrorMessage.
+     * If null/undefined, summary viewer should use errorMessage.
      */
     summaryMessage?: string;
 }
@@ -195,7 +195,7 @@ export interface IssueSnapshot {
  * If its own business rule has been violated, it should be recorded with this interface
  * and passed to ValidationManager.SetBusinessLogicErrors where it becomes exposed to 
  * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
- * by specifying that ValueHostID in AssociatedValueHostId.
+ * by specifying that valueHostId in AssociatedValueHostId.
  */
 export interface BusinessLogicError {
     /**
@@ -220,7 +220,7 @@ export interface BusinessLogicError {
     /**
      * Optional information about the error to pass along to the ValidationSummary.
      * It should be a short error code as a string. It will be used in the IssueFound
-     * returned from Validate and GetIssuesFound in IssueFound.ConditionType.
+     * returned from validate() and getIssuesFound() in IssueFound.conditionType.
      * ConditionType is used to uniquely identify each IssueFound, and your value
      * here will serve the same role. As a result, its value cannot match any
      * ConditionType.

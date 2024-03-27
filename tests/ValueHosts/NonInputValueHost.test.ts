@@ -77,7 +77,7 @@ describe('NonInputValueHostGenerator members', () => {
             validatorDescriptors: []
         })).toBe(false);
     });             
-    test('Create returns instance of NonInputValueHost with VM, Descriptor and State established', () => {
+    test('create returns instance of NonInputValueHost with VM, Descriptor and State established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);        
         let descriptor: NonInputValueHostDescriptor = {
@@ -97,7 +97,7 @@ describe('NonInputValueHostGenerator members', () => {
         expect(vh!.getId()).toBe(descriptor.id);    // check Descriptor values
         expect(vh!.getValue()).toBe("ABC");
     });
-    test('CleanupState existing state takes no action. Returns the same data', () => {
+    test('cleanupState existing state takes no action. Returns the same data', () => {
         let originalState: NonInputValueHostState = {
             id: 'Field1',
             value: 10
@@ -113,7 +113,7 @@ describe('NonInputValueHostGenerator members', () => {
         expect(state).toEqual(originalState);
     });
  
-    test('CreateState returns instance with ID and InitialValue from Descriptor', () => {
+    test('createState returns instance with ID and InitialValue from Descriptor', () => {
         let testItem = new NonInputValueHostGenerator();
         let descriptor: NonInputValueHostDescriptor = {
             id: 'Field1',
@@ -128,7 +128,7 @@ describe('NonInputValueHostGenerator members', () => {
         expect(state!.value).toBe(descriptor.initialValue);
     });
 });
-describe('ToIGatherValueHostIds function', () => {
+describe('toIGatherValueHostIds function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IGatherValueHostIds = {
             gatherValueHostIds: (a, b) => { }

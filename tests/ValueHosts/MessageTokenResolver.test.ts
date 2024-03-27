@@ -8,8 +8,8 @@ import { IMessageTokenSource, TokenLabelAndValue } from "../../src/Interfaces/In
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 
 
-// ResolveTokens(message: string, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string
-describe('ResolveTokens', () => {
+// resolveTokens(message: string, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string
+describe('resolveTokens', () => {
     test('Invalid parameters', () => {
         let vm = createMockValidationManagerForMessageTokenResolver(false);
         let messageTokeSource: IMessageTokenSource = {

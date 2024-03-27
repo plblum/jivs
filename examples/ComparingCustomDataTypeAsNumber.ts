@@ -7,9 +7,9 @@
  * You want its number representation to be in hours (a decimal value so 1hr 30m is 1.5).
  * You want to setup the the EqualToCondition like this:
  * <IEqualToConditionDescriptor>{
- *   Type: "EqualTo",
- *   ValueHost1: "TextBox1", // your code supplies the textbox value to its ValueHost as a TimeSpan
- *   SecondValue: 1.5 // Compare to this number of hours
+ *   type: "EqualTo",
+ *   valueHostId: "TextBox1", // your code supplies the textbox value to its ValueHost as a TimeSpan
+ *   secondValue: 1.5 // Compare to this number of hours
  * }
  * 
  * We need to teach this library about your TimeSpan.
@@ -106,5 +106,5 @@ export function registerTimeSpan(validationServices: IValidationServices): void
     dataTypeServices.registerDataTypeConverter(new TimeSpanToSecondsConverter());
     // now whenever a Condition's value is TimeSpan, it gets identified as LookupKey="TimeSpan"
     // When its time to compare, the TimeSpanToHoursConverters are asked if they support the value.
-    // When they do, the comparision immediately calls Convert and now has a number value.
+    // When they do, the comparision immediately calls convert and now has a number value.
 }

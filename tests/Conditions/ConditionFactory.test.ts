@@ -6,8 +6,8 @@ import {
 import type { IConditionCore, ConditionDescriptor } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 
-describe('ConditionFactory.Create', () => {
-    test('Create with registered Condition creates the correct instance', () => {
+describe('ConditionFactory.create', () => {
+    test('create with registered Condition creates the correct instance', () => {
         let factory = new ConditionFactory();
         expect(() => factory.register<RequiredTextConditionDescriptor>(
             ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor))).not.toThrow();
@@ -22,7 +22,7 @@ describe('ConditionFactory.Create', () => {
         expect(condition!.descriptor.valueHostId).toBeNull();
 
     });
-    test('Create with unregistered Condition throws', () => {
+    test('create with unregistered Condition throws', () => {
         let factory = new ConditionFactory();
         expect(() => factory.register<RequiredTextConditionDescriptor>(
             ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor))).not.toThrow();

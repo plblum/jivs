@@ -23,15 +23,15 @@ describe('ConsoleLogger constructor and supporting properties', () => {
         expect(testItem.minLevel).toBe(LoggingLevel.Info);
         expect(testItem.mainLogger).toBe(altLogger);
     });    
-    test('Change MinLevel', () => {
+    test('Change minLevel', () => {
         let testItem = new ConsoleLogger();
         testItem.minLevel = LoggingLevel.Debug;
         expect(testItem.minLevel).toBe(LoggingLevel.Debug);
         expect(testItem.mainLogger).toBeNull();
     });    
 });
-// Log(message: string, level: LoggingLevel, category?: string, source?: string): void;
-describe('ConsoleLogger.Log', () => {
+// log(message: string, level: LoggingLevel, category?: string, source?: string): void;
+describe('ConsoleLogger.log', () => {
     test('Debug', () => {
         const logSpy = jest.spyOn(console, 'debug');
         let testItem = new ConsoleLogger(LoggingLevel.Debug);
@@ -63,7 +63,7 @@ describe('ConsoleLogger.Log', () => {
 });
 
 
-describe('ConsoleLogger.Log without output when LoggingLevel is too low', () => {
+describe('ConsoleLogger.log without output when LoggingLevel is too low', () => {
     test('Debug', () => {
         const logSpy = jest.spyOn(console, 'debug');
         let testItem = new ConsoleLogger(LoggingLevel.Info);
@@ -87,7 +87,7 @@ describe('ConsoleLogger.Log without output when LoggingLevel is too low', () => 
     });    
 });
 
-describe('ConsoleLogger.Log using MainLogger to also capture content', () => {
+describe('ConsoleLogger.log using MainLogger to also capture content', () => {
     test('Debug', () => {
         let mainLogger = new MockCapturingLogger();
         mainLogger.minLevel = LoggingLevel.Debug;

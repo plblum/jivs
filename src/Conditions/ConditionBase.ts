@@ -47,7 +47,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * @param valueHost - contains both the raw value from input field/element and the value resolved by data type.
      * The evaluate function can use either. It should always return Undetermined if the value it gets
      * is 'undefined' or no compatible with its requirements (like wrong data type).
-     * If the ConditionDescriptor.ValueHostId is assigned, it will be used to retrieve
+     * If the ConditionDescriptor.valueHostId is assigned, it will be used to retrieve
      * the ValueHost from the Model, and this parameter is ignored.
      * This parameter can be null, but the ConditionDescriptor will need to supply a ValueHostId
      * to a value host instead.
@@ -56,7 +56,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
     public abstract evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
-     * Data that supports the business rule defined in Evaluate.
+     * Data that supports the business rule defined in evaluate().
      * Consider this immutable.
      * Expect to create a new Condition instance if its data needs to be changed.
      */
@@ -73,7 +73,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * * Sets InputValidatorDescriptor.Severity when undefined, where Required
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
-     * override it with ConditionDescriptor.Category.
+     * override it with ConditionDescriptor.category.
      */
     public get category(): ConditionCategory {
         return this.descriptor.category ?? this.defaultCategory;
@@ -94,7 +94,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      *  Conditions havea number of values that are appropriate for tokens on the ConditionDescriptor.
      *  Examples:
      *  - In RangeCondition, Minimum and Maximum properties become {Mininum} and {Maximum} tokens.
-     *  - In CompareToValueCondition, SecondValueHostId property is the source for the {CompareTo} token.
+     *  - In CompareToValueCondition, secondValueHostId property is the source for the {CompareTo} token.
      *  This implementation feels like it violates Single Responsibility pattern.
      *  But keeping this feature separate from conditions greatly increases complexity.
      * @param valueHostResolver 

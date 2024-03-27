@@ -200,7 +200,7 @@ interface ICondition {
     conditionType: string;
 }
 ```
-The `Evaluate function` entirely handles the validation rule, and returns a result of `Match`, `NoMatch`, or `Undetermined`.
+The `evaluate function` entirely handles the validation rule, and returns a result of `Match`, `NoMatch`, or `Undetermined`.
 <details>
 <summary>Expand for details on the results.</summary>
 
@@ -267,7 +267,7 @@ class Factory
           return <EqualTosConditionDescriptor>{
             type: 'EqualTo',
             valueHostId: fieldRef,
-            secondValue: businessLogicRule.SecondValue
+            secondValue: businessLogicRule.secondValue
           }
       }
   }
@@ -341,7 +341,7 @@ The `ValueHost` Ids are also used to help a `Condition` retrieve a value from a 
       conditionDescriptor: 
       {
         type: 'NotEqualTo',
-        valueHostId: null, // because owning ValueHost is provided automatically to the Condition.Evaluate function.
+        valueHostId: null, // because owning ValueHost is provided automatically to the Condition.evaluate function.
         secondValueHostId: 'LastName'
       }      
       ... and properties of InputValidatorDescriptor that we've yet to cover ...
@@ -368,9 +368,9 @@ interface InputValidatorDescriptor {
 Because this is so full of goodness, let’s go through each property.
 
 -	`conditionDescriptor` – Already described above. It is not the only way to setup a Condition…
--	`conditionCreator` – Alternative to creating a Condition by returning an implementation of ICondition. This choice gives you a lot of flexibility, especially when you have some complex logic that you feel you can code up in an Evaluate method easier than using a bunch of Conditions.
+-	`conditionCreator` – Alternative to creating a Condition by returning an implementation of ICondition. This choice gives you a lot of flexibility, especially when you have some complex logic that you feel you can code up in an evaluate method easier than using a bunch of Conditions.
 -	`errorMessage` – A template for the message reporting an issue. Its intended location is nearby the Input, such that you can omit including the field’s label. “This field requires a value”. As a template, it provides tokens which can be replaced by live data. (Discussed later).
--	`summaryMessage` – Same idea as ErrorMessage except to be shown in a Validation Summary. Its normal to include the field label in this message, using the {Label} token: “{Label} requires a value”.
+-	`summaryMessage` – Same idea as errorMessage except to be shown in a Validation Summary. Its normal to include the field label in this message, using the {Label} token: “{Label} requires a value”.
 -	`severity` – Controls some validation behaviors with these three values.
 	-	`Error` – normal error and the default when this field is omitted.
 	-	`Severe` – If there are more validation rules, skip them. Severity=Error continues to evaluate the remaining validation rules.
@@ -460,7 +460,7 @@ Let’s go through this type.
 -	`onStateChanged` and `onValueHostStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 -	`onValueChanged` notifies you when a `ValueHost` had its value changed.
 -	`onInputValueChanged` notifies you when an `InputValueHost` had its Input Value changed.
--	`onValidated` and `onValueHostValidated` notifies you after a `Validate function` completes, providing the results.
+-	`onValidated` and `onValueHostValidated` notifies you after a `validate function` completes, providing the results.
 
 ### Configuring the ValidationServices
 The `ValidationServices class` supports the operations of Validation with services and factories, which of course means you can heavily customize Jivs through the power of interfaces and dependency injection.
@@ -585,7 +585,7 @@ As you can see, all require that you supply a **conditionType** value. That’s 
 	         return new MyCondition();
 	      },
 	      errorMessage: 'This field requires a value',
-	      SummaryMessage: '{Label} requires a value.',
+	      summaryMessage: '{Label} requires a value.',
 	   }],
 	}]
 	```

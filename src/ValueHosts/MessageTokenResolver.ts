@@ -31,7 +31,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
         assertNotNull(valueHostResolver, 'valueHostResolver');
         if (!hosts || !hosts.length || hosts[0] == null)    // null/undefined
             throw new CodingError('hosts required');
-        const fnName = 'MessageTokenResolver.ResolveTokens';
+        const fnName = 'MessageTokenResolver.resolveTokens';
         // capture all token patterns and build a list of CapturedTokens
         // If none found, return the message
         let foundTokens = message.match(this._tokensInMessageRegEx);

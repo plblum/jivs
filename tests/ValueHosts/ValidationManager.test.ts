@@ -191,7 +191,7 @@ function testValueHostState(testItem: PublicifiedValidationManager, valueHostId:
 
     if (!valueHostState)
         valueHostState = {};
-    // fill in missing properties from factory CreateState defaults
+    // fill in missing properties from factory createState defaults
     let factory = new ValueHostFactory();
     factory.register(new InputValueHostGenerator());
     let descriptor = testItem.exposedValueHostDescriptors[valueHostId] as InputValueHostDescriptor;
@@ -199,15 +199,15 @@ function testValueHostState(testItem: PublicifiedValidationManager, valueHostId:
 
     let stateToCompare: InputValueHostState = { ...defaultState, ...valueHostState, };
 
-    // ensure ValueHost has an initial state. Use UpdateState because it is the only time we can see the real state
+    // ensure ValueHost has an initial state. Use updateState() because it is the only time we can see the real state
     valueHost.updateState((stateToUpdate) => {
         expect(stateToUpdate).toEqual(stateToCompare);
         return stateToUpdate;
     }, valueHost);        
 }
 
-// AddValueHost(descriptor: ValueHostDescriptor): void
-describe('ValidationManager.AddValueHost', () => {
+// addValueHost(descriptor: ValueHostDescriptor): void
+describe('ValidationManager.addValueHost', () => {
 
     test('New ValueHostDescriptor with no previous state creates ValueHost, adds Descriptor, and creates state', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostDescriptors: [] });
@@ -376,7 +376,7 @@ describe('ValidationManager.AddValueHost', () => {
 
         testValueHostState(testItem, 'Field1', savedValueHostState);        
     });    
-    test('State already exists in two places: lastValueHostState and as parameter for AddValueHost. State is sourced from AddValueHost.', () => {
+    test('State already exists in two places: lastValueHostState and as parameter for addValueHost. State is sourced from addValueHost.', () => {
         let descriptor: InputValueHostDescriptor = {
             id: 'Field1',
             type: InputValueHostType,
@@ -452,8 +452,8 @@ describe('ValidationManager.AddValueHost', () => {
     });    
 });
 
-// UpdateValueHost(descriptor: ValueHostDescriptor): void
-describe('ValidationManager.UpdateValueHost completely replaces the ValueHost instance', () => {
+// updateValueHost(descriptor: ValueHostDescriptor): void
+describe('ValidationManager.updateValueHost completely replaces the ValueHost instance', () => {
     test('Replace the descriptor to install a validator', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostDescriptors: [] });
         let descriptor: InputValueHostDescriptor = {
@@ -498,7 +498,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         // ensure ValueHost is InputValueHost and has an initial state
         testValueHostState(testItem, 'Field1', null);
     });
-    test('UpdateValueHost works like AddValueHost with unknown ValueHostDescriptor', () => {
+    test('updateValueHost works like addValueHost with unknown ValueHostDescriptor', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostDescriptors: [] });
         let descriptor: ValueHostDescriptor = {
             id: 'Field1',
@@ -601,7 +601,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         // ensure ValueHost is InputValueHost and has an initial state
         testValueHostState(testItem, 'Field1', updateState);
     });    
-    test('Edit state instance after UpdateValueHost has no impact on state in ValueHost', () => {
+    test('Edit state instance after updateValueHost has no impact on state in ValueHost', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostDescriptors: [] });
         let descriptor: InputValueHostDescriptor = {
             id: 'Field1',
@@ -633,7 +633,7 @@ describe('ValidationManager.UpdateValueHost completely replaces the ValueHost in
         testValueHostState(testItem, 'Field1', savedState);
     });        
 });
-describe('ValidationManager.DiscardValueHost completely removes ValueHost, its state and descriptor', () => {
+describe('ValidationManager.discardValueHost completely removes ValueHost, its state and descriptor', () => {
     test('After adding in the VM Config, discard the only one leaves empty valueHosts, descriptors, and state', () => {
         let descriptor: InputValueHostDescriptor = {
             id: 'Field1',
@@ -714,8 +714,8 @@ describe('ValidationManager.DiscardValueHost completely removes ValueHost, its s
 
     });
 });
-// GetValueHost(valueHostId: ValueHostId): IValueHost | null
-describe('ValidationManager.GetValueHost', () => {
+// getValueHost(valueHostId: ValueHostId): IValueHost | null
+describe('ValidationManager.getValueHost', () => {
     test('With 2 Descriptors, get each.', () => {
 
         let descriptor1: InputValueHostDescriptor = {
@@ -856,14 +856,14 @@ function setupInputValueHostDescriptor(fieldIndex: number,
 // getIssuesForInput(valueHostId: ValueHostId): Array<IssueSnapshot>
 // getIssuesForSummary(group?: string): Array<IssueSnapshot>
 describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssuesForInput, getIssuesForSummary based on the results', () => {
-    test('Before calling Validate with 0 inputValueHosts, isValid=true, doNotSaveNativeValue=false, getIssuesForInput=[], getIssuesForSummary=[]', () => {
+    test('Before calling validate with 0 inputValueHosts, isValid=true, doNotSaveNativeValue=false, getIssuesForInput=[], getIssuesForSummary=[]', () => {
         let setup = setupValidationManager();
         expect(setup.validationManager.isValid).toBe(true);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
         expect(setup.validationManager.getIssuesForInput('Anything')).toEqual([]);
         expect(setup.validationManager.getIssuesForSummary()).toEqual([]);
     });
-    test('isValid is true and doNotSaveNativeValue is false before calling Validate with 1 inputValueHosts', () => {
+    test('isValid is true and doNotSaveNativeValue is false before calling validate with 1 inputValueHosts', () => {
         let descriptor = setupInputValueHostDescriptor(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([descriptor]);
         expect(setup.validationManager.isValid).toBe(true);
@@ -1230,7 +1230,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(changeMe).toBe(true);
     });
 });
-describe('ValidationManager.ClearValidator', () => {
+describe('ValidationManager.clearValidation', () => {
     test('With 2 inputValueHost that are both Invalid, returns 2 ValidateResults each with 1 issue found. isValid=false. DoNotSave=true', () => {
 
         let descriptor1 = setupInputValueHostDescriptor(0, [NeverMatchesConditionType]);
@@ -1247,8 +1247,8 @@ describe('ValidationManager.ClearValidator', () => {
         expect(setup.validationManager.getIssuesForSummary()).toEqual([]);
     });
 });
-// UpdateState(updater: (stateToUpdate: TState) => TState): TState
-describe('ValidationManager.UpdateState', () => {
+// updateState(updater: (stateToUpdate: TState) => TState): TState
+describe('ValidationManager.updateState', () => {
     interface ITestExtendedState extends ValidationManagerState {
         Value: number;
     }
@@ -1300,7 +1300,7 @@ describe('ValidationManager.UpdateState', () => {
             let changes = testUpdateState(initialValue, testCallback, null);
             expect(changes.length).toBe(0);
         });
-    test('Update value with +1 results in new instance of State and report thru UpdateState',
+    test('Update value with +1 results in new instance of State and report thru updateState',
         () => {
             let testCallback = (stateToUpdate: ITestExtendedState): ITestExtendedState => {
                 stateToUpdate.Value = stateToUpdate.Value + 1;
@@ -1320,7 +1320,7 @@ describe('ValidationManager.UpdateState', () => {
                 expect(onStateChanges[i - 1].Value).toBe(initialValue + i);
             }
         });
-    test('Update value with +0 results in no change to the state instance nor seen in UpdateState',
+    test('Update value with +0 results in no change to the state instance nor seen in updateState',
         () => {
             let testCallback = (stateToUpdate: ITestExtendedState): ITestExtendedState => {
                 return stateToUpdate;
@@ -1339,7 +1339,7 @@ describe('ValidationManager.UpdateState', () => {
             expect(() => testItem.updateState(null!)).toThrow(/updater/);
         });
 });
-describe('ToIValueHostResolverfunction', () => {
+describe('toIValueHostResolver function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostResolver = {
             getValueHost: (id) => { return <any>{}; },
@@ -1365,7 +1365,7 @@ describe('ToIValueHostResolverfunction', () => {
         expect(toIValueHostResolver(100)).toBeNull();
     });        
 });
-describe('ToIValueHostsManager function', () => {
+describe('toIValueHostsManager function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostsManager = {
             getValueHost: (id) => { return <any>{}; },
@@ -1392,7 +1392,7 @@ describe('ToIValueHostsManager function', () => {
         expect(toIValueHostsManager(100)).toBeNull();
     });        
 });
-describe('ToIValueHostsManagerAccessor function', () => {
+describe('toIValueHostsManagerAccessor function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostsManagerAccessor = {
             valueHostsManager :{
@@ -1426,7 +1426,7 @@ describe('ToIValueHostsManagerAccessor function', () => {
         expect(toIValueHostsManagerAccessor(100)).toBeNull();
     });        
 });
-describe('ToIValidationManagerCallbacks function', () => {
+describe('toIValidationManagerCallbacks function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValidationManagerCallbacks = {
             onValueChanged: (vh: IValueHost, old: any) => {},

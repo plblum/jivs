@@ -23,9 +23,9 @@ export abstract class OneValueConditionBase<TConditionDescriptor extends OneValu
     }
 
     /**
-     * Supports Evaluate implementations by checking the valueHost passed in is setup
-     * and if not, supplying one identified by ConditionDescriptor.ValueHostId.
-     * ConditionDescriptor.ValueHostId takes precidence over the valueHost passed in.
+     * Supports evaluate() implementations by checking the valueHost passed in is setup
+     * and if not, supplying one identified by ConditionDescriptor.valueHostId.
+     * ConditionDescriptor.valueHostId takes precidence over the valueHost passed in.
      * @param valueHost 
      * @param valueHostResolver 
      * @returns 
@@ -35,11 +35,11 @@ export abstract class OneValueConditionBase<TConditionDescriptor extends OneValu
         if (this.descriptor.valueHostId) {
             valueHost = this.getValueHost(this.descriptor.valueHostId, valueHostResolver);
             if (!valueHost)
-                this.logInvalidPropertyData('ValueHostId', 'ValueHostId is unknown', valueHostResolver);
+                this.logInvalidPropertyData('valueHostId', 'valueHostId is unknown', valueHostResolver);
         }
         if (valueHost)
             return valueHost;
-        throw new Error('Missing value for ValueHostId.');
+        throw new Error('Missing value for valueHostId.');
     }
     protected getValueHost(valueHostId: ValueHostId, valueHostResolver: IValueHostResolver): IValueHost | null {
         return valueHostResolver.getValueHost(valueHostId);
@@ -57,14 +57,14 @@ export abstract class OneValueConditionBase<TConditionDescriptor extends OneValu
 export interface OneValueConditionDescriptor extends ConditionDescriptor {
     /**
      * One source for the value to evaluate.
-     * By design, Condition.Evaluate takes a valueHost object, allowing the caller 
+     * By design, Condition.evaluate() takes a valueHost object, allowing the caller 
      * to simply pass in the value.
      * Leave this null to use that valueHost object.
      * 
-     * Assign this to a ValueHostId if you want to have it looked up in the ValueHostsManager.GetValueHost.
+     * Assign this to a ValueHostId if you want to have it looked up in the ValueHostsManager.getValueHost().
      * 
-     * Typically leave InputValidator.ConditionDescriptor.ValueHostId null
-     * because Condition.Evaluate is passed the correct valueHost.
+     * Typically leave InputValidator.ConditionDescriptor.valueHostId null
+     * because Condition.evaluate() is passed the correct valueHost.
      * However, InputValidator.EnablerDescriptor needs it assigned.
      * Same with any Condition that is a child of another, like in MultiConditions.
      * 
@@ -84,7 +84,7 @@ export interface OneValueConditionDescriptor extends ConditionDescriptor {
 export interface TwoValueConditionDescriptor extends OneValueConditionDescriptor {
     /**
      * ValueHostId to retrieve a ValueHost that will be the source
-     * of another value for the Evaluate method.
+     * of another value for the evaluate() method.
      */
     secondValueHostId: string | null;
 }

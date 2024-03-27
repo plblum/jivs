@@ -8,7 +8,7 @@
  * 
  * ValidationManager's job is:
  * - Create and retain all ValueHosts.
- * - Provide access to all ValueHosts with its GetValueHost function.
+ * - Provide access to all ValueHosts with its getValueHost() function.
  * - Retain State objects that reflects the states of all ValueHost instances.
  *   This system can operate in a stateless way, so long as you keep
  *   these objects and pass them back via the Configuration object.
@@ -42,7 +42,7 @@ export interface IValidationManager extends IValueHostsManager {
      * even if they are considered Valid.
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-     * Important to set options.BeforeSubmit to true if invoking Validate prior to submitting.
+     * Important to set options.BeforeSubmit to true if invoking validate() prior to submitting.
      * @returns Array of ValidateResult with empty array if all are valid
      */
     validate(options?: ValidateOptions): Array<ValidateResult>;
@@ -53,7 +53,7 @@ export interface IValidationManager extends IValueHostsManager {
     clearValidation(): void;
 
     /**
-     * Value is setup by calling Validate(). It does not run Validate itself.
+     * Value is setup by calling validate(). It does not run validate() itself.
      * Returns false only when any InputValueHost has a ValidationResult of Invalid. 
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
@@ -64,7 +64,7 @@ export interface IValidationManager extends IValueHostsManager {
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
-     * based on the latest call to Validate(). (It does not run Validate().)
+     * based on the latest call to validate(). (It does not run validate().)
      * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated
      * on individual validators.
      */
@@ -74,7 +74,7 @@ export interface IValidationManager extends IValueHostsManager {
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
      * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
-     * by specifying that ValueHostID in AssociatedValueHostId.
+     * by specifying that valueHostId in AssociatedValueHostId.
      * Each time its called, all previous business logic errors are abandoned.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      */
@@ -87,7 +87,7 @@ export interface IValidationManager extends IValueHostsManager {
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
@@ -102,7 +102,7 @@ export interface IValidationManager extends IValueHostsManager {
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
@@ -138,7 +138,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * Each ValueHostDescriptor describes one ValueHost (which is info about one value in your app),
      * plus its validation rules.
      * If rules need to be changed later, either create a new instance of ValidationManager
-     * or use its AddValueHost, UpdateValueHost, DiscardValueHost methods.
+     * or use its addValueHost, updateValueHost, discardValueHost methods.
      */
     valueHostDescriptors: Array<ValueHostDescriptor>;
     /**
@@ -159,7 +159,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * It will supply you with the changes to states through the OnValueHostStateChanged property.
      * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
      * the correct state. You can also supply the state of an individual ValueHost when using
-     * the AddValueHost or UpdateValueHost methods.
+     * the addValueHost or updateValueHost methods.
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */

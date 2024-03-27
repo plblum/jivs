@@ -27,7 +27,7 @@ import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
  * An IInputValidator implementation that represents a single validator 
  * for the value of an InputValueHost.
  * It is stateless.
- * Basically you want to call Validate() to get all of the results
+ * Basically you want to call validate() to get all of the results
  * of a validation, including ValidationResult, error messages,
  * severity, and more.
  * That data ends up in the ValidationManager as part of its state,
@@ -86,7 +86,7 @@ export class InputValidator implements IInputValidator {
 
     /**
      * Condition used to validate the data.
-     * Run by Validate, but only if the Validator is enabled (Severity<>Off and Enabler == Match)
+     * Run by validate(), but only if the Validator is enabled (Severity<>Off and Enabler == Match)
      * The actual Condition instance is created by the caller
      * and supplied in the InputValidatorDescriptor.
      */
@@ -177,12 +177,12 @@ export class InputValidator implements IInputValidator {
     }
 
     /**
-     * Resolves the ErrorMessage as a template - before it has its tokens processed.
+     * Resolves the errorMessage as a template - before it has its tokens processed.
      * It uses several sources to get the template. The first to have text is used.
-     * 1. Descriptor.ErrorMessagel10n gets data from TextLocalizerService with Descriptor.ErrorMessage as fallback
-     * 2. Descriptor.ErrorMessage
+     * 1. Descriptor.ErrorMessagel10n gets data from TextLocalizerService with Descriptor.errorMessage as fallback
+     * 2. Descriptor.errorMessage
      * 3. TextLocalizerService.GetErrorMessage
-     * @returns Error message from ErrorMessage property with localization applied
+     * @returns Error message from errorMessage property with localization applied
      * if ErrorMessagel10n is setup.
      */
     protected getErrorMessageTemplate(): string {
@@ -199,14 +199,14 @@ export class InputValidator implements IInputValidator {
                 this.condition.conditionType, this.valueHost.getDataType());
         }
         if (msg == null)
-            throw new Error('Must supply a value for Descriptor.ErrorMessage');
+            throw new Error('Must supply a value for Descriptor.errorMessage');
         return msg;
     }
 
     /**
-     * Resolves the SummaryMessage as a template - before it has its tokens processed.
+     * Resolves the summaryMessage as a template - before it has its tokens processed.
      * Falls back to use GetErrorMessageTemplate if Descriptor doesn't supply a value.
-     * @returns Error message from SummaryMessage property with localization applied
+     * @returns Error message from summaryMessage property with localization applied
      * if SummaryMessagel10n is setup.
      */
     protected getSummaryMessageTemplate(): string {
@@ -258,7 +258,7 @@ export class InputValidator implements IInputValidator {
             // enabler
             let enabler = this.enabler;
             if (enabler) { // Many enablers don't use the current value host.
-                // When that is the case, their ConditionDescriptor.ValueHostId
+                // When that is the case, their ConditionDescriptor.valueHostId
                 // must be setup to retrieve the correct one.
                 // ValueHostId takes precedence.
                 let result = enabler.evaluate(this.valueHost, this.valueHostsManager);         
@@ -272,7 +272,7 @@ export class InputValidator implements IInputValidator {
             let pendingCER = this.condition.evaluate(this.valueHost, this.valueHostsManager);
 
             if (pendingCER instanceof Promise) {
-            // Support Async evaluation by letting Evaluate return a promise
+            // Support Async evaluation by letting evaluate() return a promise
             // When an async process returns, it must take NO action
             // if the value of State.ValidationResult is not still AsyncProcessing.
                 return processPromise(pendingCER);
@@ -362,9 +362,9 @@ export class InputValidator implements IInputValidator {
     }
 
     /**
-     * Validate found NoMatch. Update the InputValidatorState's properties to show
+     * validate() found NoMatch. Update the InputValidatorState's properties to show
      * the current ValidationResult and error messages.
-     * @param stateToUpdate - this is a COPY of the State, as supplied by UpdateState.
+     * @param stateToUpdate - this is a COPY of the State, as supplied by updateState().
      * Do not modify the actual instance as it is immutable.
      * @param value 
      */
