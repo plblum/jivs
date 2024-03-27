@@ -557,14 +557,16 @@ export interface AllMatchConditionDescriptor extends EvaluateChildConditionResul
 /**
  * All Children must evaluate as Match for a result of Match.
  * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
+ * Any child that does not specify its Descriptor.valueHostId will have access to the ValueHost that
+ * contains the InputValidator.
  */
 export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatchConditionDescriptor>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.And; }
     
-    protected evaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         for (let condition of conditions)
-            switch (this.cleanupChildResult(condition.evaluate(null, valueHostResolver))) {
+            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostResolver))) {
                 case ConditionEvaluateResult.NoMatch:
                     return ConditionEvaluateResult.NoMatch;
                 case ConditionEvaluateResult.Undetermined:
@@ -581,15 +583,17 @@ export interface AnyMatchConditionDescriptor extends EvaluateChildConditionResul
 /**
  * At least one Child Condition must evaluate as Match for a result of Match.
  * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
+ * Any child that does not specify its Descriptor.valueHostId will have access to the ValueHost that
+ * contains the InputValidator.
  */
 export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatchConditionDescriptor>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Or; }
 
-    protected evaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let countMatches = 0;
         for (let condition of conditions)
-            switch (this.cleanupChildResult(condition.evaluate(null, valueHostResolver))) {
+            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostResolver))) {
                 case ConditionEvaluateResult.Match:
                     countMatches++;
                     break;
@@ -623,15 +627,17 @@ export interface CountMatchesConditionDescriptor extends EvaluateChildConditionR
  * Counts the number of child Conditions that evaluate as Match and determines if that count
  * is within a range of Descriptor.Minimum to Descriptor.Maximum.
  * When Minimum isn't supplied, it defaults to 1.
+ * Any child that does not specify its Descriptor.valueHostId will have access to the ValueHost that
+ * contains the InputValidator.
  */
 export class CountMatchesCondition extends EvaluateChildConditionResultsBase<CountMatchesConditionDescriptor>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.CountMatches; }
     
-    protected evaluateChildren(conditions: ICondition[], valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         let countMatches = 0;
         for (let condition of conditions)
-            switch (this.cleanupChildResult(condition.evaluate(null, valueHostResolver))) {
+            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostResolver))) {
                 case ConditionEvaluateResult.Match:
                     countMatches++;
                     break;

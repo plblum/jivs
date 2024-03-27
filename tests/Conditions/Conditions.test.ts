@@ -2940,6 +2940,30 @@ describe('class AllMatchCondition', () => {
         let testItem = new AllMatchCondition(descriptor);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
+    test('Parent ValueHost used by child RequiredTextCondition', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let descriptor: AllMatchConditionDescriptor = {
+            type: ConditionType.And,
+            conditionDescriptors: [{
+                type: ConditionType.RequiredText,
+                // valueHostId omitted meaning it must use parent ValueHost
+            },
+            {
+                type: AlwaysMatchesConditionType
+            },
+            <RegExpConditionDescriptor>{
+                type: ConditionType.RegExp,
+                // valueHostId omitted meaning it must use parent ValueHost
+                expressionAsString: 'ABC'
+            }            ],
+        };
+        vh.setValue('ABC');    // for RequiredTextCondition and RegExpCondition to match
+        let testItem = new AllMatchCondition(descriptor);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });    
     test('category is Children', () => {
         let descriptor: AllMatchConditionDescriptor = {
             type: ConditionType.And,
