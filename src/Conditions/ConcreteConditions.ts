@@ -10,7 +10,7 @@
  */
 
 import { ValueHostId } from '../DataTypes/BasicTypes';
-import { LoggingLevel, ConfigurationCategory } from '../Interfaces/Logger';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/Logger';
 import type { TokenLabelAndValue } from '../Interfaces/InputValidator';
 import { CodingError } from '../Utilities/ErrorHandling';
 
@@ -208,7 +208,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
             services.loggerService.log('Type mismatch. Value cannot be compared to Minimum',
-                LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.getId()}`);
+                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `RangeCondition for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
         let upper = this.descriptor.maximum != null ?  // null/undefined
@@ -217,7 +217,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
             services.loggerService.log('Type mismatch. Value cannot be compared to Maximum',
-                LoggingLevel.Warn, ConfigurationCategory, `RangeCondition for ${valueHost.getId()}`);
+                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `RangeCondition for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
         if (lower === ComparersResult.Equals || lower === ComparersResult.LessThan)
@@ -308,7 +308,7 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
             this.descriptor.conversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
             valueHostResolver.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
-                LoggingLevel.Warn, ConfigurationCategory, `${this.constructor.name} for ${valueHost.getId()}`);
+                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `${this.constructor.name} for ${valueHost.getId()}`);
             return ConditionEvaluateResult.Undetermined;
         }
         return this.compareTwoValues(comparison);

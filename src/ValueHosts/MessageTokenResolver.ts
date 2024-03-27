@@ -5,7 +5,7 @@
 import type { DataTypeResolution } from '../Interfaces/DataTypes';
 import { IMessageTokenResolver, IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/InputValidator';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
-import { LoggingLevel, ConfigurationCategory, TypeMismatchCategory, FormattingCategory } from '../Interfaces/Logger';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/Logger';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 
@@ -71,13 +71,13 @@ export class MessageTokenResolver implements IMessageTokenResolver
                             if (replacement.errorMessage)
                             {
                                 valueHostResolver.services.loggerService.log(`${capturedToken.full}: ${replacement.errorMessage}`,
-                                    LoggingLevel.Error, ConfigurationCategory, fnName);   
+                                    LoggingLevel.Error, LoggingCategory.Configuration, fnName);   
                             }
                     }
                     catch (e)
                     {
                         valueHostResolver.services.loggerService.log(`${capturedToken.full}: ${(e as Error).message}`,
-                            LoggingLevel.Error, TypeMismatchCategory, fnName); 
+                            LoggingLevel.Error, LoggingCategory.TypeMismatch, fnName); 
                     }
                 }
             }
@@ -85,7 +85,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
             {
                 //Log token was not replaced
                 valueHostResolver.services.loggerService.log(`{${capturedToken.full}}: Token not replaced.`,
-                    LoggingLevel.Warn, FormattingCategory, fnName); 
+                    LoggingLevel.Warn, LoggingCategory.Formatting, fnName); 
             }
         });
         return revised;

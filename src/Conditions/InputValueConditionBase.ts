@@ -7,7 +7,7 @@
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { LoggingLevel, ConfigurationCategory } from '../Interfaces/Logger';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/Logger';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { OneValueConditionDescriptor, OneValueConditionBase } from './OneValueConditionBase';
@@ -30,7 +30,7 @@ export abstract class InputValueConditionBase<TDescriptor extends OneValueCondit
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
         if (!toIInputValueHost(valueHost)) {
             valueHostResolver.services.loggerService.log('Invalid ValueHost used. Must be an InputValueHost',
-                LoggingLevel.Error, ConfigurationCategory, 'InputValueConditionBase.Evaluate');
+                LoggingLevel.Error, LoggingCategory.Configuration, 'InputValueConditionBase.Evaluate');
             throw new CodingError('Invalid ValueHost used. Must be an InputValueHost');
         }
         let iValueHost = valueHost as unknown as IInputValueHost;

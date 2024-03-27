@@ -12,7 +12,7 @@ import {
     CountMatchesConditionDescriptor, AllMatchConditionDescriptor, AnyMatchConditionDescriptor, StringNotEmptyCondition, StringNotEmptyConditionDescriptor, NotNullCondition, NotNullConditionDescriptor
 } from "../../src/Conditions/ConcreteConditions";
 
-import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/Logger";
 
 import {
     MockValidationServices, MockValidationManager, MockCapturingLogger,
@@ -3681,7 +3681,7 @@ describe('class StringNotEmptyCondition', () => {
         expect(() => testItem.evaluate(null, vm)).toThrow(/Missing value/);
         let logger = services.loggerService as MockCapturingLogger;
         expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.category).toBe(ConfigurationCategory);
+        expect(logger.getLatest()!.category).toBe(LoggingCategory.Configuration);
         expect(logger.getLatest()!.level).toBe(LoggingLevel.Error);
     });
     test('category is Required', () => {
@@ -3779,7 +3779,7 @@ describe('class NotNullCondition', () => {
         expect(() => testItem.evaluate(null, vm)).toThrow(/Missing value/);
         let logger = services.loggerService as MockCapturingLogger;
         expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.category).toBe(ConfigurationCategory);
+        expect(logger.getLatest()!.category).toBe(LoggingCategory.Configuration);
         expect(logger.getLatest()!.level).toBe(LoggingLevel.Error);
     });
     test('category is Required', () => {

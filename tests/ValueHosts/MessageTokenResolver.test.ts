@@ -1,4 +1,4 @@
-import { LoggingLevel, FormattingCategory, ConfigurationCategory, TypeMismatchCategory, LookupKeyCategory } from "../../src/Interfaces/Logger";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/Logger";
 import { MessageTokenResolver } from "../../src/ValueHosts/MessageTokenResolver";
 import { createMockValidationManagerForMessageTokenResolver, MockCapturingLogger } from "../Mocks";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
@@ -174,8 +174,8 @@ describe('resolveTokens', () => {
         let testItem = new MessageTokenResolver();
         expect(testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vm, messageTokeSource)).toBe('{token:' + LookupKey.Number + '}');
 
-        expect(logger.findMessage('token', LoggingLevel.Error, ConfigurationCategory, 'MessageTokenResolver')).not.toBeNull();        
-        expect(logger.findMessage('not replaced', LoggingLevel.Warn, FormattingCategory, 'MessageTokenResolver')).not.toBeNull();        
+        expect(logger.findMessage('token', LoggingLevel.Error, LoggingCategory.Configuration, 'MessageTokenResolver')).not.toBeNull();        
+        expect(logger.findMessage('not replaced', LoggingLevel.Warn, LoggingCategory.Formatting, 'MessageTokenResolver')).not.toBeNull();        
     });          
     test('Message with {token:formatter} where the value cannot be resolved and is not replaced and gets logged', () => {
         let vm = createMockValidationManagerForMessageTokenResolver(true);
@@ -194,9 +194,9 @@ describe('resolveTokens', () => {
         vm.services.activeCultureId = 'de-DE';  // not configured in LA
         expect(testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vm, messageTokeSource)).toBe('{token:' + LookupKey.Number + '}');
 
-        expect(logger.findMessage('support CultureID', LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices')).not.toBeNull();
-        expect(logger.findMessage('token', LoggingLevel.Error, ConfigurationCategory, 'MessageTokenResolver')).not.toBeNull();        
-        expect(logger.findMessage('not replaced', LoggingLevel.Warn, FormattingCategory, 'MessageTokenResolver')).not.toBeNull();
+        expect(logger.findMessage('support CultureID', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeServices')).not.toBeNull();
+        expect(logger.findMessage('token', LoggingLevel.Error, LoggingCategory.Configuration, 'MessageTokenResolver')).not.toBeNull();        
+        expect(logger.findMessage('not replaced', LoggingLevel.Warn, LoggingCategory.Formatting, 'MessageTokenResolver')).not.toBeNull();
     });        
 });
 

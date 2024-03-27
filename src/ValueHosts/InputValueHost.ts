@@ -9,7 +9,7 @@
  * @module ValueHosts/ConcreteClasses/InputValueHost
  */
 import { ValueHostId } from '../DataTypes/BasicTypes';
-import { ConfigurationCategory, LoggingLevel, ValidationCategory } from '../Interfaces/Logger';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/Logger';
 import { objectKeysCount, groupsMatch } from '../Utilities/Utilities';
 import { toIValidationManagerCallbacks } from './ValidationManager';
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
@@ -228,14 +228,14 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
             {
                 let parms = fn();
                 self.services.loggerService.log(parms.message, LoggingLevel.Info,
-                    ValidationCategory,
+                    LoggingCategory.Validation,
                     parms.source ?? `ValueHost ID ${self.descriptor.id}`);
             }
         }        
         function logError(message: string): void
         {
             self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
-                LoggingLevel.Error, ValidationCategory, self.descriptor.id);
+                LoggingLevel.Error, LoggingCategory.Validation, self.descriptor.id);
         }
     }
 
@@ -297,7 +297,7 @@ export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor,
                     };
                     validators.push(this.services.inputValidatorFactory.create(this, descriptor));
                     this.services.loggerService.log(`Added ${dtcCondition.conditionType} Condition for Data Type Check`,
-                        LoggingLevel.Info, ConfigurationCategory, `InputValidator on ${this.getId()}`);
+                        LoggingLevel.Info, LoggingCategory.Configuration, `InputValidator on ${this.getId()}`);
                     created = true;
                 }
             }

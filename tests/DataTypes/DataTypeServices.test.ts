@@ -11,11 +11,9 @@ import { MockCapturingLogger, MockValidationManager, MockValidationServices } fr
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ICondition, IConditionFactory } from '../../src/Interfaces/Conditions';
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
-import exp from 'constants';
 import { DataTypeCheckCondition, RegExpCondition } from '../../src/Conditions/ConcreteConditions';
-import { InputValueHost } from '../../src/ValueHosts/InputValueHost';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
-import { CompareCategory, LoggingLevel, LookupKeyCategory } from '../../src/Interfaces/Logger';
+import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/Logger';
 
 
 describe('DataTypeServices constructor and properties', () => {
@@ -197,7 +195,7 @@ describe('DataTypeServices.format', () => {
         expect(result).not.toBeNull();
         expect(result!.value).toBeUndefined();
         expect(result!.errorMessage).toMatch(/LookupKey/);
-        expect(logger.findMessage('LookupKey', LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices')).not.toBeNull();
+        expect(logger.findMessage('LookupKey', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeServices')).not.toBeNull();
     });
     test('Unsupported lookupKey error', () => {
         let testItem = createDataTypeServicesWithManyCultures('en');
@@ -208,7 +206,7 @@ describe('DataTypeServices.format', () => {
         expect(result).not.toBeNull();
         expect(result!.value).toBeUndefined();
         expect(result!.errorMessage).toMatch(/LookupKey/);
-        expect(logger.findMessage('LookupKey', LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices')).not.toBeNull();        
+        expect(logger.findMessage('LookupKey', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeServices')).not.toBeNull();        
     });
 
     class TestFormatter implements IDataTypeFormatter
@@ -482,7 +480,7 @@ describe('DataTypeServices.compareValues', () => {
         expect(() => result = testItem.compareValues({}, 'A', null, null)).not.toThrow();
         expect(result).toBe(ComparersResult.Undetermined);
         let logger = testItem.services.loggerService as MockCapturingLogger;
-        expect(logger.findMessage('operand', LoggingLevel.Error, CompareCategory, 'DataTypeServices')).not.toBeNull();        
+        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeServices')).not.toBeNull();        
 
     });    
     test('Unsupported data type for lookupKey using some class instance logs error and reports Undetermined', () => {
@@ -492,7 +490,7 @@ describe('DataTypeServices.compareValues', () => {
         expect(() => result = testItem.compareValues(testItem /* some class */, 'A', null, null)).not.toThrow();
         expect(result).toBe(ComparersResult.Undetermined);
         let logger = testItem.services.loggerService as MockCapturingLogger;
-        expect(logger.findMessage('operand', LoggingLevel.Error, CompareCategory, 'DataTypeServices')).not.toBeNull();        
+        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeServices')).not.toBeNull();        
 
     });    
 

@@ -20,7 +20,7 @@ import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionE
 import type { IInputValueHost } from '../Interfaces/InputValueHost';
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
 import { type InputValidateResult, type IInputValidator, type InputValidatorDescriptor, type IInputValidatorFactory, type IMessageTokenSource, type TokenLabelAndValue, toIMessageTokenSource  } from '../Interfaces/InputValidator';
-import { LoggingLevel, ConfigurationCategory, ValidationCategory } from '../Interfaces/Logger';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/Logger';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 
 /**
@@ -108,7 +108,7 @@ export class InputValidator implements IInputValidator {
             catch (e)
             {
                 if (e instanceof Error)
-                    this.services.loggerService.log(e.message, LoggingLevel.Error, ConfigurationCategory, this.getLogSourceText());
+                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration, this.getLogSourceText());
                 throw e;
             }
         }
@@ -136,7 +136,7 @@ export class InputValidator implements IInputValidator {
             catch (e)
             {
                 if (e instanceof Error)
-                    this.services.loggerService.log(e.message, LoggingLevel.Error, ConfigurationCategory, this.getLogSourceText());
+                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration, this.getLogSourceText());
                 throw e;
             }
         return this._enabler;
@@ -358,14 +358,14 @@ export class InputValidator implements IInputValidator {
             {
                 let parms = fn();
                 self.services.loggerService.log(parms.message, LoggingLevel.Info,
-                    ValidationCategory,
+                    LoggingCategory.Validation,
                     parms.source ?? `Validation with ${self.getLogSourceText()}`);
             }
         }
         function logError(message: string): void
         {
             self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
-                LoggingLevel.Error, ValidationCategory, self.getLogSourceText());            
+                LoggingLevel.Error, LoggingCategory.Validation, self.getLogSourceText());            
         }
     }
 
