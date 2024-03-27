@@ -1,15 +1,15 @@
 import { ValueHostId } from "../../src/DataTypes/BasicTypes";
 import {
-    type RequiredTextConditionDescriptor, type RequiredIndexConditionDescriptor, type RangeConditionDescriptor, type CompareToConditionDescriptor,
+    type RequiredTextConditionDescriptor, type RangeConditionDescriptor, type CompareToConditionDescriptor,
     RequiredTextCondition,
-    RequiredIndexCondition,
     RangeCondition, EqualToCondition, 
     NotEqualToCondition, GreaterThanCondition,
     GreaterThanOrEqualToCondition,  LessThanCondition, 
     LessThanOrEqualToCondition, StringLengthConditionDescriptor,  StringLengthCondition,
     RegExpConditionDescriptor, RegExpCondition, 
     AllMatchCondition, DataTypeCheckConditionDescriptor, DataTypeCheckCondition,
-    AnyMatchCondition, CountMatchesCondition, CountMatchesConditionDescriptor, AllMatchConditionDescriptor, AnyMatchConditionDescriptor, StringNotEmptyCondition, StringNotEmptyConditionDescriptor, NotNullCondition, NotNullConditionDescriptor
+    AnyMatchCondition, CountMatchesCondition,
+    CountMatchesConditionDescriptor, AllMatchConditionDescriptor, AnyMatchConditionDescriptor, StringNotEmptyCondition, StringNotEmptyConditionDescriptor, NotNullCondition, NotNullConditionDescriptor
 } from "../../src/Conditions/ConcreteConditions";
 
 import { ConfigurationCategory, LoggingLevel } from "../../src/Interfaces/Logger";
@@ -471,119 +471,6 @@ describe('class RequiredTextCondition', () => {
             valueHostId: null,
         };
         let condition = new RequiredTextCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
-        expect(testItem.size).toBe(0);
-    });
-});
-
-describe('class RequiredIndexCondition', () => {
-    test('DefaultConditionType', () => {
-        expect(RequiredIndexCondition.DefaultConditionType).toBe(ConditionType.RequiredIndex);
-    });
-    test('evaluate returns Match', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1'
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        vh.setInputValue(1);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue(2);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-    });
-    test('evaluate returns NoMatch', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        vh.setInputValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-    });
-    test('evaluate influenced by Descriptor.UnselectedIndexValue value', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-            unselectedIndexValue: -1
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        vh.setInputValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setInputValue(-1);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-    });
-
-    test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1'
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        vh.setInputValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(undefined);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue('string');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-    });
-    test('category is Required', () => {
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        expect(testItem.category).toBe(ConditionCategory.Required);
-    });
-    test('category is overridden', () => {
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-            category: ConditionCategory.Contents
-        };
-        let testItem = new RequiredIndexCondition(descriptor);
-        expect(testItem.category).toBe(ConditionCategory.Contents);
-    });
-    test('gatherValueHostIds when all are assigned', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: 'Property1',
-        };
-        let condition = new RequiredIndexCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
-        expect(testItem.size).toBe(1);
-        expect(testItem.has('Property1')).toBe(true);
-    });
-    test('gatherValueHostIds when none are assigned', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let descriptor: RequiredIndexConditionDescriptor = {
-            type: ConditionType.RequiredIndex,
-            valueHostId: null,
-        };
-        let condition = new RequiredIndexCondition(descriptor);
         let testItem = new Set<ValueHostId>();
         expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);

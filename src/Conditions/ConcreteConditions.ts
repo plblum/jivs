@@ -76,39 +76,6 @@ export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeChec
 }
 
 /**
- * Descriptor for RequiredIndexCondition
- */
-export interface RequiredIndexConditionDescriptor extends OneValueConditionDescriptor {
-
-    /**
-     * The index that means nothing is selected.
-     * Defaults to 0.
-     */
-    unselectedIndexValue?: number;
-}
-
-/**
- * For single selection lists to have a selected value. Values are expected 
- * to be an index.
- */
-export class RequiredIndexCondition extends InputValueConditionBase<RequiredIndexConditionDescriptor>
-{
-    public static get DefaultConditionType(): ConditionType { return ConditionType.RequiredIndex; }    
-
-    protected evaluateInputValue(value: any, valueHost: IInputValueHost,
-        valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
-        // value of undefined has been rejected already, but still need to be sure we have a number
-        if (typeof value !== 'number')
-            return ConditionEvaluateResult.Undetermined;
-        let unselected = this.descriptor.unselectedIndexValue ?? 0;
-        return value === unselected ? ConditionEvaluateResult.NoMatch : ConditionEvaluateResult.Match;
-    }
-    protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Required;
-    }
-}
-
-/**
  * Descriptor for RegExpCondition.
  */
 export interface RegExpConditionDescriptor extends RegExpConditionBaseDescriptor {

@@ -380,9 +380,10 @@ describe('InputValidator.severity', () => {
             expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
         }
         checkDefaultSeverity(ConditionType.RequiredText);
-        checkDefaultSeverity(ConditionType.RequiredIndex);
         checkDefaultSeverity(ConditionType.DataTypeCheck);
         checkDefaultSeverity(ConditionType.RegExp);
+        checkDefaultSeverity(ConditionType.StringNotEmpty);
+        checkDefaultSeverity(ConditionType.NotNull);
     });
     test('Conditions that use Severity=Error when Descriptor.Severity = undefined', () => {
         function checkDefaultSeverity(conditionType: string) {

@@ -1,6 +1,6 @@
 import {
     DataTypeCheckConditionDescriptor,  DataTypeCheckCondition, RequiredTextConditionDescriptor,
-    RequiredTextCondition, RequiredIndexConditionDescriptor, RequiredIndexCondition, RegExpConditionDescriptor,
+    RequiredTextCondition, RegExpConditionDescriptor,
     RegExpCondition, RangeConditionDescriptor, RangeCondition, CompareToConditionDescriptor,
     EqualToCondition, NotEqualToCondition,  GreaterThanCondition,
     LessThanCondition, GreaterThanOrEqualToCondition, 
@@ -88,8 +88,6 @@ export function registerConditions(cf: ConditionFactory): void
         ConditionType.DataTypeCheck, (descriptor) => new DataTypeCheckCondition(descriptor));
     cf.register<RequiredTextConditionDescriptor>(
         ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor));
-    cf.register<RequiredIndexConditionDescriptor>(
-        ConditionType.RequiredIndex, (descriptor) => new RequiredIndexCondition(descriptor));
     cf.register<RegExpConditionDescriptor>(
         ConditionType.RegExp, (descriptor) => new RegExpCondition(descriptor));
     cf.register<RangeConditionDescriptor>(
