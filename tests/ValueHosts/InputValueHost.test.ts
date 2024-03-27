@@ -1423,7 +1423,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let state: Partial<InputValueHostState> = {
         };
         let config = setupInputValueHostForValidate(ivDescriptors, state);
-        config.valueHost.setInputValue('');
+        config.valueHost.setValue('');
         let vr = config.valueHost.validate();
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(ConditionType.RequiredText, ValidationSeverity.Severe));

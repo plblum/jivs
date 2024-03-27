@@ -17,6 +17,7 @@ import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, toI
 import { NonInputValueHost } from '../../src/ValueHosts/NonInputValueHost';
 import { createDataTypeServices, registerConditions } from '../../starter_code/create_services';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { RegExpConditionDescriptor } from "../../src/Conditions/ConcreteConditions";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<ValidationManagerState> {
@@ -1148,7 +1149,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let setup = setupValidationManager([descriptor]);
 
         let validateResults: Array<ValidateResult> = [];
-        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
+        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
         expect(() => validateResults = setup.validationManager.validate({ preliminary: false })).not.toThrow();
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
@@ -1174,7 +1175,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         };
         expect(setup.validationManager.getIssuesForSummary()).toEqual([summarySnapshot]);
     });
-    test('With 1 inputValueHost and a Required condition that will evaluate as NoMatch, use option DuringEdit=true, expect normal Invalid as DuringEdit has no impact on Required validators', () => {
+    test('With 1 inputValueHost and a Required condition that will evaluate as NoMatch, use option DuringEdit=true, expect Invalid', () => {
         let descriptor = setupInputValueHostDescriptor(0, [ConditionType.RequiredText]);
         let setup = setupValidationManager([descriptor]);
 
@@ -1182,17 +1183,47 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, null);
+        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
+            conditionType: ConditionType.RequiredText
+        }]);
     });
+    test('With 1 inputValueHost and a RegExp condition that will evaluate as NoMatch, use option DuringEdit=true, expect Invalid', () => {
+        let descriptor = setupInputValueHostDescriptor(0, [ConditionType.RegExp]);
+        (descriptor.validatorDescriptors![0].conditionDescriptor as RegExpConditionDescriptor).expressionAsString =
+            'ABC';
+        let setup = setupValidationManager([descriptor]);
+
+        let validateResults: Array<ValidateResult> = [];
+        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue(' X ');
+        expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+
+        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
+            conditionType: ConditionType.RegExp
+        }]);
+    });    
+    test('With 1 inputValueHost and a RegExp condition that will evaluate as Match, use option DuringEdit=true, expect Valid', () => {
+        let descriptor = setupInputValueHostDescriptor(0, [ConditionType.RegExp]);
+        (descriptor.validatorDescriptors![0].conditionDescriptor as RegExpConditionDescriptor).expressionAsString =
+            'ABC';
+        let setup = setupValidationManager([descriptor]);
+
+        let validateResults: Array<ValidateResult> = [];
+        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue(' ABC ');
+        expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+
+        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
+    });        
     test('With 1 inputValueHost and a Required condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit has no impact on Required validators', () => {
         let descriptor = setupInputValueHostDescriptor(0, [ConditionType.RequiredText]);
         let setup = setupValidationManager([descriptor]);
 
         let validateResults: Array<ValidateResult> = [];
-        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
+        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, null);
+        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
+            conditionType: ConditionType.RequiredText
+        }]);
     });
     test('With 1 inputValueHost and a NeverMatch condition, use option DuringEdit=true, expect condition to be skipped and ValidationResult=valid', () => {
         let descriptor = setupInputValueHostDescriptor(0, [NeverMatchesConditionType]);
@@ -1209,10 +1240,12 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let setup = setupValidationManager([descriptor]);
 
         let validateResults: Array<ValidateResult> = [];
-        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
+        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, null);
+        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
+            conditionType: NeverMatchesConditionType
+        }]);
     });
     test('OnValidated callback test', () => {
         let changeMe = false;

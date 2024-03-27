@@ -36,7 +36,9 @@ export interface ValidateOptions
      * changed a textbox but the user remains in the textbox. For example, on the 
      * HTMLInputElement.oninput event.
      * This will involve only validators that make sense during such an edit.
-     * Usually that is just a Condition whose Category is Required.
+     * Specifically their Condition implements IEvaluateConditionDuringEdits.
+     * The IEvaluateConditionDuringEdits.evaluateDuringEdit() function is used
+     * instead of ICondition.evaluate().
      * When undefined, it is the same as false.
      */
     duringEdit?: boolean;

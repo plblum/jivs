@@ -6,7 +6,11 @@ import {
     LessThanCondition, GreaterThanOrEqualToCondition, 
     LessThanOrEqualToCondition, StringLengthConditionDescriptor, StringLengthCondition, AllMatchConditionDescriptor,
     AllMatchCondition, AnyMatchConditionDescriptor,  AnyMatchCondition, CountMatchesConditionDescriptor,
-    CountMatchesCondition
+    CountMatchesCondition,
+    StringNotEmptyConditionDescriptor,
+    StringNotEmptyCondition,
+    NotNullConditionDescriptor,
+    NotNullCondition
 } from "../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../src/Conditions/ConditionFactory";
 import { ConditionType } from "../src/Conditions/ConditionTypes";
@@ -110,6 +114,11 @@ export function registerConditions(cf: ConditionFactory): void
         (ConditionType.Or, (descriptor) => new AnyMatchCondition(descriptor));
     cf.register<CountMatchesConditionDescriptor>
         (ConditionType.CountMatches, (descriptor) => new CountMatchesCondition(descriptor));
+    // StringNotEmpty is similar to RequiredText, but lacks evaluating as the user types
+    cf.register<StringNotEmptyConditionDescriptor>(
+        ConditionType.StringNotEmpty, (descriptor) => new StringNotEmptyCondition(descriptor));
+    cf.register<NotNullConditionDescriptor>(
+        ConditionType.NotNull, (descriptor) => new NotNullCondition(descriptor));
     // aliases for users who don't deal well with boolean logic can relate
     cf.register<AllMatchConditionDescriptor>
         (ConditionType.All, (descriptor) => new AllMatchCondition(descriptor));

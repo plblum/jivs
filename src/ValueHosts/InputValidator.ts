@@ -16,7 +16,7 @@ import { ValueHostId } from '../DataTypes/BasicTypes';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIGatherValueHostIds, type IValueHost } from '../Interfaces/ValueHost';
 import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
-import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings } from '../Interfaces/Conditions';
+import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import type { IInputValueHost } from '../Interfaces/InputValueHost';
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
 import { type InputValidateResult, type IInputValidator, type InputValidatorDescriptor, type IInputValidatorFactory, type IMessageTokenSource, type TokenLabelAndValue, toIMessageTokenSource  } from '../Interfaces/InputValidator';
@@ -248,8 +248,8 @@ export class InputValidator implements IInputValidator {
             if (options.preliminary && this.condition.category === ConditionCategory.Required)
                 return bailout('Preliminary option skips Required conditions');
 
-            if (options.duringEdit && this.condition.category !== ConditionCategory.Required)
-                return bailout('DuringEdit option limited to Required conditions');
+            if (options.duringEdit && !this.supportsDuringEdit())
+                return bailout('DuringEdit option limited to conditions that implement IEvaluateConditionDuringEdits');
                 
             // enabled
             if (!this.enabled)
@@ -267,6 +267,14 @@ export class InputValidator implements IInputValidator {
                     case ConditionEvaluateResult.Undetermined:
                         return bailout(`Enabler evaluated as ${ConditionEvaluateResultStrings[result]}`);
                 }
+            }
+            
+            if (options.duringEdit && this.supportsDuringEdit()) {
+                let text = this.valueHost.getInputValue();
+                if (typeof text === 'string')
+                    return resolveCER((this.condition as IEvaluateConditionDuringEdits).evaluateDuringEdits(
+                        text, this.valueHost, this.services));
+                return bailout('Value intended for evaluateDuringEdits was not a string.');
             }
 
             let pendingCER = this.condition.evaluate(this.valueHost, this.valueHostsManager);
@@ -360,6 +368,21 @@ export class InputValidator implements IInputValidator {
                 LoggingLevel.Error, ValidationCategory, self.getLogSourceText());            
         }
     }
+
+    /**
+     * When true, the condition implements IEvaluateConditionDuringEdits
+     * @returns 
+     */
+    protected supportsDuringEdit(): boolean
+    {
+        if (this._supportsDuringEdit === null)
+            this._supportsDuringEdit = toIEvaluateConditionDuringEdits(this.condition) !== null;
+        return this._supportsDuringEdit;
+    }
+    /**
+     * Flag that identifies if the condition implements IEvaluateConditionDuringEdits.
+     */
+    private _supportsDuringEdit: boolean | null = null;
 
     /**
      * validate() found NoMatch. Update the InputValidatorState's properties to show

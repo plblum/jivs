@@ -18,7 +18,7 @@ import type { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import {
     type ICondition,
-    ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter
+    ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter, IEvaluateConditionDuringEdits
 } from '../Interfaces/Conditions';
 import { OneValueConditionDescriptor, OneValueConditionBase, TwoValueConditionDescriptor } from './OneValueConditionBase';
 import { StringConditionDescriptor, StringConditionBase } from './StringConditionBase';
@@ -28,6 +28,7 @@ import { EvaluateChildConditionResultsBase, EvaluateChildConditionResultsDescrip
 import { RegExpConditionBaseDescriptor, RegExpConditionBase } from './RegExpConditionBase';
 import { ComparersResult } from '../Interfaces/DataTypes';
 import { ConditionType } from './ConditionTypes';
+import { IValidationServices } from '../Interfaces/ValidationServices';
 
 
 /**
@@ -71,48 +72,6 @@ export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeChec
     }
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.DataTypeCheck;
-    }
-}
-
-/**
- * Descriptor for RequiredTextCondition, which uses the InputValue
- */
-export interface RequiredTextConditionDescriptor extends StringConditionDescriptor {
-    /**
-     * The value that means nothing is assigned.
-     * If anything other than '', '' is still considered unassigned.
-     * So a value of "DEFAULT" matches to both "DEFAULT" and "".
-     * When undefined, it means ''.
-     */
-    emptyValue?: string;
-}
-
-/**
- * For any input field/element whose native data is textual, including HTML's <select> elements,
- * which also have an index. That can be evaluated by RequiredIndexValidator
- * It evaluates InputValueHost.InputValue, so that it can be evaluated as the user types into a textbox,
- * prior to when you might update the InputValueHost.NativeValue.
- * See also its NativeValue companion, StringNotEmptyCondition.
- */
-export class RequiredTextCondition extends InputValueConditionBase<RequiredTextConditionDescriptor>
-{
-    public static get DefaultConditionType(): ConditionType { return ConditionType.RequiredText; }    
-
-    protected evaluateInputValue(value: any, valueHost: IInputValueHost,
-        valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
-        // value of undefined has been rejected already, but still need to be sure we have a string
-        if (typeof value !== 'string')
-            return ConditionEvaluateResult.Undetermined;
-        let text = value;
-        if (this.descriptor.trim ?? true)
-            text = text.trim();
-        if (text == '' || text === this.descriptor.emptyValue)
-            return ConditionEvaluateResult.NoMatch;
-        return ConditionEvaluateResult.Match;
-    }
-
-    protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Required;
     }
 }
 
@@ -201,6 +160,9 @@ export interface RegExpConditionDescriptor extends RegExpConditionBaseDescriptor
  * Evaluates the native value, which must be a string, against a regular expression.
  * This implementation has the user supply the regular expression through
  * RegExpConditionDescriptor.
+ * Supports validateOptions.duringEdit = true so long as Descriptor.supportsDuringEdit
+ * is true or undefined. In that case, 
+ * it respects the Descriptor.trim property.
  */
 export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescriptor>
 {
@@ -208,7 +170,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
     
     private _savedRE: RegExp | null = null; // cache the results. By design, any change to the Descriptor requires creating a new instance of the condition, discarding this
 
-    protected getRegExp(valueHostResolver: IValueHostResolver): RegExp {
+    protected getRegExp(services: IValidationServices): RegExp {
         if (!this._savedRE) {
             let re: RegExp | null = this.descriptor.expression ?? null;
             if (!re) {
@@ -226,12 +188,13 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
         }
         return this._savedRE;
     }
-    protected evaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
-        let found = this.getRegExp(valueHostResolver).test(text);
+    protected evaluateString(text: string, valueHost: IValueHost, services: IValidationServices): ConditionEvaluateResult {
+        let found = this.getRegExp(services).test(text);
         if (this.descriptor.not)
             found = !found;
         return found ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }    
+
 }
 
 
@@ -568,13 +531,20 @@ export interface StringLengthConditionDescriptor extends StringConditionDescript
  * Evaluates the length of a string in characters (after trimming if Trim is true).
  * Compares the result to non-null Minimum and/or Maximum parameters.
  * Supports these tokens: {Length}, {Minimum} and {Maximum}
+ * Supports validateOptions.duringEdit = true so long as Descriptor.supportsDuringEdit
+ * is true or undefined. In that case, 
+ * it respects the Descriptor.trim property.
  */
 export class StringLengthCondition extends StringConditionBase<StringLengthConditionDescriptor>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.StringLength; }
     
-    protected evaluateString(text: string, valueHost: IValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateString(text: string, valueHost: IValueHost, services: IValidationServices): ConditionEvaluateResult {
         let len = text.length;  // already trimmed
+        return this.evaluateLength(len, valueHost);
+    }
+    private evaluateLength(len: number, valueHost: IValueHost): ConditionEvaluateResult
+    {
         valueHost.saveIntoState('Len', len);
         if (this.descriptor.minimum != null)    // null/undefined
             if (len < this.descriptor.minimum)
@@ -724,15 +694,15 @@ export interface StringNotEmptyConditionDescriptor extends OneValueConditionDesc
 }
 
 /**
- * To evaluate the Native Value when it is expected to contain a string.
+ * Base class to evaluate the Native Value when it is expected to contain a string.
  * Reports NoMatch when the value is an empty string ("").
  * No whitespace trimming is applied. The value of the InputValue may need trimming,
  * but the InputValue is expected to be the final value, already trimmed.
  * See also its InputValue companion, RequiredTextCondition.
  */
-export class StringNotEmptyCondition extends OneValueConditionBase<StringNotEmptyConditionDescriptor>
+export abstract class StringNotEmptyConditionBase<TDescriptor extends StringNotEmptyConditionDescriptor>
+    extends OneValueConditionBase<TDescriptor>
 {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.StringNotEmpty; }    
 
     public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
@@ -749,11 +719,79 @@ export class StringNotEmptyCondition extends OneValueConditionBase<StringNotEmpt
             return ConditionEvaluateResult.NoMatch;
         return ConditionEvaluateResult.Match;
     }
-
+}
+/**
+ * To evaluate the Native Value when it is expected to contain a string.
+ * Reports NoMatch when the value is an empty string ("").
+ * No whitespace trimming is applied. The value of the InputValue may need trimming,
+ * but the InputValue is expected to be the final value, already trimmed.
+ * See also its InputValue companion, RequiredTextCondition.
+ */
+export class StringNotEmptyCondition extends StringNotEmptyConditionBase<StringNotEmptyConditionDescriptor>
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.StringNotEmpty; }
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Required;
-    }
+    }    
 }
+
+/**
+ * Descriptor for RequiredTextCondition, which uses the InputValue
+ */
+export interface RequiredTextConditionDescriptor extends StringNotEmptyConditionDescriptor {
+    /**
+     * The value that means "nothing is assigned". This is often
+     * known as a watermark or placeholder.
+     * If assigned to anything other than '', '' is still considered unassigned.
+     * So a value of "DEFAULT" matches to both "DEFAULT" and "".
+     * When undefined, it means ''.
+     * Only used with ValidateOption.DuringEdit = true as the string
+     * comes from the Input value, which is actively being edited.
+     * Your parser that moves data from Input to Native values is expected
+     * to do its own trimming, leaving the DuringEdit = false no need to trim.
+     */
+    emptyValue?: string;
+
+    /**
+     * Removes leading and trailing whitespace before evaluating the string.
+     * Only used with ValidateOption.DuringEdit = true as the string
+     * comes from the Input value, which is actively being edited.
+     * Your parser that moves data from Input to Native values is expected
+     * to do its own trimming, leaving the DuringEdit = false no need to trim.
+     */
+    trim?: boolean;    
+}
+
+/**
+ * For any input field/element whose native data is a string to determine if the required
+ * rule has been met or not, based on the present of no whitespace in text and optionally
+ * not null in native value.
+ * It has two evaluation features:
+ * - ICondition.evaluate() evaluates the native value. Its implementation comes from
+ * StringNotEmptyCondition, which does not deal with trimming as that was expected during
+ * conversion from input value to native value.
+ * - IEvaluateConditionDuringEdits.evaluateDuringEdit() evaluates the input value as the user is
+ * editing the input. It is invoked by InputValueHost.SetInputValue(option.DuringEdit = true)
+ * and deals with both trimming and the possible default text (aka watermark) which you can set
+ * in Descriptor.emptyValue.
+ */
+export class RequiredTextCondition extends StringNotEmptyConditionBase<RequiredTextConditionDescriptor>
+    implements IEvaluateConditionDuringEdits
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.RequiredText; }    
+
+    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
+        if (this.descriptor.trim ?? true)
+            text = text.trim();
+        if (text == '' || text === this.descriptor.emptyValue)
+            return ConditionEvaluateResult.NoMatch;
+        return ConditionEvaluateResult.Match;
+    }    
+    protected get defaultCategory(): ConditionCategory {
+        return ConditionCategory.Required;
+    }    
+}
+
 
 /**
  * Descriptor for NotNullCondition.
