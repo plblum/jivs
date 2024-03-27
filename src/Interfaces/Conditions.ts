@@ -40,7 +40,7 @@ export interface ICondition {
      * When defining conditions through a ConditionDescriptor, the Type property must 
      * be assigned with a valid ConditionType.
      */
-    ConditionType: ConditionType | string;
+    conditionType: ConditionType | string;
 
     /**
      * Evaluate something against the rules defined in the implementation. Return whether
@@ -71,7 +71,7 @@ export interface ICondition {
      * Many Conditions have this value predefined. However, all will let the user
      * override it with ConditionDescriptor.Category.
      */
-    Category: ConditionCategory;
+    category: ConditionCategory;
 }
 
 
@@ -99,14 +99,14 @@ export interface ConditionDescriptor {
      * and be able to process the propertys of ConditionDescriptor.
      * Used by the ConditionFactory
      */
-    Type: ConditionType | string;
+    type: ConditionType | string;
 
     /**
      * Most Condition classes have an official value for Category.
      * This allows you to override that official value in special situations
      * and supply a value when the Condition does not.
      */
-    Category?: ConditionCategory;
+    category?: ConditionCategory;
 }
 
 /**
@@ -119,7 +119,7 @@ export interface IConditionCore<TConditionDescriptor extends ConditionDescriptor
      * Consider this immutable.
      * Expect to create a new Condition instance if its data needs to be changed.
      */
-    Descriptor: TConditionDescriptor;
+    descriptor: TConditionDescriptor;
 }
 
 /**
@@ -211,7 +211,7 @@ export interface SupportsDataTypeConverter extends ConditionDescriptor
      * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Integer"),
      * just the Day or Month or any other number in a Date object ("Day", "Month").
      */
-    ConversionLookupKey?: string | null;
+    conversionLookupKey?: string | null;
 }
 
 /**

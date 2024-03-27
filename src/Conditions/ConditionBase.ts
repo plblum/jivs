@@ -37,9 +37,9 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * the default conditiontype. That allows multiple instances of the same condition Class
      * to participate in one validator's list of conditions, because each has a unique ConditionType.
      */
-    public get ConditionType(): string
+    public get conditionType(): string
     {
-        return this.Descriptor.Type;
+        return this.descriptor.type;
     }
 
     /**
@@ -60,7 +60,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * Consider this immutable.
      * Expect to create a new Condition instance if its data needs to be changed.
      */
-    public get Descriptor(): TConditionDescriptor {
+    public get descriptor(): TConditionDescriptor {
         return this._descriptor;
     }
     private readonly _descriptor: TConditionDescriptor;
@@ -75,13 +75,13 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * Many Conditions have this value predefined. However, all will let the user
      * override it with ConditionDescriptor.Category.
      */
-    public get Category(): ConditionCategory {
-        return this.Descriptor.Category ?? this.DefaultCategory;
+    public get category(): ConditionCategory {
+        return this.descriptor.category ?? this.defaultCategory;
     }
     /**
      * Supplies the Condition's default Category
      */
-    protected abstract get DefaultCategory(): ConditionCategory;
+    protected abstract get defaultCategory(): ConditionCategory;
 
     /**
      * A service to provide all ValueHostIds that have been assigned to this Condition's
@@ -112,6 +112,6 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      */
     protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostResolver: IValueHostResolver): void {
         let fnName = this.constructor.name;
-        valueHostResolver.Services.LoggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, ConfigurationCategory, fnName);
+        valueHostResolver.services.loggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, ConfigurationCategory, fnName);
     }
 }

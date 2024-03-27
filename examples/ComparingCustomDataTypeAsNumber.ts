@@ -36,30 +36,30 @@ export class TimeSpan
         this._minutes = minutes ?? 0;
         this._seconds = seconds ?? 0;
     }
-    public get Hours(): number
+    public get hours(): number
     {
         return this._hours;
     }
     private _hours: number;
-    public get Minutes(): number
+    public get minutes(): number
     {
         return this._minutes;
     }
     private _minutes: number;
-    public get Seconds(): number
+    public get seconds(): number
     {
         return this._seconds;
     }
     private _seconds: number;
 
-    public get TotalSeconds(): number
+    public get totalSeconds(): number
     {
         return this._hours * 3600 + this._minutes * 60 + this._seconds;
     }
 
-    public get TotalHours(): number
+    public get totalHours(): number
     {
-        let totalSeconds = this.TotalSeconds;
+        let totalSeconds = this.totalSeconds;
         return totalSeconds / 3600;
     }
 }
@@ -69,7 +69,7 @@ export const TimeSpanAsSecondsLookupKey = "TimeSpanAsSeconds";
 
 export class TimeSpanIdentifier implements IDataTypeIdentifier
 {
-    public get DataTypeLookupKey(): string { return TimeSpanLookupKey}
+    public get dataTypeLookupKey(): string { return TimeSpanLookupKey}
     public supportsValue(value: any): boolean {
         return value instanceof TimeSpan;
     }
@@ -82,7 +82,7 @@ export class TimeSpanToHoursConverter implements IDataTypeConverter
             (!dataTypeLookupKey || dataTypeLookupKey === TimeSpanLookupKey);
     }
     convert(value: TimeSpan, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        return value.TotalHours;
+        return value.totalHours;
     }
 }
 // handles the value only with the specific key "TimeSpanAsSeconds"
@@ -93,14 +93,14 @@ export class TimeSpanToSecondsConverter implements IDataTypeConverter
             (dataTypeLookupKey === TimeSpanAsSecondsLookupKey);
     }
     convert(value: TimeSpan, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        return value.TotalSeconds;
+        return value.totalSeconds;
     }
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService
 export function registerTimeSpan(validationServices: IValidationServices): void
 {
-    let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
+    let dataTypeServices = validationServices.dataTypeServices as DataTypeServices;
     dataTypeServices.registerDataTypeIdentifier(new TimeSpanIdentifier());
     dataTypeServices.registerDataTypeConverter(new TimeSpanToHoursConverter());   
     dataTypeServices.registerDataTypeConverter(new TimeSpanToSecondsConverter());

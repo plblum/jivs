@@ -46,7 +46,7 @@ export abstract class RegExpConditionBase<TDescriptor extends RegExpConditionBas
      * Sometimes, the user develops a regular expression with another purpose, like checking an area code
      * of a USPhoneNumber. They should set ConditionDescriptor.Category to Contents
      */
-    protected get DefaultCategory(): ConditionCategory {
+    protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.DataTypeCheck;
     }
 }

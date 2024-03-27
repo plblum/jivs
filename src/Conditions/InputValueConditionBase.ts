@@ -29,7 +29,7 @@ export abstract class InputValueConditionBase<TDescriptor extends OneValueCondit
     public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
         if (!toIInputValueHost(valueHost)) {
-            valueHostResolver.Services.LoggerService.log('Invalid ValueHost used. Must be an InputValueHost',
+            valueHostResolver.services.loggerService.log('Invalid ValueHost used. Must be an InputValueHost',
                 LoggingLevel.Error, ConfigurationCategory, 'InputValueConditionBase.Evaluate');
             throw new CodingError('Invalid ValueHost used. Must be an InputValueHost');
         }

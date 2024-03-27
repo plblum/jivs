@@ -70,13 +70,13 @@ export class DataTypeServices implements IDataTypeServices {
      * Note: Not passed into the constructor because this object should be created before
      * ValidationServices itself. So it gets assigned when ValidationService.DataTypeServices is assigned a value.
      */
-    public get Services(): IValidationServices
+    public get services(): IValidationServices
     {
         if (!this._services)
             throw new CodingError('Assign Services property to ValidationServices.DataTypeServices first.');
         return this._services;
     }
-    public set Services(services: IValidationServices)
+    public set services(services: IValidationServices)
     {
         assertNotNull(services, 'services');
         this._services = services;
@@ -93,13 +93,13 @@ export class DataTypeServices implements IDataTypeServices {
         this._dataTypeFormatters?.forEach((dtf) => {
             let sa = toIServicesAccessor(dtf);
             if (sa)
-                sa.Services = services;
+                sa.services = services;
         });
         if (!this._cultureConfig || this._cultureConfig.length === 0)
-            this._cultureConfig = [{ CultureId: services.ActiveCultureId }];        
+            this._cultureConfig = [{ cultureId: services.activeCultureId }];        
     }
 
-    protected get CultureIdFallback(): Array<CultureIdFallback> {
+    protected get cultureIdFallback(): Array<CultureIdFallback> {
         if (!this._cultureConfig || this._cultureConfig.length === 0)
             throw new CodingError('Must establish the CultureIdFallback array in DataTypeServices.');
         return this._cultureConfig;
@@ -117,7 +117,7 @@ export class DataTypeServices implements IDataTypeServices {
     public getClosestCultureId(cultureId: string): string | null {
         let cc = this.getClosestCultureIdFallback(cultureId);
         if (cc)
-            return cc.CultureId;
+            return cc.cultureId;
         return null;
     }
     protected getClosestCultureIdFallback(cultureId: string): CultureIdFallback | null {
@@ -132,7 +132,7 @@ export class DataTypeServices implements IDataTypeServices {
     }    
     protected getCultureIdFallback(cultureId: string): CultureIdFallback | null
     {
-        return this.CultureIdFallback.find((cc) => cc.CultureId === cultureId) ?? null;
+        return this.cultureIdFallback.find((cc) => cc.cultureId === cultureId) ?? null;
     }
 
 
@@ -161,7 +161,7 @@ export class DataTypeServices implements IDataTypeServices {
                 lookupKey = this.identifyLookupKey(value);
             if (lookupKey === null)
                 throw new Error('Value type requires a LookupKey');
-            let cultureId: string | null = this.Services.ActiveCultureId;
+            let cultureId: string | null = this.services.activeCultureId;
             while (cultureId) {
                 let cc = this.getCultureIdFallback(cultureId);
                 if (!cc)
@@ -172,9 +172,9 @@ export class DataTypeServices implements IDataTypeServices {
                         return dtlf.format(value, lookupKey, cultureId);
                     }
                     catch (e) {
-                        return { ErrorMessage: (e as Error).message };
+                        return { errorMessage: (e as Error).message };
                     }
-                cultureId = cc.FallbackCultureId ?? null;
+                cultureId = cc.fallbackCultureId ?? null;
             }
 
             throw new Error(`Unsupported LookupKey ${lookupKey}`);
@@ -183,13 +183,13 @@ export class DataTypeServices implements IDataTypeServices {
         {
             if (e instanceof Error) // should always be true. Mostly used for typecast
             {
-                this.Services.LoggerService.log(e.message, LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices');
+                this.services.loggerService.log(e.message, LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices');
                 return {
-                    ErrorMessage: e.message,
-                    Value: undefined
+                    errorMessage: e.message,
+                    value: undefined
                 };
             }
-            return { ErrorMessage: 'Unspecified'};
+            return { errorMessage: 'Unspecified'};
         }
     }
 
@@ -208,7 +208,7 @@ export class DataTypeServices implements IDataTypeServices {
         if (this._services) {
             let sa = toIServicesAccessor(dtlf);
             if (sa)
-                sa.Services = this._services;
+                sa.services = this._services;
         }
     }
     /**
@@ -348,7 +348,7 @@ export class DataTypeServices implements IDataTypeServices {
         catch (e)
         {
             if (e instanceof Error)
-                this.Services.LoggerService.log(e.message, LoggingLevel.Error, CompareCategory, 'DataTypeServices');
+                this.services.loggerService.log(e.message, LoggingLevel.Error, CompareCategory, 'DataTypeServices');
             return ComparersResult.Undetermined;
         }
     }
@@ -422,7 +422,7 @@ export class DataTypeServices implements IDataTypeServices {
      */
     public identifyLookupKey(value: any): string | null {
         let idt = this.getDataTypeIdentifier(value);
-        return idt ? idt.DataTypeLookupKey : null;
+        return idt ? idt.dataTypeLookupKey : null;
     }
 
     /**
@@ -433,7 +433,7 @@ export class DataTypeServices implements IDataTypeServices {
      */
     public registerDataTypeIdentifier(identifier: IDataTypeIdentifier): void {
         assertNotNull(identifier, 'identifier');
-        let existingPos = this.getDataTypeIdentifiers().findIndex((idt) => idt.DataTypeLookupKey.toLowerCase() === identifier.DataTypeLookupKey.toLowerCase());
+        let existingPos = this.getDataTypeIdentifiers().findIndex((idt) => idt.dataTypeLookupKey.toLowerCase() === identifier.dataTypeLookupKey.toLowerCase());
         if (existingPos < 0)
             this._dataTypeIdentifiers!.push(identifier);
         else
@@ -499,11 +499,11 @@ export class DataTypeServices implements IDataTypeServices {
      * supplied in the ValueHost's list of validators.
      * Defaults to true.
      */
-    public get AutoGenerateDataTypeConditionEnabled(): boolean
+    public get autoGenerateDataTypeConditionEnabled(): boolean
     {
         return this._autoGenerateDataTypeConditionEnabled;
     }
-    public set AutoGenerateDataTypeConditionEnabled(value: boolean)
+    public set autoGenerateDataTypeConditionEnabled(value: boolean)
     {
         this._autoGenerateDataTypeConditionEnabled = value;
     }
@@ -539,12 +539,12 @@ export class DataTypeServices implements IDataTypeServices {
         assertNotNull(dataTypeLookupKey, 'dataTypeLookupKey');
         let generator = this.getDataTypeCheckGenerator(dataTypeLookupKey);
         if (generator !== null)
-            return generator.createCondition(valueHost, dataTypeLookupKey, this.Services.ConditionFactory); // may return null
+            return generator.createCondition(valueHost, dataTypeLookupKey, this.services.conditionFactory); // may return null
         let descriptor: DataTypeCheckConditionDescriptor = {
-            Type: ConditionType.DataTypeCheck,
-            ValueHostId: valueHost.getId()
+            type: ConditionType.DataTypeCheck,
+            valueHostId: valueHost.getId()
         };
-        return this.Services.ConditionFactory.create(descriptor);
+        return this.services.conditionFactory.create(descriptor);
     }
 
     /**
@@ -593,10 +593,10 @@ export interface CultureIdFallback {
      * If this needs to change, it is OK if you set it and the Adaptor reconfigure,
      * or to create a new instance and use it.
      */
-    CultureId: string;
+    cultureId: string;
 
     /**
      * Identifies another culture to check if a lookup key cannot be resolved.
      */
-    FallbackCultureId?: string | null;
+    fallbackCultureId?: string | null;
 }

@@ -24,10 +24,10 @@ export class ConditionFactory implements IConditionFactory {
      */
     public create<TDescriptor extends ConditionDescriptor>
         (descriptor: TDescriptor): IConditionCore<TDescriptor> {
-        let fn = this._map.get(descriptor.Type);
+        let fn = this._map.get(descriptor.type);
         if (fn)
             return fn(descriptor) as IConditionCore<TDescriptor>;
-        throw new Error(`Condition Type not supported: ${descriptor.Type}`);
+        throw new Error(`Condition Type not supported: ${descriptor.type}`);
     }
     // user supplies JSON string or object implementing ConditionDescriptor
     // and it returns an instance of IValidator.

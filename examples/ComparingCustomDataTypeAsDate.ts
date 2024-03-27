@@ -37,23 +37,23 @@ export class RelativeDate
         this._years = years ?? 0;
         this._utcToday = null;
     }
-    public get Days(): number
+    public get days(): number
     {
         return this._days;
     }
     private _days: number;
-    public get Months(): number // where 0 is January
+    public get months(): number // where 0 is January
     {
         return this._months;
     }
     private _months: number;
-    public get Years(): number
+    public get years(): number
     {
         return this._years;
     }
     private _years: number;
 
-    public get UTCToday(): Date
+    public get utcToday(): Date
     {
         if (!this._utcToday)
         {
@@ -62,15 +62,15 @@ export class RelativeDate
         }
         return this._utcToday;
     }
-    public set UTCToday(today: Date)
+    public set utcToday(today: Date)
     {
         this._utcToday = today;
     }
     private _utcToday: Date | null;
 
-    public get ResolvedDate(): Date
+    public get resolvedDate(): Date
     {// WARNING: this is prototype code. It should probably be implemented differently
-         let todayAsNumber = this.UTCToday.getTime();
+         let todayAsNumber = this.utcToday.getTime();
         let totalDays = this._days + this._months * 30 + this._years * 365;
         return new Date(totalDays * 86400000 + todayAsNumber); // supply milliseconds
     }
@@ -80,7 +80,7 @@ export const RelativeDataLookupKey = "RelativeDate";
 
 export class RelativeDateIdentifier implements IDataTypeIdentifier
 {
-    public get DataTypeLookupKey(): string { return RelativeDataLookupKey }
+    public get dataTypeLookupKey(): string { return RelativeDataLookupKey }
     public supportsValue(value: any): boolean {
         return value instanceof RelativeDate;
     }
@@ -94,14 +94,14 @@ export class RelativeDateConverter implements IDataTypeConverter
             (!dataTypeLookupKey || (dataTypeLookupKey === RelativeDataLookupKey));
     }
     public convert(value: RelativeDate, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        return value.ResolvedDate;
+        return value.resolvedDate;
     }
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService
 export function registerRelativeDate(validationServices: IValidationServices): void
 {
-    let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
+    let dataTypeServices = validationServices.dataTypeServices as DataTypeServices;
     dataTypeServices.registerDataTypeIdentifier(new RelativeDateIdentifier());
     dataTypeServices.registerDataTypeConverter(new RelativeDateConverter()); 
 

@@ -32,7 +32,7 @@ export class UTCAnniversaryConverter implements IDataTypeConverter
 // Register after you have a ValidationService instance. Setup only on the ValidationService
 export function registerRelativeDate(validationServices: IValidationServices): void
 {
-    let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
+    let dataTypeServices = validationServices.dataTypeServices as DataTypeServices;
     dataTypeServices.registerDataTypeConverter(new UTCAnniversaryConverter()); 
 
     // This gets used ONLY when the ValueHostDescriptor.DataType with "Anniversary".

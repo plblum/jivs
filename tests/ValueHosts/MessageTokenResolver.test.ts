@@ -42,9 +42,9 @@ describe('ResolveTokens', () => {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
-                    TokenLabel: 'token',
-                    AssociatedValue: 'replacement',
-                    Purpose: 'label'
+                    tokenLabel: 'token',
+                    associatedValue: 'replacement',
+                    purpose: 'label'
                 }];
             }
         };
@@ -62,9 +62,9 @@ describe('ResolveTokens', () => {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
-                    TokenLabel: 'token',
-                    AssociatedValue: new Date(2000, 0, 15),
-                    Purpose: 'label'
+                    tokenLabel: 'token',
+                    associatedValue: new Date(2000, 0, 15),
+                    purpose: 'label'
                 }];
             }
         };
@@ -77,9 +77,9 @@ describe('ResolveTokens', () => {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
-                    TokenLabel: 'token',
-                    AssociatedValue: 2100,
-                    Purpose: 'label'
+                    tokenLabel: 'token',
+                    associatedValue: 2100,
+                    purpose: 'label'
                 }];
             }
         };
@@ -92,9 +92,9 @@ describe('ResolveTokens', () => {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
-                    TokenLabel: 'token',
-                    AssociatedValue: false,
-                    Purpose: 'label'
+                    tokenLabel: 'token',
+                    associatedValue: false,
+                    purpose: 'label'
                 }];
             }
         };
@@ -107,9 +107,9 @@ describe('ResolveTokens', () => {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
-                    TokenLabel: 'token',
-                    AssociatedValue: 'aBC dEF',
-                    Purpose: 'label'
+                    tokenLabel: 'token',
+                    associatedValue: 'aBC dEF',
+                    purpose: 'label'
                 }];
             }
         };
@@ -124,9 +124,9 @@ describe('ResolveTokens', () => {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
-                    TokenLabel: 'token',
-                    AssociatedValue: new Date(2000, 0, 15, 13, 30),
-                    Purpose: 'label'
+                    tokenLabel: 'token',
+                    associatedValue: new Date(2000, 0, 15, 13, 30),
+                    purpose: 'label'
                 }];
             }
         };
@@ -141,14 +141,14 @@ describe('ResolveTokens', () => {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
-                    TokenLabel: 'token1',
-                    AssociatedValue: new Date(2000, 0, 15, 13, 30),
-                    Purpose: 'label'
+                    tokenLabel: 'token1',
+                    associatedValue: new Date(2000, 0, 15, 13, 30),
+                    purpose: 'label'
                 },
                 {
-                    TokenLabel: 'token2',
-                    AssociatedValue: 'aBC dEF',
-                    Purpose: 'label'
+                    tokenLabel: 'token2',
+                    associatedValue: 'aBC dEF',
+                    purpose: 'label'
                 }
                 ];
             }
@@ -160,14 +160,14 @@ describe('ResolveTokens', () => {
     });       
     test('Message with {token:formatter} where formatter does not support value is not replaced and gets logged', () => {
         let vm = createMockValidationManagerForMessageTokenResolver(true);
-        let logger = vm.Services.LoggerService as MockCapturingLogger;
+        let logger = vm.services.loggerService as MockCapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
-                    TokenLabel: 'token',
-                    AssociatedValue: new Date(2000, 0, 15, 13, 30),
-                    Purpose: 'label'
+                    tokenLabel: 'token',
+                    associatedValue: new Date(2000, 0, 15, 13, 30),
+                    purpose: 'label'
                 }];
             }
         };
@@ -179,19 +179,19 @@ describe('ResolveTokens', () => {
     });          
     test('Message with {token:formatter} where the value cannot be resolved and is not replaced and gets logged', () => {
         let vm = createMockValidationManagerForMessageTokenResolver(true);
-        let logger = vm.Services.LoggerService as MockCapturingLogger;
+        let logger = vm.services.loggerService as MockCapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
                 return [{
-                    TokenLabel: 'token',
-                    AssociatedValue: new Date(2000, 0, 15, 13, 30),
-                    Purpose: 'label'
+                    tokenLabel: 'token',
+                    associatedValue: new Date(2000, 0, 15, 13, 30),
+                    purpose: 'label'
                 }];
             }
         };
         let testItem = new MessageTokenResolver();
-        vm.Services.ActiveCultureId = 'de-DE';  // not configured in LA
+        vm.services.activeCultureId = 'de-DE';  // not configured in LA
         expect(testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vm, messageTokeSource)).toBe('{token:' + LookupKey.Number + '}');
 
         expect(logger.findMessage('support CultureID', LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices')).not.toBeNull();

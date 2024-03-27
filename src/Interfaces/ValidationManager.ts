@@ -58,9 +58,9 @@ export interface IValidationManager extends IValueHostsManager {
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using DoNotSaveNativeValue for more clarity.
+     * Recommend using doNotSaveNativeValue for more clarity.
      */
-    IsValid: boolean;
+    isValid: boolean;
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
@@ -73,7 +73,7 @@ export interface IValidationManager extends IValueHostsManager {
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (GetIssuesForSummary) and optionally for an individual ValueHostId,
+     * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
      * by specifying that ValueHostID in AssociatedValueHostId.
      * Each time its called, all previous business logic errors are abandoned.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
@@ -120,7 +120,7 @@ export interface IValidationManager extends IValueHostsManager {
  * Each entry in ValueHostStates must have a companion in ValueHosts and ValueHostDescriptors.
  */
 export interface ValidationManagerState {
-    StateChangeCounter?: number;
+    stateChangeCounter?: number;
 }
 
 
@@ -132,7 +132,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
     /**
      * Provides services into the system. Dependency Injection and factories.
      */
-    Services: IValidationServices;
+    services: IValidationServices;
     /**
      * Initial list of ValueHostDescriptors. Here's where all of the action is!
      * Each ValueHostDescriptor describes one ValueHost (which is info about one value in your app),
@@ -140,7 +140,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * If rules need to be changed later, either create a new instance of ValidationManager
      * or use its AddValueHost, UpdateValueHost, DiscardValueHost methods.
      */
-    ValueHostDescriptors: Array<ValueHostDescriptor>;
+    valueHostDescriptors: Array<ValueHostDescriptor>;
     /**
      * The state for the ValidationManager itself.
      * Its up to you to retain stateful information so that the service works statelessly.
@@ -150,7 +150,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */
-    SavedState?: ValidationManagerState | null;
+    savedState?: ValidationManagerState | null;
     /**
      * The state for each ValueHost. The array may not have the same states for all the ValueHostDescriptors
      * you are supplying. It will create defaults for those missing and discard those no longer in use.
@@ -163,5 +163,5 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */
-    SavedValueHostStates?: Array<ValueHostState> | null;
+    savedValueHostStates?: Array<ValueHostState> | null;
 }

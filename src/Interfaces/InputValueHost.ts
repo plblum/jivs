@@ -89,18 +89,18 @@ export interface IInputValueHost extends IValueHost {
      * as a result of validation.
      * Recommend using ValidationResult property for more clarity.
      */
-    IsValid: boolean;
+    isValid: boolean;
 
     /**
      * ValidationResult from latest validation, or an indication
      * that validation has yet to occur.
      */
-    ValidationResult: ValidationResult;
+    validationResult: ValidationResult;
 
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (GetIssuesForSummary) and optionally for an individual ValueHostId,
+     * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
      * by specifying that ValueHostID in AssociatedValueHostId.
      * Each time called, it adds to the existing list. Use ClearBusinessLogicErrors first if starting a fresh list.
      * @param error - An error to show.
@@ -158,7 +158,7 @@ export interface IInputValueHost extends IValueHost {
      *Returns true if a Required condition is setup. UI can use it to 
      * display a "requires a value" indicator.
      */
-    RequiresInput: boolean;
+    requiresInput: boolean;
 }
 
 
@@ -195,7 +195,7 @@ export interface InputValueHostBaseDescriptor extends ValueHostDescriptor {
      * * string[] - a list of group names. If none match the requested group
      *   in the Validate function, the validator is treated as disabled.
      */
-    Group?: undefined | null | string | Array<string>;
+    group?: undefined | null | string | Array<string>;
 }
 
 
@@ -211,14 +211,14 @@ export interface InputValueHostBaseState extends ValueHostState, StatefulValidat
      * whose DataType=Date, meaning the Value property must be a Date object.
      * Will be 'undefined' if the value has not been retrieved.
      */
-    InputValue?: any;
+    inputValue?: any;
 
 
     /**
      * Group used when Validate was last called. It is associated
      * with the current IssuesFound
      */
-    Group?: string;
+    group?: string;
 
     /**
      * When converting the input field/element value to native and there is an error
@@ -226,18 +226,18 @@ export interface InputValueHostBaseState extends ValueHostState, StatefulValidat
      * error message token {ConversionError}.
      * Cleared when setting the value without an error.
      */
-    ConversionErrorTokenValue?: string;
+    conversionErrorTokenValue?: string;
 
     /**
      * If there are any business logic errors, they are kept here.
      * If not, this is undefined.
      */
-    BusinessLogicErrors?: Array<BusinessLogicError>;
+    businessLogicErrors?: Array<BusinessLogicError>;
 
     /**
      * When true, an async InputValidator is running
      */
-    AsyncProcessing?: boolean;
+    asyncProcessing?: boolean;
 }
 
 /**
@@ -261,7 +261,7 @@ export interface InputValueHostDescriptor extends InputValueHostBaseDescriptor {
      * This array may need to host validators that are client-side only,
      * such as parser error converting "abc" to number.
      */
-    ValidatorDescriptors: Array<InputValidatorDescriptor> | null;
+    validatorDescriptors: Array<InputValidatorDescriptor> | null;
 }
 
 /**

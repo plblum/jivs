@@ -19,6 +19,10 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": ["error", { args: "none" }],
     "@typescript-eslint/naming-convention": [
       "error",
+      // {
+      //   "selector": "default",
+      //   "format": ["camelCase"]
+      // },      
       {
         selector: "function",
         format: ["camelCase"],
@@ -52,6 +56,41 @@ module.exports = {
         trailingUnderscore: "forbid",
       },
       {
+        selector: "classProperty",
+        modifiers: ["public", "protected"],
+        format: ["camelCase"],
+        leadingUnderscore: "forbid",
+        trailingUnderscore: "forbid",
+      },      
+      { // property member of interface and class
+        selector: "typeProperty",
+        format: ["camelCase"],
+        modifiers: ["public"],
+        leadingUnderscore: "forbid",
+        trailingUnderscore: "forbid",
+      },
+      { // get and set property names
+        selector: "classicAccessor",
+        format: ["PascalCase"],
+        modifiers: ["public", "static"],
+        leadingUnderscore: "forbid",
+        trailingUnderscore: "forbid",
+      },            
+      { // get and set property names
+        selector: "classicAccessor",
+        format: ["camelCase"],
+        modifiers: ["public"],
+        leadingUnderscore: "forbid",
+        trailingUnderscore: "forbid",
+      },      
+      { // get and set property names
+        selector: "classicAccessor",
+        format: ["camelCase"],
+        modifiers: ["protected"],
+        leadingUnderscore: "forbid",
+        trailingUnderscore: "forbid",
+      },
+      {
         selector: "parameter",
         format: ["camelCase"],
         leadingUnderscore: "forbid",
@@ -69,6 +108,23 @@ module.exports = {
         selector: "variable",
         modifiers: ["const", "global"],
         format: ["PascalCase"],
+        leadingUnderscore: "forbid",
+        trailingUnderscore: "forbid",
+      },
+      {
+        "selector": "typeParameter",
+        "format": ["PascalCase"],
+        "prefix": ["T"]
+      },
+      {
+        selector: "enum",
+        format: ["PascalCase"],
+        leadingUnderscore: "forbid",
+        trailingUnderscore: "forbid",
+      },      
+      {
+        selector: "objectLiteralMethod",
+        format: ["camelCase"],
         leadingUnderscore: "forbid",
         trailingUnderscore: "forbid",
       },

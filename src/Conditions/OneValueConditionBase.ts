@@ -32,8 +32,8 @@ export abstract class OneValueConditionBase<TConditionDescriptor extends OneValu
      */
     protected ensurePrimaryValueHost(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): IValueHost   // IValueHost
     {
-        if (this.Descriptor.ValueHostId) {
-            valueHost = this.getValueHost(this.Descriptor.ValueHostId, valueHostResolver);
+        if (this.descriptor.valueHostId) {
+            valueHost = this.getValueHost(this.descriptor.valueHostId, valueHostResolver);
             if (!valueHost)
                 this.logInvalidPropertyData('ValueHostId', 'ValueHostId is unknown', valueHostResolver);
         }
@@ -46,8 +46,8 @@ export abstract class OneValueConditionBase<TConditionDescriptor extends OneValu
     }
 
     public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void {
-        if (this.Descriptor.ValueHostId)
-            collection.add(this.Descriptor.ValueHostId);
+        if (this.descriptor.valueHostId)
+            collection.add(this.descriptor.valueHostId);
     }
 }
 
@@ -72,7 +72,7 @@ export interface OneValueConditionDescriptor extends ConditionDescriptor {
      * They are expected to create more ValueHostId properties in their 
      * ConditionDescriptor, where the remaining Properties are identified.
      */
-    ValueHostId: string | null;
+    valueHostId: string | null;
 
 }
 
@@ -86,5 +86,5 @@ export interface TwoValueConditionDescriptor extends OneValueConditionDescriptor
      * ValueHostId to retrieve a ValueHost that will be the source
      * of another value for the Evaluate method.
      */
-    SecondValueHostId: string | null;
+    secondValueHostId: string | null;
 }

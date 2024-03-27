@@ -8,11 +8,11 @@ import {
 // All test relative to 2001-05-15
 function testTimeSpanToHours(timeSpan: TimeSpan, expected: number)
 {
-    expect(timeSpan.TotalHours).toBe(expected);
+    expect(timeSpan.totalHours).toBe(expected);
 }
 function testTimeSpanToSeconds(timeSpan: TimeSpan, expected: number)
 {
-    expect(timeSpan.TotalSeconds).toBe(expected);
+    expect(timeSpan.totalSeconds).toBe(expected);
 }
 test('The TimeSpan class itself', () => {
     testTimeSpanToHours(new TimeSpan(1, 0, 0), 1.0);
@@ -26,7 +26,7 @@ test('The TimeSpan class itself', () => {
 
 test('Test TimeSpanIdentifier class members for expected results', () => {
     let dti = new TimeSpanIdentifier();
-    expect(dti.DataTypeLookupKey).toBe(TimeSpanLookupKey);
+    expect(dti.dataTypeLookupKey).toBe(TimeSpanLookupKey);
     expect(dti.supportsValue(new TimeSpan(1, 0))).toBe(true);
     expect(dti.supportsValue(1)).toBe(false);
 });

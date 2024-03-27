@@ -2,7 +2,7 @@
  * Standard implementation of IValueHost.
  * @module ValueHosts/AbstractClasses/ValueHostBase
  */
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostId as valueHostId } from '../DataTypes/BasicTypes';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
@@ -30,23 +30,23 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
         this._state = state;
     }
 //#region IValueHostsManagerAccessor
-    public get ValueHostsManager(): IValueHostsManager {
+    public get valueHostsManager(): IValueHostsManager {
         return this._valueHostsManager;
     }
     private readonly _valueHostsManager: IValueHostsManager;
 
     //#endregion IValueHostsManagerAccessor
     
-    protected get Services(): IValidationServices
+    protected get services(): IValidationServices
     {
-        return this.ValueHostsManager.Services;
+        return this.valueHostsManager.services;
     }
     /**
      * Everything the programmer can change between invocations.
      * Designed to be stored in a React state.
      * When used in React, change its members with UpdateDescriptor
      */
-    protected get Descriptor(): TDescriptor {
+    protected get descriptor(): TDescriptor {
         return this._descriptor;
     }
     private readonly _descriptor: TDescriptor;
@@ -57,8 +57,8 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
      * Consuming systems use this ID to locate the ValueHost
      * for which they will transfer a value, via ValueHostsManager.GetValueHost(this id)
      */
-    public getId(): ValueHostId {
-        return this.Descriptor.Id;
+    public getId(): valueHostId {
+        return this.descriptor.id;
     }
 
     /**
@@ -67,9 +67,9 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
      * Localization should occur when setting up the ValueHostDescriptor.
      */
     public getLabel(): string {
-        let label = this.Descriptor.Label ?? '';
-        if (this.Descriptor.Labell10n)
-            return this.Services.TextLocalizerService.localize(this.Services.ActiveCultureId, this.Descriptor.Labell10n, label) ?? '';
+        let label = this.descriptor.label ?? '';
+        if (this.descriptor.labell10n)
+            return this.services.textLocalizerService.localize(this.services.activeCultureId, this.descriptor.labell10n, label) ?? '';
         return label;
     }
 
@@ -79,7 +79,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
      * from the input field/element.
      */
     public getValue(): any {
-        return this.State.Value;
+        return this.state.value;
     }
 
     /**
@@ -101,11 +101,11 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
     public setValue(value: any, options?: SetValueOptions): void {
         if (!options)
             options = {};
-        let oldValue: any = this.State.Value;   // even undefined is supported
+        let oldValue: any = this.state.value;   // even undefined is supported
         let changed = !deepEquals(value, oldValue);
         this.updateState((stateToUpdate) => {
             if (changed) {
-                stateToUpdate.Value = value;
+                stateToUpdate.value = value;
             }
             this.updateChangeCounterInState(stateToUpdate, changed, options!);
             return stateToUpdate;
@@ -133,16 +133,16 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
 
     protected updateChangeCounterInState(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void
     {
-        if (options.Reset)
-            stateToUpdate.ChangeCounter = 0;
+        if (options.reset)
+            stateToUpdate.changeCounter = 0;
         else if (valueChanged)
-            stateToUpdate.ChangeCounter = (stateToUpdate.ChangeCounter ?? 0) + 1;        
+            stateToUpdate.changeCounter = (stateToUpdate.changeCounter ?? 0) + 1;        
     }
 
     protected useOnValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void
     {
-        if (changed && (!options || !options.SkipValueChangedCallback))
-            toIValueHostCallbacks(this.ValueHostsManager)?.OnValueChanged?.(this, oldValue);        
+        if (changed && (!options || !options.skipValueChangedCallback))
+            toIValueHostCallbacks(this.valueHostsManager)?.onValueChanged?.(this, oldValue);        
     }
 /**
  * A name of a data type used to lookup supporting services specific to the data type.
@@ -150,7 +150,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
  */    
     public getDataType(): string | null
     {
-        return this.Descriptor.DataType ?? null;
+        return this.descriptor.dataType ?? null;
     }
 
     /**
@@ -163,9 +163,9 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
      * up the form, you want to avoid showing Required validators. Those should appear only
      * if the user edits, or when the user attempts to submit.
      */
-    public get IsChanged(): boolean
+    public get isChanged(): boolean
     {
-        return (this.State.ChangeCounter ?? 0) > 0;
+        return (this.state.changeCounter ?? 0) > 0;
     }
     
     //#endregion IValueHost
@@ -180,7 +180,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
         and create a new one. The State contained in the validationManager
         must be supplied to the new ValueHost instance to restore the state.
     */
-    protected get State(): TState {
+    protected get state(): TState {
         return this._state;
     }
     private _state: TState;
@@ -198,11 +198,11 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
     public updateState(updater: (stateToUpdate: TState) => TState,
         source: IValueHost): boolean {
         assertNotNull(updater, 'updater');
-        let toUpdate = deepClone(this.State);
+        let toUpdate = deepClone(this.state);
         let updated = updater(toUpdate);
-        if (!deepEquals(this.State, updated)) {
+        if (!deepEquals(this.state, updated)) {
             this._state = updated;
-            toIValueHostCallbacks(this.ValueHostsManager)?.OnValueHostStateChanged?.(source, updated);
+            toIValueHostCallbacks(this.valueHostsManager)?.onValueHostStateChanged?.(source, updated);
             return true;
         }
         return false;
@@ -217,12 +217,12 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
     public saveIntoState(key: string, value: any): void
     {
         this.updateState((stateToUpdate) => {
-            if (!stateToUpdate.Items)
-                stateToUpdate.Items = {};
+            if (!stateToUpdate.items)
+                stateToUpdate.items = {};
             if (value !== undefined)
-                stateToUpdate.Items[key] = value;
+                stateToUpdate.items[key] = value;
             else
-                delete stateToUpdate.Items[key];      
+                delete stateToUpdate.items[key];      
             return stateToUpdate;
         }, this);
 
@@ -234,7 +234,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
  */
     public getFromState(key: string): any | undefined
     {
-        return this.State.Items ? this.State.Items[key] : undefined;
+        return this.state.items ? this.state.items[key] : undefined;
     }
 }
 
@@ -251,7 +251,7 @@ export interface IValueHostCallbacks {
      * You can setup the same callback on individual ValueHosts.
      * Here, it aggregates all ValueHost notifications.
      */
-    OnValueHostStateChanged?: ValueHostStateChangedHandler | null;
+    onValueHostStateChanged?: ValueHostStateChangedHandler | null;
 
     /**
      * Called when the ValueHost's Value property has changed.
@@ -260,7 +260,7 @@ export interface IValueHostCallbacks {
      * You can setup the same callback on individual ValueHosts.
      * Here, it aggregates all ValueHost notifications.
      */
-    OnValueChanged?: ValueChangedHandler | null;
+    onValueChanged?: ValueChangedHandler | null;
 }
 /**
  * Determines if the object implements IValueHostCallbacks.
@@ -272,8 +272,8 @@ export function toIValueHostCallbacks(source: any): IValueHostCallbacks | null
     if (source && typeof source === 'object')
     {
         let test = source as IValueHostCallbacks;     
-        if (test.OnValueHostStateChanged !== undefined && 
-            test.OnValueChanged !== undefined)
+        if (test.onValueHostStateChanged !== undefined && 
+            test.onValueChanged !== undefined)
             return test;
     }
     return null;
@@ -294,8 +294,8 @@ export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
     public abstract cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
     public createState(descriptor: ValueHostDescriptor): ValueHostState {
         return {
-            Id: descriptor.Id,
-            Value: descriptor.InitialValue
+            id: descriptor.id,
+            value: descriptor.initialValue
         };
     }
 
