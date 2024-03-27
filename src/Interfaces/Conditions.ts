@@ -22,7 +22,8 @@
 
 import { IValueHostResolver } from './ValueHostResolver';
 import { IValueHost } from './ValueHost';
-import { ConditionType } from '../Conditions/ConditionTypes';
+import { IValidationServices } from './ValidationServices';
+import { IInputValueHost } from './InputValueHost';
 
 /**
  * The basis for any condition that you want to work with these validators.
@@ -213,6 +214,58 @@ export interface SupportsDataTypeConverter extends ConditionDescriptor
      */
     conversionLookupKey?: string | null;
 }
+
+/**
+ * Implement this interface when your condition should evaluate the text
+ * of your Input as its being edited. Your evaluateDuringEdit() function
+ * is called by the InputValidator.validate() function instead of the 
+ * ICondition.evaluate() when validateOption.DuringEdit is true.
+ * This is a specialized validator, and not part of model validation.
+ * Instead, it takes a string that is provided by the UI Input (via
+ * InputValueHost.SetInputValue()) and determines if the content is valid.
+ * Most validation is based on the already converted native value, 
+ * like comparing two values. This validation should be limitd to rules
+ * that are limited to a string that is likely not in good enough shape
+ * to be converted to native. Examples:
+ * - Required: does the string have any non-whitespace text?
+ * - Reg exp to check for invalid characters, such as entering a password.
+ *   This allows you to report immediate problems as the user types.
+ * - String length: if the user has exceeded the maximum, they know immediately.
+ * In fact, the provided RequiredTextCondition, RegExpCondition, and StringLengthCondition
+ * have already been setup for this, although their ConditionDescriptors let you disable
+ * this feature.
+ */
+export interface IEvaluateConditionDuringEdits extends ICondition
+{
+    /**
+     * Evaluates the text from an Input that is actively being edited to determine if it violates
+     * the rules of this condition. However, this implementation is often very different from
+     * the implementation built around the native value. It works with a string value from the Input,
+     * and you aren't expected to retrieve any other value from a ValueHost host. 
+     * @param text - Current Input Value from InputValueHost. It has not been modified, so if
+     * you need to work with trimmed (lead and trail whitespace removed) text, you must take
+     * care of that yourself.
+     * @param valueHost - the ValueHost that invoked this.
+     * @param services - just in case, your logic needs more info. However, if the data you need
+     * is constant, add a property to your condition's ConditionDescriptor to supply it.
+     */
+    evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult;
+}
+
+/**
+ * Determines if the source implements IEvaluateConditionDuringEdits, and returns it typecasted.
+ * If not, it returns null.
+ * @param source 
+ */
+export function toIEvaluateConditionDuringEdits(source: any): IEvaluateConditionDuringEdits | null {
+    if (source && typeof source === 'object') {
+        let test = source as IEvaluateConditionDuringEdits;       
+        if (test.evaluateDuringEdits !== undefined)
+            return test;
+    }
+    return null;
+}
+
 
 /**
  * Creates instances of Conditions given an ConditionDescriptor.

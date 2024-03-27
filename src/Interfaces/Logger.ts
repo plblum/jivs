@@ -35,12 +35,17 @@ export enum LoggingLevel
     Error = 4
 }
 
-export const DebugCategory = 'Debug';
-export const InfoCategory = 'Info';
-export const ConfigurationCategory = 'Configuration';
-export const TypeMismatchCategory = 'Type Mismatch';
-export const FormattingCategory = 'Formatting';
-export const ValidationCategory = 'Validation';
-export const LookupKeyCategory = 'LookupKey';
-export const CompareCategory = 'Compare';
+/**
+ * Groups strings recommended for the log function's category property.
+ */
+export enum LoggingCategory {
+    Debug = 'Debug',
+    Info = 'Info',
+    Configuration = 'Configuration',
+    TypeMismatch = 'Type Mismatch',
+    Formatting = 'Formatting',
+    Validation = 'Validation',
+    LookupKey = 'LookupKey',
+    Compare = 'Compare'
+}
 

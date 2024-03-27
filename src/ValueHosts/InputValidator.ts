@@ -16,11 +16,11 @@ import { ValueHostId } from '../DataTypes/BasicTypes';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIGatherValueHostIds, type IValueHost } from '../Interfaces/ValueHost';
 import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
-import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings } from '../Interfaces/Conditions';
+import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import type { IInputValueHost } from '../Interfaces/InputValueHost';
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
 import { type InputValidateResult, type IInputValidator, type InputValidatorDescriptor, type IInputValidatorFactory, type IMessageTokenSource, type TokenLabelAndValue, toIMessageTokenSource  } from '../Interfaces/InputValidator';
-import { LoggingLevel, ConfigurationCategory, ValidationCategory } from '../Interfaces/Logger';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/Logger';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 
 /**
@@ -108,7 +108,7 @@ export class InputValidator implements IInputValidator {
             catch (e)
             {
                 if (e instanceof Error)
-                    this.services.loggerService.log(e.message, LoggingLevel.Error, ConfigurationCategory, this.getLogSourceText());
+                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration, this.getLogSourceText());
                 throw e;
             }
         }
@@ -136,7 +136,7 @@ export class InputValidator implements IInputValidator {
             catch (e)
             {
                 if (e instanceof Error)
-                    this.services.loggerService.log(e.message, LoggingLevel.Error, ConfigurationCategory, this.getLogSourceText());
+                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration, this.getLogSourceText());
                 throw e;
             }
         return this._enabler;
@@ -248,8 +248,8 @@ export class InputValidator implements IInputValidator {
             if (options.preliminary && this.condition.category === ConditionCategory.Required)
                 return bailout('Preliminary option skips Required conditions');
 
-            if (options.duringEdit && this.condition.category !== ConditionCategory.Required)
-                return bailout('DuringEdit option limited to Required conditions');
+            if (options.duringEdit && !this.supportsDuringEdit())
+                return bailout('DuringEdit option limited to conditions that implement IEvaluateConditionDuringEdits');
                 
             // enabled
             if (!this.enabled)
@@ -267,6 +267,14 @@ export class InputValidator implements IInputValidator {
                     case ConditionEvaluateResult.Undetermined:
                         return bailout(`Enabler evaluated as ${ConditionEvaluateResultStrings[result]}`);
                 }
+            }
+            
+            if (options.duringEdit && this.supportsDuringEdit()) {
+                let text = this.valueHost.getInputValue();
+                if (typeof text === 'string')
+                    return resolveCER((this.condition as IEvaluateConditionDuringEdits).evaluateDuringEdits(
+                        text, this.valueHost, this.services));
+                return bailout('Value intended for evaluateDuringEdits was not a string.');
             }
 
             let pendingCER = this.condition.evaluate(this.valueHost, this.valueHostsManager);
@@ -350,16 +358,31 @@ export class InputValidator implements IInputValidator {
             {
                 let parms = fn();
                 self.services.loggerService.log(parms.message, LoggingLevel.Info,
-                    ValidationCategory,
+                    LoggingCategory.Validation,
                     parms.source ?? `Validation with ${self.getLogSourceText()}`);
             }
         }
         function logError(message: string): void
         {
             self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
-                LoggingLevel.Error, ValidationCategory, self.getLogSourceText());            
+                LoggingLevel.Error, LoggingCategory.Validation, self.getLogSourceText());            
         }
     }
+
+    /**
+     * When true, the condition implements IEvaluateConditionDuringEdits
+     * @returns 
+     */
+    protected supportsDuringEdit(): boolean
+    {
+        if (this._supportsDuringEdit === null)
+            this._supportsDuringEdit = toIEvaluateConditionDuringEdits(this.condition) !== null;
+        return this._supportsDuringEdit;
+    }
+    /**
+     * Flag that identifies if the condition implements IEvaluateConditionDuringEdits.
+     */
+    private _supportsDuringEdit: boolean | null = null;
 
     /**
      * validate() found NoMatch. Update the InputValidatorState's properties to show

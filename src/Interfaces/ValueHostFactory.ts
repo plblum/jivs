@@ -66,3 +66,19 @@ export interface IValueHostGenerator {
      */
     createState(descriptor: ValueHostDescriptor): ValueHostState;
 }
+
+/**
+ * Provides the values supported by the ValueHostFactory and its Generators
+ * that map to each ValueHost class.
+ */
+export enum ValueHostType
+{
+/**
+ * Associated with NonInputValueHost
+ */    
+    NonInput = 'NonInput',
+/**
+ * Associated with InputValueHost
+ */    
+    Input = 'Input'
+}

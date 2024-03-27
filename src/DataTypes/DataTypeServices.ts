@@ -33,7 +33,7 @@ import { LookupKey } from './LookupKeys';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { DataTypeCheckConditionDescriptor } from '../Conditions/ConcreteConditions';
-import { CompareCategory, LoggingLevel, LookupKeyCategory } from '../Interfaces/Logger';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/Logger';
 
 
 /**
@@ -183,7 +183,7 @@ export class DataTypeServices implements IDataTypeServices {
         {
             if (e instanceof Error) // should always be true. Mostly used for typecast
             {
-                this.services.loggerService.log(e.message, LoggingLevel.Error, LookupKeyCategory, 'DataTypeServices');
+                this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeServices');
                 return {
                     errorMessage: e.message,
                     value: undefined
@@ -348,7 +348,7 @@ export class DataTypeServices implements IDataTypeServices {
         catch (e)
         {
             if (e instanceof Error)
-                this.services.loggerService.log(e.message, LoggingLevel.Error, CompareCategory, 'DataTypeServices');
+                this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeServices');
             return ComparersResult.Undetermined;
         }
     }

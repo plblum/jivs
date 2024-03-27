@@ -8,7 +8,7 @@ import { ValueHostId } from '../DataTypes/BasicTypes';
 import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
 import type { IInputValueHost } from '../Interfaces/InputValueHost';
 import type { IGatherValueHostIds, IValueHost } from '../Interfaces/ValueHost';
-import { LoggingLevel, ConfigurationCategory } from '../Interfaces/Logger';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/Logger';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/InputValidator';
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
@@ -112,6 +112,6 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      */
     protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostResolver: IValueHostResolver): void {
         let fnName = this.constructor.name;
-        valueHostResolver.services.loggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, ConfigurationCategory, fnName);
+        valueHostResolver.services.loggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, LoggingCategory.Configuration, fnName);
     }
 }

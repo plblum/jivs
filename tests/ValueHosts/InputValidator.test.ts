@@ -380,9 +380,10 @@ describe('InputValidator.severity', () => {
             expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
         }
         checkDefaultSeverity(ConditionType.RequiredText);
-        checkDefaultSeverity(ConditionType.RequiredIndex);
         checkDefaultSeverity(ConditionType.DataTypeCheck);
         checkDefaultSeverity(ConditionType.RegExp);
+        checkDefaultSeverity(ConditionType.StringNotEmpty);
+        checkDefaultSeverity(ConditionType.NotNull);
     });
     test('Conditions that use Severity=Error when Descriptor.Severity = undefined', () => {
         function checkDefaultSeverity(conditionType: string) {
@@ -721,7 +722,7 @@ describe('InputValidator.validate', () => {
 
     test('No issue found. Returns ConditionEvaluateResult.Match', () => {
         let config = setupWithField1AndField2();
-        config.valueHost1.setInputValue('valid');
+        config.valueHost1.setValue('valid');
 
         let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.validate({})).not.toThrow();
@@ -735,7 +736,7 @@ describe('InputValidator.validate', () => {
         let config = setupWithField1AndField2({
             severity: severity
         });
-        config.valueHost1.setInputValue('');   // will be invalid
+        config.valueHost1.setValue('');   // will be invalid
         let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -762,7 +763,7 @@ describe('InputValidator.validate', () => {
             errorMessage: errorMessage,
             summaryMessage: summaryMessage,
         });
-        config.valueHost1.setInputValue('');   // will be an issue
+        config.valueHost1.setValue('');   // will be an issue
         let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -788,8 +789,8 @@ describe('InputValidator.validate', () => {
         let config = setupWithField1AndField2(descriptorChanges);
         let logger = config.services.loggerService as MockCapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result        
-        config.valueHost1.setInputValue('');   // will be invalid
-        config.valueHost2.setInputValue('');   // for use by Enabler to be invalid
+        config.valueHost1.setValue('');   // will be invalid
+        config.valueHost2.setValueToUndefined();   // for use by Enabler to be invalid
         let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -827,8 +828,8 @@ describe('InputValidator.validate', () => {
         let config = setupWithField1AndField2(descriptorChanges);
         let logger = config.services.loggerService as MockCapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
-        config.valueHost1.setInputValue('');   // will be invalid
-        config.valueHost2.setInputValue('ABC');   // for use by Enabler to enable the condition
+        config.valueHost1.setValue('');   // will be invalid
+        config.valueHost2.setValue('ABC');   // for use by Enabler to enable the condition
         let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = config.inputValidator.validate(validateOptions)).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -857,11 +858,8 @@ describe('InputValidator.validate', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { preliminary: false }, 2, true);
     });
-    test('Issue exists and Required is evaluated (as NoMatch) because IValidateOption.DuringEdit = true.', () => {
-        testConditionHasIssueAndBlockingCheckPermitsValidation({
-        }, { duringEdit: true }, 2, true);
-    });
-    test('Issue exists and Required is evaluated (as NoMatch) because IValidateOption.DuringEdit = false doesnt skip that condition.', () => {
+
+    test('Demonstrate that duringEdit=false does not use evaluateDuringEdits.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { duringEdit: false }, 2, true);
     });
@@ -883,7 +881,31 @@ describe('InputValidator.validate', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { preliminary: false }, 2, true);
     });
-
+    function testDuringEditIsTrue(descriptorChanges: Partial<InputValidatorDescriptor>,
+        inputValue: string, 
+        logCount: number, issueExpected: boolean = true): void {
+        let config = setupWithField1AndField2(descriptorChanges);
+        let logger = config.services.loggerService as MockCapturingLogger;
+        logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
+        config.valueHost1.setInputValue(inputValue);   // for RequiredTextCondition.evaluateDuringEdit
+        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
+        expect(() => vrResult = config.inputValidator.validate({ duringEdit: true})).not.toThrow();
+        expect(vrResult).not.toBeNull();
+        expect(vrResult).not.toBeInstanceOf(Promise);
+        vrResult = vrResult as unknown as InputValidateResult;
+        if (issueExpected)
+            expect(vrResult!.issueFound).not.toBeNull();
+        else
+            expect(vrResult!.issueFound).toBeNull();
+        // 2 info level log entries: first Condition second validate result
+        expect(logger.entryCount()).toBe(logCount);
+    }
+    test('ValidationOption.duringEdit = true with issue found.', () => {
+        testDuringEditIsTrue({}, '', 2, true);
+    });    
+    test('ValidationOption.duringEdit = true with no issue found.', () => {
+        testDuringEditIsTrue({}, 'A', 2, false);
+    });        
     test('Condition throws causing result of Undetermined and log to identify exception', () => {
         let config = setupWithField1AndField2({
             conditionDescriptor: { type: ThrowsExceptionConditionType }
