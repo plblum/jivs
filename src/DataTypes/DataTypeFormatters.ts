@@ -716,7 +716,7 @@ export class DateFormatter extends DateTimeFormatterBase
         return true;
     }
 
-    public supports(dataTypeLookupKey: LookupKey | string, cultureId: string): boolean {
+    public supports(dataTypeLookupKey: string, cultureId: string): boolean {
         return (dataTypeLookupKey === LookupKey.ShortDate || super.supports(dataTypeLookupKey, cultureId));
     }
 

@@ -40,7 +40,7 @@ export interface ICondition {
      * When defining conditions through a ConditionDescriptor, the Type property must 
      * be assigned with a valid ConditionType.
      */
-    conditionType: ConditionType | string;
+    conditionType: string;
 
     /**
      * Evaluate something against the rules defined in the implementation. Return whether
@@ -99,7 +99,7 @@ export interface ConditionDescriptor {
      * and be able to process the propertys of ConditionDescriptor.
      * Used by the ConditionFactory
      */
-    type: ConditionType | string;
+    type: string;
 
     /**
      * Most Condition classes have an official value for Category.

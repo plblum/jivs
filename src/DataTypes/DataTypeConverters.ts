@@ -66,11 +66,11 @@ export class DateTimeConverter implements IDataTypeConverter
  */
 export class UTCDateOnlyConverter implements IDataTypeConverter
 {
-    public supportsValue(value: any, dataTypeLookupKey: LookupKey | string | null): boolean {
+    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return (!dataTypeLookupKey || (dataTypeLookupKey === LookupKey.Date)) &&
             value instanceof Date;
     }
-    public convert(value: Date, dataTypeLookupKey: LookupKey | string): string | number | Date | null | undefined {
+    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
         if (isNaN(value.getTime()))
             return undefined;        
         let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
@@ -85,11 +85,11 @@ export class UTCDateOnlyConverter implements IDataTypeConverter
  */
 export class LocalDateOnlyConverter implements IDataTypeConverter
 {
-    public supportsValue(value: any, dataTypeLookupKey: LookupKey | string | null): boolean {
+    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return (dataTypeLookupKey === LookupKey.LocalDate) &&
             value instanceof Date;
     }
-    public convert(value: Date, dataTypeLookupKey: LookupKey | string): string | number | Date | null | undefined {
+    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
         if (isNaN(value.getTime()))
             return undefined;        
         let dateOnly = new Date(value.getFullYear(), value.getMonth(), value.getDate());
@@ -105,11 +105,11 @@ export class LocalDateOnlyConverter implements IDataTypeConverter
  */
 export class TimeOfDayOnlyConverter implements IDataTypeConverter
 {
-    public supportsValue(value: any, dataTypeLookupKey: LookupKey | string | null): boolean {
+    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return (dataTypeLookupKey === LookupKey.TimeOfDay) &&
             value instanceof Date;
     }
-    public convert(value: Date, dataTypeLookupKey: LookupKey | string): string | number | Date | null | undefined {
+    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
         if (isNaN(value.getTime()))
             return undefined;      
         return value.getUTCHours() * 60 + value.getUTCMinutes();
@@ -123,11 +123,11 @@ export class TimeOfDayOnlyConverter implements IDataTypeConverter
  */
 export class TimeOfDayHMSOnlyConverter implements IDataTypeConverter
 {
-    public supportsValue(value: any, dataTypeLookupKey: LookupKey | string | null): boolean {
+    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return (dataTypeLookupKey === LookupKey.TimeOfDayHMS) &&
             value instanceof Date;
     }
-    public convert(value: Date, dataTypeLookupKey: LookupKey | string): string | number | Date | null | undefined {
+    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
         if (isNaN(value.getTime()))
             return undefined;      
         return value.getUTCHours() * 60 * 60 + value.getUTCMinutes() * 60 + value.getUTCSeconds();
@@ -141,11 +141,11 @@ export class TimeOfDayHMSOnlyConverter implements IDataTypeConverter
  */
 export class IntegerConverter implements IDataTypeConverter
 {
-    public supportsValue(value: any, dataTypeLookupKey: LookupKey | string | null): boolean {
+    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return (dataTypeLookupKey === LookupKey.Integer) &&
             typeof value === 'number';
     }
-    public convert(value: number, dataTypeLookupKey: LookupKey | string): string | number | Date | null | undefined {
+    public convert(value: number, dataTypeLookupKey: string): string | number | Date | null | undefined {
         return Math.round(value);
     }
 }
@@ -158,11 +158,11 @@ export class IntegerConverter implements IDataTypeConverter
  */
 export class TotalDaysConverter implements IDataTypeConverter
 {
-    public supportsValue(value: any, dataTypeLookupKey: LookupKey | string | null): boolean {
+    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return (dataTypeLookupKey === LookupKey.TotalDays) &&
             value instanceof Date;
     }
-    public convert(value: Date, dataTypeLookupKey: LookupKey | string): string | number | Date | null | undefined {
+    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
         if (isNaN(value.getTime()))
             return undefined;        
         let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));

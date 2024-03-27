@@ -40,7 +40,7 @@ export class ConditionFactory implements IConditionFactory {
      * @param type - Unique way to select the function. Uses ConditionDescriptor.Type.
      * @param fn - Expected to create an instance of a Condition.
      */
-    public register<TDescriptor extends ConditionDescriptor>(type: ConditionType | string,
+    public register<TDescriptor extends ConditionDescriptor>(type: string,
         fn: (descriptor: TDescriptor) => IConditionCore<TDescriptor>): void {
         this._map.register(type, fn as any);
     }
@@ -50,7 +50,7 @@ export class ConditionFactory implements IConditionFactory {
      * @param conditionType 
      * @returns 
      */
-    public isRegistered(conditionType: ConditionType | string): boolean {
+    public isRegistered(conditionType: string): boolean {
         return this._map.get(conditionType) !== undefined;
     }
 }
