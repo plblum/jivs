@@ -6,7 +6,7 @@ import { ValueHostId } from '../DataTypes/BasicTypes';
 import { InputValidateResult } from './InputValidator';
 
 /**
- * Parameter for the Validate method on InputValueHost and ValidationManager.
+ * Parameter for the validate() function on InputValueHost and ValidationManager.
  * It provides additional guidance on how to get the validators involved.
  */
 export interface ValidateOptions
@@ -17,11 +17,11 @@ export interface ValidateOptions
      * For example, the ValidationManager handles two forms at once. Give
      * the InputValueHostDescriptor.Group a name for each form. Then make their submit command
      * pass in the same group name.
-     * When Group is undefined or "*", Validate does not check group names. All InputValueHosts 
+     * When Group is undefined or "*", validate() does not check group names. All InputValueHosts 
      * within the ValidationManager are validated.
      * When assigned, only InputValueHosts with a matching group name (case insensitive) will be involved.
      */
-    Group?: string;
+    group?: string;
 
     /**
      * Set to true when running a validation prior to a submit activity.
@@ -30,7 +30,7 @@ export interface ValidateOptions
      * the noise complaining about missing input when they haven't had a chance to address it.
      * When undefined, it is the same as false.
      */
-    Preliminary?: boolean;
+    preliminary?: boolean;
     /**
      * Set to true when handling an intermediate change activity, such as a keystroke
      * changed a textbox but the user remains in the textbox. For example, on the 
@@ -39,41 +39,41 @@ export interface ValidateOptions
      * Usually that is just a Condition whose Category is Required.
      * When undefined, it is the same as false.
      */
-    DuringEdit?: boolean;
+    duringEdit?: boolean;
     /**
      * If you have setup a callback, whether on the ValidationManager or ValueHost,
-     * you may not want it to fire when you expressly call Validate.
+     * you may not want it to fire when you expressly call validate().
      * In that case, set this to true.
      */
-    OmitCallback?: boolean;
+    omitCallback?: boolean;
 }
 
 /**
- * Result of the Validate function that will be saved in InputValueHostState
+ * Result of the validate() function that will be saved in InputValueHostState
  */
 export interface StatefulValidateResult {
     /**
      * The state of validation for this ValueHost.
      */
-    ValidationResult: ValidationResult;
+    validationResult: ValidationResult;
 
     /**
      * The issues that were found.
      */
-    IssuesFound: Array<IssueFound> | null;
+    issuesFound: Array<IssueFound> | null;
 }
 /**
- * Result of the Validate function.
+ * Result of the validate() function.
  */
 export interface ValidateResult extends StatefulValidateResult {
     /**
-     * Any promises returned by InputValidator.Validate
+     * Any promises returned by InputValidator.validate()
      * These still need to finish before supplying their evaluation results.
      * When either null or undefined, nothing is pending.
      * There should never be an empty array as the presence of an array
      * will make the system think there are promises pending.
      */
-    Pending?: Array<Promise<InputValidateResult>> | null;
+    pending?: Array<Promise<InputValidateResult>> | null;
 }
 
 
@@ -83,7 +83,7 @@ export interface ValidateResult extends StatefulValidateResult {
  */
 export enum ValidationResult {
     /**
-     * Indicates that Validate has yet to be attempted
+     * Indicates that validate() has yet to be attempted
      * Once attempted, it will always be one of the other results
      */
     NotAttempted,
@@ -145,39 +145,39 @@ export enum ValidationSeverity {
 }
 
 /**
- * Snapshot of the results of Validate when there are errors/warnings ("Issues")
+ * Snapshot of the results of validate() when there are errors/warnings ("Issues")
  */
 export interface IssueFound {
     /**
      * Containing ValueHostId
      */
-    ValueHostId: ValueHostId;
+    valueHostId: ValueHostId;
     /**
      * Type of Condition that resulted in an error message
      */
-    ConditionType: string;
+    conditionType: string;
 
     /**
      * Determines how a Validator will behave when a Condition evaluates as NoMatch.
      * It may show error messages, prevent further evaluation of conditions
      * on the same ValueHost, and block saving.
     */
-    Severity: ValidationSeverity;
+    severity: ValidationSeverity;
 
     /**
      * The error message nearby the input field/element, ready to display in the UI.
      * With all of the processing for tokens and added formatting 
      * (for example, HTML tags around some tokens if the platform supports HTML).
      */
-    ErrorMessage: string;
+    errorMessage: string;
     /**
      * The error message shown in a validation summary. It often contains a
      * user friendly name of the ValueHost due to being a distance from the input field/element.
      * With all of the processing for tokens and added formatting 
      * (for example, HTML tags around some tokens if the platform supports HTML).
-     * If null/undefined, summary viewer should use ErrorMessage.
+     * If null/undefined, summary viewer should use errorMessage.
      */
-    SummaryMessage?: string;
+    summaryMessage?: string;
 }
 
 
@@ -185,17 +185,17 @@ export interface IssueFound {
  * Results for function that reveal error messages.
  */
 export interface IssueSnapshot {
-    Id: ValueHostId;
-    Severity: ValidationSeverity;
-    ErrorMessage: string;
+    id: ValueHostId;
+    severity: ValidationSeverity;
+    errorMessage: string;
 }
 
 /**
  * When Business Logic gathers data from the UI, it runs its own final validation.
  * If its own business rule has been violated, it should be recorded with this interface
  * and passed to ValidationManager.SetBusinessLogicErrors where it becomes exposed to 
- * the Validation Summary (GetIssuesForSummary) and optionally for an individual ValueHostId,
- * by specifying that ValueHostID in AssociatedValueHostId.
+ * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
+ * by specifying that valueHostId in AssociatedValueHostId.
  */
 export interface BusinessLogicError {
     /**
@@ -203,28 +203,28 @@ export interface BusinessLogicError {
      * or language conversion expected to be handled by the ValidationManager.
      * The same message will be shown in the ValidationSummary and a ValueHost's validation.
      */
-    ErrorMessage: string;
+    errorMessage: string;
     /**
      * If the message is associated with a ValueHost, assign the ValueHostId.
      * That makes the message available to the ValueHost's validation.
      * The Summary can take advantage of it to establish a hyperlink on the message
      * that jumps to the ValueHost's input field/element.
      */
-    AssociatedValueHostId?: string;
+    associatedValueHostId?: string;
 
     /**
      * Provides the severity. When unassigned, it uses ValidationSeverity.Error.
      * Values of Error and Severe will change the ValidationReport to Invalid.
      */
-    Severity?: ValidationSeverity;
+    severity?: ValidationSeverity;
     /**
      * Optional information about the error to pass along to the ValidationSummary.
      * It should be a short error code as a string. It will be used in the IssueFound
-     * returned from Validate and GetIssuesFound in IssueFound.ConditionType.
+     * returned from validate() and getIssuesFound() in IssueFound.conditionType.
      * ConditionType is used to uniquely identify each IssueFound, and your value
      * here will serve the same role. As a result, its value cannot match any
      * ConditionType.
      * If not supplied, the IssueFound.ConditionType will be assigned a generated value.
      */
-    ErrorCode?: string;
+    errorCode?: string;
 }

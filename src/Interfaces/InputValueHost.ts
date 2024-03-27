@@ -27,8 +27,8 @@ export interface IInputValueHost extends IValueHost {
      * System consumer assigns the value it also assigns to the input field/element.
      * Its used with RequiredCondition and DataTypeCondition.
     * @param options - 
-    * Validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when Validate=true) and sets IsChanged to false.
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
@@ -46,8 +46,8 @@ export interface IInputValueHost extends IValueHost {
      * @param inputValue - Can be undefined to indicate there is no value.
      * All other values, including null and the empty string, are considered real data.
     * @param options - 
-    * Validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when Validate=true) and sets IsChanged to false.
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
@@ -55,9 +55,9 @@ export interface IInputValueHost extends IValueHost {
     setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
 
     /**
-     * When SetValue, SetValues, SetInputValue, or SetToUndefined occurs,
+     * When setValue(), setValues(), setInputValue(), or SetToUndefined occurs,
      * all other InputValueHosts get notified here so they can rerun validation
-     * when any of their Conditions specify the ValueHostID that changed.
+     * when any of their Conditions specify the valueHostId that changed.
      * @param valueHostIdThatChanged 
      * @param revalidate 
      */
@@ -81,7 +81,7 @@ export interface IInputValueHost extends IValueHost {
     clearValidation(): void;
 
     /**
-     * Value is setup by calling Validate(). It does not run Validate itself.
+     * Value is setup by calling validate(). It does not run validate() itself.
      * Returns false when State.ValidationResult is Invalid. Any other ValidationResult
      * return true.
      * This follows an old style validation rule of everything is valid when not explicitly
@@ -89,27 +89,27 @@ export interface IInputValueHost extends IValueHost {
      * as a result of validation.
      * Recommend using ValidationResult property for more clarity.
      */
-    IsValid: boolean;
+    isValid: boolean;
 
     /**
      * ValidationResult from latest validation, or an indication
      * that validation has yet to occur.
      */
-    ValidationResult: ValidationResult;
+    validationResult: ValidationResult;
 
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (GetIssuesForSummary) and optionally for an individual ValueHostId,
-     * by specifying that ValueHostID in AssociatedValueHostId.
-     * Each time called, it adds to the existing list. Use ClearBusinessLogicErrors first if starting a fresh list.
+     * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
+     * by specifying that valueHostId in AssociatedValueHostId.
+     * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
      * @param error - An error to show.
      */
     setBusinessLogicError(error: BusinessLogicError): void;
 
     /**
      * Removes any business logic errors. Generally called automatically by
-     * ValidationManager as calls are made to SetBusinessLogicErrors and ClearValidation.
+     * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
      */
     clearBusinessLogicErrors(): void;
 
@@ -120,14 +120,14 @@ export interface IInputValueHost extends IValueHost {
     doNotSaveNativeValue(): boolean;
 
     /**
-     * The results of the latest Validate()
+     * The results of the latest validate()
      * @returns Issues found or null if none.
      */
     getIssuesFound(): Array<IssueFound> | null;
 
     /**
      * Lists all error messages and supporting info about each validator
-     * for use by a input field/element that shows its own error messages (InputValueHostState.ErrorMessage)
+     * for use by a input field/element that shows its own error messages (InputValueHostState.errorMessage)
      * @returns 
      */
     getIssuesForInput(): Array<IssueSnapshot>;
@@ -140,7 +140,7 @@ export interface IInputValueHost extends IValueHost {
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - ErrorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
@@ -149,7 +149,7 @@ export interface IInputValueHost extends IValueHost {
 
     /**
      * Returns the ConversionErrorTokenValue supplied by the latest call
-     * to SetValue or SetValues. Its null when not supplied or has been cleared.
+     * to setValue() or setValues(). Its null when not supplied or has been cleared.
      * Associated with the {ConversionError} token of the DataTypeCheckCondition.
      */
     getConversionErrorMessage(): string | null;
@@ -158,7 +158,7 @@ export interface IInputValueHost extends IValueHost {
      *Returns true if a Required condition is setup. UI can use it to 
      * display a "requires a value" indicator.
      */
-    RequiresInput: boolean;
+    requiresInput: boolean;
 }
 
 
@@ -184,18 +184,18 @@ export interface InputValueHostBaseDescriptor extends ValueHostDescriptor {
      * Often fields are used for different aspects of the page, like 
      * a login or search field in the header is a different feature
      * from the form where data is being gathered.
-     * Submit buttons usually call Validate and supply their group name.
+     * Submit buttons usually call validate() and supply their group name.
      * When they do, InputValueHosts associated with that button must have the same
      * group name.
      * Values:
      * * undefined, null or '*' all mean the group feature is ignored.
      * * string - a single group name. If it does not match the requested group
-     *   in the Validate function, the validator is treated as disabled.
+     *   in the validate() function, the validator is treated as disabled.
      *   Case insensitive matching.
      * * string[] - a list of group names. If none match the requested group
-     *   in the Validate function, the validator is treated as disabled.
+     *   in the validate() function, the validator is treated as disabled.
      */
-    Group?: undefined | null | string | Array<string>;
+    group?: undefined | null | string | Array<string>;
 }
 
 
@@ -211,14 +211,14 @@ export interface InputValueHostBaseState extends ValueHostState, StatefulValidat
      * whose DataType=Date, meaning the Value property must be a Date object.
      * Will be 'undefined' if the value has not been retrieved.
      */
-    InputValue?: any;
+    inputValue?: any;
 
 
     /**
-     * Group used when Validate was last called. It is associated
+     * Group used when validate() was last called. It is associated
      * with the current IssuesFound
      */
-    Group?: string;
+    group?: string;
 
     /**
      * When converting the input field/element value to native and there is an error
@@ -226,18 +226,18 @@ export interface InputValueHostBaseState extends ValueHostState, StatefulValidat
      * error message token {ConversionError}.
      * Cleared when setting the value without an error.
      */
-    ConversionErrorTokenValue?: string;
+    conversionErrorTokenValue?: string;
 
     /**
      * If there are any business logic errors, they are kept here.
      * If not, this is undefined.
      */
-    BusinessLogicErrors?: Array<BusinessLogicError>;
+    businessLogicErrors?: Array<BusinessLogicError>;
 
     /**
      * When true, an async InputValidator is running
      */
-    AsyncProcessing?: boolean;
+    asyncProcessing?: boolean;
 }
 
 /**
@@ -261,7 +261,7 @@ export interface InputValueHostDescriptor extends InputValueHostBaseDescriptor {
      * This array may need to host validators that are client-side only,
      * such as parser error converting "abc" to number.
      */
-    ValidatorDescriptors: Array<InputValidatorDescriptor> | null;
+    validatorDescriptors: Array<InputValidatorDescriptor> | null;
 }
 
 /**

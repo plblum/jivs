@@ -31,7 +31,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
         assertNotNull(valueHostResolver, 'valueHostResolver');
         if (!hosts || !hosts.length || hosts[0] == null)    // null/undefined
             throw new CodingError('hosts required');
-        const fnName = 'MessageTokenResolver.ResolveTokens';
+        const fnName = 'MessageTokenResolver.resolveTokens';
         // capture all token patterns and build a list of CapturedTokens
         // If none found, return the message
         let foundTokens = message.match(this._tokensInMessageRegEx);
@@ -60,23 +60,23 @@ export class MessageTokenResolver implements IMessageTokenResolver
                 if (capturedToken.isMatch(tav))
                 {
                     try {
-                        let replacement = capturedToken.replacement(tav.AssociatedValue, valueHostResolver);
-                        if (replacement.Value !== undefined)
+                        let replacement = capturedToken.replacement(tav.associatedValue, valueHostResolver);
+                        if (replacement.value !== undefined)
                         {
-                            let finalized = this.finalizeReplacement(replacement.Value, tav);
+                            let finalized = this.finalizeReplacement(replacement.value, tav);
                             revised = revised.replace(capturedToken.full, finalized);
                             resolved = true;
                         }
                         else
-                            if (replacement.ErrorMessage)
+                            if (replacement.errorMessage)
                             {
-                                valueHostResolver.Services.LoggerService.log(`${capturedToken.full}: ${replacement.ErrorMessage}`,
+                                valueHostResolver.services.loggerService.log(`${capturedToken.full}: ${replacement.errorMessage}`,
                                     LoggingLevel.Error, ConfigurationCategory, fnName);   
                             }
                     }
                     catch (e)
                     {
-                        valueHostResolver.Services.LoggerService.log(`${capturedToken.full}: ${(e as Error).message}`,
+                        valueHostResolver.services.loggerService.log(`${capturedToken.full}: ${(e as Error).message}`,
                             LoggingLevel.Error, TypeMismatchCategory, fnName); 
                     }
                 }
@@ -84,7 +84,7 @@ export class MessageTokenResolver implements IMessageTokenResolver
             if (!resolved)
             {
                 //Log token was not replaced
-                valueHostResolver.Services.LoggerService.log(`{${capturedToken.full}}: Token not replaced.`,
+                valueHostResolver.services.loggerService.log(`{${capturedToken.full}}: Token not replaced.`,
                     LoggingLevel.Warn, FormattingCategory, fnName); 
             }
         });
@@ -157,7 +157,7 @@ class CapturedToken
  */    
     public isMatch(tav: TokenLabelAndValue): boolean
     {
-        return tav.TokenLabel.toLowerCase() === this.token;
+        return tav.tokenLabel.toLowerCase() === this.token;
     }
 /**
  * Generates the replacement string for the full token, using the replacementValue
@@ -167,6 +167,6 @@ class CapturedToken
  */    
     public replacement(replacementValue: any, valueHostResolver: IValueHostResolver): DataTypeResolution<string>
     {
-        return valueHostResolver.Services.DataTypeServices.format(replacementValue, this.formatterKey ?? undefined);
+        return valueHostResolver.services.dataTypeServices.format(replacementValue, this.formatterKey ?? undefined);
     }
 }

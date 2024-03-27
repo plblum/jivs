@@ -15,7 +15,7 @@ export interface ILogger
 /**
  * Control which levels are output.
  */        
-    MinLevel: LoggingLevel;
+    minLevel: LoggingLevel;
 
     /**
      * Create a new log entry.

@@ -18,7 +18,7 @@ export interface IServicesAccessor
 /**
  * Provides access to services.
  */
-    Services: IValidationServices;    
+    services: IValidationServices;    
 }
 
 /**
@@ -32,7 +32,7 @@ export interface IBasicValidationServices {
      * tokens in messages.
      * Defaults to using the global defaultLoggerService
      */
-    LoggerService: ILogger;
+    loggerService: ILogger;
 }
 
 
@@ -44,40 +44,40 @@ export interface IValidationServices extends IBasicValidationServices {
  * The culture shown to the user in the app. Its the ISO language-region format.
    This value is the starting point to search through localizations.
  */    
-    ActiveCultureId: string;
+    activeCultureId: string;
 
     /**
      * Factory to create Condition objects.
      */
-    ConditionFactory: IConditionFactory;
+    conditionFactory: IConditionFactory;
 
     /**
      * Service to get the IDataTypeServices instance associated with the dataTypeLabel.
      */
-    DataTypeServices: IDataTypeServices;
+    dataTypeServices: IDataTypeServices;
     
     /**
      * Service to text localization specific, effectively mapping
      * a text key to a language specific version of that text.
      * Error messages and IDataTypeFormatters use this.
      */
-    TextLocalizerService: ITextLocalizerService;
+    textLocalizerService: ITextLocalizerService;
 
     /**
      * Service to get the IMessageTokenResolver instance that replaces
      * tokens in messages.
      */
-    MessageTokenResolverService: IMessageTokenResolver;
+    messageTokenResolverService: IMessageTokenResolver;
 
     /**
      * Factory for generating classes that implement IValueHost that use ValueHostDescriptor.
      */
-    ValueHostFactory: IValueHostFactory;
+    valueHostFactory: IValueHostFactory;
 
     /**
      * Factory for generating InputValidator.
      */
-    InputValidatorFactory: IInputValidatorFactory;
+    inputValidatorFactory: IInputValidatorFactory;
 
 }
 

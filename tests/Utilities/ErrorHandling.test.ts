@@ -1,7 +1,7 @@
 import { assertNotNull } from "../../src/Utilities/ErrorHandling";
 
 // function assertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
-describe("Utilities.AssertNotNull tests", () => {
+describe("Utilities.assertNotNull tests", () => {
     test("null or undefined is exception", () => {
         expect(() => assertNotNull(null, 'parm')).toThrow('parm required');
         expect(() => assertNotNull(undefined, 'parm')).toThrow('parm required');

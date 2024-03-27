@@ -1,6 +1,6 @@
 import { TextLocalizerService } from './../../src/Services/TextLocalizerService';
-// Localize(cultureIdToMatch: string, sourceText: string): string
-describe('TextLocalizerService.Localize', () => {
+// localize(cultureIdToMatch: string, sourceText: string): string
+describe('TextLocalizerService.localize', () => {
     test('No matching registrations, return the fallback text.', () => {
         let testItem = new TextLocalizerService();
         expect(testItem.localize('en', 'hello', 'fallback')).toBe('fallback');     // only a key

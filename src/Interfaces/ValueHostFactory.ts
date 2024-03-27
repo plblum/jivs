@@ -16,7 +16,7 @@ export interface IValueHostFactory {
      * Creates the instance.
      * @param valueHostsManager 
      * @param descriptor - determines the class. All classes supported here must ValueHostDescriptor to get their setup.
-     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.CreateState() to create an initial value.
+     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.createState() to create an initial value.
      */
     create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
     /**

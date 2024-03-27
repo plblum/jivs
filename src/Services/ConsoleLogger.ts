@@ -21,11 +21,11 @@ export class ConsoleLogger implements ILogger
  * Control which levels are output.
  */    
     private _minLevel = LoggingLevel.Warn;
-    public get MinLevel(): LoggingLevel
+    public get minLevel(): LoggingLevel
     {
         return this._minLevel;
     }
-    public set MinLevel(level: LoggingLevel)
+    public set minLevel(level: LoggingLevel)
     {
         this._minLevel = level;
     }
@@ -35,7 +35,7 @@ export class ConsoleLogger implements ILogger
      * that gets called after the console's logging.
      * Optional.
      */
-    public get MainLogger(): ILogger | null
+    public get mainLogger(): ILogger | null
     {
         return this._mainLogger;
     }
@@ -48,7 +48,7 @@ export class ConsoleLogger implements ILogger
      * @param source - A way to identify the source of this message, such as function name or class name + method name.
      */
     public log(message: string, level: LoggingLevel, category?: string, source?: string): void {
-        if (this.MinLevel > level)
+        if (this.minLevel > level)
             return;
         let msgTemplate = '%s %s "%s"'; // expects source, category, message
         if (!source)

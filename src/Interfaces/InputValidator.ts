@@ -11,7 +11,7 @@ import { IGatherValueHostIds } from './ValueHost';
 /**
  * Represents a single validator for the value of an InputValueHost.
  * It is stateless.
- * Basically you want to call Validate() to get all of the results
+ * Basically you want to call validate() to get all of the results
  * of a validation, including ValidationResult, error messages,
  * severity, and more.
  * That data ends up in the ValidationManager as part of its state,
@@ -32,7 +32,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostId
     /**
      * Exposes the Condition behind the validator
      */
-    Condition: ICondition;
+    condition: ICondition;
 
 }
 
@@ -65,7 +65,7 @@ export interface InputValidatorDescriptor {
     * Like all Descriptors in this system, this is expected to be immutable.
     * Only use this when ConditionCreator is null.
     */
-    ConditionDescriptor: ConditionDescriptor | null;
+    conditionDescriptor: ConditionDescriptor | null;
 
     /* eslint-disable @typescript-eslint/naming-convention */
     /**
@@ -75,7 +75,7 @@ export interface InputValidatorDescriptor {
      * @param requester
      * @returns 
      */
-    ConditionCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
+    conditionCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
@@ -89,7 +89,7 @@ export interface InputValidatorDescriptor {
      * Use this when the Condition extends IConditionCore<ConditionDescriptor>.
      * Leave null if EnablerCreator is asssigned.
      */
-    EnablerDescriptor?: ConditionDescriptor | null | undefined;
+    enablerDescriptor?: ConditionDescriptor | null | undefined;
 
     /* eslint-disable @typescript-eslint/naming-convention */
     /**
@@ -99,7 +99,7 @@ export interface InputValidatorDescriptor {
      * @param requester
      * @returns 
      */
-    EnablerCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
+    enablerCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
@@ -112,7 +112,7 @@ export interface InputValidatorDescriptor {
      * * function - Provide a function that will return true or false, 
      *   given the InputValidator as a parameter.
      */
-    Enabled?: undefined | boolean | ((host: IInputValidator) => boolean);
+    enabled?: undefined | boolean | ((host: IInputValidator) => boolean);
     /**
      * Resolves the Severity for when the Condition evaluates as NoMatch.
      * Values:
@@ -121,7 +121,7 @@ export interface InputValidatorDescriptor {
      * * function - Provide a function that will return the ValidationSeverity, 
      *   given the InputValidator as a parameter.
      */
-    Severity?: undefined | ValidationSeverity | ((host: IInputValidator) => ValidationSeverity);
+    severity?: undefined | ValidationSeverity | ((host: IInputValidator) => ValidationSeverity);
 
     /**
      * The error message "template" that will appear on screen when the condition is NoMatch.
@@ -130,7 +130,7 @@ export interface InputValidatorDescriptor {
      * It should already be localized, except for the tokens.
      * It can contain HTML tags if the platform supports them. In that case,
      * be sure to use HTML encoded characters.
-     * The string shown to the actual user is stored in InputValidatorState.ErrorMessage.
+     * The string shown to the actual user is stored in InputValidatorState.errorMessage.
      * Values:
      * * String - The error message with tokens and optional HTML tags.
      * * function - Returns the error message, given the InputValidator,
@@ -142,22 +142,22 @@ export interface InputValidatorDescriptor {
      * If you have setup defaults for error messages with TextLocalizerService,
      * leave this null to use the default. Any value here supersedes default error messages.
      */
-    ErrorMessage?: undefined | null | string | ((host: IInputValidator) => string);
+    errorMessage?: undefined | null | string | ((host: IInputValidator) => string);
 
     /**
-     * Localization key for ErrorMessage. Its value will be matched to an entry
+     * Localization key for errorMessage. Its value will be matched to an entry
      * made to ValidationServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
-     * the value from the ErrorMessage property is used.
+     * the value from the errorMessage property is used.
      */
-    ErrorMessagel10n?: string | null | undefined;
+    errorMessagel10n?: string | null | undefined;
     /**
-     * Variation of the ErrorMessage intended to be displayed in a Validation Summary area.
+     * Variation of the errorMessage intended to be displayed in a Validation Summary area.
      * A summary is usually not near the field with the error. 
      * As a result, it helps to shape the message differently, usually by including
      * the Label token. "{Label} is required."
      * Values:
-     * * undefined and null - use the ErrorMessage as the template.
+     * * undefined and null - use the errorMessage as the template.
      * * String - The error message with tokens and optional HTML tags.
      * * function - Returns the error message, given the InputValidator,
      *   allowing you to replace or customize the message during validation.
@@ -168,36 +168,36 @@ export interface InputValidatorDescriptor {
      * If you have setup defaults for error messages with TextLocalizerService,
      * leave this null to use the default. Any value here supersedes default error messages.
      */
-    SummaryMessage?: undefined | null | string | ((host: IInputValidator) => string);
+    summaryMessage?: undefined | null | string | ((host: IInputValidator) => string);
 
     /**
-     * Localization key for SummaryMessage. Its value will be matched to an entry
+     * Localization key for summaryMessage. Its value will be matched to an entry
      * made to ValidationServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
-     * the value from the ErrorMessage property is used.
+     * the value from the errorMessage property is used.
      */
-    SummaryMessagel10n?: string | null | undefined;
+    summaryMessagel10n?: string | null | undefined;
 }
 
 /**
- * Result of the Validate function.
+ * Result of the validate() function.
  */
 export interface InputValidateResult {
     /**
-     * The result of Validate
+     * The result of validate()
      */
-    ConditionEvaluateResult: ConditionEvaluateResult;
+    conditionEvaluateResult: ConditionEvaluateResult;
 
     /**
      * Assigned with issue details when an issue is found.
      * Null when no issue is found.
      */
-    IssueFound: IssueFound | null;
+    issueFound: IssueFound | null;
 
     /**
-     * When true, Validate bailed before evaluation due to Enabled or Enabler
+     * When true, validate() bailed before evaluation due to Enabled or Enabler
      */
-    Skipped?: boolean;
+    skipped?: boolean;
 }
 
 
@@ -236,14 +236,14 @@ export interface TokenLabelAndValue {
     /**
      * The text within the {} of the token. Used to match tokens.
      */
-    TokenLabel: string;
+    tokenLabel: string;
     /**
      * The value to be used as a replacement. When the value isn't a string,
      * it is converted to a string through 
      * {@link DataTypes/Interfaces!IDataTypeFormatter | IDataTypeFormatter} classes
      * registered with {@link DataTypes/ConcreteClasses/DataTypeServices!DataTypeServices | DataTypeServices}.
      */
-    AssociatedValue: any;
+    associatedValue: any;
     /**
      * Provides additional guidance about the token's purpose so the
      * IMessageTokenResolver can apply additional formatting to the token,
@@ -255,7 +255,7 @@ export interface TokenLabelAndValue {
      * 'value' - some live data, such as the ValueHost's current value. {Value} is an example
      * 'message' - text just augments the error message, like {ConversionError} of DataTypeCheckCondition
      */
-    Purpose?: 'label' | 'parameter' | 'value' | 'message';
+    purpose?: 'label' | 'parameter' | 'value' | 'message';
 }
 
 

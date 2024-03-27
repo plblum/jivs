@@ -7,9 +7,9 @@
  * You want its number representation to be in hours (a decimal value so 1hr 30m is 1.5).
  * You want to setup the the EqualToCondition like this:
  * <IEqualToConditionDescriptor>{
- *   Type: "EqualTo",
- *   ValueHost1: "TextBox1", // your code supplies the textbox value to its ValueHost as a TimeSpan
- *   SecondValue: 1.5 // Compare to this number of hours
+ *   type: "EqualTo",
+ *   valueHostId: "TextBox1", // your code supplies the textbox value to its ValueHost as a TimeSpan
+ *   secondValue: 1.5 // Compare to this number of hours
  * }
  * 
  * We need to teach this library about your TimeSpan.
@@ -36,30 +36,30 @@ export class TimeSpan
         this._minutes = minutes ?? 0;
         this._seconds = seconds ?? 0;
     }
-    public get Hours(): number
+    public get hours(): number
     {
         return this._hours;
     }
     private _hours: number;
-    public get Minutes(): number
+    public get minutes(): number
     {
         return this._minutes;
     }
     private _minutes: number;
-    public get Seconds(): number
+    public get seconds(): number
     {
         return this._seconds;
     }
     private _seconds: number;
 
-    public get TotalSeconds(): number
+    public get totalSeconds(): number
     {
         return this._hours * 3600 + this._minutes * 60 + this._seconds;
     }
 
-    public get TotalHours(): number
+    public get totalHours(): number
     {
-        let totalSeconds = this.TotalSeconds;
+        let totalSeconds = this.totalSeconds;
         return totalSeconds / 3600;
     }
 }
@@ -69,7 +69,7 @@ export const TimeSpanAsSecondsLookupKey = "TimeSpanAsSeconds";
 
 export class TimeSpanIdentifier implements IDataTypeIdentifier
 {
-    public get DataTypeLookupKey(): string { return TimeSpanLookupKey}
+    public get dataTypeLookupKey(): string { return TimeSpanLookupKey}
     public supportsValue(value: any): boolean {
         return value instanceof TimeSpan;
     }
@@ -82,7 +82,7 @@ export class TimeSpanToHoursConverter implements IDataTypeConverter
             (!dataTypeLookupKey || dataTypeLookupKey === TimeSpanLookupKey);
     }
     convert(value: TimeSpan, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        return value.TotalHours;
+        return value.totalHours;
     }
 }
 // handles the value only with the specific key "TimeSpanAsSeconds"
@@ -93,18 +93,18 @@ export class TimeSpanToSecondsConverter implements IDataTypeConverter
             (dataTypeLookupKey === TimeSpanAsSecondsLookupKey);
     }
     convert(value: TimeSpan, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        return value.TotalSeconds;
+        return value.totalSeconds;
     }
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService
 export function registerTimeSpan(validationServices: IValidationServices): void
 {
-    let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
+    let dataTypeServices = validationServices.dataTypeServices as DataTypeServices;
     dataTypeServices.registerDataTypeIdentifier(new TimeSpanIdentifier());
     dataTypeServices.registerDataTypeConverter(new TimeSpanToHoursConverter());   
     dataTypeServices.registerDataTypeConverter(new TimeSpanToSecondsConverter());
     // now whenever a Condition's value is TimeSpan, it gets identified as LookupKey="TimeSpan"
     // When its time to compare, the TimeSpanToHoursConverters are asked if they support the value.
-    // When they do, the comparision immediately calls Convert and now has a number value.
+    // When they do, the comparision immediately calls convert and now has a number value.
 }

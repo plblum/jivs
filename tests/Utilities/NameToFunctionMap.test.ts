@@ -2,23 +2,23 @@ import { NameToFunctionMapper } from "../../src/Utilities/NameToFunctionMap";
 
 
 describe('NameToFunctionMapper', () => {
-    // Register(key: string, fnOrKey: ((...args: TValue[]) => TResult) | string): void
-    test('Register with function and new key gives no errors', () => {
+    // register(key: string, fnOrKey: ((...args: TValue[]) => TResult) | string): void
+    test('register with function and new key gives no errors', () => {
         let testItem = new NameToFunctionMapper<any, string>();
         expect(() => testItem.register('A', (val: any) => 'test1')).not.toThrow();
         expect(() => testItem.register('B', (val: any) => 'test2')).not.toThrow();
     });
-    test('Register with function and same key gives no errors', () => {
+    test('register with function and same key gives no errors', () => {
         let testItem = new NameToFunctionMapper<any, string>();
         expect(() => testItem.register('A', (val: any) => 'test1')).not.toThrow();
         expect(() => testItem.register('A', (val: any) => 'test2')).not.toThrow();
     });    
-    test('Register with alias key gives no errors', () => {
+    test('register with alias key gives no errors', () => {
         let testItem = new NameToFunctionMapper<any, string>();
         expect(() => testItem.register('A', (val: any) => 'test1')).not.toThrow();
         expect(() => testItem.register('B', 'A')).not.toThrow();
     });    
-    test('Register with alias key to unknown registration throws', () => {
+    test('register with alias key to unknown registration throws', () => {
         let testItem = new NameToFunctionMapper<any, string>();
         expect(() => testItem.register('A', (val: any) => 'test1')).not.toThrow();
         expect(() => testItem.register('B', 'D')).toThrow();

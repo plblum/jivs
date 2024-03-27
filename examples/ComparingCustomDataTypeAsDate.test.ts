@@ -7,8 +7,8 @@ function testRelativeDate(relativeDate: RelativeDate, expectedYear: number, expe
 {
     let today = new Date(Date.UTC(2001, 5, 15));
 
-    relativeDate.UTCToday = today;
-    let resultDate = relativeDate.ResolvedDate;
+    relativeDate.utcToday = today;
+    let resultDate = relativeDate.resolvedDate;
     expect(resultDate.getUTCFullYear()).toBe(expectedYear);
     expect(resultDate.getUTCMonth()).toBe(expectedMonth);
     expect(resultDate.getUTCDate()).toBe(expectedDay);
@@ -24,7 +24,7 @@ test('The RelativeDate class itself', () => {
 
 test('Test RelativeDateIdentifier class members for expected results', () => {
     let dti = new RelativeDateIdentifier();
-    expect(dti.DataTypeLookupKey).toBe(RelativeDataLookupKey);
+    expect(dti.dataTypeLookupKey).toBe(RelativeDataLookupKey);
     expect(dti.supportsValue(new RelativeDate(1, 0))).toBe(true);
     expect(dti.supportsValue(new Date())).toBe(false);
 });

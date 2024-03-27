@@ -3,7 +3,7 @@
  * 
  * See IDataTypeConverter for more.
  * 
- * Comparison is handled by the DataTypeServices.CompareValues function.
+ * Comparison is handled by the DataTypeServices.compareValues() function.
  * If you register a class there, it will be checked against values supplied.
  * If none of the registered classes support those values, the values
  * are first converted via any IDataTypeConverters register. Once

@@ -44,10 +44,10 @@ export const NonInputValueHostType = 'NonInput';
 export class NonInputValueHostGenerator extends ValueHostBaseGenerator {
 
     public canCreate(descriptor: ValueHostDescriptor): boolean {
-        if (descriptor.Type != null)    // null/undefined
-            return descriptor.Type === NonInputValueHostType;
+        if (descriptor.type != null)    // null/undefined
+            return descriptor.type === NonInputValueHostType;
         let test = descriptor as unknown as InputValueHostDescriptor;
-        if (test.ValidatorDescriptors === undefined)
+        if (test.validatorDescriptors === undefined)
             return true;
         return false;
     }

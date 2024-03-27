@@ -9,21 +9,21 @@ describe('NonInputValueHost constructor', () => {
         let vm = new MockValidationManager(services);
         let testItem: NonInputValueHost | null = null;
         expect(() => testItem = new NonInputValueHost(vm, {
-            Id: 'Field1',
-            Type: NonInputValueHostType,
-            Label: 'Label1'
+            id: 'Field1',
+            type: NonInputValueHostType,
+            label: 'Label1'
         }, {
-            Id: 'Field1',
-            Value: undefined
+            id: 'Field1',
+            value: undefined
         })).not.toThrow();
 
-        expect(testItem!.ValueHostsManager).toBe(vm);
+        expect(testItem!.valueHostsManager).toBe(vm);
 
         expect(testItem!.getId()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('Label1');
         expect(testItem!.getDataType()).toBeNull();
         expect(testItem!.getValue()).toBeUndefined();
-        expect(testItem!.IsChanged).toBe(false);
+        expect(testItem!.isChanged).toBe(false);
     });
 });
 
@@ -31,104 +31,104 @@ describe('NonInputValueHostGenerator members', () => {
     test('CanCreate returns true for NonInputValueHostType', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate({
-            Type: NonInputValueHostType,
-            Id: 'Field1',
-            Label: ''
+            type: NonInputValueHostType,
+            id: 'Field1',
+            label: ''
         })).toBe(true);
     });
     test('CanCreate returns false for unexpected type', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate({
-            Type: 'Unexpected',
-            Id: 'Field1',
-            Label: ''
+            type: 'Unexpected',
+            id: 'Field1',
+            label: ''
         })).toBe(false);
     });
     test('CanCreate returns true for Type not defined and lack of ValidatorDescriptors property', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate({
-            Id: 'Field1',
-            Label: ''
+            id: 'Field1',
+            label: ''
         })).toBe(true);
     });    
 
     test('CanCreate returns true for Type=undefined and lack of ValidatorDescriptors property', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate({
-            Type: undefined,
-            Id: 'Field1',
-            Label: ''
+            type: undefined,
+            id: 'Field1',
+            label: ''
         })).toBe(true);
     });        
 
     test('CanCreate returns false for Type not defined and presence of ValidatorDescriptors property (using null as a value)', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate(<any>{
-            Id: 'Field1',
-            Label: '',
-            ValidatorDescriptors: null
+            id: 'Field1',
+            label: '',
+            validatorDescriptors: null
         })).toBe(false);
     });        
     test('CanCreate returns false for Type not defined and presence of ValidatorDescriptors property using [] as a value', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate(<any>{
-            Id: 'Field1',
-            Label: '',
-            ValidatorDescriptors: []
+            id: 'Field1',
+            label: '',
+            validatorDescriptors: []
         })).toBe(false);
     });             
-    test('Create returns instance of NonInputValueHost with VM, Descriptor and State established', () => {
+    test('create returns instance of NonInputValueHost with VM, Descriptor and State established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);        
         let descriptor: NonInputValueHostDescriptor = {
-            Id: 'Field1',
-            Type: NonInputValueHostType,
-            Label: ''
+            id: 'Field1',
+            type: NonInputValueHostType,
+            label: ''
         };
         let state: NonInputValueHostState = {
-            Id: 'Field1',
-            Value: "ABC"
+            id: 'Field1',
+            value: "ABC"
         };
         let testItem = new NonInputValueHostGenerator();
         let vh: INonInputValueHost | null = null;
         expect(() => vh = testItem.create(vm, descriptor, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(NonInputValueHost);
-        expect(vh!.getId()).toBe(descriptor.Id);    // check Descriptor values
+        expect(vh!.getId()).toBe(descriptor.id);    // check Descriptor values
         expect(vh!.getValue()).toBe("ABC");
     });
-    test('CleanupState existing state takes no action. Returns the same data', () => {
+    test('cleanupState existing state takes no action. Returns the same data', () => {
         let originalState: NonInputValueHostState = {
-            Id: 'Field1',
-            Value: 10
+            id: 'Field1',
+            value: 10
         };
         let state = { ...originalState };
         let descriptor: NonInputValueHostDescriptor = {
-            Id: 'Field1',
-            Type: NonInputValueHostType,
-            Label: ''
+            id: 'Field1',
+            type: NonInputValueHostType,
+            label: ''
         };
         let testItem = new NonInputValueHostGenerator();
         expect(() => testItem.cleanupState(state, descriptor)).not.toThrow();
         expect(state).toEqual(originalState);
     });
  
-    test('CreateState returns instance with ID and InitialValue from Descriptor', () => {
+    test('createState returns instance with ID and InitialValue from Descriptor', () => {
         let testItem = new NonInputValueHostGenerator();
         let descriptor: NonInputValueHostDescriptor = {
-            Id: 'Field1',
-            Type: NonInputValueHostType,
-            Label: '',
-            InitialValue: 'TEST'
+            id: 'Field1',
+            type: NonInputValueHostType,
+            label: '',
+            initialValue: 'TEST'
         };
         let state: NonInputValueHostState | null = null;
         expect(() => state = testItem.createState(descriptor)).not.toThrow();
         expect(state).not.toBeNull();
-        expect(state!.Id).toBe(descriptor.Id);
-        expect(state!.Value).toBe(descriptor.InitialValue);
+        expect(state!.id).toBe(descriptor.id);
+        expect(state!.value).toBe(descriptor.initialValue);
     });
 });
-describe('ToIGatherValueHostIds function', () => {
+describe('toIGatherValueHostIds function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IGatherValueHostIds = {
             gatherValueHostIds: (a, b) => { }

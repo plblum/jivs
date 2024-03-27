@@ -28,7 +28,7 @@ export abstract class StringConditionBase<TConditionDescriptor extends StringCon
             return ConditionEvaluateResult.Undetermined;
 
         let text = value as string;
-        if (this.Descriptor.Trim ?? true)
+        if (this.descriptor.trim ?? true)
             text = text.trim();
         return this.evaluateString(text, valueHost, valueHostResolver);
     }
@@ -42,7 +42,7 @@ export abstract class StringConditionBase<TConditionDescriptor extends StringCon
         ConditionEvaluateResult;
 
     /**
-     * Supplies the value found in ValueHost from GetValue.
+     * Supplies the value found in ValueHost from getValue().
      * It wants a string and will only return a string or undefined.
      * @param valueHost 
      * @returns 
@@ -60,5 +60,5 @@ export interface StringConditionDescriptor extends OneValueConditionDescriptor {
      * Indicates that validation is applied only after trimming a string value
      * that is returned by a input field/element whose native datatype is string.
      */
-    Trim?: boolean;
+    trim?: boolean;
 }

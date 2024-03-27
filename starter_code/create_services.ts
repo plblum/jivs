@@ -45,28 +45,28 @@ import { MessageTokenResolver } from './../src/ValueHosts/MessageTokenResolver';
 export function createValidationServices(): ValidationServices {
     let vs = new ValidationServices();
 
-    vs.ActiveCultureId = 'en'; // set this to your default culture
+    vs.activeCultureId = 'en'; // set this to your default culture
 
     // --- ConditionFactory ---------------------------
-    vs.ConditionFactory = createConditionFactory();
+    vs.conditionFactory = createConditionFactory();
 
     // --- DataTypeServices services -------------------------------------
     // Plenty to configure here. See CreateDataTypeServices function below.
-    vs.DataTypeServices = createDataTypeServices();
+    vs.dataTypeServices = createDataTypeServices();
 
     // --- Text localization service
     // The built-in class, TextLocalizerService, doesn't use a third party localization
     // library. If you prefer one, create a class that implements ITextLocalizerService
-    vs.TextLocalizerService = createTextLocalizerService();
+    vs.textLocalizerService = createTextLocalizerService();
 
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLogger and another, create the other
     // and pass it as the second paramter of ConsoleLogger.
-    vs.LoggerService = new ConsoleLogger(LoggingLevel.Error);
+    vs.loggerService = new ConsoleLogger(LoggingLevel.Error);
 
     // --- MessageTokenResolverService ----------------------
     // Generally you don't have to modify this.
-    vs.MessageTokenResolverService = new MessageTokenResolver();
+    vs.messageTokenResolverService = new MessageTokenResolver();
 
     return vs;
 }
@@ -161,20 +161,20 @@ export function configureCultures(): Array<CultureIdFallback>
    return [
         //!!! This is sample data. Please rework as you need it.
             {
-                CultureId: 'en',
-                FallbackCultureId: null    // when this is the default culture,
+                cultureId: 'en',
+                fallbackCultureId: null    // when this is the default culture,
             },
             {
-                CultureId: 'en-US',
-                FallbackCultureId: 'en'
+                cultureId: 'en-US',
+                fallbackCultureId: 'en'
             },
             {
-                CultureId: 'es',
-                FallbackCultureId: 'en'
+                cultureId: 'es',
+                fallbackCultureId: 'en'
             },
             {
-                CultureId: 'es-MX',
-                FallbackCultureId: 'es'
+                cultureId: 'es-MX',
+                fallbackCultureId: 'es'
             }
         ];
 }
@@ -286,12 +286,12 @@ export function createTextLocalizerService(): ITextLocalizerService
     });    
 
     // Validator error messages can use these instead of having to be setup on individual InputValidatorDescriptors.
-    // So long as you don't supply a value to the InputValidatorDescriptor.ErrorMessage property, it will
+    // So long as you don't supply a value to the InputValidatorDescriptor.errorMessage property, it will
     // create a lookup key using this pattern, and see if the TextLocalizerService has a value for it.
     // EM-ConditionType-DataTypeLookupKey
     // and a fallback:
     // EM-ConditionType
-    // Similar for SummaryMessage, only with SEM- prefix:
+    // Similar for summaryMessage, only with SEM- prefix:
     // SEM-ConditionType-DataTypeLookupKey
     // SEM-ConditionType
     // 

@@ -13,98 +13,98 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
 
         let testItem = new ValidationServices();
         // check defaults for factories and services
-        expect(testItem.ActiveCultureId).toBe('en');        
+        expect(testItem.activeCultureId).toBe('en');        
         let x: any;
-        expect(() => x = testItem.ConditionFactory).toThrow(/ConditionFactory/);
-        expect(() => x = testItem.DataTypeServices).toThrow(/DataTypeServices/);
-        expect(() => x = testItem.MessageTokenResolverService).toThrow(/MessageTokenResolverService/);
-        expect(testItem.LoggerService).toBeInstanceOf(ConsoleLogger);
-        expect(testItem.ValueHostFactory).toBeInstanceOf(ValueHostFactory);
-        expect(testItem.InputValidatorFactory).toBeInstanceOf(InputValidatorFactory);
-        expect(testItem.TextLocalizerService).toBeInstanceOf(TextLocalizerService);
+        expect(() => x = testItem.conditionFactory).toThrow(/ConditionFactory/);
+        expect(() => x = testItem.dataTypeServices).toThrow(/DataTypeServices/);
+        expect(() => x = testItem.messageTokenResolverService).toThrow(/MessageTokenResolverService/);
+        expect(testItem.loggerService).toBeInstanceOf(ConsoleLogger);
+        expect(testItem.valueHostFactory).toBeInstanceOf(ValueHostFactory);
+        expect(testItem.inputValidatorFactory).toBeInstanceOf(InputValidatorFactory);
+        expect(testItem.textLocalizerService).toBeInstanceOf(TextLocalizerService);
     });
 });
 describe('Replace factories and services', () => {
-    test('Replace ConditionFactory', () => {
+    test('Replace conditionFactory', () => {
         let replacement = new ConditionFactory();
 
         let testItem = new ValidationServices();
-        testItem.ConditionFactory = replacement;
-        expect(testItem.ConditionFactory).toBe(replacement);
+        testItem.conditionFactory = replacement;
+        expect(testItem.conditionFactory).toBe(replacement);
     });
-    test('Replace DataTypeServices', () => {
+    test('Replace dataTypeServices', () => {
         let replacement = new DataTypeServices();
         let testItem = new ValidationServices();
-        testItem.DataTypeServices = replacement;
-        expect(testItem.DataTypeServices).toBe(replacement);
+        testItem.dataTypeServices = replacement;
+        expect(testItem.dataTypeServices).toBe(replacement);
     });
-    test('Replace TextLocalizerService', () => {
+    test('Replace textLocalizerService', () => {
         let replacement = new TextLocalizerService();
 
         let testItem = new ValidationServices();
-        testItem.TextLocalizerService = replacement;
-        expect(testItem.TextLocalizerService).toBe(replacement);
+        testItem.textLocalizerService = replacement;
+        expect(testItem.textLocalizerService).toBe(replacement);
     });    
-    test('Replace MessageTokenResolverService', () => {
+    test('Replace messageTokenResolverService', () => {
         let replacement = new MessageTokenResolver();
 
         let testItem = new ValidationServices();
-        testItem.MessageTokenResolverService = replacement;
-        expect(testItem.MessageTokenResolverService).toBe(replacement);
+        testItem.messageTokenResolverService = replacement;
+        expect(testItem.messageTokenResolverService).toBe(replacement);
     });
-    test('Replace LoggerService', () => {
+    test('Replace loggerService', () => {
         let replacement = new MockCapturingLogger();
         let testItem = new ValidationServices();
-        testItem.LoggerService = replacement;
-        expect(testItem.LoggerService).toBe(replacement);
+        testItem.loggerService = replacement;
+        expect(testItem.loggerService).toBe(replacement);
     });    
-    test('Replace ValueHostFactory', () => {
+    test('Replace valueHostFactory', () => {
         let replacement = new ValueHostFactory();
         let testItem = new ValidationServices();
-        testItem.ValueHostFactory = replacement;
-        expect(testItem.ValueHostFactory).toBe(replacement);
+        testItem.valueHostFactory = replacement;
+        expect(testItem.valueHostFactory).toBe(replacement);
     });    
-    test('Replace InputValidatorFactory', () => {
+    test('Replace inputValidatorFactory', () => {
         let replacement = new InputValidatorFactory();
         let testItem = new ValidationServices();
-        testItem.InputValidatorFactory = replacement;
-        expect(testItem.InputValidatorFactory).toBe(replacement);
+        testItem.inputValidatorFactory = replacement;
+        expect(testItem.inputValidatorFactory).toBe(replacement);
     });    
-    test('Replace ActiveCultureID', () => {
+    test('Replace activeCultureID', () => {
         let replacement = 'fr';
         let testItem = new ValidationServices();
-        testItem.ActiveCultureId = replacement;
-        expect(testItem.ActiveCultureId).toBe(replacement);
+        testItem.activeCultureId = replacement;
+        expect(testItem.activeCultureId).toBe(replacement);
     });    
 });
-describe('ValueHostFactory', () => {
+describe('valueHostFactory property', () => {
     test('Set and Get', () => {
         let testItem = new ValidationServices();
         let factory = new ValueHostFactory();
-        testItem.ValueHostFactory = factory;
-        expect(testItem.ValueHostFactory).toBe(factory);
-        expect(() => testItem.ValueHostFactory = null!).toThrow();
+        testItem.valueHostFactory = factory;
+        expect(testItem.valueHostFactory).toBe(factory);
+        expect(() => testItem.valueHostFactory = null!).toThrow();
     });
     test('Get without Set returns a default ValueHostFactory', () => {
         let testItem = new ValidationServices();
         let x: any;
-        expect(() => x = testItem.ValueHostFactory).not.toThrow();
+        expect(() => x = testItem.valueHostFactory).not.toThrow();
         expect(x).toBeInstanceOf(ValueHostFactory);
     });
   
 });
-describe('InputValidatorFactory', () => {
+describe('inputValidatorFactory property', () => {
     test('Set and Get', () => {
         let testItem = new ValidationServices();
         let factory = new InputValidatorFactory();
-        testItem.InputValidatorFactory = factory;
-        expect(testItem.InputValidatorFactory).toBe(factory);
-        expect(() => testItem.InputValidatorFactory = null!).toThrow();
+        testItem.inputValidatorFactory = factory;
+        expect(testItem.inputValidatorFactory).toBe(factory);
+        expect(() => testItem.inputValidatorFactory = null!).toThrow();
     });
     test('Get without Set throws', () => {
         let testItem = new ValidationServices();
         let x: any;
-        expect(() => x = testItem.InputValidatorFactory).not.toThrow();
+        expect(() => x = testItem.inputValidatorFactory).not.toThrow();
         expect(x).toBeInstanceOf(InputValidatorFactory);
     });
   

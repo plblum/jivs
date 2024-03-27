@@ -49,7 +49,7 @@ describe('Comparers.defaultComparer', () => {
 
 // function BooleanDataTypeComparer(value1: any, value2: any): ComparersResult
 describe('Comparers.BooleanDataTypeComparer', () => {
-    test('SupportsValues', () => {
+    test('supportsValues', () => {
         let testItem = new BooleanDataTypeComparer();
         // so long as one is boolean, true
         expect(testItem.supportsValues(true, false)).toBe(true);
@@ -63,14 +63,14 @@ describe('Comparers.BooleanDataTypeComparer', () => {
     });
     test('Equals', () => {
         let testItem = new BooleanDataTypeComparer();
-        // only supply values are were approved by SupportsValues
+        // only supply values are were approved by supportsValues
         // This class allows just one to be a boolean
         expect(testItem.compare(true, true)).toBe(ComparersResult.Equals);
         expect(testItem.compare(false, false)).toBe(ComparersResult.Equals);
      });    
     test('Not Equals', () => {
         let testItem = new BooleanDataTypeComparer();
-        // only supply values are were approved by SupportsValues
+        // only supply values are were approved by supportsValues
         // This class allows just one to be a boolean, and if so, returns NotEquals
         // when the other is null.
 
@@ -81,7 +81,7 @@ describe('Comparers.BooleanDataTypeComparer', () => {
     });      
     test('Undefined', () => {
         let testItem = new BooleanDataTypeComparer();
-        // only supply values are were approved by SupportsValues
+        // only supply values are were approved by supportsValues
         // This class allows just one to be a boolean, and if so, returns Undetermined
         // unless the other is null
 

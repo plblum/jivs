@@ -33,12 +33,12 @@ export class UTCMonthYearConverter implements IDataTypeConverter
 // Register after you have a ValidationService instance. Setup only on the ValidationService
 export function registerRelativeDate(validationServices: IValidationServices): void
 {
-    let dataTypeServices = validationServices.DataTypeServices as DataTypeServices;
+    let dataTypeServices = validationServices.dataTypeServices as DataTypeServices;
     dataTypeServices.registerDataTypeConverter(new UTCMonthYearConverter()); 
 
     // This gets used ONLY when the ValueHostDescriptor.DataType with "MonthYear".
     // When its time to compare, the UTCMonthYearConverter is asked if it supports the value.
-    // If so, the comparision immediately calls Convert and now has a Date value.
+    // If so, the comparision immediately calls convert and now has a Date value.
     // The DataTypeServices knows to convert Date to a number, so it can be used by the 
     // default converter (DefaultConverter function supports comparing numbers)
 }

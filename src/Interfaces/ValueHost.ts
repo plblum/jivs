@@ -30,8 +30,8 @@
  *   The string in the native value may be cleaned up, trimmed, reformatted, etc.
  *   Most Conditions evaluate the native value.
  * Its up to the system consumer to manage both.
- * - When an input has its value set or changed, also assign it here with SetInputValue.
- * - RequiredConditions and DataTypeCondition look at the InputValue via GetInputValue.
+ * - When an input has its value set or changed, also assign it here with setInputValue().
+ * - RequiredConditions and DataTypeCondition look at the InputValue via getInputValue().
  * - The initial native value is assigned with SetNativeValue.
  *   The consumer handles converting the input field/element value into its native value
  *   and supplies it with SetNativeValue or NativeValueUndetermined.
@@ -50,7 +50,7 @@ export interface IValueHost {
     /**
      * Provides a unique identity for this ValueHost.
      * Consuming systems use this ID to locate the ValueHost
-     * for which they will transfer a value, via ValueHostsManager.GetValueHost(this id)
+     * for which they will transfer a value, via ValueHostsManager.getValueHost(this id)
      */
     getId(): ValueHostId;
 
@@ -77,8 +77,8 @@ export interface IValueHost {
     * All other values, including null and the empty string, are considered real data.
     * When undefined, IsChanged will still be changed to true unless options.Reset = true.
     * @param options - 
-    * Validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when Validate=true) and sets IsChanged to false.
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
@@ -92,8 +92,8 @@ export interface IValueHost {
      * Note this does not reset IsChanged to false without explicitly 
      * specifying options.Reset = true;
     * @param options - 
-    * Validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when Validate=true) and sets IsChanged to false.
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Required validator within the {ConversionError} token.
@@ -123,14 +123,14 @@ export interface IValueHost {
     /**
      * Determines how the validation system sees the Value in terms of editing.
      * When true, it was changed. When false, it was not.
-     * The SetValue/SetInputValue/SetValues functions are the only ones to change this flag.
+     * The setValue()/setInputValue()/setValues() functions are the only ones to change this flag.
      * They all set it to true automatically except set it to false when the option.Reset is true.
-     * The ValueHost.Validate function may skip validation of an InputValueHost when IsChanged is false,
-     * depending on the options for Validate. For example, calling validate immediately after loading
+     * The ValueHost.validate() function may skip validation of an InputValueHost when IsChanged is false,
+     * depending on the options for validate(). For example, calling validate immediately after loading
      * up the form, you want to avoid showing Required validators. Those should appear only
      * if the user edits, or when the user attempts to submit.
      */
-    IsChanged: boolean;
+    isChanged: boolean;
 }
 
 /**
@@ -142,12 +142,12 @@ export interface SetValueOptions {
      * Perform validation if ValueHost supports it.
      * That may result in a state change passed up.
      */
-    Validate?: boolean;
+    validate?: boolean;
     /**
      * Reset the field's changed and validation states as if the field has never been edited.
-     * It effectively sets ValueHost.IsChanged to false and calls InputValueHost.ClearValidation.
+     * It effectively sets ValueHost.IsChanged to false and calls InputValueHost.clearValidation().
      */
-    Reset?: boolean;
+    reset?: boolean;
 
     /**
      * When converting the input field/element value to native and there is an error
@@ -156,7 +156,7 @@ export interface SetValueOptions {
      * error message token {ConversionError}.
      * Cleared when setting the value without an error.
      */
-    ConversionErrorTokenValue?: string;
+    conversionErrorTokenValue?: string;
 
     /**
      * If you have setup the OnValueChanged callback, it automatically is run
@@ -164,7 +164,7 @@ export interface SetValueOptions {
      * Callback is skipped when true.
      * When null, it is the same as false.
      */
-    SkipValueChangedCallback?: boolean;
+    skipValueChangedCallback?: boolean;
 }
 
 /**
@@ -176,7 +176,7 @@ export interface ValueHostState {
      * The ValueHostId for the associated ValueHost.
      * Despite being in State, this property is not allowed to be changed.
      */
-    Id: ValueHostId;
+    id: ValueHostId;
 
     /**
      * The value available to be evaluated by Conditions.
@@ -186,19 +186,19 @@ export interface ValueHostState {
      * Value of undefined is valid. Use undefined if the native value could not be resolved
      * from the input field/element or is otherwise unknown.
      */
-    Value: any;
+    value: any;
 
     /**
-     * Counts the number of changes made to the Value thru SetValue/SetValues/SetInputValue.
+     * Counts the number of changes made to the Value thru setValue()/setValues()/setInputValue().
      * Increments with each call or sets it back to 0 when their option.Reset is true.
      * When 0 or undefined, it means no changes have been made. 
      */
-    ChangeCounter?: number;
+    changeCounter?: number;
 
     /**
      * Storage associated with ValueHost.SaveIntoState/GetFromState
      */
-    Items?: CustomItems;
+    items?: CustomItems;
 }
 
 /**
@@ -228,7 +228,7 @@ export interface ValueHostDescriptor {
      * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
      * by checking for inclusion of the InputValueHostDescriptor.ValidationDescriptors property.
      */
-    Type?: string;
+    type?: string;
     /**
      * Provides a unique "name" for this ValueHost, within the scope of one
      * ValueHostsManager instance.
@@ -241,38 +241,38 @@ export interface ValueHostDescriptor {
      * - index into the list, a simple number starting at 0. Property1/0, Property1/1
      * - Primary key when the children are data elements themselves. Property1/Key=abc123
      */
-    Id: ValueHostId;
+    id: ValueHostId;
 
     /**
      * The UI-ready label for this value, to be shown in error messages
      * that have the {Label} token.
      */
-    Label?: string;
+    label?: string;
 
     /**
      * Localization key for Label. Its value will be matched to an entry
      * made to ValidationServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
-     * the value from the ErrorMessage property is used.
+     * the value from the errorMessage property is used.
      */
-    Labell10n?: string | null | undefined;
+    labell10n?: string | null | undefined;
 
     /**
      * Provides an initial value when constructing the instance.
-     * Changes to the value should come from SetValue, as they
+     * Changes to the value should come from setValue(), as they
      * report state changes.
      * Can be undefined/omitted. 
      * Note that a value of null or empty string are both considered
      * real values to store. Only undefined means nothing to store.
      */
-    InitialValue?: any;
+    initialValue?: any;
 
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
      * See the DataTypeServices. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
      * If null, the current value's type (ValueHostState.Value) is used and must be string, number, boolean, or date.
      */
-    DataType?: string;
+    dataType?: string;
 }
 
 
@@ -315,7 +315,7 @@ export interface IValueHostFactory {
      * Creates the instance.
      * @param valueHostsManager 
      * @param descriptor - determines the class. All classes supported here must ValueHostDescriptor to get their setup.
-     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.CreateState() to create an initial value.
+     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.createState() to create an initial value.
      */
     create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
     /**
