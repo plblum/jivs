@@ -52,7 +52,7 @@ import { CompareCategory, LoggingLevel, LookupKeyCategory } from '../Interfaces/
  * is supplied for that culture, it has a chain of fallback cultures that you supply
  * in the constructor.
  * 
- * This class is available on {@link ValidationServices/ConcreteClass!ValidationServices.DataTypeServices}.
+ * This class is available on {@link ValidationServices/ConcreteClass!ValidationServices.dataTypeServices}.
  */
 export class DataTypeServices implements IDataTypeServices {
     /**
@@ -562,7 +562,6 @@ export class DataTypeServices implements IDataTypeServices {
     /**
      * Gets the first {@link DataTypes/Interfaces!IDataTypeCheckGenerator | IDataTypeCheckGenerator}
      *  that supports the value, or null if none are found.
-     * @param value 
      * @param dataTypeLookupKey 
      * @returns 
      */
