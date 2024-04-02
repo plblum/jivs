@@ -1,0 +1,18 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "name": "Jivs",
+    "entryPoints": [
+        "packages/jivs-engine/src/"
+    ],
+    "entryPointStrategy": "expand",
+    "out": "typedoc_output",
+    "useTsLinkResolution": true,
+    "customCss": "typedoc/jivstheme.css",
+    "excludePrivate": true,
+    "plugin": ["typedoc-plugin-extras", "typedoc-plugin-merge-modules"],
+    "customTitle": "Jivs",          //typedoc-plugin-extras
+    "footerTypedocVersion": true,   //typedoc-plugin-extras
+    "footerLastModified": true,      //typedoc-plugin-extras
+    "mergeModulesRenameDefaults": false, // typedoc-plugin-merge-modules
+    "mergeModulesMergeMode": "module",   // typedoc-plugin-merge-modules
+}  

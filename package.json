@@ -1,0 +1,45 @@
+{
+  "name": "@plblum/jivs",
+  "description": "JavaScript Input Validation Service. Provides the tools for input validation in a user interface or model.",
+  "keywords": ["validation"],  
+  "author": {
+    "name": "Peter L Blum <plblum@peterblum.com>"
+  },  
+  "license": "MIT",  
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "examples/*",
+    "starter_code/*"
+  ],
+
+  "dependencies": {
+    "gulp-jest": "^4.0.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "eslint": "^8.57.0",
+    "eslint-plugin-typescript": "^0.14.0",
+    "gulp": "^4.0.2",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.5",
+    "prettier-eslint": "^16.3.0",
+    "ts-jest": "^29.1.2",
+    "typedoc": "^0.25.12",
+    "typedoc-plugin-extras": "^3.0.0",
+    "typedoc-plugin-merge-modules": "^5.1.0",
+    "typescript": "^5.4.3",
+    "typescript-eslint": "^7.3.1",    
+    "lerna": "^8.1.2"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "jest": true
+    }
+  },
+  "madge": {
+    "tsConfig": "./tsconfig.json"
+  }  
+}

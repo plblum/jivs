@@ -1,0 +1,40 @@
+{
+  "name": "@plblum/jivs-engine",
+  "version": "0.9.0",
+  "description": "The workhorse of validation. Classes without UI that just take in values and output validation results. This lib is completely standalone from DOM, HTML, and Web APIs. The Suite contains support for UI aspects of validation too.",
+  "displayName": "JavaScript Input Validation Service",
+  "license": "MIT",
+  "main": "build/src/index.js",
+  "typings": "build/src/index.d.ts",
+  "scripts": {
+    "compile": "tsc",
+    "test": "jest",
+    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'",
+    "typedoc": "typedoc --options typedoc.json"
+  },
+  "dependencies": {
+    "gulp-jest": "^4.0.4"
+  } ,
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "eslint": "^8.57.0",
+    "eslint-plugin-typescript": "^0.14.0",
+    "gulp": "^4.0.2",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.5",
+    "prettier-eslint": "^16.3.0",
+    "ts-jest": "^29.1.2",
+    "typedoc": "^0.25.12",
+    "typedoc-plugin-extras": "^3.0.0",
+    "typedoc-plugin-merge-modules": "^5.1.0",
+    "typescript": "^5.4.3",
+    "typescript-eslint": "^7.3.1"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "jest": true
+    }
+  }
+}
