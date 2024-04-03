@@ -1,13 +1,12 @@
-import { ComparersResult } from "../src/Interfaces/DataTypeComparerService";
-import { DataTypeComparerService } from "../src/Services/DataTypeComparerService";
-import { DataTypeConverterService } from "../src/Services/DataTypeConverterService";
-import { DataTypeIdentifierService } from "../src/Services/DataTypeIdentifierService";
-import { ValidationServices } from "../src/Services/ValidationServices";
+import { ComparersResult } from '@plblum/jivs-engine/src/Interfaces/DataTypeComparerService';
+import { DataTypeComparerService } from '@plblum/jivs-engine/src/Services/DataTypeComparerService';
+import { DataTypeConverterService } from '@plblum/jivs-engine/src/Services/DataTypeConverterService';
+import { DataTypeIdentifierService } from '@plblum/jivs-engine/src/Services/DataTypeIdentifierService';
 import {
     TimeSpan, TimeSpanAsSecondsLookupKey, TimeSpanIdentifier, TimeSpanLookupKey,
     TimeSpanToHoursConverter, TimeSpanToSecondsConverter
-} from "../src/TimeSpan_class";
-import { createMinimalValidationServices } from "../src/support";
+} from '../src/TimeSpan_class';
+import { createMinimalValidationServices } from '../src/support';
 
 // All test relative to 2001-05-15
 function testTimeSpanToHours(timeSpan: TimeSpan, expected: number)
@@ -38,7 +37,7 @@ test('Test TimeSpanToHoursConverter class members for expected results', () => {
     let dtc = new TimeSpanToHoursConverter();
     expect(dtc.supportsValue(new TimeSpan(1, 0), null)).toBe(true);
     expect(dtc.supportsValue(new TimeSpan(1, 0), TimeSpanLookupKey)).toBe(true);
-    expect(dtc.supportsValue(new TimeSpan(1, 0), "willnotmatch")).toBe(false);
+    expect(dtc.supportsValue(new TimeSpan(1, 0), 'willnotmatch')).toBe(false);
     expect(dtc.supportsValue(new Date(), null)).toBe(false);
     expect(dtc.supportsValue(new Date(), TimeSpanLookupKey)).toBe(false);
     expect(dtc.supportsValue(0, TimeSpanLookupKey)).toBe(false);
@@ -48,7 +47,7 @@ test('Test TimeSpanToSecondsConverter class members for expected results', () =>
     expect(dtc.supportsValue(new TimeSpan(1, 0), null)).toBe(false);
     expect(dtc.supportsValue(new TimeSpan(1, 0), TimeSpanAsSecondsLookupKey)).toBe(true);
     expect(dtc.supportsValue(new TimeSpan(1, 0), TimeSpanLookupKey)).toBe(false);
-    expect(dtc.supportsValue(new TimeSpan(1, 0), "willnotmatch")).toBe(false);
+    expect(dtc.supportsValue(new TimeSpan(1, 0), 'willnotmatch')).toBe(false);
     expect(dtc.supportsValue(new Date(), null)).toBe(false);
     expect(dtc.supportsValue(new Date(), TimeSpanAsSecondsLookupKey)).toBe(false);
     expect(dtc.supportsValue(0, TimeSpanAsSecondsLookupKey)).toBe(false);
@@ -68,7 +67,7 @@ test('Register and test values against TimeSpanToHoursConverter', () => {
     let timeSpan2 = new TimeSpan(2, 0);
     expect(dtcs.find(timeSpan1, null)).toBeInstanceOf(TimeSpanToHoursConverter);
     expect(dtcs.find(timeSpan1, TimeSpanLookupKey)).toBeInstanceOf(TimeSpanToHoursConverter);
-    expect(dtcs.find(timeSpan1, "willnotmatch")).toBeNull();
+    expect(dtcs.find(timeSpan1, 'willnotmatch')).toBeNull();
     let compareService = vs.dataTypeComparerService as DataTypeComparerService;
     expect(compareService.compare(timeSpan1, timeSpan1, TimeSpanLookupKey, TimeSpanLookupKey)).toBe(ComparersResult.Equals);
     expect(compareService.compare(timeSpan1, timeSpan2, TimeSpanLookupKey, TimeSpanLookupKey)).toBe(ComparersResult.LessThan);
@@ -81,7 +80,7 @@ test('Register and test values against TimeSpanToSecondsConverter', () => {
     let timeSpan1 = new TimeSpan(1, 0);
     let timeSpan2 = new TimeSpan(2, 0);
     expect(dtcs.find(timeSpan1, TimeSpanAsSecondsLookupKey)).toBeInstanceOf(TimeSpanToSecondsConverter);
-    expect(dtcs.find(timeSpan1, "willnotmatch")).toBeNull();
+    expect(dtcs.find(timeSpan1, 'willnotmatch')).toBeNull();
     let compareService = vs.dataTypeComparerService as DataTypeComparerService;
     expect(compareService.compare(timeSpan1, timeSpan1, TimeSpanAsSecondsLookupKey, TimeSpanAsSecondsLookupKey)).toBe(ComparersResult.Equals);
     expect(compareService.compare(timeSpan1, timeSpan2, TimeSpanAsSecondsLookupKey, TimeSpanAsSecondsLookupKey)).toBe(ComparersResult.LessThan);

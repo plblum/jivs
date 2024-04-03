@@ -11,6 +11,10 @@
 		}
 	],
 	"settings": {
+		/* VSCode will use TSC only on workspaces, not the global level */
+		"typescript.tsdk": "./node_modules/typescript/lib",
+		"typescript.enablePromptUseWorkspaceTsdk": true,
+		"typescript.enablePromptUseGlobalTsdk": false,		
 		"explorerExclude.backup": {
 			"**/.git": true,
 			"**/.svn": true,
@@ -50,6 +54,17 @@
 			".vscode": false
 		},
 		"explorerExclude.showPicker": false,
-		"explorer.excludeGitIgnore": false
+		"explorer.excludeGitIgnore": false,
+		"jestrunner.configPath": "./jest.config.js",
+		"jestTestExplorer.logfile": "E:\\jesttestlog.txt",
+		"jestTestExplorer.pathToJest": "C:\\Code\\Jivs-Suite\\jivs\\node_modules\\jest",
+		"jestrunner.jestPath": "C:\\Code\\Jivs-Suite\\jivs\\node_modules\\jest\\bin\\jest.js",
+		"typescript.preferences.autoImportFileExcludePatterns": [
+			"**/build/**"
+		],
+		"search.exclude": {
+			"**/build": true,
+			"**/coverage": true
+		}
 	}
 }

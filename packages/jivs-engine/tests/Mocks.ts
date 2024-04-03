@@ -6,13 +6,12 @@ import type { IValidationServices } from "../src/Interfaces/ValidationServices";
 import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, ValueHostDescriptor, ValueChangedHandler, ValueHostStateChangedHandler } from "../src/Interfaces/ValueHost";
 import { IValueHostResolver, IValueHostsManager } from "../src/Interfaces/ValueHostResolver";
 import { ConditionBase } from "../src/Conditions/ConditionBase";
-import { ConditionDescriptor, ConditionEvaluateResult, ConditionCategory, IConditionFactory } from "../src/Interfaces/Conditions";
+import { ConditionDescriptor, ConditionEvaluateResult, ConditionCategory, IConditionFactory, IEvaluateConditionDuringEdits, IConditionCore } from "../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostState, ValueHostValidatedHandler } from "../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValidateResult, ValidationResult, BusinessLogicError, IssueFound, IssueSnapshot } from "../src/Interfaces/Validation";
 import { InputValueHostBase } from "../src/ValueHosts/InputValueHostBase";
 import { IInputValidator, IInputValidatorFactory, InputValidatorDescriptor } from "../src/Interfaces/InputValidator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../src/Interfaces/ValidationManager";
-import { registerConditions, registerDataTypeCheckGenerators, registerDataTypeComparers, registerDataTypeConverters, registerDataTypeFormatters, registerDataTypeIdentifiers } from "../starter_code/create_services";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../src/ValueHosts/ValueHostFactory";
 import { InputValidatorFactory } from "../src/ValueHosts/InputValidator";
 import { ITextLocalizerService } from "../src/Interfaces/TextLocalizerService";
@@ -30,6 +29,7 @@ import { DataTypeFormatterService } from "../src/Services/DataTypeFormatterServi
 import { populateServicesWithManyCultures } from "./Services/DataTypeFormatterService.test";
 import { toIInputValueHost } from "../src/ValueHosts/InputValueHost";
 import { IMessageTokenResolverService } from "../src/Interfaces/MessageTokenResolverService";
+import { registerAllConditions, registerConditions, registerDataTypeCheckGenerators, registerDataTypeComparers, registerDataTypeConverters, registerDataTypeFormatters, registerDataTypeIdentifiers } from "./createValidationServices";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -229,7 +229,7 @@ export class MockValidationServices implements IValidationServices
         this._loggerService = new MockCapturingLogger();
 
         if (registerStandardConditions) {
-            registerConditions(this.conditionFactory as ConditionFactory);
+            registerAllConditions(this.conditionFactory as ConditionFactory);
             registerTestingOnlyConditions(this.conditionFactory as ConditionFactory);
         }
         if (registerStandardDataTypes)
@@ -543,75 +543,106 @@ export interface MockCapturedLog
 }
 
 // Custom Conditions designed for testing validation where the Condition has a predictable behavior
+export abstract class MockConditionBase<TDescriptor extends ConditionDescriptor> implements IConditionCore<TDescriptor>
+{
+    constructor(descriptor: TDescriptor) {
+        this._descriptor = descriptor;
+    }
+
+    public get conditionType(): string
+    {
+        return this.descriptor.type;
+    }
+
+    public abstract evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+
+    public get descriptor(): TDescriptor {
+        return this._descriptor;
+    }
+    private readonly _descriptor: TDescriptor;
+
+    public get category(): ConditionCategory {
+        return this.descriptor.category ?? ConditionCategory.Undetermined;
+    }
+}
+// Custom Conditions designed for testing validation where the Condition has a predictable behavior
 
 export const AlwaysMatchesConditionType = "AlwaysMatches";
 
-export class AlwaysMatchesCondition extends ConditionBase<ConditionDescriptor>{
-    protected get DefaultConditionType(): string { return this.descriptor.type; }    
+export class AlwaysMatchesCondition extends MockConditionBase<ConditionDescriptor> implements IEvaluateConditionDuringEdits{
+ 
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Match;
     }
-    protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Undetermined;
-    }    
-    public gatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
-        // does nothing
+
+    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
+        return ConditionEvaluateResult.Match;
     }
 }
 
 export const NeverMatchesConditionType = "NeverMatches";
 export const NeverMatchesConditionType2 = "NeverMatches2"; // two type names for the same condition so we can test with 2 conditions without type naming conflicts
 
-export class NeverMatchesCondition extends ConditionBase<ConditionDescriptor>{
-    protected get DefaultConditionType(): string { return this.descriptor.type; }
+export class NeverMatchesCondition extends MockConditionBase<ConditionDescriptor> implements IEvaluateConditionDuringEdits {
 
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.NoMatch;
     }
-    protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Undetermined;
+    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
+        return ConditionEvaluateResult.NoMatch;
     }
-    public gatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
-        // does nothing
-    }    
 }
 
 export const IsUndeterminedConditionType = "AlwaysUndetermined";
 
-export class IsUndeterminedCondition extends ConditionBase<ConditionDescriptor>{
+export class IsUndeterminedCondition extends MockConditionBase<ConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.descriptor.type; }
     
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Undetermined;
     }
-    protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Undetermined;
-    }    
-    public gatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
-        // does nothing
-    }    
+
 }
 
 export const ThrowsExceptionConditionType = "AlwaysThrows";
 
-export class ThrowsExceptionCondition extends ConditionBase<ConditionDescriptor>{
+export class ThrowsExceptionCondition extends MockConditionBase<ConditionDescriptor>{
     protected get DefaultConditionType(): string { return this.descriptor.type; }    
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         throw new Error("Always Throws");
     }
-    protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Undetermined;
-    }    
-    public gatherValueHostIds(collection: Set<string>, valueHostsResolver: IValueHostResolver): void {
-        // does nothing
-    }    
 }
+
+export const UserSuppliedResultConditionWithDuringEditType = 'UserSuppliedResultWithDuringEdit';
+export const UserSuppliedResultConditionType = 'UserSuppliedResult';
+
+export interface UserSuppliedResultConditionDescriptor extends ConditionDescriptor
+{
+    result: ConditionEvaluateResult;
+}
+export class UserSuppliedResultCondition extends MockConditionBase<UserSuppliedResultConditionDescriptor>
+{
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        return this.descriptor.result;
+    }
+}
+export class UserSuppliedResultConditionWithDuringEdit extends UserSuppliedResultCondition
+    implements IEvaluateConditionDuringEdits
+{
+    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
+        return this.descriptor.result;
+    }
+}
+
+
 export function registerTestingOnlyConditions(factory: ConditionFactory): void
 {
     factory.register(AlwaysMatchesConditionType, (descriptor) => new AlwaysMatchesCondition(descriptor));
     factory.register(NeverMatchesConditionType, (descriptor) => new NeverMatchesCondition(descriptor));
     factory.register(IsUndeterminedConditionType, (descriptor) => new IsUndeterminedCondition(descriptor));
     factory.register(ThrowsExceptionConditionType, (descriptor) => new ThrowsExceptionCondition(descriptor));
+    factory.register<UserSuppliedResultConditionDescriptor>(UserSuppliedResultConditionType, (descriptor) => new UserSuppliedResultCondition(descriptor));
+    factory.register<UserSuppliedResultConditionDescriptor>(UserSuppliedResultConditionWithDuringEditType, (descriptor) => new UserSuppliedResultConditionWithDuringEdit(descriptor));
     // yes, two conditions of the same class can be registered with different Type names.
     factory.register(NeverMatchesConditionType2, (descriptor) => new NeverMatchesCondition(descriptor));
 }

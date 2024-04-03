@@ -1,10 +1,9 @@
-import { LookupKey } from "../src/DataTypes/LookupKeys";
-import { ComparersResult } from "../src/Interfaces/DataTypeComparerService";
-import { DataTypeComparerService } from "../src/Services/DataTypeComparerService";
-import { DataTypeConverterService } from "../src/Services/DataTypeConverterService";
-import { ValidationServices } from "../src/Services/ValidationServices";
-import { UTCAnniversaryConverter, AnniversaryLookupKey } from "../src/AnniversaryConverter";
-import { createMinimalValidationServices } from "../src/support";
+import { AnniversaryLookupKey, UTCAnniversaryConverter } from './../src/AnniversaryConverter';
+import { LookupKey } from '@plblum/jivs-engine/src/DataTypes/LookupKeys';
+import { ComparersResult } from '@plblum/jivs-engine/src/Interfaces/DataTypeComparerService';
+import { DataTypeComparerService } from '@plblum/jivs-engine/src/Services/DataTypeComparerService';
+import { DataTypeConverterService } from '@plblum/jivs-engine/src/Services/DataTypeConverterService';
+import { createMinimalValidationServices } from '../src/support';
 
 describe('UTCAnniversaryConverter', () => {
     test('supportsValue', () => {
@@ -27,7 +26,7 @@ describe('UTCAnniversaryConverter', () => {
         expect(testItem.convert(test1, AnniversaryLookupKey)).toBe(test1Anniversary.getTime());
         expect(testItem.convert(test2, AnniversaryLookupKey)).toBe(test2Anniversary.getTime());
         // dates with an illegal value will convert to undefined
-        let illegalDate = new Date("foo");
+        let illegalDate = new Date('foo');
         expect(testItem.convert(illegalDate, AnniversaryLookupKey)).toBeUndefined();
     });
     test('Within dataTypeConverterService', () => {

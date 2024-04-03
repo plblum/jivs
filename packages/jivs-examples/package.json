@@ -11,15 +11,14 @@
     "test": "jest",
     "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'"
   },
-  "dependencies":{
-    "@plblum/jivs-engine": "file:../jivs-engine"
-  },
-  
   "eslintConfig": {
     "env": {
       "browser": true,
       "node": true,
       "jest": true
     }
+  },
+  "dependencies": {
+    "@plblum/jivs-engine": "file:../jivs-engine"
   }
 }

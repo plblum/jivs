@@ -1,10 +1,9 @@
-import { LookupKey } from "../src/DataTypes/LookupKeys";
-import { ComparersResult } from "../src/Interfaces/DataTypeComparerService";
-import { DataTypeComparerService } from "../src/Services/DataTypeComparerService";
-import { DataTypeConverterService } from "../src/Services/DataTypeConverterService";
-import { ValidationServices } from "../src/Services/ValidationServices";
-import { UTCMonthYearConverter, MonthYearLookupKey } from "../src/MonthYearConverter";
-import { createMinimalValidationServices } from "../src/support";
+import { LookupKey } from '@plblum/jivs-engine/src/DataTypes/LookupKeys';
+import { ComparersResult } from '@plblum/jivs-engine/src/Interfaces/DataTypeComparerService';
+import { DataTypeComparerService } from '@plblum/jivs-engine/src/Services/DataTypeComparerService';
+import { DataTypeConverterService } from '@plblum/jivs-engine/src/Services/DataTypeConverterService';
+import { UTCMonthYearConverter, MonthYearLookupKey } from '../src/MonthYearConverter';
+import { createMinimalValidationServices } from '../src/support';
 
 describe('UTCMonthYearConverter', () => {
     test('supportsValue', () => {
@@ -26,7 +25,7 @@ describe('UTCMonthYearConverter', () => {
         expect(testItem.convert(test1, MonthYearLookupKey)).toBe(test1montyear.getTime());
         expect(testItem.convert(test2, MonthYearLookupKey)).toBe(test2monthyear.getTime());
         // dates with an illegal value will convert to undefined
-        let illegalDate = new Date("foo");
+        let illegalDate = new Date('foo');
         expect(testItem.convert(illegalDate, MonthYearLookupKey)).toBeUndefined();
     });
     test('Within dataTypeConverterService', () => {

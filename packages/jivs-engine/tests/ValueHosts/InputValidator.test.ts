@@ -1,7 +1,8 @@
 import {
     type RangeConditionDescriptor,
     RequiredTextCondition, EqualToCondition,
-    type RequiredTextConditionDescriptor, type CompareToConditionDescriptor, 
+    type RequiredTextConditionDescriptor, type CompareToConditionDescriptor,
+    RangeCondition, 
     
 } from "../../src/Conditions/ConcreteConditions";
 
@@ -9,10 +10,10 @@ import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/Inpu
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import type { TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger, ThrowsExceptionConditionType, NeverMatchesConditionType } from "../Mocks";
+import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger, ThrowsExceptionConditionType, NeverMatchesConditionType, IsUndeterminedCondition, IsUndeterminedConditionType } from "../Mocks";
 import { IValueHostResolver, IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
 import { ValueHostId } from '../../src/DataTypes/BasicTypes';
-import { type ICondition, ConditionEvaluateResult, ConditionCategory } from '../../src/Interfaces/Conditions';
+import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionDescriptor } from '../../src/Interfaces/Conditions';
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
 import { ValidationSeverity, ValidateOptions } from '../../src/Interfaces/Validation';
 import { InputValidateResult, IInputValidator, InputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
@@ -20,6 +21,8 @@ import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { registerAllConditions } from "../createValidationServices";
+import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 
 // subclass of InputValidator to expose many of its protected members so they
 // can be individually tested
@@ -397,13 +400,14 @@ describe('InputValidator.severity', () => {
         expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
     });           
     test('Conditions that use Severity=Severe when Descriptor.Severity = undefined', () => {
-        function checkDefaultSeverity(conditionType: string) {
+        function checkDefaultSeverity(conditionType: string, ) {
             let config = setupWithField1AndField2({
                 conditionDescriptor: {
                     type: conditionType
                 },
                 severity: undefined
             });
+            registerAllConditions((config.services.conditionFactory as ConditionFactory));
 
             expect(config.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
         }
@@ -885,10 +889,9 @@ describe('InputValidator.validate', () => {
     });
     test('Issue exists. Enabler = Undetermined. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
-            enablerDescriptor: <RangeConditionDescriptor>{
+            enablerDescriptor: <ConditionDescriptor>{
                 // the input value is '', which causes this condition to return Undetermined
-                type: ConditionType.Range, valueHostId: 'Field2',
-                minimum: 0, maximum: 10
+                type: IsUndeterminedConditionType, valueHostId: 'Field2'
             }
         });
     });
@@ -1132,6 +1135,8 @@ describe('getValuesForTokens', () => {
                 maximum: 'Z'
             }
         });
+        (config.services.conditionFactory as ConditionFactory).register<RangeConditionDescriptor>(
+            ConditionType.RegExp, (descriptor) => new RangeCondition(descriptor));                
         config.valueHost1.setInputValue('C');
         let tlvs: Array<TokenLabelAndValue> | null = null;
         expect(() => tlvs = config.inputValidator.getValuesForTokens(config.valueHost1, config.vm)).not.toThrow();

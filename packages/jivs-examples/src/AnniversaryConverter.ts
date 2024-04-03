@@ -1,12 +1,10 @@
-
-
+import { IDataTypeConverter } from "@plblum/jivs-engine/src/Interfaces/DataTypeConverters";
+import { IValidationServices } from "@plblum/jivs-engine/src/Interfaces/ValidationServices";
+import { DataTypeConverterService } from '@plblum/jivs-engine/src/Services/DataTypeConverterService';
 
 // Example: Supporting a Date object in a different way than it was intended by
 // implementing IDataTypeConverter. This uses just the Day and Month.
 
-import { DataTypeConverterService } from "../../jivs-engine/build/Services/DataTypeConverterService";
-import { IDataTypeConverter } from "../../jivs-engine/src/Interfaces/DataTypeConverters";
-import { IValidationServices } from "../../jivs-engine/src/Interfaces/ValidationServices";
 
 export const AnniversaryLookupKey = 'Anniversary';  // when using a Date object for same day and month each year. Assumes UTC
 

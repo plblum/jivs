@@ -21,6 +21,8 @@ import {
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
+import { IntegerConverter } from "../../src/DataTypes/DataTypeConverters";
 
 
 describe('ConditionBase class additional cases', () => {
@@ -1024,6 +1026,7 @@ describe('class RangeCondition', () => {
     });
     test('Using IntegerConverter, evaluate to show that ConversionLookupKey is applied correctly.', () => {
         let services = new MockValidationServices(false, true);
+        (services.dataTypeConverterService as DataTypeConverterService).register(new IntegerConverter());
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
@@ -1290,6 +1293,8 @@ describe('class EqualToCondition', () => {
     test('Using ConversionLookupKey = Integer, show ValueHost(but not Second) is impacted by conversion', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
+        let dsc = services.dataTypeConverterService as DataTypeConverterService;
+        dsc.register(new IntegerConverter());        
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
@@ -1313,6 +1318,9 @@ describe('class EqualToCondition', () => {
     test('Using SecondConversionLookupKey = RoundToWhole, show SecondValueHost(but not ValueHost) is impacted by conversion', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
+        let dsc = services.dataTypeConverterService as DataTypeConverterService;
+        dsc.register(new IntegerConverter());
+
         let vh1 = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost(

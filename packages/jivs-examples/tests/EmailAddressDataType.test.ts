@@ -1,13 +1,12 @@
-import { RegExpConditionDescriptor } from "../src/Conditions/ConcreteConditions";
-import { LookupKey } from "../src/DataTypes/LookupKeys";
-import { ConditionEvaluateResult } from "../src/Interfaces/Conditions";
-import { InputValueHostDescriptor } from "../src/Interfaces/InputValueHost";
-import { ValueHostType } from "../src/Interfaces/ValueHostFactory";
-import { ValidationServices } from "../src/Services/ValidationServices";
-import { InputValueHost } from "../src/ValueHosts/InputValueHost";
-import { ValidationManager } from "../src/ValueHosts/ValidationManager";
-import { EmailAddressCondition, EmailAddressConditionType, EmailAddressDataTypeCheckGenerator, EmailAddressLookupKey } from "../src/EmailAddressDataType";
-import { createMinimalValidationServices } from "../src/support";
+import { RegExpConditionDescriptor } from '@plblum/jivs-engine/src/Conditions/ConcreteConditions';
+import { LookupKey } from '@plblum/jivs-engine/src/DataTypes/LookupKeys';
+import { ConditionEvaluateResult } from '@plblum/jivs-engine/src/Interfaces/Conditions';
+import { InputValueHostDescriptor } from '@plblum/jivs-engine/src/Interfaces/InputValueHost';
+import { ValueHostType } from '@plblum/jivs-engine/src/Interfaces/ValueHostFactory';
+import { InputValueHost } from '@plblum/jivs-engine/src/ValueHosts/InputValueHost';
+import { ValidationManager } from '@plblum/jivs-engine/src/ValueHosts/ValidationManager';
+import { EmailAddressCondition, EmailAddressConditionType, EmailAddressDataTypeCheckGenerator, EmailAddressLookupKey } from '../src/EmailAddressDataType';
+import { createMinimalValidationServices } from '../src/support';
 
 describe('EmailAddressCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {

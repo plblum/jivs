@@ -97,7 +97,7 @@ describe('resolveTokens', () => {
                 }];
             }
         };
-        let testItem = new MessageTokenResolverService();
+        let testItem = vm.services.messageTokenResolverService;
         expect(testItem.resolveTokens('{token}', null!, vm, messageTokeSource)).toBe('false');
     });            
     test('Message with {token} gets token replaced using formatters. Token value is a String.', () => {

@@ -6,8 +6,8 @@ import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { registerDataTypeIdentifiers, registerDataTypeFormatters } from "../../starter_code/create_services";
 import { MockCapturingLogger, MockValidationServices } from "../Mocks";
+import { registerDataTypeFormatters, registerDataTypeIdentifiers } from "../createValidationServices";
 
 export function populateServicesWithManyCultures(services: MockValidationServices, activeCultureId: string, registerFormatters: boolean = false): void {
     services.activeCultureId = activeCultureId;

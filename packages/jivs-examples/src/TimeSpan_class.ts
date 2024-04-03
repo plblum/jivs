@@ -24,11 +24,11 @@
  * 
  */
 
-import { IDataTypeConverter } from "../src/Interfaces/DataTypeConverters";
-import { IDataTypeIdentifier } from "../src/Interfaces/DataTypeIdentifier";
-import { IValidationServices } from "../src/Interfaces/ValidationServices"
-import { DataTypeConverterService } from "../src/Services/DataTypeConverterService";
-import { DataTypeIdentifierService } from "../src/Services/DataTypeIdentifierService";
+import { IDataTypeConverter } from "@plblum/jivs-engine/src/Interfaces/DataTypeConverters";
+import { IDataTypeIdentifier } from "@plblum/jivs-engine/src/Interfaces/DataTypeIdentifier";
+import { IValidationServices } from "@plblum/jivs-engine/src/Interfaces/ValidationServices"
+import { DataTypeConverterService } from "@plblum/jivs-engine/src/Services/DataTypeConverterService";
+import { DataTypeIdentifierService } from "@plblum/jivs-engine/src/Services/DataTypeIdentifierService";
 
 export class TimeSpan
 {

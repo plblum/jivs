@@ -1,6 +1,6 @@
-import { IDataTypeConverter } from '../src/Interfaces/DataTypeConverters';
-import { IValidationServices } from '../src/Interfaces/ValidationServices';
-import { DataTypeConverterService } from '../src/Services/DataTypeConverterService';
+import { IDataTypeConverter } from '@plblum/jivs-engine/src/Interfaces/DataTypeConverters';
+import { IValidationServices } from '@plblum/jivs-engine/src/Interfaces/ValidationServices';
+import { DataTypeConverterService } from '@plblum/jivs-engine/src/Services/DataTypeConverterService';
 
 // Example: Supporting a Date object in a different way than it was intended by
 // implementing IDataTypeConverter. This uses the month and year.
