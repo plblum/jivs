@@ -17,7 +17,7 @@ import { ValidationServices } from '../../src/Services/ValidationServices';
 import { toIInputValueHostCallbacks } from "../../src/Interfaces/InputValueHost";
 import { ValidationResult, ValidationSeverity } from "../../src/Interfaces/Validation";
 import { toIInputValueHostBase } from "../../src/ValueHosts/InputValueHostBase";
-import { createValidationServices } from "../../starter_code/create_services";
+import { createValidationServices } from "../../../../starter_code/create_services";
 import { ConditionWithPromiseTester } from "./InputValidator.test";
 import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";

@@ -6,8 +6,8 @@ import { ValidationServices } from "../src/Services/ValidationServices";
 import {
     TimeSpan, TimeSpanAsSecondsLookupKey, TimeSpanIdentifier, TimeSpanLookupKey,
     TimeSpanToHoursConverter, TimeSpanToSecondsConverter
-} from "./ComparingCustomDataTypeAsNumber";
-import { createMinimalValidationServices } from "./support";
+} from "../src/TimeSpan_class";
+import { createMinimalValidationServices } from "../src/support";
 
 // All test relative to 2001-05-15
 function testTimeSpanToHours(timeSpan: TimeSpan, expected: number)

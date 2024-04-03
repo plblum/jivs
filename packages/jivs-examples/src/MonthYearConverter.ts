@@ -30,7 +30,7 @@ export class UTCMonthYearConverter implements IDataTypeConverter
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService
-export function registerRelativeDate(validationServices: IValidationServices): void
+export function registerMonthYear(validationServices: IValidationServices): void
 {
     let dtcs = validationServices.dataTypeConverterService as DataTypeConverterService;
     // or move just this line into registerDataTypeConverters() function         

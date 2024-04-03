@@ -1,10 +1,12 @@
-import { IDataTypeConverter } from "../src/Interfaces/DataTypeConverters";
-import { IValidationServices } from "../src/Interfaces/ValidationServices";
-import { DataTypeConverterService } from "../src/Services/DataTypeConverterService";
+
 
 
 // Example: Supporting a Date object in a different way than it was intended by
 // implementing IDataTypeConverter. This uses just the Day and Month.
+
+import { DataTypeConverterService } from "../../jivs-engine/build/Services/DataTypeConverterService";
+import { IDataTypeConverter } from "../../jivs-engine/src/Interfaces/DataTypeConverters";
+import { IValidationServices } from "../../jivs-engine/src/Interfaces/ValidationServices";
 
 export const AnniversaryLookupKey = 'Anniversary';  // when using a Date object for same day and month each year. Assumes UTC
 
@@ -30,7 +32,7 @@ export class UTCAnniversaryConverter implements IDataTypeConverter
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService
-export function registerRelativeDate(validationServices: IValidationServices): void
+export function registerAnniversary(validationServices: IValidationServices): void
 {
     let dtcs = validationServices.dataTypeConverterService as DataTypeConverterService;
     // or move just this line into registerDataTypeConverters() function         

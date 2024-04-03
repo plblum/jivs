@@ -1,8 +1,8 @@
 {
-  "name": "@plblum/jivs-engine",
+  "name": "@plblum/jivs-examples",
   "version": "0.9.0",
-  "description": "The workhorse of validation. Classes without UI that just take in values and output validation results. This lib is completely standalone from DOM, HTML, and Web APIs. The Suite contains support for UI aspects of validation too.",
-  "displayName": "JavaScript Input Validation Service",
+  "description": "Code and associated unit tests to show you how to use Jivs",
+  "displayName": "Jivs Examples",
   "license": "MIT",
   "main": "build/src/index.js",
   "typings": "build/src/index.d.ts",
@@ -10,6 +10,9 @@
     "compile": "tsc",
     "test": "jest",
     "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'"
+  },
+  "dependencies":{
+    "@plblum/jivs-engine": "file:../jivs-engine"
   },
   
   "eslintConfig": {

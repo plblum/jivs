@@ -5,9 +5,51 @@
 		},
 		{
 			"path": "packages/jivs-engine"
+		},
+		{
+			"path": "packages/jivs-examples"
 		}
 	],
 	"settings": {
-		"explorerExclude.backup": {}
+		"explorerExclude.backup": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/Thumbs.db": true,
+			".eslintignore": true,
+			".gitattributes": true,
+			".gitignore": true,
+			".npmignore": true,
+			"Jivs.code-workspace": true,
+			"lerna.json": true,
+			"LICENSE": true,
+			"package-lock.json": true,
+			"typedoc_output": true,
+			"node_modules": true,
+			".vscode": true
+		},
+		"files.exclude": {
+			"**/.git": false,
+			"**/.svn": false,
+			"**/.hg": false,
+			"**/CVS": false,
+			"**/.DS_Store": false,
+			"**/Thumbs.db": false,
+			".eslintignore": false,
+			".gitattributes": false,
+			".gitignore": false,
+			".npmignore": false,
+			"Jivs.code-workspace": false,
+			"lerna.json": false,
+			"LICENSE": false,
+			"package-lock.json": false,
+			"typedoc_output": false,
+			"node_modules": false,
+			".vscode": false
+		},
+		"explorerExclude.showPicker": false,
+		"explorer.excludeGitIgnore": false
 	}
 }

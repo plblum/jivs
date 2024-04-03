@@ -1,14 +1,9 @@
-import { RegExpConditionDescriptor } from "../src/Conditions/ConcreteConditions";
 import { LookupKey } from "../src/DataTypes/LookupKeys";
 import { ConditionEvaluateResult } from "../src/Interfaces/Conditions";
-import { InputValueHostDescriptor } from "../src/Interfaces/InputValueHost";
 import { ValueHostType } from "../src/Interfaces/ValueHostFactory";
-import { ValidationServices } from "../src/Services/ValidationServices";
-import { InputValueHost } from "../src/ValueHosts/InputValueHost";
 import { ValidationManager } from "../src/ValueHosts/ValidationManager";
-import { EmailAddressCondition, EmailAddressConditionType, EmailAddressDataTypeCheckGenerator, EmailAddressLookupKey } from "./EmailAddressDataType";
-import { createMinimalValidationServices } from "./support";
-
+import { EmailAddressCondition, EmailAddressConditionType, EmailAddressDataTypeCheckGenerator, EmailAddressLookupKey } from "../src/EmailAddressDataType";
+import { createMinimalValidationServices } from "../src/support";
 describe('EmailAddressCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices();
@@ -16,28 +11,28 @@ describe('EmailAddressCondition tests', () => {
             services: services,
             valueHostDescriptors: []
         });
-        let vhDescriptor: InputValueHostDescriptor = {
-            type: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationDescriptors property
+        let vhDescriptor = {
+            type: ValueHostType.Input, //NOTE: optional so long as you have setup the validationDescriptors property
             id: 'Field1',
             dataType: EmailAddressLookupKey,
-            validatorDescriptors: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
+            validatorDescriptors: [] // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
         };
         let vh = vm.addValueHost(vhDescriptor, null);
-        let descriptor: RegExpConditionDescriptor = {
+        let descriptor = {
             type: EmailAddressConditionType,
             valueHostId: 'Field1',
         };
         let testItem = new EmailAddressCondition(descriptor);
         vh.setValue('ABC@DEF.com');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);    
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('A1@B2.gov');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue('ABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue('ABC@');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);            
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(100);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
@@ -54,15 +49,15 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
             services: services,
             valueHostDescriptors: []
         });
-        let vhDescriptor: InputValueHostDescriptor = {
-            type: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationDescriptors property
+        let vhDescriptor = {
+            type: ValueHostType.Input, //NOTE: optional so long as you have setup the validationDescriptors property
             id: 'Field1',
             dataType: EmailAddressLookupKey,
-            validatorDescriptors: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
+            validatorDescriptors: [] // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
         };
-        let vh = vm.addValueHost(vhDescriptor, null) as InputValueHost;
-
+        let vh = vm.addValueHost(vhDescriptor, null);
         let testItem = new EmailAddressDataTypeCheckGenerator();
         expect(testItem.createCondition(vh, EmailAddressLookupKey, services.conditionFactory)).toBeInstanceOf(EmailAddressCondition);
-    });    
+    });
 });
+//# sourceMappingURL=EmailAddressDataType.test.js.map

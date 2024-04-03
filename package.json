@@ -6,10 +6,18 @@
     "name": "Peter L Blum <plblum@peterblum.com>"
   },  
   "license": "MIT",  
+  "homepage": "https://github.com/plblum/jivs#readme",  
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plblum/jivs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/plblum/jivs/issues"
+  },
+  
   "private": true,
   "workspaces": [
     "packages/*",
-    "examples/*",
     "starter_code/*"
   ],
 
@@ -32,14 +40,14 @@
     "typescript-eslint": "^7.3.1",    
     "lerna": "^8.1.2"
   },
+  "scripts": {
+    "typedoc": "typedoc --options typedoc.json"
+  },  
   "eslintConfig": {
     "env": {
       "browser": true,
       "node": true,
       "jest": true
     }
-  },
-  "madge": {
-    "tsConfig": "./tsconfig.json"
-  }  
+  }
 }

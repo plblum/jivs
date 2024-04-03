@@ -18,7 +18,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "sourceMap": true,
-    "typeRoots": ["./types", "./node_modules/@types/"],
+    "typeRoots": ["./types", "/node_modules/@types/"],
 
     /* Strict Type-Checking Options */
     "strict": true /* Enable all strict type-checking options. */,

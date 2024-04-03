@@ -2,9 +2,9 @@ import { UTCDateOnlyConverter } from './../src/DataTypes/DataTypeConverters';
 import { DataTypeComparerService } from './../src/Services/DataTypeComparerService';
 import { DataTypeConverterService } from "../src/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "../src/Services/DataTypeIdentifierService";
-import { RelativeDataLookupKey, RelativeDate, RelativeDateConverter, RelativeDateIdentifier } from "./ComparingCustomDataTypeAsDate";
+import { RelativeDataLookupKey, RelativeDate, RelativeDateConverter, RelativeDateIdentifier } from "../src/RelativeDate_class";
 import { ComparersResult } from '../src/Interfaces/DataTypeComparerService';
-import { createMinimalValidationServices } from './support';
+import { createMinimalValidationServices } from '../src/support';
 
 // All test relative to 2001-05-15
 function testRelativeDate(relativeDate: RelativeDate, expectedYear: number, expectedMonth: number, expectedDay: number)

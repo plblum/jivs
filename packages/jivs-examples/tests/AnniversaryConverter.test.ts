@@ -3,8 +3,8 @@ import { ComparersResult } from "../src/Interfaces/DataTypeComparerService";
 import { DataTypeComparerService } from "../src/Services/DataTypeComparerService";
 import { DataTypeConverterService } from "../src/Services/DataTypeConverterService";
 import { ValidationServices } from "../src/Services/ValidationServices";
-import { UTCAnniversaryConverter, AnniversaryLookupKey } from "./AnniversaryConverter";
-import { createMinimalValidationServices } from "./support";
+import { UTCAnniversaryConverter, AnniversaryLookupKey } from "../src/AnniversaryConverter";
+import { createMinimalValidationServices } from "../src/support";
 
 describe('UTCAnniversaryConverter', () => {
     test('supportsValue', () => {
