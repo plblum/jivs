@@ -8,8 +8,7 @@
   "typings": "build/src/index.d.ts",
   "scripts": {
     "compile": "tsc",
-    "test": "jest",
-    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'"
+    "test": "jest"
   },
   
   "eslintConfig": {

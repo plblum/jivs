@@ -12,6 +12,7 @@
 
 # testing
 /packages/*/coverage
+/coverage
 
 # misc
 ~*
