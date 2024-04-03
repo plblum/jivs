@@ -4,7 +4,7 @@
     "entryPoints": [
         "packages/jivs-engine/src/"
     ],
-    "readme": "./readme.md",
+    "readme": "README.md",
     "entryPointStrategy": "expand",
     "out": "typedoc_output",
     "useTsLinkResolution": true,
