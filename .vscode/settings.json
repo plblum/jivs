@@ -1,0 +1,17 @@
+{
+    // /* VSCode will use TSC only on workspaces, not the global level */
+    // "typescript.tsdk": "./node_modules/typescript/lib",
+    // "typescript.enablePromptUseWorkspaceTsdk": true,
+    // "typescript.enablePromptUseGlobalTsdk": false,
+  
+    "explorerExclude.backup": {}
+    // these come from Prettier ESLint
+    // "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+    // "editor.formatOnType": false, // required
+    // "editor.formatOnPaste": true, // optional
+    // "editor.formatOnSave": true, // optional
+    // "editor.formatOnSaveMode": "file", // required to format on save
+    // "files.autoSave": "onFocusChange", // optional but recommended
+    // "vs-code-prettier-eslint.prettierLast": false // set as "true" to run 'prettier' last not first
+  }
+  

@@ -1,0 +1,70 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "packages/jivs-engine"
+		},
+		{
+			"path": "packages/jivs-examples"
+		}
+	],
+	"settings": {
+		/* VSCode will use TSC only on workspaces, not the global level */
+		"typescript.tsdk": "./node_modules/typescript/lib",
+		"typescript.enablePromptUseWorkspaceTsdk": true,
+		"typescript.enablePromptUseGlobalTsdk": false,		
+		"explorerExclude.backup": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/Thumbs.db": true,
+			".eslintignore": true,
+			".gitattributes": true,
+			".gitignore": true,
+			".npmignore": true,
+			"Jivs.code-workspace": true,
+			"lerna.json": true,
+			"LICENSE": true,
+			"package-lock.json": true,
+			"typedoc_output": true,
+			"node_modules": true,
+			".vscode": true
+		},
+		"files.exclude": {
+			"**/.git": false,
+			"**/.svn": false,
+			"**/.hg": false,
+			"**/CVS": false,
+			"**/.DS_Store": false,
+			"**/Thumbs.db": false,
+			".eslintignore": false,
+			".gitattributes": false,
+			".gitignore": false,
+			".npmignore": false,
+			"Jivs.code-workspace": false,
+			"lerna.json": false,
+			"LICENSE": false,
+			"package-lock.json": false,
+			"typedoc_output": false,
+			"node_modules": false,
+			".vscode": false
+		},
+		"explorerExclude.showPicker": false,
+		"explorer.excludeGitIgnore": false,
+		"jestrunner.configPath": "./jest.config.js",
+		"jestTestExplorer.logfile": "E:\\jesttestlog.txt",
+		"jestTestExplorer.pathToJest": "C:\\Code\\Jivs-Suite\\jivs\\node_modules\\jest",
+		"jestrunner.jestPath": "C:\\Code\\Jivs-Suite\\jivs\\node_modules\\jest\\bin\\jest.js",
+		"typescript.preferences.autoImportFileExcludePatterns": [
+			"**/build/**"
+		],
+		"search.exclude": {
+			"**/build": true,
+			"**/coverage": true
+		}
+	}
+}

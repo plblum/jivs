@@ -1,0 +1,67 @@
+# credit https://joelhooks.com/jest-and-github-actions/
+on:
+  push:
+    branches-ignore:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - develop
+      - main
+name: 🧪 Run Jest tests
+run-name: Run Jest tests initiated by @${{ github.actor }}
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # - name: Branch name
+      #   run: echo Running on branch ${{ github.head_ref }} and ${{ github.base_ref }}
+      - uses: actions/checkout@v4
+      - name: Test using Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+        # node_modules is in the root of the repo. So install it there.
+      - run: npm install
+      - run: npm run test:github
+
+      - name: Tests ✅
+        if: ${{ success() }}
+        id: test_success
+        run: |
+          curl --request POST \
+          --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
+          --header 'authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "context": "tests",
+            "state": "success",
+            "description": "Tests passed",
+            "target_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }'
+      - name: 📂 Deploy coverage data
+        if: ${{ success() && (github.base_ref == 'main') }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./coverage/lcov-report/
+          server-dir: ${{ secrets.FTP_COVERAGE_PATH }}
+          dry-run: false
+
+      - name: Tests 🚨
+        if: ${{ failure() }}
+        id: test_failure
+        run: |
+          echo "There were test failures" >> $GITHUB_STEP_SUMMARY
+          curl --request POST \
+          --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
+          --header 'authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "context": "tests",
+            "state": "failure",
+            "description": "Tests failed",
+            "target_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }'

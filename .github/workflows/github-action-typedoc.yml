@@ -1,0 +1,29 @@
+on:
+  push:
+    branches:
+      - main
+name: 🚀 Generate docs with TypeDoc and deploy
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v4
+
+    - name: Generate using Node.js and TypeDoc
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - run: npm install
+    - run: npm run typedoc
+
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./typedoc_output/
+        server-dir: ${{ secrets.FTP_TYPEDOCS_PATH }}
+        dry-run: false

@@ -1,0 +1,8 @@
+{
+    // Do not all typedoc to run directly in this package. 
+    // Its all handled at the top level.
+    "$schema": "https://typedoc.org/schema.json",
+    "name": "Jivs",
+    "emit": "none",
+    "exclude": ["*.*"]
+}  
