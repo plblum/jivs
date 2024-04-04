@@ -296,7 +296,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
      * by specifying that valueHostId in AssociatedValueHostId.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
      * @param error - A business logic error to show.
@@ -334,6 +334,11 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
     //#endregion business logic errors
 
     //#region access to validation results    
+    /**
+     * The results of validation specific to one condiiton Type.
+     * @param conditionType 
+     * @returns The issue or null if none.
+     */    
     public getIssueFound(conditionType: string): IssueFound | null {
         if (!conditionType)
             return null;
@@ -343,47 +348,19 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
                 value.conditionType === conditionType) ?? null) :
             null;
     }
-    /**
-     * The results of the latest validate()
-     * @returns Issues found or null if none.
-     */
-    public getIssuesFound(): Array<IssueFound> | null {
-        return this.state.issuesFound;
-    }
 
     /**
-     * Lists all error messages and supporting info about each validator
-     * for use by a input field/element that shows its own error messages (InputValueHostState.errorMessage)
-     * @returns 
-     */
-    public getIssuesForInput(): Array<IssueFound> {
-        let id = this.getId();
-        let list: Array<IssueFound> = [];
-
-        if (this.state.issuesFound) {
-            for (let issue of this.state.issuesFound) {
-                list.push(issue);
-            }
-        }
-        this.addBusinessLogicErrorsToSnapshotList(list);
-
-        return list;
-    }
-
-    /**
-     * A list of all issues to show in a Validation Summary widget optionally for a given group.
-     * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
-     * the same group (case insensitive match).
+     * Lists all issues found (error messages and supporting info) for a single InputValueHost
+     * so the input field/element can show error messages and adjust its appearance.
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
+     * - ConditionType - Identifies the condition supplying the issue.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
-     *   show in the Validation Summary widget. Each InputValidator has 2 messages.
-     *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
-     *   is returned.
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
+     * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesForSummary(group?: string): Array<IssueFound> {
+    public getIssuesFound(group?: string): Array<IssueFound> {
         let id = this.getId();
         let list: Array<IssueFound> = [];
 
@@ -442,7 +419,7 @@ export function toIInputValueHostBase(source: any): IInputValueHostBase | null
         if (test.getInputValue !== undefined && 
             test.setInputValue !== undefined &&
             test.validate !== undefined &&
-            test.getIssuesForInput !== undefined)
+            test.getIssuesFound !== undefined)
             return test;
     }
     return null;

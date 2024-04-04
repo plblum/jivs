@@ -187,7 +187,7 @@ export interface IssueFound {
  * When Business Logic gathers data from the UI, it runs its own final validation.
  * If its own business rule has been violated, it should be recorded with this interface
  * and passed to ValidationManager.SetBusinessLogicErrors where it becomes exposed to 
- * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
+ * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
  * by specifying that valueHostId in AssociatedValueHostId.
  */
 export interface BusinessLogicError {

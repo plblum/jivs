@@ -73,7 +73,7 @@ export interface IValidationManager extends IValueHostsManager {
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
      * by specifying that valueHostId in AssociatedValueHostId.
      * Each time its called, all previous business logic errors are abandoned.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
@@ -106,7 +106,7 @@ export interface IValidationManager extends IValueHostsManager {
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    getIssues(group?: string): Array<IssueFound>;
+    getIssuesFound(group?: string): Array<IssueFound>;
 }
 
 /**

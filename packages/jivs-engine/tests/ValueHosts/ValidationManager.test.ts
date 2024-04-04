@@ -895,14 +895,14 @@ function setupInputValueHostDescriptor(fieldIndex: number,
 // get isValid(): boolean
 // doNotSaveNativeValue(): boolean
 // getIssuesForInput(valueHostId: ValueHostId): Array<IssueFound>
-// getIssuesForSummary(group?: string): Array<IssueFound>
-describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssuesForInput, getIssuesForSummary based on the results', () => {
-    test('Before calling validate with 0 inputValueHosts, isValid=true, doNotSaveNativeValue=false, getIssuesForInput=[], getIssuesForSummary=[]', () => {
+// getIssuesFound(group?: string): Array<IssueFound>
+describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssuesForInput, getIssuesFound based on the results', () => {
+    test('Before calling validate with 0 inputValueHosts, isValid=true, doNotSaveNativeValue=false, getIssuesForInput=[], getIssuesFound=[]', () => {
         let setup = setupValidationManager();
         expect(setup.validationManager.isValid).toBe(true);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
         expect(setup.validationManager.getIssuesForInput('Anything')).toEqual([]);
-        expect(setup.validationManager.getIssues()).toEqual([]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
     test('isValid is true and doNotSaveNativeValue is false before calling validate with 1 inputValueHosts', () => {
         let descriptor = setupInputValueHostDescriptor(0, [AlwaysMatchesConditionType]);
@@ -910,7 +910,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.isValid).toBe(true);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
         expect(setup.validationManager.getIssuesForInput(descriptor.id)).toEqual([]);
-        expect(setup.validationManager.getIssues()).toEqual([]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
     test('With 1 inputValueHost that is ValidationResult.Valid, returns 1 ValidateResult', () => {
         let descriptor = setupInputValueHostDescriptor(0, [AlwaysMatchesConditionType]);
@@ -923,7 +923,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.isValid).toBe(true);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
         expect(setup.validationManager.getIssuesForInput(descriptor.id)).toEqual([]);
-        expect(setup.validationManager.getIssues()).toEqual([]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
     test('With 1 inputValueHost that is ValidationResult.Invalid, returns 1 ValidateResult', () => {
 
@@ -958,7 +958,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
         };
-        expect(setup.validationManager.getIssues()).toEqual([summarySnapshot]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([summarySnapshot]);
     });
     test('With 1 inputValueHost that has 2 validators with Match and NoMatch, returns 2 ValidateResults and is Invalid', () => {
 
@@ -996,7 +996,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
         };
-        expect(setup.validationManager.getIssues()).toEqual([summarySnapshot]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([summarySnapshot]);
     });
     test('With 2 inputValueHost that are both valid, returns 2 ValidateResults without issues found', () => {
 
@@ -1015,7 +1015,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         expect(setup.validationManager.getIssuesForInput(descriptor1.id)).toEqual([]);
         expect(setup.validationManager.getIssuesForInput(descriptor2.id)).toEqual([]);
-        expect(setup.validationManager.getIssues()).toEqual([]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
     test('With 2 inputValueHost that are both undetermined, returns 2 ValidateResults without issues found. isValid=true. DoNotSave=false', () => {
 
@@ -1033,7 +1033,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
         expect(setup.validationManager.getIssuesForInput(descriptor1.id)).toEqual([]);
         expect(setup.validationManager.getIssuesForInput(descriptor2.id)).toEqual([]);
-        expect(setup.validationManager.getIssues()).toEqual([]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
     test('With 2 inputValueHost that are both Invalid, returns 2 ValidateResults each with 1 issue found. isValid=false. DoNotSave=true', () => {
 
@@ -1096,9 +1096,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorMessage: 'Error 2: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
         };
-        expect(setup.validationManager.getIssues()).toEqual([summarySnapshot1, summarySnapshot2]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([summarySnapshot1, summarySnapshot2]);
     });
-    test('With 1 BusinessLogicError not associated with any ValueHost, isValid=false, DoNotSave=true, getIssuesForSummary has the businesslogicerror, and there is a new ValueHost for the BusinessLogic', () => {
+    test('With 1 BusinessLogicError not associated with any ValueHost, isValid=false, DoNotSave=true, getIssuesFound has the businesslogicerror, and there is a new ValueHost for the BusinessLogic', () => {
         let setup = setupValidationManager();
         setup.validationManager.setBusinessLogicErrors([
             {
@@ -1107,7 +1107,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         ]);
         expect(setup.validationManager.isValid).toBe(false);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
-        expect(setup.validationManager.getIssues()).toEqual([<IssueFound>{
+        expect(setup.validationManager.getIssuesFound()).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
             valueHostId: BusinessLogicValueHostId,
@@ -1124,7 +1124,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             summaryMessage: 'BL_ERROR'
         }]);
     });
-    test('With 1 ValueHost that is assigned without validators 1 BusinessLogicError, isValid=false, DoNotSave=true, getIssuesForSummary has the businesslogicerror, and there is a no ValueHost for the BusinessLogic', () => {
+    test('With 1 ValueHost that is assigned without validators 1 BusinessLogicError, isValid=false, DoNotSave=true, getIssuesFound has the businesslogicerror, and there is a no ValueHost for the BusinessLogic', () => {
 
         let descriptor = setupInputValueHostDescriptor(0, []);
         let setup = setupValidationManager([descriptor]);
@@ -1136,7 +1136,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         ]);
         expect(setup.validationManager.isValid).toBe(false);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
-        expect(setup.validationManager.getIssues()).toEqual([<IssueFound>{
+        expect(setup.validationManager.getIssuesFound()).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
             valueHostId: descriptor.id,
@@ -1154,7 +1154,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getValueHost(BusinessLogicValueHostId)).toBeNull();
         expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostId)).toEqual([]);
     });
-    test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 BusinessLogicError not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesForSummary has both errors businesslogicerror, BLValueHost has the BLError, InputValueHost has its own error', () => {
+    test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 BusinessLogicError not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors businesslogicerror, BLValueHost has the BLError, InputValueHost has its own error', () => {
 
         let descriptor = setupInputValueHostDescriptor(0, [NeverMatchesConditionType]);
         descriptor.validatorDescriptors![0].errorMessage = 'CONDITION ERROR';
@@ -1168,7 +1168,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         setup.validationManager.validate();
         expect(setup.validationManager.isValid).toBe(false);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
-        expect(setup.validationManager.getIssues()).toEqual([
+        expect(setup.validationManager.getIssuesFound()).toEqual([
             <IssueFound>{
                 errorMessage: 'CONDITION ERROR',
                 severity: ValidationSeverity.Error,
@@ -1220,7 +1220,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.isValid).toBe(true);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
         expect(setup.validationManager.getIssuesForInput(descriptor.id)).toEqual([]);
-        expect(setup.validationManager.getIssues()).toEqual([]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
     test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=false, expect ValidationResult.Invalid because Preliminary is off', () => {
         const conditionType = 'TEST';
@@ -1262,7 +1262,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorMessage: 'Error 1: ' + conditionType,
             summaryMessage: 'Summary 1: ' + conditionType,
         };
-        expect(setup.validationManager.getIssues()).toEqual([summarySnapshot]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([summarySnapshot]);
     });
     test('With 1 inputValueHost and a condition that will evaluate as NoMatch during Edit, use option DuringEdit=true, expect Invalid', () => {
         let descriptor = setupInputValueHostDescriptor(0, [NeverMatchesConditionType]);
@@ -1362,7 +1362,7 @@ describe('ValidationManager.clearValidation', () => {
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
         expect(setup.validationManager.getIssuesForInput(descriptor1.id)).toEqual([]);
         expect(setup.validationManager.getIssuesForInput(descriptor2.id)).toEqual([]);
-        expect(setup.validationManager.getIssues()).toEqual([]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
 });
 // updateState(updater: (stateToUpdate: TState) => TState): TState

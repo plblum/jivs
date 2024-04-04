@@ -371,7 +371,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
      * by specifying that valueHostId in AssociatedValueHostId.
      * Each time its called, all previous business logic errors are abandoned.
      * Internally, a BusinessLogicInputValueHost is added to the list of ValueHosts to hold any
@@ -411,7 +411,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     public getIssuesForInput(valueHostId: ValueHostId): Array<IssueFound> {
         let vh = this.getValueHost(valueHostId);
         if (vh && vh instanceof InputValueHostBase)
-            return vh.getIssuesForInput();
+            return vh.getIssuesFound();
         return [];
     }
     /**
@@ -427,10 +427,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssues(group?: string): Array<IssueFound> {
+    public getIssuesFound(group?: string): Array<IssueFound> {
         let list: Array<IssueFound> = [];
         for (let vh of this.inputValueHost()) {
-            list = list.concat(vh.getIssuesForSummary(group));
+            list = list.concat(vh.getIssuesFound(group));
         }
         return list;
     }
