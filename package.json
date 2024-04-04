@@ -22,10 +22,10 @@
   ],
 
   "dependencies": {
-    "gulp-jest": "^4.0.4"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
+    "gulp-jest": "^4.0.4",
     "eslint": "^8.57.0",
     "eslint-plugin-typescript": "^0.14.0",
     "gulp": "^4.0.2",
