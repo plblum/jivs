@@ -36,7 +36,7 @@ export interface ICondition {
     /**
      * A unique identifier for the specific implementation, like "Required" or "Range".
      * Its value appears in the IssueFound that comes from Validation, and in 
-     * IssueSnapshot that comes from retrieving a list of errors to display.
+     * IssueFound that comes from retrieving a list of errors to display.
      * It allows the consumer of both to correlate those instances with the specific condition.
      * When defining conditions through a ConditionDescriptor, the Type property must 
      * be assigned with a valid ConditionType.
@@ -108,6 +108,13 @@ export interface ConditionDescriptor {
      * and supply a value when the Condition does not.
      */
     category?: ConditionCategory;
+
+    /**
+     * Handy way to allow users to enter known properties without getting ts errors.
+     * However, they can improve things if they typecast to the appropriate
+     * condition's Descriptor.
+     */
+    [propName: string]: any;
 }
 
 /**

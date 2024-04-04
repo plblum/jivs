@@ -18,7 +18,7 @@ import { ValueHostId } from "../../src/DataTypes/BasicTypes";
 import { InputValueHostDescriptor, InputValueHostState, IInputValueHost, InputValueHostBaseState, IInputValueHostBase, IInputValueHostCallbacks, ValueHostValidatedHandler, toIInputValueHostCallbacks } from "../../src/Interfaces/InputValueHost";
 import {
     ValidationResult, IssueFound, ValidateResult, ValidationSeverity, ValidateOptions,
-    BusinessLogicError, IssueSnapshot
+    BusinessLogicError
 } from "../../src/Interfaces/Validation";
 import { InputValidateResult, IInputValidator, InputValidatorDescriptor, IInputValidatorFactory } from "../../src/Interfaces/InputValidator";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -627,7 +627,7 @@ describe('InputValueHost.setInputValue with getInputValue to check result', () =
         expect(config.valueHost.validationResult).toBe(ValidationResult.Valid);
         expect(() => config.valueHost.setInputValue('ABC', { reset: true })).not.toThrow();
         expect(config.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
-        expect(config.valueHost.getIssuesFound()).toBeNull();
+        expect(config.valueHost.getIssuesFound()).toEqual([]);
         expect(config.valueHost.isChanged).toBe(false);
     });
     test('ConversionErrorTokenValue supplied and is ignored because we are not setting native value here', () => {
@@ -2365,64 +2365,12 @@ describe('InputValueHost.getIssueFound', () => {
     });
 });
 
-// getIssuesFound(): IssuesFoundDictionary | null
-describe('InputValueHosts.getIssuesFound', () => {
-    test('No issues. Return null', () => {
-        let config = testValidateFunction(null, null, ValidationResult.Valid, null);
-        let issuesFound: Array<IssueFound> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesFound()).not.toThrow();
-        expect(issuesFound).toBeNull();
-    });
-    test('1 issue exists. It is returned.', () => {
-        let ivDescriptors: Array<Partial<InputValidatorDescriptor>> = [
-            {
-                conditionDescriptor: {
-                    type: NeverMatchesConditionType
-                }
-            }
-        ];
-        let state: Partial<InputValueHostState> = {};
-        let expectedIssuesFound: Array<IssueFound> = [];
-        expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType));
-        let config = testValidateFunction(ivDescriptors, state, ValidationResult.Invalid, expectedIssuesFound);
-        let issuesFound: Array<IssueFound> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesFound()).not.toThrow();
-        expect(issuesFound).not.toBeNull();
-        expect(issuesFound).toEqual(expectedIssuesFound);
-    });
-    test('2 issues exist. Both are returned in the order of the ValidationDescriptors array.', () => {
-        let ivDescriptors: Array<Partial<InputValidatorDescriptor>> = [
-            {
-                conditionDescriptor: {
-                    type: NeverMatchesConditionType
-                },
-                errorMessage: '1'
-            },
-            {
-                conditionDescriptor: {
-                    type: NeverMatchesConditionType2
-                },
-                errorMessage: '2'
-            }
-        ];
-        let state: Partial<InputValueHostState> = {};
-        let expectedIssuesFound: Array<IssueFound> = [];
-        expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Error, '1'));
-        expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType2, ValidationSeverity.Error, '2'));
-        let config = testValidateFunction(ivDescriptors, state, ValidationResult.Invalid, expectedIssuesFound);
-        let issuesFound: Array<IssueFound> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesFound()).not.toThrow();
-        expect(issuesFound).not.toBeNull();
-        expect(issuesFound).toEqual(expectedIssuesFound);
-    });
-});
-
-// getIssuesForInput(): Array<IssueSnapshot>
-describe('InputValueHost.getIssuesForInput', () => {
+// getIssuesFound(): Array<IssueFound>
+describe('InputValueHost.getIssuesFound', () => {
     test('Nothing to report returns empty array', () => {
         let config = testValidateFunction(null, null, ValidationResult.Valid, null);
-        let issuesFound: Array<IssueSnapshot> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
+        let issuesFound: Array<IssueFound> | null = null;
+        expect(() => issuesFound = config.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesFound).not.toBeNull();
         expect(issuesFound!.length).toBe(0);
     });
@@ -2449,165 +2397,25 @@ describe('InputValueHost.getIssuesForInput', () => {
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning, '1', 'Summary1'));
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType2, ValidationSeverity.Error, '2', 'Summary2'));
         let config = testValidateFunction(ivDescriptors, state, ValidationResult.Invalid, expectedIssuesFound);
-        let issuesToReport: Array<IssueSnapshot> | null = null;
-        expect(() => issuesToReport = config.valueHost.getIssuesForInput()).not.toThrow();
+        let issuesToReport: Array<IssueFound> | null = null;
+        expect(() => issuesToReport = config.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesToReport).not.toBeNull();
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: NeverMatchesConditionType,
                 severity: ValidationSeverity.Warning,
-                errorMessage: '1'
-            },
-            {
-                id: 'Field1',
-                severity: ValidationSeverity.Error,
-                errorMessage: '2'
-            }
-        ];
-        expect(issuesToReport).toEqual(expected);
-    });
-    test('No Validation errors, but has BusinessLogicError (Error) reports just the BusinessLogicError', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
-            errorMessage: 'ERROR',
-            severity: ValidationSeverity.Error
-        });
-        let issuesFound: Array<IssueSnapshot> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
-        expect(issuesFound).not.toBeNull();
-
-        let expected: Array<IssueSnapshot> = [
-            {
-                id: 'Field1',
-                severity: ValidationSeverity.Error,
-                errorMessage: 'ERROR'
-            },
-        ];
-        expect(issuesFound).toEqual(expected);
-    });
-    test('No Validation errors, but has BusinessLogicError (Severe) reports just the BusinessLogicError', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
-            errorMessage: 'SEVERE',
-            severity: ValidationSeverity.Severe
-        });
-        let issuesFound: Array<IssueSnapshot> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
-        expect(issuesFound).not.toBeNull();
-
-        let expected: Array<IssueSnapshot> = [
-            {
-                id: 'Field1',
-                severity: ValidationSeverity.Severe,
-                errorMessage: 'SEVERE'
-            },
-        ];
-        expect(issuesFound).toEqual(expected);
-    });
-    test('No Validation errors, but has BusinessLogicError (Warning) reports just the BusinessLogicError', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
-            errorMessage: 'WARNING',
-            severity: ValidationSeverity.Warning
-        });
-        let issuesFound: Array<IssueSnapshot> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
-        expect(issuesFound).not.toBeNull();
-
-        let expected: Array<IssueSnapshot> = [
-            {
-                id: 'Field1',
-                severity: ValidationSeverity.Warning,
-                errorMessage: 'WARNING'
-            },
-        ];
-        expect(issuesFound).toEqual(expected);
-    });
-    test('1 Validation error, and has BusinessLogicError (Error) reports 2 entries with BusinessLogicError last', () => {
-        let ivDescriptors: Array<Partial<InputValidatorDescriptor>> = [
-            {
-                conditionDescriptor: {
-                    type: NeverMatchesConditionType
-                },
-                errorMessage: 'Condition Error',
-                summaryMessage: 'Summary1',
-                severity: ValidationSeverity.Error
-            },
-
-        ];
-        let config = setupInputValueHostForValidate(ivDescriptors, {});
-        config.valueHost.setBusinessLogicError({
-            errorMessage: 'BL_ERROR',
-            severity: ValidationSeverity.Error
-        });
-        let issuesFound: Array<IssueSnapshot> | null = null;
-        config.valueHost.validate();
-        expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
-        expect(issuesFound).not.toBeNull();
-
-        let expected: Array<IssueSnapshot> = [
-            {
-                id: 'Field1',
-                severity: ValidationSeverity.Error,
-                errorMessage: 'Condition Error'
-            },
-            {
-                id: 'Field1',
-                severity: ValidationSeverity.Error,
-                errorMessage: 'BL_ERROR'
-            },
-        ];
-        expect(issuesFound).toEqual(expected);
-    });
-});
-
-// getIssuesForSummary(): Array<IssueSnapshot>
-describe('InputValueHost.getIssuesForSummary', () => {
-    test('Nothing to report returns empty array', () => {
-        let config = testValidateFunction(null, null, ValidationResult.Valid, null);
-        let issuesFound: Array<IssueSnapshot> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
-        expect(issuesFound).not.toBeNull();
-        expect(issuesFound!.length).toBe(0);
-    });
-    test('2 issues exist. Both are returned in the order of the ValidationDescriptors array.', () => {
-        let ivDescriptors: Array<Partial<InputValidatorDescriptor>> = [
-            {
-                conditionDescriptor: {
-                    type: NeverMatchesConditionType
-                },
                 errorMessage: '1',
-                summaryMessage: 'Summary1',
-                severity: ValidationSeverity.Warning
+                summaryMessage: 'Summary1'
             },
             {
-                conditionDescriptor: {
-                    type: NeverMatchesConditionType2
-                },
+                valueHostId: 'Field1',
+                conditionType: NeverMatchesConditionType2,
+                severity: ValidationSeverity.Error,
                 errorMessage: '2',
                 summaryMessage: 'Summary2'
             }
         ];
-        let state: Partial<InputValueHostState> = {};
-        let expectedIssuesFound: Array<IssueFound> = [];
-        expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning, '1', 'Summary1'));
-        expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType2, ValidationSeverity.Error, '2', 'Summary2'));
-        let config = testValidateFunction(ivDescriptors, state, ValidationResult.Invalid, expectedIssuesFound);
-        let issuesToReport: Array<IssueSnapshot> | null = null;
-        expect(() => issuesToReport = config.valueHost.getIssuesForSummary()).not.toThrow();
-        expect(issuesToReport).not.toBeNull();
-        let expected: Array<IssueSnapshot> = [
-            {
-                id: 'Field1',
-                severity: ValidationSeverity.Warning,
-                errorMessage: 'Summary1'
-            },
-            {
-                id: 'Field1',
-                severity: ValidationSeverity.Error,
-                errorMessage: 'Summary2'
-            }
-        ];
         expect(issuesToReport).toEqual(expected);
     });
 
@@ -2617,15 +2425,17 @@ describe('InputValueHost.getIssuesForSummary', () => {
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
+        let issuesFound: Array<IssueFound> | null = null;
+        expect(() => issuesFound = config.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Error,
-                errorMessage: 'ERROR'
+                errorMessage: 'ERROR',
+                summaryMessage: 'ERROR'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2636,15 +2446,17 @@ describe('InputValueHost.getIssuesForSummary', () => {
             errorMessage: 'SEVERE',
             severity: ValidationSeverity.Severe
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
+        let issuesFound: Array<IssueFound> | null = null;
+        expect(() => issuesFound = config.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Severe,
-                errorMessage: 'SEVERE'
+                errorMessage: 'SEVERE',
+                summaryMessage: 'SEVERE'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2655,15 +2467,17 @@ describe('InputValueHost.getIssuesForSummary', () => {
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
-        expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
+        let issuesFound: Array<IssueFound> | null = null;
+        expect(() => issuesFound = config.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Warning,
-                errorMessage: 'WARNING'
+                errorMessage: 'WARNING',
+                summaryMessage: 'WARNING'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2685,21 +2499,25 @@ describe('InputValueHost.getIssuesForSummary', () => {
             errorMessage: 'BL_ERROR',
             // use the default         Severity: ValidationSeverity.Error
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         config.valueHost.validate();
-        expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
+        expect(() => issuesFound = config.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: NeverMatchesConditionType,
                 severity: ValidationSeverity.Error,
-                errorMessage: 'Summary Condition Error'
+                errorMessage: 'Condition Error',
+                summaryMessage: 'Summary Condition Error'
             },
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Error,
-                errorMessage: 'BL_ERROR'
+                errorMessage: 'BL_ERROR',
+                summaryMessage: 'BL_ERROR'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2857,13 +2675,11 @@ describe('toIInputValueHost', () => {
             doNotSaveNativeValue: function (): boolean {
                 throw new Error('Function not implemented.');
             },
-            getIssuesFound: function (): IssueFound[] | null {
+
+            getIssueFound(conditionType: string): IssueFound | null {
                 throw new Error('Function not implemented.');
             },
-            getIssuesForInput: function (): IssueSnapshot[] {
-                throw new Error('Function not implemented.');
-            },
-            getIssuesForSummary: function (group?: string | undefined): IssueSnapshot[] {
+            getIssuesFound: function (group?: string | undefined): IssueFound[] {
                 throw new Error('Function not implemented.');
             },
             getConversionErrorMessage: function (): string | null {
@@ -3765,13 +3581,11 @@ describe('toIInputValueHost function', () => {
         doNotSaveNativeValue(): boolean {
             throw new Error("Method not implemented.");
         }
-        getIssuesFound(): IssueFound[] | null {
+        getIssueFound(conditionType: string): IssueFound | null {
             throw new Error("Method not implemented.");
         }
-        getIssuesForInput(): IssueSnapshot[] {
-            throw new Error("Method not implemented.");
-        }
-        getIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
+
+        getIssuesFound(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
         getConversionErrorMessage(): string | null {
@@ -3882,13 +3696,11 @@ describe('toIInputValueHostBase function', () => {
         doNotSaveNativeValue(): boolean {
             throw new Error("Method not implemented.");
         }
-        getIssuesFound(): IssueFound[] | null {
+        getIssueFound(conditionType: string): IssueFound | null {
             throw new Error("Method not implemented.");
-        }
-        getIssuesForInput(): IssueSnapshot[] {
-            throw new Error("Method not implemented.");
-        }
-        getIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
+        }  
+
+        getIssuesFound(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
         getConversionErrorMessage(): string | null {

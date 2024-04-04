@@ -5,10 +5,9 @@ import { MessageTokenResolverService  } from "../src/Services/MessageTokenResolv
 import type { IValidationServices } from "../src/Interfaces/ValidationServices";
 import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, ValueHostDescriptor, ValueChangedHandler, ValueHostStateChangedHandler } from "../src/Interfaces/ValueHost";
 import { IValueHostResolver, IValueHostsManager } from "../src/Interfaces/ValueHostResolver";
-import { ConditionBase } from "../src/Conditions/ConditionBase";
 import { ConditionDescriptor, ConditionEvaluateResult, ConditionCategory, IConditionFactory, IEvaluateConditionDuringEdits, IConditionCore } from "../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostState, ValueHostValidatedHandler } from "../src/Interfaces/InputValueHost";
-import { ValidateOptions, ValidateResult, ValidationResult, BusinessLogicError, IssueFound, IssueSnapshot } from "../src/Interfaces/Validation";
+import { ValidateOptions, ValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../src/Interfaces/Validation";
 import { InputValueHostBase } from "../src/ValueHosts/InputValueHostBase";
 import { IInputValidator, IInputValidatorFactory, InputValidatorDescriptor } from "../src/Interfaces/InputValidator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../src/Interfaces/ValidationManager";
@@ -160,14 +159,13 @@ export class MockInputValueHost extends MockValueHost
     clearBusinessLogicErrors(): void {
         throw new Error("Method not implemented.");
     }
-    
-    getIssuesFound(): Array<IssueFound> | null {
-        throw new Error("Method not implemented.");
-    }    
-    getIssuesForInput(): IssueSnapshot[] {
-        throw new Error("Method not implemented.");
+
+    getIssueFound(conditionType: string): IssueFound | null
+    {
+        throw new Error("Method not implemented."); 
     }
-    getIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
+    
+    getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }    
 
@@ -429,10 +427,10 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     {
         throw new Error("Method not implemented.");        
     }        
-    getIssuesForInput(valueHostId: string): IssueSnapshot[] {
+    getIssuesForInput(valueHostId: string): IssueFound[] {
         throw new Error("Method not implemented.");
     }
-    getIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
+    getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }
 

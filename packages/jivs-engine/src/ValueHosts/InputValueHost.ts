@@ -411,7 +411,7 @@ export function toIInputValueHost(source: any): IInputValueHost | null
             test.getInputValue !== undefined && 
             test.setInputValue !== undefined &&
             test.validate !== undefined &&
-            test.getIssuesForInput !== undefined)
+            test.getIssuesFound !== undefined)
             return test;
     }
     return null;

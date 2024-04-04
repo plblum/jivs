@@ -26,7 +26,7 @@
 
 import { ValueHostId } from '../DataTypes/BasicTypes';
 import { IValueHostsManager } from './ValueHostResolver';
-import { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from './Validation';
+import { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from './Validation';
 import { IValidationServices } from './ValidationServices';
 import { ValueHostDescriptor, ValueHostState } from './ValueHost';
 import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './InputValueHost';
@@ -73,7 +73,7 @@ export interface IValidationManager extends IValueHostsManager {
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
      * by specifying that valueHostId in AssociatedValueHostId.
      * Each time its called, all previous business logic errors are abandoned.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
@@ -86,28 +86,27 @@ export interface IValidationManager extends IValueHostsManager {
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
+     * - ConditionType - Identifies the condition supplying the issue.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
-     *   show in the Validation Summary widget. Each InputValidator has 2 messages.
-     *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
-     *   is returned.
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
+     * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    getIssuesForInput(valueHostId: ValueHostId): Array<IssueSnapshot>;
+    getIssuesForInput(valueHostId: ValueHostId): Array<IssueFound>;
 
     /**
-     * A list of all issues to show in a Validation Summary widget optionally for a given group.
+     * A list of all issues from all InputValueHosts optionally for a given group.
+     * Use with a Validation Summary widget and when validating the Model itself.
      * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
      * the same group (case insensitive match).
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
+     * - ConditionType - Identifies the condition supplying the issue.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
-     *   show in the Validation Summary widget. Each InputValidator has 2 messages.
-     *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
-     *   is returned.
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
+     * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    getIssuesForSummary(group?: string): Array<IssueSnapshot>;
+    getIssuesFound(group?: string): Array<IssueFound>;
 }
 
 /**

@@ -6,7 +6,7 @@ import { ValueHostId } from '../DataTypes/BasicTypes';
 import { IInputValidator, InputValidatorDescriptor } from './InputValidator';
 import {
     type ValidateOptions, type ValidateResult, ValidationResult,
-    type BusinessLogicError, type IssueFound, type IssueSnapshot, StatefulValidateResult
+    type BusinessLogicError, type IssueFound, StatefulValidateResult
 } from './Validation';
 import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostDescriptor, type ValueHostState } from './ValueHost';
 
@@ -100,7 +100,7 @@ export interface IInputValueHostBase extends IValueHost {
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesForSummary) and optionally for an individual ValueHostId,
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
      * by specifying that valueHostId in AssociatedValueHostId.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
      * @param error - An error to show.
@@ -120,20 +120,14 @@ export interface IInputValueHostBase extends IValueHost {
     doNotSaveNativeValue(): boolean;
 
     /**
-     * The results of the latest validate()
-     * @returns Issues found or null if none.
+     * The results of validation specific to one condiiton Type.
+     * @param conditionType 
+     * @returns The issue or null if none.
      */
-    getIssuesFound(): Array<IssueFound> | null;
+    getIssueFound(conditionType: string): IssueFound | null;
 
     /**
-     * Lists all error messages and supporting info about each validator
-     * for use by a input field/element that shows its own error messages (InputValueHostState.errorMessage)
-     * @returns 
-     */
-    getIssuesForInput(): Array<IssueSnapshot>;
-
-    /**
-     * A list of all issues to show in a Validation Summary widget optionally for a given group.
+     * A list of all issues found.
      * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
      * the same group (case insensitive match).
      * @returns An array of 0 or more details of issues found. Each contains:
@@ -145,7 +139,7 @@ export interface IInputValueHostBase extends IValueHost {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    getIssuesForSummary(group?: string): Array<IssueSnapshot>;
+    getIssuesFound(group?: string): Array<IssueFound>;
 
     /**
      * Returns the ConversionErrorTokenValue supplied by the latest call

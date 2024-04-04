@@ -293,6 +293,13 @@ export interface ValueHostDescriptor {
      * If null, the current value's type (ValueHostState.Value) is used and must be string, number, boolean, or date.
      */
     dataType?: string;
+
+    /**
+     * Handy way to allow users to enter known properties without getting ts errors.
+     * However, they can improve things if they typecast to the appropriate
+     * valueHost's Descriptor.
+     */
+    [propName: string]: any;    
 }
 
 
