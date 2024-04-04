@@ -184,15 +184,6 @@ export interface IssueFound {
 
 
 /**
- * Results for function that reveal error messages.
- */
-export interface IssueSnapshot {
-    id: ValueHostId;
-    severity: ValidationSeverity;
-    errorMessage: string;
-}
-
-/**
  * When Business Logic gathers data from the UI, it runs its own final validation.
  * If its own business rule has been violated, it should be recorded with this interface
  * and passed to ValidationManager.SetBusinessLogicErrors where it becomes exposed to 

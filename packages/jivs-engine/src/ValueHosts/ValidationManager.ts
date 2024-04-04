@@ -10,7 +10,7 @@ import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostDescriptor, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostId } from '../DataTypes/BasicTypes';
 import type { IInputValueHost, IInputValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/InputValueHost';
-import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueSnapshot } from '../Interfaces/Validation';
+import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from '../Interfaces/Validation';
 import { InputValueHostBase, toIInputValueHostBase } from './InputValueHostBase';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
@@ -400,41 +400,41 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * Lists all issues found (error messages and supporting info) for a single InputValueHost
      * so the input field/element can show error messages and adjust its appearance.
-     * @param valueHostId - identifies the ValueHost whose issues you want.
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
+     * - ConditionType - Identifies the condition supplying the issue.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
-     *   show in the Validation Summary widget. Each InputValidator has 2 messages.
-     *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
-     *   is returned.
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
+     * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesForInput(valueHostId: ValueHostId): Array<IssueSnapshot> {
+    public getIssuesForInput(valueHostId: ValueHostId): Array<IssueFound> {
         let vh = this.getValueHost(valueHostId);
         if (vh && vh instanceof InputValueHostBase)
             return vh.getIssuesForInput();
         return [];
     }
     /**
-     * A list of all issues to show in a Validation Summary widget for a giving validation group.
-     * @param group 
+     * A list of all issues from all InputValueHosts optionally for a given group.
+     * Use with a Validation Summary widget and when validating the Model itself.
+     * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
+     * the same group (case insensitive match).
      * @returns An array of 0 or more details of issues found. Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
+     * - ConditionType - Identifies the condition supplying the issue.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
-     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
-     *   show in the Validation Summary widget. Each InputValidator has 2 messages.
-     *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
-     *   is returned.
+     * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
+     * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesForSummary(group?: string): Array<IssueSnapshot> {
-        let list: Array<IssueSnapshot> = [];
+    public getIssues(group?: string): Array<IssueFound> {
+        let list: Array<IssueFound> = [];
         for (let vh of this.inputValueHost()) {
             list = list.concat(vh.getIssuesForSummary(group));
         }
         return list;
     }
+    
     //#region IValidationManagerCallbacks
     /**
      * Called when the ValidationManager's state has changed.

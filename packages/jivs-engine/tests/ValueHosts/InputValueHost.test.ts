@@ -18,7 +18,7 @@ import { ValueHostId } from "../../src/DataTypes/BasicTypes";
 import { InputValueHostDescriptor, InputValueHostState, IInputValueHost, InputValueHostBaseState, IInputValueHostBase, IInputValueHostCallbacks, ValueHostValidatedHandler, toIInputValueHostCallbacks } from "../../src/Interfaces/InputValueHost";
 import {
     ValidationResult, IssueFound, ValidateResult, ValidationSeverity, ValidateOptions,
-    BusinessLogicError, IssueSnapshot
+    BusinessLogicError
 } from "../../src/Interfaces/Validation";
 import { InputValidateResult, IInputValidator, InputValidatorDescriptor, IInputValidatorFactory } from "../../src/Interfaces/InputValidator";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -2417,11 +2417,11 @@ describe('InputValueHosts.getIssuesFound', () => {
     });
 });
 
-// getIssuesForInput(): Array<IssueSnapshot>
+// getIssuesForInput(): Array<IssueFound>
 describe('InputValueHost.getIssuesForInput', () => {
     test('Nothing to report returns empty array', () => {
         let config = testValidateFunction(null, null, ValidationResult.Valid, null);
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
         expect(issuesFound).not.toBeNull();
         expect(issuesFound!.length).toBe(0);
@@ -2449,19 +2449,23 @@ describe('InputValueHost.getIssuesForInput', () => {
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning, '1', 'Summary1'));
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType2, ValidationSeverity.Error, '2', 'Summary2'));
         let config = testValidateFunction(ivDescriptors, state, ValidationResult.Invalid, expectedIssuesFound);
-        let issuesToReport: Array<IssueSnapshot> | null = null;
+        let issuesToReport: Array<IssueFound> | null = null;
         expect(() => issuesToReport = config.valueHost.getIssuesForInput()).not.toThrow();
         expect(issuesToReport).not.toBeNull();
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: NeverMatchesConditionType,
                 severity: ValidationSeverity.Warning,
-                errorMessage: '1'
+                errorMessage: '1',
+                summaryMessage: 'Summary1'
             },
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: NeverMatchesConditionType2,
                 severity: ValidationSeverity.Error,
-                errorMessage: '2'
+                errorMessage: '2',
+                summaryMessage: 'Summary2'
             }
         ];
         expect(issuesToReport).toEqual(expected);
@@ -2472,15 +2476,39 @@ describe('InputValueHost.getIssuesForInput', () => {
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Error,
-                errorMessage: 'ERROR'
+                errorMessage: 'ERROR',
+                summaryMessage: 'ERROR'
+            },
+        ];
+        expect(issuesFound).toEqual(expected);
+    });
+    test('No Validation errors, but has BusinessLogicError (Error) reports just the BusinessLogicError and has an errorcode', () => {
+        let config = setupInputValueHost();
+        config.valueHost.setBusinessLogicError({
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error,
+            errorCode: 'ERRORCODE'
+        });
+        let issuesFound: Array<IssueFound> | null = null;
+        expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
+        expect(issuesFound).not.toBeNull();
+
+        let expected: Array<IssueFound> = [
+            {
+                valueHostId: 'Field1',
+                conditionType: 'ERRORCODE',
+                severity: ValidationSeverity.Error,
+                errorMessage: 'ERROR',
+                summaryMessage: 'ERROR'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2491,15 +2519,17 @@ describe('InputValueHost.getIssuesForInput', () => {
             errorMessage: 'SEVERE',
             severity: ValidationSeverity.Severe
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Severe,
-                errorMessage: 'SEVERE'
+                errorMessage: 'SEVERE',
+                summaryMessage: 'SEVERE'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2510,15 +2540,17 @@ describe('InputValueHost.getIssuesForInput', () => {
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Warning,
-                errorMessage: 'WARNING'
+                errorMessage: 'WARNING',
+                summaryMessage: 'WARNING'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2540,32 +2572,36 @@ describe('InputValueHost.getIssuesForInput', () => {
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         config.valueHost.validate();
         expect(() => issuesFound = config.valueHost.getIssuesForInput()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: NeverMatchesConditionType,
                 severity: ValidationSeverity.Error,
-                errorMessage: 'Condition Error'
+                errorMessage: 'Condition Error',
+                summaryMessage: 'Summary1'
             },
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Error,
-                errorMessage: 'BL_ERROR'
+                errorMessage: 'BL_ERROR',
+                summaryMessage: 'BL_ERROR'
             },
         ];
         expect(issuesFound).toEqual(expected);
     });
 });
 
-// getIssuesForSummary(): Array<IssueSnapshot>
+// getIssuesForSummary(): Array<IssueFound>
 describe('InputValueHost.getIssuesForSummary', () => {
     test('Nothing to report returns empty array', () => {
         let config = testValidateFunction(null, null, ValidationResult.Valid, null);
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
         expect(issuesFound).not.toBeNull();
         expect(issuesFound!.length).toBe(0);
@@ -2593,19 +2629,23 @@ describe('InputValueHost.getIssuesForSummary', () => {
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning, '1', 'Summary1'));
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType2, ValidationSeverity.Error, '2', 'Summary2'));
         let config = testValidateFunction(ivDescriptors, state, ValidationResult.Invalid, expectedIssuesFound);
-        let issuesToReport: Array<IssueSnapshot> | null = null;
+        let issuesToReport: Array<IssueFound> | null = null;
         expect(() => issuesToReport = config.valueHost.getIssuesForSummary()).not.toThrow();
         expect(issuesToReport).not.toBeNull();
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: NeverMatchesConditionType,
                 severity: ValidationSeverity.Warning,
-                errorMessage: 'Summary1'
+                errorMessage: '1',
+                summaryMessage: 'Summary1'
             },
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: NeverMatchesConditionType2,
                 severity: ValidationSeverity.Error,
-                errorMessage: 'Summary2'
+                errorMessage: '2',
+                summaryMessage: 'Summary2'
             }
         ];
         expect(issuesToReport).toEqual(expected);
@@ -2617,15 +2657,17 @@ describe('InputValueHost.getIssuesForSummary', () => {
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Error,
-                errorMessage: 'ERROR'
+                errorMessage: 'ERROR',
+                summaryMessage: 'ERROR'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2636,15 +2678,17 @@ describe('InputValueHost.getIssuesForSummary', () => {
             errorMessage: 'SEVERE',
             severity: ValidationSeverity.Severe
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Severe,
-                errorMessage: 'SEVERE'
+                errorMessage: 'SEVERE',
+                summaryMessage: 'SEVERE'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2655,15 +2699,17 @@ describe('InputValueHost.getIssuesForSummary', () => {
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Warning,
-                errorMessage: 'WARNING'
+                errorMessage: 'WARNING',
+                summaryMessage: 'WARNING'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2685,21 +2731,25 @@ describe('InputValueHost.getIssuesForSummary', () => {
             errorMessage: 'BL_ERROR',
             // use the default         Severity: ValidationSeverity.Error
         });
-        let issuesFound: Array<IssueSnapshot> | null = null;
+        let issuesFound: Array<IssueFound> | null = null;
         config.valueHost.validate();
         expect(() => issuesFound = config.valueHost.getIssuesForSummary()).not.toThrow();
         expect(issuesFound).not.toBeNull();
 
-        let expected: Array<IssueSnapshot> = [
+        let expected: Array<IssueFound> = [
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: NeverMatchesConditionType,
                 severity: ValidationSeverity.Error,
-                errorMessage: 'Summary Condition Error'
+                errorMessage: 'Condition Error',
+                summaryMessage: 'Summary Condition Error'
             },
             {
-                id: 'Field1',
+                valueHostId: 'Field1',
+                conditionType: '',
                 severity: ValidationSeverity.Error,
-                errorMessage: 'BL_ERROR'
+                errorMessage: 'BL_ERROR',
+                summaryMessage: 'BL_ERROR'
             },
         ];
         expect(issuesFound).toEqual(expected);
@@ -2860,10 +2910,10 @@ describe('toIInputValueHost', () => {
             getIssuesFound: function (): IssueFound[] | null {
                 throw new Error('Function not implemented.');
             },
-            getIssuesForInput: function (): IssueSnapshot[] {
+            getIssuesForInput: function (): IssueFound[] {
                 throw new Error('Function not implemented.');
             },
-            getIssuesForSummary: function (group?: string | undefined): IssueSnapshot[] {
+            getIssuesForSummary: function (group?: string | undefined): IssueFound[] {
                 throw new Error('Function not implemented.');
             },
             getConversionErrorMessage: function (): string | null {
@@ -3768,10 +3818,10 @@ describe('toIInputValueHost function', () => {
         getIssuesFound(): IssueFound[] | null {
             throw new Error("Method not implemented.");
         }
-        getIssuesForInput(): IssueSnapshot[] {
+        getIssuesForInput(): IssueFound[] {
             throw new Error("Method not implemented.");
         }
-        getIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
+        getIssuesForSummary(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
         getConversionErrorMessage(): string | null {
@@ -3885,10 +3935,10 @@ describe('toIInputValueHostBase function', () => {
         getIssuesFound(): IssueFound[] | null {
             throw new Error("Method not implemented.");
         }
-        getIssuesForInput(): IssueSnapshot[] {
+        getIssuesForInput(): IssueFound[] {
             throw new Error("Method not implemented.");
         }
-        getIssuesForSummary(group?: string | undefined): IssueSnapshot[] {
+        getIssuesForSummary(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
         getConversionErrorMessage(): string | null {

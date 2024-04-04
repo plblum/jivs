@@ -6,7 +6,7 @@ import { ValueHostId } from '../DataTypes/BasicTypes';
 import { IInputValidator, InputValidatorDescriptor } from './InputValidator';
 import {
     type ValidateOptions, type ValidateResult, ValidationResult,
-    type BusinessLogicError, type IssueFound, type IssueSnapshot, StatefulValidateResult
+    type BusinessLogicError, type IssueFound, StatefulValidateResult
 } from './Validation';
 import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostDescriptor, type ValueHostState } from './ValueHost';
 
@@ -130,7 +130,7 @@ export interface IInputValueHostBase extends IValueHost {
      * for use by a input field/element that shows its own error messages (InputValueHostState.errorMessage)
      * @returns 
      */
-    getIssuesForInput(): Array<IssueSnapshot>;
+    getIssuesForInput(): Array<IssueFound>;
 
     /**
      * A list of all issues to show in a Validation Summary widget optionally for a given group.
@@ -145,7 +145,7 @@ export interface IInputValueHostBase extends IValueHost {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    getIssuesForSummary(group?: string): Array<IssueSnapshot>;
+    getIssuesForSummary(group?: string): Array<IssueFound>;
 
     /**
      * Returns the ConversionErrorTokenValue supplied by the latest call

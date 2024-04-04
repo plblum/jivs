@@ -9,7 +9,7 @@ import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { IInputValueHost, IInputValueHostBase, InputValueHostBaseDescriptor, InputValueHostBaseState } from '../Interfaces/InputValueHost';
-import { BusinessLogicError, IssueFound, IssueSnapshot, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from '../Interfaces/Validation';
+import { BusinessLogicError, IssueFound, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from '../Interfaces/Validation';
 
 
 /**
@@ -356,17 +356,13 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      * for use by a input field/element that shows its own error messages (InputValueHostState.errorMessage)
      * @returns 
      */
-    public getIssuesForInput(): Array<IssueSnapshot> {
+    public getIssuesForInput(): Array<IssueFound> {
         let id = this.getId();
-        let list: Array<IssueSnapshot> = [];
+        let list: Array<IssueFound> = [];
 
         if (this.state.issuesFound) {
             for (let issue of this.state.issuesFound) {
-                list.push({
-                    id: id,
-                    severity: issue.severity,
-                    errorMessage: issue.errorMessage
-                });
+                list.push(issue);
             }
         }
         this.addBusinessLogicErrorsToSnapshotList(list);
@@ -387,30 +383,28 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    public getIssuesForSummary(group?: string): Array<IssueSnapshot> {
+    public getIssuesForSummary(group?: string): Array<IssueFound> {
         let id = this.getId();
-        let list: Array<IssueSnapshot> = [];
+        let list: Array<IssueFound> = [];
 
         if (this.state.issuesFound && groupsMatch(group, this.state.group)) {
             for (let issue of this.state.issuesFound) {
-                list.push({
-                    id: id,
-                    severity: issue.severity,
-                    errorMessage: issue.summaryMessage ?? issue.errorMessage
-                });
+                list.push(issue);
             }
         }
         this.addBusinessLogicErrorsToSnapshotList(list);
 
         return list;
     }
-    private addBusinessLogicErrorsToSnapshotList(list: Array<IssueSnapshot>): void {
+    private addBusinessLogicErrorsToSnapshotList(list: Array<IssueFound>): void {
         if (this.businessLogicErrors) {
             for (let error of this.businessLogicErrors) {
                 list.push({
-                    id: this.getId(),
+                    valueHostId: this.getId(),
+                    conditionType: error.errorCode ?? '',
                     severity: error.severity ?? ValidationSeverity.Error,
-                    errorMessage: error.errorMessage
+                    errorMessage: error.errorMessage,
+                    summaryMessage: error.errorMessage
                 });
             }
         }
