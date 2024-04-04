@@ -222,6 +222,13 @@ export interface InputValidatorDescriptor {
      * the value from the errorMessage property is used.
      */
     summaryMessagel10n?: string | null | undefined;
+
+    /**
+     * Handy way to allow users to enter known properties without getting ts errors.
+     * However, they can improve things if they typecast to the appropriate
+     * inputValidator's Descriptor.
+     */
+    [propName: string]: any;    
 }
 
 /**
