@@ -1,0 +1,30 @@
+// This file is intended only for the typedoc process to use.
+// With typedoc, we want to include several packages.
+// Typedoc uses a tsconfig file for that purpose. 
+// The typedoc.json file points to this file.
+{
+    "extends":  "../tsconfig_common.json",
+    "configureOptions":
+    {
+        "baseUrl": ".",
+        "outDir": "./typedoc_build",
+        "rootDir": "./",
+ //       "declarationDir": "./build/types",    
+        "paths": {
+          "@plblum/jivs-engine": ["./packages/jivs-engine"]
+        }    
+
+    },
+    "include": [
+      "../packages"
+    ],
+    "exclude": [ 
+        "./*.js", 
+        "./*.mjs", 
+        "coverage",
+        "node_modules",
+        "docs",
+        "starter_code",
+        "typedoc",
+        "typedoc_output"]
+}
