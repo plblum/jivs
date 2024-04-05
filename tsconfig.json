@@ -1,6 +1,7 @@
 {
   // NOTE: Most path related options are in package-specific tsconfig files.
   "compilerOptions": {
+    "rootDir": "./",
     "target": "ES6",
     "lib": [
       "dom",

@@ -1,12 +1,14 @@
 {
   "name": "@plblum/jivs",
   "description": "JavaScript Input Validation Service. Provides the tools for input validation in a user interface or model.",
-  "keywords": ["validation"],  
+  "keywords": [
+    "validation"
+  ],
   "author": {
     "name": "Peter L Blum <plblum@peterblum.com>"
-  },  
-  "license": "MIT",  
-  "homepage": "https://github.com/plblum/jivs#readme",  
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/plblum/jivs#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/plblum/jivs.git"
@@ -14,22 +16,20 @@
   "bugs": {
     "url": "https://github.com/plblum/jivs/issues"
   },
-  
   "private": true,
   "workspaces": [
     "packages/*",
     "starter_code/*"
   ],
-
-  "dependencies": {
-  },
   "devDependencies": {
     "@types/jest": "^29.5.12",
-    "gulp-jest": "^4.0.4",
+    "del": "^7.1.0",
     "eslint": "^8.57.0",
     "eslint-plugin-typescript": "^0.14.0",
     "gulp": "^4.0.2",
+    "gulp-jest": "^4.0.4",
     "jest": "^29.7.0",
+    "lerna": "^8.1.2",
     "prettier": "^3.2.5",
     "prettier-eslint": "^16.3.0",
     "ts-jest": "^29.1.2",
@@ -37,14 +37,15 @@
     "typedoc-plugin-extras": "^3.0.0",
     "typedoc-plugin-merge-modules": "^5.1.0",
     "typescript": "^5.4.3",
-    "typescript-eslint": "^7.3.1",    
-    "lerna": "^8.1.2"
+    "typescript-eslint": "^7.3.1"
   },
   "scripts": {
     "typedoc": "typedoc --options typedoc.json",
-    "test": "jest",    
-    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'"    
-  },  
+    "test": "jest",
+    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'",
+    "gulp": "node gulpfile.mjs",
+    "clean": "gulp clean"
+  },
   "eslintConfig": {
     "env": {
       "browser": true,
