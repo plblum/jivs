@@ -1,6 +1,7 @@
 {
   // NOTE: Most path related options are in package-specific tsconfig files.
   "compilerOptions": {
+    "rootDir": "./",
     "target": "ES6",
     "lib": [
       "dom",
@@ -37,7 +38,5 @@
     "allowUnreachableCode": true,
 
     "outDir": "./starter_code/build",          
-  },
-  // prevent allowing tsc to compile if run from top level, except for starter_code which lands in the build folder
-  "exclude": ["**/*.js", "**/packages", "**/build"]
+  }
 }

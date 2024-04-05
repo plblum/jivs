@@ -1,4 +1,9 @@
 module.exports = {
+    globals: {
+        'ts-jest': {
+          tsConfig: 'tsconfig_root_compile.json'
+        }
+      },    
     transform: {
         "^.+\\.tsx?$": "ts-jest"
     },
