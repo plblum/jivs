@@ -1,6 +1,6 @@
 {
     "$schema": "https://typedoc.org/schema.json",
-    "tsconfig": "./typedoc/tsconfig.json",
+    "tsconfig": "tsconfig_root_compile.json",
     "name": "Jivs",
     "entryPoints": [
         "packages/jivs-engine/src/"

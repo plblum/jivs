@@ -3,11 +3,11 @@
 // Typedoc uses a tsconfig file for that purpose. 
 // The typedoc.json file points to this file.
 {
-    "extends":  "../tsconfig_common.json",
+    "extends":  "./tsconfig_common.json",
     "configureOptions":
     {
         "baseUrl": ".",
-        "outDir": "./typedoc_build",
+        "outDir": "./global_build",
         "rootDir": "./",
  //       "declarationDir": "./build/types",    
         "paths": {
@@ -16,7 +16,7 @@
 
     },
     "include": [
-      "../packages"
+      "packages"
     ],
     "exclude": [ 
         "./*.js", 
