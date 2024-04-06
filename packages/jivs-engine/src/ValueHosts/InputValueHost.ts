@@ -13,13 +13,13 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, groupsMatch } from '../Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
-import { InputValueHostDescriptor, InputValueHostState, IInputValueHost, IInputValueHostBase } from '../Interfaces/InputValueHost';
 import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from '../Interfaces/Validation';
-import { InputValueHostBase, InputValueHostBaseGenerator } from './InputValueHostBase';
 import { InputValidateResult, IInputValidator, InputValidatorDescriptor } from '../Interfaces/InputValidator';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
+import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from '../Interfaces/InputValueHost';
+import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 
 
 /**
@@ -37,7 +37,7 @@ import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 * If the caller changes any of these, discard the instance
 * and create a new one.
  */
-export class InputValueHost extends InputValueHostBase<InputValueHostDescriptor, InputValueHostState>
+export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescriptor, InputValueHostState>
     implements IInputValueHost
 {
     constructor(valueHostsManager: IValueHostsManager, descriptor: InputValueHostDescriptor, state: InputValueHostState) {
@@ -417,7 +417,7 @@ export function toIInputValueHost(source: any): IInputValueHost | null
     return null;
 }
 
-export class InputValueHostGenerator extends InputValueHostBaseGenerator {
+export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
     public canCreate(descriptor: InputValueHostDescriptor): boolean {
         if (descriptor.type != null)    // null/undefined
             return descriptor.type === ValueHostType.Input;

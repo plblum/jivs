@@ -29,7 +29,7 @@ import { IValueHostsManager } from './ValueHostResolver';
 import { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from './Validation';
 import { IValidationServices } from './ValidationServices';
 import { ValueHostDescriptor, ValueHostState } from './ValueHost';
-import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './InputValueHost';
+import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './ValidatableValueHostBase';
 
 /**
  * Interface from which to implement a ValidationManager.

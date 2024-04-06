@@ -1,6 +1,6 @@
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
-import { createMockValidationManagerForMessageTokenResolver, MockCapturingLogger } from "../Mocks";
+import { createMockValidationManagerForMessageTokenResolver, MockCapturingLogger } from "../TestSupport/mocks";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IInputValueHost } from "../../src/Interfaces/InputValueHost";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";

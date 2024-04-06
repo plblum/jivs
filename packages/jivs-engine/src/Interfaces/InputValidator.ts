@@ -3,10 +3,10 @@
  * @module InputValidator/Types
  */
 import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from './Conditions';
-import { IInputValueHost } from './InputValueHost';
 import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
 import { IGatherValueHostIds } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
+import { IInputValueHost } from './InputValueHost';
 
 /**
  * Represents a single validator for the value of an InputValueHost.

@@ -25,7 +25,7 @@ import { DataTypeCheckConditionDescriptor, RequiredTextConditionDescriptor, RegE
 import { CultureIdFallback } from "@plblum/jivs-engine/src/Interfaces/DataTypeFormatterService";
 import { ITextLocalizerService } from "@plblum/jivs-engine/src/Interfaces/TextLocalizerService";
 import { LookupKey } from "@plblum/jivs-engine/src/DataTypes/LookupKeys";
-import { registerTestingOnlyConditions } from "./Mocks";
+import { registerTestingOnlyConditions } from "./conditionsForTesting";
 
 
 export function createValidationServicesForTesting(): ValidationServices {
