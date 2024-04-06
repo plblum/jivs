@@ -12,10 +12,10 @@ import { InputValidator } from "../../src/ValueHosts/InputValidator";
 import { InputValueHost, InputValueHostGenerator, toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
-import { AlwaysMatchesConditionType, IsUndeterminedConditionType, MockCapturingLogger, MockValidationServices, MockValidationManager, NeverMatchesConditionType, NeverMatchesConditionType2, NeverMatchesCondition, registerTestingOnlyConditions } from "../Mocks";
+import { MockCapturingLogger, MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ValidationServices } from '../../src/Services/ValidationServices';
 import { ValueHostId } from "../../src/DataTypes/BasicTypes";
-import { InputValueHostDescriptor, InputValueHostState, IInputValueHost, InputValueHostBaseState, IInputValueHostBase, IInputValueHostCallbacks, ValueHostValidatedHandler, toIInputValueHostCallbacks } from "../../src/Interfaces/InputValueHost";
+import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from "../../src/Interfaces/InputValueHost";
 import {
     ValidationResult, IssueFound, ValidateResult, ValidationSeverity, ValidateOptions,
     BusinessLogicError
@@ -23,7 +23,7 @@ import {
 import { InputValidateResult, IInputValidator, InputValidatorDescriptor, IInputValidatorFactory } from "../../src/Interfaces/InputValidator";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { SetValueOptions, IValueHost, ValueHostState, ValueHostDescriptor, ValueHostStateChangedHandler, ValidTypesForStateStorage } from "../../src/Interfaces/ValueHost";
-import { toIInputValueHostBase } from "../../src/ValueHosts/InputValueHostBase";
+import { toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { ConditionWithPromiseTester } from "./InputValidator.test";
 import { ConditionCategory, ConditionEvaluateResult, ICondition, ConditionDescriptor, IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
@@ -43,7 +43,9 @@ import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifier
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { NonInputValueHost } from '../../src/ValueHosts/NonInputValueHost';
 import { BusinessLogicInputValueHost } from "../../src/ValueHosts/BusinessLogicInputValueHost";
-import { createValidationServicesForTesting } from "../createValidationServices";
+import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
+import { ValueHostValidatedHandler, IValidatableValueHostBase, ValidatableValueHostBaseState, toIInputValueHostCallbacks, IInputValueHostCallbacks } from "../../src/Interfaces/ValidatableValueHostBase";
+import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, registerTestingOnlyConditions, NeverMatchesCondition } from "../TestSupport/conditionsForTesting";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -1733,7 +1735,7 @@ function validateWithAsyncConditions(
     let doneTime = false;
     let handlerCount = 0;
     let onValidateHandler: ValueHostValidatedHandler =
-        (valueHost: IInputValueHostBase, validateResult: ValidateResult) => {
+        (valueHost: IValidatableValueHostBase, validateResult: ValidateResult) => {
             let vm = (valueHost as InputValueHost).valueHostsManager as IValidationManager;
             let evr = expectedValidateResults[handlerCount];
             expect(validateResult.validationResult).toBe(evr.validationResult);
@@ -2238,7 +2240,7 @@ describe('InputValueHost.setBusinessLogicError', () => {
 
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1); // first changes the value; second changes ValidationResult
-        let valueChange = <InputValueHostBaseState>changes[0];
+        let valueChange = <ValidatableValueHostBaseState>changes[0];
         expect(valueChange.businessLogicErrors).toBeDefined();
         expect(valueChange.businessLogicErrors![0]).toEqual(
             <BusinessLogicError>{
@@ -2262,14 +2264,14 @@ describe('InputValueHost.setBusinessLogicError', () => {
 
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2);
-        let valueChange1 = <InputValueHostBaseState>changes[0];
+        let valueChange1 = <ValidatableValueHostBaseState>changes[0];
         expect(valueChange1.businessLogicErrors).toBeDefined();
         expect(valueChange1.businessLogicErrors![0]).toEqual(
             <BusinessLogicError>{
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error
             });
-        let valueChange2 = <InputValueHostBaseState>changes[1];
+        let valueChange2 = <ValidatableValueHostBaseState>changes[1];
         expect(valueChange2.businessLogicErrors).toBeDefined();
         expect(valueChange2.businessLogicErrors![0]).toEqual(
             <BusinessLogicError>{
@@ -2311,14 +2313,14 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
 
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2); // first changes the value; second changes ValidationResult
-        let valueChange1 = <InputValueHostBaseState>changes[0];
+        let valueChange1 = <ValidatableValueHostBaseState>changes[0];
         expect(valueChange1.businessLogicErrors).toBeDefined();
         expect(valueChange1.businessLogicErrors![0]).toEqual(
             <BusinessLogicError>{
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error
             });
-        let valueChange2 = <InputValueHostBaseState>changes[1];
+        let valueChange2 = <ValidatableValueHostBaseState>changes[1];
         expect(valueChange2.businessLogicErrors).toBeUndefined();
     });
 });
@@ -3649,7 +3651,7 @@ describe('toIInputValueHost function', () => {
         expect(toIInputValueHost(100)).toBeNull();
     });
 });
-describe('toIInputValueHostBase function', () => {
+describe('toIValidatableValueHostBase function', () => {
     test('Passing actual BusinessLogicInputValueHost matches interface returns same object.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
         let testItem = new BusinessLogicInputValueHost(vm, {
@@ -3663,9 +3665,9 @@ describe('toIInputValueHostBase function', () => {
                 validationResult: ValidationResult.NotAttempted,
                 inputValue: undefined
             });
-        expect(toIInputValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });
-    class TestIInputValueHostBaseImplementation implements IInputValueHostBase {
+    class TestIValidatableValueHostBaseImplementation implements IValidatableValueHostBase {
 
         getInputValue() {
             throw new Error("Method not implemented.");
@@ -3739,19 +3741,19 @@ describe('toIInputValueHostBase function', () => {
        
     }
     test('Passing object with interface match returns same object.', () => {
-        let testItem = new TestIInputValueHostBaseImplementation();
+        let testItem = new TestIValidatableValueHostBaseImplementation();
 
-        expect(toIInputValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(toIInputValueHostBase(testItem)).toBeNull();
+        expect(toIValidatableValueHostBase(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(toIInputValueHostBase(null)).toBeNull();
+        expect(toIValidatableValueHostBase(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(toIInputValueHostBase(100)).toBeNull();
+        expect(toIValidatableValueHostBase(100)).toBeNull();
     });
 });
 
@@ -3764,8 +3766,8 @@ describe('toIInputValueHostCallbacks function', () => {
     class TestIInputValueHostCallbacksImplementation implements IInputValueHostCallbacks {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostStateChanged(vh: IValueHost, state: ValueHostState) { }
-        onInputValueChanged(vh: IInputValueHostBase, old: any) { }
-        onValueHostValidated(vh: IInputValueHostBase, validationResult: ValidateResult) { }
+        onInputValueChanged(vh: IValidatableValueHostBase, old: any) { }
+        onValueHostValidated(vh: IValidatableValueHostBase, validationResult: ValidateResult) { }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIInputValueHostCallbacksImplementation();

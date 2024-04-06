@@ -4,17 +4,18 @@
  */
 
 import { ValueHostId } from '../DataTypes/BasicTypes';
-import { InputValueHostBaseDescriptor, InputValueHostBaseState, IInputValueHost, IInputValueHostBase } from '../Interfaces/InputValueHost';
+import { ValidatableValueHostBaseDescriptor, ValidatableValueHostBaseState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { ValidateOptions, ValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
-import { InputValueHostBase, InputValueHostBaseGenerator } from './InputValueHostBase';
+
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
+import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 
 
 /**
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
  */
-export class BusinessLogicInputValueHost extends InputValueHostBase<InputValueHostBaseDescriptor, InputValueHostBaseState>
+export class BusinessLogicInputValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseDescriptor, ValidatableValueHostBaseState>
 {
     /**
      * Result is based on the presence of Business Logic Errors that are not warnings.
@@ -73,15 +74,15 @@ export class BusinessLogicInputValueHost extends InputValueHostBase<InputValueHo
 export const BusinessLogicValueHostId = '*';   
 
 export const BusinessLogicInputValueHostType = 'BusinessLogic';
-export class BusinessLogicInputValueHostGenerator extends InputValueHostBaseGenerator {
+export class BusinessLogicInputValueHostGenerator extends ValidatableValueHostBaseGenerator {
 
-    public canCreate(descriptor: InputValueHostBaseDescriptor): boolean {
+    public canCreate(descriptor: ValidatableValueHostBaseDescriptor): boolean {
         return descriptor.type === BusinessLogicInputValueHostType;
     }
-    public create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostBaseDescriptor, state: InputValueHostBaseState): IInputValueHostBase {
+    public create(valueHostsManager: IValueHostsManager, descriptor: ValidatableValueHostBaseDescriptor, state: ValidatableValueHostBaseState): IValidatableValueHostBase {
         return new BusinessLogicInputValueHost(valueHostsManager, descriptor, state);
     }
-    public cleanupState(state: InputValueHostBaseState, descriptor: InputValueHostBaseDescriptor): void {
+    public cleanupState(state: ValidatableValueHostBaseState, descriptor: ValidatableValueHostBaseDescriptor): void {
         // nothing to do
     }
 }

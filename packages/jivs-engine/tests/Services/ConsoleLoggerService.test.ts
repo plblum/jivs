@@ -1,6 +1,6 @@
 import { ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
-import { MockCapturingLogger } from "../Mocks";
+import { MockCapturingLogger } from "../TestSupport/mocks";
 
 
 

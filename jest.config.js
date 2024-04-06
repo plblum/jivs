@@ -6,13 +6,14 @@ module.exports = {
       },    
     transform: {
         "^.+\\.tsx?$": "ts-jest"
-    },
-    testRegex: "(/tests/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+  },
+ //   testMatch: ["**/*.test.ts"],
+    testRegex: "/tests/.*\\.(test)\\.ts$",
     testPathIgnorePatterns: [
-        "/node_modules/", "/build/"],
-    modulePaths: ["/packages/*/src/"],
+        "/node_modules/", "/build/", "TestSupport"],
+    modulePaths: ["<rootDir>/packages/*/src/"],
     moduleFileExtensions: ["ts", "js" ],
     collectCoverage: true,
     verbose: false,
-    coveragePathIgnorePatterns: ["/packages/jivs-examples/", "/starter_code"]
+    coveragePathIgnorePatterns: ["/packages/jivs-examples/", "/starter_code", "TestSupport"]
 };

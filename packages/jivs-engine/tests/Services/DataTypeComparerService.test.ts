@@ -10,7 +10,7 @@ import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerServic
 import { DataTypeComparerService } from "../../src/Services/DataTypeComparerService";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { MockCapturingLogger, MockValidationServices } from "../Mocks";
+import { MockCapturingLogger, MockValidationServices } from "../TestSupport/mocks";
 
 describe('DataTypeComparerServices constructor and properties', () => {
 

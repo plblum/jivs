@@ -3,7 +3,7 @@ import {
     TotalDaysConverter, IntegerConverter, TimeOfDayOnlyConverter, TimeOfDayHMSOnlyConverter
 } from './../../src/DataTypes/DataTypeConverters';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { MockValidationServices } from '../Mocks';
+import { MockValidationServices } from '../TestSupport/mocks';
 import { DataTypeComparerService } from '../../src/Services/DataTypeComparerService';
 describe('DataTypeConverter concrete classes', () => {
     describe('CaseInsensitiveStringConverter', () => {

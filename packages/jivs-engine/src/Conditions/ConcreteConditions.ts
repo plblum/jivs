@@ -22,7 +22,6 @@ import {
 import { OneValueConditionDescriptor, OneValueConditionBase, TwoValueConditionDescriptor } from './OneValueConditionBase';
 import { StringConditionDescriptor, StringConditionBase } from './StringConditionBase';
 import { InputValueConditionBase } from './InputValueConditionBase';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { EvaluateChildConditionResultsBase, EvaluateChildConditionResultsDescriptor } from './EvaluateChildConditionResultsBase';
 import { RegExpConditionBaseDescriptor, RegExpConditionBase } from './RegExpConditionBase';
 
@@ -30,6 +29,7 @@ import { ConditionType } from './ConditionTypes';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
 
 
 /**

@@ -1,41 +1,41 @@
 import { BusinessLogicInputValueHostGenerator, BusinessLogicValueHostId } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { BusinessLogicInputValueHost, BusinessLogicInputValueHostType } from "../../src/ValueHosts/BusinessLogicInputValueHost";
-import { MockValidationManager, MockValidationServices } from "../Mocks";
+import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { objectKeysCount } from '../../src/Utilities/Utilities';
-import { InputValueHostBaseDescriptor, InputValueHostBaseState, IInputValueHost, IInputValueHostBase } from '../../src/Interfaces/InputValueHost';
 import { ValidationResult, ValidateResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
+import { ValidatableValueHostBaseDescriptor, ValidatableValueHostBaseState, IValidatableValueHostBase } from '../../src/Interfaces/ValidatableValueHostBase';
 
 
 interface ITestSetupConfig {
     services: MockValidationServices,
     validationManager: MockValidationManager,
-    descriptor: InputValueHostBaseDescriptor,
-    state: InputValueHostBaseState,
+    descriptor: ValidatableValueHostBaseDescriptor,
+    state: ValidatableValueHostBaseState,
     valueHost: BusinessLogicInputValueHost
 };
 
 
 function setupInputValueHost(
-    descriptor?: Partial<InputValueHostBaseDescriptor> | null,
-    state?: Partial<InputValueHostBaseState> | null): ITestSetupConfig {
+    descriptor?: Partial<ValidatableValueHostBaseDescriptor> | null,
+    state?: Partial<ValidatableValueHostBaseState> | null): ITestSetupConfig {
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
-    let defaultDescriptor: InputValueHostBaseDescriptor = {
+    let defaultDescriptor: ValidatableValueHostBaseDescriptor = {
         type: BusinessLogicInputValueHostType,
         id: BusinessLogicValueHostId,
         label: '*',
     };
-    let updatedDescriptor: InputValueHostBaseDescriptor = (!descriptor) ?
+    let updatedDescriptor: ValidatableValueHostBaseDescriptor = (!descriptor) ?
         defaultDescriptor :
         { ...defaultDescriptor, ...descriptor };
-    let defaultState: InputValueHostBaseState = {
+    let defaultState: ValidatableValueHostBaseState = {
         id: 'Field1',
         value: undefined,
         inputValue: undefined,
         issuesFound: null,
         validationResult: ValidationResult.NotAttempted
     };
-    let updatedState: InputValueHostBaseState = (!state) ?
+    let updatedState: ValidatableValueHostBaseState = (!state) ?
         defaultState :
         { ...defaultState, ...state };
     let vh = new BusinessLogicInputValueHost(vm,
@@ -241,12 +241,12 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
     test('create returns instance of InputValueHost with VM, Descriptor and State established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let descriptor: InputValueHostBaseDescriptor = {
+        let descriptor: ValidatableValueHostBaseDescriptor = {
             id: 'Field1',
             type: BusinessLogicInputValueHostType,
             label: '',
         };
-        let state: InputValueHostBaseState = {
+        let state: ValidatableValueHostBaseState = {
             id: 'Field1',
             issuesFound: null,
             validationResult: ValidationResult.NotAttempted,
@@ -254,7 +254,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             inputValue: 'TEST'
         };
         let testItem = new BusinessLogicInputValueHostGenerator();
-        let vh: IInputValueHostBase | null = null;
+        let vh: IValidatableValueHostBase | null = null;
         expect(() => vh = testItem.create(vm, descriptor, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(BusinessLogicInputValueHost);
@@ -262,7 +262,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(vh!.getInputValue()).toBe('TEST');  // check State value
     });
     test('cleanupState existing state has no IssuesFound. Returns the same data', () => {
-        let originalState: InputValueHostBaseState = {
+        let originalState: ValidatableValueHostBaseState = {
             id: 'Field1',
             issuesFound: null,
             validationResult: ValidationResult.Valid,
@@ -270,7 +270,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             value: 10
         };
         let state = { ...originalState };
-        let descriptor: InputValueHostBaseDescriptor = {
+        let descriptor: ValidatableValueHostBaseDescriptor = {
             id: 'Field1',
             type: BusinessLogicInputValueHostType,
             label: '',
@@ -282,13 +282,13 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
 
     test('createState returns instance with ID and InitialValue from Descriptor', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
-        let descriptor: InputValueHostBaseDescriptor = {
+        let descriptor: ValidatableValueHostBaseDescriptor = {
             id: 'Field1',
             type: BusinessLogicInputValueHostType,
             label: '',
             initialValue: 'TEST',
         };
-        let state: InputValueHostBaseState | null = null;
+        let state: ValidatableValueHostBaseState | null = null;
         expect(() => state = testItem.createState(descriptor)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.id).toBe(descriptor.id);

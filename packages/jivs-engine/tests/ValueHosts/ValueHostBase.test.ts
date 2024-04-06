@@ -4,7 +4,7 @@ import {
 } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
-import { MockValidationServices, MockValidationManager } from "../Mocks";
+import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
