@@ -1,3 +1,4 @@
+import { createCultureIdFallbacksForEn, createCultureIdFallbacksForFR, populateServicesWithManyCultures } from "../TestSupport/utilities";
 import { BooleanFormatter, NumberFormatter } from "../../src/DataTypes/DataTypeFormatters";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService";
@@ -5,72 +6,10 @@ import { IDataTypeFormatter } from "../../src/Interfaces/DataTypeFormatters";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
-import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { MockCapturingLogger, MockValidationServices } from "../Mocks";
-import { registerDataTypeFormatters, registerDataTypeIdentifiers } from "../createValidationServices";
 
-export function populateServicesWithManyCultures(services: MockValidationServices, activeCultureId: string, registerFormatters: boolean = false): void {
-    services.activeCultureId = activeCultureId;
+import { MockCapturingLogger, MockValidationServices } from "../TestSupport/mocks";
 
-    let dtis = new DataTypeIdentifierService();
-    services.dataTypeIdentifierService = dtis;
 
-    registerDataTypeIdentifiers(dtis);   // always
-    if (registerFormatters) {
-        let ccs = createCultureIdFallbacksForEn();
-        let dtfs = new DataTypeFormatterService(ccs);
-        services.dataTypeFormatterService = dtfs;
-        dtfs.services = services;
-        registerDataTypeFormatters(dtfs);
-    }
-
-}
-
-function createCultureIdFallbacksForEn(): Array<CultureIdFallback> {
-    return [
-        {
-            cultureId: 'en',
-            fallbackCultureId: null
-        },
-        {
-            cultureId: 'fr',
-            fallbackCultureId: 'en'
-        },
-        {
-            cultureId: 'fr-FR',
-            fallbackCultureId: 'fr'
-        },
-        {
-            cultureId: 'en-US',
-            fallbackCultureId: 'en'
-        },
-        {
-            cultureId: 'en-GB',
-            fallbackCultureId: 'en-US'
-        },
-    ];
-}
-function createCultureIdFallbacksForFR(): Array<CultureIdFallback> {
-    return [
-        {
-            cultureId: 'fr',
-            fallbackCultureId: null
-        },
-        {
-            cultureId: 'en',
-            fallbackCultureId: 'fr'
-        },
-        {
-            cultureId: 'fr-FR',
-            fallbackCultureId: 'fr'
-        },
-        {
-            cultureId: 'en-US',
-            fallbackCultureId: 'en'
-        },
-
-    ];
-}
 class TestFormatter implements IDataTypeFormatter {
     constructor(supportedCultureIds: Array<string>, valueToReturn?: string) {
         this._valueToReturn = valueToReturn ?? 'EN TestKey';

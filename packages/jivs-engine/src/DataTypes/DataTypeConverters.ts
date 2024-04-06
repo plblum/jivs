@@ -51,16 +51,15 @@ export class DateTimeConverter implements IDataTypeConverter
         return value.getTime();
     }
 }
+
 /**
- * For JavaScript Date objects to convert them into a number of milliseconds
- * using Date.getTime(), without the time of day part (its always set to 0:00:00).
- * It assumes the Date object is in UTC and returns a UTC date.
- * Date comparison doesn't work by using == and != in JavaScript.
- * Officially, you compare with getTime() results.
- * When this library compares Date objects, it expects this converter
- * to get involved so its DefaultComparer function has two numbers 
- * from which to work.
+ * Converts a Date object into a total number of days since Jan 1, 1970 using UTC values.
+ * It ignores the time of day part of the Date object.
+ * This is used instead of Date.getTime which is a number of milliseconds
+ * because total days is useful in other situations like difference between
+ * two Date objects by date.
  * DataType LookupKey: "Date".
+ * It assumes the Date object is setup in UTC time.
  * This is automatically used when there is no dataTypeLookup key specified
  * and the value is a date.
  */
@@ -74,13 +73,16 @@ export class UTCDateOnlyConverter implements IDataTypeConverter
         if (isNaN(value.getTime()))
             return undefined;        
         let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
-        return dateOnly.getTime();
+        return Math.floor(dateOnly.getTime() / 86400000);
     }
 }
 /**
- * For JavaScript Date objects to convert them into a number of milliseconds
- * using Date.getTime(), without the time of day part (its always set to 0:00:00).
- * It assumes the Date object is in local time and returns a local date.
+ * Converts a Date object into a total number of days since Jan 1, 1970 using local date values.
+ * It ignores the time of day part of the Date object.
+ * This is used instead of Date.getTime which is a number of milliseconds
+ * because total days is useful in other situations like difference between
+ * two Date objects by date.
+ * It assumes the Date object is setup in local time.
  * DataType Lookup Key: "LocalDate"
  */
 export class LocalDateOnlyConverter implements IDataTypeConverter
@@ -93,7 +95,7 @@ export class LocalDateOnlyConverter implements IDataTypeConverter
         if (isNaN(value.getTime()))
             return undefined;        
         let dateOnly = new Date(value.getFullYear(), value.getMonth(), value.getDate());
-        return dateOnly.getTime();
+        return Math.floor(dateOnly.getTime() / 86400000);
     }
 }
 
@@ -152,20 +154,17 @@ export class IntegerConverter implements IDataTypeConverter
 
 /**
  * For Dates values to be compared by their total years since Jan 1, 1970
+ * Its actually the same conversion as UTCDateOnlyConverter, just established
+ * with another lookup key that is easier to understand for this purpose,
+ * and UTCDateOnlyConverter is selected when there is no lookup key.
  * DataTypeLookupKey = "TotalDays"
  * Use in Conditions that offer the ConversionLookupKey property, assigned
  * to ConversionLookupKey and/or SecondValueConversionLookupKey.
  */
-export class TotalDaysConverter implements IDataTypeConverter
+export class TotalDaysConverter extends UTCDateOnlyConverter
 {
     public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return (dataTypeLookupKey === LookupKey.TotalDays) &&
             value instanceof Date;
-    }
-    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        if (isNaN(value.getTime()))
-            return undefined;        
-        let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
-        return Math.floor(dateOnly.getTime() / 86400000);
     }
 }

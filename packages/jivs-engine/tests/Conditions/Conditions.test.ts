@@ -16,13 +16,13 @@ import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerServic
 
 import {
     MockValidationServices, MockValidationManager, MockCapturingLogger,
-    AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedCondition, IsUndeterminedConditionType
-} from "../Mocks";
+} from "../TestSupport/mocks";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { IntegerConverter } from "../../src/DataTypes/DataTypeConverters";
+import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType } from "../TestSupport/conditionsForTesting";
 
 
 describe('ConditionBase class additional cases', () => {

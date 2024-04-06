@@ -1,6 +1,6 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ValidationServices } from "../../src/Services/ValidationServices";
-import { MockCapturingLogger } from "../Mocks";
+import { MockCapturingLogger } from "../TestSupport/mocks";
 import { InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";

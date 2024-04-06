@@ -6,12 +6,12 @@
 
 import { ValueHostId } from '../DataTypes/BasicTypes';
 import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
-import type { IInputValueHost } from '../Interfaces/InputValueHost';
 import type { IGatherValueHostIds, IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
 
 /**
  * Base implementation of ICondition.

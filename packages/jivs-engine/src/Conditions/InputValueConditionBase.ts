@@ -5,13 +5,13 @@
  */
 
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { OneValueConditionDescriptor, OneValueConditionBase } from './OneValueConditionBase';
-import { toIInputValueHostBase } from '../ValueHosts/InputValueHostBase';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 
 
 /**
@@ -29,7 +29,7 @@ export abstract class InputValueConditionBase<TDescriptor extends OneValueCondit
      */
     public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
-        if (!toIInputValueHostBase(valueHost)) {
+        if (!toIInputValueHost(valueHost)) {
             valueHostResolver.services.loggerService.log('Invalid ValueHost used. Must be an InputValueHost',
                 LoggingLevel.Error, LoggingCategory.Configuration, 'InputValueConditionBase.Evaluate');
             throw new CodingError('Invalid ValueHost used. Must be an InputValueHost');

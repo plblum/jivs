@@ -2,7 +2,7 @@ import { NonInputValueHostDescriptor, NonInputValueHostState, INonInputValueHost
 import { IGatherValueHostIds, toIGatherValueHostIds } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { NonInputValueHost, NonInputValueHostGenerator } from "../../src/ValueHosts/NonInputValueHost";
-import { MockValidationServices, MockValidationManager, NeverMatchesConditionType } from "../Mocks";
+import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 
 describe('NonInputValueHost constructor', () => {
     test('constructor with valid parameters created and sets up Services, Descriptor, and State', () => {

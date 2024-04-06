@@ -6,7 +6,7 @@ import {
 } from '../../src/DataTypes/DataTypeFormatters';
 
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
-import { MockValidationServices } from '../Mocks';
+import { MockValidationServices } from '../TestSupport/mocks';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 

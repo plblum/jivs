@@ -9,12 +9,13 @@ import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostDescriptor, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostId } from '../DataTypes/BasicTypes';
-import type { IInputValueHost, IInputValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/InputValueHost';
+import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
 import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from '../Interfaces/Validation';
-import { InputValueHostBase, toIInputValueHostBase } from './InputValueHostBase';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from './InputValueHost';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { ValidatableValueHostBase } from './ValidatableValueHostBase';
 
 
 /**
@@ -300,10 +301,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
                 ivh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
     }
 
-    protected * inputValueHost(): Generator<IInputValueHostBase> {
+    protected * inputValueHost(): Generator<IValidatableValueHostBase> {
         for (let key in this._valueHosts) {
             let vh = this._valueHosts[key];
-            if (vh instanceof InputValueHostBase)
+            if (vh instanceof ValidatableValueHostBase)
                 yield vh;
         }
     }
@@ -393,7 +394,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
                         id: BusinessLogicValueHostId
                     }, null);
                 }
-                if (vh instanceof InputValueHostBase)
+                if (vh instanceof ValidatableValueHostBase)
                     vh.setBusinessLogicError(error);
             }
     }
@@ -410,7 +411,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      */
     public getIssuesForInput(valueHostId: ValueHostId): Array<IssueFound> {
         let vh = this.getValueHost(valueHostId);
-        if (vh && vh instanceof InputValueHostBase)
+        if (vh && vh instanceof ValidatableValueHostBase)
             return vh.getIssuesFound();
         return [];
     }

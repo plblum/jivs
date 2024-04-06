@@ -1,6 +1,6 @@
 /**
- * Core implementation of IInputValueHost without specifics on validators, just the idea of validating.
- * @module ValueHosts/AbstractClasses/InputValueHostBase
+ * Expands upon ValueHost to provide the basics of validation.
+ * @module ValueHosts/AbstractClasses/ValidatableValueHostBase
  */
 import { ValueHostId } from '../DataTypes/BasicTypes';
 import { deepEquals, groupsMatch } from '../Utilities/Utilities';
@@ -8,27 +8,25 @@ import { type SetValueOptions} from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostResolver';
-import { IInputValueHost, IInputValueHostBase, InputValueHostBaseDescriptor, InputValueHostBaseState } from '../Interfaces/InputValueHost';
+import { IValidatableValueHostBase, ValidatableValueHostBaseDescriptor, ValidatableValueHostBaseState } from '../Interfaces/ValidatableValueHostBase';
 import { BusinessLogicError, IssueFound, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from '../Interfaces/Validation';
 
 
 /**
-* Core implementation of IInputValueHost without specifics on validators, just the idea of validating.
-* Each instance depends on a few things, all passed into the constructor
-* and treated as immutable.
-* - IValueHostsManager - Contains all ValueHosts. This is usually ValidationManager.
-*   It is the owner of all state and provides group validation.
-* - InputValueHostBaseDescriptor - The business logic supplies these rules
-*   to implement a ValueHost's Id, label, data type, validation rules,
-*   and other business logic metadata.
-* - InputValueHostState - State used by this InputValueHost including
-    its validators.
-* If the caller changes any of these, discard the instance
-* and create a new one.
+* Expands upon ValueHost to provide the basics of validation.
  */
-export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseDescriptor, TState extends InputValueHostBaseState>
+export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableValueHostBaseDescriptor, TState extends ValidatableValueHostBaseState>
     extends ValueHostBase<TDescriptor, TState>
-    implements IInputValueHostBase {
+    implements IValidatableValueHostBase {
+/**
+ * @param valueHostsManager - Contains all ValueHosts. This is usually ValidationManager.
+ *   It is the owner of all state and provides group validation.
+ * @param descriptor - The business logic supplies these rules
+ *   to implement a ValueHost's Id, label, data type, validation rules,
+ *   and other business logic metadata. Treat as immutable.
+ * @param state - State used by this InputValueHost including its validators.
+ * If the caller changes any of these, discard the instance. Treat as immutable.
+ */    
     constructor(valueHostsManager: IValueHostsManager, descriptor: TDescriptor, state: TState) {
         super(valueHostsManager, descriptor, state);
     }
@@ -151,7 +149,7 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
         this.useOnValueChanged(inputChanged, oldInput, options);
     }
 
-    protected updateConversionErrorMessage(stateToUpdate: InputValueHostBaseState,
+    protected updateConversionErrorMessage(stateToUpdate: ValidatableValueHostBaseState,
         nativeValue: any, options: SetValueOptions): void {
         if ((nativeValue === undefined) && options.conversionErrorTokenValue)
             stateToUpdate.conversionErrorTokenValue = options.conversionErrorTokenValue;
@@ -408,14 +406,14 @@ export abstract class InputValueHostBase<TDescriptor extends InputValueHostBaseD
  * @param source 
  * @returns source typecasted to IInputValueHost if appropriate or null if not.
  */
-export function toIInputValueHostBase(source: any): IInputValueHostBase | null
+export function toIValidatableValueHostBase(source: any): IValidatableValueHostBase | null
 {
-    if (source instanceof InputValueHostBase)
-        return source as IInputValueHostBase;
+    if (source instanceof ValidatableValueHostBase)
+        return source as IValidatableValueHostBase;
     if (source && typeof source === 'object')
     {
-        let test = source as IInputValueHost;    
-        // some select members of IInputValueHost
+        let test = source as IValidatableValueHostBase;    
+        // some select members of IValidatableValueHostBase
         if (test.getInputValue !== undefined && 
             test.setInputValue !== undefined &&
             test.validate !== undefined &&
@@ -425,10 +423,10 @@ export function toIInputValueHostBase(source: any): IInputValueHostBase | null
     return null;
 }
 
-export abstract class InputValueHostBaseGenerator implements IValueHostGenerator {
-    public abstract canCreate(descriptor: InputValueHostBaseDescriptor): boolean;
+export abstract class ValidatableValueHostBaseGenerator implements IValueHostGenerator {
+    public abstract canCreate(descriptor: ValidatableValueHostBaseDescriptor): boolean;
 
-    public abstract create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostBaseDescriptor, state: InputValueHostBaseState): IInputValueHostBase;
+    public abstract create(valueHostsManager: IValueHostsManager, descriptor: ValidatableValueHostBaseDescriptor, state: ValidatableValueHostBaseState): IValidatableValueHostBase;
 
     /**
      * Looking for changes to the ValidationDescriptors to impact IssuesFound.
@@ -437,8 +435,8 @@ export abstract class InputValueHostBaseGenerator implements IValueHostGenerator
      * @param state 
      * @param descriptor 
      */
-    public abstract cleanupState(state: InputValueHostBaseState, descriptor: InputValueHostBaseDescriptor): void;
-    public createState(descriptor: InputValueHostBaseDescriptor): InputValueHostBaseState {
+    public abstract cleanupState(state: ValidatableValueHostBaseState, descriptor: ValidatableValueHostBaseDescriptor): void;
+    public createState(descriptor: ValidatableValueHostBaseDescriptor): ValidatableValueHostBaseState {
         return {
             id: descriptor.id,
             value: descriptor.initialValue,
