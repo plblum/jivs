@@ -1,0 +1,32 @@
+{
+  "targetDefaults": {
+    "compile": {
+      "clean": {
+        "dependsOn": [
+          "^clean"
+        ]
+      },      
+      "cache": true,
+      "dependsOn": [
+        "^compile"
+      ],
+      "outputs": [
+        "{projectRoot}/packages/**/build/"
+      ]
+    },
+    "test": {
+      "dependsOn": [
+        "^test"
+      ]
+    },
+    "bumpversion": {
+      "dependsOn": []
+    },
+    "publish_library": {
+      "dependsOn": []
+    },
+    "test:github": {
+      "dependsOn": []
+    }
+  }
+}

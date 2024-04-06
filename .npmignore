@@ -5,7 +5,7 @@ docs/
 node_modules/
 typedoc/
 typedoc_output/
-tsconfig.json
+tsconfig*.json
 typedoc.json
 gulpfile.js
 README.md.backup
