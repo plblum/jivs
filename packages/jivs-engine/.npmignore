@@ -1,0 +1,19 @@
+tests/
+/src/
+coverage/
+docs/
+node_modules/
+typedoc/
+typedoc_output/
+tsconfig*.json
+typedoc.json
+gulpfile.js
+README.md.backup
+jest.config.*
+# .eslintignore
+# .gitattributes
+# .gitignore
+# eslintrc.json
+# packages-lock.json
+# .github/
+# .vscode/
