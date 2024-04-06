@@ -3,7 +3,7 @@
 Jivs -- JavaScript Input Validation Service -- is a suite of libraries that help answer this question: how do I deal with data validation in the UI and/or on the Model?
 
 Start here to better understand this library and determine if its right for you:
-[http://jivs.peterblum.com/typedoc](Jivs Documentation)
+[Jivs Documentation](http://jivs.peterblum.com/typedoc)
 
 I don't want to repeat the same content in two places. So the document you are reading assumes you're familiar with it's core ideas.
 
@@ -12,7 +12,7 @@ I'm looking for an assessment of the architecture. I've been tweaking and refact
 it plenty in hopes its easy to use and really delivers. Getting the API right early on
 avoids the hassle of breaking changes later.*
 
-*Please visit [https://github.com/plblum/jivs/discussions](Jivs Github Discussions board) to participate.*
+*Please visit [Jivs Github Discussions board](https://github.com/plblum/jivs/discussions) to participate.*
 
 Jivs includes multiple libraries. This one -- **jivs-engine** -- handles the actual work of validation. It provides no user interface and is unaware of the shape of any Model. Its written with a strong sense of modern OOP patterns, where you build something with a strong separation of concerns: the UI is a separate world from evaluating data and returning a result.
 
@@ -27,6 +27,6 @@ npm install --save @plblum/jivs-engine
 
 ## Usage
 As this is a library that is behind other libraries, there are many ways to use Jivs.
-So please use [http://jivs.peterblum.com/typedoc](Jivs Documentation) and the other Jivs libraries as a resource.
+So please use [Jivs Documentation](http://jivs.peterblum.com/typedoc) and the other Jivs libraries as a resource.
 
-In addition, the (https://github.com/plblum/jivs)[source code] includes a package called [https://github.com/plblum/jivs/tree/main/packages/jivs-examples](jivs-examples), dedicated to coding examples.
+In addition, the [source code](https://github.com/plblum/jivs) includes a package called [jivs-examples](https://github.com/plblum/jivs/tree/main/packages/jivs-examples), dedicated to coding examples.
