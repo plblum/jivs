@@ -10,6 +10,8 @@ gulp.task('clean', function () {
         'packages/**/build/**/*',
         'packages/**/src/**/*.d.ts',
         // 'packages/**/src/**/*.js',
-         'packages/**/src/**/*.map'
+        'packages/**/src/**/*.map',
+        'packages/**/*.md.backup',
+        'packages/**/*.tgz'
     ]);
 });

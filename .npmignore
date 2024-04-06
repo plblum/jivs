@@ -1,16 +1,19 @@
-/packages/*/tests
-/packages/*/src
-/coverage
-/docs
-/node_modules
-/typedoc
-/typedoc_output
-/.github
-/.vscode
+tests/
+/src/
+coverage/
+docs/
+node_modules/
+typedoc/
+typedoc_output/
 tsconfig.json
-.eslintignore
-.gitattributes
-.gitignore
-eslintrc.json
-packages-lock.json
 typedoc.json
+gulpfile.js
+README.md.backup
+jest.config.*
+# .eslintignore
+# .gitattributes
+# .gitignore
+# eslintrc.json
+# packages-lock.json
+# .github/
+# .vscode/

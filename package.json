@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/plblum/jivs/issues"
   },
-  "private": true,
+  "private": "false",
   "workspaces": [
     "packages/*",
     "starter_code/*"
