@@ -2,9 +2,9 @@
   "extends": "../../tsconfig_common.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "./build/src",
+    "outDir": "./build/",
     "rootDir": "./src/",
-    "declarationDir": "./build/types",       
+    "declarationDir": "./build/",       
   },
   "include": [ "src", "types" ], 
   /* omitting the tests from the main compile to avoid them generating d.ts files.
