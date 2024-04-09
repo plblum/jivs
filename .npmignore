@@ -8,6 +8,7 @@ typedoc_output/
 tsconfig*.json
 typedoc.json
 gulpfile.js
+gulpfile.mjs
 README.md.backup
 jest.config.*
 # .eslintignore
