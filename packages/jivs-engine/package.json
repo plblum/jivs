@@ -5,7 +5,7 @@
   "displayName": "JavaScript Input Validation Service",
   "license": "MIT",
   "main": "build/src/index.js",
-  "typings": "build/types/index.d.ts",
+  "types": "build/types/index.d.ts",
   "scripts": {
     "compile": "tsc",
     "test": "jest",
