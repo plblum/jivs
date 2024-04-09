@@ -1,21 +1,23 @@
 {
   "name": "@plblum/jivs-engine",
-  "version": "0.9.0",
+  "version": "0.9.4",
   "description": "The workhorse of validation. Classes without UI that just take in values and output validation results. This lib is completely standalone from DOM, HTML, and Web APIs. The Suite contains support for UI aspects of validation too.",
   "displayName": "JavaScript Input Validation Service",
   "license": "MIT",
   "main": "build/src/index.js",
-  "typings": "build/src/index.d.ts",
+  "typings": "build/types/index.d.ts",
   "scripts": {
     "compile": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "bumpversion": "lerna version --no-private",
+    "publish_library": "lerna publish --no-private"
   },
-  
   "eslintConfig": {
     "env": {
       "browser": true,
       "node": true,
       "jest": true
     }
-  }
+  },
+  "gitHead": "51fe8c1947df2b3b252e6f9d0f5f3b3627573b13"
 }

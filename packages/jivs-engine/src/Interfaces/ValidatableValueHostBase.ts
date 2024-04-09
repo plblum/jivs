@@ -1,6 +1,6 @@
 /**
  * @inheritDoc ValueHosts/AbstractClasses/ValidatableValueHostBase!
- * @module ValueHosts/Types/InputValueHostBase
+ * @module ValueHosts/Types/ValidatableValueHostBase
  */
 import { ValueHostId } from '../DataTypes/BasicTypes';
 import {

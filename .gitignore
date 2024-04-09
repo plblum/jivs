@@ -17,6 +17,9 @@
 # misc
 ~*
 *.backup
+*.tgz
 
 npm-debug.log*
 
+
+.nx/cache

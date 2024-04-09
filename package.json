@@ -16,7 +16,7 @@
   "bugs": {
     "url": "https://github.com/plblum/jivs/issues"
   },
-  "private": true,
+  "private": "false",
   "workspaces": [
     "packages/*",
     "starter_code/*"
@@ -44,7 +44,9 @@
     "test": "jest",
     "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'",
     "gulp": "node gulpfile.mjs",
-    "clean": "gulp clean"
+    "clean": "gulp clean",
+    "bumpversion": "lerna version --no-private",
+    "publish_library": "lerna publish --no-private"
   },
   "eslintConfig": {
     "env": {

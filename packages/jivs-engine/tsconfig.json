@@ -2,12 +2,9 @@
   "extends": "../../tsconfig_common.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "./build",
-    "rootDir": "./",
-    "declarationDir": "./build/types",    
-    "paths": {
-      "@plblum/jivs-engine": ["../jivs-engine"]
-    }    
+    "outDir": "./build/src",
+    "rootDir": "./src/",
+    "declarationDir": "./build/types",       
   },
   "include": [ "src", "types" ], 
   /* omitting the tests from the main compile to avoid them generating d.ts files.
