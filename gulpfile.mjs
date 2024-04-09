@@ -9,8 +9,13 @@ gulp.task('clean', function () {
         'starter_code/build/**',
         'packages/**/build/**/*',
         'packages/**/src/**/*.d.ts',
-        // 'packages/**/src/**/*.js',
+        'packages/*/*.d.ts',        
+        'packages/**/src/**/*.js',
         'packages/**/src/**/*.map',
+        'packages/**/tests/**/*.d.ts',
+        'packages/**/tests/**/*.js',
+        'packages/**/tests/**/*.map',  
+        
         'packages/**/*.md.backup',
         'packages/**/*.tgz'
     ]);

@@ -9,7 +9,7 @@ I don't want to repeat the same content in two places. So the document you are r
 
 *Jivs is a work-in-progress. This is a preview to get feedback from the community.
 I'm looking for an assessment of the architecture. I've been tweaking and refactoring
-it plenty in hopes its easy to use and really delivers. Getting the API right early on
+it plenty in hopes it's easy to use and really delivers. Getting the API right early on
 avoids the hassle of breaking changes later.*
 
 *Please visit [Jivs Github Discussions board](https://github.com/plblum/jivs/discussions) to participate.*
