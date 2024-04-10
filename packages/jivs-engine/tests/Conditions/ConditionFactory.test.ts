@@ -14,12 +14,12 @@ describe('ConditionFactory.create', () => {
         let condition: IConditionCore<RequiredTextConditionDescriptor> | null = null;
         expect(() => condition = factory.create<RequiredTextConditionDescriptor>({
             type: ConditionType.RequiredText,
-            valueHostId: null
+            valueHostName: null
         })).not.toThrow();
         expect(condition).not.toBeNull();
         expect(condition).toBeInstanceOf(RequiredTextCondition);
         expect(condition!.descriptor.type).toBe(ConditionType.RequiredText);
-        expect(condition!.descriptor.valueHostId).toBeNull();
+        expect(condition!.descriptor.valueHostName).toBeNull();
 
     });
     test('create with unregistered Condition throws', () => {
@@ -29,7 +29,7 @@ describe('ConditionFactory.create', () => {
         let condition: IConditionCore<ConditionDescriptor> | null = null;
         expect(() => condition = factory.create(<ConditionDescriptor>{
             type: 'UnknownType',
-            ValueHostId: null
+            ValueHostName: null
         })).toThrow(/not supported/);
 
     });

@@ -1,4 +1,4 @@
-import { BusinessLogicInputValueHostGenerator, BusinessLogicValueHostId } from '../../src/ValueHosts/BusinessLogicInputValueHost';
+import { BusinessLogicInputValueHostGenerator, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { BusinessLogicInputValueHost, BusinessLogicInputValueHostType } from "../../src/ValueHosts/BusinessLogicInputValueHost";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { objectKeysCount } from '../../src/Utilities/Utilities';
@@ -22,14 +22,14 @@ function setupInputValueHost(
     let vm = new MockValidationManager(services);
     let defaultDescriptor: ValidatableValueHostBaseDescriptor = {
         type: BusinessLogicInputValueHostType,
-        id: BusinessLogicValueHostId,
+        name: BusinessLogicValueHostName,
         label: '*',
     };
     let updatedDescriptor: ValidatableValueHostBaseDescriptor = (!descriptor) ?
         defaultDescriptor :
         { ...defaultDescriptor, ...descriptor };
     let defaultState: ValidatableValueHostBaseState = {
-        id: 'Field1',
+        name: 'Field1',
         value: undefined,
         inputValue: undefined,
         issuesFound: null,
@@ -81,7 +81,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
             conditionType: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostId: BusinessLogicValueHostId
+            valueHostName: BusinessLogicValueHostName
         });
     });    
     test('One BusinessLogicErrors with only ErrorMesage and Severity=Error results in ValidationResult.Invalid and one IssueFound', () => {
@@ -100,7 +100,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
             conditionType: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostId: BusinessLogicValueHostId
+            valueHostName: BusinessLogicValueHostName
         });
     });        
     test('One BusinessLogicErrors with only ErrorMesage and Severity=Severe results in ValidationResult.Invalid and one IssueFound', () => {
@@ -119,7 +119,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
             conditionType: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Severe,
-            valueHostId: BusinessLogicValueHostId
+            valueHostName: BusinessLogicValueHostName
         });
     });            
     test('One BusinessLogicErrors with only ErrorMesage and Severity=Warning results in ValidationResult.Valid and one IssueFound', () => {
@@ -138,7 +138,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
             conditionType: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostId: BusinessLogicValueHostId
+            valueHostName: BusinessLogicValueHostName
         });
     });            
     test('One BusinessLogicErrors with ErrorMesage, ErrorCode="EC1" and Severity=Error results in ValidationResult.Invalid and one IssueFound identified as "EC1"', () => {
@@ -158,7 +158,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
             conditionType: "EC1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostId: BusinessLogicValueHostId
+            valueHostName: BusinessLogicValueHostName
         });
     });          
     test('2 BusinessLogicErrors (Warning, Error) results in ValidationResult.Invalid and two IssueFounds', () => {
@@ -181,13 +181,13 @@ describe('BusinessLogicInputValueHost.validate', () => {
             conditionType: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostId: BusinessLogicValueHostId
+            valueHostName: BusinessLogicValueHostName
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
             conditionType: "GENERATED_1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostId: BusinessLogicValueHostId
+            valueHostName: BusinessLogicValueHostName
         });        
     });            
     test('2 BusinessLogicErrors (Warning, Warning) results in ValidationResult.Valid and two IssueFounds', () => {
@@ -210,13 +210,13 @@ describe('BusinessLogicInputValueHost.validate', () => {
             conditionType: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostId: BusinessLogicValueHostId
+            valueHostName: BusinessLogicValueHostName
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
             conditionType: "GENERATED_1",
             errorMessage: "WARNING2",
             severity: ValidationSeverity.Warning,
-            valueHostId: BusinessLogicValueHostId
+            valueHostName: BusinessLogicValueHostName
         });        
     });                
 });
@@ -226,7 +226,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         expect(testItem.canCreate({
             type: BusinessLogicInputValueHostType,
-            id: 'Field1',
+            name: 'Field1',
             label: '',
         })).toBe(true);
     });
@@ -234,7 +234,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         expect(testItem.canCreate({
             type: 'Unexpected',
-            id: 'Field1',
+            name: 'Field1',
             label: '',
         })).toBe(false);
     });
@@ -242,12 +242,12 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let descriptor: ValidatableValueHostBaseDescriptor = {
-            id: 'Field1',
+            name: 'Field1',
             type: BusinessLogicInputValueHostType,
             label: '',
         };
         let state: ValidatableValueHostBaseState = {
-            id: 'Field1',
+            name: 'Field1',
             issuesFound: null,
             validationResult: ValidationResult.NotAttempted,
             value: undefined,
@@ -258,12 +258,12 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(() => vh = testItem.create(vm, descriptor, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(BusinessLogicInputValueHost);
-        expect(vh!.getId()).toBe(descriptor.id);    // check Descriptor value
+        expect(vh!.getName()).toBe(descriptor.name);    // check Descriptor value
         expect(vh!.getInputValue()).toBe('TEST');  // check State value
     });
     test('cleanupState existing state has no IssuesFound. Returns the same data', () => {
         let originalState: ValidatableValueHostBaseState = {
-            id: 'Field1',
+            name: 'Field1',
             issuesFound: null,
             validationResult: ValidationResult.Valid,
             inputValue: 'ABC',
@@ -271,7 +271,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         };
         let state = { ...originalState };
         let descriptor: ValidatableValueHostBaseDescriptor = {
-            id: 'Field1',
+            name: 'Field1',
             type: BusinessLogicInputValueHostType,
             label: '',
         };
@@ -280,10 +280,10 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(state).toEqual(originalState);
     });
 
-    test('createState returns instance with ID and InitialValue from Descriptor', () => {
+    test('createState returns instance with name and InitialValue from Descriptor', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         let descriptor: ValidatableValueHostBaseDescriptor = {
-            id: 'Field1',
+            name: 'Field1',
             type: BusinessLogicInputValueHostType,
             label: '',
             initialValue: 'TEST',
@@ -291,7 +291,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         let state: ValidatableValueHostBaseState | null = null;
         expect(() => state = testItem.createState(descriptor)).not.toThrow();
         expect(state).not.toBeNull();
-        expect(state!.id).toBe(descriptor.id);
+        expect(state!.name).toBe(descriptor.name);
         expect(state!.validationResult).toBe(ValidationResult.NotAttempted);
         expect(state!.inputValue).toBeUndefined();
         expect(state!.group).toBeUndefined();

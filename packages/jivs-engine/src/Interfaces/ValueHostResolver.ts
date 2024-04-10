@@ -5,7 +5,7 @@
  * @module ValidationManager/Types/ValueHostResolver
  */
 
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IInputValueHost } from './InputValueHost';
 import { IServicesAccessor } from './ValidationServices';
 import type { IValueHost } from './ValueHost';
@@ -16,18 +16,18 @@ import type { IValueHost } from './ValueHost';
  */
 export interface IValueHostResolver extends IServicesAccessor {
     /**
-     * Retrieves the ValueHost of the identified by valueHostId
-     * @param valueHostId - Matches to the IValueHost.Id property
+     * Retrieves the ValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the IValueHost.name property
      * Returns the instance or null if not found.
      */
-    getValueHost(valueHostId: ValueHostId): IValueHost | null;
+    getValueHost(valueHostName: ValueHostName): IValueHost | null;
 
     /**
-     * Retrieves the InputValueHost of the identified by valueHostId
-     * @param valueHostId - Matches to the IInputValueHost.Id property
+     * Retrieves the InputValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the IInputValueHost.name property
      * Returns the instance or null if not found or found a non-input valuehost.
      */
-    getInputValueHost(valueHostId: ValueHostId): IInputValueHost | null;
+    getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null;
 }
 
 /**
@@ -43,7 +43,7 @@ export interface IValueHostsManager extends IValueHostResolver
      * will want to revalidate or set up a state to force revalidation.
      * This goes through those ValueHosts and notifies them.
      */
-    notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void;
+    notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void;
     
 }
 /**

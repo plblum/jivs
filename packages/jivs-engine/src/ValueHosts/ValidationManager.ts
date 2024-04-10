@@ -4,11 +4,11 @@
  * Its methods provide validation and the results of validation.
  * @module ValidationManager/ConcreteClasses
  */
-import { BusinessLogicInputValueHostType, BusinessLogicValueHostId } from './BusinessLogicInputValueHost';
+import { BusinessLogicInputValueHostType, BusinessLogicValueHostName } from './BusinessLogicInputValueHost';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostDescriptor, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
 import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
@@ -187,7 +187,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * Adds a ValueHostDescriptor for a ValueHost not previously added. 
      * Does not trigger any notifications.
-     * Exception when the same ValueHostDescriptor.Id already exists.
+     * Exception when the same ValueHostDescriptor.name already exists.
      * @param descriptor 
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
@@ -197,15 +197,15 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      */
     public addValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
         assertNotNull(descriptor, 'descriptor');
-        if (!this._valueHostDescriptors[descriptor.id])
+        if (!this._valueHostDescriptors[descriptor.name])
             return this.applyDescriptor(descriptor, initialState);
 
-        throw new Error(`Property ${descriptor.id} already assigned.`);
+        throw new Error(`Property ${descriptor.name} already assigned.`);
     }
     /**
      * Replaces a ValueHostDescriptor for an already added ValueHost. 
      * Does not trigger any notifications.
-     * If the id isn't found, it will be added.
+     * If the name isn't found, it will be added.
      * @param descriptor 
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
@@ -213,7 +213,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      */
     public updateValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
         assertNotNull(descriptor, 'descriptor');
-        if (this._valueHostDescriptors[descriptor.id])
+        if (this._valueHostDescriptors[descriptor.name])
             return this.applyDescriptor(descriptor, initialState);
 
         return this.addValueHost(descriptor, initialState);
@@ -225,12 +225,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      */
     public discardValueHost(descriptor: ValueHostDescriptor): void {
         assertNotNull(descriptor, 'descriptor');
-        if (this._valueHostDescriptors[descriptor.id]) {
-            delete this._valueHosts[descriptor.id];
-            delete this._valueHostDescriptors[descriptor.id];
+        if (this._valueHostDescriptors[descriptor.name]) {
+            delete this._valueHosts[descriptor.name];
+            delete this._valueHostDescriptors[descriptor.name];
             if (this._lastValueHostStates)
             {
-                let pos = this._lastValueHostStates.findIndex((state) => state.id === descriptor.id);
+                let pos = this._lastValueHostStates.findIndex((state) => state.name === descriptor.name);
                 if (pos > -1)
                     this._lastValueHostStates.splice(pos, 1);
             }
@@ -253,7 +253,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         let defaultState = factory.createState(descriptor);
 
         if (!existingState && this._lastValueHostStates)
-            existingState = this._lastValueHostStates.find((state) => state.id === descriptor.id) ?? null;
+            existingState = this._lastValueHostStates.find((state) => state.name === descriptor.name) ?? null;
         if (existingState) {
             let cleanedState = deepClone(existingState) as ValueHostState;  // clone to allow changes during Cleanup
             factory.cleanupState(cleanedState, descriptor);
@@ -267,26 +267,26 @@ export class ValidationManager<TState extends ValidationManagerState> implements
             state = defaultState;
         let vh = factory.create(this, descriptor, state);
 
-        this._valueHosts[descriptor.id] = vh;
-        this._valueHostDescriptors[descriptor.id] = descriptor;
+        this._valueHosts[descriptor.name] = vh;
+        this._valueHostDescriptors[descriptor.name] = descriptor;
         return vh;
     }
 
     /**
-     * Retrieves the ValueHost associated with valueHostId
-     * @param valueHostId - Matches to the IValueHost.Id property
+     * Retrieves the ValueHost associated with valueHostName
+     * @param valueHostName - Matches to the IValueHost.name property
      * Returns the instance or null if not found.
      */
-    public getValueHost(valueHostId: ValueHostId): IValueHost | null {
-        return this._valueHosts[valueHostId] ?? null;
+    public getValueHost(valueHostName: ValueHostName): IValueHost | null {
+        return this._valueHosts[valueHostName] ?? null;
     }
     /**
-     * Retrieves the InputValueHost of the identified by valueHostId
-     * @param valueHostId - Matches to the IInputValueHost.Id property
+     * Retrieves the InputValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the IInputValueHost.name property
      * Returns the instance or null if not found or found a non-input valuehost.
      */
-    public getInputValueHost(valueHostId: ValueHostId): IInputValueHost | null {
-        return toIInputValueHost(this.getValueHost(valueHostId));
+    public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
+        return toIInputValueHost(this.getValueHost(valueHostName));
     }
 
     /**
@@ -295,9 +295,9 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * will want to revalidate or set up a state to force revalidation.
      * This goes through those ValueHosts and notifies them.
      */
-    public notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void {
+    public notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void {
         for (let ivh of this.inputValueHost())
-            if (ivh.getId() !== valueHostIdThatChanged)
+            if (ivh.getName() !== valueHostIdThatChanged)
                 ivh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
     }
 
@@ -372,11 +372,11 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
-     * by specifying that valueHostId in AssociatedValueHostId.
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
+     * by specifying that valueHostName in AssociatedValueHostName.
      * Each time its called, all previous business logic errors are abandoned.
      * Internally, a BusinessLogicInputValueHost is added to the list of ValueHosts to hold any
-     * error that lacks an AssociatedValueHostId.
+     * error that lacks an AssociatedValueHostName.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      */
     public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void {
@@ -386,12 +386,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         }
         if (errors)
             for (let error of errors) {
-                let vh = this.getValueHost(error.associatedValueHostId ?? BusinessLogicValueHostId);
-                if (!vh && !error.associatedValueHostId) {
+                let vh = this.getValueHost(error.associatedValueHostName ?? BusinessLogicValueHostName);
+                if (!vh && !error.associatedValueHostName) {
                     vh = this.addValueHost({
                         type: BusinessLogicInputValueHostType,
                         label: '*',
-                        id: BusinessLogicValueHostId
+                        name: BusinessLogicValueHostName
                     }, null);
                 }
                 if (vh instanceof ValidatableValueHostBase)
@@ -405,15 +405,15 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * When 0, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
-     * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
+     * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - ConditionType - Identifies the condition supplying the issue.
-     * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
+     * - conditionType - Identifies the condition supplying the issue.
+     * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesForInput(valueHostId: ValueHostId): Array<IssueFound> {
-        let vh = this.getValueHost(valueHostId);
+    public getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> {
+        let vh = this.getValueHost(valueHostName);
         if (vh && vh instanceof ValidatableValueHostBase)
             return vh.getIssuesFound();
         return [];
@@ -427,10 +427,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * When 0, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
-     * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
+     * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - ConditionType - Identifies the condition supplying the issue.
-     * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
+     * - conditionType - Identifies the condition supplying the issue.
+     * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
@@ -513,7 +513,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
  * this ValidationManager.
  */
 interface IValueHostDescriptorsMap {
-    [valueHostId: ValueHostId]: ValueHostDescriptor;
+    [valueHostName: ValueHostName]: ValueHostDescriptor;
 }
 
 /**
@@ -522,6 +522,6 @@ interface IValueHostDescriptorsMap {
  * in this ValidationManager.
  */
 interface IValueHostsMap {
-    [valueHostId: ValueHostId]: IValueHost;
+    [valueHostName: ValueHostName]: IValueHost;
 }
 

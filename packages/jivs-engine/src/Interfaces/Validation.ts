@@ -2,7 +2,7 @@
  * Interfaces built around the concept of data validation.
  * @module Validation/Types
  */
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { InputValidateResult } from './InputValidator';
 
 /**
@@ -151,9 +151,9 @@ export enum ValidationSeverity {
  */
 export interface IssueFound {
     /**
-     * Containing ValueHostId
+     * Containing ValueHostName
      */
-    valueHostId: ValueHostId;
+    valueHostName: ValueHostName;
     /**
      * Type of Condition that resulted in an error message
      */
@@ -187,8 +187,8 @@ export interface IssueFound {
  * When Business Logic gathers data from the UI, it runs its own final validation.
  * If its own business rule has been violated, it should be recorded with this interface
  * and passed to ValidationManager.SetBusinessLogicErrors where it becomes exposed to 
- * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
- * by specifying that valueHostId in AssociatedValueHostId.
+ * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
+ * by specifying that valueHostName in AssociatedValueHostName.
  */
 export interface BusinessLogicError {
     /**
@@ -198,12 +198,12 @@ export interface BusinessLogicError {
      */
     errorMessage: string;
     /**
-     * If the message is associated with a ValueHost, assign the ValueHostId.
+     * If the message is associated with a ValueHost, assign the ValueHostName.
      * That makes the message available to the ValueHost's validation.
      * The Summary can take advantage of it to establish a hyperlink on the message
      * that jumps to the ValueHost's input field/element.
      */
-    associatedValueHostId?: string;
+    associatedValueHostName?: string;
 
     /**
      * Provides the severity. When unassigned, it uses ValidationSeverity.Error.

@@ -3,7 +3,7 @@
  * @module ValueHosts/ConcreteClasses/BusinessLogicInputValueHost
  */
 
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValidatableValueHostBaseDescriptor, ValidatableValueHostBaseState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { ValidateOptions, ValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
@@ -45,7 +45,7 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
                     conditionType: errorCode,
                     errorMessage: error.errorMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
-                    valueHostId: '*'
+                    valueHostName: '*'
                 });
                 issueCount++;
             }
@@ -63,15 +63,15 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
         return false;
     }
     /**
-     * A service to provide all ValueHostIds that have been assigned to this Condition's
+     * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Descriptor.
      */
-    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void
     {
         // nothing to do
     }
 }
-export const BusinessLogicValueHostId = '*';   
+export const BusinessLogicValueHostName = '*';   
 
 export const BusinessLogicInputValueHostType = 'BusinessLogic';
 export class BusinessLogicInputValueHostGenerator extends ValidatableValueHostBaseGenerator {

@@ -31,6 +31,7 @@ import { registerAllConditions, registerDataTypeCheckGenerators, registerDataTyp
 import { ValueHostValidatedHandler, InputValueChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
+import { ValueHostName } from "src/DataTypes/BasicTypes";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -42,16 +43,16 @@ export function createMockValidationManagerForMessageTokenResolver(registerLooku
 
 export class MockValueHost implements IValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, id: string, dataTypeLookupKey: string, label?: string)
+    constructor(valueHostsManager: IValueHostsManager, name: string, dataTypeLookupKey: string, label?: string)
     {
         this._valueHostsManager = valueHostsManager;
-        this._id = id;
+        this._name = name;
         this._dataTypeLookupKey = dataTypeLookupKey;
-        this._label = label ?? id;
+        this._label = label ?? name;
         this._value = undefined;
     }
     _valueHostsManager: IValueHostsManager;
-    _id: string;
+    _name: string;
     _label: string;
     _value: any;
     _dataTypeLookupKey: string;
@@ -59,8 +60,8 @@ export class MockValueHost implements IValueHost
     public get valueHostsManager(): IValueHostsManager {
         return this._valueHostsManager;
     }
-    getId(): string {
-        return this._id;
+    getName(): string {
+        return this._name;
     }
     getLabel(): string {
         return this._label;
@@ -178,7 +179,7 @@ export class MockInputValueHost extends MockValueHost
 
     requiresInput: boolean = false;
     
-    otherValueHostChangedNotification(valueHostIdThatChanged: string, revalidate: boolean): void {
+    otherValueHostChangedNotification(valueHostNameThatChanged: string, revalidate: boolean): void {
         // do nothing
     }
     
@@ -365,18 +366,18 @@ export class MockValidationManager implements IValidationManager, IValidationMan
  */    
     private _valueHosts: Map<string, IValueHost> = new Map<string, IValueHost>();  
     
-    public addValueHost(id: string, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
+    public addValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
     {
-        let vh = new MockValueHost(this, id, dataTypeLookupKey, label);
-        this._valueHosts.set(id, vh);
+        let vh = new MockValueHost(this, name, dataTypeLookupKey, label);
+        this._valueHosts.set(name, vh);
         vh._value = value;
         return vh;
     }
 
-    public addInputValueHost(id: string, dataTypeLookupKey: string, label: string, inputValue?: any, nativeValue?: any): MockInputValueHost
+    public addInputValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, inputValue?: any, nativeValue?: any): MockInputValueHost
     {
-        let vh = new MockInputValueHost(this, id, dataTypeLookupKey, label);
-        this._valueHosts.set(id, vh);
+        let vh = new MockInputValueHost(this, name, dataTypeLookupKey, label);
+        this._valueHosts.set(name, vh);
         vh._inputValue = inputValue;
         vh._value = nativeValue;
         return vh;
@@ -387,16 +388,16 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         if (!state)
             state = this.services.valueHostFactory.createState(descriptor) as InputValueHostState;
         let vh = this.services.valueHostFactory.create(this, descriptor, state) as IInputValueHost;
-        this._valueHosts.set(descriptor.id, vh);    
+        this._valueHosts.set(descriptor.name, vh);    
   //      vh.SetValues(nativeValue, inputValue);
         return vh;
     }
 
-    public getValueHost(valueHostId: string): IValueHost | null {
-        return this._valueHosts.get(valueHostId) ?? null;
+    public getValueHost(valueHostName: ValueHostName): IValueHost | null {
+        return this._valueHosts.get(valueHostName) ?? null;
     }    
-    public getInputValueHost(valueHostId: string): IInputValueHost | null {
-        return toIInputValueHost(this.getValueHost(valueHostId));
+    public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
+        return toIInputValueHost(this.getValueHost(valueHostName));
     }    
     private _hostStateChanges: Array<ValueHostState> = [];
     public onValueHostStateChangeHandler: ValueHostStateChangedHandler = (valueHost, stateToRetain) => {
@@ -419,17 +420,17 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     doNotSaveNativeValue(): boolean {
         throw new Error("Method not implemented.");
     }
-    notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: string, revalidate: boolean): void {
+    notifyOtherValueHostsOfValueChange(valueHostNameThatChanged: string, revalidate: boolean): void {
         this._valueHosts.forEach((vh, key) => {
             if (vh instanceof ValidatableValueHostBase)
-                vh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
+                vh.otherValueHostChangedNotification(valueHostNameThatChanged, revalidate);
         });
     }    
     public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void
     {
         throw new Error("Method not implemented.");        
     }        
-    getIssuesForInput(valueHostId: string): IssueFound[] {
+    getIssuesForInput(valueHostName: string): IssueFound[] {
         throw new Error("Method not implemented.");
     }
     getIssuesFound(group?: string | undefined): IssueFound[] {

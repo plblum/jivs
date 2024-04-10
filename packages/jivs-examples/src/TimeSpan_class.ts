@@ -8,7 +8,7 @@
  * You want to setup the the EqualToCondition like this:
  * <IEqualToConditionDescriptor>{
  *   type: "EqualTo",
- *   valueHostId: "TextBox1", // your code supplies the textbox value to its ValueHost as a TimeSpan
+ *   valueHostName: "TextBox1", // your code supplies the textbox value to its ValueHost as a TimeSpan
  *   secondValue: 1.5 // Compare to this number of hours
  * }
  * 

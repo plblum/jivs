@@ -51,7 +51,7 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
     }
     public createState(descriptor: ValueHostDescriptor): IPublicifiedValueHostState {
         let state: IPublicifiedValueHostState = {
-            id: descriptor.id,
+            name: descriptor.name,
             value: descriptor.initialValue,
             Counter: 0
         };
@@ -64,7 +64,7 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
  * Returns an ValueHost (PublicifiedValueHost subclass) ready for testing.
  * @param descriptor - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
- * Id: 'Field1',
+ * name: 'Field1',
  * Label: 'Label1',
  * Type: 'PublicifyValueHostBase',
  * DataType: LookupKey.String,
@@ -87,7 +87,7 @@ function setupValueHost(descriptor?: Partial<ValueHostDescriptor>, initialValue?
     let vm = new MockValidationManager(services);
 
     let defaultDescriptor: ValueHostDescriptor = {
-        id: 'Field1',
+        name: 'Field1',
         label: 'Label1',
         type: 'PublicifyValueHostBase',
         dataType: LookupKey.String,
@@ -97,7 +97,7 @@ function setupValueHost(descriptor?: Partial<ValueHostDescriptor>, initialValue?
         defaultDescriptor :
         { ...defaultDescriptor, ...descriptor };
     let state: IPublicifiedValueHostState = {
-        id: 'Field1',
+        name: 'Field1',
         value: initialValue,
         Counter: 0
     };
@@ -120,10 +120,10 @@ describe('constructor and resulting property values', () => {
         let testItem = config.valueHost;
         expect(testItem.ExposeServices()).toBe(config.services);
         expect(testItem.ExposeDescriptor()).toBe(config.descriptor);
-        expect(testItem.ExposeState().id).toBe('Field1');
+        expect(testItem.ExposeState().name).toBe('Field1');
         expect(testItem.valueHostsManager).toBe(config.validationManager);
 
-        expect(testItem.getId()).toBe('Field1');
+        expect(testItem.getName()).toBe('Field1');
         expect(testItem.getLabel()).toBe('Label1');
         expect(testItem.getDataType()).toBe(LookupKey.String);
         expect(testItem.getValue()).toBeUndefined();
@@ -143,14 +143,14 @@ describe('constructor and resulting property values', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);        
         let descriptor: ValueHostDescriptor = {
-            id: 'Field1',
+            name: 'Field1',
             label: 'Label1',
             type: 'PublicifyValueHostBase',
             dataType: LookupKey.String,
             initialValue: 'DATA'
         };
         let state: IPublicifiedValueHostState = {
-            id: 'Field1',
+            name: 'Field1',
             value: undefined,
             Counter: 0
         };
@@ -186,7 +186,7 @@ describe('updateState', () => {
             expect(changes.length).toBe(3);
             for (let i = 1; i <= 3; i++) {
 
-                expect(changes[i - 1].id).toBe('Field1');
+                expect(changes[i - 1].name).toBe('Field1');
                 expect(changes[i - 1].value).toBe(initialValue + i);
             }
 
@@ -233,7 +233,7 @@ describe('setValue', () => {
 
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect(changes[0].id).toBe('Field1');
+        expect(changes[0].name).toBe('Field1');
         expect(changes[0].value).toBe(finalValue);
         expect(changes[0].changeCounter).toBe(1);
     });
@@ -261,7 +261,7 @@ describe('setValue', () => {
 
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect(changes[0].id).toBe('Field1');
+        expect(changes[0].name).toBe('Field1');
         expect(changes[0].value).toBe(finalValue);
         expect(changes[0].changeCounter).toBe(0);
     });
@@ -401,7 +401,7 @@ describe('setValueToUndefined', () => {
 
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect(changes[0].id).toBe('Field1');
+        expect(changes[0].name).toBe('Field1');
         expect(changes[0].value).toBe(finalValue);
     });
     test('Value was not changed. State did not change', () => {
@@ -468,7 +468,7 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
 
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect(changes[0].id).toBe('Field1');
+        expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
         expect(changes[0].items!['KEY']).toBe(10);
         expect(testItem.getFromState('KEY')).toBe(10);        
@@ -489,10 +489,10 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
 
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2);
-        expect(changes[0].id).toBe('Field1');
+        expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
         expect(changes[0].items!['KEY']).toBe(10);
-        expect(changes[1].id).toBe('Field1');
+        expect(changes[1].name).toBe('Field1');
         expect(changes[1].items).not.toBeNull();
         expect(changes[1].items!['KEY']).toBeUndefined();        
         expect(testItem.getFromState('KEY')).toBeUndefined;        
@@ -506,10 +506,10 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
 
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2);
-        expect(changes[0].id).toBe('Field1');
+        expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
         expect(changes[0].items!['KEY1']).toBe(10);
-        expect(changes[1].id).toBe('Field1');
+        expect(changes[1].name).toBe('Field1');
         expect(changes[1].items).not.toBeNull();
         expect(changes[1].items!['KEY2']).toBe(20);  
         expect(testItem.getFromState('KEY1')).toBe(10);        
@@ -524,13 +524,13 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
         expect(() => testItem.saveIntoState('KEY2', undefined)).not.toThrow();
         let changes = config.validationManager.getHostStateChanges();
         expect(changes.length).toBe(3);
-        expect(changes[0].id).toBe('Field1');
+        expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
         expect(changes[0].items!['KEY1']).toBe(10);
-        expect(changes[1].id).toBe('Field1');
+        expect(changes[1].name).toBe('Field1');
         expect(changes[1].items).not.toBeNull();
         expect(changes[1].items!['KEY2']).toBe(20);  
-        expect(changes[2].id).toBe('Field1');
+        expect(changes[2].name).toBe('Field1');
         expect(changes[2].items).not.toBeNull();
         expect(changes[2].items!['KEY2']).toBeUndefined();
         expect(testItem.getFromState('KEY1')).toBe(10);        

@@ -4,7 +4,7 @@
  */
 import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from './Conditions';
 import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
-import { IGatherValueHostIds } from './ValueHost';
+import { IGatherValueHostNames } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
 import { IInputValueHost } from './InputValueHost';
 
@@ -18,7 +18,7 @@ import { IInputValueHost } from './InputValueHost';
  * allowing the system consumer to know how to deal with the data
  * of the ValueHost (save or not) and the UI to display the state.
  */
-export interface IInputValidator extends IMessageTokenSource, IGatherValueHostIds {
+export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNames {
     /**
      * Perform validation activity and provide the results including
      * whether there is an error (ValidationResult), fully formatted
