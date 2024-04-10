@@ -4,8 +4,8 @@
   "description": "The workhorse of validation. Classes without UI that just take in values and output validation results. This lib is completely standalone from DOM, HTML, and Web APIs. The Suite contains support for UI aspects of validation too.",
   "displayName": "JavaScript Input Validation Service",
   "license": "MIT",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
   "scripts": {
     "compile": "tsc",
     "test": "jest",

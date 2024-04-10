@@ -4,8 +4,8 @@ import { type ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerSe
 import { MessageTokenResolverService  } from "../../src/Services/MessageTokenResolverService";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, ValueHostDescriptor, ValueChangedHandler, ValueHostStateChangedHandler } from "../../src/Interfaces/ValueHost";
-import { IValueHostResolver, IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
-import { ConditionDescriptor, ConditionEvaluateResult, ConditionCategory, IConditionFactory, IEvaluateConditionDuringEdits, IConditionCore } from "../../src/Interfaces/Conditions";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
+import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueHostState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
@@ -31,7 +31,7 @@ import { registerAllConditions, registerDataTypeCheckGenerators, registerDataTyp
 import { ValueHostValidatedHandler, InputValueChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
-import { ValueHostName } from "src/DataTypes/BasicTypes";
+import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
