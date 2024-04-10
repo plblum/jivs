@@ -5,9 +5,9 @@
  * @module Conditions/AbstractClasses/EvaluateChildConditionResultsBase
  */
 
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from '../Interfaces/Conditions';
-import { IValueHost, toIGatherValueHostIds } from '../Interfaces/ValueHost';
+import { IValueHost, toIGatherValueHostNames } from '../Interfaces/ValueHost';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { ConditionBase } from './ConditionBase';
@@ -82,11 +82,11 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
         return childResult;
     }
 
-    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void
     {
         let conditions = this.conditions(valueHostResolver);
         for (let condition of conditions)
-            toIGatherValueHostIds(condition)?.gatherValueHostIds(collection, valueHostResolver);
+            toIGatherValueHostNames(condition)?.gatherValueHostNames(collection, valueHostResolver);
     }        
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Children;

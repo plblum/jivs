@@ -24,7 +24,7 @@
  */
 
 
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostsManager } from './ValueHostResolver';
 import { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from './Validation';
 import { IValidationServices } from './ValidationServices';
@@ -73,8 +73,8 @@ export interface IValidationManager extends IValueHostsManager {
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
-     * by specifying that valueHostId in AssociatedValueHostId.
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
+     * by specifying that valueHostName in AssociatedValueHostName.
      * Each time its called, all previous business logic errors are abandoned.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      */
@@ -87,14 +87,14 @@ export interface IValidationManager extends IValueHostsManager {
      * When 0, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
-     * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
+     * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - ConditionType - Identifies the condition supplying the issue.
-     * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
+     * - conditionType - Identifies the condition supplying the issue.
+     * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    getIssuesForInput(valueHostId: ValueHostId): Array<IssueFound>;
+    getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound>;
 
     /**
      * A list of all issues from all InputValueHosts optionally for a given group.
@@ -105,10 +105,10 @@ export interface IValidationManager extends IValueHostsManager {
      * When 0, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
-     * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
+     * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - ConditionType - Identifies the condition supplying the issue.
-     * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
+     * - conditionType - Identifies the condition supplying the issue.
+     * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.
      */

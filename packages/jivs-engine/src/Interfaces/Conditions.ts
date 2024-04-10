@@ -11,7 +11,7 @@
  * Key interfaces:
  * - {@link ICondition} - Provides the evaluate() function for implementations.
  * - {@link ConditionDescriptor} - A description of the rules for evaluation, such
- *   as ValueHostId="TextBox1", Type (of Condition to use)="Range",
+ *   as ValueHostName="TextBox1", Type (of Condition to use)="Range",
  *   Minimum=3, and Maximum=5.
  * - {@link IConditionCore } - Blending the ICondition with 
  *   the ConditionDescriptor, for implementing conditions that are configured
@@ -49,8 +49,8 @@ export interface ICondition {
      * @param valueHost - Most values are found amongst the ValueHosts in the ValueHostsManager.
      * Conditions can look them up using ValueHostsManager.getValueHost().getValue() or getInputValue().
      * This parameter is used as an optimization, both to avoid that lookup and to avoid
-     * the user typing in a ValueHostId when creating the Condition instance.
-     * InputValidator.validate() knows to pass the ValueHostId that hosts the InputValidator.
+     * the user typing in a ValueHostName when creating the Condition instance.
+     * InputValidator.validate() knows to pass the ValueHostName that hosts the InputValidator.
      * Expect this to be null in other cases, such as when Condition is a child of the AllMatchCondition
      * and its peers. In otherwords, support both ways.
      * @param valueHostResolver - Its primary use is to lookup ValueHosts to get their data.

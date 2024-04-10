@@ -46,7 +46,7 @@ export class EmailAddressDataTypeCheckGenerator implements IDataTypeCheckGenerat
     createCondition(valueHost: IInputValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): ICondition | null {
         let descriptor: RegExpConditionDescriptor = {
             type: EmailAddressConditionType,
-            valueHostId: valueHost.getId()
+            valueHostName: valueHost.getName()
         };
         return new EmailAddressCondition(descriptor);   // or use the conditionFactory, so long as your condition is registered
     }

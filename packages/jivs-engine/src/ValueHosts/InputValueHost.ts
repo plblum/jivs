@@ -8,7 +8,7 @@
  *   quite different from the value intended to be stored in the Model/Entity.
  * @module ValueHosts/ConcreteClasses/InputValueHost
  */
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, groupsMatch } from '../Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
@@ -30,7 +30,7 @@ import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './V
 * Each instance depends on a few things, all passed into the constructor:
 * - valueHostsManager - Typically this is the ValidationManager.
 * - InputValueHostDescriptor - The business logic supplies these rules
-*   to implement a ValueHost's Id, label, data type, validation rules,
+*   to implement a ValueHost's name, label, data type, validation rules,
 *   and other business logic metadata.
 * - InputValueHostState - State used by this InputValueHost including
     its validators.
@@ -232,13 +232,13 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
                 let parms = fn();
                 self.services.loggerService.log(parms.message, LoggingLevel.Info,
                     LoggingCategory.Validation,
-                    parms.source ?? `ValueHost ID ${self.descriptor.id}`);
+                    parms.source ?? `ValueHost name ${self.descriptor.name}`);
             }
         }        
         function logError(message: string): void
         {
             self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
-                LoggingLevel.Error, LoggingCategory.Validation, self.descriptor.id);
+                LoggingLevel.Error, LoggingCategory.Validation, self.descriptor.name);
         }
     }
 
@@ -300,7 +300,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
                     };
                     validators.push(this.services.inputValidatorFactory.create(this, descriptor));
                     this.services.loggerService.log(`Added ${dtcCondition.conditionType} Condition for Data Type Check`,
-                        LoggingLevel.Info, LoggingCategory.Configuration, `InputValidator on ${this.getId()}`);
+                        LoggingLevel.Info, LoggingCategory.Configuration, `InputValidator on ${this.getName()}`);
                     created = true;
                 }
             }
@@ -320,14 +320,14 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
             (validators[0].condition.category === ConditionCategory.Required);
     }
     /**
-     * A service to provide all ValueHostIds that have been assigned to this Condition's
+     * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Descriptor.
      */
-    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void
     {
         let validators = this.validators();
         for (let validator of validators)
-            validator.gatherValueHostIds(collection, valueHostResolver);
+            validator.gatherValueHostNames(collection, valueHostResolver);
     }
 
     /**

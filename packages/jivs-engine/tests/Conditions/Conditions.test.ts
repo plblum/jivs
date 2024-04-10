@@ -1,4 +1,4 @@
-import { ValueHostId } from "../../src/DataTypes/BasicTypes";
+import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import {
     type RequiredTextConditionDescriptor, type RangeConditionDescriptor, type CompareToConditionDescriptor,
     RequiredTextCondition,
@@ -26,7 +26,7 @@ import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedCo
 
 
 describe('ConditionBase class additional cases', () => {
-    test('Descriptor.valueHostId with unknown ID logs and throws', () => {
+    test('Descriptor.valueHostName with unknown name logs and throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let logger = services.loggerService as MockCapturingLogger;
@@ -34,15 +34,15 @@ describe('ConditionBase class additional cases', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'PropertyNotRegistered',
+            valueHostName: 'PropertyNotRegistered',
             trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
-        expect(() => testItem.evaluate(vh, vm)).toThrow(/valueHostId/);
+        expect(() => testItem.evaluate(vh, vm)).toThrow(/valueHostName/);
         expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/valueHostId/);
+        expect(logger.getLatest()?.message).toMatch(/valueHostName/);
     });
-    test('Descriptor.valueHostId with null and evaluate value is null logs and throws', () => {
+    test('Descriptor.valueHostName with null and evaluate value is null logs and throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let logger = services.loggerService as MockCapturingLogger;
@@ -50,36 +50,36 @@ describe('ConditionBase class additional cases', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'PropertyNotRegistered',
+            valueHostName: 'PropertyNotRegistered',
             trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
-        expect(() => testItem.evaluate(null, vm)).toThrow(/valueHostId/);
+        expect(() => testItem.evaluate(null, vm)).toThrow(/valueHostName/);
         expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/valueHostId/);
+        expect(logger.getLatest()?.message).toMatch(/valueHostName/);
     });
-    test('ensurePrimaryValueHost will ValueHostId = null and parameter = null throws exception', () => {
+    test('ensurePrimaryValueHost will ValueHostName = null and parameter = null throws exception', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: null,
+            valueHostName: null,
             trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
-        //     expect(() => testItem.evaluate(vh, vm)).toThrow(/valueHostId/);
-        expect(() => testItem.evaluate(null, vm)).toThrow(/valueHostId/);
+        //     expect(() => testItem.evaluate(vh, vm)).toThrow(/valueHostName/);
+        expect(() => testItem.evaluate(null, vm)).toThrow(/valueHostName/);
     });
-    test('ensurePrimaryValueHost will ValueHostId = null and parameter = assigned works normally', () => {
+    test('ensurePrimaryValueHost will ValueHostName = null and parameter = assigned works normally', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: null,
+            valueHostName: null,
             trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
@@ -100,7 +100,7 @@ describe('class DataTypeCheckCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: DataTypeCheckConditionDescriptor = {
             type: ConditionType.DataTypeCheck,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
         vh.setValues('A', 'A');
@@ -119,7 +119,7 @@ describe('class DataTypeCheckCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: DataTypeCheckConditionDescriptor = {
             type: ConditionType.DataTypeCheck,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
         vh.setInputValue('A');    // at this moment, setValue is undefined
@@ -134,7 +134,7 @@ describe('class DataTypeCheckCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: DataTypeCheckConditionDescriptor = {
             type: ConditionType.DataTypeCheck,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
         // at this moment, setValue is undefined
@@ -149,7 +149,7 @@ describe('class DataTypeCheckCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: DataTypeCheckConditionDescriptor = {
             type: ConditionType.DataTypeCheck,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         vh.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
         let testItem = new DataTypeCheckCondition(descriptor);
@@ -171,7 +171,7 @@ describe('class DataTypeCheckCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: DataTypeCheckConditionDescriptor = {
             type: ConditionType.DataTypeCheck,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
 
@@ -188,7 +188,7 @@ describe('class DataTypeCheckCondition', () => {
     test('category is DataTypeCheck', () => {
         let descriptor: DataTypeCheckConditionDescriptor = {
             type: ConditionType.DataTypeCheck,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.DataTypeCheck);
@@ -196,35 +196,35 @@ describe('class DataTypeCheckCondition', () => {
     test('category is overridden', () => {
         let descriptor: DataTypeCheckConditionDescriptor = {
             type: ConditionType.DataTypeCheck,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
         let testItem = new DataTypeCheckCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let descriptor: DataTypeCheckConditionDescriptor = {
             type: ConditionType.DataTypeCheck,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let condition = new DataTypeCheckCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let descriptor: DataTypeCheckConditionDescriptor = {
             type: ConditionType.DataTypeCheck,
-            valueHostId: null,
+            valueHostName: null,
         };
         let condition = new DataTypeCheckCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -239,7 +239,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1'
+            valueHostName: 'Property1'
         };
         let testItem = new RequiredTextCondition(descriptor);
         vh.setValue('A');
@@ -257,7 +257,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1'
+            valueHostName: 'Property1'
         };
         let testItem = new RequiredTextCondition(descriptor);
         vh.setValue('');
@@ -271,7 +271,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             emptyValue: 'EMPTY'
         };
         let testItem = new RequiredTextCondition(descriptor);
@@ -295,7 +295,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             trim: true,
         };
         let testItem = new RequiredTextCondition(descriptor);
@@ -317,7 +317,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             nullValueResult: nullValueResult
         };
         let testItem = new RequiredTextCondition(descriptor);
@@ -341,7 +341,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
@@ -360,7 +360,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
@@ -374,7 +374,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             trim: true
         };
         let testItem = new RequiredTextCondition(descriptor);
@@ -388,7 +388,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             trim: true,
             emptyValue: 'EMPTY'
         };
@@ -407,7 +407,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             trim: false,
             emptyValue: 'EMPTY'
         };
@@ -426,7 +426,7 @@ describe('class RequiredTextCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new RequiredTextCondition(descriptor);
         expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
@@ -436,7 +436,7 @@ describe('class RequiredTextCondition', () => {
     test('category is Required', () => {
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new RequiredTextCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Required);
@@ -444,37 +444,37 @@ describe('class RequiredTextCondition', () => {
     test('category is overridden', () => {
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
         let testItem = new RequiredTextCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let condition = new RequiredTextCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: RequiredTextConditionDescriptor = {
             type: ConditionType.RequiredText,
-            valueHostId: null,
+            valueHostName: null,
         };
         let condition = new RequiredTextCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -490,7 +490,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: 'ABC'
         };
         let testItem = new RegExpCondition(descriptor);
@@ -514,7 +514,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: 'ABC',
             ignoreCase: true
         };
@@ -539,7 +539,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             multiline: false
         };
@@ -564,7 +564,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             multiline: true
         };
@@ -589,7 +589,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expression: /^ABC$/im
         };
         let testItem = new RegExpCondition(descriptor);
@@ -613,7 +613,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: 'ABC',
             not: true
         };
@@ -639,7 +639,7 @@ describe('class RegExpCondition', () => {
 
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             trim: true
         };
@@ -657,7 +657,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: 'ABC'
         };
         let testItem = new RegExpCondition(descriptor);
@@ -677,7 +677,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: 'ABC',
             not: true
         };
@@ -699,7 +699,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new RegExpCondition(descriptor);
         vh.setValue('ABC');
@@ -713,7 +713,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             ignoreCase: true,
             supportsDuringEdit: true
@@ -735,7 +735,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             ignoreCase: true,
             supportsDuringEdit: false
@@ -757,7 +757,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             ignoreCase: true,
             supportsDuringEdit: true,
@@ -776,7 +776,7 @@ describe('class RegExpCondition', () => {
     test('category is DataTypeCheck', () => {
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new RegExpCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.DataTypeCheck);
@@ -784,37 +784,37 @@ describe('class RegExpCondition', () => {
     test('category is overridden', () => {
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
         let testItem = new RegExpCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let condition = new RegExpCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: RegExpConditionDescriptor = {
             type: ConditionType.RegExp,
-            valueHostId: null,
+            valueHostName: null,
         };
         let condition = new RegExpCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -830,7 +830,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 'C',
             maximum: 'G'
         };
@@ -861,7 +861,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: -8,
             maximum: 25
         };
@@ -890,7 +890,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.Date, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: new Date(Date.UTC(2000, 5, 1)),
             maximum: new Date(Date.UTC(2000, 5, 30))
         };
@@ -916,7 +916,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: undefined,
             maximum: 'G'
         };
@@ -944,7 +944,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 'C',
             maximum: null   // should work like undefined
         };
@@ -976,7 +976,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 'C',
             maximum: 'G'
         };
@@ -993,7 +993,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 'G',    // this is a mismatch
             maximum: 10  // this is OK
         };
@@ -1012,7 +1012,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 10, // this is OK
             maximum: 'G'    // this is a mismatch
         };
@@ -1032,7 +1032,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 1.6,
             maximum: 6.1,
             conversionLookupKey: LookupKey.Integer
@@ -1057,7 +1057,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 'C',
             maximum: 'G'
         };
@@ -1084,7 +1084,7 @@ describe('class RangeCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: undefined,
             maximum: null
         };
@@ -1107,7 +1107,7 @@ describe('class RangeCondition', () => {
     test('category is Comparison', () => {
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 2,
             maximum: null
         };
@@ -1117,7 +1117,7 @@ describe('class RangeCondition', () => {
     test('category is overridden', () => {
         let descriptor: RangeConditionDescriptor = {
             type: ConditionType.Range,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             category: ConditionCategory.Contents,
             minimum: 2,
             maximum: null
@@ -1125,7 +1125,7 @@ describe('class RangeCondition', () => {
         let testItem = new RangeCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
@@ -1133,15 +1133,15 @@ describe('class RangeCondition', () => {
             type: ConditionType.Range,
             minimum: 2,
             maximum: undefined,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let condition = new RangeCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
@@ -1149,17 +1149,17 @@ describe('class RangeCondition', () => {
             type: ConditionType.Range,
             minimum: 2,
             maximum: undefined,
-            valueHostId: null,
+            valueHostName: null,
         };
         let condition = new RangeCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
 
 describe('CompareToConditionBase class additional cases', () => {
-    test('Descriptor.secondValueHostId with unknown ID logs and throws', () => {
+    test('Descriptor.secondValueHostName with unknown name logs and throws', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -1168,16 +1168,16 @@ describe('CompareToConditionBase class additional cases', () => {
         vh.setValue('');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            secondValueHostId: 'PropertyNotRegistered',
-            valueHostId: null
+            secondValueHostName: 'PropertyNotRegistered',
+            valueHostName: null
         };
         let testItem = new EqualToCondition(descriptor);
-        expect(() => testItem.evaluate(vh, vm)).toThrow(/secondValueHostId/);
+        expect(() => testItem.evaluate(vh, vm)).toThrow(/secondValueHostName/);
         expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/secondValueHostId/);
+        expect(logger.getLatest()?.message).toMatch(/secondValueHostName/);
     });
     
-    test('Descriptor.secondValueHostId and secondValue both with null logs and throws', () => {
+    test('Descriptor.secondValueHostName and secondValue both with null logs and throws', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -1186,8 +1186,8 @@ describe('CompareToConditionBase class additional cases', () => {
         vh.setValue('');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: null,
-            secondValueHostId: null,
+            valueHostName: null,
+            secondValueHostName: null,
             secondValue: null
         };
         let testItem = new EqualToCondition(descriptor);
@@ -1210,9 +1210,9 @@ describe('class EqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new EqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1231,9 +1231,9 @@ describe('class EqualToCondition', () => {
             'Property1', LookupKey.Boolean, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: false,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new EqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1242,7 +1242,7 @@ describe('class EqualToCondition', () => {
         vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
-    test('evaluate using secondValueHostId property with number for Match or NoMatch', () => {
+    test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -1251,8 +1251,8 @@ describe('class EqualToCondition', () => {
             'Property2', LookupKey.Number, 'Label2');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1275,9 +1275,9 @@ describe('class EqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new EqualToCondition(descriptor);
         vh.setValue(null);
@@ -1299,10 +1299,10 @@ describe('class EqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             conversionLookupKey: LookupKey.Integer,
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new EqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1327,9 +1327,9 @@ describe('class EqualToCondition', () => {
             'Property2', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             conversionLookupKey: LookupKey.Integer,
-            secondValueHostId: 'Property2',
+            secondValueHostName: 'Property2',
             secondConversionLookupKey: LookupKey.Integer
         };
         let testItem = new EqualToCondition(descriptor);
@@ -1353,9 +1353,9 @@ describe('class EqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new EqualToCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -1375,9 +1375,9 @@ describe('class EqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: undefined,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new EqualToCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -1393,9 +1393,9 @@ describe('class EqualToCondition', () => {
     test('category is Comparison', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new EqualToCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
@@ -1403,42 +1403,42 @@ describe('class EqualToCondition', () => {
     test('category is overridden', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null,
+            secondValueHostName: null,
             category: ConditionCategory.Contents
         };
         let testItem = new EqualToCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let condition = new EqualToCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.EqualTo,
-            valueHostId: null,
-            secondValueHostId: null
+            valueHostName: null,
+            secondValueHostName: null
         };
         let condition = new EqualToCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -1453,9 +1453,9 @@ describe('class NotEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new NotEqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1474,9 +1474,9 @@ describe('class NotEqualToCondition', () => {
             'Property1', LookupKey.Boolean, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: false,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new NotEqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1485,7 +1485,7 @@ describe('class NotEqualToCondition', () => {
         vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
-    test('evaluate using secondValueHostId property with number for Match or NoMatch', () => {
+    test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -1494,8 +1494,8 @@ describe('class NotEqualToCondition', () => {
             'Property2', LookupKey.Number, 'Label2');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let testItem = new NotEqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1518,9 +1518,9 @@ describe('class NotEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new NotEqualToCondition(descriptor);
         vh.setValue(null);
@@ -1539,9 +1539,9 @@ describe('class NotEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new NotEqualToCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -1554,7 +1554,7 @@ describe('class NotEqualToCondition', () => {
             }
         ]);
     });
-    test('getValuesForTokens using secondValueHostId', () => {
+    test('getValuesForTokens using secondValueHostName', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -1564,9 +1564,9 @@ describe('class NotEqualToCondition', () => {
         vh2.setValue(100);
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: null,
-            secondValueHostId: 'Property2'
+            secondValueHostName: 'Property2'
         };
         let testItem = new NotEqualToCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -1586,9 +1586,9 @@ describe('class NotEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: null,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new NotEqualToCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -1604,9 +1604,9 @@ describe('class NotEqualToCondition', () => {
     test('category is Comparison', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new NotEqualToCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
@@ -1614,42 +1614,42 @@ describe('class NotEqualToCondition', () => {
     test('category is overridden', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null,
+            secondValueHostName: null,
             category: ConditionCategory.Contents
         };
         let testItem = new NotEqualToCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let condition = new NotEqualToCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.NotEqualTo,
-            valueHostId: null,
-            secondValueHostId: null
+            valueHostName: null,
+            secondValueHostName: null
         };
         let condition = new NotEqualToCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -1664,9 +1664,9 @@ describe('class GreaterThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1685,9 +1685,9 @@ describe('class GreaterThanCondition', () => {
             'Property1', LookupKey.Boolean, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: false,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1696,7 +1696,7 @@ describe('class GreaterThanCondition', () => {
         vh.setValue(false); // secondValue == this value. So NoMatch because operator is GT
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
-    test('evaluate using secondValueHostId property with number for Match or NoMatch', () => {
+    test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -1705,8 +1705,8 @@ describe('class GreaterThanCondition', () => {
             'Property2', LookupKey.Number, 'Label2');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let testItem = new GreaterThanCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1729,9 +1729,9 @@ describe('class GreaterThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanCondition(descriptor);
         vh.setValue(null);
@@ -1750,9 +1750,9 @@ describe('class GreaterThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -1772,9 +1772,9 @@ describe('class GreaterThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: null,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -1790,9 +1790,9 @@ describe('class GreaterThanCondition', () => {
     test('category is Comparison', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
@@ -1800,42 +1800,42 @@ describe('class GreaterThanCondition', () => {
     test('category is overridden', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null,
+            secondValueHostName: null,
             category: ConditionCategory.Contents
         };
         let testItem = new GreaterThanCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let condition = new GreaterThanCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThan,
-            valueHostId: null,
-            secondValueHostId: null
+            valueHostName: null,
+            secondValueHostName: null
         };
         let condition = new GreaterThanCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });        
 });
@@ -1850,9 +1850,9 @@ describe('class GreaterThanOrEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanOrEqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1871,9 +1871,9 @@ describe('class GreaterThanOrEqualToCondition', () => {
             'Property1', LookupKey.Boolean, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: false,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanOrEqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1882,7 +1882,7 @@ describe('class GreaterThanOrEqualToCondition', () => {
         vh.setValue(false); // secondValue == this value. So Match because operator is GTE
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
-    test('evaluate using secondValueHostId property with number for Match or NoMatch', () => {
+    test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -1891,8 +1891,8 @@ describe('class GreaterThanOrEqualToCondition', () => {
             'Property2', LookupKey.Number, 'Label2');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let testItem = new GreaterThanOrEqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -1915,9 +1915,9 @@ describe('class GreaterThanOrEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanOrEqualToCondition(descriptor);
         vh.setValue(null);
@@ -1936,9 +1936,9 @@ describe('class GreaterThanOrEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanOrEqualToCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -1958,9 +1958,9 @@ describe('class GreaterThanOrEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: null,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanOrEqualToCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -1976,9 +1976,9 @@ describe('class GreaterThanOrEqualToCondition', () => {
     test('category is Comparison', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new GreaterThanOrEqualToCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
@@ -1986,42 +1986,42 @@ describe('class GreaterThanOrEqualToCondition', () => {
     test('category is overridden', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null,
+            secondValueHostName: null,
             category: ConditionCategory.Contents
         };
         let testItem = new GreaterThanOrEqualToCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let condition = new GreaterThanOrEqualToCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.GreaterThanOrEqualTo,
-            valueHostId: null,
-            secondValueHostId: null
+            valueHostName: null,
+            secondValueHostName: null
         };
         let condition = new GreaterThanOrEqualToCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });            
 });
@@ -2037,9 +2037,9 @@ describe('class LessThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -2058,9 +2058,9 @@ describe('class LessThanCondition', () => {
             'Property1', LookupKey.Boolean, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: false,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -2069,7 +2069,7 @@ describe('class LessThanCondition', () => {
         vh.setValue(false); // secondValue == this value. So NoMatch because operator is LT
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
-    test('evaluate using secondValueHostId property with number for Match or NoMatch', () => {
+    test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -2078,8 +2078,8 @@ describe('class LessThanCondition', () => {
             'Property2', LookupKey.Number, 'Label2');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let testItem = new LessThanCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -2102,9 +2102,9 @@ describe('class LessThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanCondition(descriptor);
         vh.setValue(null);
@@ -2123,9 +2123,9 @@ describe('class LessThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -2145,9 +2145,9 @@ describe('class LessThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: null,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -2163,9 +2163,9 @@ describe('class LessThanCondition', () => {
     test('category is Comparison', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
@@ -2173,42 +2173,42 @@ describe('class LessThanCondition', () => {
     test('category is overridden', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null,
+            secondValueHostName: null,
             category: ConditionCategory.Contents
         };
         let testItem = new LessThanCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let condition = new LessThanCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThan,
-            valueHostId: null,
-            secondValueHostId: null
+            valueHostName: null,
+            secondValueHostName: null
         };
         let condition = new LessThanCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });            
 });
@@ -2223,9 +2223,9 @@ describe('class LessThanOrEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanOrEqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -2244,9 +2244,9 @@ describe('class LessThanOrEqualToCondition', () => {
             'Property1', LookupKey.Boolean, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: false,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanOrEqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -2255,7 +2255,7 @@ describe('class LessThanOrEqualToCondition', () => {
         vh.setValue(false); // secondValue == this value. So Match because operator is LTE
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
-    test('evaluate using secondValueHostId property with number for Match or NoMatch', () => {
+    test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -2264,8 +2264,8 @@ describe('class LessThanOrEqualToCondition', () => {
             'Property2', LookupKey.Number, 'Label2');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let testItem = new LessThanOrEqualToCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
@@ -2288,9 +2288,9 @@ describe('class LessThanOrEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanOrEqualToCondition(descriptor);
         vh.setValue(null);
@@ -2309,9 +2309,9 @@ describe('class LessThanOrEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 100,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanOrEqualToCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -2331,9 +2331,9 @@ describe('class LessThanOrEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: null,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanOrEqualToCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
@@ -2349,9 +2349,9 @@ describe('class LessThanOrEqualToCondition', () => {
     test('category is Comparison', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null
+            secondValueHostName: null
         };
         let testItem = new LessThanOrEqualToCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
@@ -2359,42 +2359,42 @@ describe('class LessThanOrEqualToCondition', () => {
     test('category is overridden', () => {
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             secondValue: 10,
-            secondValueHostId: null,
+            secondValueHostName: null,
             category: ConditionCategory.Contents
         };
         let testItem = new LessThanOrEqualToCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: 'Property1',
-            secondValueHostId: 'Property2'
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
         };
         let condition = new LessThanOrEqualToCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Property1')).toBe(true);
         expect(testItem.has('Property2')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
             type: ConditionType.LessThanOrEqualTo,
-            valueHostId: null,
-            secondValueHostId: null
+            valueHostName: null,
+            secondValueHostName: null
         };
         let condition = new LessThanOrEqualToCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });            
 });
@@ -2411,7 +2411,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 2,
             maximum: 5
         };
@@ -2443,7 +2443,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 2,
             maximum: null
         };
@@ -2467,7 +2467,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: null,
             maximum: 5
         };
@@ -2496,7 +2496,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: undefined,
             maximum: undefined
         };
@@ -2517,7 +2517,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 2,
             maximum: 5,
             trim: false
@@ -2540,7 +2540,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 2,
             maximum: 5,
             supportsDuringEdit: true
@@ -2566,7 +2566,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 2,
             maximum: 5,
             supportsDuringEdit: true,
@@ -2592,7 +2592,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 2,
             maximum: 5,
             supportsDuringEdit: false
@@ -2611,7 +2611,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 2,
             maximum: 5
         };
@@ -2643,7 +2643,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: 2,
             maximum: 5
         };
@@ -2677,7 +2677,7 @@ describe('class StringLengthCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             minimum: null,
             maximum: null
         };
@@ -2707,7 +2707,7 @@ describe('class StringLengthCondition', () => {
     test('category is Comparison', () => {
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new StringLengthCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
@@ -2715,37 +2715,37 @@ describe('class StringLengthCondition', () => {
     test('category is overridden', () => {
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
         let testItem = new StringLengthCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: 'Property1'
+            valueHostName: 'Property1'
         };
         let condition = new StringLengthCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: StringLengthConditionDescriptor = {
             type: ConditionType.StringLength,
-            valueHostId: null
+            valueHostName: null
         };
         let condition = new StringLengthCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });            
 });
@@ -2957,14 +2957,14 @@ describe('class AllMatchCondition', () => {
             type: ConditionType.And,
             conditionDescriptors: [{
                 type: ConditionType.RequiredText,
-                // valueHostId omitted meaning it must use parent ValueHost
+                // valueHostName omitted meaning it must use parent ValueHost
             },
             {
                 type: AlwaysMatchesConditionType
             },
             <RegExpConditionDescriptor>{
                 type: ConditionType.RegExp,
-                // valueHostId omitted meaning it must use parent ValueHost
+                // valueHostName omitted meaning it must use parent ValueHost
                 expressionAsString: 'ABC'
             }            ],
         };
@@ -2989,7 +2989,7 @@ describe('class AllMatchCondition', () => {
         let testItem = new AllMatchCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds with no children has none', () => {
+    test('gatherValueHostNames with no children has none', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -2998,11 +2998,11 @@ describe('class AllMatchCondition', () => {
             conditionDescriptors: []
         };
         let condition = new AllMatchCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
-    test('gatherValueHostIds where each child has a different ValueHost. All are found in the results', () => {
+    test('gatherValueHostNames where each child has a different ValueHost. All are found in the results', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3011,27 +3011,27 @@ describe('class AllMatchCondition', () => {
             conditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field2'
+                    valueHostName: 'Field2'
                 },             
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field3'
+                    valueHostName: 'Field3'
                 },                
             ]
         };
         let condition = new AllMatchCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(3);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
     });    
-    test('gatherValueHostIds where two child have the same ValueHostId, while another is different. Expect 2 ValueHostIds', () => {
+    test('gatherValueHostNames where two child have the same ValueHostName, while another is different. Expect 2 ValueHostNames', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3040,26 +3040,26 @@ describe('class AllMatchCondition', () => {
             conditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field2'
+                    valueHostName: 'Field2'
                 },             
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },                
             ]
         };
         let condition = new AllMatchCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
     });    
-    test('gatherValueHostIds where each child two have different ValueHosts, another is Null. Expect two ValueHostIds', () => {
+    test('gatherValueHostNames where each child two have different ValueHosts, another is Null. Expect two ValueHostNames', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3068,21 +3068,21 @@ describe('class AllMatchCondition', () => {
             conditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: null
+                    valueHostName: null
                 },             
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field3'
+                    valueHostName: 'Field3'
                 },                
             ]
         };
         let condition = new AllMatchCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
@@ -3327,7 +3327,7 @@ describe('class AnyMatchCondition', () => {
         let testItem = new AnyMatchCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds with no children has none', () => {
+    test('gatherValueHostNames with no children has none', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3336,11 +3336,11 @@ describe('class AnyMatchCondition', () => {
             conditionDescriptors: []
         };
         let condition = new AnyMatchCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
-    test('gatherValueHostIds where each child has a different ValueHost. All are found in the results', () => {
+    test('gatherValueHostNames where each child has a different ValueHost. All are found in the results', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3349,27 +3349,27 @@ describe('class AnyMatchCondition', () => {
             conditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field2'
+                    valueHostName: 'Field2'
                 },             
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field3'
+                    valueHostName: 'Field3'
                 },                
             ]
         };
         let condition = new AnyMatchCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(3);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
     });    
-    test('gatherValueHostIds where two child have the same ValueHostId, while another is different. Expect 2 ValueHostIds', () => {
+    test('gatherValueHostNames where two child have the same ValueHostName, while another is different. Expect 2 ValueHostNames', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3378,26 +3378,26 @@ describe('class AnyMatchCondition', () => {
             conditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field2'
+                    valueHostName: 'Field2'
                 },             
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },                
             ]
         };
         let condition = new AnyMatchCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
     });    
-    test('gatherValueHostIds where each child two have different ValueHosts, another is Null. Expect two ValueHostIds', () => {
+    test('gatherValueHostNames where each child two have different ValueHosts, another is Null. Expect two ValueHostNames', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3406,21 +3406,21 @@ describe('class AnyMatchCondition', () => {
             conditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: null
+                    valueHostName: null
                 },             
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field3'
+                    valueHostName: 'Field3'
                 },                
             ]
         };
         let condition = new AnyMatchCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
@@ -3533,7 +3533,7 @@ describe('class CountMatchesCondition', () => {
         let testItem = new CountMatchesCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds with no children has none', () => {
+    test('gatherValueHostNames with no children has none', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3542,11 +3542,11 @@ describe('class CountMatchesCondition', () => {
             conditionDescriptors: []
         };
         let condition = new CountMatchesCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
-    test('gatherValueHostIds where each child has a different ValueHost. All are found in the results', () => {
+    test('gatherValueHostNames where each child has a different ValueHost. All are found in the results', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
   
@@ -3555,27 +3555,27 @@ describe('class CountMatchesCondition', () => {
             conditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field2'
+                    valueHostName: 'Field2'
                 },             
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field3'
+                    valueHostName: 'Field3'
                 },                
             ]
         };
         let condition = new CountMatchesCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(3);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
     });    
-    test('gatherValueHostIds where two child have the same ValueHostId, while another is different. Expect 2 ValueHostIds', () => {
+    test('gatherValueHostNames where two child have the same ValueHostName, while another is different. Expect 2 ValueHostNames', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3584,26 +3584,26 @@ describe('class CountMatchesCondition', () => {
             conditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field2'
+                    valueHostName: 'Field2'
                 },             
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },                
             ]
         };
         let condition = new CountMatchesCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field2')).toBe(true);
     });    
-    test('gatherValueHostIds where each child two have different ValueHosts, another is Null. Expect two ValueHostIds', () => {
+    test('gatherValueHostNames where each child two have different ValueHosts, another is Null. Expect two ValueHostNames', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
 
@@ -3612,21 +3612,21 @@ describe('class CountMatchesCondition', () => {
             conditionDescriptors: [
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 },
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: null
+                    valueHostName: null
                 },             
                 <RequiredTextConditionDescriptor>{
                     type: ConditionType.RequiredText,
-                    valueHostId: 'Field3'
+                    valueHostName: 'Field3'
                 },                
             ]
         };
         let condition = new CountMatchesCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
@@ -3646,7 +3646,7 @@ describe('class StringNotEmptyCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringNotEmptyConditionDescriptor = {
             type: ConditionType.StringNotEmpty,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         if (nullValueResult !== undefined)
             descriptor.nullValueResult = nullValueResult;
@@ -3682,7 +3682,7 @@ describe('class StringNotEmptyCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: StringNotEmptyConditionDescriptor = {
             type: ConditionType.StringNotEmpty,
-            valueHostId: 'UnknownProperty'
+            valueHostName: 'UnknownProperty'
         };
         let testItem = new StringNotEmptyCondition(descriptor);
         vh.setValue('');
@@ -3695,7 +3695,7 @@ describe('class StringNotEmptyCondition', () => {
     test('category is Required', () => {
         let descriptor: StringNotEmptyConditionDescriptor = {
             type: ConditionType.StringNotEmpty,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new StringNotEmptyCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Required);
@@ -3703,37 +3703,37 @@ describe('class StringNotEmptyCondition', () => {
     test('category is overridden', () => {
         let descriptor: StringNotEmptyConditionDescriptor = {
             type: ConditionType.StringNotEmpty,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
         let testItem = new StringNotEmptyCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: StringNotEmptyConditionDescriptor = {
             type: ConditionType.StringNotEmpty,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let condition = new StringNotEmptyCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: StringNotEmptyConditionDescriptor = {
             type: ConditionType.StringNotEmpty,
-            valueHostId: null,
+            valueHostName: null,
         };
         let condition = new StringNotEmptyCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });
@@ -3749,7 +3749,7 @@ describe('class NotNullCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: NotNullConditionDescriptor = {
             type: ConditionType.NotNull,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
 
         let testItem = new NotNullCondition(descriptor);
@@ -3780,7 +3780,7 @@ describe('class NotNullCondition', () => {
             'Property1', LookupKey.String, 'Label');
         let descriptor: NotNullConditionDescriptor = {
             type: ConditionType.NotNull,
-            valueHostId: 'UnknownProperty'
+            valueHostName: 'UnknownProperty'
         };
         let testItem = new NotNullCondition(descriptor);
         vh.setValue('');
@@ -3793,7 +3793,7 @@ describe('class NotNullCondition', () => {
     test('category is Required', () => {
         let descriptor: NotNullConditionDescriptor = {
             type: ConditionType.NotNull,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let testItem = new NotNullCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Required);
@@ -3801,37 +3801,37 @@ describe('class NotNullCondition', () => {
     test('category is overridden', () => {
         let descriptor: NotNullConditionDescriptor = {
             type: ConditionType.NotNull,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
         let testItem = new NotNullCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
-    test('gatherValueHostIds when all are assigned', () => {
+    test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: NotNullConditionDescriptor = {
             type: ConditionType.NotNull,
-            valueHostId: 'Property1',
+            valueHostName: 'Property1',
         };
         let condition = new NotNullCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
         expect(testItem.has('Property1')).toBe(true);
     });
-    test('gatherValueHostIds when none are assigned', () => {
+    test('gatherValueHostNames when none are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
         let descriptor: NotNullConditionDescriptor = {
             type: ConditionType.NotNull,
-            valueHostId: null,
+            valueHostName: null,
         };
         let condition = new NotNullCondition(descriptor);
-        let testItem = new Set<ValueHostId>();
-        expect(() => condition.gatherValueHostIds(testItem, vm)).not.toThrow();
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
     });
 });

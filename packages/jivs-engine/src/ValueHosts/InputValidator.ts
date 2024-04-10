@@ -12,9 +12,9 @@
   * @module InputValidator/ConcreteClasses
  */
 
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
-import { toIGatherValueHostIds, type IValueHost, ValidTypesForStateStorage } from '../Interfaces/ValueHost';
+import { toIGatherValueHostNames, type IValueHost, ValidTypesForStateStorage } from '../Interfaces/ValueHost';
 import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
@@ -37,7 +37,7 @@ import { IInputValueHost } from '../Interfaces/InputValueHost';
  * 
  * Each instance depends on a few things, all passed into the constructor
  * and treated as immutable.
- * - IInputValueHost - ID, label, and values from the consuming system.
+ * - IInputValueHost - name, label, and values from the consuming system.
  * - InputValidatorDescriptor - The business logic supplies these rules
  *   to implement validation including Condition, Enabler, and error messages
  * If the caller changes any of these, discard the instance
@@ -272,9 +272,9 @@ export class InputValidator implements IInputValidator {
             // enabler
             let enabler = this.enabler;
             if (enabler) { // Many enablers don't use the current value host.
-                // When that is the case, their ConditionDescriptor.valueHostId
+                // When that is the case, their ConditionDescriptor.valueHostName
                 // must be setup to retrieve the correct one.
-                // ValueHostId takes precedence.
+                // ValueHostName takes precedence.
                 let result = enabler.evaluate(this.valueHost, this.valueHostsManager);
                 switch (result) {
                     case ConditionEvaluateResult.NoMatch:
@@ -507,11 +507,11 @@ export class InputValidator implements IInputValidator {
 
 
     /**
-     * A service to provide all ValueHostIds that have been assigned to this Condition's
+     * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Descriptor.
      */
-    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void {
-        toIGatherValueHostIds(this.condition)?.gatherValueHostIds(collection, valueHostResolver);
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
+        toIGatherValueHostNames(this.condition)?.gatherValueHostNames(collection, valueHostResolver);
     }
 
     /**
@@ -542,7 +542,7 @@ export class InputValidator implements IInputValidator {
     }
 
     protected getLogSourceText(): string {
-        return `InputValidator on ValueHost ${this._valueHost.getId()}`;
+        return `InputValidator on ValueHost ${this._valueHost.getName()}`;
     }
 }
 
@@ -550,7 +550,7 @@ export class InputValidator implements IInputValidator {
 export function createIssueFound(valueHost: IValueHost,
     validator: IInputValidator): IssueFound {
     return {
-        valueHostId: valueHost.getId(),
+        valueHostName: valueHost.getName(),
         conditionType: validator.condition.conditionType,
         severity: ValidationSeverity.Error,
         errorMessage: '',

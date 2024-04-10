@@ -9,7 +9,7 @@
  * @module Conditions/ConcreteConditions
  */
 
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
 
@@ -209,7 +209,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
             services.loggerService.log('Type mismatch. Value cannot be compared to Minimum',
-                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `RangeCondition for ${valueHost.getId()}`);
+                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `RangeCondition for ${valueHost.getName()}`);
             return ConditionEvaluateResult.Undetermined;
         }
         let upper = this.descriptor.maximum != null ?  // null/undefined
@@ -218,7 +218,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionDescript
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
             services.loggerService.log('Type mismatch. Value cannot be compared to Maximum',
-                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `RangeCondition for ${valueHost.getId()}`);
+                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `RangeCondition for ${valueHost.getName()}`);
             return ConditionEvaluateResult.Undetermined;
         }
         if (lower === ComparersResult.Equals || lower === ComparersResult.LessThan)
@@ -258,7 +258,7 @@ export interface CompareToConditionDescriptor extends TwoValueConditionDescripto
      */
     secondValue?: any;
     /**
-     * Associated with secondValue/secondValueHostId only.
+     * Associated with secondValue/secondValueHostName only.
      * Assign to a LookupKey that is associated with a DataTypeConverter.
      * Use it to convert the value prior to comparing, to handle special cases like
      * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Round"),
@@ -270,7 +270,7 @@ export interface CompareToConditionDescriptor extends TwoValueConditionDescripto
 /**
  * Compare the native datatype value against a second value.
  * The second value can be supplied in the Descriptor.Value property
- * or as another ValueHost identified in Descriptor.secondValueHostId.
+ * or as another ValueHost identified in Descriptor.secondValueHostName.
  * Subclasses implement the actual comparison operator (equals, greater than, etc)
  * Supports tokens: {CompareTo}, the value from the second value host.
  */
@@ -283,11 +283,11 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
             return ConditionEvaluateResult.Undetermined;
         let secondValue: any = undefined;
         let secondValueLookupKey: string | null = null;
-        if (this.descriptor.secondValueHostId) {
-            let vh2 = this.getValueHost(this.descriptor.secondValueHostId, valueHostResolver);
+        if (this.descriptor.secondValueHostName) {
+            let vh2 = this.getValueHost(this.descriptor.secondValueHostName, valueHostResolver);
             if (!vh2) {
-                const msg = 'secondValueHostId is unknown';
-                this.logInvalidPropertyData('secondValueHostId', msg, valueHostResolver);
+                const msg = 'secondValueHostName is unknown';
+                this.logInvalidPropertyData('secondValueHostName', msg, valueHostResolver);
                 throw new Error(msg);
             }
             secondValue = vh2.getValue();
@@ -309,7 +309,7 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
             this.descriptor.conversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
             valueHostResolver.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
-                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `${this.constructor.name} for ${valueHost.getId()}`);
+                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `${this.constructor.name} for ${valueHost.getName()}`);
             return ConditionEvaluateResult.Undetermined;
         }
         return this.compareTwoValues(comparison);
@@ -317,10 +317,10 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void {
-        super.gatherValueHostIds(collection, valueHostResolver);
-        if (this.descriptor.secondValueHostId)
-            collection.add(this.descriptor.secondValueHostId);
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
+        super.gatherValueHostNames(collection, valueHostResolver);
+        if (this.descriptor.secondValueHostName)
+            collection.add(this.descriptor.secondValueHostName);
     }
 
     public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
@@ -328,8 +328,8 @@ export abstract class CompareToConditionBase<TDescriptor extends CompareToCondit
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
         let secondValue: any = undefined;
-        if (this.descriptor.secondValueHostId) {
-            let vh = this.getValueHost(this.descriptor.secondValueHostId, valueHostResolver);
+        if (this.descriptor.secondValueHostName) {
+            let vh = this.getValueHost(this.descriptor.secondValueHostName, valueHostResolver);
             if (vh)
                 secondValue = vh.getValue();
         }
@@ -558,7 +558,7 @@ export interface AllMatchConditionDescriptor extends EvaluateChildConditionResul
 /**
  * All Children must evaluate as Match for a result of Match.
  * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
- * Any child that does not specify its Descriptor.valueHostId will have access to the ValueHost that
+ * Any child that does not specify its Descriptor.valueHostName will have access to the ValueHost that
  * contains the InputValidator.
  */
 export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatchConditionDescriptor>
@@ -584,7 +584,7 @@ export interface AnyMatchConditionDescriptor extends EvaluateChildConditionResul
 /**
  * At least one Child Condition must evaluate as Match for a result of Match.
  * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
- * Any child that does not specify its Descriptor.valueHostId will have access to the ValueHost that
+ * Any child that does not specify its Descriptor.valueHostName will have access to the ValueHost that
  * contains the InputValidator.
  */
 export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatchConditionDescriptor>
@@ -628,7 +628,7 @@ export interface CountMatchesConditionDescriptor extends EvaluateChildConditionR
  * Counts the number of child Conditions that evaluate as Match and determines if that count
  * is within a range of Descriptor.Minimum to Descriptor.Maximum.
  * When Minimum isn't supplied, it defaults to 1.
- * Any child that does not specify its Descriptor.valueHostId will have access to the ValueHost that
+ * Any child that does not specify its Descriptor.valueHostName will have access to the ValueHost that
  * contains the InputValidator.
  */
 export class CountMatchesCondition extends EvaluateChildConditionResultsBase<CountMatchesConditionDescriptor>

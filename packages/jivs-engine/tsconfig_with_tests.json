@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig_common.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./build/",
+    "rootDir": "./",
+    "declaration": false
+  },
+  "include": [ "src", "types", "tests" ], 
+  "exclude": [ "./*.js", "./*.mjs", "coverage", "docs", "build"]
+}

@@ -2,7 +2,7 @@
  * {@inheritDoc ValueHosts/Types/ValueHost }
  * @module ValueHosts/AbstractClasses/ValueHostBase
  */
-import { ValueHostId as valueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
@@ -47,12 +47,12 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
 
     //#region IValueHost
     /**
-     * Provides a unique identity for this ValueHost.
-     * Consuming systems use this ID to locate the ValueHost
-     * for which they will transfer a value, via ValueHostsManager.getValueHost(this id)
+     * Provides a unique name for this ValueHost.
+     * Consuming systems use this name to locate the ValueHost
+     * for which they will transfer a value, via ValueHostsManager.getValueHost(this name)
      */
-    public getId(): valueHostId {
-        return this.descriptor.id;
+    public getName(): valueHostName {
+        return this.descriptor.name;
     }
 
     /**
@@ -268,7 +268,7 @@ export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
     public abstract cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
     public createState(descriptor: ValueHostDescriptor): ValueHostState {
         return {
-            id: descriptor.id,
+            name: descriptor.name,
             value: descriptor.initialValue
         };
     }
