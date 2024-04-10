@@ -9,6 +9,7 @@
   "scripts": {
     "compile": "tsc",
     "test": "jest",
+    "clean": "gulp clean",    
     "bumpversion": "lerna version --no-private",
     "publish_library": "lerna publish --no-private"
   },

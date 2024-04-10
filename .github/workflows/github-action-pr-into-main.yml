@@ -1,0 +1,20 @@
+name: Enforce Pull Request from Develop
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  enforce_pull_request_from_develop:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if source branch is develop
+        run: |
+          source_branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          if [[ "$source_branch" != "develop" ]]; then
+            echo "Pull request from $source_branch to main is not allowed. Please create the pull request from develop."
+            exit 1
+          fi
+#          source_branch=$(jq -r '.pull_request.head.ref' "$GITHUB_EVENT_PATH")
