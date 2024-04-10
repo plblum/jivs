@@ -12,7 +12,7 @@ import type { TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger } from "../TestSupport/mocks";
 import { IValueHostResolver, IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
-import { ValueHostId } from '../../src/DataTypes/BasicTypes';
+import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionDescriptor } from '../../src/Interfaces/Conditions';
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
 import { ValidationSeverity, ValidateOptions } from '../../src/Interfaces/Validation';
@@ -59,7 +59,7 @@ class PublicifiedInputValidator extends InputValidator {
  * The returned ValidationManager includes two InputValueHosts with IDs "Field1" and "Field2".
  * @param descriptor - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
- * ConditionDescriptor - RequiredTextConditiontType, ValueHostId: null
+ * ConditionDescriptor - RequiredTextConditiontType, ValueHostName: null
  * errorMessage: 'Local'
  * summaryMessage: 'Summary'
  * @returns An object with all of the parts that were setup including 
@@ -80,7 +80,7 @@ function setupWithField1AndField2(descriptor?: Partial<InputValidatorDescriptor>
     let vh2 = vm.addInputValueHost('Field2', LookupKey.String, 'Label2');
     const defaultDescriptor: InputValidatorDescriptor = {
         conditionDescriptor: <RequiredTextConditionDescriptor>
-            { type: ConditionType.RequiredText, valueHostId: 'Field1' },
+            { type: ConditionType.RequiredText, valueHostName: 'Field1' },
         errorMessage: 'Local',
         summaryMessage: 'Summary'
     };
@@ -156,7 +156,7 @@ describe('InputValidator.condition', () => {
     test('Successful creation of RequiredTextCondition using ConditionDescriptor', () => {
         let config = setupWithField1AndField2({
             conditionDescriptor: <RequiredTextConditionDescriptor>
-                { type: ConditionType.RequiredText, valueHostId: null },
+                { type: ConditionType.RequiredText, valueHostName: null },
         });
 
         let condition: ICondition | null = null;
@@ -240,7 +240,7 @@ describe('InputValidator.enabler', () => {
         let config = setupWithField1AndField2({
             enablerDescriptor: <CompareToConditionDescriptor>{
                 type: ConditionType.EqualTo,
-                valueHostId: null
+                valueHostName: null
             }
         });
 
@@ -884,7 +884,7 @@ describe('InputValidator.validate', () => {
         testConditionHasIssueButDisabledReturnsNull({
             enablerDescriptor: <RequiredTextConditionDescriptor>{
                 type: ConditionType.RequiredText,
-                valueHostId: 'Field2'
+                valueHostName: 'Field2'
             }
         });
     });
@@ -892,7 +892,7 @@ describe('InputValidator.validate', () => {
         testConditionHasIssueButDisabledReturnsNull({
             enablerDescriptor: <ConditionDescriptor>{
                 // the input value is '', which causes this condition to return Undetermined
-                type: IsUndeterminedConditionType, valueHostId: 'Field2'
+                type: IsUndeterminedConditionType, valueHostName: 'Field2'
             }
         });
     });
@@ -921,7 +921,7 @@ describe('InputValidator.validate', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             enablerDescriptor: <RequiredTextConditionDescriptor>{
                 // the input value is 'ABC', which causes this condition to return Match
-                type: ConditionType.RequiredText, valueHostId: 'Field2'
+                type: ConditionType.RequiredText, valueHostName: 'Field2'
             }
         }, {}, 3);
     });
@@ -1060,7 +1060,7 @@ describe('InputValidator.validate', () => {
                     errorMessage: 'Local',
                     summaryMessage: 'Summary',
                     severity: ValidationSeverity.Error,
-                    valueHostId: 'Field1'
+                    valueHostName: 'Field1'
                 }
             });
         });
@@ -1090,14 +1090,14 @@ describe('InputValidator.validate', () => {
             }
         });
 });
-describe('InputValidator.gatherValueHostIds', () => {
-    test('RequiredTextCondition supplies its ValueHostId', () => {
+describe('InputValidator.gatherValueHostNames', () => {
+    test('RequiredTextCondition supplies its ValueHostName', () => {
         let config = setupWithField1AndField2({
             conditionDescriptor: <RequiredTextConditionDescriptor>
-                { type: ConditionType.RequiredText, valueHostId: 'Property1' },
+                { type: ConditionType.RequiredText, valueHostName: 'Property1' },
         });
-        let collection = new Set<ValueHostId>();
-        expect(() => config.inputValidator.gatherValueHostIds(collection, config.vm)).not.toThrow();
+        let collection = new Set<ValueHostName>();
+        expect(() => config.inputValidator.gatherValueHostNames(collection, config.vm)).not.toThrow();
         expect(collection.size).toBe(1);
         expect(collection.has('Property1')).toBe(true);
     });
@@ -1108,7 +1108,7 @@ describe('getValuesForTokens', () => {
         let config = setupWithField1AndField2({
             conditionDescriptor: <RequiredTextConditionDescriptor>{
                 type: ConditionType.RequiredText,
-                valueHostId: null
+                valueHostName: null
             }
         });
         config.valueHost1.setInputValue('Value1');
@@ -1131,7 +1131,7 @@ describe('getValuesForTokens', () => {
     test('RangeCondition returns 4 tokens: Label, Value, Minimum, Maximum', () => {
         let config = setupWithField1AndField2({
             conditionDescriptor: <RangeConditionDescriptor>{
-                type: ConditionType.Range, valueHostId: null,
+                type: ConditionType.Range, valueHostName: null,
                 minimum: 'A',
                 maximum: 'Z'
             }
@@ -1175,7 +1175,7 @@ describe('InputValidatorFactory.create', () => {
         const descriptor: InputValidatorDescriptor = {
             conditionDescriptor: <RequiredTextConditionDescriptor>{
                 type: ConditionType.RequiredText,
-                valueHostId: 'Field1'
+                valueHostName: 'Field1'
             },
             errorMessage: 'Local',
             summaryMessage: 'Summary'

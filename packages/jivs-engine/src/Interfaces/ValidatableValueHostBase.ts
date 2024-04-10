@@ -2,7 +2,7 @@
  * @inheritDoc ValueHosts/AbstractClasses/ValidatableValueHostBase!
  * @module ValueHosts/Types/ValidatableValueHostBase
  */
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
     type ValidateOptions, type ValidateResult, ValidationResult,
     type BusinessLogicError, type IssueFound, StatefulValidateResult
@@ -56,11 +56,11 @@ export interface IValidatableValueHostBase extends IValueHost {
     /**
      * When setValue(), setValues(), setInputValue(), or SetToUndefined occurs,
      * all other InputValueHosts get notified here so they can rerun validation
-     * when any of their Conditions specify the valueHostId that changed.
+     * when any of their Conditions specify the valueHostName that changed.
      * @param valueHostIdThatChanged 
      * @param revalidate 
      */
-    otherValueHostChangedNotification(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void;
+    otherValueHostChangedNotification(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void;
 
     /**
      * Runs validation against some of all validators.
@@ -99,8 +99,8 @@ export interface IValidatableValueHostBase extends IValueHost {
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
-     * by specifying that valueHostId in AssociatedValueHostId.
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
+     * by specifying that valueHostName in AssociatedValueHostName.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
      * @param error - An error to show.
      */
@@ -133,7 +133,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      * When 0, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
-     * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
+     * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 

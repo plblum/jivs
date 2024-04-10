@@ -1,8 +1,8 @@
 import gulp from 'gulp';
 import { deleteAsync as del } from 'del';
 
-// Define the 'clean' task
-gulp.task('clean', function () {
+export function cleanRoot()
+{
     return del([
         'typedoc_output/**/*',
         'coverage/**/*',
@@ -19,4 +19,7 @@ gulp.task('clean', function () {
         'packages/**/*.md.backup',
         'packages/**/*.tgz'
     ]);
-});
+}
+
+// Define the 'clean' task
+gulp.task('clean', cleanRoot);

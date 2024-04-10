@@ -1,7 +1,7 @@
 /**
  * Exposes values from the consuming system to the validation engine.
  * Each instance represents a single value from the consuming system.
- * Each also has an Id, used to lookup the ValueHost,
+ * Each also has an name, used to lookup the ValueHost,
  * and a Label, which is a UI friendly way to tell the user the source of a validation error.
  * There are several types of ValueHosts:
  * - InputValueHosts - reflects values from user input. 
@@ -40,7 +40,7 @@
  */
 
 
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver, IValueHostsManager } from './ValueHostResolver';
 
 /**
@@ -48,11 +48,11 @@ import { IValueHostResolver, IValueHostsManager } from './ValueHostResolver';
  */
 export interface IValueHost {
     /**
-     * Provides a unique identity for this ValueHost.
-     * Consuming systems use this ID to locate the ValueHost
-     * for which they will transfer a value, via ValueHostsManager.getValueHost(this id)
+     * Provides a unique name for this ValueHost.
+     * Consuming systems use this name to locate the ValueHost
+     * for which they will transfer a value, via ValueHostsManager.getValueHost(this name)
      */
-    getId(): ValueHostId;
+    getName(): ValueHostName;
 
     /**
      * The UI-ready label for this value, to be shown in error messages
@@ -189,10 +189,10 @@ export interface SetValueOptions {
 export interface ValueHostState {
 
     /**
-     * The ValueHostId for the associated ValueHost.
+     * The ValueHostName for the associated ValueHost.
      * Despite being in State, this property is not allowed to be changed.
      */
-    id: ValueHostId;
+    name: ValueHostName;
 
     /**
      * The value available to be evaluated by Conditions.
@@ -246,18 +246,18 @@ export interface ValueHostDescriptor {
      */
     type?: string;
     /**
-     * Provides a unique "name" for this ValueHost, within the scope of one
+     * Provides a unique name for this ValueHost, within the scope of one
      * ValueHostsManager instance.
-     * Consuming systems use this ID to locate the ValueHost
+     * Consuming systems use this name to locate the ValueHost
      * for which they will access a Value.
-     * Its up to the consuming system to define unique IDs.
+     * Its up to the consuming system to define unique names.
      * A good form is path notation through the module's properties, such as:
      * AddressInfo/StreetName
      * When a property is part of a collection/list, consider:
      * - index into the list, a simple number starting at 0. Property1/0, Property1/1
      * - Primary key when the children are data elements themselves. Property1/Key=abc123
      */
-    id: ValueHostId;
+    name: ValueHostName;
 
     /**
      * The UI-ready label for this value, to be shown in error messages
@@ -306,15 +306,15 @@ export interface ValueHostDescriptor {
 
 /**
  * Provides a service to ValueHosts, their InputValidators, and Conditions that gathers
- * all of the ValueHostIds being referenced amongst them. Generally Conditions provide all of them,
+ * all of the ValueHostNames being referenced amongst them. Generally Conditions provide all of them,
  * both from InputValidator.Condition and InputValidator.Enabler.
  */
-export interface IGatherValueHostIds {
+export interface IGatherValueHostNames {
     /**
-     * A service to provide all ValueHostIds that have been assigned to this Condition's
+     * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Descriptor.
      */
-    gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
+    gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void;
 }
 
 /**
@@ -322,10 +322,10 @@ export interface IGatherValueHostIds {
  * If not, it returns null.
  * @param source 
  */
-export function toIGatherValueHostIds(source: any): IGatherValueHostIds | null {
+export function toIGatherValueHostNames(source: any): IGatherValueHostNames | null {
     if (source && typeof source === 'object') {
-        let test = source as IGatherValueHostIds;       
-        if (test.gatherValueHostIds !== undefined)
+        let test = source as IGatherValueHostNames;       
+        if (test.gatherValueHostNames !== undefined)
             return test;
     }
     return null;

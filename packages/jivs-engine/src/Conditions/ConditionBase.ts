@@ -4,9 +4,9 @@
  * @module Conditions/AbstractClasses/ConditionBase
  */
 
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
-import type { IGatherValueHostIds, IValueHost } from '../Interfaces/ValueHost';
+import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
@@ -21,7 +21,7 @@ import { IInputValueHost } from '../Interfaces/InputValueHost';
  * Instances should be registered in the ConditionFactory.
  */
 export abstract class ConditionBase<TConditionDescriptor extends ConditionDescriptor>
-    implements IConditionCore<TConditionDescriptor>, IMessageTokenSource, IGatherValueHostIds {
+    implements IConditionCore<TConditionDescriptor>, IMessageTokenSource, IGatherValueHostNames {
     constructor(descriptor: TConditionDescriptor) {
         assertNotNull(descriptor, 'descriptor');
         this._descriptor = descriptor;
@@ -47,9 +47,9 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * @param valueHost - contains both the raw value from input field/element and the value resolved by data type.
      * The evaluate function can use either. It should always return Undetermined if the value it gets
      * is 'undefined' or no compatible with its requirements (like wrong data type).
-     * If the ConditionDescriptor.valueHostId is assigned, it will be used to retrieve
+     * If the ConditionDescriptor.valueHostName is assigned, it will be used to retrieve
      * the ValueHost from the Model, and this parameter is ignored.
-     * This parameter can be null, but the ConditionDescriptor will need to supply a ValueHostId
+     * This parameter can be null, but the ConditionDescriptor will need to supply a ValueHostName
      * to a value host instead.
      * @param valueHostResolver 
      */
@@ -84,17 +84,17 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
     protected abstract get defaultCategory(): ConditionCategory;
 
     /**
-     * A service to provide all ValueHostIds that have been assigned to this Condition's
+     * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Descriptor.
      */
-    public abstract gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
+    public abstract gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void;
 
     /**
      * Implementation for IMessageTokenSource.
      *  Conditions havea number of values that are appropriate for tokens on the ConditionDescriptor.
      *  Examples:
      *  - In RangeCondition, Minimum and Maximum properties become {Mininum} and {Maximum} tokens.
-     *  - In CompareToValueCondition, secondValueHostId property is the source for the {CompareTo} token.
+     *  - In CompareToValueCondition, secondValueHostName property is the source for the {CompareTo} token.
      *  This implementation feels like it violates Single Responsibility pattern.
      *  But keeping this feature separate from conditions greatly increases complexity.
      * @param valueHostResolver 

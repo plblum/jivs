@@ -17,14 +17,14 @@ describe('EmailAddressCondition tests', () => {
         });
         let vhDescriptor: InputValueHostDescriptor = {
             type: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationDescriptors property
-            id: 'Field1',
+            name: 'Field1',
             dataType: EmailAddressLookupKey,
             validatorDescriptors: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
         };
         let vh = vm.addValueHost(vhDescriptor, null);
         let descriptor: RegExpConditionDescriptor = {
             type: EmailAddressConditionType,
-            valueHostId: 'Field1',
+            valueHostName: 'Field1',
         };
         let testItem = new EmailAddressCondition(descriptor);
         vh.setValue('ABC@DEF.com');
@@ -55,7 +55,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         });
         let vhDescriptor: InputValueHostDescriptor = {
             type: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationDescriptors property
-            id: 'Field1',
+            name: 'Field1',
             dataType: EmailAddressLookupKey,
             validatorDescriptors: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
         };

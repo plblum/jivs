@@ -2,7 +2,7 @@
  * Expands upon ValueHost to provide the basics of validation.
  * @module ValueHosts/AbstractClasses/ValidatableValueHostBase
  */
-import { ValueHostId } from '../DataTypes/BasicTypes';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 import { deepEquals, groupsMatch } from '../Utilities/Utilities';
 import { type SetValueOptions} from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
@@ -22,7 +22,7 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
  * @param valueHostsManager - Contains all ValueHosts. This is usually ValidationManager.
  *   It is the owner of all state and provides group validation.
  * @param descriptor - The business logic supplies these rules
- *   to implement a ValueHost's Id, label, data type, validation rules,
+ *   to implement a ValueHost's name, label, data type, validation rules,
  *   and other business logic metadata. Treat as immutable.
  * @param state - State used by this InputValueHost including its validators.
  * If the caller changes any of these, discard the instance. Treat as immutable.
@@ -168,17 +168,17 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
 
     protected notifyOthersOfChange(options: SetValueOptions): void {
         toIValueHostsManager(this.valueHostsManager)?.notifyOtherValueHostsOfValueChange?.(
-            this.getId(), options.validate === true);
+            this.getName(), options.validate === true);
     }
     /**
      * When setValue(), setValues(), setInputValue(), or SetToUndefined occurs,
      * all other InputValueHosts get notified here so they can rerun validation
-     * when any of their Conditions specify the valueHostId that changed.
+     * when any of their Conditions specify the valueHostName that changed.
      * @param valueHostIdThatChanged 
      * @param revalidate 
      */
-    public otherValueHostChangedNotification(valueHostIdThatChanged: ValueHostId, revalidate: boolean): void {
-        if (valueHostIdThatChanged === this.getId())
+    public otherValueHostChangedNotification(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void {
+        if (valueHostIdThatChanged === this.getName())
             return; // mostly to call out this case isn't desirable.
         if (this.validationResult === ValidationResult.NotAttempted)
             return; // validation didn't previously run, so no change now
@@ -190,8 +190,8 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
         if (!this._associatedValueHosts) { // this is a cache that is only cleared by recreating the ValueHost
             // it assumes that the Descriptor is immutable, so there cannot be any changes to ValueHosts
             // without creating a new instance of this ValueHost
-            this._associatedValueHosts = new Set<ValueHostId>();
-            this.gatherValueHostIds(this._associatedValueHosts, this.valueHostsManager);
+            this._associatedValueHosts = new Set<ValueHostName>();
+            this.gatherValueHostNames(this._associatedValueHosts, this.valueHostsManager);
 
         }
 
@@ -209,12 +209,12 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
             }
         }
     }
-    private _associatedValueHosts: Set<ValueHostId> | null = null;
+    private _associatedValueHosts: Set<ValueHostName> | null = null;
     /**
-     * A service to provide all ValueHostIds that have been assigned to this Condition's
+     * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Descriptor.
      */
-    public abstract gatherValueHostIds(collection: Set<ValueHostId>, valueHostResolver: IValueHostResolver): void;
+    public abstract gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void;
 
     //#endregion IInputValueHost
 
@@ -294,8 +294,8 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
-     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostId,
-     * by specifying that valueHostId in AssociatedValueHostId.
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
+     * by specifying that valueHostName in AssociatedValueHostName.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
      * @param error - A business logic error to show.
      */
@@ -354,7 +354,7 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
      * When 0, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
-     * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
+     * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - ConditionType - Identifies the condition supplying the issue.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
@@ -362,7 +362,6 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
     public getIssuesFound(group?: string): Array<IssueFound> {
-        let id = this.getId();
         let list: Array<IssueFound> = [];
 
         if (this.state.issuesFound && groupsMatch(group, this.state.group)) {
@@ -378,7 +377,7 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
         if (this.businessLogicErrors) {
             for (let error of this.businessLogicErrors) {
                 list.push({
-                    valueHostId: this.getId(),
+                    valueHostName: this.getName(),
                     conditionType: error.errorCode ?? '',
                     severity: error.severity ?? ValidationSeverity.Error,
                     errorMessage: error.errorMessage,
@@ -441,7 +440,7 @@ export abstract class ValidatableValueHostBaseGenerator implements IValueHostGen
     public abstract cleanupState(state: ValidatableValueHostBaseState, descriptor: ValidatableValueHostBaseDescriptor): void;
     public createState(descriptor: ValidatableValueHostBaseDescriptor): ValidatableValueHostBaseState {
         return {
-            id: descriptor.id,
+            name: descriptor.name,
             value: descriptor.initialValue,
             validationResult: ValidationResult.NotAttempted,
             inputValue: undefined,
