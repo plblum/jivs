@@ -350,7 +350,10 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
     /**
      * Lists all issues found (error messages and supporting info) for a single InputValueHost
      * so the input field/element can show error messages and adjust its appearance.
-     * @returns An array of 0 or more details of issues found. Each contains:
+     * @returns An array of 0 or more details of issues found. 
+     * When 0, there are no issues and the data is valid. If there are issues, when all
+     * have severity = warning, the data is also valid. Anything else means invalid data.
+     * Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - ConditionType - Identifies the condition supplying the issue.
