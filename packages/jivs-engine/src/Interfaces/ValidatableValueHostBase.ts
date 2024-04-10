@@ -1,6 +1,6 @@
 /**
  * @inheritDoc ValueHosts/AbstractClasses/ValidatableValueHostBase!
- * @module ValueHosts/Types/InputValueHostBase
+ * @module ValueHosts/Types/ValidatableValueHostBase
  */
 import { ValueHostId } from '../DataTypes/BasicTypes';
 import {
@@ -129,7 +129,10 @@ export interface IValidatableValueHostBase extends IValueHost {
      * A list of all issues found.
      * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
      * the same group (case insensitive match).
-     * @returns An array of 0 or more details of issues found. Each contains:
+     * @returns An array of 0 or more details of issues found. 
+     * When 0, there are no issues and the data is valid. If there are issues, when all
+     * have severity = warning, the data is also valid. Anything else means invalid data.
+     * Each contains:
      * - Id - The ID for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.

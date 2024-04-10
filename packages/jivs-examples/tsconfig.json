@@ -2,9 +2,9 @@
   "extends": "../../tsconfig_common.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "./build",
-    "rootDir": "./src",
-    "declarationDir": "./build/types",    
+    "outDir": "./build/",
+    "rootDir": "./src/",
+    "declarationDir": "./build/",    
     "paths": {
       "@plblum/jivs-engine": ["../jivs-engine"]
     }    

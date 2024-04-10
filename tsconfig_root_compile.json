@@ -9,7 +9,7 @@
         "baseUrl": ".",
         "outDir": "./global_build",
         "rootDir": "./",
- //       "declarationDir": "./build/types",    
+        "declarationDir": "./global_build/types",    
         "paths": {
           "@plblum/jivs-engine": ["./packages/jivs-engine"]
         }    
