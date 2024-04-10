@@ -12,7 +12,7 @@
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import type { ILoggerService } from '../Interfaces/LoggerService';
 import type { IInputValidatorFactory } from '../Interfaces/InputValidator';
-import type { IValidationServices } from '../Interfaces/ValidationServices';
+import { ServiceName, toIServicesAccessor, type IValidationServices } from '../Interfaces/ValidationServices';
 import type { IConditionFactory } from '../Interfaces/Conditions';
 import { IValueHostFactory } from '../Interfaces/ValueHost';
 import { InputValidatorFactory } from '../ValueHosts/InputValidator';
@@ -40,6 +40,42 @@ export class ValidationServices implements IValidationServices {
     constructor() {
 
     }
+//#region IServices
+    /**
+     * Returns the service by its name identifier.
+     * Returns null if the name identifier is unregistered.
+     * @param serviceName - Will be a case insensitive match
+     */
+    public getService<T>(serviceName: string): T | null
+    {
+        assertNotNull(serviceName, 'serviceName');
+        serviceName = serviceName.toLowerCase();
+        return this._services[serviceName] ?? null;
+    }
+
+    /**
+     * Adds or replaces a service.
+     * If the supplied service implements IServicesAccessor, its own
+     * services property is assigned to this ValidationServices instance.
+     * @param serviceName - name that identifies this service and
+     * will be used in getService().
+     * @param service - the service. It can be a class, object, or primitive.
+     * Will be a case insensitive match
+     */    
+    public setService(serviceName: string, service: any): void
+    {
+        assertNotNull(serviceName, 'serviceName');
+        assertNotNull(service, 'service');
+        serviceName = serviceName.toLowerCase();
+        this._services[serviceName] = service;
+        let sa = toIServicesAccessor(service);
+        if (sa)
+            sa.services = this;
+    }
+
+    private _services: { [serviceName: string]: any } = {};
+    //#endregion IServices
+    
     /**
      * The culture shown to the user in the app. Its the ISO language-region format.
        This value is the starting point to search through localizations.
@@ -57,32 +93,29 @@ export class ValidationServices implements IValidationServices {
      * Factory to create Condition objects.
      */
     public get conditionFactory(): IConditionFactory {
-        if (!this._conditionFactory)
+        let factory = this.getService<IConditionFactory>(ServiceName.conditionFactory);
+        if (!factory)
             throw new CodingError('Must assign ValidationServices.ConditionFactory.');
-        return this._conditionFactory;
+        return factory;
     }
     public set conditionFactory(factory: IConditionFactory) {
-        assertNotNull(factory, 'factory');
-        this._conditionFactory = factory;
+        this.setService(ServiceName.conditionFactory, factory);
     }
-    private _conditionFactory: IConditionFactory | null = null;
 
     /**
      * Service for formatting data types used within tokens of error messages
     *  using {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
      */
     public get dataTypeFormatterService(): IDataTypeFormatterService {
-        if (!this._dataTypeFormatterService)
+        let service = this.getService<IDataTypeFormatterService>(ServiceName.formatter);
+        if (!service)
             throw new CodingError('Must assign ValidationServices.dataTypeFormatterService.');
 
-        return this._dataTypeFormatterService;
+        return service;
     }
     public set dataTypeFormatterService(service: IDataTypeFormatterService) {
-        assertNotNull(service, 'service');
-        this._dataTypeFormatterService = service;
-        service.services = this;
+        this.setService(ServiceName.formatter, service);
     }
-    private _dataTypeFormatterService: IDataTypeFormatterService | null = null;    
     
     /**
      * Service for identifing the Data Type Lookup Key associated with a data type
@@ -90,16 +123,15 @@ export class ValidationServices implements IValidationServices {
      */
 
     public get dataTypeIdentifierService(): IDataTypeIdentifierService {
-        if (!this._dataTypeIdentifierService)
+        let service = this.getService<IDataTypeIdentifierService>(ServiceName.identifier);
+        if (!service)
             throw new CodingError('Must assign ValidationServices.dataTypeIdentifierService.');
 
-        return this._dataTypeIdentifierService;
+        return service;
     }
     public set dataTypeIdentifierService(service: IDataTypeIdentifierService) {
-        assertNotNull(service, 'service');
-        this._dataTypeIdentifierService = service;
-    }
-    private _dataTypeIdentifierService: IDataTypeIdentifierService | null = null;    
+        this.setService(ServiceName.identifier, service);
+    } 
     
     /**
      * Service for changing the original value into 
@@ -107,49 +139,44 @@ export class ValidationServices implements IValidationServices {
      * using {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
      */
     public get dataTypeConverterService(): IDataTypeConverterService {
-        if (!this._dataTypeConverterService)
+        let service = this.getService<IDataTypeConverterService>(ServiceName.converter);
+        if (!service)
             throw new CodingError('Must assign ValidationServices.dataTypeConverterService.');
 
-        return this._dataTypeConverterService;
+        return service;
     }
     public set dataTypeConverterService(service: IDataTypeConverterService) {
-        assertNotNull(service, 'service');
-        this._dataTypeConverterService = service;
-        service.services = this;
+        this.setService(ServiceName.converter, service);
     }
-    private _dataTypeConverterService: IDataTypeConverterService | null = null;
+
     /**
      * Service for changing the comparing two values
      * using {@link DataTypes/Types/IDataTypeComparer!IDataTypeComparer | IDataTypeComparer} instances.
      */
     public get dataTypeComparerService(): IDataTypeComparerService {
-        if (!this._dataTypeComparerService)
+        let service = this.getService<IDataTypeComparerService>(ServiceName.comparer);
+        if (!service)
             throw new CodingError('Must assign ValidationServices.dataTypeComparerService.');
 
-        return this._dataTypeComparerService;
+        return service;
     }
     public set dataTypeComparerService(service: IDataTypeComparerService) {
-        assertNotNull(service, 'service');
-        this._dataTypeComparerService = service;
-        service.services = this;
+        this.setService(ServiceName.comparer, service);
     }
-    private _dataTypeComparerService: IDataTypeComparerService | null = null;
     /**
      * Service that supports automatic generation of Conditions for the Data Type Check
      * using {@link DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator | IDataTypeCheckGenerator} instances.
      */
     public get autoGenerateDataTypeCheckService(): IAutoGenerateDataTypeCheckService {
-        if (!this._autoGenerateDataTypeCheckService)
+        let service = this.getService<IAutoGenerateDataTypeCheckService>(ServiceName.autoGenerator);
+        if (!service)
             throw new CodingError('Must assign ValidationServices.autoGenerateDataTypeCheckService.');
 
-        return this._autoGenerateDataTypeCheckService;
+        return service;
     }
     public set autoGenerateDataTypeCheckService(service: IAutoGenerateDataTypeCheckService) {
-        assertNotNull(service, 'service');
-        this._autoGenerateDataTypeCheckService = service;
-        service.services = this;
+        this.setService(ServiceName.autoGenerator, service);
     }
-    private _autoGenerateDataTypeCheckService: IAutoGenerateDataTypeCheckService | null = null;
 
     /**
      * Service to text localization specific, effectively mapping
@@ -162,31 +189,32 @@ export class ValidationServices implements IValidationServices {
      */
     public get textLocalizerService(): ITextLocalizerService
     {
-        if (!this._textLocalizerService)
-            this._textLocalizerService = new TextLocalizerService();
-        return this._textLocalizerService;
+        let service = this.getService<ITextLocalizerService>(ServiceName.textLocalizer);
+        if (!service) {
+            service = new TextLocalizerService();
+            this.setService(ServiceName.textLocalizer, service);
+        }
+        return service;
     }
     public set textLocalizerService(service: ITextLocalizerService)
     {
-        this._textLocalizerService = service;
+        this.setService(ServiceName.textLocalizer, service);
     }
-    private _textLocalizerService: ITextLocalizerService | null = null; 
 
     /**
      * Service to get the IMessageTokenResolver instance that replaces
      * tokens in messages.
      */
     public get messageTokenResolverService(): IMessageTokenResolverService {
-        if (!this._messageTokenResolverService)
+        let service = this.getService<IMessageTokenResolverService>(ServiceName.messageTokenResolver);
+        if (!service)
             throw new CodingError('Must assign ValidationServices.MessageTokenResolverService.');
 
-        return this._messageTokenResolverService;
+        return service;
     }
     public set messageTokenResolverService(service: IMessageTokenResolverService) {
-        assertNotNull(service, 'service');
-        this._messageTokenResolverService = service;
+        this.setService(ServiceName.messageTokenResolver, service);
     }
-    private _messageTokenResolverService: IMessageTokenResolverService | null = null;
 
     /**
      * Service to get the ILogger instance that replaces
@@ -194,15 +222,16 @@ export class ValidationServices implements IValidationServices {
      * Defaults to using ConsoleLoggerService.
      */
     public get loggerService(): ILoggerService {
-        if (!this._loggerService)
-            this._loggerService = new ConsoleLoggerService();
-        return this._loggerService;
+        let service = this.getService<ILoggerService>(ServiceName.logger);
+        if (!service) {
+            service = new ConsoleLoggerService();
+            this.setService(ServiceName.logger, service);
+        }
+        return service;
     }
     public set loggerService(service: ILoggerService) {
-        assertNotNull(service, 'service');
-        this._loggerService = service;
+        this.setService(ServiceName.logger, service);
     }
-    private _loggerService: ILoggerService | null = null;
 
     //#region ValueHostFactory
     /**
@@ -210,18 +239,17 @@ export class ValidationServices implements IValidationServices {
      * It supplies a default if not setup by the user.
      */
     public get valueHostFactory(): IValueHostFactory {
-        if (!this._valueHostFactory) {
-            let factory = new ValueHostFactory();
+        let service = this.getService<IValueHostFactory>(ServiceName.valueHostFactory);
+        if (!service) {
+            let factory = service = new ValueHostFactory();
             registerStandardValueHostGenerators(factory);
-            this._valueHostFactory = factory;
+            this.setService(ServiceName.valueHostFactory, factory);
         }
-        return this._valueHostFactory;
+        return service;
     }
     public set valueHostFactory(factory: IValueHostFactory) {
-        assertNotNull(factory, 'factory');
-        this._valueHostFactory = factory;
+        this.setService(ServiceName.valueHostFactory, factory);
     }
-    private _valueHostFactory: IValueHostFactory | null = null;
 
     //#endregion ValueHostFactory
 
@@ -231,15 +259,16 @@ export class ValidationServices implements IValidationServices {
      * It supplies a default if not setup by the user.
      */
     public get inputValidatorFactory(): IInputValidatorFactory {
-        if (!this._inputValidatorFactory)
-            this._inputValidatorFactory = new InputValidatorFactory();
-        return this._inputValidatorFactory;
+        let service = this.getService<IInputValidatorFactory>(ServiceName.inputValidatorFactory);
+        if (!service) {
+            service = new InputValidatorFactory();
+            this.setService(ServiceName.inputValidatorFactory, service);
+        }
+        return service;
     }
     public set inputValidatorFactory(factory: InputValidatorFactory) {
-        assertNotNull(factory, 'factory');
-        this._inputValidatorFactory = factory;
+        this.setService(ServiceName.inputValidatorFactory, factory);
     }
-    private _inputValidatorFactory: IInputValidatorFactory | null = null;
 
     //#endregion InputValidatorFactory        
 }
