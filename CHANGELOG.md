@@ -1,3 +1,8 @@
+## 0.11.0
+- **Breaking API change.** Renamed LessThanOrEqualTo and GreaterThanOrEqualTo to 
+LessThanOrEqual and GreaterThanOrEqual.
+- **Major feature.** Fluent syntax available for configuring ValueHosts and their validators.
+  `configInput("FieldName").required().regExp("expression", {}, "error message")`
 ## 0.9.8
 - **Breaking API change.** ValueHosts use "name" instead of "id" to provide their identifier, in preparation for supporting paths (hierarchy of ValueHosts).
   IValueHost.getId() -> IValueHost.getName()

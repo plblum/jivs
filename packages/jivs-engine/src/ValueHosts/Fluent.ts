@@ -43,11 +43,9 @@
  *    // finish the conditionDescriptor from parameters supplied.
  *       if (parameter != null)
  *          condDescriptor.propertyName = parameter;
- *       let ivDescriptor: InputValidatorDescriptor = inputValidationParameters ?
- *           { ...inputValidatorParameters as InputValidatorDescriptor } :
- *           { errorMessage: null };
+
  *       let self = this as FluentValidationRule;
- *       self.addValidationRule('Your Condition Type', condDescriptor, ivDescriptor);
+ *       self.addValidationRule('Your Condition Type', condDescriptor, errorMessage, inputValidatorParameters);
  *       return self;
  *   }
  *   throw new FluentSyntaxRequiredError();
@@ -60,7 +58,7 @@
  *       fnname([any condition properties the user must provide], 
  *          conditionDescriptor: ConditionDescriptor, 
  *          errorMessage: string, 
- *          inputValidationParameters? : FluentInputValidationDescriptor) : FluentValidationRule
+ *          inputValidationParameters? : FluentInputValidatorDescriptor) : FluentValidationRule
  *    }
  * }
  * FluentValidationRule.prototype.fnname = fnname;
@@ -70,7 +68,7 @@
  *     expression: string, caseInsensitive: boolean,
  *     conditionDescriptor: RegExpConditionDescriptor, 
  *     errorMessage: string, 
- *     inputValidationParameters? : FluentInputValidationDescriptor) : FluentValidationRule
+ *     inputValidatorParameters? : FluentInputValidatorDescriptor) : FluentValidationRule
  * {
  *   if (this instanceof FluentValidationRule) {
  *       let condDescriptor = { ...conditionDescriptor as RegExpConditionDescriptor };
@@ -78,19 +76,15 @@
  *       if (expression != null)
  *          condDescriptor.expressionAsString = expression;
  *       if (caseInsensitive)
- *          condDescriptor.caseInsensitive = true;
- *       let ivDescriptor: InputValidatorDescriptor = inputValidationParameters ?
- *           { ...inputValidatorParameters as InputValidatorDescriptor } :
- *           { errorMessage: null };
- *       if (errorMessage)
- *          ivDescriptor.errorMessage = errorMessage;
+ *          condDescriptor.ignoreCase = true;
+
  *       let self = this as FluentValidationRule;
- *       self.addValidationRule('Your Condition Type', condDescriptor, ivDescriptor);
+ *       self.addValidationRule(ConditionType.RegExp, condDescriptor, errorMessage, inputValidatorParameters);
  *       return self;
  *   }
  *   throw new FluentSyntaxRequiredError();
  * }
- * declare module "../../@plblum/jivs-engine/build/src/conditions/concretecondition"
+ * declare module "../../@plblum/jivs-engine/build/src/valueHosts/fluent"
  * {
  *    export interface FluentValidationRule
  *    {
@@ -103,7 +97,7 @@
  * }
  * FluentValidationRule.prototype.regExp = regExp;
  * 
- * @module ValueHosts/ConcreteClasses/Fluent
+ * @module ValueHosts/Fluent
  */
 
 import { InputValidatorDescriptor } from './../Interfaces/InputValidator';

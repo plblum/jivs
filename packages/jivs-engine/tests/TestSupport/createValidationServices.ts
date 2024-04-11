@@ -1,8 +1,8 @@
 import {
     DataTypeCheckCondition, RequiredTextCondition, RegExpCondition, RangeCondition, CompareToConditionDescriptor,
     EqualToCondition, StringLengthConditionDescriptor, StringLengthCondition, AllMatchCondition, AllMatchConditionDescriptor, AnyMatchCondition,
-    AnyMatchConditionDescriptor, CountMatchesCondition, CountMatchesConditionDescriptor, GreaterThanCondition, GreaterThanOrEqualToCondition, LessThanCondition,
-    LessThanOrEqualToCondition, NotEqualToCondition, NotNullCondition, NotNullConditionDescriptor, StringNotEmptyCondition, StringNotEmptyConditionDescriptor
+    AnyMatchConditionDescriptor, CountMatchesCondition, CountMatchesConditionDescriptor, GreaterThanCondition, GreaterThanOrEqualCondition, LessThanCondition,
+    LessThanOrEqualCondition, NotEqualToCondition, NotNullCondition, NotNullConditionDescriptor, StringNotEmptyCondition, StringNotEmptyConditionDescriptor
 } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -88,9 +88,9 @@ export function registerConditions(cf: ConditionFactory): void
     cf.register<CompareToConditionDescriptor>
         (ConditionType.LessThan, (descriptor) => new LessThanCondition(descriptor));
     cf.register<CompareToConditionDescriptor>
-        (ConditionType.GreaterThanOrEqualTo, (descriptor) => new GreaterThanOrEqualToCondition(descriptor));
+        (ConditionType.GreaterThanOrEqual, (descriptor) => new GreaterThanOrEqualCondition(descriptor));
     cf.register<CompareToConditionDescriptor>
-        (ConditionType.LessThanOrEqualTo, (descriptor) => new LessThanOrEqualToCondition(descriptor));
+        (ConditionType.LessThanOrEqual, (descriptor) => new LessThanOrEqualCondition(descriptor));
     cf.register<StringLengthConditionDescriptor>
         (ConditionType.StringLength, (descriptor) => new StringLengthCondition(descriptor));
     cf.register<AllMatchConditionDescriptor>
@@ -131,9 +131,9 @@ export function registerAllConditions(cf: ConditionFactory): void
     cf.register<CompareToConditionDescriptor>
         (ConditionType.LessThan, (descriptor) => new LessThanCondition(descriptor));
     cf.register<CompareToConditionDescriptor>
-        (ConditionType.GreaterThanOrEqualTo, (descriptor) => new GreaterThanOrEqualToCondition(descriptor));
+        (ConditionType.GreaterThanOrEqual, (descriptor) => new GreaterThanOrEqualCondition(descriptor));
     cf.register<CompareToConditionDescriptor>
-        (ConditionType.LessThanOrEqualTo, (descriptor) => new LessThanOrEqualToCondition(descriptor));
+        (ConditionType.LessThanOrEqual, (descriptor) => new LessThanOrEqualCondition(descriptor));
     cf.register<StringLengthConditionDescriptor>
         (ConditionType.StringLength, (descriptor) => new StringLengthCondition(descriptor));
     cf.register<AllMatchConditionDescriptor>
