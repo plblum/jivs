@@ -1,3 +1,4 @@
+import { IInputValueHostDescriptorResolver } from './../Interfaces/InputValueHost';
 /**
  * ValidationManager is the central object for using this system.
  * It is where you describe the shape of your inputs and their validation rules.
@@ -14,7 +15,7 @@ import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } 
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from './InputValueHost';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IInputValueHost, toIInputValueHostDescriptorResolver } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from './ValidatableValueHostBase';
 
 
@@ -108,8 +109,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
             this._state.stateChangeCounter = 0;
         this._lastValueHostStates = internalConfig.savedValueHostStates ?? [];
         let descriptors = internalConfig.valueHostDescriptors ?? [];
-        for (let descriptor of descriptors) {
-            this.addValueHost(descriptor, null);
+        for (let item of descriptors) {
+            let resolver = toIInputValueHostDescriptorResolver(item);
+            if (resolver)
+                this.addValueHost(resolver.descriptor, null);
+            else
+                this.addValueHost(item as ValueHostDescriptor, null);
         }
     }
     protected get config(): ValidationManagerConfig
