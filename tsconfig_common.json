@@ -35,6 +35,9 @@
     // "noUnusedParameters": true,            /* Report errors on unused parameters. */
     "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
     "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */,      
-    "allowUnreachableCode": true
+    "allowUnreachableCode": true,
+
+    /* JSDoc */
+    "stripInternal": true // remove JSDoc output where comments contain @internal
   }
 }

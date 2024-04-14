@@ -30,83 +30,69 @@
  *   adding it to the array of ConditionDescriptors hosted in EvaluateChildConditionResultsDescriptor.
  * 
  * ## Creating your own fluent functions
- * Fluent functions should look like this:
+ * Create two functions to support chaining to configInfo() and configChildren().
+ * They are not exported, as they are used to modify the prototypes of other classes.
+ * 
+ * Fluent functions should look like this: 
  * @example
- * export function fnname([any condition properties the user must provide], 
- *     conditionDescriptor?: Omit<ConditionDescriptor, 'type' | 'valueHostName'>, 
- *     errorMessage?: string | null, // all InputValidatorDescriptor related parameters should be optional due to function reuse with FluentConditionCollector
- *     inputValidatorParameters? : FluentInputValidationDescriptor) : FluentCollectorBase
- * {
- *  // ensure there is a conditionDescriptor, even if empty
- *    conditionDescriptor = (conditionDescriptor ? { ...conditionDescriptor } : {}) as ConditionDescriptor;
- *    // finish the conditionDescriptor from parameters supplied.
- *    if (parameter != null)
- *       conditionDescriptor.propertyName = parameter;
- * // send it along to finishFluent and return its result
- *    return finishFluent('Your Condition Type', conditionDescriptor, errorMessage, inputValidatorParameters);
+ * export type FluentRegExpConditionDescriptor = Omit<RegExpConditionDescriptor, 'type' | 'valueHostName' | 'expressionAsString' | 'expression' | 'ignoreCase'>;
+ * 
+ * function _genCDRegExp(
+ *     expression: RegExp | string, ignoreCase?: boolean | null,
+ *     conditionDescriptor?: FluentRegExpConditionDescriptor | null): RegExpConditionDescriptor {
+ *     let condDescriptor: RegExpConditionDescriptor = (conditionDescriptor ? { ...conditionDescriptor } : {}) as RegExpConditionDescriptor;
+ *     if (expression != null)
+ *         if (expression instanceof RegExp)
+ *             condDescriptor.expression = expression;
+ *         else 
+ *             condDescriptor.expressionAsString = expression;
+ *     if (ignoreCase != null)
+ *         condDescriptor.ignoreCase = ignoreCase;
+ *     return condDescriptor as RegExpConditionDescriptor;
  * }
- * declare module "../../path to the condition class itself"
+ * function regExp_forConfigInput(
+ *     expression: RegExp | string, ignoreCase?: boolean | null,
+ *     conditionDescriptor?: FluentRegExpConditionDescriptor | null,
+ *     errorMessage?: string | null,
+ *     inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+ *     return finishFluentValidatorCollector(this,
+ *         ConditionType.RegExp, _genCDRegExp(expression, ignoreCase, conditionDescriptor),
+ *         errorMessage, inputValidatorParameters);
+ * }
+ * function regExp_forConfigChildren(
+ *     valueHostName: ValueHostName | null,
+ *     expression: RegExp | string, ignoreCase?: boolean | null,
+ *     conditionDescriptor?: FluentRegExpConditionDescriptor | null): FluentConditionCollector {
+ *     return finishFluentConditionCollector(this,
+ *         ConditionType.RegExp, valueHostName, _genCDRegExp(expression, ignoreCase, conditionDescriptor));
+ * }
+ * 
+ * declare module "../../@plblum/jivs-engine/build/src/ValueHosts/fluent"
  * {
  *    export interface FluentValidatorCollector
  *    {
- * // same definition as the actual function
- *       fnname([any condition properties the user must provide], 
- *          conditionDescriptor: ConditionDescriptor, 
+ * // same definition as the actual function, except use the name the user should enter in chaining
+ *       regExp(expression: RegExp | string, ignoreCase?: boolean | null,
+ *          conditionDescriptor?: FluentRegExpConditionDescriptor | null, 
  *          errorMessage?: string | null, 
- *          inputValidationParameters? : FluentInputValidatorDescriptor) : FluentCollectorBase
+ *          inputValidatorParameters : FluentInputValidationDescriptor) : FluentValidatorCollector
  *    }
  *    export interface FluentConditionCollector
  *    {
- * // similar definition to the actual function. Omit the errorMessage and inputValidatorParameters parameters
- *       fnname([any condition properties the user must provide], 
- *          conditionDescriptor: ConditionDescriptor) : FluentCollectorBase
+ * // same definition as the actual function, except use the name the user should enter in chaining
+ *       regExp(expression: RegExp | string, ignoreCase?: boolean | null,
+ *          conditionDescriptor?: FluentRegExpConditionDescriptor) : FluentConditionCollector
  *    } 
  * }
- * FluentValidationRule.prototype.fnname = fnname;
+ * FluentValidatorCollector.prototype.regExp = regExp_forConfigInput;
+ * FluentConditionCollector.prototype.regExp = regExp_forConfigChildren;
  * 
- * @example
- * export function regExp(
- *    expression: string | null, ignoreCase?: boolean,
- *    conditionDescriptor?: Omit<RegExpConditionDescriptor, 'type'>,
- *    errorMessage?: string | null,
- *    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentCollectorBase 
- * {
- *    conditionDescriptor = (conditionDescriptor ? { ...conditionDescriptor  } : {}) as RegExpConditionDescriptor;
- *    if (expression != null)
- *        conditionDescriptor.expressionAsString = expression;
- *    if (ignoreCase === true)
- *        conditionDescriptor.ignoreCase = true;
- *    return finishFluent(this, ConditionType.RegExp, conditionDescriptor, errorMessage, inputValidatorParameters);
- * }
- * declare module "../../@plblum/jivs-engine/build/src/valueHosts/fluent"
- * {
- *    export interface FluentValidatorCollector
- *    {
- * // same definition as the actual function
- *       regExp(expression: string | null, ignoreCase?: boolean,
- *          conditionDescriptor?: Omit<RegExpConditionDescriptor, 'type'>, 
- *          errorMessage?: string | null, 
- *          inputValidatorParameters : FluentInputValidationDescriptor) : FluentCollectorBase
- *    }
- *    export interface FluentConditionCollector
- *    {
- * // similar definition to the actual function. Omit the errorMessage and inputValidatorParameters parameters
- * // Otherwise, leave the parameters identical to the actual function.
- *       regExp(expression: string | null, ignoreCase?: boolean,
- *          conditionDescriptor?: Omit<RegExpConditionDescriptor, 'type'>) : FluentCollectorBase
- *    } 
- * }
- * FluentValidatorCollector.prototype.regExp = regExp;
- * FluentConditionCollector.prototype.regExp = regExp;
- * 
+ * @module ValueHosts/Fluent
  * ## Switching to a different condition library
  *  
  * Jivs is designed to allow a replacement to its own conditions. Thus the fluent system
  * allows replacing the FluentValidatorCollector and FluentConditionCollector classes with your own.
  * Just register it with fluentFactory.singleton.register().
- * 
- * 
- * @module ValueHosts/Fluent
  */
 
 import { InputValidatorDescriptor } from './../Interfaces/InputValidator';
@@ -409,52 +395,55 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
 /**
  * Call from within a fluent function once you have all parameters fully setup.
  * It will complete the setup.
- * @param self - should be a FluentCollectorBase. Fluent function expects to pass its value
- * of 'this' here. However, its possible self is not FluentCollectorBase.
+ * @param thisFromCaller 
+ * Should be a FluentValidatorCollector. Fluent function expects to pass its value
+ * of 'this' here. However, its possible self is not FluentValidatorCollector.
  * We'll throw an exception here in that case.
  * @param conditionType 
  * @param conditionDescriptor 
  * @param errorMessage 
  * @param inputValidatorParameters 
- * @returns 
+ * @returns The same instance passed into the first parameter to allow for chaining.
  */
-export function finishFluentValidatorCollector(fluentCollectorBase: any, 
+export function finishFluentValidatorCollector(thisFromCaller: any, 
     conditionType: string | null,
     conditionDescriptor: Partial<ConditionDescriptor>,
     errorMessage: string | null | undefined,
-    inputValidatorParameters: FluentInputValidatorDescriptor | undefined | null): FluentCollectorBase
+    inputValidatorParameters: FluentInputValidatorDescriptor | undefined | null): FluentValidatorCollector
 {
-    if (fluentCollectorBase instanceof FluentValidatorCollector) {
-        fluentCollectorBase.add(conditionType, conditionDescriptor, errorMessage, inputValidatorParameters);
-        return fluentCollectorBase;
+    if (thisFromCaller instanceof FluentValidatorCollector) {
+        thisFromCaller.add(conditionType, conditionDescriptor, errorMessage, inputValidatorParameters);
+        return thisFromCaller;
     }
     throw new FluentSyntaxRequiredError();
 }
 /**
  * Call from within a fluent function once you have all parameters fully setup.
  * It will complete the setup.
- * @param self - should be a FluentCollectorBase. Fluent function expects to pass its value
- * of 'this' here. However, its possible self is not FluentCollectorBase.
+ * @param thisFromCaller 
+ * Should be a FluentConditionCollector. Fluent function expects to pass its value
+ * of 'this' here. However, its possible self is not FluentConditionCollector.
  * We'll throw an exception here in that case.
  * @param conditionType 
- * @param valueHostName - fluent function should supply this as a parameter
+ * @param valueHostName 
+ * Fluent function should supply this as a parameter
  * so long as its ConditionDescriptor implements OneValueConditionDescriptor.
  * Since these conditions are children of another, they are more likely to
  * need the valueHostName than those in FluentValidatorCollectors.
  * @param conditionDescriptor 
- * @returns 
+ * @returns The same instance passed into the first parameter to allow for chaining.
  */
-export function finishFluentConditionCollector(fluentCollectorBase: any, 
+export function finishFluentConditionCollector(thisFromCaller: any, 
     conditionType: string | null,
     valueHostName: ValueHostName | null,
-    conditionDescriptor: Partial<ConditionDescriptor>): FluentCollectorBase
+    conditionDescriptor: Partial<ConditionDescriptor>): FluentConditionCollector
 {
-    if (fluentCollectorBase instanceof FluentConditionCollector) {
+    if (thisFromCaller instanceof FluentConditionCollector) {
         if (valueHostName)
             (conditionDescriptor as OneValueConditionDescriptor).valueHostName = valueHostName;
 
-        fluentCollectorBase.add(conditionType, conditionDescriptor);
-        return fluentCollectorBase;
+        thisFromCaller.add(conditionType, conditionDescriptor);
+        return thisFromCaller;
     }    
     throw new FluentSyntaxRequiredError();
 }
