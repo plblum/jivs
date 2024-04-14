@@ -18,6 +18,7 @@ Jivs is a suite of libraries, built around its core, Jivs-engine.
 Jivs-engine is just the tooling to evaluate values and return a list of
 issues found. 
 > That is the essence of validation! 
+
 Even something sounding that simple can involve a lot of features and behaviors.
 That's where Jivs starts to differentiate itself.
 
@@ -476,7 +477,7 @@ let validationManager = new ValidationManager(config);
 ### Fluent syntax
 If you are typing in those Descriptor objects, you are probably not happy. Descriptor objects are meant for code that convert your business logic objects into them.
 
-Jivs comes with a fluent syntax to simplify the configuration work.
+Jivs comes with a fluent syntax to simplify the manual configuration work.
 Here's how the example with FirstName and LastName properties looks with this syntax.
 ```ts
 let firstNameConfig = configInput('FirstName', 'String', { label: 'First Name' })
