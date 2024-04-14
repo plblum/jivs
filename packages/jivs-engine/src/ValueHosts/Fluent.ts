@@ -309,7 +309,7 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
             ivDesc.conditionDescriptor = { ...conditionDescriptor as ConditionDescriptor };
         if (conditionType && ivDesc.conditionDescriptor)
             ivDesc.conditionDescriptor.type = conditionType;
-        this.descriptor.validatorDescriptors?.push(ivDesc as InputValidatorDescriptor);
+        this.descriptor.validatorDescriptors!.push(ivDesc as InputValidatorDescriptor);
     }
 }
 
@@ -388,7 +388,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
         assertNotNull(conditionDescriptor, 'conditionDescriptor');
         if (conditionType)
             conditionDescriptor.type = conditionType;
-        this.descriptor.conditionDescriptors?.push(conditionDescriptor as ConditionDescriptor);
+        this.descriptor.conditionDescriptors!.push(conditionDescriptor as ConditionDescriptor);
     }
 }
 
@@ -538,7 +538,7 @@ export class FluentSyntaxRequiredError extends Error
 export declare interface FluentValidatorCollector
 {
     customRule(conditionCreator: (requester: InputValidatorDescriptor) => ICondition | null,
-        errorMessage: string | null,
+        errorMessage?: string | null,
         inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector | InputValidatorDescriptor;
 }
 

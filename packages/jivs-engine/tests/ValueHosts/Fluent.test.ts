@@ -460,8 +460,22 @@ describe('customRule', () => {
         expect(descriptor.validatorDescriptors!.length).toBe(1);
         expect(descriptor.validatorDescriptors![0].conditionDescriptor).toBeNull();
         expect(descriptor.validatorDescriptors![0].conditionCreator).not.toBeNull();
-
+        expect(descriptor.validatorDescriptors![0].errorMessage).toBe('Error');
+        expect(descriptor.validatorDescriptors![0].summaryMessage).toBe('Summary');        
     });
+    test('Provide a valid function without errorMessage or inputValidatorParameters and get back a FluentValidatorCollector with inputValidatorDescriptor.conditionCreator setup, and conditionDescriptor null', () => {
+        let testItem = configInput('Field1').customRule((requester) =>
+            {
+                return new RequiredTextCondition({ type: ConditionType.RequiredText, valueHostName: null });
+            });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let descriptor = (testItem as FluentValidatorCollector).descriptor;
+        expect(descriptor.validatorDescriptors!.length).toBe(1);
+        expect(descriptor.validatorDescriptors![0].conditionDescriptor).toBeNull();
+        expect(descriptor.validatorDescriptors![0].conditionCreator).not.toBeNull();
+        expect(descriptor.validatorDescriptors![0].errorMessage).toBeUndefined();
+        expect(descriptor.validatorDescriptors![0].summaryMessage).toBeUndefined();    
+    });    
 
     test('Stand-alone call throws', () => {
         expect(() => customRule((requester) => {

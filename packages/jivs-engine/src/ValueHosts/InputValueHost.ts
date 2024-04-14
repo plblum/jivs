@@ -20,6 +20,7 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
+import { FluentValidatorCollector } from './Fluent';
 
 
 /**
@@ -380,6 +381,19 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
         }
         this.descriptor.validatorDescriptors.push(descriptor);
     }
+    /**
+     * Alternative way to add validators (see @link addValidator)
+     * where you chain validation rules to this function like this:
+     * `vh.configValidators().required().regExp(/\d/)`
+     */
+    public configValidators(): FluentValidatorCollector
+    {
+        this._validators = null;    // force recreation   
+        if (!this.descriptor.validatorDescriptors)
+            this.descriptor.validatorDescriptors = [];        
+        return new FluentValidatorCollector(this.descriptor);
+    }
+    
     /**
      * While you normally set the validation group name with InputValueHostDescriptor.group,
      * InputValueHostDescriptor is often setup from the perspective of the business logic,

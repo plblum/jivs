@@ -1,10 +1,11 @@
 import { LookupKey } from './../../src/DataTypes/LookupKeys';
 import { FluentConditionCollector, configChildren } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
-import { DataTypeCheckConditionDescriptor, EqualToConditionDescriptor, GreaterThanConditionDescriptor, GreaterThanOrEqualConditionDescriptor, LessThanConditionDescriptor, LessThanOrEqualConditionDescriptor, NotEqualToConditionDescriptor, NotNullConditionDescriptor, RangeConditionDescriptor, RegExpConditionDescriptor, RequiredTextConditionDescriptor, StringLengthConditionDescriptor, StringNotEmptyConditionDescriptor } from '../../src/Conditions/ConcreteConditions';
+import { AllMatchConditionDescriptor, AnyMatchConditionDescriptor, CountMatchesConditionDescriptor, DataTypeCheckConditionDescriptor, EqualToConditionDescriptor, GreaterThanConditionDescriptor, GreaterThanOrEqualConditionDescriptor, LessThanConditionDescriptor, LessThanOrEqualConditionDescriptor, NotEqualToConditionDescriptor, NotNullConditionDescriptor, RangeConditionDescriptor, RegExpConditionDescriptor, RequiredTextConditionDescriptor, StringLengthConditionDescriptor, StringNotEmptyConditionDescriptor } from '../../src/Conditions/ConcreteConditions';
 import { ConditionDescriptor, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { initFluentConditions } from '../../src/Conditions/FluentConditionCollectorExtensions';
 import { EvaluateChildConditionResultsDescriptor } from '../../src/Conditions/EvaluateChildConditionResultsBase';
+import { InputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
 
 function TestFluentConditionCollector(testItem: FluentConditionCollector,
     expectedCondDescriptor: ConditionDescriptor) {
@@ -897,4 +898,103 @@ describe('notNull on configChildren', () => {
         });
     });
 
+});
+
+describe('all on configChildren', () => {
+    test('With empty configChildren, creates InputValidatorDescriptor with AllMatchCondition with type=AllMatch and conditionDescriptors=[]', () => {
+        initFluentConditions();
+        let testItem = configChildren().all(configChildren());
+        TestFluentConditionCollector(testItem, <AllMatchConditionDescriptor>{
+                type: ConditionType.All,
+                conditionDescriptors: []
+           });
+    });
+    test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with AllMatchCondition with type=AllMatch and conditionDescriptors populated with both conditions', () => {
+        initFluentConditions();
+        let testItem = configChildren().all(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
+        TestFluentConditionCollector(testItem, <AllMatchConditionDescriptor>{
+                type: ConditionType.All,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            });
+    });
+});
+describe('any on configChildren', () => {
+    test('With empty configChildren, creates InputValidatorDescriptor with AnyMatchCondition with type=AnyMatch and conditionDescriptors=[]', () => {
+        initFluentConditions();
+        let testItem = configChildren().any(configChildren());
+        TestFluentConditionCollector(testItem, <AnyMatchConditionDescriptor>{
+                type: ConditionType.Any,
+                conditionDescriptors: []
+            });
+    });
+    test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with AnyMatchCondition with type=AnyMatch and conditionDescriptors populated with both conditions', () => {
+        initFluentConditions();
+        let testItem = configChildren().any(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
+        TestFluentConditionCollector(testItem, <AnyMatchConditionDescriptor>{
+                type: ConditionType.Any,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            });
+    });
+});
+
+describe('countMatches on configChildren', () => {
+    test('With minimum and maximum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, maximum, and conditionDescriptors=[]', () => {
+        initFluentConditions();
+        let testItem = configChildren().countMatches(1, 2, configChildren());
+        TestFluentConditionCollector(testItem, <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                minimum: 1,
+                maximum: 2,
+                conditionDescriptors: []
+            });
+    });
+    test('With minimum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, and conditionDescriptors=[]', () => {
+        initFluentConditions();
+        let testItem = configChildren().countMatches(1, null, configChildren());
+        TestFluentConditionCollector(testItem, <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                minimum: 1,
+                conditionDescriptors: []
+            });
+    });
+    test('With maximum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, maximum, and conditionDescriptors=[]', () => {
+        initFluentConditions();
+        let testItem = configChildren().countMatches(null, 2, configChildren());
+        TestFluentConditionCollector(testItem, <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                maximum: 2,
+                conditionDescriptors: []
+            });
+    });    
+    test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch and conditionDescriptors populated with both conditions', () => {
+        initFluentConditions();
+        let testItem = configChildren().countMatches(0, 2, configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
+        TestFluentConditionCollector(testItem, <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                minimum: 0,
+                maximum: 2,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            });
+    });
 });

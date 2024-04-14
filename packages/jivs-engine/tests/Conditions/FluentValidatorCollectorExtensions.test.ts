@@ -1,10 +1,10 @@
 import { LookupKey } from './../../src/DataTypes/LookupKeys';
 import { InputValueHostDescriptor } from '../../src/Interfaces/InputValueHost';
-import { FluentCollectorBase, FluentValidatorCollector, configInput } from "../../src/ValueHosts/Fluent";
+import { FluentCollectorBase, FluentValidatorCollector, configChildren, configInput } from "../../src/ValueHosts/Fluent";
 import { initFluent } from "../../src/Conditions/FluentValidatorCollectorExtensions";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { InputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
-import { DataTypeCheckConditionDescriptor, EqualToConditionDescriptor, GreaterThanConditionDescriptor, GreaterThanOrEqualConditionDescriptor, LessThanConditionDescriptor, LessThanOrEqualConditionDescriptor, NotEqualToConditionDescriptor, NotNullConditionDescriptor, RangeConditionDescriptor, RegExpConditionDescriptor, RequiredTextConditionDescriptor, StringLengthConditionDescriptor, StringNotEmptyConditionDescriptor } from '../../src/Conditions/ConcreteConditions';
+import { AllMatchConditionDescriptor, AnyMatchConditionDescriptor, CountMatchesConditionDescriptor, DataTypeCheckConditionDescriptor, EqualToConditionDescriptor, GreaterThanConditionDescriptor, GreaterThanOrEqualConditionDescriptor, LessThanConditionDescriptor, LessThanOrEqualConditionDescriptor, NotEqualToConditionDescriptor, NotNullConditionDescriptor, RangeConditionDescriptor, RegExpConditionDescriptor, RequiredTextConditionDescriptor, StringLengthConditionDescriptor, StringNotEmptyConditionDescriptor } from '../../src/Conditions/ConcreteConditions';
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 
 function TestFluentValidatorCollector(testItem: FluentCollectorBase,
@@ -761,7 +761,7 @@ describe('lessThanOrEqualValue on configInput', () => {
                 secondValue: 1
             }
         });
-    });    
+    });
     test('With secondValue assigned and condDesc=null, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
         initFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null);
@@ -1119,7 +1119,7 @@ describe('greaterThanOrEqualValue on configInput', () => {
                 secondValue: 1
             }
         });
-    });    
+    });
     test('With secondValue assigned and condDesc=null, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
         initFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null);
@@ -1390,7 +1390,7 @@ describe('stringNotEmpty on configInput', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with StringNotEmptyCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         initFluent();
-        let testItem = configInput('Field1').stringNotEmpty(null, null,  { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = configInput('Field1').stringNotEmpty(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringNotEmptyConditionDescriptor>{
                 type: ConditionType.StringNotEmpty
@@ -1457,7 +1457,7 @@ describe('requiredText on configInput', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RequiredTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         initFluent();
-        let testItem = configInput('Field1').requiredText(null, null,  { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = configInput('Field1').requiredText(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RequiredTextConditionDescriptor>{
                 type: ConditionType.RequiredText
@@ -1511,7 +1511,7 @@ describe('notNull on configInput', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         initFluent();
-        let testItem = configInput('Field1').notNull(null,  { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = configInput('Field1').notNull(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotNullConditionDescriptor>{
                 type: ConditionType.NotNull
@@ -1526,6 +1526,308 @@ describe('notNull on configInput', () => {
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotNullConditionDescriptor>{
                 type: ConditionType.NotNull
+            },
+            errorMessage: 'FirstError'
+        });
+    });
+});
+
+describe('all on configInput', () => {
+    test('With empty configChildren, creates InputValidatorDescriptor with AllMatchCondition with type=AllMatch and conditionDescriptors=[]', () => {
+        initFluent();
+        let testItem = configInput('Field1').all(configChildren());
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AllMatchConditionDescriptor>{
+                type: ConditionType.All,
+                conditionDescriptors: []
+            }
+        });
+    });
+    test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with AllMatchCondition with type=AllMatch and conditionDescriptors populated with both conditions', () => {
+        initFluent();
+        let testItem = configInput('Field1').all(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AllMatchConditionDescriptor>{
+                type: ConditionType.All,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            }
+        });
+    });
+
+    test('With configChildren setup with requiredText and regExp, and errorMessage assigned creates InputValidatorDescriptor with AllMatchCondition with only type assigned and errorMessage assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').all(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error');
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AllMatchConditionDescriptor>{
+                type: ConditionType.All,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            },
+            errorMessage: 'Error'
+        });
+    });
+    test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').all(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AllMatchConditionDescriptor>{
+                type: ConditionType.All,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').all(configChildren(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AllMatchConditionDescriptor>{
+                type: ConditionType.All,
+                conditionDescriptors: []
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AllMatchCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').all(configChildren(), 'FirstError', { errorMessage: 'SecondError' });
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AllMatchConditionDescriptor>{
+                type: ConditionType.All,
+                conditionDescriptors: []
+            },
+            errorMessage: 'FirstError'
+        });
+    });
+});
+describe('any on configInput', () => {
+    test('With empty configChildren, creates InputValidatorDescriptor with AnyMatchCondition with type=AnyMatch and conditionDescriptors=[]', () => {
+        initFluent();
+        let testItem = configInput('Field1').any(configChildren());
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AnyMatchConditionDescriptor>{
+                type: ConditionType.Any,
+                conditionDescriptors: []
+            }
+        });
+    });
+    test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with AnyMatchCondition with type=AnyMatch and conditionDescriptors populated with both conditions', () => {
+        initFluent();
+        let testItem = configInput('Field1').any(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AnyMatchConditionDescriptor>{
+                type: ConditionType.Any,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            }
+        });
+    });
+
+    test('With configChildren setup with requiredText and regExp, and errorMessage assigned creates InputValidatorDescriptor with AnyMatchCondition with only type assigned and errorMessage assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').any(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error');
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AnyMatchConditionDescriptor>{
+                type: ConditionType.Any,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            },
+            errorMessage: 'Error'
+        });
+    });
+    test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').any(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AnyMatchConditionDescriptor>{
+                type: ConditionType.Any,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').any(configChildren(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AnyMatchConditionDescriptor>{
+                type: ConditionType.Any,
+                conditionDescriptors: []
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AnyMatchCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').any(configChildren(), 'FirstError', { errorMessage: 'SecondError' });
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <AnyMatchConditionDescriptor>{
+                type: ConditionType.Any,
+                conditionDescriptors: []
+            },
+            errorMessage: 'FirstError'
+        });
+    });
+});
+
+describe('countMatches on configInput', () => {
+    test('With minimum and maximum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, maximum, and conditionDescriptors=[]', () => {
+        initFluent();
+        let testItem = configInput('Field1').countMatches(1, 2, configChildren());
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                minimum: 1,
+                maximum: 2,
+                conditionDescriptors: []
+            }
+        });
+    });
+    test('With minimum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, and conditionDescriptors=[]', () => {
+        initFluent();
+        let testItem = configInput('Field1').countMatches(1, null, configChildren());
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                minimum: 1,
+                conditionDescriptors: []
+            }
+        });
+    });
+    test('With maximum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, maximum, and conditionDescriptors=[]', () => {
+        initFluent();
+        let testItem = configInput('Field1').countMatches(null, 2, configChildren());
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                maximum: 2,
+                conditionDescriptors: []
+            }
+        });
+    });    
+    test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch and conditionDescriptors populated with both conditions', () => {
+        initFluent();
+        let testItem = configInput('Field1').countMatches(0, 2, configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                minimum: 0,
+                maximum: 2,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            }
+        });
+    });
+
+    test('With configChildren setup with requiredText and regExp, and errorMessage assigned creates InputValidatorDescriptor with CountMatchesMatchCondition with only type assigned and errorMessage assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').countMatches(1, 4, configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error');
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                minimum: 1,
+                maximum: 4,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            },
+            errorMessage: 'Error'
+        });
+    });
+    test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').countMatches(1, 2, configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                minimum: 1,
+                maximum: 2,
+                conditionDescriptors: [<any>{
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F1'
+                },
+                {
+                    type: ConditionType.RequiredText,
+                    valueHostName: 'F2'
+                }]
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').countMatches(null, null, configChildren(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                conditionDescriptors: []
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with CountMatchesMatchCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
+        initFluent();
+        let testItem = configInput('Field1').countMatches(null, null, configChildren(), 'FirstError', { errorMessage: 'SecondError' });
+        TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
+            conditionDescriptor: <CountMatchesConditionDescriptor>{
+                type: ConditionType.CountMatches,
+                conditionDescriptors: []
             },
             errorMessage: 'FirstError'
         });
