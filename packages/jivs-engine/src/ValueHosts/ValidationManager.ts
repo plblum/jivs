@@ -14,8 +14,9 @@ import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } 
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from './InputValueHost';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IInputValueHost, toIInputValueHostDescriptorResolver } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from './ValidatableValueHostBase';
+import { FluentCollectorBase, FluentValidatorCollector } from './Fluent';
 
 
 /**
@@ -108,8 +109,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
             this._state.stateChangeCounter = 0;
         this._lastValueHostStates = internalConfig.savedValueHostStates ?? [];
         let descriptors = internalConfig.valueHostDescriptors ?? [];
-        for (let descriptor of descriptors) {
-            this.addValueHost(descriptor, null);
+        for (let item of descriptors) {
+            let resolver = toIInputValueHostDescriptorResolver(item);
+            if (resolver)
+                this.addValueHost(resolver.descriptor, null);
+            else
+                this.addValueHost(item as ValueHostDescriptor, null);
         }
     }
     protected get config(): ValidationManagerConfig
@@ -189,14 +194,37 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Does not trigger any notifications.
      * Exception when the same ValueHostDescriptor.name already exists.
      * @param descriptor 
+     * Can use configNonInput() or any ValueDescriptorHost.
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupState() first.
      * When null, the state supplied in the ValidationManager constructor will be used if available.
      * When neither state was supplied, a default state is created.
      */
-    public addValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
-        assertNotNull(descriptor, 'descriptor');
+    public addValueHost(descriptor: ValueHostDescriptor,
+        initialState: ValueHostState | null): IValueHost;
+    /**
+     * Adds a ValueHostDescriptor for an InputValueHost not previously added. 
+     * Expects fluent syntax where the first parameter starts with
+     * configInput() followed by chained validation rules.
+     * Does not trigger any notifications.
+     * Exception when the same ValueHostDescriptor.name already exists.
+     * @param fluentCollector
+     * Pass in `configInput("valueHostName"[, parameters]).validator().validator()`. 
+     * @param initialState
+     * When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.cleanupState() first.
+     * When null, the state supplied in the ValidationManager constructor will be used if available.
+     * When neither state was supplied, a default state is created.
+     */
+    public addValueHost(fluentCollector: FluentValidatorCollector,
+        initialState: ValueHostState | null): IValueHost;
+    public addValueHost(arg1: ValueHostDescriptor | FluentValidatorCollector,
+        initialState: ValueHostState | null): IValueHost {
+        assertNotNull(arg1, 'arg1');
+        let descriptor: ValueHostDescriptor = arg1 instanceof FluentValidatorCollector ?
+            arg1.descriptor : arg1;
         if (!this._valueHostDescriptors[descriptor.name])
             return this.applyDescriptor(descriptor, initialState);
 

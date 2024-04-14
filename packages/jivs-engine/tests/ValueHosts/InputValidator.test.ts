@@ -434,9 +434,9 @@ describe('InputValidator.severity', () => {
         checkDefaultSeverity(ConditionType.EqualTo);
         checkDefaultSeverity(ConditionType.NotEqualTo);
         checkDefaultSeverity(ConditionType.GreaterThan);
-        checkDefaultSeverity(ConditionType.GreaterThanOrEqualTo);
+        checkDefaultSeverity(ConditionType.GreaterThanOrEqual);
         checkDefaultSeverity(ConditionType.LessThan);
-        checkDefaultSeverity(ConditionType.LessThanOrEqualTo);
+        checkDefaultSeverity(ConditionType.LessThanOrEqual);
         checkDefaultSeverity(ConditionType.And);
         checkDefaultSeverity(ConditionType.Or);
         checkDefaultSeverity(ConditionType.CountMatches);

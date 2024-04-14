@@ -190,13 +190,13 @@ export enum ServiceName {
      */
     inputValidatorFactory = 'InputValidatorFactory',
     /**
-     * IModelToValueHostFactory - in jivs-model
+     * IModelToValuesFactory - in jivs-model
      */
-    modelToValueHostFactory = 'ModelToValueHostFactory',
+    modelToValuesFactory = 'ModelToValuesFactory',
     /**
-     * IValueHostToModelFactory - in jivs-ssot
+     * IValuesToModelFactory - in jivs-ssot
      */
-    valueHostToModelFactory = 'ValueHostToModelFactory',
+    valuesToModelFactory = 'ValuesToModelFactory',
     /**
      * IDataTypeParserService - in jivs-parsers
      */

@@ -6,7 +6,7 @@ import { toIServicesAccessor, type IValidationServices } from "../../src/Interfa
 import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, ValueHostDescriptor, ValueChangedHandler, ValueHostStateChangedHandler } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
-import { IInputValueHost, InputValueHostState } from "../../src/Interfaces/InputValueHost";
+import { IInputValueHost, IInputValueHostDescriptorResolver, InputValueHostDescriptor, InputValueHostState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IInputValidator, IInputValidatorFactory, InputValidatorDescriptor } from "../../src/Interfaces/InputValidator";
@@ -32,6 +32,7 @@ import { ValueHostValidatedHandler, InputValueChangedHandler } from "../../src/I
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
+import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -567,4 +568,13 @@ export interface MockCapturedLog
     level: LoggingLevel,
     category: string | undefined,
     source: string | undefined
+}
+
+export class MockInputValueHostDescriptorResolver implements IInputValueHostDescriptorResolver
+{
+    constructor(descriptor: Omit<InputValueHostDescriptor, 'type'>)
+    {
+        this.descriptor = { ...descriptor as InputValueHostDescriptor, type: ValueHostType.Input };
+    }
+    public descriptor: InputValueHostDescriptor;
 }

@@ -12,8 +12,7 @@
         "declarationDir": "./global_build/types",    
         "paths": {
           "@plblum/jivs-engine": ["./packages/jivs-engine"]
-        }    
-
+        }
     },
     "include": [
       "packages"

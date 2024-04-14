@@ -77,3 +77,33 @@ export interface InputValueHostDescriptor extends ValidatableValueHostBaseDescri
 export interface InputValueHostState extends ValidatableValueHostBaseState {
 
 }
+
+/**
+ * Provides a way to get an InputValueHostDescriptor from another object,
+ * as an alternative to being supplied one directly.
+ * Fluent uses this to supply the descriptor to ValidationManagerConfig.ValueHostDescriptors.
+ */
+export interface IInputValueHostDescriptorResolver
+{
+    /**
+     * The InputValueHostDescriptor that is being constructed and will be supplied to ValidationManagerConfig.valueHostDescriptors.
+     */
+    descriptor: InputValueHostDescriptor;
+}
+
+/**
+ * Determines if the object implements IInputValueHostDescriptorResolver.
+ * @param source 
+ * @returns source typecasted to IInputValueHostDescriptorResolver if appropriate or null if not.
+ */
+export function toIInputValueHostDescriptorResolver(source: any): IInputValueHostDescriptorResolver | null
+{
+    if (source && typeof source === 'object')
+    {
+        let test = source as IInputValueHostDescriptorResolver;    
+        // some select members of IInputValueHostDescriptorResolver
+        if (test.descriptor)
+            return test;
+    }
+    return null;
+}
