@@ -426,6 +426,7 @@ export function finishFluentValidatorCollector(thisFromCaller: any,
  * We'll throw an exception here in that case.
  * @param conditionType 
  * @param valueHostName 
+ * Overrides the default valueHostName, which comes from the configInput().
  * Fluent function should supply this as a parameter
  * so long as its ConditionDescriptor implements OneValueConditionDescriptor.
  * Since these conditions are children of another, they are more likely to
@@ -435,8 +436,8 @@ export function finishFluentValidatorCollector(thisFromCaller: any,
  */
 export function finishFluentConditionCollector(thisFromCaller: any, 
     conditionType: string | null,
-    valueHostName: ValueHostName | null,
-    conditionDescriptor: Partial<ConditionDescriptor>): FluentConditionCollector
+    conditionDescriptor: Partial<ConditionDescriptor>,
+    valueHostName?: ValueHostName): FluentConditionCollector
 {
     if (thisFromCaller instanceof FluentConditionCollector) {
         if (valueHostName)

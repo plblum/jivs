@@ -378,7 +378,7 @@ function testChainRequiredText_Val(conditionDescriptor: Omit<RequiredTextConditi
 }
 function testChainRequiredText_Cond(conditionDescriptor: Omit<RequiredTextConditionDescriptor, 'type' | 'valueHostName'>
 ): FluentConditionCollector {
-    return finishFluentConditionCollector(this, ConditionType.RequiredText, 'valueHostName', conditionDescriptor);
+    return finishFluentConditionCollector(this, ConditionType.RequiredText, conditionDescriptor, 'valueHostName');
 
 }
 
@@ -392,7 +392,7 @@ function testChainRegExp_Val(conditionDescriptor: Omit<RegExpConditionDescriptor
 }
 function testChainRegExp_Cond(conditionDescriptor: Omit<RegExpConditionDescriptor, 'type' | 'valueHostName'>): FluentConditionCollector {
 
-    return finishFluentConditionCollector(this, ConditionType.RegExp, 'valueHostName', conditionDescriptor);
+    return finishFluentConditionCollector(this, ConditionType.RegExp, conditionDescriptor, 'valueHostName');
 }
 // interface that extends the class FluentValidatorCollector
 declare module './../../src/ValueHosts/Fluent'
@@ -554,20 +554,20 @@ describe('finishFluentConditionCollector ', () => {
         let testItem1 = new FluentConditionCollector({type: '', conditionDescriptors: [] }); 
         expect(()=>finishFluentConditionCollector(
             testItem1,
-            '', '', {})
+            '', {})
         ).not.toThrow();
         let testItem2 = new FluentValidatorCollector({ name: '', validatorDescriptors: [] });
         expect(()=>finishFluentConditionCollector(
             testItem2,
-            '', '', {})
+            '', {})
         ).toThrow();
         expect(()=>finishFluentConditionCollector(
             100,
-            '', '', {})
+            '', {})
         ).toThrow();       
         expect(()=>finishFluentConditionCollector(
             null,
-            '', '', {})
+            '', {})
         ).toThrow();               
     });
 });
