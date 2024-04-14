@@ -172,13 +172,13 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionDescript
 export interface RangeConditionDescriptor extends OneValueConditionDescriptor, SupportsDataTypeConverter {
     /**
      * Native data type representing the minimum of the range.
-     * When undefined or null, no minimum, like LessThanOrEqualToConditon.
+     * When undefined or null, no minimum, like LessThanOrEqualConditon.
      */
     minimum: any;
 
     /**
      * Native data type representing the maximum of the range.
-     * When undefined or null, no maximum, like GreaterThanOrEqualToConditon.
+     * When undefined or null, no maximum, like GreaterThanOrEqualConditon.
      */
     maximum: any;
 }
@@ -434,8 +434,8 @@ export interface LessThanConditionDescriptor extends CompareToConditionDescripto
  * Value 1 must be greater than or equal Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class GreaterThanOrEqualToCondition extends CompareToConditionBase<GreaterThanOrEqualToConditionDescriptor> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqualTo; }
+export class GreaterThanOrEqualCondition extends CompareToConditionBase<GreaterThanOrEqualConditionDescriptor> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqual; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
@@ -451,15 +451,15 @@ export class GreaterThanOrEqualToCondition extends CompareToConditionBase<Greate
 }
 
 /**
- * Descriptor for GreaterThanOrEqualToCondition
+ * Descriptor for GreaterThanOrEqualCondition
  */
-export interface GreaterThanOrEqualToConditionDescriptor extends CompareToConditionDescriptor { }
+export interface GreaterThanOrEqualConditionDescriptor extends CompareToConditionDescriptor { }
 /**
  * Value 1 must be less than or equal Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class LessThanOrEqualToCondition extends CompareToConditionBase<LessThanOrEqualToConditionDescriptor> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqualTo; }    
+export class LessThanOrEqualCondition extends CompareToConditionBase<LessThanOrEqualConditionDescriptor> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqual; }    
 
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
@@ -475,22 +475,22 @@ export class LessThanOrEqualToCondition extends CompareToConditionBase<LessThanO
 }
 
 /**
- * Descriptor for LessThanOrEqualToCondition
+ * Descriptor for LessThanOrEqualCondition
  */
-export interface LessThanOrEqualToConditionDescriptor extends CompareToConditionDescriptor { }
+export interface LessThanOrEqualConditionDescriptor extends CompareToConditionDescriptor { }
 /**
  * Descriptor for StringLengthCondition
  */
 export interface StringLengthConditionDescriptor extends StringConditionDescriptor {
     /**
      * Native data type representing the minimum of the range.
-     * When undefined or null, no minimum, like LessThanOrEqualToConditon.
+     * When undefined or null, no minimum, like LessThanOrEqualConditon.
      */
     minimum?: number | null;
 
     /**
      * Native data type representing the maximum of the range.
-     * When undefined or null, no maximum, like GreaterThanOrEqualToConditon.
+     * When undefined or null, no maximum, like GreaterThanOrEqualConditon.
      */
     maximum?: number | null;
 }

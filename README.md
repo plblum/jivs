@@ -1,4 +1,8 @@
 # Jivs - JavaScript Input Validation Service
+*Jivs is a work-in-progress. This is a preview to get feedback from the community.
+I'm looking for an assessment of the architecture. I've been tweaking and refactoring
+it plenty in hopes it's easy to use and really delivers. Getting the API right early on
+avoids the hassle of breaking changes later. --- Peter Blum*
 
 *For full documentation, go to [http://jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc)*
 
@@ -10,33 +14,23 @@ learned much more in terms of OOP patterns programming, plus TypeScript
 came out and JavaScript introduced Classes. Wonderful stuff that I now
 use here, in **Jivs**.
 
-Jivs itself is just the tooling to evaluate values and return a list of
+Jivs is a suite of libraries, built around its core, Jivs-engine.
+Jivs-engine is just the tooling to evaluate values and return a list of
 issues found. 
 > That is the essence of validation! 
 
-Jivs is a "service",
+Even something sounding that simple can involve a lot of features and behaviors.
+That's where Jivs starts to differentiate itself.
+
+Jivs-engine is a "service",
 doing that job well, and not trying to provide the actual UI. For that,
-you will be able to add companion libraries to match your environment,
+add or build companion libraries to match your environment,
 such as working in the browser's DOM or React's components. Being a
 UI-independent service, you can build your own UI around it, and it can
 run both in the browser and NodeJS.
 
-Jivs' philosophy involves strong separation of concerns.
--   UI is strongly separated from the validation work
--   Business logic code is where your validation rules generally are
-    found, not in the UI input forms.
-
-The result is that the UI knows almost nothing about what needs to be
-validated. The UI just posts its current values into Jivs and asks: what
-are the result of validation? It gets back a Validation Result, such as
-"Valid", "Invalid", or even "Undetermined", and any issues found. An
-issue found includes error messages, an id to the field associated with
-the validation rule, and its severity.
-
-The UI uses that information to change the visuals: show those errors in
-some way and perhaps change the appearance of the input and its
-surroundings. Jivs knows nothing about that stuff, although its
-supporting libraries (pending) are well-informed on those matters.
+As of today, only Jivs-engine is available, and you can extend it as needed. I plan to introduce UI support libraries, and possibly libraries that incorporate third party
+libraries of many types, including other schema validation services and internationalization.
 
 > *Peter Blum, .net and web coder since 2002*
 
@@ -48,8 +42,8 @@ supporting libraries (pending) are well-informed on those matters.
 
 ### Setting Expectations
 
-- **What Jivs Isn’t:** It doesn't come with UI widgets for displaying error messages or applying stylesheet changes. However, we're developing additional libraries to complement Jivs with these UI capabilities—stay tuned.
 - **What Jivs Excels At:** Its forte is value validation. This distinct focus from UI concerns allows for flexible UI development on any framework, such as React, which requires a unique approach to HTML manipulation. We plan to support both standard DOM and React-specific libraries.
+- **What Jivs Lacks:** As of this writing, only the core library Jivs-engine is offered. I hope to surround it with UI libraries, and support third party libraries that offer much of the tooling you use.
 - **Not Just for Browsers:** Despite seeming browser-centric, server-side validation is critical to prevent tampered data and address server-specific validations. Jivs supports this on Node.js, enabling consistent validation rules across client and server.
 - **Code Effort:** While using Jivs involves coding, it’s basically what you would have to write anyway. Some of your coding work with or without Jivs:
 	- **Defining validation rules:** Jivs encourages business logic-driven validation, independent of UI. It has a large library of rules already, and makes it easy to add new ones through your code.
@@ -220,6 +214,8 @@ Your new code should look like this, where `ValueHostId` is your identifier for 
     secondValue: date object representing Today;
 }
 ```
+> A fluent syntax is also part of Jivs. It simplifies manual entry of building conditions and several other objects that will be shown later. We'll look at it once you have the full picture using these Descriptor objects.
+
 ## Bridging business logic and UI validation
 
 We recommend that you create a Factory-style class that takes your business logic validation information in and returns the appropriate `ConditionDescriptor` already configured. Let’s suppose that your business logic has a class called BusinessLogicComparer that looks like this:
@@ -478,6 +474,28 @@ let config = <IValidationManagerConfig>{
 let validationManager = new ValidationManager(config);
 // TODO: expose this validationManager to your widgets that need validation
 ```
+### Fluent syntax
+If you are typing in those Descriptor objects, you are probably not happy. Descriptor objects are meant for code that convert your business logic objects into them.
+
+Jivs comes with a fluent syntax to simplify the manual configuration work.
+Here's how the example with FirstName and LastName properties looks with this syntax.
+```ts
+let firstNameConfig = configInput('FirstName', 'String', { label: 'First Name' })
+   .requiredText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.')
+   .notEqualTo('LastName', 'Are you sure...', { summaryMessage: 'In {Label}, are you sure...');
+let lastNameConfig = configInput('LastName', 'String', { label: 'Last Name'})
+   .requiredText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.' );
+   //NOTE: Error messages can be omitted if you set them up in the TextLocalizationService
+   // or let the UI developer attach them later.
+   
+let services = createValidationServices();
+let config = <IValidationManagerConfig>{
+  services: services,
+  valueHostDescriptors: [firstNameConfig, lastNameConfig]
+}
+let validationManager = new ValidationManager(config);   
+```
+ 
 ## Creating your own Conditions
 Jivs provides many `Condition classes`, covering typical cases. All classes implement the `ICondition interface`.
 ```ts

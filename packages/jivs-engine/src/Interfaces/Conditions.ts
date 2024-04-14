@@ -109,12 +109,13 @@ export interface ConditionDescriptor {
      */
     category?: ConditionCategory;
 
-    /**
-     * Handy way to allow users to enter known properties without getting ts errors.
-     * However, they can improve things if they typecast to the appropriate
-     * condition's Descriptor.
-     */
-    [propName: string]: any;
+    //!! Interferes with intellisense support for building with known properties    
+    // /**
+    //  * Handy way to allow users to enter known properties without getting ts errors.
+    //  * However, they can improve things if they typecast to the appropriate
+    //  * condition's Descriptor.
+    //  */
+    // [propName: string]: any;
 }
 
 /**

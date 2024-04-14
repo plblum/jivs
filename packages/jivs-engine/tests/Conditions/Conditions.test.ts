@@ -4,8 +4,8 @@ import {
     RequiredTextCondition,
     RangeCondition, EqualToCondition, 
     NotEqualToCondition, GreaterThanCondition,
-    GreaterThanOrEqualToCondition,  LessThanCondition, 
-    LessThanOrEqualToCondition, StringLengthConditionDescriptor,  StringLengthCondition,
+    GreaterThanOrEqualCondition,  LessThanCondition, 
+    LessThanOrEqualCondition, StringLengthConditionDescriptor,  StringLengthCondition,
     RegExpConditionDescriptor, RegExpCondition, 
     AllMatchCondition, DataTypeCheckConditionDescriptor, DataTypeCheckCondition,
     AnyMatchCondition, CountMatchesCondition,
@@ -1839,9 +1839,9 @@ describe('class GreaterThanCondition', () => {
         expect(testItem.size).toBe(0);
     });        
 });
-describe('class GreaterThanOrEqualToCondition', () => {
+describe('class GreaterThanOrEqualCondition', () => {
     test('DefaultConditionType', () => {
-        expect(GreaterThanOrEqualToCondition.DefaultConditionType).toBe(ConditionType.GreaterThanOrEqualTo);
+        expect(GreaterThanOrEqualCondition.DefaultConditionType).toBe(ConditionType.GreaterThanOrEqual);
     });
     test('evaluate using secondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -1849,12 +1849,12 @@ describe('class GreaterThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 100,
             secondValueHostName: null
         };
-        let testItem = new GreaterThanOrEqualToCondition(descriptor);
+        let testItem = new GreaterThanOrEqualCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
@@ -1870,12 +1870,12 @@ describe('class GreaterThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValue: false,
             secondValueHostName: null
         };
-        let testItem = new GreaterThanOrEqualToCondition(descriptor);
+        let testItem = new GreaterThanOrEqualCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1890,11 +1890,11 @@ describe('class GreaterThanOrEqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
-        let testItem = new GreaterThanOrEqualToCondition(descriptor);
+        let testItem = new GreaterThanOrEqualCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
         vh2.setInputValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
@@ -1914,12 +1914,12 @@ describe('class GreaterThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 100,
             secondValueHostName: null
         };
-        let testItem = new GreaterThanOrEqualToCondition(descriptor);
+        let testItem = new GreaterThanOrEqualCondition(descriptor);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(undefined);
@@ -1935,12 +1935,12 @@ describe('class GreaterThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 100,
             secondValueHostName: null
         };
-        let testItem = new GreaterThanOrEqualToCondition(descriptor);
+        let testItem = new GreaterThanOrEqualCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
@@ -1957,12 +1957,12 @@ describe('class GreaterThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValue: null,
             secondValueHostName: null
         };
-        let testItem = new GreaterThanOrEqualToCondition(descriptor);
+        let testItem = new GreaterThanOrEqualCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
@@ -1975,23 +1975,23 @@ describe('class GreaterThanOrEqualToCondition', () => {
     });    
     test('category is Comparison', () => {
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 10,
             secondValueHostName: null
         };
-        let testItem = new GreaterThanOrEqualToCondition(descriptor);
+        let testItem = new GreaterThanOrEqualCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () => {
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 10,
             secondValueHostName: null,
             category: ConditionCategory.Contents
         };
-        let testItem = new GreaterThanOrEqualToCondition(descriptor);
+        let testItem = new GreaterThanOrEqualCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
     test('gatherValueHostNames when all are assigned', () => {
@@ -1999,11 +1999,11 @@ describe('class GreaterThanOrEqualToCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
-        let condition = new GreaterThanOrEqualToCondition(descriptor);
+        let condition = new GreaterThanOrEqualCondition(descriptor);
         let testItem = new Set<ValueHostName>();
         expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
@@ -2015,11 +2015,11 @@ describe('class GreaterThanOrEqualToCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.GreaterThanOrEqualTo,
+            type: ConditionType.GreaterThanOrEqual,
             valueHostName: null,
             secondValueHostName: null
         };
-        let condition = new GreaterThanOrEqualToCondition(descriptor);
+        let condition = new GreaterThanOrEqualCondition(descriptor);
         let testItem = new Set<ValueHostName>();
         expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
@@ -2212,9 +2212,9 @@ describe('class LessThanCondition', () => {
         expect(testItem.size).toBe(0);
     });            
 });
-describe('class LessThanOrEqualToCondition', () => {
+describe('class LessThanOrEqualCondition', () => {
     test('DefaultConditionType', () => {
-        expect(LessThanOrEqualToCondition.DefaultConditionType).toBe(ConditionType.LessThanOrEqualTo);
+        expect(LessThanOrEqualCondition.DefaultConditionType).toBe(ConditionType.LessThanOrEqual);
     });
     test('evaluate using secondValue property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -2222,12 +2222,12 @@ describe('class LessThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 100,
             secondValueHostName: null
         };
-        let testItem = new LessThanOrEqualToCondition(descriptor);
+        let testItem = new LessThanOrEqualCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -2243,12 +2243,12 @@ describe('class LessThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: false,
             secondValueHostName: null
         };
-        let testItem = new LessThanOrEqualToCondition(descriptor);
+        let testItem = new LessThanOrEqualCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
         vh.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -2263,11 +2263,11 @@ describe('class LessThanOrEqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
-        let testItem = new LessThanOrEqualToCondition(descriptor);
+        let testItem = new LessThanOrEqualCondition(descriptor);
         vh.setInputValue('---- does not matter ----');
         vh2.setInputValue('---- Second does not matter ---');
         vh2.setValue(100);  // property value to match to the rest
@@ -2287,12 +2287,12 @@ describe('class LessThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 100,
             secondValueHostName: null
         };
-        let testItem = new LessThanOrEqualToCondition(descriptor);
+        let testItem = new LessThanOrEqualCondition(descriptor);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(undefined);
@@ -2308,12 +2308,12 @@ describe('class LessThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 100,
             secondValueHostName: null
         };
-        let testItem = new LessThanOrEqualToCondition(descriptor);
+        let testItem = new LessThanOrEqualCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
@@ -2330,12 +2330,12 @@ describe('class LessThanOrEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: null,
             secondValueHostName: null
         };
-        let testItem = new LessThanOrEqualToCondition(descriptor);
+        let testItem = new LessThanOrEqualCondition(descriptor);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
@@ -2348,23 +2348,23 @@ describe('class LessThanOrEqualToCondition', () => {
     });    
     test('category is Comparison', () => {
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 10,
             secondValueHostName: null
         };
-        let testItem = new LessThanOrEqualToCondition(descriptor);
+        let testItem = new LessThanOrEqualCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () => {
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 10,
             secondValueHostName: null,
             category: ConditionCategory.Contents
         };
-        let testItem = new LessThanOrEqualToCondition(descriptor);
+        let testItem = new LessThanOrEqualCondition(descriptor);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
     test('gatherValueHostNames when all are assigned', () => {
@@ -2372,11 +2372,11 @@ describe('class LessThanOrEqualToCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
-        let condition = new LessThanOrEqualToCondition(descriptor);
+        let condition = new LessThanOrEqualCondition(descriptor);
         let testItem = new Set<ValueHostName>();
         expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(2);
@@ -2388,11 +2388,11 @@ describe('class LessThanOrEqualToCondition', () => {
         let vm = new MockValidationManager(services);
 
         let descriptor: CompareToConditionDescriptor = {
-            type: ConditionType.LessThanOrEqualTo,
+            type: ConditionType.LessThanOrEqual,
             valueHostName: null,
             secondValueHostName: null
         };
-        let condition = new LessThanOrEqualToCondition(descriptor);
+        let condition = new LessThanOrEqualCondition(descriptor);
         let testItem = new Set<ValueHostName>();
         expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
