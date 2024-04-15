@@ -102,7 +102,7 @@ Here are a few terms used.
 
 You will be working with classes and interfaces. Here are the primary pieces to orient you to its API.
 
--   [`ValueHost classes`](#valuehosts) -- Identifies a single value to be validated
+-   [`ValueHost classes`](#valuehosts-and-their-names) -- Identifies a single value to be validated
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
 	- `InputValueHost class` -- For your Inputs, a ValueHost with the power of validation. 
