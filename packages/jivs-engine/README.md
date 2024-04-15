@@ -8,7 +8,7 @@ avoids the hassle of breaking changes later.*
 *Please visit [Jivs Github Discussions board](https://github.com/plblum/jivs/discussions) to participate.*
 
 Jivs -- JavaScript Input Validation Service -- is a suite of libraries that help answer this question: how do I deal with data validation in the UI and/or on the Model?
-Jivs-engine -- this library -- is its core, with a powerful set of tools to adapt to
+**Jivs-engine** -- this library -- is its core, with a powerful set of tools to adapt to
 UIs and models.
 
 Jivs' philosophy involves strong separation of concerns.
@@ -25,11 +25,13 @@ the validation rule, and its severity.
 
 The UI uses that information to change the visuals: show those errors in
 some way and perhaps change the appearance of the input and its
-surroundings. Jivs knows nothing about that stuff, although its
+surroundings. Jivs-engine knows nothing about that stuff, although its
 supporting libraries (pending) are well-informed on those matters.
 
 Start here to better understand this library and determine if its right for you:
-[Jivs Documentation](https://github.com/plblum/jivs)
+[Jivs Documentation](https://github.com/plblum/jivs/blob/main/README.md)
+
+For the open source project: [https://github.com/plblum/jivs](https://github.com/plblum/jivs)
 
 ### Selecting the right starting point
 Jivs includes multiple libraries. This one -- **jivs-engine** -- handles the actual work of validation. It provides no user interface and is unaware of the shape of any Model. Its written with a strong sense of modern OOP patterns, where you build something with a strong separation of concerns: the UI is a separate world from evaluating data and returning a result.
