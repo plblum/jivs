@@ -102,7 +102,7 @@ Here are a few terms used.
 
 You will be working with classes and interfaces. Here are the primary pieces to orient you to its API.
 
--   [`ValueHost classes`](#valuehosts-and-their-names) -- Identifies a single value to be validated
+-   [`ValueHost classes`](#valuehosts) -- Identifies a single value to be validated
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
 	- `InputValueHost class` -- For your Inputs, a ValueHost with the power of validation. 
@@ -124,7 +124,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     are `Conditions` included in this library, you are often going to need
     to build your own.
 
--   [`InputValidator class`](#inputvalidators) -- Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
+-   <a href="#inputvalidators">`InputValidator class`</a> -- Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
 
 - [`ValidationServices class`](#validationservices)-- Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by ValidationServices which empower Jivs.
 	- `IDataTypeFormatter` -- Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
@@ -243,8 +243,8 @@ class Factory
   }
 }
 ```
-<a name="valuehosts"></a>
-## ValueHosts and their Names
+
+## ValueHosts
 
 Next task is to give names to every UI widget that correlates them to the fields of the Model.
 
