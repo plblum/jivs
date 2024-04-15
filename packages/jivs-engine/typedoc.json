@@ -4,5 +4,10 @@
     "$schema": "https://typedoc.org/schema.json",
     "name": "Jivs",
     "emit": "none",
-    "exclude": ["*.*"]
+    "exclude": ["*.*"],
+    "sort": [
+        "kind",
+        "instance-first",
+        "source-order"
+    ]
 }  

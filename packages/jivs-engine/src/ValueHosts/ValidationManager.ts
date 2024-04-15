@@ -74,20 +74,20 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @example
      * ```ts
      * {
-     *   Services: CreateValidationServices(); <-- see and customize your create_services.ts file
-     *   ValueHostDescriptors: [
+     *   services: createValidationServices(); <-- see and customize your create_services.ts file
+     *   valueHostDescriptors: [
      *     // see elsewhere for details on ValueHostDescriptors as they are the heavy lifting in this system.
      *     // Just know that you need one object for each value that you want to connect
      *     // to the Validation Manager
      *      ],
-     *   SavedState: null, // or the state object previously returned with OnStateChanged
-     *   SavedValueHostStates: null, // or an array of the state objects previously returned with OnValueHostStateChanged
-     *   OnStateChanged: (validationManager, state)=> { },
-     *   OnValueHostStateChanged: (valueHost, state) => { },
-     *   OnValidated: (validationManager, validationResults)=> { },
-     *   OnValueHostValidated: (valueHost, validationResult) => { },
-     *   OnValueChanged: (valueHost, oldValue) => { },
-     *   OnInputValueChanged: (valueHost, oldValue) => { }
+     *   savedState: null, // or the state object previously returned with OnStateChanged
+     *   savedValueHostStates: null, // or an array of the state objects previously returned with OnValueHostStateChanged
+     *   onStateChanged: (validationManager, state)=> { },
+     *   onValueHostStateChanged: (valueHost, state) => { },
+     *   onValidated: (validationManager, validationResults)=> { },
+     *   onValueHostValidated: (valueHost, validationResult) => { },
+     *   onValueChanged: (valueHost, oldValue) => { },
+     *   onInputValueChanged: (valueHost, oldValue) => { }
      * }
      * ```
      */
@@ -124,6 +124,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     private readonly _config: ValidationManagerConfig;
 
     /**
+     * Access to the ValidationServices.
+     * @internal
      * The ValidationManager and IValidationServices are crosslinked.
      * A instance of ValidationManager is passed to the IValidationServices's constructor
      * and that constructor sets this property.
@@ -375,7 +377,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using doNotSaveNativeValue for more clarity.
+     * Recommend using @link doNotSaveNativeValue|doNotSaveNativeValue() for more clarity.
      */
     public get isValid(): boolean {
         for (let vh of this.inputValueHost())
@@ -401,10 +403,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
-     * by specifying that valueHostName in AssociatedValueHostName.
+     * by specifying that valueHostName in associatedValueHostName.
      * Each time its called, all previous business logic errors are abandoned.
      * Internally, a BusinessLogicInputValueHost is added to the list of ValueHosts to hold any
-     * error that lacks an AssociatedValueHostName.
+     * error that lacks an associatedValueHostName.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      */
     public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void {

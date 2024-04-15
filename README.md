@@ -4,7 +4,7 @@ I'm looking for an assessment of the architecture. I've been tweaking and refact
 it plenty in hopes it's easy to use and really delivers. Getting the API right early on
 avoids the hassle of breaking changes later. --- Peter Blum*
 
-*For full documentation, go to [http://jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc)*
+*For the full API, go to [http://jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc)*
 
 Back in the day (2002-2013), I created a successful suite of Web
 Controls for ASP.NET WebForms which featured a complete replacement to
@@ -186,11 +186,12 @@ Jivs provides numerous `Condition classes`.
 - `AllMatchCondition`, `AnyMatchCondition` - For creating complex logic by using multiple `Conditions`.
 </details>
 
-To use them, you need to populate their `ConditionDescriptor type`, which has configuration properties specific to its class. 
+To use them, you need to populate their `ConditionDescriptor`, which has configuration properties specific to its class. 
+> Like all Descriptors in Jivs, they only have properties, many of which are optional. They are not a classes either. You just create a plain old JavaScript object strongly typed with its interface.
 
-We'll work with this example. Here's the rule we want to implement: Compare a date from the Input to today's date.
+We'll work with this example: Compare a date from the Input to today's date.
 
-The `EqualToCondition` is the right Condition for the job.  You need to create a `EqualToConditionDescriptor` that Jivs will use later to prepare the `EqualToCondition`. Here's that `ConditionDescriptor`:
+The `EqualToCondition` is the right Condition for the job.  You need to create a `EqualToConditionDescriptor` that Jivs will use later to prepare the `EqualToCondition`. Here's its `ConditionDescriptor`:
 ```ts
 interface EqualToConditionDescriptor {
     type: string;
@@ -209,7 +210,7 @@ Your new code should look like this, where `ValueHostName` is your identifier fo
 {
     type: 'EqualTo';
     valueHostName: 'SignedOnDate';
-    secondValue: date object representing Today;
+    secondValue: ...date object representing Today...;
 }
 ```
 > A fluent syntax is also part of Jivs. It simplifies manual entry of building conditions and several other objects that will be [shown later](#Fluent-syntax). We'll look at it once you have the full picture using these Descriptor objects.
@@ -307,15 +308,17 @@ When we configure the above Model for Jivs, you can imagine something like this 
   }
 ]
 ```
-In fact, that’s about right, only with more properties. Those objects use the `InputValueHostDescriptor type`. Like all Descriptors in Jivs, it only has properties, many of which are optional. It is not a class either. You just create a plain old JavaScript object strongly typed with this interface.
+In fact, that’s about right, only with more properties. Those objects use the `InputValueHostDescriptor type`. 
+
+> Like all Descriptors in Jivs, it only has properties, many of which are optional. It is not a class either. You just create a plain old JavaScript object strongly typed with this interface.
 ```ts
 interface ValueHostDescriptor
 {
   type?: string;
   name: string;
+  dataType?: string;
   label?: string;
   labell10n?: string | null;
-  dataType?: string;
   initialValue?: any;
 }
 interface InputValueHostDescriptor extends ValueHostDescriptor 
@@ -335,15 +338,15 @@ Here’s how your configuration actually looks:
   {
     type: 'Input',
     name: 'FirstName',
-    label: 'First name', // localized, of course!
     dataType: 'String',
+    label: 'First name', // localized, of course!
     validatorDescriptors: [ InputValidatorDescriptors ]
   },
   {
     type: 'Input',
     name: 'LastName',
-    label: 'Last name',
     dataType: 'String',
+    label: 'Last name',
     validatorDescriptors: [ InputValidatorDescriptors ]
   }
 ]
@@ -374,7 +377,8 @@ The `ValueHost` names are also used to help a `Condition` retrieve a value from 
 
 Validation is really just a process that evaluates some rule and returns a result. If there was an error, the result involves an error message. 
 
-The `InputValidator class` handles this work. Once again, we use a Descriptor to configure it. Like all Descriptors in Jivs, it only has properties, many of which are optional. It is not a class either. You just create a plain old JavaScript object strongly typed with this interface.
+The `InputValidator class` handles this work. Once again, we use a Descriptor to configure it. 
+> Like all Descriptors in Jivs, it only has properties, many of which are optional. It is not a class either. You just create a plain old JavaScript object strongly typed with this interface.
 ```ts
 interface InputValidatorDescriptor {
     conditionDescriptor: null | ConditionDescriptor;
@@ -407,8 +411,8 @@ Now let’s place an `InputValidatorDescriptor` into our previous example using 
 [{
   type: 'Input',
   name: 'FirstName',
-  label: 'First name',
   dataType: 'String',
+  label: 'First name',
   validatorDescriptors: [{
     conditionDescriptor: {
       type: 'RequiredText',
@@ -431,8 +435,8 @@ Now let’s place an `InputValidatorDescriptor` into our previous example using 
 {
   type: 'Input',
   name: 'LastName',
-  label: 'Last name',
   dataType: 'String',
+  label: 'Last name',
   validatorDescriptors: [{
     conditionDescriptor: {
       type: 'RequiredText',
@@ -647,4 +651,120 @@ let fieldNameConfig = configInput('fieldname')
 - `conditionType` should be meaningful. Try to limit it to characters that work within JSON and code, such as letters, digits, underscore, space, and dash. Also try to keep it short and memorable as users will select your Condition by specifying its value in the Descriptors passed into the `ValidationManager`.
 - `conditionType` values are case sensitive.
 - You may be building replacements for the Condition classes supplied in Jivs especially if you prefer a third party's validation schema code. In that case, implement the `IConditionFactory interface` to expose your replacements. Always attach your factory to the `ValidationServices class` in the `createValidationServices function`.
+<a name="lookupkeys"></a>
+## Lookup Keys: Data Types and companion tools
+To really do the job well, Jivs wants to know specific data types associated with each Model property. You've seen the property "dataType" when configuring a ValueHost.
+```ts
+interface ValueHostDescriptor
+{
+  name: string;
+  dataType?: string;
+	... other properties omitted ...
+}
+// using that Descriptor
+{
+  type: 'Input',
+  name: 'FirstName',
+  dataType: 'String',
+  label: 'First name',
+  validatorDescriptors: [ InputValidatorDescriptors ]
+},
 
+```
+You must assign dataType to the name of a data type when the data is not a string, boolean, number or Date, and should assign it for those types when you need to be more precise, such as an "EmailAddress" instead of just "String".
+
+We use the term "Lookup Key" when specifying the name of a data type. Please [see this page](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all supplied with Jivs and how they are used.
+
+A Lookup Key is very powerful! It connects up with these behaviors:
+- <a href="#datatypeidentifier">Identifiers</a>
+- <a href="#datatypeconverter">Converters</a>
+- <a href="#datatypeformatter">Formatters</a>
+- <a href="#datatypecomparer">Comparers</a>
+- <a href="#datatypecheckgenerator">DataTypeCheckGenerators</a>
+
+Let's look at each.
+<a name="datatypeidentifier"></a>
+### Identifiers
+You can leave the dataType property blank and Jivs will identify its name for you with implementations of `IDataTypeIdentifier`. These come preinstalled: "String", "Number", "Boolean", and "Date" (Date object using only the date part in UTC).
+
+Add your own when you have a class representing some data. Check out an actual example [here](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts). In this example, we have a new class, RelativeDate. We've created a new Lookup Key name called "RelativeDate" and associated it with a new DataTypeIdentifier.
+
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+<a name="datatypeconverter"></a>
+### Converters
+Change the value supplied to Conditions with implementations of `IDataTypeConverter`.
+
+Consider these *Use Cases*:
+- Provide case insensitive string matching by converting to lowercase. We've included a Converter for that, with "CaseInsensitive" as its Lookup Key. In this case, the Lookup Key should not be assigned to the ValueHost because its limited to the Condition. Many ConditionDescriptors have conversionLookupKey and secondConversionLookupKey properties where you assign the Lookup Key. 
+
+	Here is the NotEqualToCondition configured with CaseInsensitive:
+	```ts
+	{
+	  type: 'Input',
+	  name: 'FirstName',
+	  dataType: 'String',
+	  label: 'First name',
+	  validatorDescriptors: [ 
+	  	{
+	  	  conditionDescriptor: 
+	  	  {
+	  	    type: 'NotEqual',
+	  	    secondValueHostName: 'LastName',
+	  	    conversionLookupKey: 'CaseInsensitive',
+	  	    secondConversionLookupKey: 'CaseInsensitive'
+	  	  }
+	  	}
+	  ]
+	},
+	```
+- Changing a Date object into something other than a Date+Time. You may be interested only in the date, the time, or even parts like Month or Hours. 
+	
+	Jivs includes these converters: "Date" (UTC date only), "LocalDate" (local date only), "TimeOfDay" (omits seconds), "TimeOfDayHMS" (includes seconds).
+	
+	We also have examples that introduce Month/Year [here](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/MonthYearConverter.ts) and Month/Day [here](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/AnniversaryConverter.ts).
+	
+	These Lookup Keys are usually assigned to the dataType property on the ValueHost.
+- Perhaps you want to compare the difference in days between two dates. For that you need to convert a Date object into a number -- the number of days since some fixed point. 
+	
+	Jivs includes the "TotalDays" Lookup Key and converter. Use it on a ConditionDescriptor.
+- Changing your own class (already setup with an Identifier) into something as simple as a string, number, or Date also requires a Converter. You will see how in [the RelativeDate class example](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts) and also in an example built around [a TimeSpan class](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts).
+- Additional converters already supplied with these Lookup Keys: "Integer" (uses Math.round), "Uppercase", "Lowercase".
+- Suppose that you have a class "FullName" with properties of FirstName and LastName. Create a converter to return a string that is both concatenated.
+- Suppose that you have a class "StreetAddress" with properties of Street, City, Region, PostalCode. Create a converter to return just the postal code.
+
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+<a name="datatypeformatter"></a>
+### Formatters
+Formatters provide localized strings for the tokens within error messages with implementations of `IDataTypeFormatter`. For example, if validating a date against a range, your error message may look like this: 
+
+`"The value must be between {Minimum} and {Maximum}."`
+
+Formatters initially use the Lookup Key from the ValueHost.dataType. So if you assigned dataType="Date", expect the short date format. 
+
+`"The value must be between 12/31/1999 and 12/31/2005."`
+
+To override it, such as using the abbreviated date format, include the Lookup Key within the token like this:
+	
+`"The value must be between {Minimum:AbbrevDate} and {Maximum:AbbrevDate}."`
+
+`"The value must be between Dec 31, 1999 and Dec 31, 2005."`
+
+Jivs provides these formatters: "ShortDate", "AbbrevDate", "AbbrevDOWDate" (adds day of week), "LongDate", "LongDOWDate" (adds day of week), "TimeOfDay" (omits seconds), "TimeOfDayHMS", "Integer", "Currency", "Percentage" (where 1.0 = 100%), "Percentage100" (where 100 = 100%), "Uppercase", "Lowercase", "Boolean" (say "True" and "False" for boolean values) and "YesNoBoolean" (say "Yes" or "No" for boolean values).
+
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+<a name="datatypecomparers"></a>
+### Comparers
+Staying with the "single responsibility pattern", Jivs recommends that you use its comparison Conditions (Range, Equal, NotEqual, LessThan, etc) for all data types. It already knows how to handle comparing strings, numbers, dates and booleans. It does so with implementations of IDataTypeComparer. It also uses the Converters to get a Date, number or string from the value. So its pretty unusual to need to provide your own Comparer class. But its here if you need it.
+
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+<a name="datatypecheckgenerator"></a>
+### DataTypeCheckGenerator
+In Jivs, "Data Type Check" means a Condition that can determine if the data supplied is fully compatible with what the model property intended. 
+
+Jivs provides the DataTypeCheckCondition, and it handles many cases simply by checking if the Input value (from the UI editor) was successfully converted to the native value. For example, converting a date string "31-May-2030" into a Date object. As a rule, when that conversion fails, Jivs expects you to call `ValueHost.setValueToUndefined()`. DataTypeCheckCondition reports an error only when Input value is assigned and native value is undefined.
+	
+DataTypeCheck doesn't work when no conversion is required. Strings are a great example of a native value that doesn't require conversion. Strings represent all kinds of data. For example, an email address or a phone number. For these cases, create a Lookup Key ("EmailAddress", "PhoneNumber") and implement a `IDataTypeCheckGenerator `that supplies a regular expression to validate the string.
+	
+Take a look at [this example for Email Address](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts).
+
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
