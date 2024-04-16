@@ -33,7 +33,7 @@ import {
     _genDCGreaterThanOrEqual, _genDCGreaterThanOrEqualValue, _genDCGreaterThanValue,
     _genDCLessThan, _genDCLessThanOrEqual, _genDCLessThanOrEqualValue, _genDCLessThanValue,
     _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCRequiredText,
-    _genDCStringLength, _genDCStringNotEmpty, initFluentConditions
+    _genDCStringLength, _genDCStringNotEmpty, enableFluentConditions
 } from "./FluentConditionCollectorExtensions";
 
 // How TypeScript merges functions with the FluentValidatorCollector class
@@ -209,7 +209,7 @@ declare module "./../ValueHosts/Fluent"
  * Inside of a function to allow apps that don't use these fluent classes
  * to avoid any time setting up something not used.
  */
-export function initFluent(): void {
+export function enableFluent(): void {
     if (typeof FluentValidatorCollector.prototype.dataTypeCheck === 'function')
         return;
     // How JavaScript sees the functions added to the FluentValidatorCollector class
@@ -247,7 +247,7 @@ export function initFluent(): void {
     FluentValidatorCollector.prototype.gte = greaterThanOrEqual;
     //#endregion shorter names for some
 
-    initFluentConditions();
+    enableFluentConditions();
 }
 
 // --- Actual fluent functions -------

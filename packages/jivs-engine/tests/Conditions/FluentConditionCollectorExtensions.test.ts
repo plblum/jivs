@@ -3,7 +3,7 @@ import { FluentConditionCollector, configChildren } from "../../src/ValueHosts/F
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { AllMatchConditionDescriptor, AnyMatchConditionDescriptor, CountMatchesConditionDescriptor, DataTypeCheckConditionDescriptor, EqualToConditionDescriptor, GreaterThanConditionDescriptor, GreaterThanOrEqualConditionDescriptor, LessThanConditionDescriptor, LessThanOrEqualConditionDescriptor, NotEqualToConditionDescriptor, NotNullConditionDescriptor, RangeConditionDescriptor, RegExpConditionDescriptor, RequiredTextConditionDescriptor, StringLengthConditionDescriptor, StringNotEmptyConditionDescriptor } from '../../src/Conditions/ConcreteConditions';
 import { ConditionDescriptor, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
-import { initFluentConditions } from '../../src/Conditions/FluentConditionCollectorExtensions';
+import { enableFluentConditions } from '../../src/Conditions/FluentConditionCollectorExtensions';
 import { EvaluateChildConditionResultsDescriptor } from '../../src/Conditions/EvaluateChildConditionResultsBase';
 import { InputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
 
@@ -21,14 +21,14 @@ function TestFluentConditionCollector(testItem: FluentConditionCollector,
 
 describe('dataTypeCheck on configChildren', () => {
     test('With no parameters creates InputValidatorDescriptor with DataTypeCheckCondition with only type assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().dataTypeCheck();
         TestFluentConditionCollector(testItem, <DataTypeCheckConditionDescriptor>{
             type: ConditionType.DataTypeCheck
         });
     });
     test('With only errorMessage creates InputValidatorDescriptor with DataTypeCheckCondition with only type assigned and errorMessage assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().dataTypeCheck();
         TestFluentConditionCollector(testItem, <DataTypeCheckConditionDescriptor>{
             type: ConditionType.DataTypeCheck
@@ -39,7 +39,7 @@ describe('dataTypeCheck on configChildren', () => {
 
 describe('regExp on configChildren', () => {
     test('With expression assigned to a string, creates InputValidatorDescriptor with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().regExp( '\\d');
         TestFluentConditionCollector(testItem, <RegExpConditionDescriptor>{
             type: ConditionType.RegExp,
@@ -47,7 +47,7 @@ describe('regExp on configChildren', () => {
         });
     });
     test('With expression assigned to a string and condDesc={}, creates InputValidatorDescriptor with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().regExp('\\d', null, {});
         TestFluentConditionCollector(testItem, <RegExpConditionDescriptor>{
             type: ConditionType.RegExp,
@@ -55,7 +55,7 @@ describe('regExp on configChildren', () => {
         });
     });
     test('With ValueHostName assigned and expression assigned to a string, creates InputValidatorDescriptor with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().regExp('\\d', null, null, 'Field2');
         TestFluentConditionCollector(testItem, <RegExpConditionDescriptor>{
             type: ConditionType.RegExp,
@@ -64,7 +64,7 @@ describe('regExp on configChildren', () => {
         });
     });
     test('With expression assigned to a RegExp, creates InputValidatorDescriptor with RegExpCondition with type=RegExp and expression assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().regExp(/\d/i);
         TestFluentConditionCollector(testItem, <RegExpConditionDescriptor>{
             type: ConditionType.RegExp,
@@ -72,7 +72,7 @@ describe('regExp on configChildren', () => {
         });
     });
     test('With expression and ignoreCase=true creates InputValidatorDescriptor with RegExpCondition with type=RegExp, expressionAsString, and ignoreCase=true assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().regExp('\\d', true);
         TestFluentConditionCollector(testItem, <RegExpConditionDescriptor>{
             type: ConditionType.RegExp,
@@ -81,7 +81,7 @@ describe('regExp on configChildren', () => {
         });
     });
     test('With expression and ignoreCase=false creates InputValidatorDescriptor with RegExpCondition with type=RegExp, expressionAsString, and ignoreCase=false assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().regExp('\\d', false);
         TestFluentConditionCollector(testItem, <RegExpConditionDescriptor>{
             type: ConditionType.RegExp,
@@ -90,7 +90,7 @@ describe('regExp on configChildren', () => {
         });
     });
     test('With expression as text, ignoreCase=null, and ivParam with not=true, creates InputValidatorDescriptor with RegExpCondition with type=RegExp, expressionAsString, and not=true assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().regExp('\\d', null, { not: true });
         TestFluentConditionCollector(testItem, <RegExpConditionDescriptor>{
             type: ConditionType.RegExp,
@@ -102,7 +102,7 @@ describe('regExp on configChildren', () => {
 
 describe('range on configChildren', () => {
     test('With minimum and maximum assigned, creates InputValidatorDescriptor with RangeCondition with type=Range, minimum and maximum assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().range(1, 4);
         TestFluentConditionCollector(testItem, <RangeConditionDescriptor>{
             type: ConditionType.Range,
@@ -111,7 +111,7 @@ describe('range on configChildren', () => {
         });
     });
     test('With ValueHostName, minimum and maximum assigned, creates InputValidatorDescriptor with RangeCondition with type=Range, minimum, maximum, and valueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().range(1, 4, 'Field2');
         TestFluentConditionCollector(testItem, <RangeConditionDescriptor>{
             type: ConditionType.Range,
@@ -123,7 +123,7 @@ describe('range on configChildren', () => {
 
 
     test('With minimum assigned and maximum=null, creates InputValidatorDescriptor with RangeCondition with type=Range, minimum assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().range(1, null);
         TestFluentConditionCollector(testItem, <RangeConditionDescriptor>{
             type: ConditionType.Range,
@@ -131,7 +131,7 @@ describe('range on configChildren', () => {
         });
     });
     test('With maximum assigned and minimum=null, creates InputValidatorDescriptor with RangeCondition with type=Range, maximum assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().range(null, 4);
         TestFluentConditionCollector(testItem, <RangeConditionDescriptor>{
             type: ConditionType.Range,
@@ -143,7 +143,7 @@ describe('range on configChildren', () => {
 
 describe('equalToValue on configChildren', () => {
     test('With secondValue assigned, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().equalToValue(1);
         TestFluentConditionCollector(testItem, <EqualToConditionDescriptor>{
             type: ConditionType.EqualTo,
@@ -151,7 +151,7 @@ describe('equalToValue on configChildren', () => {
         });
     });
     test('With secondValue assigned and condDesc={}, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().equalToValue(1, {});
         TestFluentConditionCollector(testItem, <EqualToConditionDescriptor>{
             type: ConditionType.EqualTo,
@@ -159,7 +159,7 @@ describe('equalToValue on configChildren', () => {
         });
     });
     test('With ValueHostName and secondValue assigned, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo, secondValue and valueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().equalToValue(1, null, 'Field2');
         TestFluentConditionCollector(testItem, <EqualToConditionDescriptor>{
             type: ConditionType.EqualTo,
@@ -170,7 +170,7 @@ describe('equalToValue on configChildren', () => {
 
 
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().equalToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <EqualToConditionDescriptor>{
             type: ConditionType.EqualTo,
@@ -182,7 +182,7 @@ describe('equalToValue on configChildren', () => {
 });
 describe('equalTo on configChildren', () => {
     test('With secondValueHostName assigned, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().equalTo('Field2');
         TestFluentConditionCollector(testItem, <EqualToConditionDescriptor>{
             type: ConditionType.EqualTo,
@@ -190,7 +190,7 @@ describe('equalTo on configChildren', () => {
         });
     });
     test('With secondValueHostName assigned and condDesc={}, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().equalTo('Field2', {});
         TestFluentConditionCollector(testItem, <EqualToConditionDescriptor>{
             type: ConditionType.EqualTo,
@@ -198,7 +198,7 @@ describe('equalTo on configChildren', () => {
         });
     });    
     test('With valueHostName and secondValueHostName, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo, valueHostName and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().equalTo('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <EqualToConditionDescriptor>{
             type: ConditionType.EqualTo,
@@ -208,7 +208,7 @@ describe('equalTo on configChildren', () => {
     });
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().equalTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <EqualToConditionDescriptor>{
             type: ConditionType.EqualTo,
@@ -221,7 +221,7 @@ describe('equalTo on configChildren', () => {
 
 describe('notEqualToValue on configChildren', () => {
     test('With secondValue assigned, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notEqualToValue(1);
         TestFluentConditionCollector(testItem, <NotEqualToConditionDescriptor>{
             type: ConditionType.NotEqualTo,
@@ -229,7 +229,7 @@ describe('notEqualToValue on configChildren', () => {
         });
     });
     test('With secondValue assigned and condDesc={}, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notEqualToValue(1, {});
         TestFluentConditionCollector(testItem, <NotEqualToConditionDescriptor>{
             type: ConditionType.NotEqualTo,
@@ -237,7 +237,7 @@ describe('notEqualToValue on configChildren', () => {
         });
     });
     test('With valueHostName and secondValue assigned, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo, valueHostName, and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notEqualToValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <NotEqualToConditionDescriptor>{
             type: ConditionType.NotEqualTo,
@@ -247,7 +247,7 @@ describe('notEqualToValue on configChildren', () => {
     });
 
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notEqualToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <NotEqualToConditionDescriptor>{
             type: ConditionType.NotEqualTo,
@@ -259,7 +259,7 @@ describe('notEqualToValue on configChildren', () => {
 });
 describe('notEqualTo on configChildren', () => {
     test('With secondValueHostName assigned, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notEqualTo('Field2');
         TestFluentConditionCollector(testItem, <NotEqualToConditionDescriptor>{
             type: ConditionType.NotEqualTo,
@@ -267,7 +267,7 @@ describe('notEqualTo on configChildren', () => {
         });
     });
     test('With secondValueHostName assigned and condDesc={}, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notEqualTo('Field2', {});
         TestFluentConditionCollector(testItem, <NotEqualToConditionDescriptor>{
             type: ConditionType.NotEqualTo,
@@ -275,7 +275,7 @@ describe('notEqualTo on configChildren', () => {
         });
     });
     test('With valueHostName and secondValueHostName assigned, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notEqualTo('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <NotEqualToConditionDescriptor>{
             type: ConditionType.NotEqualTo,
@@ -285,7 +285,7 @@ describe('notEqualTo on configChildren', () => {
     });
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notEqualTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <NotEqualToConditionDescriptor>{
             type: ConditionType.NotEqualTo,
@@ -298,7 +298,7 @@ describe('notEqualTo on configChildren', () => {
 
 describe('lessThanValue on configChildren', () => {
     test('With secondValue assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanValue(1);
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -307,7 +307,7 @@ describe('lessThanValue on configChildren', () => {
     });
     
     test('With valueHostName and secondValue assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan, valueHostName and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -316,7 +316,7 @@ describe('lessThanValue on configChildren', () => {
         });
     });
     test('Shorthand version "ltValue" With secondValue, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().ltValue(1);
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -325,7 +325,7 @@ describe('lessThanValue on configChildren', () => {
     });
 
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -337,7 +337,7 @@ describe('lessThanValue on configChildren', () => {
 });
 describe('lessThan on configChildren', () => {
     test('With secondValueHostName assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThan('Field2');
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -346,7 +346,7 @@ describe('lessThan on configChildren', () => {
         });
     });
     test('With secondValueHostName assigned and condDesc={}, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThan('Field2', {});
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -354,7 +354,7 @@ describe('lessThan on configChildren', () => {
         });
     });
     test('With valueHostName and secondValueHostName assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThan('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -364,7 +364,7 @@ describe('lessThan on configChildren', () => {
     });
 
     test('Shorthand version "lt" with secondValueHostName assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lt('Field2');
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -372,7 +372,7 @@ describe('lessThan on configChildren', () => {
         });
     });
     test('Shorthand version "lt" with valueHostName and secondValueHostName assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lt('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -383,7 +383,7 @@ describe('lessThan on configChildren', () => {
 
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThan( 'Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <LessThanConditionDescriptor>{
             type: ConditionType.LessThan,
@@ -395,7 +395,7 @@ describe('lessThan on configChildren', () => {
 });
 describe('lessThanOrEqualValue on configChildren', () => {
     test('With secondValue assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanOrEqualValue(1);
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -403,7 +403,7 @@ describe('lessThanOrEqualValue on configChildren', () => {
         });
     });
     test('With secondValue assigned and condDesc={}, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanOrEqualValue(1, {});
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -412,7 +412,7 @@ describe('lessThanOrEqualValue on configChildren', () => {
     });    
 
     test('With valueHostName and secondValue assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual, valueHostName, and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanOrEqualValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -422,7 +422,7 @@ describe('lessThanOrEqualValue on configChildren', () => {
     });
 
     test('Shorthand version "lteValue" with secondValue assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lteValue(1);
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -431,7 +431,7 @@ describe('lessThanOrEqualValue on configChildren', () => {
     });
 
     test('Shorthand version "lteValue" with secondValue assigned and condDesc={}, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lteValue(1, {});
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -439,7 +439,7 @@ describe('lessThanOrEqualValue on configChildren', () => {
         });
     });
     test('Shorthand version "lteValue" with valueHostName and secondValue assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual, valueHostName, and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lteValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -449,7 +449,7 @@ describe('lessThanOrEqualValue on configChildren', () => {
     });
 
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -461,7 +461,7 @@ describe('lessThanOrEqualValue on configChildren', () => {
 });
 describe('lessThanOrEqual on configChildren', () => {
     test('With secondValueHostName assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanOrEqual('Field2');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -469,7 +469,7 @@ describe('lessThanOrEqual on configChildren', () => {
         });
     });
     test('With secondValueHostName assigned and condDesc={}, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanOrEqual('Field2', {});
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -477,7 +477,7 @@ describe('lessThanOrEqual on configChildren', () => {
         });
     });
     test('With valueHostName and secondValueHostName assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanOrEqual('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -487,7 +487,7 @@ describe('lessThanOrEqual on configChildren', () => {
     });
 
     test('Shorthand version "lte" with secondValueHostName assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lte('Field2');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -495,7 +495,7 @@ describe('lessThanOrEqual on configChildren', () => {
         });
     });
     test('Shorthand version "lte" with valueHostName and secondValueHostName assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lte('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -505,7 +505,7 @@ describe('lessThanOrEqual on configChildren', () => {
     });
 
     test('With secondValueHostName, and secondConversionLookupKey assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().lessThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionDescriptor>{
             type: ConditionType.LessThanOrEqual,
@@ -519,7 +519,7 @@ describe('lessThanOrEqual on configChildren', () => {
 
 describe('greaterThanValue on configChildren', () => {
     test('With secondValue assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanValue(1);
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -527,7 +527,7 @@ describe('greaterThanValue on configChildren', () => {
         });
     });
     test('With secondValue assigned and condDesc={}, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanValue(1, {});
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -535,7 +535,7 @@ describe('greaterThanValue on configChildren', () => {
         });
     });
     test('With valueHostName and secondValue assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan, valueHostName, and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -545,7 +545,7 @@ describe('greaterThanValue on configChildren', () => {
     });
 
     test('Shorthand version "gtValue" with secondValue assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gtValue(1);
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -553,7 +553,7 @@ describe('greaterThanValue on configChildren', () => {
         });
     });
     test('Shorthand version "gtValue" with secondValue assigned and condDesc={}, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gtValue(1, {});
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -561,7 +561,7 @@ describe('greaterThanValue on configChildren', () => {
         });
     });
     test('Shorthand version "gtValue" with valueHostName and secondValue assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan, valueHostName, and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gtValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -571,7 +571,7 @@ describe('greaterThanValue on configChildren', () => {
     });
 
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -584,7 +584,7 @@ describe('greaterThanValue on configChildren', () => {
 
 describe('greaterThan on configChildren', () => {
     test('With secondValueHostName assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThan('Field2');
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -592,7 +592,7 @@ describe('greaterThan on configChildren', () => {
         });
     });
     test('With secondValueHostName assigned and condDesc={}, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThan('Field2', {});
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -600,7 +600,7 @@ describe('greaterThan on configChildren', () => {
         });
     });
    test('With valueHostName and secondValueHostName assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThan('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -609,7 +609,7 @@ describe('greaterThan on configChildren', () => {
         });
     });
     test('Shorthand version "gt" with secondValueHostName assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gt('Field2');
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -617,7 +617,7 @@ describe('greaterThan on configChildren', () => {
         });
     });
     test('Shorthand version "gt" with secondValueHostName assigned and condDesc={}, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gt('Field2', {});
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -625,7 +625,7 @@ describe('greaterThan on configChildren', () => {
         });
     });
     test('Shorthand version "gt" with valueHostName and secondValueHostName assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gt('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -635,7 +635,7 @@ describe('greaterThan on configChildren', () => {
     });
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <GreaterThanConditionDescriptor>{
             type: ConditionType.GreaterThan,
@@ -647,7 +647,7 @@ describe('greaterThan on configChildren', () => {
 });
 describe('greaterThanOrEqualValue on configChildren', () => {
     test('With secondValue assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanOrEqualValue(1);
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -655,7 +655,7 @@ describe('greaterThanOrEqualValue on configChildren', () => {
         });
     });
     test('With secondValue assigned and condDesc={}, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanOrEqualValue(1, {});
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -663,7 +663,7 @@ describe('greaterThanOrEqualValue on configChildren', () => {
         });
     });
     test('With valueHostName and secondValue assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, valueHostName, and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanOrEqualValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -672,7 +672,7 @@ describe('greaterThanOrEqualValue on configChildren', () => {
         });
     });
     test('Shorthand version "gteValue" with secondValue assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gteValue(1);
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -680,7 +680,7 @@ describe('greaterThanOrEqualValue on configChildren', () => {
         });
     });
     test('Shorthand version "gteValue" with secondValue assigned and condDesc={}, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gteValue(1, {});
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -688,7 +688,7 @@ describe('greaterThanOrEqualValue on configChildren', () => {
         });
     });
     test('Shorthand version "gteValue" with valueHostName and secondValue assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, valueHostName, and secondValue assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gteValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -698,7 +698,7 @@ describe('greaterThanOrEqualValue on configChildren', () => {
     });
 
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -710,7 +710,7 @@ describe('greaterThanOrEqualValue on configChildren', () => {
 });
 describe('greaterThanOrEqual on configChildren', () => {
     test('With secondValueHostName assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanOrEqual('Field2');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -718,7 +718,7 @@ describe('greaterThanOrEqual on configChildren', () => {
         });
     });
     test('With secondValueHostName assigned and condDesc={}, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanOrEqual('Field2', {});
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -727,7 +727,7 @@ describe('greaterThanOrEqual on configChildren', () => {
     });
 
     test('With valueHostName and secondValueHostName assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, valueHostName,  and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanOrEqual('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -737,7 +737,7 @@ describe('greaterThanOrEqual on configChildren', () => {
     });
 
     test('Shorthand version "gte" with secondValueHostName assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gte('Field2');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -745,7 +745,7 @@ describe('greaterThanOrEqual on configChildren', () => {
         });
     });
     test('Shorthand version "gte" with secondValueHostName assigned and condDesc={}, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gte('Field2', {});
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -753,7 +753,7 @@ describe('greaterThanOrEqual on configChildren', () => {
         });
     });
     test('Shorthand version "gte" with valueHostName and secondValueHostName assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().gte('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -763,7 +763,7 @@ describe('greaterThanOrEqual on configChildren', () => {
     });
 
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().greaterThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionDescriptor>{
             type: ConditionType.GreaterThanOrEqual,
@@ -776,7 +776,7 @@ describe('greaterThanOrEqual on configChildren', () => {
 
 describe('stringLength on configChildren', () => {
     test('With maximum assigned, creates InputValidatorDescriptor with StringLengthCondition with type=StringLength and maximum assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().stringLength(4);
         TestFluentConditionCollector(testItem, <StringLengthConditionDescriptor>{
             type: ConditionType.StringLength,
@@ -784,7 +784,7 @@ describe('stringLength on configChildren', () => {
         });
     });
     test('With maximum assigned and condDesc={}, creates InputValidatorDescriptor with StringLengthCondition with type=StringLength and maximum assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().stringLength(4, {});
         TestFluentConditionCollector(testItem, <StringLengthConditionDescriptor>{
             type: ConditionType.StringLength,
@@ -792,7 +792,7 @@ describe('stringLength on configChildren', () => {
         });
     });
     test('With valueHostName and maximum assigned, creates InputValidatorDescriptor with StringLengthCondition with type=StringLength, valueHostName, and maximum assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().stringLength(4, null, 'Field1');
         TestFluentConditionCollector(testItem, <StringLengthConditionDescriptor>{
             type: ConditionType.StringLength,
@@ -802,7 +802,7 @@ describe('stringLength on configChildren', () => {
     });
 
     test('With minimum and maximum assigned, creates InputValidatorDescriptor with StringLengthCondition with type=StringLength, minimum assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().stringLength(4, { minimum: 1 });
         TestFluentConditionCollector(testItem, <StringLengthConditionDescriptor>{
             type: ConditionType.StringLength,
@@ -814,21 +814,21 @@ describe('stringLength on configChildren', () => {
 
 describe('stringNotEmpty on configChildren', () => {
     test('With no parameters, creates InputValidatorDescriptor with StringNotEmptyCondition with type=StringNotEmpty assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().stringNotEmpty();
         TestFluentConditionCollector(testItem, <StringNotEmptyConditionDescriptor>{
             type: ConditionType.StringNotEmpty,
         });
     });
     test('With condDesc={}, creates InputValidatorDescriptor with StringNotEmptyCondition with type=StringNotEmpty assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().stringNotEmpty({});
         TestFluentConditionCollector(testItem, <StringNotEmptyConditionDescriptor>{
             type: ConditionType.StringNotEmpty,
         });
     });    
     test('With valueHostName assigned, creates InputValidatorDescriptor with StringNotEmptyCondition with type=StringNotEmpty and valueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().stringNotEmpty(null, 'Field1');
         TestFluentConditionCollector(testItem, <StringNotEmptyConditionDescriptor>{
             type: ConditionType.StringNotEmpty,
@@ -837,7 +837,7 @@ describe('stringNotEmpty on configChildren', () => {
     });
 
     test('With nullValueResult assigned, creates InputValidatorDescriptor with StringNotEmptyCondition with type=StringNotEmpty, nullValueResult assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().stringNotEmpty({ nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentConditionCollector(testItem, <StringNotEmptyConditionDescriptor>{
             type: ConditionType.StringNotEmpty,
@@ -848,7 +848,7 @@ describe('stringNotEmpty on configChildren', () => {
 
 describe('requiredText on configChildren', () => {
     test('With no parameters, creates InputValidatorDescriptor with RequiredTextCondition with type=RequiredText', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().requiredText();
         TestFluentConditionCollector(testItem, <RequiredTextConditionDescriptor>{
             type: ConditionType.RequiredText
@@ -856,14 +856,14 @@ describe('requiredText on configChildren', () => {
     });
 
     test('With condDesc={}, creates InputValidatorDescriptor with RequiredTextCondition with type=RequiredText', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().requiredText({});
         TestFluentConditionCollector(testItem, <RequiredTextConditionDescriptor>{
             type: ConditionType.RequiredText
         });
     });
     test('With valueHostName assigned, creates InputValidatorDescriptor with RequiredTextCondition with type=RequiredText and valueHostName', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().requiredText(null, 'Field1');
         TestFluentConditionCollector(testItem, <RequiredTextConditionDescriptor>{
             type: ConditionType.RequiredText,
@@ -872,7 +872,7 @@ describe('requiredText on configChildren', () => {
     });
 
     test('With emptyValue and nullValueResult assigned, creates InputValidatorDescriptor with RequiredTextCondition with type=RequiredText, emptyValue, nullValueResult assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().requiredText({ emptyValue: 'X', nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentConditionCollector(testItem, <RequiredTextConditionDescriptor>{
             type: ConditionType.RequiredText,
@@ -883,14 +883,14 @@ describe('requiredText on configChildren', () => {
 });
 describe('notNull on configChildren', () => {
     test('With no parameters, creates InputValidatorDescriptor with NotNullCondition with type=NotNull assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notNull();
         TestFluentConditionCollector(testItem, <NotNullConditionDescriptor>{
             type: ConditionType.NotNull
         });
     });
     test('With valueHostName assigned, creates InputValidatorDescriptor with NotNullCondition with type=NotNull and valueHostName assigned', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().notNull('Field1');
         TestFluentConditionCollector(testItem, <NotNullConditionDescriptor>{
             type: ConditionType.NotNull,
@@ -902,7 +902,7 @@ describe('notNull on configChildren', () => {
 
 describe('all on configChildren', () => {
     test('With empty configChildren, creates InputValidatorDescriptor with AllMatchCondition with type=AllMatch and conditionDescriptors=[]', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().all(configChildren());
         TestFluentConditionCollector(testItem, <AllMatchConditionDescriptor>{
                 type: ConditionType.All,
@@ -910,7 +910,7 @@ describe('all on configChildren', () => {
            });
     });
     test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with AllMatchCondition with type=AllMatch and conditionDescriptors populated with both conditions', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().all(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
         TestFluentConditionCollector(testItem, <AllMatchConditionDescriptor>{
                 type: ConditionType.All,
@@ -927,7 +927,7 @@ describe('all on configChildren', () => {
 });
 describe('any on configChildren', () => {
     test('With empty configChildren, creates InputValidatorDescriptor with AnyMatchCondition with type=AnyMatch and conditionDescriptors=[]', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().any(configChildren());
         TestFluentConditionCollector(testItem, <AnyMatchConditionDescriptor>{
                 type: ConditionType.Any,
@@ -935,7 +935,7 @@ describe('any on configChildren', () => {
             });
     });
     test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with AnyMatchCondition with type=AnyMatch and conditionDescriptors populated with both conditions', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().any(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
         TestFluentConditionCollector(testItem, <AnyMatchConditionDescriptor>{
                 type: ConditionType.Any,
@@ -953,7 +953,7 @@ describe('any on configChildren', () => {
 
 describe('countMatches on configChildren', () => {
     test('With minimum and maximum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, maximum, and conditionDescriptors=[]', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().countMatches(1, 2, configChildren());
         TestFluentConditionCollector(testItem, <CountMatchesConditionDescriptor>{
                 type: ConditionType.CountMatches,
@@ -963,7 +963,7 @@ describe('countMatches on configChildren', () => {
             });
     });
     test('With minimum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, and conditionDescriptors=[]', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().countMatches(1, null, configChildren());
         TestFluentConditionCollector(testItem, <CountMatchesConditionDescriptor>{
                 type: ConditionType.CountMatches,
@@ -972,7 +972,7 @@ describe('countMatches on configChildren', () => {
             });
     });
     test('With maximum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, maximum, and conditionDescriptors=[]', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().countMatches(null, 2, configChildren());
         TestFluentConditionCollector(testItem, <CountMatchesConditionDescriptor>{
                 type: ConditionType.CountMatches,
@@ -981,7 +981,7 @@ describe('countMatches on configChildren', () => {
             });
     });    
     test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch and conditionDescriptors populated with both conditions', () => {
-        initFluentConditions();
+        enableFluentConditions();
         let testItem = configChildren().countMatches(0, 2, configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
         TestFluentConditionCollector(testItem, <CountMatchesConditionDescriptor>{
                 type: ConditionType.CountMatches,

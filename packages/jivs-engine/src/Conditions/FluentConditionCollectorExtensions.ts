@@ -132,12 +132,12 @@ declare module "./../ValueHosts/Fluent"
 }
 
 /**
- * Initialization code that is called by initFluent(), but safe to call repeatedly.
+ * Initialization code that is called by enableFluent(), but safe to call repeatedly.
  * @remarks
  * Inside of a function to allow apps that don't use these fluent classes
  * to avoid any time setting up something not used.
  */
-export function initFluentConditions(): void {
+export function enableFluentConditions(): void {
     if (typeof FluentConditionCollector.prototype.dataTypeCheck === 'function')
         return;
     // How JavaScript sees the functions added to the FluentConditionCollector class

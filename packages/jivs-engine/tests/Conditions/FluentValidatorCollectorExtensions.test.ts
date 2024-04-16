@@ -1,7 +1,7 @@
 import { LookupKey } from './../../src/DataTypes/LookupKeys';
 import { InputValueHostDescriptor } from '../../src/Interfaces/InputValueHost';
 import { FluentCollectorBase, FluentValidatorCollector, configChildren, configInput } from "../../src/ValueHosts/Fluent";
-import { initFluent } from "../../src/Conditions/FluentValidatorCollectorExtensions";
+import { enableFluent } from "../../src/Conditions/FluentValidatorCollectorExtensions";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { InputValidatorDescriptor } from '../../src/Interfaces/InputValidator';
 import { AllMatchConditionDescriptor, AnyMatchConditionDescriptor, CountMatchesConditionDescriptor, DataTypeCheckConditionDescriptor, EqualToConditionDescriptor, GreaterThanConditionDescriptor, GreaterThanOrEqualConditionDescriptor, LessThanConditionDescriptor, LessThanOrEqualConditionDescriptor, NotEqualToConditionDescriptor, NotNullConditionDescriptor, RangeConditionDescriptor, RegExpConditionDescriptor, RequiredTextConditionDescriptor, StringLengthConditionDescriptor, StringNotEmptyConditionDescriptor } from '../../src/Conditions/ConcreteConditions';
@@ -21,7 +21,7 @@ function TestFluentValidatorCollector(testItem: FluentCollectorBase,
 
 describe('dataTypeCheck on configInput', () => {
     test('With no parameters creates InputValidatorDescriptor with DataTypeCheckCondition with only type assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').dataTypeCheck();
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <DataTypeCheckConditionDescriptor>{
@@ -30,7 +30,7 @@ describe('dataTypeCheck on configInput', () => {
         });
     });
     test('With only errorMessage creates InputValidatorDescriptor with DataTypeCheckCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').dataTypeCheck('Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <DataTypeCheckConditionDescriptor>{
@@ -40,7 +40,7 @@ describe('dataTypeCheck on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').dataTypeCheck('Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <DataTypeCheckConditionDescriptor>{
@@ -51,7 +51,7 @@ describe('dataTypeCheck on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').dataTypeCheck(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <DataTypeCheckConditionDescriptor>{
@@ -62,7 +62,7 @@ describe('dataTypeCheck on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with DataTypeCheckCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').dataTypeCheck('FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <DataTypeCheckConditionDescriptor>{
@@ -75,7 +75,7 @@ describe('dataTypeCheck on configInput', () => {
 
 describe('regExp on configInput', () => {
     test('With expression assigned to a string, creates InputValidatorDescriptor with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').regExp('\\d');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RegExpConditionDescriptor>{
@@ -85,7 +85,7 @@ describe('regExp on configInput', () => {
         });
     });
     test('With expression assigned to a RegExp, creates InputValidatorDescriptor with RegExpCondition with type=RegExp and expression assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').regExp(/\d/i);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RegExpConditionDescriptor>{
@@ -95,7 +95,7 @@ describe('regExp on configInput', () => {
         });
     });
     test('With expression and ignoreCase=true creates InputValidatorDescriptor with RegExpCondition with type=RegExp, expressionAsString, and ignoreCase=true assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').regExp('\\d', true);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RegExpConditionDescriptor>{
@@ -106,7 +106,7 @@ describe('regExp on configInput', () => {
         });
     });
     test('With expression and ignoreCase=false creates InputValidatorDescriptor with RegExpCondition with type=RegExp, expressionAsString, and ignoreCase=false assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').regExp('\\d', false);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RegExpConditionDescriptor>{
@@ -117,7 +117,7 @@ describe('regExp on configInput', () => {
         });
     });
     test('With expression as text, ignoreCase=null, and ivParam with not=true, creates InputValidatorDescriptor with RegExpCondition with type=RegExp, expressionAsString, and not=true assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').regExp('\\d', null, { not: true });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RegExpConditionDescriptor>{
@@ -128,7 +128,7 @@ describe('regExp on configInput', () => {
         });
     });
     test('With only errorMessage creates InputValidatorDescriptor with RegExpCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').regExp(null, null, null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RegExpConditionDescriptor>{
@@ -138,7 +138,7 @@ describe('regExp on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RegExpCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').regExp(null, null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RegExpConditionDescriptor>{
@@ -149,7 +149,7 @@ describe('regExp on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RegExpCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').regExp(null, null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RegExpConditionDescriptor>{
@@ -160,7 +160,7 @@ describe('regExp on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RegExpCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').regExp(null, null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RegExpConditionDescriptor>{
@@ -173,7 +173,7 @@ describe('regExp on configInput', () => {
 
 describe('range on configInput', () => {
     test('With minimum and maximum, creates InputValidatorDescriptor with RangeCondition with type=Range and minimum assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).range(1, 4);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RangeConditionDescriptor>{
@@ -185,7 +185,7 @@ describe('range on configInput', () => {
     });
 
     test('With minimum assigned and maximum=null, creates InputValidatorDescriptor with RangeCondition with type=Range, minimum assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').range(1, null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RangeConditionDescriptor>{
@@ -195,7 +195,7 @@ describe('range on configInput', () => {
         });
     });
     test('With maximum assigned and minimum=null, creates InputValidatorDescriptor with RangeCondition with type=Range, maximum assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').range(null, 4);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RangeConditionDescriptor>{
@@ -206,7 +206,7 @@ describe('range on configInput', () => {
     });
 
     test('With only errorMessage creates InputValidatorDescriptor with RangeCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').range(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RangeConditionDescriptor>{
@@ -216,7 +216,7 @@ describe('range on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RangeCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').range(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RangeConditionDescriptor>{
@@ -227,7 +227,7 @@ describe('range on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RangeCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').range(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RangeConditionDescriptor>{
@@ -238,7 +238,7 @@ describe('range on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RangeCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').range(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RangeConditionDescriptor>{
@@ -251,7 +251,7 @@ describe('range on configInput', () => {
 
 describe('equalToValue on configInput', () => {
     test('With secondValue, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).equalToValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -261,7 +261,7 @@ describe('equalToValue on configInput', () => {
         });
     });
     test('With secondValue assigned and condDesc=null, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).equalToValue(1, null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -271,7 +271,7 @@ describe('equalToValue on configInput', () => {
         });
     });
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).equalToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -283,7 +283,7 @@ describe('equalToValue on configInput', () => {
         });
     });
     test('With only errorMessage creates InputValidatorDescriptor with EqualToCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').equalToValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -293,7 +293,7 @@ describe('equalToValue on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with EqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').equalToValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -304,7 +304,7 @@ describe('equalToValue on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with EqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').equalToValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -315,7 +315,7 @@ describe('equalToValue on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with EqualToCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').equalToValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -327,7 +327,7 @@ describe('equalToValue on configInput', () => {
 });
 describe('equalTo on configInput', () => {
     test('With secondValueHostName, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').equalTo('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -338,7 +338,7 @@ describe('equalTo on configInput', () => {
     });
 
     test('With secondValueHostName assigned and condDesc=null, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).equalTo('Field2', null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -348,7 +348,7 @@ describe('equalTo on configInput', () => {
         });
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with EqualToCondition with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).equalTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -360,7 +360,7 @@ describe('equalTo on configInput', () => {
         })
     });
     test('With only errorMessage creates InputValidatorDescriptor with EqualToCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').equalTo('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -371,7 +371,7 @@ describe('equalTo on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with EqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').equalTo('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -383,7 +383,7 @@ describe('equalTo on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with EqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').equalTo('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -395,7 +395,7 @@ describe('equalTo on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with EqualToCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').equalTo('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <EqualToConditionDescriptor>{
@@ -409,7 +409,7 @@ describe('equalTo on configInput', () => {
 
 describe('notEqualToValue on configInput', () => {
     test('With secondValue, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).notEqualToValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -419,7 +419,7 @@ describe('notEqualToValue on configInput', () => {
         });
     });
     test('With secondValue assigned and condDesc=null, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).notEqualToValue(1, null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -429,7 +429,7 @@ describe('notEqualToValue on configInput', () => {
         });
     });
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).notEqualToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -441,7 +441,7 @@ describe('notEqualToValue on configInput', () => {
         });
     });
     test('With only errorMessage creates InputValidatorDescriptor with NotEqualToCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notEqualToValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -451,7 +451,7 @@ describe('notEqualToValue on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotEqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notEqualToValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -462,7 +462,7 @@ describe('notEqualToValue on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotEqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notEqualToValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -473,7 +473,7 @@ describe('notEqualToValue on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotEqualToCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notEqualToValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -485,7 +485,7 @@ describe('notEqualToValue on configInput', () => {
 });
 describe('notEqualTo on configInput', () => {
     test('With secondValueHostName, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notEqualTo('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -496,7 +496,7 @@ describe('notEqualTo on configInput', () => {
     });
 
     test('With secondValueHostName assigned and condDesc=null, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).notEqualTo('Field2', null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -506,7 +506,7 @@ describe('notEqualTo on configInput', () => {
         });
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with NotEqualToCondition with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).notEqualTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -518,7 +518,7 @@ describe('notEqualTo on configInput', () => {
         })
     });
     test('With only errorMessage creates InputValidatorDescriptor with NotEqualToCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notEqualTo('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -529,7 +529,7 @@ describe('notEqualTo on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotEqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notEqualTo('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -541,7 +541,7 @@ describe('notEqualTo on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotEqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notEqualTo('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -553,7 +553,7 @@ describe('notEqualTo on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotEqualToCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notEqualTo('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotEqualToConditionDescriptor>{
@@ -566,7 +566,7 @@ describe('notEqualTo on configInput', () => {
 });
 describe('lessThanValue on configInput', () => {
     test('With secondValue, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThanValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -576,7 +576,7 @@ describe('lessThanValue on configInput', () => {
         });
     });
     test('Shorthand version "ltValue" With secondValue, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).ltValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -587,7 +587,7 @@ describe('lessThanValue on configInput', () => {
     });
 
     test('With secondValue assigned and condDesc=null, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThanValue(1, null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -597,7 +597,7 @@ describe('lessThanValue on configInput', () => {
         });
     });
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -609,7 +609,7 @@ describe('lessThanValue on configInput', () => {
         });
     });
     test('With only errorMessage creates InputValidatorDescriptor with LessThanCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -619,7 +619,7 @@ describe('lessThanValue on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -630,7 +630,7 @@ describe('lessThanValue on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -641,7 +641,7 @@ describe('lessThanValue on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -653,7 +653,7 @@ describe('lessThanValue on configInput', () => {
 });
 describe('lessThan on configInput', () => {
     test('With secondValueHostName, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThan('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -663,7 +663,7 @@ describe('lessThan on configInput', () => {
         });
     });
     test('SShorthand version "lt" With secondValueHostName, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lt('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -673,7 +673,7 @@ describe('lessThan on configInput', () => {
         });
     });
     test('With secondValueHostName assigned and condDesc=null, creates InputValidatorDescriptor with LessThanCondition with type=LessThan and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThan('Field2', null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -683,7 +683,7 @@ describe('lessThan on configInput', () => {
         });
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with LessThanCondition with type=LessThan, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -695,7 +695,7 @@ describe('lessThan on configInput', () => {
         })
     });
     test('With only errorMessage creates InputValidatorDescriptor with LessThanCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThan('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -706,7 +706,7 @@ describe('lessThan on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThan('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -718,7 +718,7 @@ describe('lessThan on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThan('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -730,7 +730,7 @@ describe('lessThan on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThan('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanConditionDescriptor>{
@@ -743,7 +743,7 @@ describe('lessThan on configInput', () => {
 });
 describe('lessThanOrEqualValue on configInput', () => {
     test('With secondValue, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThanOrEqualValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -753,7 +753,7 @@ describe('lessThanOrEqualValue on configInput', () => {
         });
     });
     test('Shorthand version, "lteValue", With secondValue, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lteValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -763,7 +763,7 @@ describe('lessThanOrEqualValue on configInput', () => {
         });
     });
     test('With secondValue assigned and condDesc=null, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -773,7 +773,7 @@ describe('lessThanOrEqualValue on configInput', () => {
         });
     });
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -785,7 +785,7 @@ describe('lessThanOrEqualValue on configInput', () => {
         });
     });
     test('With only errorMessage creates InputValidatorDescriptor with LessThanOrEqualCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanOrEqualValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -795,7 +795,7 @@ describe('lessThanOrEqualValue on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanOrEqualValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -806,7 +806,7 @@ describe('lessThanOrEqualValue on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanOrEqualValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -817,7 +817,7 @@ describe('lessThanOrEqualValue on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanOrEqualCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanOrEqualValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -829,7 +829,7 @@ describe('lessThanOrEqualValue on configInput', () => {
 });
 describe('lessThanOrEqual on configInput', () => {
     test('With secondValueHostName, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanOrEqual('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -839,7 +839,7 @@ describe('lessThanOrEqual on configInput', () => {
         });
     });
     test('Shorthand version "lte" With secondValueHostName, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lte('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -851,7 +851,7 @@ describe('lessThanOrEqual on configInput', () => {
 
 
     test('With secondValueHostName assigned and condDesc=null, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThanOrEqual('Field2', null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -861,7 +861,7 @@ describe('lessThanOrEqual on configInput', () => {
         });
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with LessThanOrEqualCondition with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).lessThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -873,7 +873,7 @@ describe('lessThanOrEqual on configInput', () => {
         })
     });
     test('With only errorMessage creates InputValidatorDescriptor with LessThanOrEqualCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanOrEqual('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -884,7 +884,7 @@ describe('lessThanOrEqual on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanOrEqual('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -896,7 +896,7 @@ describe('lessThanOrEqual on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanOrEqual('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -908,7 +908,7 @@ describe('lessThanOrEqual on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with LessThanOrEqualCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').lessThanOrEqual('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <LessThanOrEqualConditionDescriptor>{
@@ -923,7 +923,7 @@ describe('lessThanOrEqual on configInput', () => {
 
 describe('greaterThanValue on configInput', () => {
     test('With secondValue, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThanValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -933,7 +933,7 @@ describe('greaterThanValue on configInput', () => {
         });
     });
     test('Shorthand version "gtValue" With secondValue, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).gtValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -944,7 +944,7 @@ describe('greaterThanValue on configInput', () => {
     });
 
     test('With secondValue assigned and condDesc=null, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThanValue(1, null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -954,7 +954,7 @@ describe('greaterThanValue on configInput', () => {
         });
     });
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -966,7 +966,7 @@ describe('greaterThanValue on configInput', () => {
         });
     });
     test('With only errorMessage creates InputValidatorDescriptor with GreaterThanCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -976,7 +976,7 @@ describe('greaterThanValue on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -987,7 +987,7 @@ describe('greaterThanValue on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -998,7 +998,7 @@ describe('greaterThanValue on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -1010,7 +1010,7 @@ describe('greaterThanValue on configInput', () => {
 });
 describe('greaterThan on configInput', () => {
     test('With secondValueHostName, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThan('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -1020,7 +1020,7 @@ describe('greaterThan on configInput', () => {
         });
     });
     test('Shorthand version "gt" with secondValueHostName, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').gt('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -1031,7 +1031,7 @@ describe('greaterThan on configInput', () => {
     });
 
     test('With secondValueHostName assigned and condDesc=null, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThan('Field2', null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -1041,7 +1041,7 @@ describe('greaterThan on configInput', () => {
         });
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with GreaterThanCondition with type=GreaterThan, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -1053,7 +1053,7 @@ describe('greaterThan on configInput', () => {
         })
     });
     test('With only errorMessage creates InputValidatorDescriptor with GreaterThanCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThan('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -1064,7 +1064,7 @@ describe('greaterThan on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThan('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -1076,7 +1076,7 @@ describe('greaterThan on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThan('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -1088,7 +1088,7 @@ describe('greaterThan on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThan('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanConditionDescriptor>{
@@ -1101,7 +1101,7 @@ describe('greaterThan on configInput', () => {
 });
 describe('greaterThanOrEqualValue on configInput', () => {
     test('With secondValue, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThanOrEqualValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1111,7 +1111,7 @@ describe('greaterThanOrEqualValue on configInput', () => {
         });
     });
     test('Shorthand version "gteValue" With secondValue, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).gteValue(1);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1121,7 +1121,7 @@ describe('greaterThanOrEqualValue on configInput', () => {
         });
     });
     test('With secondValue assigned and condDesc=null, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1131,7 +1131,7 @@ describe('greaterThanOrEqualValue on configInput', () => {
         });
     });
     test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1143,7 +1143,7 @@ describe('greaterThanOrEqualValue on configInput', () => {
         });
     });
     test('With only errorMessage creates InputValidatorDescriptor with GreaterThanOrEqualCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqualValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1153,7 +1153,7 @@ describe('greaterThanOrEqualValue on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqualValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1164,7 +1164,7 @@ describe('greaterThanOrEqualValue on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqualValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1175,7 +1175,7 @@ describe('greaterThanOrEqualValue on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanOrEqualCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqualValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1187,7 +1187,7 @@ describe('greaterThanOrEqualValue on configInput', () => {
 });
 describe('greaterThanOrEqual on configInput', () => {
     test('With secondValueHostName, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqual('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1197,7 +1197,7 @@ describe('greaterThanOrEqual on configInput', () => {
         });
     });
     test('Shorthand version "gte" with secondValueHostName, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqual('Field2');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1208,7 +1208,7 @@ describe('greaterThanOrEqual on configInput', () => {
     });
 
     test('With secondValueHostName assigned and condDesc=null, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThanOrEqual('Field2', null);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1218,7 +1218,7 @@ describe('greaterThanOrEqual on configInput', () => {
         });
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates InputValidatorDescriptor with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1', LookupKey.Integer).greaterThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1230,7 +1230,7 @@ describe('greaterThanOrEqual on configInput', () => {
         })
     });
     test('With only errorMessage creates InputValidatorDescriptor with GreaterThanOrEqualCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqual('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1241,7 +1241,7 @@ describe('greaterThanOrEqual on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqual('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1253,7 +1253,7 @@ describe('greaterThanOrEqual on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqual('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1265,7 +1265,7 @@ describe('greaterThanOrEqual on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with GreaterThanOrEqualCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').greaterThanOrEqual('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <GreaterThanOrEqualConditionDescriptor>{
@@ -1279,7 +1279,7 @@ describe('greaterThanOrEqual on configInput', () => {
 
 describe('stringLength on configInput', () => {
     test('With maximum, creates InputValidatorDescriptor with StringLengthCondition with type=StringLength and maximum assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringLength(4);
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringLengthConditionDescriptor>{
@@ -1290,7 +1290,7 @@ describe('stringLength on configInput', () => {
     });
 
     test('With minimum and maximum assigned, creates InputValidatorDescriptor with StringLengthCondition with type=StringLength, minimum assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringLength(4, { minimum: 1 });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringLengthConditionDescriptor>{
@@ -1302,7 +1302,7 @@ describe('stringLength on configInput', () => {
     });
 
     test('With only errorMessage creates InputValidatorDescriptor with StringLengthCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringLength(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringLengthConditionDescriptor>{
@@ -1312,7 +1312,7 @@ describe('stringLength on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with StringLengthCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringLength(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringLengthConditionDescriptor>{
@@ -1323,7 +1323,7 @@ describe('stringLength on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with StringLengthCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringLength(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringLengthConditionDescriptor>{
@@ -1334,7 +1334,7 @@ describe('stringLength on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with StringLengthCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringLength(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringLengthConditionDescriptor>{
@@ -1347,7 +1347,7 @@ describe('stringLength on configInput', () => {
 
 describe('stringNotEmpty on configInput', () => {
     test('With no parameters, creates InputValidatorDescriptor with StringNotEmptyCondition with type=StringNotEmpty', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringNotEmpty();
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringNotEmptyConditionDescriptor>{
@@ -1357,7 +1357,7 @@ describe('stringNotEmpty on configInput', () => {
     });
 
     test('With nullValueResult assigned, creates InputValidatorDescriptor with StringNotEmptyCondition with type=StringNotEmpty, nullValueResult assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringNotEmpty({ nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringNotEmptyConditionDescriptor>{
@@ -1368,7 +1368,7 @@ describe('stringNotEmpty on configInput', () => {
     });
 
     test('With only errorMessage creates InputValidatorDescriptor with StringNotEmptyCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringNotEmpty(null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringNotEmptyConditionDescriptor>{
@@ -1378,7 +1378,7 @@ describe('stringNotEmpty on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with StringNotEmptyCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringNotEmpty(null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringNotEmptyConditionDescriptor>{
@@ -1389,7 +1389,7 @@ describe('stringNotEmpty on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with StringNotEmptyCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringNotEmpty(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringNotEmptyConditionDescriptor>{
@@ -1400,7 +1400,7 @@ describe('stringNotEmpty on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with StringNotEmptyCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').stringNotEmpty(null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <StringNotEmptyConditionDescriptor>{
@@ -1413,7 +1413,7 @@ describe('stringNotEmpty on configInput', () => {
 
 describe('requiredText on configInput', () => {
     test('With no parameters, creates InputValidatorDescriptor with RequiredTextCondition with type=RequiredText', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').requiredText();
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RequiredTextConditionDescriptor>{
@@ -1423,7 +1423,7 @@ describe('requiredText on configInput', () => {
     });
 
     test('With emptyValue and nullValueResult assigned, creates InputValidatorDescriptor with RequiredTextCondition with type=RequiredText, emptyValue, nullValueResult assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').requiredText({ emptyValue: 'X', nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RequiredTextConditionDescriptor>{
@@ -1435,7 +1435,7 @@ describe('requiredText on configInput', () => {
     });
 
     test('With only errorMessage creates InputValidatorDescriptor with RequiredTextCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').requiredText(null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RequiredTextConditionDescriptor>{
@@ -1445,7 +1445,7 @@ describe('requiredText on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RequiredTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').requiredText(null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RequiredTextConditionDescriptor>{
@@ -1456,7 +1456,7 @@ describe('requiredText on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RequiredTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').requiredText(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RequiredTextConditionDescriptor>{
@@ -1467,7 +1467,7 @@ describe('requiredText on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with RequiredTextCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').requiredText(null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <RequiredTextConditionDescriptor>{
@@ -1479,7 +1479,7 @@ describe('requiredText on configInput', () => {
 });
 describe('notNull on configInput', () => {
     test('With no parameters, creates InputValidatorDescriptor with NotNullCondition with type=NotNull', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notNull();
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotNullConditionDescriptor>{
@@ -1489,7 +1489,7 @@ describe('notNull on configInput', () => {
     });
 
     test('With only errorMessage creates InputValidatorDescriptor with NotNullCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notNull('Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotNullConditionDescriptor>{
@@ -1499,7 +1499,7 @@ describe('notNull on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notNull('Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotNullConditionDescriptor>{
@@ -1510,7 +1510,7 @@ describe('notNull on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notNull(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotNullConditionDescriptor>{
@@ -1521,7 +1521,7 @@ describe('notNull on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with NotNullCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').notNull('FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <NotNullConditionDescriptor>{
@@ -1534,7 +1534,7 @@ describe('notNull on configInput', () => {
 
 describe('all on configInput', () => {
     test('With empty configChildren, creates InputValidatorDescriptor with AllMatchCondition with type=AllMatch and conditionDescriptors=[]', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').all(configChildren());
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AllMatchConditionDescriptor>{
@@ -1544,7 +1544,7 @@ describe('all on configInput', () => {
         });
     });
     test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with AllMatchCondition with type=AllMatch and conditionDescriptors populated with both conditions', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').all(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AllMatchConditionDescriptor>{
@@ -1562,7 +1562,7 @@ describe('all on configInput', () => {
     });
 
     test('With configChildren setup with requiredText and regExp, and errorMessage assigned creates InputValidatorDescriptor with AllMatchCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').all(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AllMatchConditionDescriptor>{
@@ -1580,7 +1580,7 @@ describe('all on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').all(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AllMatchConditionDescriptor>{
@@ -1599,7 +1599,7 @@ describe('all on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').all(configChildren(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AllMatchConditionDescriptor>{
@@ -1611,7 +1611,7 @@ describe('all on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AllMatchCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').all(configChildren(), 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AllMatchConditionDescriptor>{
@@ -1624,7 +1624,7 @@ describe('all on configInput', () => {
 });
 describe('any on configInput', () => {
     test('With empty configChildren, creates InputValidatorDescriptor with AnyMatchCondition with type=AnyMatch and conditionDescriptors=[]', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').any(configChildren());
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AnyMatchConditionDescriptor>{
@@ -1634,7 +1634,7 @@ describe('any on configInput', () => {
         });
     });
     test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with AnyMatchCondition with type=AnyMatch and conditionDescriptors populated with both conditions', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').any(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AnyMatchConditionDescriptor>{
@@ -1652,7 +1652,7 @@ describe('any on configInput', () => {
     });
 
     test('With configChildren setup with requiredText and regExp, and errorMessage assigned creates InputValidatorDescriptor with AnyMatchCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').any(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AnyMatchConditionDescriptor>{
@@ -1670,7 +1670,7 @@ describe('any on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').any(configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AnyMatchConditionDescriptor>{
@@ -1689,7 +1689,7 @@ describe('any on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').any(configChildren(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AnyMatchConditionDescriptor>{
@@ -1701,7 +1701,7 @@ describe('any on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with AnyMatchCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').any(configChildren(), 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <AnyMatchConditionDescriptor>{
@@ -1715,7 +1715,7 @@ describe('any on configInput', () => {
 
 describe('countMatches on configInput', () => {
     test('With minimum and maximum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, maximum, and conditionDescriptors=[]', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').countMatches(1, 2, configChildren());
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <CountMatchesConditionDescriptor>{
@@ -1727,7 +1727,7 @@ describe('countMatches on configInput', () => {
         });
     });
     test('With minimum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, and conditionDescriptors=[]', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').countMatches(1, null, configChildren());
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <CountMatchesConditionDescriptor>{
@@ -1738,7 +1738,7 @@ describe('countMatches on configInput', () => {
         });
     });
     test('With maximum assigned and empty configChildren, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch, maximum, and conditionDescriptors=[]', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').countMatches(null, 2, configChildren());
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <CountMatchesConditionDescriptor>{
@@ -1749,7 +1749,7 @@ describe('countMatches on configInput', () => {
         });
     });    
     test('With configChildren setup with requiredText and regExp, creates InputValidatorDescriptor with CountMatchesMatchCondition with type=CountMatchesMatch and conditionDescriptors populated with both conditions', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').countMatches(0, 2, configChildren().requiredText(null, 'F1').requiredText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <CountMatchesConditionDescriptor>{
@@ -1769,7 +1769,7 @@ describe('countMatches on configInput', () => {
     });
 
     test('With configChildren setup with requiredText and regExp, and errorMessage assigned creates InputValidatorDescriptor with CountMatchesMatchCondition with only type assigned and errorMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').countMatches(1, 4, configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <CountMatchesConditionDescriptor>{
@@ -1789,7 +1789,7 @@ describe('countMatches on configInput', () => {
         });
     });
     test('With errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').countMatches(1, 2, configChildren().requiredText(null, 'F1').requiredText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <CountMatchesConditionDescriptor>{
@@ -1810,7 +1810,7 @@ describe('countMatches on configInput', () => {
         });
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').countMatches(null, null, configChildren(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <CountMatchesConditionDescriptor>{
@@ -1822,7 +1822,7 @@ describe('countMatches on configInput', () => {
         });
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorDescriptor with CountMatchesMatchCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorDescriptor assigned', () => {
-        initFluent();
+        enableFluent();
         let testItem = configInput('Field1').countMatches(null, null, configChildren(), 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorDescriptor>{
             conditionDescriptor: <CountMatchesConditionDescriptor>{
