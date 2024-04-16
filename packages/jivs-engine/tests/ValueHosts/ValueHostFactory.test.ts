@@ -130,7 +130,7 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(vm, config, state)).toThrow(/ValueHostConfig\.Type/);
+        expect(() => valueHost = testItem.create(vm, config, state)).toThrow(/ValueHostConfig\.type/);
 
     });    
     test('create with Config.type that has no matching registration throws', () => {

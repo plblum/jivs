@@ -62,7 +62,7 @@ export abstract class DataTypeServiceBase<T> implements IDataTypeServiceBase
     /**
      * All registered T.
      */
-    private _registeredClasses: Array<T> = [];
+    private readonly _registeredClasses: Array<T> = [];
 }
 
 /**

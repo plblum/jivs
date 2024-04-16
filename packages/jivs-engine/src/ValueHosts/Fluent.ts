@@ -279,7 +279,7 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
     {
         return this._config;
     }
-    private _config: InputValueHostConfig;
+    private readonly _config: InputValueHostConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentValidationRule.

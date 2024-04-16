@@ -143,7 +143,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         return this._valueHosts;
     }
 
-    private _valueHosts: IValueHostsMap = {};
+    private readonly _valueHosts: IValueHostsMap = {};
     /**
      * ValueHostConfigs supplied by the caller (business logic).
      * Always replace a ValueHost when its Config changes.
@@ -151,7 +151,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     protected get valueHostConfigs(): IValueHostConfigsMap {
         return this._valueHostConfigs;
     }
-    private _valueHostConfigs: IValueHostConfigsMap = {};
+    private readonly _valueHostConfigs: IValueHostConfigsMap = {};
 
     /**
      * ValueHostStates and more.
