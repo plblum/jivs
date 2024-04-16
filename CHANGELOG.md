@@ -1,3 +1,7 @@
+## 0.12.0
+- **Breaking API change.** Renamed "Descriptor" to "Config" throughout. I felt that the descriptor objects
+were better described as configuration objects.
+- **Breaking API change.** Renamed "RequiredTextCondition" to "RequireTextCondition" throughout.
 ## 0.11.0
 - **Breaking API change.** Renamed LessThanOrEqualTo and GreaterThanOrEqualTo to 
 LessThanOrEqual and GreaterThanOrEqual.

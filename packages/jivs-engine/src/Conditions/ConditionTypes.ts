@@ -21,9 +21,9 @@ export enum ConditionType
     DataTypeCheck = 'DataTypeCheck',
 
     /**
-     * Associated with RequiredTextCondition class.
+     * Associated with RequireTextCondition class.
      */
-    RequiredText = 'RequiredText',
+    RequireText = 'RequireText',
 
     /**
      * Associated with RegExpCondition class.

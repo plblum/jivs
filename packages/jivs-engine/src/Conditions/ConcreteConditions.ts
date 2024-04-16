@@ -672,7 +672,7 @@ export interface StringNotEmptyConditionConfig extends OneValueConditionConfig {
  * Reports NoMatch when the value is an empty string ("").
  * No whitespace trimming is applied. The value of the InputValue may need trimming,
  * but the InputValue is expected to be the final value, already trimmed.
- * See also its InputValue companion, RequiredTextCondition.
+ * See also its InputValue companion, RequireTextCondition.
  */
 export abstract class StringNotEmptyConditionBase<TConfig extends StringNotEmptyConditionConfig>
     extends OneValueConditionBase<TConfig>
@@ -699,7 +699,7 @@ export abstract class StringNotEmptyConditionBase<TConfig extends StringNotEmpty
  * Reports NoMatch when the value is an empty string ("").
  * No whitespace trimming is applied. The value of the InputValue may need trimming,
  * but the InputValue is expected to be the final value, already trimmed.
- * See also its InputValue companion, RequiredTextCondition.
+ * See also its InputValue companion, RequireTextCondition.
  */
 export class StringNotEmptyCondition extends StringNotEmptyConditionBase<StringNotEmptyConditionConfig>
 {
@@ -710,9 +710,9 @@ export class StringNotEmptyCondition extends StringNotEmptyConditionBase<StringN
 }
 
 /**
- * Config for RequiredTextCondition, which uses the InputValue
+ * Config for RequireTextCondition, which uses the InputValue
  */
-export interface RequiredTextConditionConfig extends StringNotEmptyConditionConfig {
+export interface RequireTextConditionConfig extends StringNotEmptyConditionConfig {
     /**
      * The value that means "nothing is assigned". This is often
      * known as a watermark or placeholder.
@@ -738,21 +738,21 @@ export interface RequiredTextConditionConfig extends StringNotEmptyConditionConf
 
 /**
  * For any input field/element whose native data is a string to determine if the required
- * rule has been met or not, based on the present of no whitespace in text and optionally
+ * rule has been met or not, optionally require the absence of surrounding whitespace and optionally
  * not null in native value.
  * It has two evaluation features:
  * - ICondition.evaluate() evaluates the native value. Its implementation comes from
  * StringNotEmptyCondition, which does not deal with trimming as that was expected during
  * conversion from input value to native value.
  * - IEvaluateConditionDuringEdits.evaluateDuringEdit() evaluates the input value as the user is
- * editing the input. It is invoked by InputValueHost.SetInputValue(option.DuringEdit = true)
+ * editing the input. It is invoked by InputValueHost.setInputValue(option.DuringEdit = true)
  * and deals with both trimming and the possible default text (aka watermark) which you can set
  * in Config.emptyValue.
  */
-export class RequiredTextCondition extends StringNotEmptyConditionBase<RequiredTextConditionConfig>
+export class RequireTextCondition extends StringNotEmptyConditionBase<RequireTextConditionConfig>
     implements IEvaluateConditionDuringEdits
 {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.RequiredText; }    
+    public static get DefaultConditionType(): ConditionType { return ConditionType.RequireText; }    
 
     public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
         if (this.config.trim ?? true)

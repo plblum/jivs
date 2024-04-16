@@ -25,14 +25,14 @@ import {
     FluentNotEqualToConditionConfig,
     FluentNotEqualToValueConditionConfig,
     FluentRegExpConditionConfig,
-    FluentRequiredTextConditionConfig,
+    FluentRequireTextConditionConfig,
     FluentStringLengthConditionConfig,
     FluentStringNotEmptyConditionConfig,
     _genCDDataTypeCheck, _genCDRange, _genCDRegExp, _genDCAll, _genDCAny,
     _genDCCountMatches, _genDCEqualTo, _genDCEqualToValue, _genDCGreaterThan,
     _genDCGreaterThanOrEqual, _genDCGreaterThanOrEqualValue, _genDCGreaterThanValue,
     _genDCLessThan, _genDCLessThanOrEqual, _genDCLessThanOrEqualValue, _genDCLessThanValue,
-    _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCRequiredText,
+    _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCRequireText,
     _genDCStringLength, _genDCStringNotEmpty, enableFluentConditions
 } from "./FluentConditionCollectorExtensions";
 
@@ -149,7 +149,7 @@ declare module "./../ValueHosts/Fluent"
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
         requiredText(
-            conditionConfig?: FluentRequiredTextConditionConfig | null,
+            conditionConfig?: FluentRequireTextConditionConfig | null,
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
         notNull(
@@ -442,11 +442,11 @@ function stringNotEmpty(
 }
 
 function requiredText(
-    conditionConfig?: FluentRequiredTextConditionConfig | null,
+    conditionConfig?: FluentRequireTextConditionConfig | null,
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.RequiredText, _genDCRequiredText(conditionConfig),
+        ConditionType.RequireText, _genDCRequireText(conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 

@@ -1,6 +1,6 @@
 import {
     CompareToConditionConfig, DataTypeCheckConditionConfig, RangeConditionConfig,
-    RequiredTextConditionConfig, RequiredTextCondition, RegExpConditionConfig, RegExpCondition,
+    RequireTextConditionConfig, RequireTextCondition, RegExpConditionConfig, RegExpCondition,
     EqualToCondition,
     RangeCondition,
     AllMatchCondition,
@@ -765,21 +765,21 @@ describe('InputValueHost.getValidator', () => {
         let ivConfigs: Array<Partial<InputValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.RequiredText
+                    type: ConditionType.RequireText
                 }
             }
         ];
         let state: Partial<InputValueHostState> = {};
         let setup = setupInputValueHostForValidate(ivConfigs, state);
-        let result = setup.valueHost.getValidator(ConditionType.RequiredText);
+        let result = setup.valueHost.getValidator(ConditionType.RequireText);
         expect(result).toBeInstanceOf(InputValidator);
-        expect((result as InputValidator).conditionType).toBe(ConditionType.RequiredText);
+        expect((result as InputValidator).conditionType).toBe(ConditionType.RequireText);
     });    
     test('With 1 validator registered, request a different conditionType. Returns null', () => {
         let ivConfigs: Array<Partial<InputValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.RequiredText
+                    type: ConditionType.RequireText
                 }
             }
         ];
@@ -794,7 +794,7 @@ describe('InputValueHost.getValidator', () => {
         let ivConfigs: Array<Partial<InputValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.RequiredText
+                    type: ConditionType.RequireText
                 }
             },
             {
@@ -824,9 +824,9 @@ describe('InputValueHost.getValidator', () => {
             (ConditionType.All, (config) => new AllMatchCondition(config));
 
         
-        let result = setup.valueHost.getValidator(ConditionType.RequiredText);
+        let result = setup.valueHost.getValidator(ConditionType.RequireText);
         expect(result).toBeInstanceOf(InputValidator);
-        expect((result as InputValidator).conditionType).toBe(ConditionType.RequiredText);
+        expect((result as InputValidator).conditionType).toBe(ConditionType.RequireText);
         result = setup.valueHost.getValidator(ConditionType.RegExp);
         expect(result).toBeInstanceOf(InputValidator);
         expect((result as InputValidator).conditionType).toBe(ConditionType.RegExp);        
@@ -1529,7 +1529,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         expect(setup.valueHost.isValid).toBe(true);
         expect(setup.valueHost.validationResult).toBe(ValidationResult.Valid);
     });
-    test('Ensure Required sorts first amongst several Conditions, placing Required last. Demonstrated by stopping when RequiredTextCondition is NoMatch while others return an error', () => {
+    test('Ensure Required sorts first amongst several Conditions, placing Required last. Demonstrated by stopping when RequireTextCondition is NoMatch while others return an error', () => {
         let ivConfigs: Array<Partial<InputValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1543,7 +1543,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
             },
             {
                 conditionConfig: {
-                    type: ConditionType.RequiredText
+                    type: ConditionType.RequireText
                 }
             }
         ];
@@ -1553,7 +1553,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         setup.valueHost.setValue('');
         let vr = setup.valueHost.validate();
         let issuesFound: Array<IssueFound> = [];
-        issuesFound.push(createIssueFound(ConditionType.RequiredText, ValidationSeverity.Severe));
+        issuesFound.push(createIssueFound(ConditionType.RequireText, ValidationSeverity.Severe));
         expect(vr.issuesFound).toEqual(issuesFound);
     });
     test('Ensure DataTypeCheck sorts first amongst several Conditions, placing DataTypeCheck last. Demonstrated by stopping when DataTypeCheckCondition is NoMatch while others return an error', () => {
@@ -1601,7 +1601,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
             },
             {
                 conditionConfig: {
-                    type: ConditionType.RequiredText
+                    type: ConditionType.RequireText
                 }
             }
         ];
@@ -2542,7 +2542,7 @@ describe('addValidator function', () => {
         let vh = vm.getValueHost('Field1') as InputValueHost;
         vh.addValidator({
             conditionConfig: {
-                type: ConditionType.RequiredText
+                type: ConditionType.RequireText
             },
             errorMessage: 'Error'
         });
@@ -2620,7 +2620,7 @@ describe('addValidator function', () => {
         let vh = vm.getValueHost('Field1') as InputValueHost;
         vh.addValidator({
             conditionConfig: {
-                type: ConditionType.RequiredText             
+                type: ConditionType.RequireText             
             },
             errorMessage: 'Required'
         });
@@ -2881,8 +2881,8 @@ describe('InputValueHostGenerator members', () => {
             label: '',
             validatorConfigs: [
                 {
-                    conditionConfig: <RequiredTextConditionConfig>{
-                        type: ConditionType.RequiredText,
+                    conditionConfig: <RequireTextConditionConfig>{
+                        type: ConditionType.RequireText,
                         valueHostName: null
                     },
                     errorMessage: ''
@@ -2908,7 +2908,7 @@ describe('InputValueHostGenerator members', () => {
             label: '',
             validatorConfigs: [
                 {
-                    conditionCreator: (requestor) => new RequiredTextCondition({ type: ConditionType.RequiredText, valueHostName: 'Field1' }),
+                    conditionCreator: (requestor) => new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: 'Field1' }),
                     conditionConfig: null,
                     errorMessage: ''
                 }
@@ -2928,7 +2928,7 @@ describe('InputValueHostGenerator members', () => {
         };
         originalState.issuesFound?.push({
             valueHostName: 'Field1',
-            conditionType: ConditionType.RequiredText,
+            conditionType: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
             summaryMessage: ''
@@ -2940,8 +2940,8 @@ describe('InputValueHostGenerator members', () => {
             label: '',
             validatorConfigs: [
                 {
-                    conditionConfig: <RequiredTextConditionConfig>{
-                        type: ConditionType.RequiredText,
+                    conditionConfig: <RequireTextConditionConfig>{
+                        type: ConditionType.RequireText,
                         valueHostName: 'Field1'
                     },
                     errorMessage: ''
@@ -2962,7 +2962,7 @@ describe('InputValueHostGenerator members', () => {
         };
         originalState.issuesFound?.push({
             valueHostName: 'Field1',
-            conditionType: ConditionType.RequiredText,
+            conditionType: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
             summaryMessage: ''
@@ -2974,7 +2974,7 @@ describe('InputValueHostGenerator members', () => {
             label: '',
             validatorConfigs: [
                 {
-                    conditionCreator: (requestor) => new RequiredTextCondition({ type: ConditionType.RequiredText, valueHostName: 'Field1' }),
+                    conditionCreator: (requestor) => new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: 'Field1' }),
                     conditionConfig: null,
                     errorMessage: ''
                 }
@@ -2994,7 +2994,7 @@ describe('InputValueHostGenerator members', () => {
         };
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
-            conditionType: ConditionType.RequiredText,
+            conditionType: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Warning,
             summaryMessage: ''
@@ -3030,7 +3030,7 @@ describe('InputValueHostGenerator members', () => {
         };
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
-            conditionType: ConditionType.RequiredText,
+            conditionType: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Warning,
             summaryMessage: ''
@@ -3065,7 +3065,7 @@ describe('InputValueHostGenerator members', () => {
         };
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
-            conditionType: ConditionType.RequiredText,
+            conditionType: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
             summaryMessage: ''
@@ -3102,7 +3102,7 @@ describe('InputValueHostGenerator members', () => {
         };
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
-            conditionType: ConditionType.RequiredText,
+            conditionType: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
             summaryMessage: ''
@@ -3126,7 +3126,7 @@ describe('InputValueHostGenerator members', () => {
                     },
                     errorMessage: ''
                 }
-                // we've abandoned ConditionType.RequiredText which was severity=Error
+                // we've abandoned ConditionType.RequireText which was severity=Error
             ]
         };
         let testItem = new InputValueHostGenerator();
@@ -3146,7 +3146,7 @@ describe('InputValueHostGenerator members', () => {
         };
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
-            conditionType: ConditionType.RequiredText,
+            conditionType: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
             summaryMessage: ''
@@ -3184,7 +3184,7 @@ describe('InputValueHostGenerator members', () => {
                     },
                     errorMessage: ''
                 }
-                // we've abandoned ConditionType.RequiredText which was severity=Error
+                // we've abandoned ConditionType.RequireText which was severity=Error
             ]
         };
         let testItem = new InputValueHostGenerator();
@@ -3204,7 +3204,7 @@ describe('InputValueHostGenerator members', () => {
         };
         originalState.issuesFound!.push({
             valueHostName: 'Field1',
-            conditionType: ConditionType.RequiredText,
+            conditionType: ConditionType.RequireText,
             errorMessage: '',
             severity: ValidationSeverity.Error,
             summaryMessage: ''
@@ -3242,7 +3242,7 @@ describe('InputValueHostGenerator members', () => {
                     },
                     errorMessage: ''
                 }
-                // we've abandoned ConditionType.RequiredText which was severity=Error
+                // we've abandoned ConditionType.RequireText which was severity=Error
             ]
         };
         let testItem = new InputValueHostGenerator();
@@ -3261,8 +3261,8 @@ describe('InputValueHostGenerator members', () => {
             initialValue: 'TEST',
             validatorConfigs: [
                 {
-                    conditionConfig: <RequiredTextConditionConfig>{
-                        type: ConditionType.RequiredText,
+                    conditionConfig: <RequireTextConditionConfig>{
+                        type: ConditionType.RequireText,
                         valueHostName: 'Field1'
                     },
                     errorMessage: '',
@@ -3285,7 +3285,7 @@ describe('InputValueHost.requiresInput', () => {
         let ivConfigs: Array<Partial<InputValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.RequiredText
+                    type: ConditionType.RequireText
                 }
             }
         ];
@@ -3321,7 +3321,7 @@ describe('InputValueHost.requiresInput', () => {
             },
             {
                 conditionConfig: {
-                    type: ConditionType.RequiredText
+                    type: ConditionType.RequireText
                 }
             }
         ];
@@ -3341,8 +3341,8 @@ describe('InputValueHost.gatherValueHostNames', () => {
                 }
             },
             {
-                conditionConfig: <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                conditionConfig: <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Property2'
                 }
             }
@@ -3386,8 +3386,8 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
                 name: 'Field2',
                 label: 'Label2',
                 validatorConfigs: [{
-                    conditionConfig: <RequiredTextConditionConfig>{
-                        type: ConditionType.RequiredText,
+                    conditionConfig: <RequireTextConditionConfig>{
+                        type: ConditionType.RequireText,
                         valueHostName: null
                     },
                     errorMessage: 'Field2 Error'
@@ -3398,8 +3398,8 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
                 name: 'Field3',
                 label: 'Label3',
                 validatorConfigs: [{
-                    conditionConfig: <RequiredTextConditionConfig>{
-                        type: ConditionType.RequiredText,
+                    conditionConfig: <RequireTextConditionConfig>{
+                        type: ConditionType.RequireText,
                         valueHostName: null
                     },
                     errorMessage: 'Field3 Error'

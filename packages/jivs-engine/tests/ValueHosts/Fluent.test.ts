@@ -1,4 +1,4 @@
-import { RegExpConditionConfig, RequiredTextCondition, RequiredTextConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { RegExpConditionConfig, RequireTextCondition, RequireTextConditionConfig } from '../../src/Conditions/ConcreteConditions';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { EvaluateChildConditionResultsConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
@@ -47,11 +47,11 @@ describe('FluentValidatorCollector', () => {
         let inputValidatorConfig: FluentInputValidatorConfig = {
             summaryMessage: 'Summary'
         };
-        expect(() => testItem.add(ConditionType.RequiredText, {}, 'Error', inputValidatorConfig)).not.toThrow();
+        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', inputValidatorConfig)).not.toThrow();
         expect(testItem.config.validatorConfigs!.length).toBe(1);
         expect(testItem.config.validatorConfigs![0]).toEqual({
             conditionConfig: {
-                type: ConditionType.RequiredText
+                type: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -67,7 +67,7 @@ describe('FluentValidatorCollector', () => {
         }
         let testItem = new FluentValidatorCollector(config);
         let conditionConfig: ConditionConfig = {
-            type: ConditionType.RequiredText
+            type: ConditionType.RequireText
         };
         let inputValidatorConfig: FluentInputValidatorConfig = {
             summaryMessage: 'Summary'
@@ -76,7 +76,7 @@ describe('FluentValidatorCollector', () => {
         expect(testItem.config.validatorConfigs!.length).toBe(1);
         expect(testItem.config.validatorConfigs![0]).toEqual({
             conditionConfig: {
-                type: ConditionType.RequiredText
+                type: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -95,11 +95,11 @@ describe('FluentValidatorCollector', () => {
             errorMessage: 'Error',
             summaryMessage: 'Summary'
         };
-        expect(() => testItem.add(ConditionType.RequiredText, {}, null, inputValidatorConfig)).not.toThrow();
+        expect(() => testItem.add(ConditionType.RequireText, {}, null, inputValidatorConfig)).not.toThrow();
         expect(testItem.config.validatorConfigs!.length).toBe(1);
         expect(testItem.config.validatorConfigs![0]).toEqual({
             conditionConfig: {
-                type: ConditionType.RequiredText
+                type: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -140,10 +140,10 @@ describe('FluentConditionCollector', () => {
         }
         let testItem = new FluentConditionCollector(config);
 
-        expect(() => testItem.add(ConditionType.RequiredText, {})).not.toThrow();
+        expect(() => testItem.add(ConditionType.RequireText, {})).not.toThrow();
         expect(testItem.config.conditionConfigs!.length).toBe(1);
         expect(testItem.config.conditionConfigs![0]).toEqual({
-            type: ConditionType.RequiredText
+            type: ConditionType.RequireText
         });
     });
     test('add() with null for conditionType, and other parameters correctly defined', () => {
@@ -153,13 +153,13 @@ describe('FluentConditionCollector', () => {
         }
         let testItem = new FluentConditionCollector(config);
         let conditionConfig: ConditionConfig = {
-            type: ConditionType.RequiredText
+            type: ConditionType.RequireText
         };
 
         expect(() => testItem.add(null, conditionConfig)).not.toThrow();
         expect(testItem.config.conditionConfigs!.length).toBe(1);
         expect(testItem.config.conditionConfigs![0]).toEqual({
-            type: ConditionType.RequiredText
+            type: ConditionType.RequireText
         });
     });
 });
@@ -370,15 +370,15 @@ describe('configChildren', () => {
     });        
 });
 // Test cases for creating fluent functions...
-function testChainRequiredText_Val(conditionConfig: Omit<RequiredTextConditionConfig, 'type' | 'valueHostName'>,
+function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>,
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig
 ): FluentValidatorCollector {
-        return finishFluentValidatorCollector(this, ConditionType.RequiredText, conditionConfig, errorMessage, inputValidatorParameters);
+        return finishFluentValidatorCollector(this, ConditionType.RequireText, conditionConfig, errorMessage, inputValidatorParameters);
 }
-function testChainRequiredText_Cond(conditionConfig: Omit<RequiredTextConditionConfig, 'type' | 'valueHostName'>
+function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>
 ): FluentConditionCollector {
-    return finishFluentConditionCollector(this, ConditionType.RequiredText, conditionConfig, 'valueHostName');
+    return finishFluentConditionCollector(this, ConditionType.RequireText, conditionConfig, 'valueHostName');
 
 }
 
@@ -398,7 +398,7 @@ function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'type
 declare module './../../src/ValueHosts/Fluent'
 {
     export interface FluentValidatorCollector {
-        testChainRequiredText(conditionConfig: Omit<RequiredTextConditionConfig, 'type' | 'valueHostName'>,
+        testChainRequireText(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>,
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig
         ): FluentValidatorCollector;
@@ -408,8 +408,8 @@ declare module './../../src/ValueHosts/Fluent'
         ): FluentValidatorCollector;
     }
     export interface FluentConditionCollector {
-        testChainRequiredText(conditionConfig:
-            Omit<RequiredTextConditionConfig, 'type' | 'valueHostName'>
+        testChainRequireText(conditionConfig:
+            Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>
         ): FluentConditionCollector;
         testChainRegExp(conditionConfig:
             Omit<RegExpConditionConfig, 'type' | 'valueHostName'>
@@ -417,29 +417,29 @@ declare module './../../src/ValueHosts/Fluent'
     }    
 }
 //  Make JavaScript associate the function with the class.
-FluentValidatorCollector.prototype.testChainRequiredText = testChainRequiredText_Val;
+FluentValidatorCollector.prototype.testChainRequireText = testChainRequireText_Val;
 FluentValidatorCollector.prototype.testChainRegExp = testChainRegExp_Val;
-FluentConditionCollector.prototype.testChainRequiredText = testChainRequiredText_Cond;
+FluentConditionCollector.prototype.testChainRequireText = testChainRequireText_Cond;
 FluentConditionCollector.prototype.testChainRegExp = testChainRegExp_Cond;
 
 describe('Fluent chaining on configInput', () => {
     test('configInput: Add RequiredTest condition to InputValueHostConfig via chaining', () => {
-        let testItem = configInput('Field1').testChainRequiredText({}, 'Error', {});
+        let testItem = configInput('Field1').testChainRequireText({}, 'Error', {});
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let config = (testItem as FluentValidatorCollector).config;
         expect(config.validatorConfigs!.length).toBe(1);
         expect(config.validatorConfigs![0].conditionConfig).not.toBeNull();
-        expect(config.validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequiredText);
+        expect(config.validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequireText);
     });
     test('configInput: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let testItem = configInput('Field1')
-            .testChainRequiredText({}, 'Error', {})
+            .testChainRequireText({}, 'Error', {})
             .testChainRegExp({ expressionAsString: '\\d' }, 'Error2');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let config = (testItem as FluentValidatorCollector).config;
         expect(config.validatorConfigs!.length).toBe(2);
         expect(config.validatorConfigs![0].conditionConfig).not.toBeNull();
-        expect(config.validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequiredText);
+        expect(config.validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequireText);
         expect(config.validatorConfigs![1].conditionConfig).not.toBeNull();
         expect(config.validatorConfigs![1].conditionConfig!.type).toBe(ConditionType.RegExp);
         expect((config.validatorConfigs![1].conditionConfig! as RegExpConditionConfig).expressionAsString).toBe('\\d');
@@ -449,7 +449,7 @@ describe('customRule', () => {
     test('Provide a valid function and get back a FluentValidatorCollector with inputValidatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let testItem = configInput('Field1').customRule((requester) =>
             {
-                return new RequiredTextCondition({ type: ConditionType.RequiredText, valueHostName: null });
+                return new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: null });
             },
             'Error',
             {
@@ -466,7 +466,7 @@ describe('customRule', () => {
     test('Provide a valid function without errorMessage or inputValidatorParameters and get back a FluentValidatorCollector with inputValidatorConfig.conditionCreator setup, and conditionConfig null', () => {
         let testItem = configInput('Field1').customRule((requester) =>
             {
-                return new RequiredTextCondition({ type: ConditionType.RequiredText, valueHostName: null });
+                return new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: null });
             });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let config = (testItem as FluentValidatorCollector).config;
@@ -479,7 +479,7 @@ describe('customRule', () => {
 
     test('Stand-alone call throws', () => {
         expect(() => customRule((requester) => {
-            return new RequiredTextCondition({ type: ConditionType.RequiredText, valueHostName: null });
+            return new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: null });
         },
             'Error',
             {
@@ -489,22 +489,22 @@ describe('customRule', () => {
 });
 describe('Fluent chaining on configChildren', () => {
     test('configChildren: Add RequiredTest condition to InputValueHostConfig via chaining', () => {
-        let testItem = configChildren().testChainRequiredText({});
+        let testItem = configChildren().testChainRequireText({});
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         let config = (testItem as FluentConditionCollector).config;
         expect(config.conditionConfigs!.length).toBe(1);
         expect(config.conditionConfigs![0]).not.toBeNull();
-        expect(config.conditionConfigs![0].type).toBe(ConditionType.RequiredText);
+        expect(config.conditionConfigs![0].type).toBe(ConditionType.RequireText);
     });
     test('configChildren: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let testItem = configChildren()
-            .testChainRequiredText({})
+            .testChainRequireText({})
             .testChainRegExp({ expressionAsString: '\\d' });
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         let config = (testItem as FluentConditionCollector).config;
         expect(config.conditionConfigs!.length).toBe(2);
         expect(config.conditionConfigs![0]).not.toBeNull();
-        expect(config.conditionConfigs![0].type).toBe(ConditionType.RequiredText);
+        expect(config.conditionConfigs![0].type).toBe(ConditionType.RequireText);
         expect(config.conditionConfigs![1]).not.toBeNull();
         expect(config.conditionConfigs![1].type).toBe(ConditionType.RegExp);
         expect((config.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
@@ -514,13 +514,13 @@ describe('Fluent chaining on configChildren', () => {
             type: 'All',
             conditionConfigs: [] 
         };
-        let testItem = configChildren(eccrConfig).testChainRequiredText({});
+        let testItem = configChildren(eccrConfig).testChainRequireText({});
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         let config = (testItem as FluentConditionCollector).config;
         expect(config).toBe(eccrConfig);
         expect(config.conditionConfigs!.length).toBe(1);
         expect(config.conditionConfigs![0]).not.toBeNull();
-        expect(config.conditionConfigs![0].type).toBe(ConditionType.RequiredText);
+        expect(config.conditionConfigs![0].type).toBe(ConditionType.RequireText);
     });
     test('configChildren with EvaluateChildConditionResultsConfig parameter: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let eccrConfig: EvaluateChildConditionResultsConfig = {
@@ -528,14 +528,14 @@ describe('Fluent chaining on configChildren', () => {
             conditionConfigs: [] 
         };        
         let testItem = configChildren(eccrConfig)
-            .testChainRequiredText({})
+            .testChainRequireText({})
             .testChainRegExp({ expressionAsString: '\\d' });
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         let config = (testItem as FluentConditionCollector).config;
         expect(config).toBe(eccrConfig);        
         expect(config.conditionConfigs!.length).toBe(2);
         expect(config.conditionConfigs![0]).not.toBeNull();
-        expect(config.conditionConfigs![0].type).toBe(ConditionType.RequiredText);
+        expect(config.conditionConfigs![0].type).toBe(ConditionType.RequireText);
         expect(config.conditionConfigs![1]).not.toBeNull();
         expect(config.conditionConfigs![1].type).toBe(ConditionType.RegExp);
         expect((config.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');

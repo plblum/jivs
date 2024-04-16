@@ -335,7 +335,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequiredText,
+                        type: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -362,7 +362,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequiredText,
+                        type: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -419,7 +419,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequiredText,
+                        type: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -440,7 +440,7 @@ describe('ValidationManager.addValueHost', () => {
             issuesFound: [{
                 errorMessage: 'msg',
                 valueHostName: 'Field1',
-                conditionType: ConditionType.RequiredText,
+                conditionType: ConditionType.RequireText,
                 severity: ValidationSeverity.Error
             }]
         };
@@ -456,7 +456,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequiredText,
+                        type: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -475,7 +475,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequiredText,
+                        type: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -499,7 +499,7 @@ describe('ValidationManager.addValueHost', () => {
             issuesFound: [{
                 errorMessage: 'msg',
                 valueHostName: 'Field1',
-                conditionType: ConditionType.RequiredText,
+                conditionType: ConditionType.RequireText,
                 severity: ValidationSeverity.Error
             }]
         };
@@ -529,7 +529,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequiredText,
+                        type: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }

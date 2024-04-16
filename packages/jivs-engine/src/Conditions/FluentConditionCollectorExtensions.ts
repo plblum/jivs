@@ -7,7 +7,7 @@
  */
 
 import { FluentConditionCollector, finishFluentConditionCollector } from "../ValueHosts/Fluent";
-import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequiredTextConditionConfig, StringLengthConditionConfig, StringNotEmptyConditionConfig } from "./ConcreteConditions";
+import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig, StringNotEmptyConditionConfig } from "./ConcreteConditions";
 import { ConditionType } from "./ConditionTypes";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { assertNotNull } from "../Utilities/ErrorHandling";
@@ -88,7 +88,7 @@ declare module "./../ValueHosts/Fluent"
             conditionConfig?: FluentStringNotEmptyConditionConfig | null,
             valueHostName?: ValueHostName): FluentConditionCollector;
         requiredText(
-            conditionConfig?: FluentRequiredTextConditionConfig | null,
+            conditionConfig?: FluentRequireTextConditionConfig | null,
             valueHostName?: ValueHostName): FluentConditionCollector;
         notNull(valueHostName?: ValueHostName): FluentConditionCollector;
 
@@ -621,22 +621,22 @@ function stringNotEmpty(
     return finishFluentConditionCollector(this,
         ConditionType.StringNotEmpty, _genDCStringNotEmpty(conditionConfig), valueHostName);
 }
-export type FluentRequiredTextConditionConfig = Omit<RequiredTextConditionConfig, 'type' | 'valueHostName' | 'category'>;
+export type FluentRequireTextConditionConfig = Omit<RequireTextConditionConfig, 'type' | 'valueHostName' | 'category'>;
 /**
- * Common code to setup RequiredTextConditionConfig for support within
+ * Common code to setup RequireTextConditionConfig for support within
  * FluentValidatorCollector and FluentConditionCollector fluent functions.
  * @internal
  */
-export function _genDCRequiredText(
-    conditionConfig?: FluentRequiredTextConditionConfig | null): RequiredTextConditionConfig {
-    let condConfig = (conditionConfig ? { ...conditionConfig } : {}) as RequiredTextConditionConfig;
+export function _genDCRequireText(
+    conditionConfig?: FluentRequireTextConditionConfig | null): RequireTextConditionConfig {
+    let condConfig = (conditionConfig ? { ...conditionConfig } : {}) as RequireTextConditionConfig;
     return condConfig;
 }
 function requiredText(
-    conditionConfig?: FluentRequiredTextConditionConfig | null,
+    conditionConfig?: FluentRequireTextConditionConfig | null,
     valueHostName?: ValueHostName): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.RequiredText, _genDCRequiredText(conditionConfig), valueHostName);
+        ConditionType.RequireText, _genDCRequireText(conditionConfig), valueHostName);
 }
 
 /**

@@ -180,7 +180,7 @@ Jivs provides numerous `Condition classes`.
 <details>
 <summary>Expand to see just a few.</summary>
 
-- `RequiredTextCondition`, `StringNotEmptyCondition`, `NotNullCondition` - for required fields
+- `RequireTextCondition`, `StringNotEmptyCondition`, `NotNullCondition` - for required fields
 - `DataTypeCheckCondition`, `RegExpCondition` - for checking the data conforms to the data type.
 - `RangeCondition`, `EqualToCondition`, `GreaterThanCondition` - Comparing values
 - `AllMatchCondition`, `AnyMatchCondition` - For creating complex logic by using multiple `Conditions`.
@@ -415,7 +415,7 @@ Now let’s place an `InputValidatorConfig` into our previous example using a Mo
   label: 'First name',
   validatorConfigs: [{
     conditionConfig: {
-      type: 'RequiredText',
+      type: 'RequireText',
       valueHostName: null
     },
     errorMessage: 'This field requires a value',
@@ -439,7 +439,7 @@ Now let’s place an `InputValidatorConfig` into our previous example using a Mo
   label: 'Last name',
   validatorConfigs: [{
     conditionConfig: {
-      type: 'RequiredText',
+      type: 'RequireText',
       valueHostName: null
     },
     errorMessage: 'This field requires a value',
@@ -523,10 +523,10 @@ Here's how the example with FirstName and LastName properties looks with this sy
 ```ts
 enableFluent();	// required! This can be called in application startup if you like
 let firstNameConfig = configInput('FirstName', 'String', { label: 'First Name' })
-   .requiredText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.')
+   .requireText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.')
    .notEqualTo('LastName', 'Are you sure...', { summaryMessage: 'In {Label}, are you sure...');
 let lastNameConfig = configInput('LastName', 'String', { label: 'Last Name'})
-   .requiredText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.' );
+   .requireText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.' );
    //NOTE: Error messages can be omitted if you set them up in the TextLocalizationService
    // or let the UI developer attach them later.
    
@@ -821,10 +821,10 @@ When using the supplied TextLocalizerService, you won't need to know those Looku
 
 The existing `createTextLocalizerService() function` already has numerous examples. For example:
 ```ts
-    service.registerErrorMessage(ConditionType.RequiredText, null, {
+    service.registerErrorMessage(ConditionType.RequireText, null, {
         '*': 'Requires a value.'
     });
-    service.registerSummaryMessage(ConditionType.RequiredText, null, {
+    service.registerSummaryMessage(ConditionType.RequireText, null, {
         '*': '{Label} requires a value.'
     });    
     service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {

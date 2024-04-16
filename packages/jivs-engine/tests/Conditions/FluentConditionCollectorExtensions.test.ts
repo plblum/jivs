@@ -1,7 +1,7 @@
 import { LookupKey } from './../../src/DataTypes/LookupKeys';
 import { FluentConditionCollector, configChildren } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
-import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequiredTextConditionConfig, StringLengthConditionConfig, StringNotEmptyConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig, StringNotEmptyConditionConfig } from '../../src/Conditions/ConcreteConditions';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { enableFluentConditions } from '../../src/Conditions/FluentConditionCollectorExtensions';
 import { EvaluateChildConditionResultsConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
@@ -847,35 +847,35 @@ describe('stringNotEmpty on configChildren', () => {
 });
 
 describe('requiredText on configChildren', () => {
-    test('With no parameters, creates InputValidatorConfig with RequiredTextCondition with type=RequiredText', () => {
+    test('With no parameters, creates InputValidatorConfig with RequireTextCondition with type=RequireText', () => {
         enableFluentConditions();
         let testItem = configChildren().requiredText();
-        TestFluentConditionCollector(testItem, <RequiredTextConditionConfig>{
-            type: ConditionType.RequiredText
+        TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
+            type: ConditionType.RequireText
         });
     });
 
-    test('With condDesc={}, creates InputValidatorConfig with RequiredTextCondition with type=RequiredText', () => {
+    test('With condDesc={}, creates InputValidatorConfig with RequireTextCondition with type=RequireText', () => {
         enableFluentConditions();
         let testItem = configChildren().requiredText({});
-        TestFluentConditionCollector(testItem, <RequiredTextConditionConfig>{
-            type: ConditionType.RequiredText
+        TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
+            type: ConditionType.RequireText
         });
     });
-    test('With valueHostName assigned, creates InputValidatorConfig with RequiredTextCondition with type=RequiredText and valueHostName', () => {
+    test('With valueHostName assigned, creates InputValidatorConfig with RequireTextCondition with type=RequireText and valueHostName', () => {
         enableFluentConditions();
         let testItem = configChildren().requiredText(null, 'Field1');
-        TestFluentConditionCollector(testItem, <RequiredTextConditionConfig>{
-            type: ConditionType.RequiredText,
+        TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
+            type: ConditionType.RequireText,
             valueHostName: 'Field1'
         });
     });
 
-    test('With emptyValue and nullValueResult assigned, creates InputValidatorConfig with RequiredTextCondition with type=RequiredText, emptyValue, nullValueResult assigned', () => {
+    test('With emptyValue and nullValueResult assigned, creates InputValidatorConfig with RequireTextCondition with type=RequireText, emptyValue, nullValueResult assigned', () => {
         enableFluentConditions();
         let testItem = configChildren().requiredText({ emptyValue: 'X', nullValueResult: ConditionEvaluateResult.NoMatch });
-        TestFluentConditionCollector(testItem, <RequiredTextConditionConfig>{
-            type: ConditionType.RequiredText,
+        TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
+            type: ConditionType.RequireText,
             emptyValue: 'X',
             nullValueResult: ConditionEvaluateResult.NoMatch
         });
@@ -915,11 +915,11 @@ describe('all on configChildren', () => {
         TestFluentConditionCollector(testItem, <AllMatchConditionConfig>{
                 type: ConditionType.All,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             });
@@ -940,11 +940,11 @@ describe('any on configChildren', () => {
         TestFluentConditionCollector(testItem, <AnyMatchConditionConfig>{
                 type: ConditionType.Any,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             });
@@ -988,11 +988,11 @@ describe('countMatches on configChildren', () => {
                 minimum: 0,
                 maximum: 2,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             });

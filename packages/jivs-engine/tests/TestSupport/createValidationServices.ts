@@ -1,5 +1,5 @@
 import {
-    DataTypeCheckCondition, RequiredTextCondition, RegExpCondition, RangeCondition, CompareToConditionConfig,
+    DataTypeCheckCondition, RequireTextCondition, RegExpCondition, RangeCondition, CompareToConditionConfig,
     EqualToCondition, StringLengthConditionConfig, StringLengthCondition, AllMatchCondition, AllMatchConditionConfig, AnyMatchCondition,
     AnyMatchConditionConfig, CountMatchesCondition, CountMatchesConditionConfig, GreaterThanCondition, GreaterThanOrEqualCondition, LessThanCondition,
     LessThanOrEqualCondition, NotEqualToCondition, NotNullCondition, NotNullConditionConfig, StringNotEmptyCondition, StringNotEmptyConditionConfig
@@ -21,7 +21,7 @@ import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifier
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { ValidationServices } from "../../src/Services/ValidationServices";
-import { DataTypeCheckConditionConfig, RequiredTextConditionConfig, RegExpConditionConfig, RangeConditionConfig } from "../../src/Conditions/ConcreteConditions";
+import { DataTypeCheckConditionConfig, RequireTextConditionConfig, RegExpConditionConfig, RangeConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
@@ -72,8 +72,8 @@ export function registerConditions(cf: ConditionFactory): void
 {
     cf.register<DataTypeCheckConditionConfig>(
         ConditionType.DataTypeCheck, (config) => new DataTypeCheckCondition(config));
-    cf.register<RequiredTextConditionConfig>(
-        ConditionType.RequiredText, (config) => new RequiredTextCondition(config));
+    cf.register<RequireTextConditionConfig>(
+        ConditionType.RequireText, (config) => new RequireTextCondition(config));
 /*    
     cf.register<RegExpConditionConfig>(
         ConditionType.RegExp, (config) => new RegExpCondition(config));
@@ -99,7 +99,7 @@ export function registerConditions(cf: ConditionFactory): void
         (ConditionType.Or, (config) => new AnyMatchCondition(config));
     cf.register<CountMatchesConditionConfig>
         (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
-    // StringNotEmpty is similar to RequiredText, but lacks evaluating as the user types
+    // StringNotEmpty is similar to RequireText, but lacks evaluating as the user types
     cf.register<StringNotEmptyConditionConfig>(
         ConditionType.StringNotEmpty, (config) => new StringNotEmptyCondition(config));
     cf.register<NotNullConditionConfig>(
@@ -115,8 +115,8 @@ export function registerAllConditions(cf: ConditionFactory): void
 {
     cf.register<DataTypeCheckConditionConfig>(
         ConditionType.DataTypeCheck, (config) => new DataTypeCheckCondition(config));
-    cf.register<RequiredTextConditionConfig>(
-        ConditionType.RequiredText, (config) => new RequiredTextCondition(config));
+    cf.register<RequireTextConditionConfig>(
+        ConditionType.RequireText, (config) => new RequireTextCondition(config));
   
     cf.register<RegExpConditionConfig>(
         ConditionType.RegExp, (config) => new RegExpCondition(config));

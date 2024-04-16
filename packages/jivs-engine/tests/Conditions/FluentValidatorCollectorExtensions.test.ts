@@ -4,7 +4,7 @@ import { FluentCollectorBase, FluentValidatorCollector, configChildren, configIn
 import { enableFluent } from "../../src/Conditions/FluentValidatorCollectorExtensions";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { InputValidatorConfig } from '../../src/Interfaces/InputValidator';
-import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequiredTextConditionConfig, StringLengthConditionConfig, StringNotEmptyConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig, StringNotEmptyConditionConfig } from '../../src/Conditions/ConcreteConditions';
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 
 function TestFluentValidatorCollector(testItem: FluentCollectorBase,
@@ -1412,66 +1412,66 @@ describe('stringNotEmpty on configInput', () => {
 });
 
 describe('requiredText on configInput', () => {
-    test('With no parameters, creates InputValidatorConfig with RequiredTextCondition with type=RequiredText', () => {
+    test('With no parameters, creates InputValidatorConfig with RequireTextCondition with type=RequireText', () => {
         enableFluent();
         let testItem = configInput('Field1').requiredText();
         TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <RequiredTextConditionConfig>{
-                type: ConditionType.RequiredText
+            conditionConfig: <RequireTextConditionConfig>{
+                type: ConditionType.RequireText
             }
         });
     });
 
-    test('With emptyValue and nullValueResult assigned, creates InputValidatorConfig with RequiredTextCondition with type=RequiredText, emptyValue, nullValueResult assigned', () => {
+    test('With emptyValue and nullValueResult assigned, creates InputValidatorConfig with RequireTextCondition with type=RequireText, emptyValue, nullValueResult assigned', () => {
         enableFluent();
         let testItem = configInput('Field1').requiredText({ emptyValue: 'X', nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <RequiredTextConditionConfig>{
-                type: ConditionType.RequiredText,
+            conditionConfig: <RequireTextConditionConfig>{
+                type: ConditionType.RequireText,
                 emptyValue: 'X',
                 nullValueResult: ConditionEvaluateResult.NoMatch
             }
         });
     });
 
-    test('With only errorMessage creates InputValidatorConfig with RequiredTextCondition with only type assigned and errorMessage assigned', () => {
+    test('With only errorMessage creates InputValidatorConfig with RequireTextCondition with only type assigned and errorMessage assigned', () => {
         enableFluent();
         let testItem = configInput('Field1').requiredText(null, 'Error');
         TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <RequiredTextConditionConfig>{
-                type: ConditionType.RequiredText
+            conditionConfig: <RequireTextConditionConfig>{
+                type: ConditionType.RequireText
             },
             errorMessage: 'Error'
         });
     });
-    test('With errorMessage and parameter.summaryMessage creates InputValidatorConfig with RequiredTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+    test('With errorMessage and parameter.summaryMessage creates InputValidatorConfig with RequireTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         enableFluent();
         let testItem = configInput('Field1').requiredText(null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <RequiredTextConditionConfig>{
-                type: ConditionType.RequiredText
+            conditionConfig: <RequireTextConditionConfig>{
+                type: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
         });
     });
-    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorConfig with RequiredTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorConfig with RequireTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         enableFluent();
         let testItem = configInput('Field1').requiredText(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <RequiredTextConditionConfig>{
-                type: ConditionType.RequiredText
+            conditionConfig: <RequireTextConditionConfig>{
+                type: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
         });
     });
-    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorConfig with RequiredTextCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorConfig assigned', () => {
+    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorConfig with RequireTextCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorConfig assigned', () => {
         enableFluent();
         let testItem = configInput('Field1').requiredText(null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <RequiredTextConditionConfig>{
-                type: ConditionType.RequiredText
+            conditionConfig: <RequireTextConditionConfig>{
+                type: ConditionType.RequireText
             },
             errorMessage: 'FirstError'
         });
@@ -1550,11 +1550,11 @@ describe('all on configInput', () => {
             conditionConfig: <AllMatchConditionConfig>{
                 type: ConditionType.All,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             }
@@ -1568,11 +1568,11 @@ describe('all on configInput', () => {
             conditionConfig: <AllMatchConditionConfig>{
                 type: ConditionType.All,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1586,11 +1586,11 @@ describe('all on configInput', () => {
             conditionConfig: <AllMatchConditionConfig>{
                 type: ConditionType.All,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1640,11 +1640,11 @@ describe('any on configInput', () => {
             conditionConfig: <AnyMatchConditionConfig>{
                 type: ConditionType.Any,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             }
@@ -1658,11 +1658,11 @@ describe('any on configInput', () => {
             conditionConfig: <AnyMatchConditionConfig>{
                 type: ConditionType.Any,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1676,11 +1676,11 @@ describe('any on configInput', () => {
             conditionConfig: <AnyMatchConditionConfig>{
                 type: ConditionType.Any,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1757,11 +1757,11 @@ describe('countMatches on configInput', () => {
                 minimum: 0,
                 maximum: 2,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             }
@@ -1777,11 +1777,11 @@ describe('countMatches on configInput', () => {
                 minimum: 1,
                 maximum: 4,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1797,11 +1797,11 @@ describe('countMatches on configInput', () => {
                 minimum: 1,
                 maximum: 2,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequiredText,
+                    type: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },

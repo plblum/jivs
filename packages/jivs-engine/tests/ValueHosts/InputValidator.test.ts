@@ -1,7 +1,7 @@
 import {
     type RangeConditionConfig,
-    RequiredTextCondition, EqualToCondition,
-    type RequiredTextConditionConfig, type CompareToConditionConfig,
+    RequireTextCondition, EqualToCondition,
+    type RequireTextConditionConfig, type CompareToConditionConfig,
     RangeCondition, 
     
 } from "../../src/Conditions/ConcreteConditions";
@@ -59,7 +59,7 @@ class PublicifiedInputValidator extends InputValidator {
  * The returned ValidationManager includes two InputValueHosts with IDs "Field1" and "Field2".
  * @param config - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
- * ConditionConfig - RequiredTextConditiontType, ValueHostName: null
+ * ConditionConfig - RequireTextConditiontType, ValueHostName: null
  * errorMessage: 'Local'
  * summaryMessage: 'Summary'
  * @returns An object with all of the parts that were setup including 
@@ -79,8 +79,8 @@ function setupWithField1AndField2(config?: Partial<InputValidatorConfig>): {
     let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Label1');
     let vh2 = vm.addInputValueHost('Field2', LookupKey.String, 'Label2');
     const defaultConfig: InputValidatorConfig = {
-        conditionConfig: <RequiredTextConditionConfig>
-            { type: ConditionType.RequiredText, valueHostName: 'Field1' },
+        conditionConfig: <RequireTextConditionConfig>
+            { type: ConditionType.RequireText, valueHostName: 'Field1' },
         errorMessage: 'Local',
         summaryMessage: 'Summary'
     };
@@ -153,16 +153,16 @@ describe('Inputvalidator.constructor and initial property values', () => {
     });
 });
 describe('InputValidator.condition', () => {
-    test('Successful creation of RequiredTextCondition using ConditionConfig', () => {
+    test('Successful creation of RequireTextCondition using ConditionConfig', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: <RequiredTextConditionConfig>
-                { type: ConditionType.RequiredText, valueHostName: null },
+            conditionConfig: <RequireTextConditionConfig>
+                { type: ConditionType.RequireText, valueHostName: null },
         });
 
         let condition: ICondition | null = null;
         expect(() => condition = setup.inputValidator.condition).not.toThrow();
         expect(condition).not.toBeNull();
-        expect(condition).toBeInstanceOf(RequiredTextCondition);
+        expect(condition).toBeInstanceOf(RequireTextCondition);
     });
     test('Attempt to create Condition with ConditionConfig with invalid type throws', () => {
         let setup = setupWithField1AndField2({
@@ -203,7 +203,7 @@ describe('InputValidator.condition', () => {
     });
     test('Both Config and Creator setup throws', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: { type: ConditionType.RequiredText },
+            conditionConfig: { type: ConditionType.RequireText },
             conditionCreator: (requestor) => {
                 return {
                     conditionType: 'TEST',
@@ -289,7 +289,7 @@ describe('InputValidator.enabler', () => {
     });
     test('Both Config and Creator setup throws', () => {
         let setup = setupWithField1AndField2({
-            enablerConfig: { type: ConditionType.RequiredText },
+            enablerConfig: { type: ConditionType.RequireText },
             enablerCreator: (requestor) => {
                 return {
                     conditionType: 'TEST',
@@ -412,7 +412,7 @@ describe('InputValidator.severity', () => {
 
             expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
         }
-        checkDefaultSeverity(ConditionType.RequiredText);
+        checkDefaultSeverity(ConditionType.RequireText);
         checkDefaultSeverity(ConditionType.DataTypeCheck);
         checkDefaultSeverity(ConditionType.RegExp);
         checkDefaultSeverity(ConditionType.StringNotEmpty);
@@ -550,7 +550,7 @@ describe('InputValidator.getErrorMessageTemplate', () => {
             errorMessage: null,
             errorMessagel10n: null,
         });
-        (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequiredText, null, {
+        (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
@@ -565,7 +565,7 @@ describe('InputValidator.getErrorMessageTemplate', () => {
             errorMessagel10n: null,
         });
 
-        (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequiredText, null, {
+        (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
@@ -706,7 +706,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             summaryMessage: null,
             summaryMessagel10n: null,
         });
-        (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequiredText, null, {
+        (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
@@ -721,7 +721,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             summaryMessagel10n: null,
         });
 
-        (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequiredText, null, {
+        (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
@@ -817,7 +817,7 @@ describe('InputValidator.validate', () => {
         expect(vrResult).not.toBeInstanceOf(Promise);
         vrResult = vrResult as unknown as InputValidateResult;
         expect(vrResult!.issueFound).not.toBeNull();
-        expect(vrResult!.issueFound!.conditionType).toBe(ConditionType.RequiredText);
+        expect(vrResult!.issueFound!.conditionType).toBe(ConditionType.RequireText);
         expect(vrResult!.issueFound!.severity).toBe(severity);
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
     }
@@ -846,7 +846,7 @@ describe('InputValidator.validate', () => {
         expect(vrResult!.issueFound).not.toBeNull();
 
         let issueFound = vrResult!.issueFound;
-        expect(issueFound!.conditionType).toBe(ConditionType.RequiredText);
+        expect(issueFound!.conditionType).toBe(ConditionType.RequireText);
         expect(issueFound!.errorMessage).toBe(expectedErrorMessage);
         expect(issueFound!.summaryMessage).toBe(expectedSummaryMessage);
     }
@@ -882,8 +882,8 @@ describe('InputValidator.validate', () => {
     });
     test('Issue exists. Enabler = NoMatch. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
-            enablerConfig: <RequiredTextConditionConfig>{
-                type: ConditionType.RequiredText,
+            enablerConfig: <RequireTextConditionConfig>{
+                type: ConditionType.RequireText,
                 valueHostName: 'Field2'
             }
         });
@@ -919,9 +919,9 @@ describe('InputValidator.validate', () => {
 
     test('Issue exists. Enabler = Match. Returns Issue with correct error messages', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
-            enablerConfig: <RequiredTextConditionConfig>{
+            enablerConfig: <RequireTextConditionConfig>{
                 // the input value is 'ABC', which causes this condition to return Match
-                type: ConditionType.RequiredText, valueHostName: 'Field2'
+                type: ConditionType.RequireText, valueHostName: 'Field2'
             }
         }, {}, 3);
     });
@@ -962,7 +962,7 @@ describe('InputValidator.validate', () => {
         let setup = setupWithField1AndField2(configChanges);
         let logger = setup.services.loggerService as MockCapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
-        setup.valueHost1.setInputValue(inputValue);   // for RequiredTextCondition.evaluateDuringEdit
+        setup.valueHost1.setInputValue(inputValue);   // for RequireTextCondition.evaluateDuringEdit
         let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
         expect(() => vrResult = setup.inputValidator.validate({ duringEdit: true})).not.toThrow();
         expect(vrResult).not.toBeNull();
@@ -1091,10 +1091,10 @@ describe('InputValidator.validate', () => {
         });
 });
 describe('InputValidator.gatherValueHostNames', () => {
-    test('RequiredTextCondition supplies its ValueHostName', () => {
+    test('RequireTextCondition supplies its ValueHostName', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: <RequiredTextConditionConfig>
-                { type: ConditionType.RequiredText, valueHostName: 'Property1' },
+            conditionConfig: <RequireTextConditionConfig>
+                { type: ConditionType.RequireText, valueHostName: 'Property1' },
         });
         let collection = new Set<ValueHostName>();
         expect(() => setup.inputValidator.gatherValueHostNames(collection, setup.vm)).not.toThrow();
@@ -1104,10 +1104,10 @@ describe('InputValidator.gatherValueHostNames', () => {
 });
 
 describe('getValuesForTokens', () => {
-    test('RequiredTextCondition returns 2 tokens: Label and Value', () => {
+    test('RequireTextCondition returns 2 tokens: Label and Value', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: <RequiredTextConditionConfig>{
-                type: ConditionType.RequiredText,
+            conditionConfig: <RequireTextConditionConfig>{
+                type: ConditionType.RequireText,
                 valueHostName: null
             }
         });
@@ -1173,8 +1173,8 @@ describe('InputValidatorFactory.create', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Label1');
         const config: InputValidatorConfig = {
-            conditionConfig: <RequiredTextConditionConfig>{
-                type: ConditionType.RequiredText,
+            conditionConfig: <RequireTextConditionConfig>{
+                type: ConditionType.RequireText,
                 valueHostName: 'Field1'
             },
             errorMessage: 'Local',

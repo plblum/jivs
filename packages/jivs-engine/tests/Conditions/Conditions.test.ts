@@ -1,7 +1,7 @@
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import {
-    type RequiredTextConditionConfig, type RangeConditionConfig, type CompareToConditionConfig,
-    RequiredTextCondition,
+    type RequireTextConditionConfig, type RangeConditionConfig, type CompareToConditionConfig,
+    RequireTextCondition,
     RangeCondition, EqualToCondition, 
     NotEqualToCondition, GreaterThanCondition,
     GreaterThanOrEqualCondition,  LessThanCondition, 
@@ -32,12 +32,12 @@ describe('ConditionBase class additional cases', () => {
         let logger = services.loggerService as MockCapturingLogger;
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'PropertyNotRegistered',
             trim: true
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(() => testItem.evaluate(vh, vm)).toThrow(/valueHostName/);
         expect(logger.entryCount()).toBe(1);
         expect(logger.getLatest()?.message).toMatch(/valueHostName/);
@@ -48,12 +48,12 @@ describe('ConditionBase class additional cases', () => {
         let logger = services.loggerService as MockCapturingLogger;
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'PropertyNotRegistered',
             trim: true
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(() => testItem.evaluate(null, vm)).toThrow(/valueHostName/);
         expect(logger.entryCount()).toBe(1);
         expect(logger.getLatest()?.message).toMatch(/valueHostName/);
@@ -63,12 +63,12 @@ describe('ConditionBase class additional cases', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: null,
             trim: true
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         //     expect(() => testItem.evaluate(vh, vm)).toThrow(/valueHostName/);
         expect(() => testItem.evaluate(null, vm)).toThrow(/valueHostName/);
     });
@@ -77,12 +77,12 @@ describe('ConditionBase class additional cases', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: null,
             trim: true
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -228,20 +228,20 @@ describe('class DataTypeCheckCondition', () => {
         expect(testItem.size).toBe(0);
     });
 });
-describe('class RequiredTextCondition', () => {
+describe('class RequireTextCondition', () => {
     test('DefaultConditionType', () => {
-        expect(RequiredTextCondition.DefaultConditionType).toBe(ConditionType.RequiredText);
+        expect(RequireTextCondition.DefaultConditionType).toBe(ConditionType.RequireText);
     });
     test('evaluate returns Match', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1'
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(' A');
@@ -255,11 +255,11 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1'
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
@@ -269,12 +269,12 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
             emptyValue: 'EMPTY'
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(' A');
@@ -293,12 +293,12 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: true,
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(' A');
@@ -315,12 +315,12 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
             nullValueResult: nullValueResult
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(nullValueResult);
 
@@ -339,12 +339,12 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: true
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         vh.setValue(undefined);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(10);
@@ -358,12 +358,12 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: true
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
         expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
     });
@@ -372,12 +372,12 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: true
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits(' ', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
     });
@@ -386,13 +386,13 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: true,
             emptyValue: 'EMPTY'
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
         expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
@@ -405,13 +405,13 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: false,
             emptyValue: 'EMPTY'
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
         expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
@@ -424,41 +424,41 @@ describe('class RequiredTextCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
         expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
     });
 
     test('category is Required', () => {
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Required);
     });
     test('category is overridden', () => {
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
-        let testItem = new RequiredTextCondition(config);
+        let testItem = new RequireTextCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
     test('gatherValueHostNames when all are assigned', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: 'Property1',
         };
-        let condition = new RequiredTextCondition(config);
+        let condition = new RequireTextCondition(config);
         let testItem = new Set<ValueHostName>();
         expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(1);
@@ -468,11 +468,11 @@ describe('class RequiredTextCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: RequiredTextConditionConfig = {
-            type: ConditionType.RequiredText,
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
             valueHostName: null,
         };
-        let condition = new RequiredTextCondition(config);
+        let condition = new RequireTextCondition(config);
         let testItem = new Set<ValueHostName>();
         expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
@@ -2948,7 +2948,7 @@ describe('class AllMatchCondition', () => {
         let testItem = new AllMatchCondition(config);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
-    test('Parent ValueHost used by child RequiredTextCondition', () => {
+    test('Parent ValueHost used by child RequireTextCondition', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
@@ -2956,7 +2956,7 @@ describe('class AllMatchCondition', () => {
         let config: AllMatchConditionConfig = {
             type: ConditionType.And,
             conditionConfigs: [{
-                type: ConditionType.RequiredText,
+                type: ConditionType.RequireText,
                 // valueHostName omitted meaning it must use parent ValueHost
             },
             {
@@ -2968,7 +2968,7 @@ describe('class AllMatchCondition', () => {
                 expressionAsString: 'ABC'
             }            ],
         };
-        vh.setValue('ABC');    // for RequiredTextCondition and RegExpCondition to match
+        vh.setValue('ABC');    // for RequireTextCondition and RegExpCondition to match
         let testItem = new AllMatchCondition(config);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });    
@@ -3009,16 +3009,16 @@ describe('class AllMatchCondition', () => {
         let config: AllMatchConditionConfig = {
             type: ConditionType.And,
             conditionConfigs: [
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -3038,16 +3038,16 @@ describe('class AllMatchCondition', () => {
         let config: AllMatchConditionConfig = {
             type: ConditionType.And,
             conditionConfigs: [
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },                
             ]
@@ -3066,16 +3066,16 @@ describe('class AllMatchCondition', () => {
         let config: AllMatchConditionConfig = {
             type: ConditionType.And,
             conditionConfigs: [
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: null
                 },             
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -3347,16 +3347,16 @@ describe('class AnyMatchCondition', () => {
         let config: AnyMatchConditionConfig = {
             type: ConditionType.Or,
             conditionConfigs: [
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -3376,16 +3376,16 @@ describe('class AnyMatchCondition', () => {
         let config: AnyMatchConditionConfig = {
             type: ConditionType.Or,
             conditionConfigs: [
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },                
             ]
@@ -3404,16 +3404,16 @@ describe('class AnyMatchCondition', () => {
         let config: AnyMatchConditionConfig = {
             type: ConditionType.Or,
             conditionConfigs: [
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: null
                 },             
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -3553,16 +3553,16 @@ describe('class CountMatchesCondition', () => {
         let config: CountMatchesConditionConfig = {
             type: ConditionType.CountMatches,
             conditionConfigs: [
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -3582,16 +3582,16 @@ describe('class CountMatchesCondition', () => {
         let config: CountMatchesConditionConfig = {
             type: ConditionType.CountMatches,
             conditionConfigs: [
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },                
             ]
@@ -3610,16 +3610,16 @@ describe('class CountMatchesCondition', () => {
         let config: CountMatchesConditionConfig = {
             type: ConditionType.CountMatches,
             conditionConfigs: [
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: null
                 },             
-                <RequiredTextConditionConfig>{
-                    type: ConditionType.RequiredText,
+                <RequireTextConditionConfig>{
+                    type: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]

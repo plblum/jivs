@@ -94,7 +94,7 @@ export interface ICondition {
  * for the purpose of logging and blocking.)
  * Examples: 
  * 
- * RequiredTextCondition implements IConditionCore<RequiredTextConditionConfig> which usually looks like:
+ * RequireTextCondition implements IConditionCore<RequireTextConditionConfig> which usually looks like:
  *  `{ type: 'Required' }`
  * 
  * RangeCondition implements IConditionCore<RangeConditionConfig> which usually looks like:  
@@ -170,7 +170,7 @@ export const ConditionEvaluateResultStrings = [
  */
 export enum ConditionCategory {
     /**
-     * Use when the data is required: RequiredTextCondition and RequiredIndexCondition.
+     * Use when the data is required: RequireTextCondition and RequiredIndexCondition.
      * These will be evaluated first by the InputValueHost, and will stop further evaluation
      * if evaluation is NoMatch (unless user explicitly sets InputValidatorConfig.severity to Error or Warning.)
      */
@@ -244,7 +244,7 @@ export interface SupportsDataTypeConverter extends ConditionConfig
  * - Reg exp to check for invalid characters, such as entering a password.
  *   This allows you to report immediate problems as the user types.
  * - String length: if the user has exceeded the maximum, they know immediately.
- * In fact, the provided RequiredTextCondition, RegExpCondition, and StringLengthCondition
+ * In fact, the provided RequireTextCondition, RegExpCondition, and StringLengthCondition
  * have already been setup for this, although their ConditionConfigs let you disable
  * this feature.
  */
