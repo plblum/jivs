@@ -21,7 +21,7 @@ import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces
 import { IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionDescriptor, UserSuppliedResultCondition, UserSuppliedResultConditionType } from "../TestSupport/conditionsForTesting";
 import { configInput } from "../../src/ValueHosts/Fluent";
-import { initFluent } from "../../src/Conditions/FluentValidatorCollectorExtensions";
+import { enableFluent } from "../../src/Conditions/FluentValidatorCollectorExtensions";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<ValidationManagerState> {
@@ -347,7 +347,7 @@ describe('ValidationManager.addValueHost', () => {
     });    
 
     test('Using fluent syntax, add InputValueHostDescriptor with required ConditionDescriptor', () => {
-        initFluent();
+        enableFluent();
         let testItem = new PublicifiedValidationManager({
             services: new MockValidationServices(true, false), valueHostDescriptors: []
         });

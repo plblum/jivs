@@ -17,4 +17,9 @@
     "footerLastModified": true,      //typedoc-plugin-extras
     "mergeModulesRenameDefaults": false, // typedoc-plugin-merge-modules
     "mergeModulesMergeMode": "module",   // typedoc-plugin-merge-modules
+    "sort": [
+        "kind",
+        "instance-first",
+        "source-order"
+    ]    
 }  
