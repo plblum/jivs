@@ -20,8 +20,7 @@ import { createValidationServicesForTesting } from "../TestSupport/createValidat
 import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig, UserSuppliedResultCondition, UserSuppliedResultConditionType } from "../TestSupport/conditionsForTesting";
-import { configInput } from "../../src/ValueHosts/Fluent";
-import { enableFluent } from "../../src/Conditions/FluentValidatorCollectorExtensions";
+import { config } from "../../src/ValueHosts/Fluent";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<ValidationManagerState> {
@@ -324,7 +323,6 @@ describe('ValidationManager.addValueHost', () => {
         testValueHostState(testItem, 'Field2', null);
     });
     test('Add InputValueHostConfig with required ConditionConfig', () => {
-     
         let testItem = new PublicifiedValidationManager({
             services: new MockValidationServices(true, false), valueHostConfigs: []
         });
@@ -347,12 +345,11 @@ describe('ValidationManager.addValueHost', () => {
     });    
 
     test('Using fluent syntax, add InputValueHostConfig with required ConditionConfig', () => {
-        enableFluent();
         let testItem = new PublicifiedValidationManager({
             services: new MockValidationServices(true, false), valueHostConfigs: []
         });
 
-        testItem.addValueHost(configInput('Field1', null, { label: 'Field 1' }).requiredText(null, 'msg'),
+        testItem.addValueHost(config().input('Field1', null, { label: 'Field 1' }).requireText(null, 'msg'),
             null);
         expect(testItem.exposedValueHostConfigs['Field1']).toBeDefined();     
         expect(testItem.exposedValueHostConfigs['Field1']).toEqual({
@@ -658,6 +655,41 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         // ensure ValueHost is InputValueHost and has an initial state
         testValueHostState(testItem, 'Field1', null);
     });
+    test('Using fluent syntax, replace the config with existing ValueHostState.ValidationResult of Invalid retains state when replacement is the same type', () => {
+        let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
+        let ivConfig = config().input('Field1', null, { label: 'Field 1'});
+        let initialValueHost = testItem.addValueHost(ivConfig, null);
+
+        let replacementConfig = config().input('Field1', null, { label: 'Field 1'}).requireText({}, 'Error');
+
+        let replacementValueHost: IValueHost | null = null;
+        expect(() => replacementValueHost = testItem.updateValueHost(replacementConfig, null)).not.toThrow();
+        expect(replacementValueHost).not.toBeNull();
+        expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
+
+        expect(testItem.exposedValueHosts).not.toBeNull();
+        expect(Object.keys(testItem.exposedValueHosts).length).toBe(1);
+        expect(testItem.exposedValueHosts['Field1']).toBe(replacementValueHost);
+        expect(testItem.exposedValueHostConfigs).not.toBeNull();
+        expect(Object.keys(testItem.exposedValueHostConfigs).length).toBe(1);
+        expect(testItem.exposedState).not.toBeNull();
+
+        // no side effects of the originals
+        let replacementValueHostConfig = testItem.exposedValueHostConfigs['Field1'];
+        expect(replacementValueHostConfig).not.toBe(ivConfig.parentConfig);
+        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs).toBeDefined();
+        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs!.length).toBe(1);
+        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].errorMessage).toBe('Error');        
+        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].conditionConfig).toBeDefined();
+        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequireText);
+        
+        // ensure ValueHost is supporting the Config
+        expect(testItem.exposedValueHosts['Field1']).toBeInstanceOf(InputValueHost);
+
+        // ensure ValueHost is InputValueHost and has an initial state
+        testValueHostState(testItem, 'Field1', null);
+    });
+
     test('Replace the state, keeping the same config. Confirm the state and config', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
@@ -743,7 +775,7 @@ describe('ValidationManager.discardValueHost completely removes ValueHost, its s
         let testItem = new PublicifiedValidationManager(setup);
         expect(testItem.getValueHost(config.name)!.getValue()).toBe(10);  // to prove later this is deleted
 
-        expect(() => testItem.discardValueHost(config)).not.toThrow();
+        expect(() => testItem.discardValueHost(config.name)).not.toThrow();
 
         expect(testItem.exposedValueHosts).not.toBeNull();
         expect(Object.keys(testItem.exposedValueHosts).length).toBe(0);
@@ -766,7 +798,7 @@ describe('ValidationManager.discardValueHost completely removes ValueHost, its s
         };
         let initialValueHost = testItem.addValueHost(config, null);
 
-        expect(() => testItem.discardValueHost(config)).not.toThrow();
+        expect(() => testItem.discardValueHost(config.name)).not.toThrow();
 
         expect(testItem.exposedValueHosts).not.toBeNull();
         expect(Object.keys(testItem.exposedValueHosts).length).toBe(0);
@@ -793,7 +825,7 @@ describe('ValidationManager.discardValueHost completely removes ValueHost, its s
         };
         let initialValueHost2 = testItem.addValueHost(config2, null);
 
-        expect(() => testItem.discardValueHost(config2)).not.toThrow();
+        expect(() => testItem.discardValueHost(config2.name)).not.toThrow();
 
         expect(testItem.exposedValueHosts).not.toBeNull();
         expect(Object.keys(testItem.exposedValueHosts).length).toBe(1);

@@ -574,7 +574,7 @@ export class MockInputValueHostConfigResolver implements IInputValueHostConfigRe
 {
     constructor(config: Omit<InputValueHostConfig, 'type'>)
     {
-        this.config = { ...config as InputValueHostConfig, type: ValueHostType.Input };
+        this.parentConfig = { ...config as InputValueHostConfig, type: ValueHostType.Input };
     }
-    public config: InputValueHostConfig;
+    public parentConfig: InputValueHostConfig;
 }

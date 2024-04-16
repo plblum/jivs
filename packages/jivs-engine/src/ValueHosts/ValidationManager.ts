@@ -112,7 +112,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         for (let item of configs) {
             let resolver = toIInputValueHostConfigResolver(item);
             if (resolver)
-                this.addValueHost(resolver.config, null);
+                this.addValueHost(resolver.parentConfig, null);
             else
                 this.addValueHost(item as ValueHostConfig, null);
         }
@@ -196,7 +196,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
      * @param config 
-     * Can use configNonInput() or any ValueConfigHost.
+     * Can use config().nonInput() or any ValueConfigHost.
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupState() first.
@@ -208,11 +208,11 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * Adds a ValueHostConfig for an InputValueHost not previously added. 
      * Expects fluent syntax where the first parameter starts with
-     * configInput() followed by chained validation rules.
+     * config().input() followed by chained validation rules.
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
      * @param fluentCollector
-     * Pass in `configInput("valueHostName"[, parameters]).validator().validator()`. 
+     * Pass in `config().input("valueHostName"[, parameters]).validator().validator()`. 
      * @param initialState
      * When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
@@ -226,7 +226,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         initialState: ValueHostState | null): IValueHost {
         assertNotNull(arg1, 'arg1');
         let config: ValueHostConfig = arg1 instanceof FluentValidatorCollector ?
-            arg1.config : arg1;
+            arg1.parentConfig : arg1;
         if (!this._valueHostConfigs[config.name])
             return this.applyConfig(config, initialState);
 
@@ -241,8 +241,24 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupState() first.
      */
-    public updateValueHost(config: ValueHostConfig, initialState: ValueHostState | null): IValueHost {
-        assertNotNull(config, 'config');
+    public updateValueHost(config: ValueHostConfig, initialState: ValueHostState | null): IValueHost;
+    /**
+     * Replaces a ValueHostConfig for an already added ValueHost. 
+     * Does not trigger any notifications.
+     * Expects fluent syntax where the first parameter starts with
+     * config().input() followed by chained validation rules.
+     * If the name isn't found, it will be added.
+     * @param collector 
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValidationManager constructor.
+     * It will be run through ValueHostFactory.cleanupState() first.
+     */
+    public updateValueHost(collector: FluentValidatorCollector, initialState: ValueHostState | null): IValueHost;
+    public updateValueHost(arg1: ValueHostConfig | FluentValidatorCollector, initialState: ValueHostState | null): IValueHost {
+        assertNotNull(arg1, 'arg');
+        let config: ValueHostConfig = arg1 instanceof FluentValidatorCollector ?
+            arg1.parentConfig : arg1;
+
         if (this._valueHostConfigs[config.name])
             return this.applyConfig(config, initialState);
 
@@ -253,14 +269,14 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Does not trigger any notifications.
      * @param config 
      */
-    public discardValueHost(config: ValueHostConfig): void {
-        assertNotNull(config, 'config');
-        if (this._valueHostConfigs[config.name]) {
-            delete this._valueHosts[config.name];
-            delete this._valueHostConfigs[config.name];
+    public discardValueHost(valueHostName: ValueHostName): void {
+        assertNotNull(valueHostName, 'valueHostName');
+        if (this._valueHostConfigs[valueHostName]) {
+            delete this._valueHosts[valueHostName];
+            delete this._valueHostConfigs[valueHostName];
             if (this._lastValueHostStates)
             {
-                let pos = this._lastValueHostStates.findIndex((state) => state.name === config.name);
+                let pos = this._lastValueHostStates.findIndex((state) => state.name === valueHostName);
                 if (pos > -1)
                     this._lastValueHostStates.splice(pos, 1);
             }

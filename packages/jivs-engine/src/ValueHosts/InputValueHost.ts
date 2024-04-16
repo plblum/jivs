@@ -21,6 +21,7 @@ import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { InputValueHostConfig, InputValueHostState, IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { FluentValidatorCollector } from './Fluent';
+import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
 
 
 /**
@@ -388,6 +389,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
      */
     public configValidators(): FluentValidatorCollector
     {
+        enableFluent();
         this._validators = null;    // force recreation   
         if (!this.config.validatorConfigs)
             this.config.validatorConfigs = [];        

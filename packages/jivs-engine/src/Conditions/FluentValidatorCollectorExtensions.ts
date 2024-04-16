@@ -53,7 +53,7 @@ declare module "./../ValueHosts/Fluent"
         dataTypeCheck(
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
-        requiredText(
+        requireText(
             conditionConfig?: FluentRequireTextConditionConfig | null,
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
@@ -136,16 +136,16 @@ declare module "./../ValueHosts/Fluent"
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         all(
-            configChildren: FluentConditionCollector,
+            collector: FluentConditionCollector,
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         any(
-            configChildren: FluentConditionCollector,
+            collector: FluentConditionCollector,
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
         countMatches(
             minimum: number | null, maximum: number | null,
-            configChildren: FluentConditionCollector,
+            collector: FluentConditionCollector,
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;      
         
@@ -206,7 +206,7 @@ export function enableFluent(): void {
         return;
     // How JavaScript sees the functions added to the FluentValidatorCollector class
     FluentValidatorCollector.prototype.dataTypeCheck = dataTypeCheck;
-    FluentValidatorCollector.prototype.requiredText = requiredText;
+    FluentValidatorCollector.prototype.requireText = requireText;
     FluentValidatorCollector.prototype.notNull = notNull;
     FluentValidatorCollector.prototype.regExp = regExp;
     FluentValidatorCollector.prototype.range = range;
@@ -253,7 +253,7 @@ function dataTypeCheck(
         errorMessage, inputValidatorParameters);
 }
 
-function requiredText(
+function requireText(
     conditionConfig?: FluentRequireTextConditionConfig | null,
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
@@ -414,30 +414,30 @@ function stringLength(
 }
 
 function all(
-    configChildren: FluentConditionCollector,
+    collector: FluentConditionCollector,
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.All, _genDCAll(configChildren),
+        ConditionType.All, _genDCAll(collector),
         errorMessage, inputValidatorParameters);
 }
 
 function any(
-    configChildren: FluentConditionCollector,
+    collector: FluentConditionCollector,
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.Any, _genDCAny(configChildren),
+        ConditionType.Any, _genDCAny(collector),
         errorMessage, inputValidatorParameters);
 }
 
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    configChildren: FluentConditionCollector,
+    collector: FluentConditionCollector,
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, configChildren),
+        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, collector),
         errorMessage, inputValidatorParameters);
 }

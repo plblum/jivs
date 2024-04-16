@@ -2,35 +2,56 @@
  * Fluent syntax for ValueHosts and associated validation rules
  * used to build the ValueHostConfig (with all of its children) quickly
  * and succinctly. 
- * The user will start the fluent syntax with configInput() or configNonInput().
+ * The user will start the fluent syntax with config().input() or config().nonInput().
  * Those will setup the configs for InputValueHost or NonInputValueHost
  * taking advantage of intellisense to expose the available properties
  * of the config, which may be a subset of the original.
- * `configNonInput('productName')`
- * > configNonInput has no chained functions. Chaining is for validation.
  * 
- * `configInput('productName', { dataType: 'String' })`
+ * `config().input('valueHostName').[chained functions]`
  * 
- * configInput() fluently flows into defining the validation rules.
+ * With optional parameters
  * 
- * `configInput('productName').required().regExp('^\\d$')`
+ * `config().input('valueHostName', 'datatype lookup key', { label: 'label' }).[chained functions]`
  * 
- * Each condition class will define its fluent method based on its ConditionType name ("requiredText", "regExp", etc).
+ * `config().nonInput('valueHostName').[chained functions]`
+ * 
+ *  With optional parameters
+ * 
+ * `config().nonInput('valueHostName', 'datatype lookup key', { label: 'label' }).[chained functions]`
+ * 
+ * For example:
+ * ```ts
+ * let valueHostConfigs = [
+ *   config().nonInput('productVisible', LookupKey.Boolean),
+ *   config().input('productName', LookupKey.String, { label: 'Name' }).required().regExp('^\w[\s\w]*$')`,
+ *   config().input('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqual(0.0)`,
+ * ];
+ * let vm = new ValidationManager({
+ *   services: createValidationServices(),
+ *   valueHostConfigs = valueHostConfigs;
+ * });
+ * ```
+ * `config().input('productName').required().regExp('^\\d$')`
+ * 
+ * ## How this system works
+ * 
+ * Each condition class will define its fluent method based on its ConditionType name ("requireText", "regExp", etc).
  * They will use some TypeScript Declaration Merging magic to make their
  * class appear to be part of FluentValidatorCollector and FluentConditionCollector, classes that connect
  * the conditions to the InputValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
- * - FluentValidatorCollector - Class at the top level of fluent series, coming from the call
- *   to configInput(). It creates both a conditionConfig and a hosting inputValidatorConfig,
- *   adding them to the InputValueHostConfig that is being created.
+ * - StartFluent - Class that starts a fluent chain. Its methods start InputValueHost (input()),
+ *   NonInputValueHost (nonInput()), and a collection of Conditions (conditions()).
  * 
- * - FluentConditionCollector - Class used only within a condition that operates on nested conditions,
- *   like AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. Their base config
- *   is EvaluateChildConditionResultsConfig. It creates only a ConditionConfig,
- *   adding it to the array of ConditionConfigs hosted in EvaluateChildConditionResultsConfig.
+ * - FluentValidatorCollector - Class that supplies Conditions and InputValidators
+ *   to the preceding InputValueHost. It is returned by config().input() and each chained object that follows.
+ * 
+ * - FluentConditionCollector - Class that supplies Conditions to Conditions based upon EvaluateChildConditionResultsConfig:
+ *   AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. It is created 
+ *   by config().conditions()
  * 
  * ## Creating your own fluent functions
- * Create two functions to support chaining to configInfo() and configChildren().
+ * Create two functions to support chaining to config().input() and config().conditions().
  * They are not exported, as they are used to modify the prototypes of other classes.
  * 
  * Fluent functions should look like this: 
@@ -50,7 +71,7 @@
  *         condConfig.ignoreCase = ignoreCase;
  *     return condConfig as RegExpConditionConfig;
  * }
- * function regExp_forConfigInput(
+ * function regExp_forInput(
  *     expression: RegExp | string, ignoreCase?: boolean | null,
  *     conditionConfig?: FluentRegExpConditionConfig | null,
  *     errorMessage?: string | null,
@@ -59,7 +80,7 @@
  *         ConditionType.RegExp, _genCDRegExp(expression, ignoreCase, conditionConfig),
  *         errorMessage, inputValidatorParameters);
  * }
- * function regExp_forConfigChildren(
+ * function regExp_forConditions(
  *     valueHostName: ValueHostName | null,
  *     expression: RegExp | string, ignoreCase?: boolean | null,
  *     conditionConfig?: FluentRegExpConditionConfig | null): FluentConditionCollector {
@@ -84,8 +105,8 @@
  *          conditionConfig?: FluentRegExpConditionConfig) : FluentConditionCollector
  *    } 
  * }
- * FluentValidatorCollector.prototype.regExp = regExp_forConfigInput;
- * FluentConditionCollector.prototype.regExp = regExp_forConfigChildren;
+ * FluentValidatorCollector.prototype.regExp = regExp_forInput;
+ * FluentConditionCollector.prototype.regExp = regExp_forConditions;
  * 
  * @module ValueHosts/Fluent
  * ## Switching to a different condition library
@@ -104,88 +125,120 @@ import { assertNotNull } from "../Utilities/ErrorHandling";
 import { EvaluateChildConditionResultsConfig } from '../Conditions/EvaluateChildConditionResultsBase';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { OneValueConditionConfig } from '../Conditions/OneValueConditionBase';
+import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
 
 /**
- * Fluent format to create a NonInputValueHostConfig.
- * This is the start of a fluent series. However, at this time, there are no further items in the series.
- * @param name - the ValueHost name
- * @param dataType - optional and can be null. The value for ValueHost.dataType.
- * @param parameters - optional. Any additional properties of a NonInputValueHostConfig.
+ * Starts a fluent chain. Its methods start InputValueHost (input()),
+ * NonInputValueHost (nonInput()), and a collection of Conditions (conditions()).
+ * You access it through the global config() function
  */
-export function configNonInput(name: string, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig;
-/**
- * Fluent format to create a NonInputValueHostConfig.
- * This is the start of a fluent series. However, at this time, there are no further items in the series.
- * @param config - Supply the entire NonInputValueHostConfig. This is a special use case.
- * You can omit the type property.
- */
-export function configNonInput(config: Omit<NonInputValueHostConfig, 'type'>): NonInputValueHostConfig;
-// overload resolution
-export function configNonInput(arg1: string | NonInputValueHostConfig, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig
+export class StartFluent
 {
-    assertNotNull(arg1, 'arg1');
-    if (typeof arg1 === 'object')
-        return { ...arg1 as NonInputValueHostConfig, type: ValueHostType.NonInput };
-    if (typeof arg1 === 'string') {
+    /**
+     * Fluent format to create a InputValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param name - the ValueHost name
+     * @param dataType - optional and can be null. The value for ValueHost.dataType.
+     * @param parameters - optional. Any additional properties of a InputValueHostConfig.
+     */
+    public input(name: string, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
+    /**
+     * Fluent format to create a InputValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param config - Supply the entire InputValueHostConfig. This is a special use case.
+     * You can omit the type property.
+     */
+    public input(config: FluentInputValueConfig): FluentValidatorCollector;
+    // overload resolution
+    public input(arg1: string | FluentInputValueConfig, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector
+    {
+        assertNotNull(arg1, 'arg1');
+        
+        if (typeof arg1 === 'object') {
+            let config: InputValueHostConfig =
+                { ...arg1 as InputValueHostConfig, type: ValueHostType.Input };
+            if (!config.validatorConfigs)
+                config.validatorConfigs = [];
 
-        let config: NonInputValueHostConfig = { type: ValueHostType.NonInput, name: arg1 };
-        if (dataType)
-            config.dataType = dataType;
-        if (parameters)
-            config = { ...parameters, ...config };
-    
-        return config;
+            return new FluentValidatorCollector(config);
+        }
+        if (typeof arg1 === 'string') {
+
+            let config: InputValueHostConfig =
+                { type: ValueHostType.Input, name: arg1 } as InputValueHostConfig;
+            if (dataType)
+                config.dataType = dataType;
+            if (parameters)
+                config = { ...parameters, ...config };
+            if (!config.validatorConfigs)
+                config.validatorConfigs = [];
+
+            return new FluentValidatorCollector(config);;
+        }
+        throw new TypeError('Must pass valuehost name or InputValueHostConfig');
+    }    
+    /**
+     * Fluent format to create a NonInputValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param name - the ValueHost name
+     * @param dataType - optional and can be null. The value for ValueHost.dataType.
+     * @param parameters - optional. Any additional properties of a NonInputValueHostConfig.
+     */
+    nonInput(name: string, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig;
+    /**
+     * Fluent format to create a NonInputValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param config - Supply the entire NonInputValueHostConfig. This is a special use case.
+     * You can omit the type property.
+     */
+    nonInput(config: Omit<NonInputValueHostConfig, 'type'>): NonInputValueHostConfig;
+    // overload resolution
+    nonInput(arg1: string | NonInputValueHostConfig, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig
+    {
+        assertNotNull(arg1, 'arg1');
+        if (typeof arg1 === 'object')
+            return { ...arg1 as NonInputValueHostConfig, type: ValueHostType.NonInput };
+        if (typeof arg1 === 'string') {
+
+            let config: NonInputValueHostConfig = { type: ValueHostType.NonInput, name: arg1 };
+            if (dataType)
+                config.dataType = dataType;
+            if (parameters)
+                config = { ...parameters, ...config };
+        
+            return config;
+        }
+        throw new TypeError('Must pass valuehost name or NonInputValueHostConfig');
     }
-    throw new TypeError('Must pass valuehost name or NonInputValueHostConfig');
+    /**
+     * Start of a series to collect ConditionConfigs into any condition that
+     * implements EvaluateChildConditionResultsConfig.
+     * For example, config().input('Field1').all(config().conditions().required('Field2').required('Field3'))
+     * The fluent function for all (and others that support EvaluateChildConditionResultsConfig)
+     * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
+    * @param config - When null/undefined, the instance is created and the caller is expected
+    * to retrieve its conditionConfigs from the config property.
+    * When assigned, that instance gets conditionConfigs populated and 
+    * there is no need to get a value from configs property.
+    */
+    public conditions(config?: EvaluateChildConditionResultsConfig): FluentConditionCollector
+    {
+        let collector = new FluentConditionCollector(config ?? null);
+        return collector;
+    }    
 }
+export function config(): StartFluent
+{
+    enableFluent();
+    return new StartFluent();
+}
+
+
 /**
  * For fluent configNonInput function.
  */
 export type FluentNonInputParameters = Omit<NonInputValueHostConfig, 'type' | 'name' | 'dataType'>;
 
-/**
- * Fluent format to create a InputValueHostConfig.
- * This is the start of a fluent series. Extend series with validation rules like "required()".
- * @param name - the ValueHost name
- * @param dataType - optional and can be null. The value for ValueHost.dataType.
- * @param parameters - optional. Any additional properties of a InputValueHostConfig.
- */
-export function configInput(name: string, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
-/**
- * Fluent format to create a InputValueHostConfig.
- * This is the start of a fluent series. However, at this time, there are no further items in the series.
- * @param config - Supply the entire InputValueHostConfig. This is a special use case.
- * You can omit the type property.
- */
-export function configInput(config: FluentInputValueConfig): FluentValidatorCollector;
-// overload resolution
-export function configInput(arg1: string | FluentInputValueConfig, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector
-{
-    assertNotNull(arg1, 'arg1');
-    
-    if (typeof arg1 === 'object') {
-        let config: InputValueHostConfig =
-            { ...arg1 as InputValueHostConfig, type: ValueHostType.Input };
-        if (!config.validatorConfigs)
-            config.validatorConfigs = [];
-
-        return new FluentValidatorCollector(config);
-    }
-    if (typeof arg1 === 'string') {
-
-        let config: InputValueHostConfig =
-            { type: ValueHostType.Input, name: arg1 } as InputValueHostConfig;
-        if (dataType)
-            config.dataType = dataType;
-        if (parameters)
-            config = { ...parameters, ...config };
-        if (!config.validatorConfigs)
-            config.validatorConfigs = [];
-
-        return new FluentValidatorCollector(config);;
-    }
-    throw new TypeError('Must pass valuehost name or InputValueHostConfig');
-}
 /**
  * For fluent configInput function.
  */
@@ -197,22 +250,6 @@ export type FluentInputParameters = Omit<FluentInputValueConfig, 'name' | 'dataT
  */
 export type FluentInputValidatorConfig = Omit<InputValidatorConfig, 'conditionConfig'>;
 
-/**
- * Start of a series to collect ConditionConfigs into any condition that
- * implements EvaluateChildConditionResultsConfig.
- * For example, configInput('Field1').all(configChildren().required('Field2').required('Field3'))
- * The fluent function for all (and others that support EvaluateChildConditionResultsConfig)
- * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
-* @param config - When null/undefined, the instance is created and the caller is expected
-* to retrieve its conditionConfigs from the config property.
-* When assigned, that instance gets conditionConfigs populated and 
-* there is no need to get a value from configs property.
- */
-export function configChildren(config?: EvaluateChildConditionResultsConfig): FluentConditionCollector
-{
-    let collector = new FluentConditionCollector(config ?? null);
-    return collector;
-}
 
 /**
  * Class that will get fluent functions attached
@@ -257,29 +294,33 @@ export interface IFluentValidatorCollector extends IInputValueHostConfigResolver
 }
 
 /**
+ * Supplies Conditions and InputValidators the preceding InputValueHost in a fluent chain. 
+ * It is returned by config().input() and each chained object that follows.
+ * 
  * This class will dynamically get fluent functions for each condition
  * by using TypeScript's Declaration Merging:
  * https://www.typescriptlang.org/docs/handbook/declaration-merging.html
- * Those functions will be located near the associated Config class.
+ * 
+ * See {@link ValueHosts/Fluent | Fluent Overview}
  */
 export class FluentValidatorCollector extends FluentCollectorBase implements IFluentValidatorCollector
 {
-    constructor(config: InputValueHostConfig)
+    constructor(parentConfig: InputValueHostConfig)
     {
         super();
-        assertNotNull(config, 'config');
-        if (!config.validatorConfigs)
-            config.validatorConfigs = [];
-        this._config = config;
+        assertNotNull(parentConfig, 'config');
+        if (!parentConfig.validatorConfigs)
+            parentConfig.validatorConfigs = [];
+        this._parentConfig = parentConfig;
     }
     /**
      * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
      */
-    public get config(): InputValueHostConfig
+    public get parentConfig(): InputValueHostConfig
     {
-        return this._config;
+        return this._parentConfig;
     }
-    private readonly _config: InputValueHostConfig;
+    private readonly _parentConfig: InputValueHostConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentValidationRule.
@@ -309,7 +350,7 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
             ivDesc.conditionConfig = { ...conditionConfig as ConditionConfig };
         if (conditionType && ivDesc.conditionConfig)
             ivDesc.conditionConfig.type = conditionType;
-        this.config.validatorConfigs!.push(ivDesc as InputValidatorConfig);
+        this.parentConfig.validatorConfigs!.push(ivDesc as InputValidatorConfig);
     }
 }
 
@@ -327,7 +368,7 @@ export interface IFluentConditionCollector
     /**
      * The config that will collect the conditions.
      */
-    config: EvaluateChildConditionResultsConfig;
+    parentConfig: EvaluateChildConditionResultsConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentConditionCollector.
@@ -342,37 +383,42 @@ export interface IFluentConditionCollector
 }
 
 /**
+ * Supplies Conditions to Conditions that use EvaluateChildConditionResultsConfig:
+ * AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. It is created 
+ * by config().conditions()
+ * 
  * This class will dynamically get fluent functions for each condition
  * by using TypeScript's Declaration Merging:
  * https://www.typescriptlang.org/docs/handbook/declaration-merging.html
- * Those functions will be located near the associated Config class.
+ * 
+ * See {@link ValueHosts/Fluent | Fluent Overview}
  */
 export class FluentConditionCollector extends FluentCollectorBase implements IFluentConditionCollector
 {
     /**
      * 
-     * @param config null, the instance is created and the caller is expected
+     * @param parentConfig null, the instance is created and the caller is expected
      * to retrieve its conditionConfigs from the config property.
      * When assigned, that instance gets conditionConfigs populated and 
      * there is no need to get a value from configs property.
      */
-    constructor(config: EvaluateChildConditionResultsConfig | null)
+    constructor(parentConfig: EvaluateChildConditionResultsConfig | null)
     {
         super();
-        if (!config)
-            config = { conditionConfigs: [], type: 'TBD' };
-        if (!config.conditionConfigs)
-            config.conditionConfigs = [];
-        this._config = config;
+        if (!parentConfig)
+            parentConfig = { conditionConfigs: [], type: 'TBD' };
+        if (!parentConfig.conditionConfigs)
+            parentConfig.conditionConfigs = [];
+        this._parentConfig = parentConfig;
     }
     /**
      * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
      */
-    public get config(): EvaluateChildConditionResultsConfig
+    public get parentConfig(): EvaluateChildConditionResultsConfig
     {
-        return this._config;
+        return this._parentConfig;
     }
-    private readonly _config: EvaluateChildConditionResultsConfig;
+    private readonly _parentConfig: EvaluateChildConditionResultsConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentConditionCollector.
@@ -388,7 +434,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
         assertNotNull(conditionConfig, 'conditionConfig');
         if (conditionType)
             conditionConfig.type = conditionType;
-        this.config.conditionConfigs!.push(conditionConfig as ConditionConfig);
+        this.parentConfig.conditionConfigs!.push(conditionConfig as ConditionConfig);
     }
 }
 
@@ -426,7 +472,7 @@ export function finishFluentValidatorCollector(thisFromCaller: any,
  * We'll throw an exception here in that case.
  * @param conditionType 
  * @param valueHostName 
- * Overrides the default valueHostName, which comes from the configInput().
+ * Overrides the default valueHostName, which comes from the config().input().
  * Fluent function should supply this as a parameter
  * so long as its ConditionConfig implements OneValueConditionConfig.
  * Since these conditions are children of another, they are more likely to

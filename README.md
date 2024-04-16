@@ -516,16 +516,15 @@ let validationManager = new ValidationManager(config);
 ```
 <a name="fluentsyntax"></a>
 ## Fluent syntax
-If you are typing in those Config objects, you are probably not happy. Config objects are meant for code that convert your business logic objects into them.
+If you are typing in those Config objects, you are probably not happy. Config objects are meant for code that converts your business logic objects into them.
 
 Jivs comes with a fluent syntax to simplify the manual configuration work.
 Here's how the example with FirstName and LastName properties looks with this syntax.
 ```ts
-enableFluent();	// required! This can be called in application startup if you like
-let firstNameConfig = configInput('FirstName', 'String', { label: 'First Name' })
+let firstNameConfig = config().input('FirstName', 'String', { label: 'First Name' })
    .requireText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.')
    .notEqualTo('LastName', 'Are you sure...', { summaryMessage: 'In {Label}, are you sure...');
-let lastNameConfig = configInput('LastName', 'String', { label: 'Last Name'})
+let lastNameConfig = config.input('LastName', 'String', { label: 'Last Name'})
    .requireText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.' );
    //NOTE: Error messages can be omitted if you set them up in the TextLocalizationService
    // or let the UI developer attach them later.
@@ -535,6 +534,16 @@ let config = <IValidationManagerConfig>{
   valueHostConfigs: [firstNameConfig, lastNameConfig]
 }
 let validationManager = new ValidationManager(config);   
+```
+You can also use the config() object to add NonInputValueHosts and a list of Conditions to these Conditions: All, Any, CountMatches.
+
+```ts
+let visibleConfig = config().nonInput('PersonVisible', 'Boolean');
+let activeConfig = config().nonInput('PersonActive', 'Boolean');
+let personName = config().input('Name').any(
+     config().conditions()
+     	.equalTo(true, { valueHostName: 'PersonVisible'})
+        .equalTo(true, { valueHostName: 'PersonActive'}));
 ```
 <a name="createconditions"></a>
 ## Creating your own Conditions
@@ -611,7 +620,7 @@ Choose one of the methodologies below. When establishing the InputValueHost with
 ```
 The [fluent syntax](#fluentsyntax) for this is:
 ```ts
-let fieldNameConfig = configInput('fieldname')
+let fieldNameConfig = config().input('fieldname')
 	.customRule(
 		(requester)=> ...create your object here..., 
 		'optional error message', 
@@ -661,17 +670,17 @@ interface ValueHostConfig
   dataType?: string;
 	... other properties omitted ...
 }
-// using that Config
-{
+
+let firstNameConfig = <ValueHostConfig>{
   type: 'Input',
   name: 'FirstName',
   dataType: 'String',
-  label: 'First name',
   validatorConfigs: [ InputValidatorConfigs ]
-},
+  ... other properties omitted ...
+};
 
 ```
-You must assign dataType to the name of a data type when the data is not a string, boolean, number or Date, and should assign it for those types when you need to be more precise, such as an "EmailAddress" instead of just "String".
+You *must* assign dataType to the name of a data type when the data is not a string, boolean, number or Date, and *should* assign it for those types when you need to be more precise, such as an "EmailAddress" instead of just "String".
 
 We use the term "Lookup Key" when specifying the name of a data type. Please [see this page](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all supplied with Jivs and how they are used.
 
@@ -795,7 +804,7 @@ Let's suppose that you have a label "First Name" which you want in several langu
 	  labell10n: 'FirstName'
 	}
 	... or using fluent syntax ...
-	configInput('FirstName', null, { label: 'First Name', 'labell10n': 'FirstName' })
+	config().input('FirstName', null, { label: 'First Name', 'labell10n': 'FirstName' })
 	```
 3. Add an entry to the `createTextLocalizerService() function` like this:
 	```ts

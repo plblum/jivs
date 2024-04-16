@@ -17,7 +17,7 @@ declare module "./../ValueHosts/Fluent"
 {
     export interface FluentConditionCollector {
         dataTypeCheck(): FluentConditionCollector;
-        requiredText(
+        requireText(
             conditionConfig?: FluentRequireTextConditionConfig | null,
             valueHostName?: ValueHostName): FluentConditionCollector;
         notNull(valueHostName?: ValueHostName): FluentConditionCollector;
@@ -82,12 +82,12 @@ declare module "./../ValueHosts/Fluent"
             conditionConfig?: FluentStringLengthConditionConfig | null,
             valueHostName?: ValueHostName): FluentConditionCollector;
         all(
-            configChildren: FluentConditionCollector): FluentConditionCollector;
+            collector: FluentConditionCollector): FluentConditionCollector;
         any(
-            configChildren: FluentConditionCollector): FluentConditionCollector;
+            collector: FluentConditionCollector): FluentConditionCollector;
         countMatches(
             minimum: number | null, maximum: number | null,
-            configChildren: FluentConditionCollector): FluentConditionCollector;
+            collector: FluentConditionCollector): FluentConditionCollector;
 
 
         //#region shorter names for some
@@ -139,7 +139,7 @@ export function enableFluentConditions(): void {
         return;
     // How JavaScript sees the functions added to the FluentConditionCollector class
     FluentConditionCollector.prototype.dataTypeCheck = dataTypeCheck;
-    FluentConditionCollector.prototype.requiredText = requiredText;
+    FluentConditionCollector.prototype.requireText = requireText;
     FluentConditionCollector.prototype.notNull = notNull;
     FluentConditionCollector.prototype.regExp = regExp;
     FluentConditionCollector.prototype.range = range;
@@ -201,7 +201,7 @@ export function _genDCRequireText(
     let condConfig = (conditionConfig ? { ...conditionConfig } : {}) as RequireTextConditionConfig;
     return condConfig;
 }
-function requiredText(
+function requireText(
     conditionConfig?: FluentRequireTextConditionConfig | null,
     valueHostName?: ValueHostName): FluentConditionCollector {
     return finishFluentConditionCollector(this,
@@ -584,14 +584,14 @@ function stringLength(
  * @internal
  */
 export function _genDCAll(
-    configChildren: FluentConditionCollector): AllMatchConditionConfig {
-    assertNotNull(configChildren, 'configChildren');
-    return { conditionConfigs: configChildren.config.conditionConfigs } as AllMatchConditionConfig;
+    collector: FluentConditionCollector): AllMatchConditionConfig {
+    assertNotNull(collector, 'collector');
+    return { conditionConfigs: collector.parentConfig.conditionConfigs } as AllMatchConditionConfig;
 }
 function all(
-    configChildren: FluentConditionCollector): FluentConditionCollector {
+    collector: FluentConditionCollector): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.All, _genDCAll(configChildren));
+        ConditionType.All, _genDCAll(collector));
 }
 /**
  * Common code to setup AnyMatchConditionConfig for support within
@@ -599,14 +599,14 @@ function all(
  * @internal
  */
 export function _genDCAny(
-    configChildren: FluentConditionCollector): AnyMatchConditionConfig {
-    assertNotNull(configChildren, 'configChildren');
-    return { conditionConfigs: configChildren.config.conditionConfigs } as AnyMatchConditionConfig;
+    collector: FluentConditionCollector): AnyMatchConditionConfig {
+    assertNotNull(collector, 'collector');
+    return { conditionConfigs: collector.parentConfig.conditionConfigs } as AnyMatchConditionConfig;
 }
 function any(
-    configChildren: FluentConditionCollector): FluentConditionCollector {
+    collector: FluentConditionCollector): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.Any,  _genDCAny(configChildren));
+        ConditionType.Any,  _genDCAny(collector));
 }
 
 /**
@@ -617,10 +617,10 @@ function any(
 export function _genDCCountMatches(
     minimum: number | null,
     maximum: number | null,
-    configChildren: FluentConditionCollector): CountMatchesConditionConfig {
-    assertNotNull(configChildren, 'configChildren');
+    collector: FluentConditionCollector): CountMatchesConditionConfig {
+    assertNotNull(collector, 'collector');
     let condConfig: CountMatchesConditionConfig =
-        { conditionConfigs: configChildren.config.conditionConfigs } as CountMatchesConditionConfig;
+        { conditionConfigs: collector.parentConfig.conditionConfigs } as CountMatchesConditionConfig;
     if (minimum !== null)
         condConfig.minimum = minimum;
     if (maximum !== null)
@@ -630,8 +630,8 @@ export function _genDCCountMatches(
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    configChildren: FluentConditionCollector): FluentConditionCollector {
+    collector: FluentConditionCollector): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, configChildren));
+        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, collector));
 }
 

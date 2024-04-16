@@ -88,7 +88,7 @@ export interface IInputValueHostConfigResolver
     /**
      * The InputValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.
      */
-    config: InputValueHostConfig;
+    parentConfig: InputValueHostConfig;
 }
 
 /**
@@ -102,7 +102,7 @@ export function toIInputValueHostConfigResolver(source: any): IInputValueHostCon
     {
         let test = source as IInputValueHostConfigResolver;    
         // some select members of IInputValueHostConfigResolver
-        if (test.config)
+        if (test.parentConfig)
             return test;
     }
     return null;
