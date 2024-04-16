@@ -51,28 +51,28 @@ function setupInputValueHost(
 
 describe('BusinessLogicInputValueHost.validate', () => {
     test('No BusinessLogicErrors results in ValidationResult.Valid', () => {
-        let config = setupInputValueHost();
+        let setup = setupInputValueHost();
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate()).not.toThrow();
+        expect(() => vr = setup.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.validationResult).toBe(ValidationResult.Valid);
         expect(vr!.issuesFound).toBeNull();
     });
     test('Has group which is ignored. No BusinessLogicErrors results in ValidationResult.Valid', () => {
-        let config = setupInputValueHost();
+        let setup = setupInputValueHost();
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate({ group: 'GROUPA' })).not.toThrow();
+        expect(() => vr = setup.valueHost.validate({ group: 'GROUPA' })).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.validationResult).toBe(ValidationResult.Valid);
         expect(vr!.issuesFound).toBeNull();
     });    
     test('One BusinessLogicErrors with only ErrorMesage results in ValidationResult.Invalid and one IssueFound because Severity=undefined means Severity=Error', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
+        let setup = setupInputValueHost();
+        setup.valueHost.setBusinessLogicError({
             errorMessage: 'ERROR',
         });
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate()).not.toThrow();
+        expect(() => vr = setup.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.validationResult).toBe(ValidationResult.Invalid);
         expect(vr!.issuesFound).not.toBeNull();
@@ -85,13 +85,13 @@ describe('BusinessLogicInputValueHost.validate', () => {
         });
     });    
     test('One BusinessLogicErrors with only ErrorMesage and Severity=Error results in ValidationResult.Invalid and one IssueFound', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
+        let setup = setupInputValueHost();
+        setup.valueHost.setBusinessLogicError({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate()).not.toThrow();
+        expect(() => vr = setup.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.validationResult).toBe(ValidationResult.Invalid);
         expect(vr!.issuesFound).not.toBeNull();
@@ -104,13 +104,13 @@ describe('BusinessLogicInputValueHost.validate', () => {
         });
     });        
     test('One BusinessLogicErrors with only ErrorMesage and Severity=Severe results in ValidationResult.Invalid and one IssueFound', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
+        let setup = setupInputValueHost();
+        setup.valueHost.setBusinessLogicError({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Severe
         });
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate()).not.toThrow();
+        expect(() => vr = setup.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.validationResult).toBe(ValidationResult.Invalid);
         expect(vr!.issuesFound).not.toBeNull();
@@ -123,13 +123,13 @@ describe('BusinessLogicInputValueHost.validate', () => {
         });
     });            
     test('One BusinessLogicErrors with only ErrorMesage and Severity=Warning results in ValidationResult.Valid and one IssueFound', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
+        let setup = setupInputValueHost();
+        setup.valueHost.setBusinessLogicError({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate()).not.toThrow();
+        expect(() => vr = setup.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.validationResult).toBe(ValidationResult.Valid);
         expect(vr!.issuesFound).not.toBeNull();
@@ -142,14 +142,14 @@ describe('BusinessLogicInputValueHost.validate', () => {
         });
     });            
     test('One BusinessLogicErrors with ErrorMesage, ErrorCode="EC1" and Severity=Error results in ValidationResult.Invalid and one IssueFound identified as "EC1"', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
+        let setup = setupInputValueHost();
+        setup.valueHost.setBusinessLogicError({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error,
             errorCode: "EC1"
         });
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate()).not.toThrow();
+        expect(() => vr = setup.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.validationResult).toBe(ValidationResult.Invalid);
         expect(vr!.issuesFound).not.toBeNull();
@@ -162,17 +162,17 @@ describe('BusinessLogicInputValueHost.validate', () => {
         });
     });          
     test('2 BusinessLogicErrors (Warning, Error) results in ValidationResult.Invalid and two IssueFounds', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
+        let setup = setupInputValueHost();
+        setup.valueHost.setBusinessLogicError({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
-        config.valueHost.setBusinessLogicError({
+        setup.valueHost.setBusinessLogicError({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         });        
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate()).not.toThrow();
+        expect(() => vr = setup.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.validationResult).toBe(ValidationResult.Invalid);
         expect(vr!.issuesFound).not.toBeNull();
@@ -191,17 +191,17 @@ describe('BusinessLogicInputValueHost.validate', () => {
         });        
     });            
     test('2 BusinessLogicErrors (Warning, Warning) results in ValidationResult.Valid and two IssueFounds', () => {
-        let config = setupInputValueHost();
-        config.valueHost.setBusinessLogicError({
+        let setup = setupInputValueHost();
+        setup.valueHost.setBusinessLogicError({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
-        config.valueHost.setBusinessLogicError({
+        setup.valueHost.setBusinessLogicError({
             errorMessage: 'WARNING2',
             severity: ValidationSeverity.Warning
         });        
         let vr: ValidateResult | null = null;
-        expect(() => vr = config.valueHost.validate()).not.toThrow();
+        expect(() => vr = setup.valueHost.validate()).not.toThrow();
         expect(vr).not.toBeNull();
         expect(vr!.validationResult).toBe(ValidationResult.Valid);
         expect(vr!.issuesFound).not.toBeNull();
