@@ -77,6 +77,105 @@ export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeChec
 }
 
 /**
+ * Config for RequireTextCondition, which uses the InputValue
+ */
+export interface RequireTextConditionConfig extends OneValueConditionConfig {
+    /**
+     * Removes leading and trailing whitespace before evaluating the string.
+     * Only used with ValidateOption.DuringEdit = true as the string
+     * comes from the Input value, which is actively being edited.
+     * Your parser that moves data from Input to Native values is expected
+     * to do its own trimming, leaving the DuringEdit = false no need to trim.
+     */
+    trim?: boolean;    
+
+    /**
+     * Normally a value of null is considered NoMatch so both an empty string and null are NoMatch.
+     * When this is set, it determines the value.
+     * If you want to consider null as valid, supply Match. If you don't want to evaluate null
+     * at all, supply Undetermined.
+     */    
+    nullValueResult?: ConditionEvaluateResult;    
+}
+
+/**
+ * For any input field/element whose native data is a string to determine if the required
+ * rule has been met or not, optionally require the absence of surrounding whitespace and optionally
+ * not null in native value.
+ * It has two evaluation features:
+ * - ICondition.evaluate() evaluates the native value. It ignores the trim property.
+ * - IEvaluateConditionDuringEdits.evaluateDuringEdit() evaluates the input value as the user is
+ * editing the input. It is invoked by InputValueHost.setInputValue(option.DuringEdit = true)
+ * and supports the trim property.
+ */
+export class RequireTextCondition extends OneValueConditionBase<RequireTextConditionConfig>
+    implements IEvaluateConditionDuringEdits
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.RequireText; }    
+
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.getValue();
+        if (value === undefined) 
+            return ConditionEvaluateResult.Undetermined;
+        if (value === null)
+            return this.config.nullValueResult ?? ConditionEvaluateResult.NoMatch;
+
+        if (typeof value !== 'string')
+            return ConditionEvaluateResult.Undetermined;
+        let text = value;
+        if (text == '')
+            return ConditionEvaluateResult.NoMatch;
+        return ConditionEvaluateResult.Match;
+    }
+
+    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
+        if (this.config.trim ?? true)
+            text = text.trim();
+        if (text == '')
+            return ConditionEvaluateResult.NoMatch;
+        return ConditionEvaluateResult.Match;
+    }    
+    protected get defaultCategory(): ConditionCategory {
+        return ConditionCategory.Required;
+    }    
+}
+
+
+/**
+ * Config for NotNullCondition.
+ */
+export interface NotNullConditionConfig extends OneValueConditionConfig {
+
+}
+
+/**
+ * To evaluate the Native Value when it may contain a null,
+ * and null is not valid in this case.
+ * Reports NoMatch when the value is null.
+
+ * See also RequireTextCondition which includes checking for null in addition to the empty string.
+ */
+export class NotNullCondition extends OneValueConditionBase<NotNullConditionConfig>
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.NotNull; }    
+
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.getValue();
+        if (value === undefined) 
+            return ConditionEvaluateResult.Undetermined;
+        if (value === null)
+            return ConditionEvaluateResult.NoMatch;
+        return ConditionEvaluateResult.Match;
+    }
+
+    protected get defaultCategory(): ConditionCategory {
+        return ConditionCategory.Required;
+    }
+}
+
+/**
  * Config for RegExpCondition.
  */
 export interface RegExpConditionConfig extends RegExpConditionBaseConfig {
@@ -651,151 +750,5 @@ export class CountMatchesCondition extends EvaluateChildConditionResultsBase<Cou
         if (this.config.maximum !== undefined && countMatches > this.config.maximum)
             return ConditionEvaluateResult.NoMatch;
         return ConditionEvaluateResult.Match;
-    }
-}
-
-/**
- * Config for StringNotEmptyCondition.
- */
-export interface StringNotEmptyConditionConfig extends OneValueConditionConfig {
-/**
- * Normally a value of null is considered NoMatch so both an empty string and null are NoMatch.
- * When this is set, it determines the value.
- * If you want to consider null as valid, supply Match. If you don't want to evaluate null
- * at all, supply Undetermined.
- */    
-    nullValueResult?: ConditionEvaluateResult;
-}
-
-/**
- * Base class to evaluate the Native Value when it is expected to contain a string.
- * Reports NoMatch when the value is an empty string ("").
- * No whitespace trimming is applied. The value of the InputValue may need trimming,
- * but the InputValue is expected to be the final value, already trimmed.
- * See also its InputValue companion, RequireTextCondition.
- */
-export abstract class StringNotEmptyConditionBase<TConfig extends StringNotEmptyConditionConfig>
-    extends OneValueConditionBase<TConfig>
-{
-
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
-        let value = valueHost.getValue();
-        if (value === undefined) 
-            return ConditionEvaluateResult.Undetermined;
-        if (value === null)
-            return this.config.nullValueResult ?? ConditionEvaluateResult.NoMatch;
-
-        if (typeof value !== 'string')
-            return ConditionEvaluateResult.Undetermined;
-        let text = value;
-        if (text == '')
-            return ConditionEvaluateResult.NoMatch;
-        return ConditionEvaluateResult.Match;
-    }
-}
-/**
- * To evaluate the Native Value when it is expected to contain a string.
- * Reports NoMatch when the value is an empty string ("").
- * No whitespace trimming is applied. The value of the InputValue may need trimming,
- * but the InputValue is expected to be the final value, already trimmed.
- * See also its InputValue companion, RequireTextCondition.
- */
-export class StringNotEmptyCondition extends StringNotEmptyConditionBase<StringNotEmptyConditionConfig>
-{
-    public static get DefaultConditionType(): ConditionType { return ConditionType.StringNotEmpty; }
-    protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Required;
-    }    
-}
-
-/**
- * Config for RequireTextCondition, which uses the InputValue
- */
-export interface RequireTextConditionConfig extends StringNotEmptyConditionConfig {
-    /**
-     * The value that means "nothing is assigned". This is often
-     * known as a watermark or placeholder.
-     * If assigned to anything other than '', '' is still considered unassigned.
-     * So a value of "DEFAULT" matches to both "DEFAULT" and "".
-     * When undefined, it means ''.
-     * Only used with ValidateOption.DuringEdit = true as the string
-     * comes from the Input value, which is actively being edited.
-     * Your parser that moves data from Input to Native values is expected
-     * to do its own trimming, leaving the DuringEdit = false no need to trim.
-     */
-    emptyValue?: string;
-
-    /**
-     * Removes leading and trailing whitespace before evaluating the string.
-     * Only used with ValidateOption.DuringEdit = true as the string
-     * comes from the Input value, which is actively being edited.
-     * Your parser that moves data from Input to Native values is expected
-     * to do its own trimming, leaving the DuringEdit = false no need to trim.
-     */
-    trim?: boolean;    
-}
-
-/**
- * For any input field/element whose native data is a string to determine if the required
- * rule has been met or not, optionally require the absence of surrounding whitespace and optionally
- * not null in native value.
- * It has two evaluation features:
- * - ICondition.evaluate() evaluates the native value. Its implementation comes from
- * StringNotEmptyCondition, which does not deal with trimming as that was expected during
- * conversion from input value to native value.
- * - IEvaluateConditionDuringEdits.evaluateDuringEdit() evaluates the input value as the user is
- * editing the input. It is invoked by InputValueHost.setInputValue(option.DuringEdit = true)
- * and deals with both trimming and the possible default text (aka watermark) which you can set
- * in Config.emptyValue.
- */
-export class RequireTextCondition extends StringNotEmptyConditionBase<RequireTextConditionConfig>
-    implements IEvaluateConditionDuringEdits
-{
-    public static get DefaultConditionType(): ConditionType { return ConditionType.RequireText; }    
-
-    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult {
-        if (this.config.trim ?? true)
-            text = text.trim();
-        if (text == '' || text === this.config.emptyValue)
-            return ConditionEvaluateResult.NoMatch;
-        return ConditionEvaluateResult.Match;
-    }    
-    protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Required;
-    }    
-}
-
-
-/**
- * Config for NotNullCondition.
- */
-export interface NotNullConditionConfig extends OneValueConditionConfig {
-
-}
-
-/**
- * To evaluate the Native Value when it may contain a null,
- * and null is not valid in this case.
- * Reports NoMatch when the value is null.
-
- * See also StringNotEmptyCondition which includes checking for null in addition to the empty string.
- */
-export class NotNullCondition extends OneValueConditionBase<NotNullConditionConfig>
-{
-    public static get DefaultConditionType(): ConditionType { return ConditionType.NotNull; }    
-
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
-        let value = valueHost.getValue();
-        if (value === undefined) 
-            return ConditionEvaluateResult.Undetermined;
-        if (value === null)
-            return ConditionEvaluateResult.NoMatch;
-        return ConditionEvaluateResult.Match;
-    }
-
-    protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Required;
     }
 }

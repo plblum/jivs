@@ -2,6 +2,8 @@
 - **Breaking API change.** Renamed "Descriptor" to "Config" throughout. I felt that the descriptor objects
 were better described as configuration objects.
 - **Breaking API change.** Renamed "RequiredTextCondition" to "RequireTextCondition" throughout.
+- **Breaking API change.** Removed "StringNotEmptyCondition" and expect users to use RequireTextCondition instead.
+## 0.11.0
 ## 0.11.0
 - **Breaking API change.** Renamed LessThanOrEqualTo and GreaterThanOrEqualTo to 
 LessThanOrEqual and GreaterThanOrEqual.

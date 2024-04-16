@@ -9,7 +9,7 @@ import {
     RegExpConditionConfig, RegExpCondition, 
     AllMatchCondition, DataTypeCheckConditionConfig, DataTypeCheckCondition,
     AnyMatchCondition, CountMatchesCondition,
-    CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig, StringNotEmptyCondition, StringNotEmptyConditionConfig, NotNullCondition, NotNullConditionConfig
+    CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig, NotNullCondition, NotNullConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
@@ -264,30 +264,6 @@ describe('class RequireTextCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
  
-    test('evaluate not influenced by Config.emptyString value because that is only used by evaluateDuringEdit', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
-            valueHostName: 'Property1',
-            emptyValue: 'EMPTY'
-        };
-        let testItem = new RequireTextCondition(config);
-        vh.setValue('A');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(' A');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue('');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(' ');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue('EMPTY');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(' EMPTY');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-    });
     test('evaluate not influenced by Config.trim=true because trim is for evaluateDuringEdit', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
@@ -381,44 +357,7 @@ describe('class RequireTextCondition', () => {
         expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
         expect(testItem.evaluateDuringEdits(' ', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
     });
-    test('evaluateDuringEdits influenced by Config.emptyString value', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
-            valueHostName: 'Property1',
-            trim: true,
-            emptyValue: 'EMPTY'
-        };
-        let testItem = new RequireTextCondition(config);
-        expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
-        expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
-        expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
-        expect(testItem.evaluateDuringEdits(' ', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
-        expect(testItem.evaluateDuringEdits('EMPTY', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
-        expect(testItem.evaluateDuringEdits(' EMPTY', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
-    });
-    test('evaluateDuringEdits influenced by Config.trim=false', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
-            valueHostName: 'Property1',
-            trim: false,
-            emptyValue: 'EMPTY'
-        };
-        let testItem = new RequireTextCondition(config);
-        expect(testItem.evaluateDuringEdits('A', vh, services)).toBe(ConditionEvaluateResult.Match);
-        expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
-        expect(testItem.evaluateDuringEdits('', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
-        expect(testItem.evaluateDuringEdits(' ', vh, services)).toBe(ConditionEvaluateResult.Match);
-        expect(testItem.evaluateDuringEdits('EMPTY', vh, services)).toBe(ConditionEvaluateResult.NoMatch);
-        expect(testItem.evaluateDuringEdits(' EMPTY', vh, services)).toBe(ConditionEvaluateResult.Match);
-    });
+
     test('Config.trim undefined works like Trim=true', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
@@ -3633,110 +3572,6 @@ describe('class CountMatchesCondition', () => {
     });            
 });
 
-describe('class StringNotEmptyCondition', () => {
-    test('DefaultConditionType', () => {
-        expect(StringNotEmptyCondition.DefaultConditionType).toBe(ConditionType.StringNotEmpty);
-    });
-    function testValue(valueToTest: any, nullValueResult: ConditionEvaluateResult | undefined,
-        expectedConditionEvaluateResult: ConditionEvaluateResult)
-    {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: StringNotEmptyConditionConfig = {
-            type: ConditionType.StringNotEmpty,
-            valueHostName: 'Property1',
-        };
-        if (nullValueResult !== undefined)
-            config.nullValueResult = nullValueResult;
-        let testItem = new StringNotEmptyCondition(config);
-        vh.setValue(valueToTest);
-        expect(testItem.evaluate(vh, vm)).toBe(expectedConditionEvaluateResult);
-    }
-    test('evaluate with strings', () => {
-        testValue('A', undefined, ConditionEvaluateResult.Match);    
-        testValue(' A ', undefined, ConditionEvaluateResult.Match);
-        testValue(' ', undefined, ConditionEvaluateResult.Match);   // not empty!
-        testValue('', undefined, ConditionEvaluateResult.NoMatch);        
-    });
-    test('evaluate with null', () => {
-        testValue(null, undefined, ConditionEvaluateResult.NoMatch);    
-        testValue(null, ConditionEvaluateResult.Match, ConditionEvaluateResult.Match);    
-        testValue(null, ConditionEvaluateResult.NoMatch, ConditionEvaluateResult.NoMatch);    
-        testValue(null, ConditionEvaluateResult.Undetermined, ConditionEvaluateResult.Undetermined);    
-    });    
-    test('evaluate with non-string data types are always undetermined', () => {
-        testValue(undefined, undefined, ConditionEvaluateResult.Undetermined);    
-        testValue(0, undefined, ConditionEvaluateResult.Undetermined);    
-        testValue({}, undefined, ConditionEvaluateResult.Undetermined);    
-        testValue([], undefined, ConditionEvaluateResult.Undetermined);    
-        testValue(false, undefined, ConditionEvaluateResult.Undetermined);    
-        testValue(new Date(), undefined, ConditionEvaluateResult.Undetermined);    
-    });    
-
-    test('evaluate with wrong ValueHost logs and throws', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: StringNotEmptyConditionConfig = {
-            type: ConditionType.StringNotEmpty,
-            valueHostName: 'UnknownProperty'
-        };
-        let testItem = new StringNotEmptyCondition(config);
-        vh.setValue('');
-        expect(() => testItem.evaluate(null, vm)).toThrow(/Missing value/);
-        let logger = services.loggerService as MockCapturingLogger;
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.category).toBe(LoggingCategory.Configuration);
-        expect(logger.getLatest()!.level).toBe(LoggingLevel.Error);
-    });
-    test('category is Required', () => {
-        let config: StringNotEmptyConditionConfig = {
-            type: ConditionType.StringNotEmpty,
-            valueHostName: 'Property1',
-        };
-        let testItem = new StringNotEmptyCondition(config);
-        expect(testItem.category).toBe(ConditionCategory.Required);
-    });
-    test('category is overridden', () => {
-        let config: StringNotEmptyConditionConfig = {
-            type: ConditionType.StringNotEmpty,
-            valueHostName: 'Property1',
-            category: ConditionCategory.Contents
-        };
-        let testItem = new StringNotEmptyCondition(config);
-        expect(testItem.category).toBe(ConditionCategory.Contents);
-    });
-    test('gatherValueHostNames when all are assigned', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-
-        let config: StringNotEmptyConditionConfig = {
-            type: ConditionType.StringNotEmpty,
-            valueHostName: 'Property1',
-        };
-        let condition = new StringNotEmptyCondition(config);
-        let testItem = new Set<ValueHostName>();
-        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
-        expect(testItem.size).toBe(1);
-        expect(testItem.has('Property1')).toBe(true);
-    });
-    test('gatherValueHostNames when none are assigned', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-
-        let config: StringNotEmptyConditionConfig = {
-            type: ConditionType.StringNotEmpty,
-            valueHostName: null,
-        };
-        let condition = new StringNotEmptyCondition(config);
-        let testItem = new Set<ValueHostName>();
-        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
-        expect(testItem.size).toBe(0);
-    });
-});
 describe('class NotNullCondition', () => {
     test('DefaultConditionType', () => {
         expect(NotNullCondition.DefaultConditionType).toBe(ConditionType.NotNull);

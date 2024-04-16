@@ -4,7 +4,12 @@ import { FluentCollectorBase, FluentValidatorCollector, configChildren, configIn
 import { enableFluent } from "../../src/Conditions/FluentValidatorCollectorExtensions";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { InputValidatorConfig } from '../../src/Interfaces/InputValidator';
-import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig, StringNotEmptyConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import {
+    AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
+    EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig,
+    LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig,
+    RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
+} from '../../src/Conditions/ConcreteConditions';
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 
 function TestFluentValidatorCollector(testItem: FluentCollectorBase,
@@ -1345,72 +1350,6 @@ describe('stringLength on configInput', () => {
     });
 });
 
-describe('stringNotEmpty on configInput', () => {
-    test('With no parameters, creates InputValidatorConfig with StringNotEmptyCondition with type=StringNotEmpty', () => {
-        enableFluent();
-        let testItem = configInput('Field1').stringNotEmpty();
-        TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <StringNotEmptyConditionConfig>{
-                type: ConditionType.StringNotEmpty
-            }
-        });
-    });
-
-    test('With nullValueResult assigned, creates InputValidatorConfig with StringNotEmptyCondition with type=StringNotEmpty, nullValueResult assigned', () => {
-        enableFluent();
-        let testItem = configInput('Field1').stringNotEmpty({ nullValueResult: ConditionEvaluateResult.NoMatch });
-        TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <StringNotEmptyConditionConfig>{
-                type: ConditionType.StringNotEmpty,
-                nullValueResult: ConditionEvaluateResult.NoMatch
-            }
-        });
-    });
-
-    test('With only errorMessage creates InputValidatorConfig with StringNotEmptyCondition with only type assigned and errorMessage assigned', () => {
-        enableFluent();
-        let testItem = configInput('Field1').stringNotEmpty(null, 'Error');
-        TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <StringNotEmptyConditionConfig>{
-                type: ConditionType.StringNotEmpty
-            },
-            errorMessage: 'Error'
-        });
-    });
-    test('With errorMessage and parameter.summaryMessage creates InputValidatorConfig with StringNotEmptyCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        enableFluent();
-        let testItem = configInput('Field1').stringNotEmpty(null, 'Error', { summaryMessage: 'Summary' });
-        TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <StringNotEmptyConditionConfig>{
-                type: ConditionType.StringNotEmpty
-            },
-            errorMessage: 'Error',
-            summaryMessage: 'Summary'
-        });
-    });
-    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates InputValidatorConfig with StringNotEmptyCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
-        enableFluent();
-        let testItem = configInput('Field1').stringNotEmpty(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
-        TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <StringNotEmptyConditionConfig>{
-                type: ConditionType.StringNotEmpty
-            },
-            errorMessage: 'Error',
-            summaryMessage: 'Summary'
-        });
-    });
-    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates InputValidatorConfig with StringNotEmptyCondition with only type assigned. ErrorMessage is from first parameter, not inputValidatorConfig assigned', () => {
-        enableFluent();
-        let testItem = configInput('Field1').stringNotEmpty(null, 'FirstError', { errorMessage: 'SecondError' });
-        TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
-            conditionConfig: <StringNotEmptyConditionConfig>{
-                type: ConditionType.StringNotEmpty
-            },
-            errorMessage: 'FirstError'
-        });
-    });
-});
-
 describe('requiredText on configInput', () => {
     test('With no parameters, creates InputValidatorConfig with RequireTextCondition with type=RequireText', () => {
         enableFluent();
@@ -1422,13 +1361,12 @@ describe('requiredText on configInput', () => {
         });
     });
 
-    test('With emptyValue and nullValueResult assigned, creates InputValidatorConfig with RequireTextCondition with type=RequireText, emptyValue, nullValueResult assigned', () => {
+    test('With nullValueResult=NoMatch assigned, creates InputValidatorConfig with RequireTextCondition with type=RequireText, nullValueResult=NoMatch', () => {
         enableFluent();
-        let testItem = configInput('Field1').requiredText({ emptyValue: 'X', nullValueResult: ConditionEvaluateResult.NoMatch });
+        let testItem = configInput('Field1').requiredText({ nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentValidatorCollector(testItem, <InputValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 type: ConditionType.RequireText,
-                emptyValue: 'X',
                 nullValueResult: ConditionEvaluateResult.NoMatch
             }
         });

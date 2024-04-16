@@ -2,7 +2,7 @@ import {
     DataTypeCheckCondition, RequireTextCondition, RegExpCondition, RangeCondition, CompareToConditionConfig,
     EqualToCondition, StringLengthConditionConfig, StringLengthCondition, AllMatchCondition, AllMatchConditionConfig, AnyMatchCondition,
     AnyMatchConditionConfig, CountMatchesCondition, CountMatchesConditionConfig, GreaterThanCondition, GreaterThanOrEqualCondition, LessThanCondition,
-    LessThanOrEqualCondition, NotEqualToCondition, NotNullCondition, NotNullConditionConfig, StringNotEmptyCondition, StringNotEmptyConditionConfig
+    LessThanOrEqualCondition, NotEqualToCondition, NotNullCondition, NotNullConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -99,9 +99,6 @@ export function registerConditions(cf: ConditionFactory): void
         (ConditionType.Or, (config) => new AnyMatchCondition(config));
     cf.register<CountMatchesConditionConfig>
         (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
-    // StringNotEmpty is similar to RequireText, but lacks evaluating as the user types
-    cf.register<StringNotEmptyConditionConfig>(
-        ConditionType.StringNotEmpty, (config) => new StringNotEmptyCondition(config));
     cf.register<NotNullConditionConfig>(
         ConditionType.NotNull, (config) => new NotNullCondition(config));
     // aliases for users who don't deal well with boolean logic can relate
@@ -140,16 +137,15 @@ export function registerAllConditions(cf: ConditionFactory): void
         (ConditionType.And, (config) => new AllMatchCondition(config));
     cf.register<AnyMatchConditionConfig>
         (ConditionType.Or, (config) => new AnyMatchCondition(config));
-    cf.register<CountMatchesConditionConfig>
-        (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
-    cf.register<StringNotEmptyConditionConfig>(
-        ConditionType.StringNotEmpty, (config) => new StringNotEmptyCondition(config));
-    cf.register<NotNullConditionConfig>(
-        ConditionType.NotNull, (config) => new NotNullCondition(config));
     cf.register<AllMatchConditionConfig>
         (ConditionType.All, (config) => new AllMatchCondition(config));
     cf.register<AnyMatchConditionConfig>
         (ConditionType.Any, (config) => new AnyMatchCondition(config));
+    cf.register<CountMatchesConditionConfig>
+        (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
+    cf.register<NotNullConditionConfig>(
+        ConditionType.NotNull, (config) => new NotNullCondition(config));
+
 }
 
 

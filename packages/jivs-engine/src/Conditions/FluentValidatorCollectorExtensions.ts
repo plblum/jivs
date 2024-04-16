@@ -27,13 +27,12 @@ import {
     FluentRegExpConditionConfig,
     FluentRequireTextConditionConfig,
     FluentStringLengthConditionConfig,
-    FluentStringNotEmptyConditionConfig,
     _genCDDataTypeCheck, _genCDRange, _genCDRegExp, _genDCAll, _genDCAny,
     _genDCCountMatches, _genDCEqualTo, _genDCEqualToValue, _genDCGreaterThan,
     _genDCGreaterThanOrEqual, _genDCGreaterThanOrEqualValue, _genDCGreaterThanValue,
     _genDCLessThan, _genDCLessThanOrEqual, _genDCLessThanOrEqualValue, _genDCLessThanValue,
     _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCRequireText,
-    _genDCStringLength, _genDCStringNotEmpty, enableFluentConditions
+    _genDCStringLength, enableFluentConditions
 } from "./FluentConditionCollectorExtensions";
 
 // How TypeScript merges functions with the FluentValidatorCollector class
@@ -54,13 +53,18 @@ declare module "./../ValueHosts/Fluent"
         dataTypeCheck(
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
-
+        requiredText(
+            conditionConfig?: FluentRequireTextConditionConfig | null,
+            errorMessage?: string | null,
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
+        notNull(
+            errorMessage?: string | null,
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
         regExp(
             expression: RegExp | string | null, ignoreCase?: boolean | null,
             conditionConfig?: FluentRegExpConditionConfig | null,
             errorMessage?: string | null,
             inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
-
         range(
             minimum: any, maximum: any,
             errorMessage?: string | null,
@@ -143,19 +147,7 @@ declare module "./../ValueHosts/Fluent"
             minimum: number | null, maximum: number | null,
             configChildren: FluentConditionCollector,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
-        stringNotEmpty(
-            conditionConfig?: FluentStringNotEmptyConditionConfig | null,
-            errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
-        requiredText(
-            conditionConfig?: FluentRequireTextConditionConfig | null,
-            errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
-        notNull(
-            errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
-        
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;      
         
     //#region shorter names for some
         ltValue(
@@ -214,6 +206,8 @@ export function enableFluent(): void {
         return;
     // How JavaScript sees the functions added to the FluentValidatorCollector class
     FluentValidatorCollector.prototype.dataTypeCheck = dataTypeCheck;
+    FluentValidatorCollector.prototype.requiredText = requiredText;
+    FluentValidatorCollector.prototype.notNull = notNull;
     FluentValidatorCollector.prototype.regExp = regExp;
     FluentValidatorCollector.prototype.range = range;
     FluentValidatorCollector.prototype.equalToValue = equalToValue;
@@ -232,9 +226,7 @@ export function enableFluent(): void {
     FluentValidatorCollector.prototype.all = all;
     FluentValidatorCollector.prototype.any = any;
     FluentValidatorCollector.prototype.countMatches = countMatches;
-    FluentValidatorCollector.prototype.stringNotEmpty = stringNotEmpty;
-    FluentValidatorCollector.prototype.requiredText = requiredText;
-    FluentValidatorCollector.prototype.notNull = notNull;
+
 
     //#region shorter names for some
     FluentValidatorCollector.prototype.ltValue = lessThanValue;
@@ -258,6 +250,24 @@ function dataTypeCheck(
 // no ConditionConfig parameter because without type and valueHostName, it will always be empty    
     return finishFluentValidatorCollector(this,
         ConditionType.DataTypeCheck, _genCDDataTypeCheck(),
+        errorMessage, inputValidatorParameters);
+}
+
+function requiredText(
+    conditionConfig?: FluentRequireTextConditionConfig | null,
+    errorMessage?: string | null,
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
+    return finishFluentValidatorCollector(this,
+        ConditionType.RequireText, _genDCRequireText(conditionConfig),
+        errorMessage, inputValidatorParameters);
+}
+
+function notNull(
+    errorMessage?: string | null,
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
+    // no ConditionConfig parameter because without type and valueHostName, it will always be empty        
+    return finishFluentValidatorCollector(this,
+        ConditionType.NotNull, _genDCNotNull(),
         errorMessage, inputValidatorParameters);
 }
 
@@ -429,32 +439,5 @@ function countMatches(
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
         ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, configChildren),
-        errorMessage, inputValidatorParameters);
-}
-
-function stringNotEmpty(
-    conditionConfig?: FluentStringNotEmptyConditionConfig | null,
-    errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
-    return finishFluentValidatorCollector(this,
-        ConditionType.StringNotEmpty, _genDCStringNotEmpty(conditionConfig),
-        errorMessage, inputValidatorParameters);
-}
-
-function requiredText(
-    conditionConfig?: FluentRequireTextConditionConfig | null,
-    errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
-    return finishFluentValidatorCollector(this,
-        ConditionType.RequireText, _genDCRequireText(conditionConfig),
-        errorMessage, inputValidatorParameters);
-}
-
-function notNull(
-    errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
-    // no ConditionConfig parameter because without type and valueHostName, it will always be empty        
-    return finishFluentValidatorCollector(this,
-        ConditionType.NotNull, _genDCNotNull(),
         errorMessage, inputValidatorParameters);
 }

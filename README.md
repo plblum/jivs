@@ -180,7 +180,7 @@ Jivs provides numerous `Condition classes`.
 <details>
 <summary>Expand to see just a few.</summary>
 
-- `RequireTextCondition`, `StringNotEmptyCondition`, `NotNullCondition` - for required fields
+- `RequireTextCondition`, `NotNullCondition` - for required fields
 - `DataTypeCheckCondition`, `RegExpCondition` - for checking the data conforms to the data type.
 - `RangeCondition`, `EqualToCondition`, `GreaterThanCondition` - Comparing values
 - `AllMatchCondition`, `AnyMatchCondition` - For creating complex logic by using multiple `Conditions`.

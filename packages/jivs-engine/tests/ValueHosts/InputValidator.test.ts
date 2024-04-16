@@ -415,7 +415,6 @@ describe('InputValidator.severity', () => {
         checkDefaultSeverity(ConditionType.RequireText);
         checkDefaultSeverity(ConditionType.DataTypeCheck);
         checkDefaultSeverity(ConditionType.RegExp);
-        checkDefaultSeverity(ConditionType.StringNotEmpty);
         checkDefaultSeverity(ConditionType.NotNull);
     });
     test('Conditions that use severity=Error when Config.severity = undefined', () => {

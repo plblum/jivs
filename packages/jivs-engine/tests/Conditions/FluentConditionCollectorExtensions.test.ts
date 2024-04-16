@@ -1,11 +1,15 @@
 import { LookupKey } from './../../src/DataTypes/LookupKeys';
 import { FluentConditionCollector, configChildren } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
-import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig, StringNotEmptyConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import {
+    AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
+    EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig,
+    LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig,
+    RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
+} from '../../src/Conditions/ConcreteConditions';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { enableFluentConditions } from '../../src/Conditions/FluentConditionCollectorExtensions';
 import { EvaluateChildConditionResultsConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
-import { InputValidatorConfig } from '../../src/Interfaces/InputValidator';
 
 function TestFluentConditionCollector(testItem: FluentConditionCollector,
     expectedCondConfig: ConditionConfig) {
@@ -812,40 +816,6 @@ describe('stringLength on configChildren', () => {
     });
 });
 
-describe('stringNotEmpty on configChildren', () => {
-    test('With no parameters, creates InputValidatorConfig with StringNotEmptyCondition with type=StringNotEmpty assigned', () => {
-        enableFluentConditions();
-        let testItem = configChildren().stringNotEmpty();
-        TestFluentConditionCollector(testItem, <StringNotEmptyConditionConfig>{
-            type: ConditionType.StringNotEmpty,
-        });
-    });
-    test('With condDesc={}, creates InputValidatorConfig with StringNotEmptyCondition with type=StringNotEmpty assigned', () => {
-        enableFluentConditions();
-        let testItem = configChildren().stringNotEmpty({});
-        TestFluentConditionCollector(testItem, <StringNotEmptyConditionConfig>{
-            type: ConditionType.StringNotEmpty,
-        });
-    });    
-    test('With valueHostName assigned, creates InputValidatorConfig with StringNotEmptyCondition with type=StringNotEmpty and valueHostName assigned', () => {
-        enableFluentConditions();
-        let testItem = configChildren().stringNotEmpty(null, 'Field1');
-        TestFluentConditionCollector(testItem, <StringNotEmptyConditionConfig>{
-            type: ConditionType.StringNotEmpty,
-            valueHostName: 'Field1',
-        });
-    });
-
-    test('With nullValueResult assigned, creates InputValidatorConfig with StringNotEmptyCondition with type=StringNotEmpty, nullValueResult assigned', () => {
-        enableFluentConditions();
-        let testItem = configChildren().stringNotEmpty({ nullValueResult: ConditionEvaluateResult.NoMatch });
-        TestFluentConditionCollector(testItem, <StringNotEmptyConditionConfig>{
-            type: ConditionType.StringNotEmpty,
-            nullValueResult: ConditionEvaluateResult.NoMatch
-        });
-    });
-});
-
 describe('requiredText on configChildren', () => {
     test('With no parameters, creates InputValidatorConfig with RequireTextCondition with type=RequireText', () => {
         enableFluentConditions();
@@ -871,12 +841,11 @@ describe('requiredText on configChildren', () => {
         });
     });
 
-    test('With emptyValue and nullValueResult assigned, creates InputValidatorConfig with RequireTextCondition with type=RequireText, emptyValue, nullValueResult assigned', () => {
+    test('With nullValueResult=NoMatch assigned, creates InputValidatorConfig with RequireTextCondition with type=RequireText, nullValueResult=NoMatch assigned', () => {
         enableFluentConditions();
-        let testItem = configChildren().requiredText({ emptyValue: 'X', nullValueResult: ConditionEvaluateResult.NoMatch });
+        let testItem = configChildren().requiredText({ nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
             type: ConditionType.RequireText,
-            emptyValue: 'X',
             nullValueResult: ConditionEvaluateResult.NoMatch
         });
     });

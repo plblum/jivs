@@ -8,8 +8,6 @@ import {
     LessThanOrEqualCondition, StringLengthConditionConfig, StringLengthCondition, AllMatchConditionConfig,
     AllMatchCondition, AnyMatchConditionConfig,  AnyMatchCondition, CountMatchesConditionConfig,
     CountMatchesCondition,
-    StringNotEmptyConditionConfig,
-    StringNotEmptyCondition,
     NotNullConditionConfig,
     NotNullCondition
 } from "@plblum/jivs-engine/src/Conditions/ConcreteConditions";
@@ -146,9 +144,6 @@ export function registerConditions(cf: ConditionFactory): void
         (ConditionType.Or, (config) => new AnyMatchCondition(config));
     cf.register<CountMatchesConditionConfig>
         (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
-    // StringNotEmpty is similar to RequireText, but lacks evaluating as the user types
-    cf.register<StringNotEmptyConditionConfig>(
-        ConditionType.StringNotEmpty, (config) => new StringNotEmptyCondition(config));
     cf.register<NotNullConditionConfig>(
         ConditionType.NotNull, (config) => new NotNullCondition(config));
     // aliases for users who don't deal well with boolean logic can relate
