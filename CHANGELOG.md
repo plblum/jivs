@@ -3,7 +3,8 @@
 were better described as configuration objects.
 - **Breaking API change.** Renamed "RequiredTextCondition" to "RequireTextCondition" throughout.
 - **Breaking API change.** Removed "StringNotEmptyCondition" and expect users to use RequireTextCondition instead.
-## 0.11.0
+- **Breaking API change.** Reworked Fluent syntax. configInput() -> config().input(); configNonInput() -> config().nonInput();
+configChildren() -> config().conditions().
 ## 0.11.0
 - **Breaking API change.** Renamed LessThanOrEqualTo and GreaterThanOrEqualTo to 
 LessThanOrEqual and GreaterThanOrEqual.
