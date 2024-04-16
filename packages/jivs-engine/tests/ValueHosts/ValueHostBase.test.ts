@@ -1,6 +1,6 @@
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import {
-    type ValueHostState, type IValueHost, ValueHostDescriptor, IValueHostCallbacks, toIValueHostCallbacks
+    type ValueHostState, type IValueHost, ValueHostConfig, IValueHostCallbacks, toIValueHostCallbacks
 } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
@@ -19,17 +19,17 @@ interface IPublicifiedValueHostState extends ValueHostState
  * Subclass of ValueHostBase to focus testing on ValueHostBase members
  * including exposing protected members
  */
-class PublicifiedValueHostBase extends ValueHostBase<ValueHostDescriptor, IPublicifiedValueHostState>
+class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifiedValueHostState>
 {
-    constructor(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IPublicifiedValueHostState) {
-        super(valueHostsManager, descriptor, state);
+    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostState) {
+        super(valueHostsManager, config, state);
     }
     public ExposeServices(): IValidationServices {
         return this.services;
     }
 
-    public ExposeDescriptor(): ValueHostDescriptor {
-        return this.descriptor;
+    public ExposeConfig(): ValueHostConfig {
+        return this.config;
     }
 
     public ExposeState(): IPublicifiedValueHostState {
@@ -40,19 +40,19 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostDescriptor, IPubli
  * This implementation of IValueHostGenerator is actually tested in ValueHostFactory.tests.ts
  */
 class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
-    public canCreate(descriptor: ValueHostDescriptor): boolean {
-        return descriptor.type === 'PublicifyValueHostBase';
+    public canCreate(config: ValueHostConfig): boolean {
+        return config.type === 'PublicifyValueHostBase';
     }
-    public create(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IPublicifiedValueHostState): IValueHost {
-        return new PublicifiedValueHostBase(valueHostsManager, descriptor, state);
+    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostState): IValueHost {
+        return new PublicifiedValueHostBase(valueHostsManager, config, state);
     }
-    public cleanupState(state: IPublicifiedValueHostState, descriptor: ValueHostDescriptor): void {
+    public cleanupState(state: IPublicifiedValueHostState, config: ValueHostConfig): void {
         state.Counter = 0;
     }
-    public createState(descriptor: ValueHostDescriptor): IPublicifiedValueHostState {
+    public createState(config: ValueHostConfig): IPublicifiedValueHostState {
         let state: IPublicifiedValueHostState = {
-            name: descriptor.name,
-            value: descriptor.initialValue,
+            name: config.name,
+            value: config.initialValue,
             Counter: 0
         };
         return state;
@@ -62,7 +62,7 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
 
 /**
  * Returns an ValueHost (PublicifiedValueHost subclass) ready for testing.
- * @param descriptor - Provide just the properties that you want to test.
+ * @param config - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
  * name: 'Field1',
  * Label: 'Label1',
@@ -70,13 +70,13 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
  * DataType: LookupKey.String,
  * InitialValue: 'DATA'
  * @returns An object with all of the parts that were setup including 
- * ValidationManager, Services, ValueHosts, the complete Descriptor,
+ * ValidationManager, Services, ValueHosts, the complete Config,
  * and the state.
  */
-function setupValueHost(descriptor?: Partial<ValueHostDescriptor>, initialValue?: any): {
+function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): {
     services: MockValidationServices,
     validationManager: MockValidationManager,
-    descriptor: ValueHostDescriptor,
+    config: ValueHostConfig,
     state: ValueHostState,
     valueHost: PublicifiedValueHostBase
 } {
@@ -86,40 +86,40 @@ function setupValueHost(descriptor?: Partial<ValueHostDescriptor>, initialValue?
     services.valueHostFactory = factory;
     let vm = new MockValidationManager(services);
 
-    let defaultDescriptor: ValueHostDescriptor = {
+    let defaultConfig: ValueHostConfig = {
         name: 'Field1',
         label: 'Label1',
         type: 'PublicifyValueHostBase',
         dataType: LookupKey.String,
         initialValue: 'DATA'
     };
-    let updatedDescriptor: ValueHostDescriptor = (!descriptor) ?
-        defaultDescriptor :
-        { ...defaultDescriptor, ...descriptor };
+    let updatedConfig: ValueHostConfig = (!config) ?
+        defaultConfig :
+        { ...defaultConfig, ...config };
     let state: IPublicifiedValueHostState = {
         name: 'Field1',
         value: initialValue,
         Counter: 0
     };
     let vh = new PublicifiedValueHostBase(vm,
-        updatedDescriptor, state);
+        updatedConfig, state);
     return {
         services: services,
         validationManager: vm,
-        descriptor: updatedDescriptor,
+        config: updatedConfig,
         state: state,
         valueHost: vh
     };
 }
 
-// constructor(validationManager: IValidationManager, descriptor: TDescriptor, state: TState)
+// constructor(validationManager: IValidationManager, config: TConfig, state: TState)
 describe('constructor and resulting property values', () => {
 
-    test('constructor with valid parameters created and sets up Services, Descriptor, and State', () => {
+    test('constructor with valid parameters created and sets up Services, Config, and State', () => {
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
         expect(testItem.ExposeServices()).toBe(setup.services);
-        expect(testItem.ExposeDescriptor()).toBe(setup.descriptor);
+        expect(testItem.ExposeConfig()).toBe(setup.config);
         expect(testItem.ExposeState().name).toBe('Field1');
         expect(testItem.valueHostsManager).toBe(setup.validationManager);
 
@@ -130,7 +130,7 @@ describe('constructor and resulting property values', () => {
         expect(testItem.isChanged).toBe(false);
     });
 
-    test('constructor with Descriptor.DataType undefined results in GetDataType = null', () => {
+    test('constructor with Config.dataType undefined results in getDataType = null', () => {
         let setup = setupValueHost({
             dataType: undefined
         });
@@ -142,7 +142,7 @@ describe('constructor and resulting property values', () => {
 
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);        
-        let descriptor: ValueHostDescriptor = {
+        let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
             type: 'PublicifyValueHostBase',
@@ -156,11 +156,11 @@ describe('constructor and resulting property values', () => {
         };
         let testItem: PublicifiedValueHostBase | null = null;
         expect(() => testItem = new PublicifiedValueHostBase(null!,
-            descriptor, state)).toThrow(/valueHostsManager/);
+            config, state)).toThrow(/valueHostsManager/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
-            null!, state)).toThrow(/descriptor/);
+            null!, state)).toThrow(/config/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
-            descriptor, null!)).toThrow(/state/);
+            config, null!)).toThrow(/state/);
     });
 });
 

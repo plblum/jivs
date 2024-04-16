@@ -1,8 +1,8 @@
 import {
-    DataTypeCheckCondition, RequiredTextCondition, RegExpCondition, RangeCondition, CompareToConditionDescriptor,
-    EqualToCondition, StringLengthConditionDescriptor, StringLengthCondition, AllMatchCondition, AllMatchConditionDescriptor, AnyMatchCondition,
-    AnyMatchConditionDescriptor, CountMatchesCondition, CountMatchesConditionDescriptor, GreaterThanCondition, GreaterThanOrEqualCondition, LessThanCondition,
-    LessThanOrEqualCondition, NotEqualToCondition, NotNullCondition, NotNullConditionDescriptor, StringNotEmptyCondition, StringNotEmptyConditionDescriptor
+    DataTypeCheckCondition, RequiredTextCondition, RegExpCondition, RangeCondition, CompareToConditionConfig,
+    EqualToCondition, StringLengthConditionConfig, StringLengthCondition, AllMatchCondition, AllMatchConditionConfig, AnyMatchCondition,
+    AnyMatchConditionConfig, CountMatchesCondition, CountMatchesConditionConfig, GreaterThanCondition, GreaterThanOrEqualCondition, LessThanCondition,
+    LessThanOrEqualCondition, NotEqualToCondition, NotNullCondition, NotNullConditionConfig, StringNotEmptyCondition, StringNotEmptyConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -21,7 +21,7 @@ import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifier
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { ValidationServices } from "../../src/Services/ValidationServices";
-import { DataTypeCheckConditionDescriptor, RequiredTextConditionDescriptor, RegExpConditionDescriptor, RangeConditionDescriptor } from "../../src/Conditions/ConcreteConditions";
+import { DataTypeCheckConditionConfig, RequiredTextConditionConfig, RegExpConditionConfig, RangeConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
@@ -70,86 +70,86 @@ export function createConditionFactory(): ConditionFactory
 }
 export function registerConditions(cf: ConditionFactory): void
 {
-    cf.register<DataTypeCheckConditionDescriptor>(
-        ConditionType.DataTypeCheck, (descriptor) => new DataTypeCheckCondition(descriptor));
-    cf.register<RequiredTextConditionDescriptor>(
-        ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor));
+    cf.register<DataTypeCheckConditionConfig>(
+        ConditionType.DataTypeCheck, (config) => new DataTypeCheckCondition(config));
+    cf.register<RequiredTextConditionConfig>(
+        ConditionType.RequiredText, (config) => new RequiredTextCondition(config));
 /*    
-    cf.register<RegExpConditionDescriptor>(
-        ConditionType.RegExp, (descriptor) => new RegExpCondition(descriptor));
-    cf.register<RangeConditionDescriptor>(
-        ConditionType.Range, (descriptor) => new RangeCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>(
-        ConditionType.EqualTo, (descriptor) => new EqualToCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.NotEqualTo, (descriptor) => new NotEqualToCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.GreaterThan, (descriptor) => new GreaterThanCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.LessThan, (descriptor) => new LessThanCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.GreaterThanOrEqual, (descriptor) => new GreaterThanOrEqualCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.LessThanOrEqual, (descriptor) => new LessThanOrEqualCondition(descriptor));
-    cf.register<StringLengthConditionDescriptor>
-        (ConditionType.StringLength, (descriptor) => new StringLengthCondition(descriptor));
-    cf.register<AllMatchConditionDescriptor>
-        (ConditionType.And, (descriptor) => new AllMatchCondition(descriptor));
-    cf.register<AnyMatchConditionDescriptor>
-        (ConditionType.Or, (descriptor) => new AnyMatchCondition(descriptor));
-    cf.register<CountMatchesConditionDescriptor>
-        (ConditionType.CountMatches, (descriptor) => new CountMatchesCondition(descriptor));
+    cf.register<RegExpConditionConfig>(
+        ConditionType.RegExp, (config) => new RegExpCondition(config));
+    cf.register<RangeConditionConfig>(
+        ConditionType.Range, (config) => new RangeCondition(config));
+    cf.register<CompareToConditionConfig>(
+        ConditionType.EqualTo, (config) => new EqualToCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.NotEqualTo, (config) => new NotEqualToCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.GreaterThan, (config) => new GreaterThanCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.LessThan, (config) => new LessThanCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.GreaterThanOrEqual, (config) => new GreaterThanOrEqualCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.LessThanOrEqual, (config) => new LessThanOrEqualCondition(config));
+    cf.register<StringLengthConditionConfig>
+        (ConditionType.StringLength, (config) => new StringLengthCondition(config));
+    cf.register<AllMatchConditionConfig>
+        (ConditionType.And, (config) => new AllMatchCondition(config));
+    cf.register<AnyMatchConditionConfig>
+        (ConditionType.Or, (config) => new AnyMatchCondition(config));
+    cf.register<CountMatchesConditionConfig>
+        (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
     // StringNotEmpty is similar to RequiredText, but lacks evaluating as the user types
-    cf.register<StringNotEmptyConditionDescriptor>(
-        ConditionType.StringNotEmpty, (descriptor) => new StringNotEmptyCondition(descriptor));
-    cf.register<NotNullConditionDescriptor>(
-        ConditionType.NotNull, (descriptor) => new NotNullCondition(descriptor));
+    cf.register<StringNotEmptyConditionConfig>(
+        ConditionType.StringNotEmpty, (config) => new StringNotEmptyCondition(config));
+    cf.register<NotNullConditionConfig>(
+        ConditionType.NotNull, (config) => new NotNullCondition(config));
     // aliases for users who don't deal well with boolean logic can relate
-    cf.register<AllMatchConditionDescriptor>
-        (ConditionType.All, (descriptor) => new AllMatchCondition(descriptor));
-    cf.register<AnyMatchConditionDescriptor>
-        (ConditionType.Any, (descriptor) => new AnyMatchCondition(descriptor));
+    cf.register<AllMatchConditionConfig>
+        (ConditionType.All, (config) => new AllMatchCondition(config));
+    cf.register<AnyMatchConditionConfig>
+        (ConditionType.Any, (config) => new AnyMatchCondition(config));
 */    
 }
 export function registerAllConditions(cf: ConditionFactory): void
 {
-    cf.register<DataTypeCheckConditionDescriptor>(
-        ConditionType.DataTypeCheck, (descriptor) => new DataTypeCheckCondition(descriptor));
-    cf.register<RequiredTextConditionDescriptor>(
-        ConditionType.RequiredText, (descriptor) => new RequiredTextCondition(descriptor));
+    cf.register<DataTypeCheckConditionConfig>(
+        ConditionType.DataTypeCheck, (config) => new DataTypeCheckCondition(config));
+    cf.register<RequiredTextConditionConfig>(
+        ConditionType.RequiredText, (config) => new RequiredTextCondition(config));
   
-    cf.register<RegExpConditionDescriptor>(
-        ConditionType.RegExp, (descriptor) => new RegExpCondition(descriptor));
-    cf.register<RangeConditionDescriptor>(
-        ConditionType.Range, (descriptor) => new RangeCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>(
-        ConditionType.EqualTo, (descriptor) => new EqualToCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.NotEqualTo, (descriptor) => new NotEqualToCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.GreaterThan, (descriptor) => new GreaterThanCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.LessThan, (descriptor) => new LessThanCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.GreaterThanOrEqual, (descriptor) => new GreaterThanOrEqualCondition(descriptor));
-    cf.register<CompareToConditionDescriptor>
-        (ConditionType.LessThanOrEqual, (descriptor) => new LessThanOrEqualCondition(descriptor));
-    cf.register<StringLengthConditionDescriptor>
-        (ConditionType.StringLength, (descriptor) => new StringLengthCondition(descriptor));
-    cf.register<AllMatchConditionDescriptor>
-        (ConditionType.And, (descriptor) => new AllMatchCondition(descriptor));
-    cf.register<AnyMatchConditionDescriptor>
-        (ConditionType.Or, (descriptor) => new AnyMatchCondition(descriptor));
-    cf.register<CountMatchesConditionDescriptor>
-        (ConditionType.CountMatches, (descriptor) => new CountMatchesCondition(descriptor));
-    cf.register<StringNotEmptyConditionDescriptor>(
-        ConditionType.StringNotEmpty, (descriptor) => new StringNotEmptyCondition(descriptor));
-    cf.register<NotNullConditionDescriptor>(
-        ConditionType.NotNull, (descriptor) => new NotNullCondition(descriptor));
-    cf.register<AllMatchConditionDescriptor>
-        (ConditionType.All, (descriptor) => new AllMatchCondition(descriptor));
-    cf.register<AnyMatchConditionDescriptor>
-        (ConditionType.Any, (descriptor) => new AnyMatchCondition(descriptor));
+    cf.register<RegExpConditionConfig>(
+        ConditionType.RegExp, (config) => new RegExpCondition(config));
+    cf.register<RangeConditionConfig>(
+        ConditionType.Range, (config) => new RangeCondition(config));
+    cf.register<CompareToConditionConfig>(
+        ConditionType.EqualTo, (config) => new EqualToCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.NotEqualTo, (config) => new NotEqualToCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.GreaterThan, (config) => new GreaterThanCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.LessThan, (config) => new LessThanCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.GreaterThanOrEqual, (config) => new GreaterThanOrEqualCondition(config));
+    cf.register<CompareToConditionConfig>
+        (ConditionType.LessThanOrEqual, (config) => new LessThanOrEqualCondition(config));
+    cf.register<StringLengthConditionConfig>
+        (ConditionType.StringLength, (config) => new StringLengthCondition(config));
+    cf.register<AllMatchConditionConfig>
+        (ConditionType.And, (config) => new AllMatchCondition(config));
+    cf.register<AnyMatchConditionConfig>
+        (ConditionType.Or, (config) => new AnyMatchCondition(config));
+    cf.register<CountMatchesConditionConfig>
+        (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
+    cf.register<StringNotEmptyConditionConfig>(
+        ConditionType.StringNotEmpty, (config) => new StringNotEmptyCondition(config));
+    cf.register<NotNullConditionConfig>(
+        ConditionType.NotNull, (config) => new NotNullCondition(config));
+    cf.register<AllMatchConditionConfig>
+        (ConditionType.All, (config) => new AllMatchCondition(config));
+    cf.register<AnyMatchConditionConfig>
+        (ConditionType.Any, (config) => new AnyMatchCondition(config));
 }
 
 

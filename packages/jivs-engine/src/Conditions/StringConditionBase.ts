@@ -8,16 +8,16 @@ import { ConditionEvaluateResult, IEvaluateConditionDuringEdits } from '../Inter
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { OneValueConditionDescriptor, OneValueConditionBase } from './OneValueConditionBase';
+import { OneValueConditionConfig, OneValueConditionBase } from './OneValueConditionBase';
 
 /**
  * Base implementation of a Condition that evaluates a string as the native value.
  */
-export abstract class StringConditionBase<TConditionDescriptor extends StringConditionDescriptor>
-    extends OneValueConditionBase<TConditionDescriptor> implements IEvaluateConditionDuringEdits
+export abstract class StringConditionBase<TConditionConfig extends StringConditionConfig>
+    extends OneValueConditionBase<TConditionConfig> implements IEvaluateConditionDuringEdits
 {
     /**
-     * Evaluate a value using its business rule and configuration in the Descriptor.
+     * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the value from input field/element and the native value resolved by data type.
      * This function checks both in valueHost to determine a string source.
      * @param valueHostResolver 
@@ -30,13 +30,13 @@ export abstract class StringConditionBase<TConditionDescriptor extends StringCon
 
         let text = value as string;
         // trimming is not appropriate since we are evaluating an already cleaned up native value
-        // if (this.descriptor.trim ?? true)
+        // if (this.config.trim ?? true)
         //     text = text.trim();
         return this.evaluateString(text, valueHost, valueHostResolver.services);
     }
     /**
      * Applies the business rule against the string value (already trimmed if 
-     * Descriptor.Trim is true).
+     * Config.trim is true).
      * @param text
      * @param valueHost
      * @param services 
@@ -44,18 +44,18 @@ export abstract class StringConditionBase<TConditionDescriptor extends StringCon
     protected abstract evaluateString(text: string, valueHost: IValueHost, services: IValidationServices):
         ConditionEvaluateResult;
     /**
-     * Runs when Descriptor.supportsDuringEdit is true and validateOptions.DuringEdit is true
-     * Supports the Descriptor.trim option.
+     * Runs when Config.supportsDuringEdit is true and validateOptions.DuringEdit is true
+     * Supports the Config.trim option.
      * @param text 
      * @param valueHost 
      * @param services 
      * @returns When supportsDuringEdit is false, returns undetermined. Otherwise it follows
-     * the rules from the Descriptor.
+     * the rules from the Config.
      */
     public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult{
-        if (this.descriptor.supportsDuringEdit !== false)
+        if (this.config.supportsDuringEdit !== false)
         {
-            if (this.descriptor.trim ?? true)
+            if (this.config.trim ?? true)
                 text = text.trim();
             return this.evaluateString(text, valueHost, services);
         }
@@ -75,7 +75,7 @@ export abstract class StringConditionBase<TConditionDescriptor extends StringCon
     }
 }
 
-export interface StringConditionDescriptor extends OneValueConditionDescriptor {
+export interface StringConditionConfig extends OneValueConditionConfig {
 
     /**
      * When true or undefined, this evaluates when ValidateOption.DuringEdit is true.

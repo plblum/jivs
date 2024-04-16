@@ -14,11 +14,11 @@ import { objectKeysCount, groupsMatch } from '../Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
 import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from '../Interfaces/Validation';
-import { InputValidateResult, IInputValidator, InputValidatorDescriptor } from '../Interfaces/InputValidator';
+import { InputValidateResult, IInputValidator, InputValidatorConfig } from '../Interfaces/InputValidator';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
-import { InputValueHostDescriptor, InputValueHostState, IInputValueHost } from '../Interfaces/InputValueHost';
+import { InputValueHostConfig, InputValueHostState, IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { FluentValidatorCollector } from './Fluent';
 
@@ -26,11 +26,11 @@ import { FluentValidatorCollector } from './Fluent';
 /**
  * Standard implementation of IInputValueHost. It owns a list of InputValidators
  * which support its validate() function.
- * Use ValueHostDescriptor.Type = "Input" for the ValidationManager to use this class.
+ * Use ValueHostConfig.type = "Input" for the ValidationManager to use this class.
  * 
 * Each instance depends on a few things, all passed into the constructor:
 * - valueHostsManager - Typically this is the ValidationManager.
-* - InputValueHostDescriptor - The business logic supplies these rules
+* - InputValueHostConfig - The business logic supplies these rules
 *   to implement a ValueHost's name, label, data type, validation rules,
 *   and other business logic metadata.
 * - InputValueHostState - State used by this InputValueHost including
@@ -38,11 +38,11 @@ import { FluentValidatorCollector } from './Fluent';
 * If the caller changes any of these, discard the instance
 * and create a new one.
  */
-export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescriptor, InputValueHostState>
+export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfig, InputValueHostState>
     implements IInputValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, descriptor: InputValueHostDescriptor, state: InputValueHostState) {
-        super(valueHostsManager, descriptor, state);
+    constructor(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostState) {
+        super(valueHostsManager, config, state);
     }
 
     /**
@@ -69,8 +69,8 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
         };
 
         if (!groupsMatch(options.group,
-            (this.getFromState('_group') ?? this.descriptor.group) as string | null))
-            return bailout(`Group names do not match "${options.group}" vs "${this.descriptor.group?.toString()}"`);      
+            (this.getFromState('_group') ?? this.config.group) as string | null))
+            return bailout(`Group names do not match "${options.group}" vs "${this.config.group?.toString()}"`);      
         
         try {
             try {
@@ -233,32 +233,32 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
                 let parms = fn();
                 self.services.loggerService.log(parms.message, LoggingLevel.Info,
                     LoggingCategory.Validation,
-                    parms.source ?? `ValueHost name ${self.descriptor.name}`);
+                    parms.source ?? `ValueHost name ${self.config.name}`);
             }
         }        
         function logError(message: string): void
         {
             self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
-                LoggingLevel.Error, LoggingCategory.Validation, self.descriptor.name);
+                LoggingLevel.Error, LoggingCategory.Validation, self.config.name);
         }
     }
 
     //#region validation
     /**
      * Provides the list of IInputValidator instances derived
-     * from the ValidatorDescriptors. Lazy loads the instances.
+     * from the ValidatorConfigs. Lazy loads the instances.
      */
     protected validators(): Array<IInputValidator> {
         if (this._validators === null)
             this._validators = this.generateValidators();
         return this._validators;
     }
-    // populated by Validators() when null. Set to null by UpdateValueHostDescriptor
+    // populated by Validators() when null. Set to null by UpdateValueHostConfig
     // to account for changes made there.
     private _validators: Array<IInputValidator> | null = null;
 
     /**
-     * Generates an array of all InputValidators from ValueHostDescriptor.ValidatorDescriptors.
+     * Generates an array of all InputValidators from ValueHostConfig.validatorConfigs.
      * Sorts the by Category so Required is always first, DataTypeCheck is just after Required.
      * @returns 
      */
@@ -266,7 +266,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
         let factory = this.services.inputValidatorFactory;
         let validators: Array<IInputValidator> = [];
         let needsDataTypeCheck = true;
-        this.descriptor.validatorDescriptors?.forEach((valDesc) => {
+        this.config.validatorConfigs?.forEach((valDesc) => {
             let pv = factory.create(this, valDesc);
             validators.push(pv);
             if (needsDataTypeCheck && pv.condition.category === ConditionCategory.DataTypeCheck)
@@ -292,14 +292,14 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
             if (lookupKey) {
                 let dtcCondition = this.services.autoGenerateDataTypeCheckService.autoGenerateDataTypeCondition(this, lookupKey);
                 if (dtcCondition != null) {
-                    let descriptor: InputValidatorDescriptor = {
+                    let config: InputValidatorConfig = {
                         /* eslint-disable-next-line @typescript-eslint/naming-convention */
                         conditionCreator: (requester) => dtcCondition,
-                        conditionDescriptor: null,
+                        conditionConfig: null,
                         errorMessage: null, // expecting TextLocalizationService to contribute based on ConditionType + DataTypeLookupKey
                         severity: ValidationSeverity.Severe
                     };
-                    validators.push(this.services.inputValidatorFactory.create(this, descriptor));
+                    validators.push(this.services.inputValidatorFactory.create(this, config));
                     this.services.loggerService.log(`Added ${dtcCondition.conditionType} Condition for Data Type Check`,
                         LoggingLevel.Info, LoggingCategory.Configuration, `InputValidator on ${this.getName()}`);
                     created = true;
@@ -322,7 +322,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
     }
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
-     * Descriptor.
+     * Config.
      */
     public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void
     {
@@ -349,7 +349,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
      * to those already configured within ValidationManager.
      * 
      * It adds or replaces when the ConditionType matches an existing 
-     * InputValidatorDescriptor.
+     * InputValidatorConfig.
      * 
      * Try to avoid using it for validators coming from business logic.
      * This fits well with Data Type Check cases that were
@@ -359,27 +359,27 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
      * but their rules typically are known by business logic and its just
      * a matter of converting "required" and "string length" business rules
      * to these conditions during setup in ValidationManager.
-     * @param descriptor 
+     * @param config 
      */
-    public addValidator(descriptor: InputValidatorDescriptor): void
+    public addValidator(config: InputValidatorConfig): void
     {
         this._validators = null;    // force recreation
-        if (!this.descriptor.validatorDescriptors)
-            this.descriptor.validatorDescriptors = [];
+        if (!this.config.validatorConfigs)
+            this.config.validatorConfigs = [];
         let knownConditionType: string | null =
-            descriptor.conditionDescriptor ? descriptor.conditionDescriptor.type : null;
+            config.conditionConfig ? config.conditionConfig.type : null;
         if (knownConditionType)
         {
-            let index = this.descriptor.validatorDescriptors.findIndex((ivd) =>
-                (ivd.conditionDescriptor ? ivd.conditionDescriptor.type : '') ===
+            let index = this.config.validatorConfigs.findIndex((ivd) =>
+                (ivd.conditionConfig ? ivd.conditionConfig.type : '') ===
                 knownConditionType
             );    
             if (index > -1) {
-                this.descriptor.validatorDescriptors[index] = descriptor;
+                this.config.validatorConfigs[index] = config;
                 return;
             }
         }
-        this.descriptor.validatorDescriptors.push(descriptor);
+        this.config.validatorConfigs.push(config);
     }
     /**
      * Alternative way to add validators (see @link addValidator)
@@ -389,18 +389,18 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostDescr
     public configValidators(): FluentValidatorCollector
     {
         this._validators = null;    // force recreation   
-        if (!this.descriptor.validatorDescriptors)
-            this.descriptor.validatorDescriptors = [];        
-        return new FluentValidatorCollector(this.descriptor);
+        if (!this.config.validatorConfigs)
+            this.config.validatorConfigs = [];        
+        return new FluentValidatorCollector(this.config);
     }
     
     /**
-     * While you normally set the validation group name with InputValueHostDescriptor.group,
-     * InputValueHostDescriptor is often setup from the perspective of the business logic,
+     * While you normally set the validation group name with InputValueHostConfig.group,
+     * InputValueHostConfig is often setup from the perspective of the business logic,
      * which does not make the ultimate decision on field grouping.
      * Call this from the UI layer when establishing the input to replace the supplied
      * group name.
-     * @param group - When undefined, it restores group to InputValueHostDescriptor.group
+     * @param group - When undefined, it restores group to InputValueHostConfig.group
      */
     public setGroup(group: string): void
     {
@@ -432,41 +432,41 @@ export function toIInputValueHost(source: any): IInputValueHost | null
 }
 
 export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
-    public canCreate(descriptor: InputValueHostDescriptor): boolean {
-        if (descriptor.type != null)    // null/undefined
-            return descriptor.type === ValueHostType.Input;
+    public canCreate(config: InputValueHostConfig): boolean {
+        if (config.type != null)    // null/undefined
+            return config.type === ValueHostType.Input;
 
-        if (descriptor.validatorDescriptors === undefined)
+        if (config.validatorConfigs === undefined)
             return false;
         return true;
     }
-    public create(valueHostsManager: IValueHostsManager, descriptor: InputValueHostDescriptor, state: InputValueHostState): IInputValueHost {
-        return new InputValueHost(valueHostsManager, descriptor, state);
+    public create(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostState): IInputValueHost {
+        return new InputValueHost(valueHostsManager, config, state);
     }
 /**
- * Looking for changes to the ValidationDescriptors to impact IssuesFound.
+ * Looking for changes to the ValidationConfigs to impact IssuesFound.
  * If IssuesFound did change, fix ValidationResult for when Invalid to 
  * review IssuesFound in case it is only a Warning, which makes ValidationResult Valid.
  * @param state 
- * @param descriptor 
+ * @param config 
  */    
-    public cleanupState(state: InputValueHostState, descriptor: InputValueHostDescriptor): void {
+    public cleanupState(state: InputValueHostState, config: InputValueHostConfig): void {
         assertNotNull(state, 'state');
-        assertNotNull(descriptor, 'descriptor');
-        let descriptorChanged = false;
+        assertNotNull(config, 'config');
+        let configChanged = false;
         let oldStateCount = 0;
         let issuesFound: Array<IssueFound> | null = null;
 
         if (state.issuesFound) {
             let oldState = state.issuesFound;
 
-            descriptor.validatorDescriptors?.forEach((valDescriptor) => {
+            config.validatorConfigs?.forEach((valConfig) => {
                 let condType = 'UNKNOWN';
-                if (valDescriptor.conditionDescriptor)
-                    condType = valDescriptor.conditionDescriptor.type;
-                else if (valDescriptor.conditionCreator)
+                if (valConfig.conditionConfig)
+                    condType = valConfig.conditionConfig.type;
+                else if (valConfig.conditionCreator)
                 {
-                    let cond = valDescriptor.conditionCreator(valDescriptor);   // return null is actually a configuration bug reported to the user in InputValidator.Condition
+                    let cond = valConfig.conditionCreator(valConfig);   // return null is actually a configuration bug reported to the user in InputValidator.Condition
                     if (cond)
                         condType = cond.conditionType;
                 }
@@ -478,10 +478,10 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
                     oldStateCount++;
                 }
                 else
-                    descriptorChanged = true;
+                    configChanged = true;
             });
         }
-        if (!descriptorChanged && (oldStateCount === objectKeysCount(state.issuesFound)))
+        if (!configChanged && (oldStateCount === objectKeysCount(state.issuesFound)))
             return;
 
         state.issuesFound = issuesFound as (Array<IssueFound> | null);

@@ -8,27 +8,27 @@ import { type SetValueOptions} from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostResolver';
-import { IValidatableValueHostBase, ValidatableValueHostBaseDescriptor, ValidatableValueHostBaseState } from '../Interfaces/ValidatableValueHostBase';
+import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseState } from '../Interfaces/ValidatableValueHostBase';
 import { BusinessLogicError, IssueFound, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from '../Interfaces/Validation';
 
 
 /**
 * Expands upon ValueHost to provide the basics of validation.
  */
-export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableValueHostBaseDescriptor, TState extends ValidatableValueHostBaseState>
-    extends ValueHostBase<TDescriptor, TState>
+export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueHostBaseConfig, TState extends ValidatableValueHostBaseState>
+    extends ValueHostBase<TConfig, TState>
     implements IValidatableValueHostBase {
 /**
  * @param valueHostsManager - Contains all ValueHosts. This is usually ValidationManager.
  *   It is the owner of all state and provides group validation.
- * @param descriptor - The business logic supplies these rules
+ * @param config - The business logic supplies these rules
  *   to implement a ValueHost's name, label, data type, validation rules,
  *   and other business logic metadata. Treat as immutable.
  * @param state - State used by this InputValueHost including its validators.
  * If the caller changes any of these, discard the instance. Treat as immutable.
  */    
-    constructor(valueHostsManager: IValueHostsManager, descriptor: TDescriptor, state: TState) {
-        super(valueHostsManager, descriptor, state);
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
+        super(valueHostsManager, config, state);
     }
 
 
@@ -188,7 +188,7 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
         // Looks like validation previously ran...
         // check if we use a Condition that specifies valueHostIdThatChanged.
         if (!this._associatedValueHosts) { // this is a cache that is only cleared by recreating the ValueHost
-            // it assumes that the Descriptor is immutable, so there cannot be any changes to ValueHosts
+            // it assumes that the Config is immutable, so there cannot be any changes to ValueHosts
             // without creating a new instance of this ValueHost
             this._associatedValueHosts = new Set<ValueHostName>();
             this.gatherValueHostNames(this._associatedValueHosts, this.valueHostsManager);
@@ -212,7 +212,7 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
     private _associatedValueHosts: Set<ValueHostName> | null = null;
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
-     * Descriptor.
+     * Config.
      */
     public abstract gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void;
 
@@ -357,7 +357,7 @@ export abstract class ValidatableValueHostBase<TDescriptor extends ValidatableVa
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
      * - ConditionType - Identifies the condition supplying the issue.
-     * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
+     * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
@@ -426,22 +426,22 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 }
 
 export abstract class ValidatableValueHostBaseGenerator implements IValueHostGenerator {
-    public abstract canCreate(descriptor: ValidatableValueHostBaseDescriptor): boolean;
+    public abstract canCreate(config: ValidatableValueHostBaseConfig): boolean;
 
-    public abstract create(valueHostsManager: IValueHostsManager, descriptor: ValidatableValueHostBaseDescriptor, state: ValidatableValueHostBaseState): IValidatableValueHostBase;
+    public abstract create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseState): IValidatableValueHostBase;
 
     /**
-     * Looking for changes to the ValidationDescriptors to impact IssuesFound.
+     * Looking for changes to the ValidationConfigs to impact IssuesFound.
      * If IssuesFound did change, fix ValidationResult for when Invalid to 
      * review IssuesFound in case it is only a Warning, which makes ValidationResult Valid.
      * @param state 
-     * @param descriptor 
+     * @param config 
      */
-    public abstract cleanupState(state: ValidatableValueHostBaseState, descriptor: ValidatableValueHostBaseDescriptor): void;
-    public createState(descriptor: ValidatableValueHostBaseDescriptor): ValidatableValueHostBaseState {
+    public abstract cleanupState(state: ValidatableValueHostBaseState, config: ValidatableValueHostBaseConfig): void;
+    public createState(config: ValidatableValueHostBaseConfig): ValidatableValueHostBaseState {
         return {
-            name: descriptor.name,
-            value: descriptor.initialValue,
+            name: config.name,
+            value: config.initialValue,
             validationResult: ValidationResult.NotAttempted,
             inputValue: undefined,
             issuesFound: null

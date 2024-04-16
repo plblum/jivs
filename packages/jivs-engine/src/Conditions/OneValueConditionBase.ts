@@ -1,10 +1,10 @@
 /**
  * Base implementation for Conditions that get a value from a single ValueHostName.
- * The Descriptor introduces ValueHostName.
+ * The Config introduces ValueHostName.
  * @module Conditions/AbstractClasses/OneValueConditionBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { ConditionDescriptor } from '../Interfaces/Conditions';
+import { ConditionConfig } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionBase } from './ConditionBase';
@@ -12,28 +12,28 @@ import { ConditionBase } from './ConditionBase';
 
 
 /**
- * Base implementation of ICondition with OneValueConditionDescriptor.
- * The Descriptor introduces ValueHostName.
+ * Base implementation of ICondition with OneValueConditionConfig.
+ * The Config introduces ValueHostName.
  */
-export abstract class OneValueConditionBase<TConditionDescriptor extends OneValueConditionDescriptor>
-    extends ConditionBase<TConditionDescriptor>
+export abstract class OneValueConditionBase<TConditionConfig extends OneValueConditionConfig>
+    extends ConditionBase<TConditionConfig>
 {
-    constructor(descriptor: TConditionDescriptor) {
-        super(descriptor);
+    constructor(config: TConditionConfig) {
+        super(config);
     }
 
     /**
      * Supports evaluate() implementations by checking the valueHost passed in is setup
-     * and if not, supplying one identified by ConditionDescriptor.valueHostName.
-     * ConditionDescriptor.valueHostName takes precidence over the valueHost passed in.
+     * and if not, supplying one identified by ConditionConfig.valueHostName.
+     * ConditionConfig.valueHostName takes precidence over the valueHost passed in.
      * @param valueHost 
      * @param valueHostResolver 
      * @returns 
      */
     protected ensurePrimaryValueHost(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): IValueHost   // IValueHost
     {
-        if (this.descriptor.valueHostName) {
-            valueHost = this.getValueHost(this.descriptor.valueHostName, valueHostResolver);
+        if (this.config.valueHostName) {
+            valueHost = this.getValueHost(this.config.valueHostName, valueHostResolver);
             if (!valueHost)
                 this.logInvalidPropertyData('valueHostName', 'valueHostName is unknown', valueHostResolver);
         }
@@ -46,15 +46,15 @@ export abstract class OneValueConditionBase<TConditionDescriptor extends OneValu
     }
 
     public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
-        if (this.descriptor.valueHostName)
-            collection.add(this.descriptor.valueHostName);
+        if (this.config.valueHostName)
+            collection.add(this.config.valueHostName);
     }
 }
 
 /**
- * Base conditionDescriptor for Conditions that need to get a value from a ValueHost.
+ * Base conditionConfig for Conditions that need to get a value from a ValueHost.
  */
-export interface OneValueConditionDescriptor extends ConditionDescriptor {
+export interface OneValueConditionConfig extends ConditionConfig {
     /**
      * One source for the value to evaluate.
      * By design, Condition.evaluate() takes a valueHost object, allowing the caller 
@@ -63,14 +63,14 @@ export interface OneValueConditionDescriptor extends ConditionDescriptor {
      * 
      * Assign this to a ValueHostName if you want to have it looked up in the ValueHostsManager.getValueHost().
      * 
-     * Typically leave InputValidator.ConditionDescriptor.valueHostName null
+     * Typically leave InputValidator.ConditionConfig.valueHostName null
      * because Condition.evaluate() is passed the correct valueHost.
-     * However, InputValidator.EnablerDescriptor needs it assigned.
+     * However, InputValidator.EnablerConfig needs it assigned.
      * Same with any Condition that is a child of another, like in MultiConditions.
      * 
      * Many conditions need two or more sources for values.
      * They are expected to create more ValueHostName properties in their 
-     * ConditionDescriptor, where the remaining Properties are identified.
+     * ConditionConfig, where the remaining Properties are identified.
      */
     valueHostName: ValueHostName | null;
 
@@ -81,7 +81,7 @@ export interface OneValueConditionDescriptor extends ConditionDescriptor {
  * For conditions where it takes 2 values to evaluate properly, like
  * when comparing the values of two properties.
  */
-export interface TwoValueConditionDescriptor extends OneValueConditionDescriptor {
+export interface TwoValueConditionConfig extends OneValueConditionConfig {
     /**
      * ValueHostName to retrieve a ValueHost that will be the source
      * of another value for the evaluate() method.

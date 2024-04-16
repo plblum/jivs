@@ -7,7 +7,7 @@ import {
     type ValidateOptions, type ValidateResult, ValidationResult,
     type BusinessLogicError, type IssueFound, StatefulValidateResult
 } from './Validation';
-import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostDescriptor, type ValueHostState } from './ValueHost';
+import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostState } from './ValueHost';
 
 /**
 * Manages a value that may use input validation.
@@ -135,7 +135,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - Severity - Helps style the error. Expect Severe, Error, and Warning levels.
+     * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
      *   show in the Validation Summary widget. Each InputValidator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
@@ -161,7 +161,7 @@ export interface IValidatableValueHostBase extends IValueHost {
 /**
  * Just the data that is used to describe this input value.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to InputValueHostDescriptor.
+ * It should be generatable from JSON, and simply gets typed to InputValueHostConfig.
  * This provides the backing data for each InputValueHost.
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this, except values are converted to their native forms
@@ -171,7 +171,7 @@ export interface IValidatableValueHostBase extends IValueHost {
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  */
-export interface ValidatableValueHostBaseDescriptor extends ValueHostDescriptor {
+export interface ValidatableValueHostBaseConfig extends ValueHostConfig {
 
     /**
      * InputValueHosts can be part of one or more named groups.
@@ -206,7 +206,7 @@ export interface ValidatableValueHostBaseState extends ValueHostState, StatefulV
      * The value from the input field/element, even if invalid.
      * The value may not be the native data type.
      * For example, it could be a string from an <input>
-     * whose DataType=Date, meaning the Value property must be a Date object.
+     * whose dataType=Date, meaning the Value property must be a Date object.
      * Will be 'undefined' if the value has not been retrieved.
      */
     inputValue?: any;

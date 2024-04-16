@@ -7,14 +7,14 @@
 import { BusinessLogicInputValueHostType, BusinessLogicValueHostName } from './BusinessLogicInputValueHost';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
-import type { IValueHost, ValueChangedHandler, ValueHostDescriptor, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
+import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
 import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from './InputValueHost';
-import { IInputValueHost, toIInputValueHostDescriptorResolver } from '../Interfaces/InputValueHost';
+import { IInputValueHost, toIInputValueHostConfigResolver } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from './ValidatableValueHostBase';
 import { FluentCollectorBase, FluentValidatorCollector } from './Fluent';
 
@@ -25,25 +25,25 @@ import { FluentCollectorBase, FluentValidatorCollector } from './Fluent';
  * Once setup, it has a list of ValueHost objects. Those that are InputValueHosts
  * contain validators.
  * 
- * Descriptors are interfaces you use with plain objects to fashion them into 
- * ValidationManager's configuration. ValueHostDescriptor describes a ValueHost.
- * InputValueHostDescriptor describes an InputValueHost (which supports validation).
- * An InputValueHost takes InputValidatorDescriptors to fashion its list of Validators.
- * An InputValidator takes various ConditionDescriptors to fashion the specific 
+ * Configs are interfaces you use with plain objects to fashion them into 
+ * ValidationManager's configuration. ValueHostConfig describes a ValueHost.
+ * InputValueHostConfig describes an InputValueHost (which supports validation).
+ * An InputValueHost takes InputValidatorConfigs to fashion its list of Validators.
+ * An InputValidator takes various ConditionConfigs to fashion the specific 
  * validation rule.
  * 
  * ValidationManager's constructor takes a single parameter, but its a potent one:
  * it's Configuration object (type=ValidationManagerConfig). By the time you 
- * create the ValidationManager, you have provided all of those descriptors to
+ * create the ValidationManager, you have provided all of those configs to
  * the Configuration object. It also supplies the ValidationServices object,
  * state data, and callbacks. See the constructor's documentation for a sample of 
  * the Configuration object.
  * 
  * We recommend using your business logic to host the validation rules.
- * For that, you will need code that translates those rules into InputValidatorDescriptors.
+ * For that, you will need code that translates those rules into InputValidatorConfigs.
  * Try to keep validation rules separate from your UI's code.
  * 
- * All Descriptors are considered immutable. If you need to make a change, you can
+ * All Configs are considered immutable. If you need to make a change, you can
  * create a new instance of ValidationManager, or call its addValueHost, updateValueHost,
  * or discardValueHost methods to keep the existing instance.
  * 
@@ -75,8 +75,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * ```ts
      * {
      *   services: createValidationServices(); <-- see and customize your create_services.ts file
-     *   valueHostDescriptors: [
-     *     // see elsewhere for details on ValueHostDescriptors as they are the heavy lifting in this system.
+     *   valueHostConfigs: [
+     *     // see elsewhere for details on ValueHostConfigs as they are the heavy lifting in this system.
      *     // Just know that you need one object for each value that you want to connect
      *     // to the Validation Manager
      *      ],
@@ -102,19 +102,19 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         internalConfig.services = savedServices;
 
         this._config = internalConfig;
-        this._valueHostDescriptors = {};
+        this._valueHostConfigs = {};
         this._valueHosts = {};
         this._state = internalConfig.savedState ?? {};
         if (typeof this._state.stateChangeCounter !== 'number')
             this._state.stateChangeCounter = 0;
         this._lastValueHostStates = internalConfig.savedValueHostStates ?? [];
-        let descriptors = internalConfig.valueHostDescriptors ?? [];
-        for (let item of descriptors) {
-            let resolver = toIInputValueHostDescriptorResolver(item);
+        let configs = internalConfig.valueHostConfigs ?? [];
+        for (let item of configs) {
+            let resolver = toIInputValueHostConfigResolver(item);
             if (resolver)
-                this.addValueHost(resolver.descriptor, null);
+                this.addValueHost(resolver.config, null);
             else
-                this.addValueHost(item as ValueHostDescriptor, null);
+                this.addValueHost(item as ValueHostConfig, null);
         }
     }
     protected get config(): ValidationManagerConfig
@@ -136,8 +136,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
 
 
     /**
-     * ValueHosts for all ValueHostDescriptors.
-     * Always replace a ValueHost when the associated Descriptor or State are changed.
+     * ValueHosts for all ValueHostConfigs.
+     * Always replace a ValueHost when the associated Config or State are changed.
      */
     protected get valueHosts(): IValueHostsMap {
         return this._valueHosts;
@@ -145,13 +145,13 @@ export class ValidationManager<TState extends ValidationManagerState> implements
 
     private _valueHosts: IValueHostsMap = {};
     /**
-     * ValueHostDescriptors supplied by the caller (business logic).
-     * Always replace a ValueHost when its Descriptor changes.
+     * ValueHostConfigs supplied by the caller (business logic).
+     * Always replace a ValueHost when its Config changes.
      */
-    protected get valueHostDescriptors(): IValueHostDescriptorsMap {
-        return this._valueHostDescriptors;
+    protected get valueHostConfigs(): IValueHostConfigsMap {
+        return this._valueHostConfigs;
     }
-    private _valueHostDescriptors: IValueHostDescriptorsMap = {};
+    private _valueHostConfigs: IValueHostConfigsMap = {};
 
     /**
      * ValueHostStates and more.
@@ -192,25 +192,25 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     }
 
     /**
-     * Adds a ValueHostDescriptor for a ValueHost not previously added. 
+     * Adds a ValueHostConfig for a ValueHost not previously added. 
      * Does not trigger any notifications.
-     * Exception when the same ValueHostDescriptor.name already exists.
-     * @param descriptor 
-     * Can use configNonInput() or any ValueDescriptorHost.
+     * Exception when the same ValueHostConfig.name already exists.
+     * @param config 
+     * Can use configNonInput() or any ValueConfigHost.
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupState() first.
      * When null, the state supplied in the ValidationManager constructor will be used if available.
      * When neither state was supplied, a default state is created.
      */
-    public addValueHost(descriptor: ValueHostDescriptor,
+    public addValueHost(config: ValueHostConfig,
         initialState: ValueHostState | null): IValueHost;
     /**
-     * Adds a ValueHostDescriptor for an InputValueHost not previously added. 
+     * Adds a ValueHostConfig for an InputValueHost not previously added. 
      * Expects fluent syntax where the first parameter starts with
      * configInput() followed by chained validation rules.
      * Does not trigger any notifications.
-     * Exception when the same ValueHostDescriptor.name already exists.
+     * Exception when the same ValueHostConfig.name already exists.
      * @param fluentCollector
      * Pass in `configInput("valueHostName"[, parameters]).validator().validator()`. 
      * @param initialState
@@ -222,71 +222,71 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      */
     public addValueHost(fluentCollector: FluentValidatorCollector,
         initialState: ValueHostState | null): IValueHost;
-    public addValueHost(arg1: ValueHostDescriptor | FluentValidatorCollector,
+    public addValueHost(arg1: ValueHostConfig | FluentValidatorCollector,
         initialState: ValueHostState | null): IValueHost {
         assertNotNull(arg1, 'arg1');
-        let descriptor: ValueHostDescriptor = arg1 instanceof FluentValidatorCollector ?
-            arg1.descriptor : arg1;
-        if (!this._valueHostDescriptors[descriptor.name])
-            return this.applyDescriptor(descriptor, initialState);
+        let config: ValueHostConfig = arg1 instanceof FluentValidatorCollector ?
+            arg1.config : arg1;
+        if (!this._valueHostConfigs[config.name])
+            return this.applyConfig(config, initialState);
 
-        throw new Error(`Property ${descriptor.name} already assigned.`);
+        throw new Error(`Property ${config.name} already assigned.`);
     }
     /**
-     * Replaces a ValueHostDescriptor for an already added ValueHost. 
+     * Replaces a ValueHostConfig for an already added ValueHost. 
      * Does not trigger any notifications.
      * If the name isn't found, it will be added.
-     * @param descriptor 
+     * @param config 
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupState() first.
      */
-    public updateValueHost(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
-        assertNotNull(descriptor, 'descriptor');
-        if (this._valueHostDescriptors[descriptor.name])
-            return this.applyDescriptor(descriptor, initialState);
+    public updateValueHost(config: ValueHostConfig, initialState: ValueHostState | null): IValueHost {
+        assertNotNull(config, 'config');
+        if (this._valueHostConfigs[config.name])
+            return this.applyConfig(config, initialState);
 
-        return this.addValueHost(descriptor, initialState);
+        return this.addValueHost(config, initialState);
     }
     /**
      * Discards a ValueHost. 
      * Does not trigger any notifications.
-     * @param descriptor 
+     * @param config 
      */
-    public discardValueHost(descriptor: ValueHostDescriptor): void {
-        assertNotNull(descriptor, 'descriptor');
-        if (this._valueHostDescriptors[descriptor.name]) {
-            delete this._valueHosts[descriptor.name];
-            delete this._valueHostDescriptors[descriptor.name];
+    public discardValueHost(config: ValueHostConfig): void {
+        assertNotNull(config, 'config');
+        if (this._valueHostConfigs[config.name]) {
+            delete this._valueHosts[config.name];
+            delete this._valueHostConfigs[config.name];
             if (this._lastValueHostStates)
             {
-                let pos = this._lastValueHostStates.findIndex((state) => state.name === descriptor.name);
+                let pos = this._lastValueHostStates.findIndex((state) => state.name === config.name);
                 if (pos > -1)
                     this._lastValueHostStates.splice(pos, 1);
             }
         }
     }
     /**
-     * Creates the IValueHost based on the descriptor and ensures
+     * Creates the IValueHost based on the config and ensures
      * ValidationManager has correct and corresponding instances of ValueHost,
-     * ValueHostDescriptor and ValueHostState.
-     * @param descriptor 
+     * ValueHostConfig and ValueHostState.
+     * @param config 
      * @param initialState - When not null, this ValueHost state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupState() first.
      * @returns 
      */
-    protected applyDescriptor(descriptor: ValueHostDescriptor, initialState: ValueHostState | null): IValueHost {
-        let factory = this.services.valueHostFactory; // functions in here throw exceptions if descriptor is unsupported
+    protected applyConfig(config: ValueHostConfig, initialState: ValueHostState | null): IValueHost {
+        let factory = this.services.valueHostFactory; // functions in here throw exceptions if config is unsupported
         let state: ValueHostState | undefined = undefined;
         let existingState = initialState;
-        let defaultState = factory.createState(descriptor);
+        let defaultState = factory.createState(config);
 
         if (!existingState && this._lastValueHostStates)
-            existingState = this._lastValueHostStates.find((state) => state.name === descriptor.name) ?? null;
+            existingState = this._lastValueHostStates.find((state) => state.name === config.name) ?? null;
         if (existingState) {
             let cleanedState = deepClone(existingState) as ValueHostState;  // clone to allow changes during Cleanup
-            factory.cleanupState(cleanedState, descriptor);
+            factory.cleanupState(cleanedState, config);
             // User may have supplied the state without
             // all of the properties we normally use.
             // Ensure all properties defined by createState() exist, even if their value is undefined
@@ -295,10 +295,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         }
         else
             state = defaultState;
-        let vh = factory.create(this, descriptor, state);
+        let vh = factory.create(this, config, state);
 
-        this._valueHosts[descriptor.name] = vh;
-        this._valueHostDescriptors[descriptor.name] = descriptor;
+        this._valueHosts[config.name] = vh;
+        this._valueHostConfigs[config.name] = config;
         return vh;
     }
 
@@ -536,19 +536,19 @@ export class ValidationManager<TState extends ValidationManagerState> implements
 }
 
 /**
- * All ValueHostDescriptors for this ValidationManager.
+ * All ValueHostConfigs for this ValidationManager.
  * Caller may pass this in via the ValidationManager constructor
  * or build it out via ValidationManager.addValueHost.
  * Each entry must have a companion in ValueHost and ValueHostState in
  * this ValidationManager.
  */
-interface IValueHostDescriptorsMap {
-    [valueHostName: ValueHostName]: ValueHostDescriptor;
+interface IValueHostConfigsMap {
+    [valueHostName: ValueHostName]: ValueHostConfig;
 }
 
 /**
  * All InputValueHosts for the Model.
- * Each entry must have a companion in InputValueDescriptors and ValueHostState
+ * Each entry must have a companion in InputValueConfigs and ValueHostState
  * in this ValidationManager.
  */
 interface IValueHostsMap {

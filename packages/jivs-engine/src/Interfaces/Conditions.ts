@@ -10,12 +10,12 @@
  * 
  * Key interfaces:
  * - {@link ICondition} - Provides the evaluate() function for implementations.
- * - {@link ConditionDescriptor} - A description of the rules for evaluation, such
+ * - {@link ConditionConfig} - A description of the rules for evaluation, such
  *   as ValueHostName="TextBox1", Type (of Condition to use)="Range",
  *   Minimum=3, and Maximum=5.
  * - {@link IConditionCore } - Blending the ICondition with 
- *   the ConditionDescriptor, for implementing conditions that are configured
- *   through the Descriptor. Most Condition classes supplied in this library
+ *   the ConditionConfig, for implementing conditions that are configured
+ *   through the Config. Most Condition classes supplied in this library
  *   implement this interface.
  * @module Conditions/Types
  */
@@ -28,7 +28,7 @@ import { IInputValueHost } from './InputValueHost';
 /**
  * The basis for any condition that you want to work with these validators.
  * There are a number of implementations based on its subclass IConditionCore,
- * all which allow a Descriptor approach of configuration.
+ * all which allow a Config approach of configuration.
  * Implement this directly when you want to handle all of the work in the evaluate()
  * function yourself, and supply your own way of configuring.
  */
@@ -38,7 +38,7 @@ export interface ICondition {
      * Its value appears in the IssueFound that comes from Validation, and in 
      * IssueFound that comes from retrieving a list of errors to display.
      * It allows the consumer of both to correlate those instances with the specific condition.
-     * When defining conditions through a ConditionDescriptor, the Type property must 
+     * When defining conditions through a ConditionConfig, the Type property must 
      * be assigned with a valid ConditionType.
      */
     conditionType: string;
@@ -66,39 +66,44 @@ export interface ICondition {
      * Helps identify the purpose of the Condition. Impacts:
      * * Sort order of the list of Conditions evaluated by an InputValidator,
      *   placing Required first and DataTypeCheck second.
-     * * Sets InputValueHostDescriptor.Required.
-     * * Sets InputValidatorDescriptor.Severity when undefined, where Required
+     * * Sets InputValueHostConfig.required.
+     * * Sets InputValidatorConfig.severity when undefined, where Required
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
-     * override it with ConditionDescriptor.category.
+     * override it with ConditionConfig.category.
      */
     category: ConditionCategory;
 }
 
 
 /**
- * Just the data that is used to identify a Condition that is needed,
- * along with data that supports its ability to evaluate its business rule.
- * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to ConditionDescriptor.
- * This provides the backing data for each ICondition.
- * When placed into the ICondition, it is treated as immutable
- * and can be used as state in React.
+ * Just the data that is used to identify the Condition class to use,
+ * along with its configuration -- usually fields also found in business rules.
+ * Each use of IConditionCore has its own inherited version of ConditionConfig
+ * to supply its own rules.
+ * Condition classes that implement IConditionCore are always passed the ConditionConfig
+ * as the one and only parameter. The ConditionFactory expects that.
+ * Once supplied to the Condition class, consider the ConditionConfig immutable.
+ * 
+ * ConditionConfig should not contain any supporting functions or services.
+ * 
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this. However, there are sometimes
  * cases a business rule is client side only (parser error converting "abc" to number)
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  * Examples: 
- * RequiredTextValidator: { type: 'Required' }
- * RangeValidator:  { type: 'Range', minimum: any, maximum: any } // datatype sensitive values are in their native datatype
- *  CustomValidator: { type: 'Custom' } // this needs the user to supply a function callback for validation
+ * 
+ * RequiredTextCondition implements IConditionCore<RequiredTextConditionConfig> which usually looks like:
+ *  `{ type: 'Required' }`
+ * 
+ * RangeCondition implements IConditionCore<RangeConditionConfig> which usually looks like:  
+ *  `{ type: 'Range', minimum: any, maximum: any }`
  */
-export interface ConditionDescriptor {
+export interface ConditionConfig {
     /**
-     * Identifies the class to create. Class must implement ICondition
-     * and be able to process the propertys of ConditionDescriptor.
-     * Used by the ConditionFactory
+     * Also known as "ConditionType", it identifies the class for ConditionFactory to create
+     * and is used to gather the issues found within a ValueHost. 
      */
     type: string;
 
@@ -113,7 +118,7 @@ export interface ConditionDescriptor {
     // /**
     //  * Handy way to allow users to enter known properties without getting ts errors.
     //  * However, they can improve things if they typecast to the appropriate
-    //  * condition's Descriptor.
+    //  * condition's Config.
     //  */
     // [propName: string]: any;
 }
@@ -121,14 +126,14 @@ export interface ConditionDescriptor {
 /**
  * The base for conditions implemented within this library.
  */
-export interface IConditionCore<TConditionDescriptor extends ConditionDescriptor> extends ICondition {
+export interface IConditionCore<TConditionConfig extends ConditionConfig> extends ICondition {
 
     /**
      * Data that supports the business rule defined in evaluate().
      * Consider this immutable.
      * Expect to create a new Condition instance if its data needs to be changed.
      */
-    descriptor: TConditionDescriptor;
+    config: TConditionConfig;
 }
 
 /**
@@ -149,14 +154,14 @@ export const ConditionEvaluateResultStrings = [
 /**
  * Each Category gets assigned a category. For the most part, these are merely info.
  * However, Required and DataTypeCheck have special meaning.
- * Required - the InputValueHostDescriptor.Required property is set if this is found.
+ * Required - the InputValueHostConfig.required property is set if this is found.
  *   These conditions are always placed first in the evaluation order.
- *   When Required, InputValidatorDescriptor.Severity of Undefined is treated as Severe, not Error
+ *   When Required, InputValidatorConfig.severity of Undefined is treated as Severe, not Error
  *   to stop further Condition evaluation.
  * DataTypeCheck - used to ensure we have a valid native object that can be used by other
  *   conditions. Because these should be evaluated before those, these conditions
  *   are placed just after Required.
- *   When DataTypeCheck, InputValidatorDescriptor.Severity of Undefined is treated as Severe, not Error,
+ *   When DataTypeCheck, InputValidatorConfig.severity of Undefined is treated as Severe, not Error,
  *   to stop further Condition evaluation.
  *   Users may set RegExpCondition's Category to DataTypeCheck if the expression confirms 
  *   a string is the expected data type, like USPhoneNumber or EmailAddress.
@@ -167,14 +172,14 @@ export enum ConditionCategory {
     /**
      * Use when the data is required: RequiredTextCondition and RequiredIndexCondition.
      * These will be evaluated first by the InputValueHost, and will stop further evaluation
-     * if evaluation is NoMatch (unless user explicitly sets InputValidatorDescriptor.Severity to Error or Warning.)
+     * if evaluation is NoMatch (unless user explicitly sets InputValidatorConfig.severity to Error or Warning.)
      */
     Required,
     /**
      * Use to check the data is in its expected final form, whether a primitive, object (like Date), or
      * if it remains a string, it contains the expected pattern: DataTypeCheckCondition, RegExpCondition
      * These will be evaluated before all other conditions except Required, and will stop further evaluation
-     * if evaluation is NoMatch (unless user explicitly sets InputValidatorDescriptor.Severity to Error or Warning.)
+     * if evaluation is NoMatch (unless user explicitly sets InputValidatorConfig.severity to Error or Warning.)
       */
     DataTypeCheck,
     /**
@@ -201,18 +206,18 @@ export enum ConditionCategory {
 
 /**
  * Conditions that compare values using dataTypeComparerService.compare()
- * will provide LookupKeys from the ValueHost.DataType. 
+ * will provide LookupKeys from the ValueHost.dataType. 
  * Often the comparison needs a little more work done to the value.
  * Examples:
  * - Case insensitive comparison needs to convert the strings to lowercase
  * - Dates may be compared to each other as the difference between two in days, months, or years.
  *   Conversion would get the total days/months/years (instead of milliseconds).
- * Implement this interface to provide ConversionLookupKey to
- * the ConditionDescriptor. If ConversionLookupKey is assigned, pass it
- * to compareValues() instead of ValueHost.DataType.
+ * Implement this interface to provide conversionLookupKey to
+ * the ConditionConfig. If conversionLookupKey is assigned, pass it
+ * to compareValues() instead of ValueHost.dataType.
  * Some LookupKeys that might be used: CaseInsensitive, Integer, TotalDays
  */
-export interface SupportsDataTypeConverter extends ConditionDescriptor
+export interface SupportsDataTypeConverter extends ConditionConfig
 {
     /**
      * Assign to a LookupKey that is associated with a DataTypeConverter.
@@ -240,7 +245,7 @@ export interface SupportsDataTypeConverter extends ConditionDescriptor
  *   This allows you to report immediate problems as the user types.
  * - String length: if the user has exceeded the maximum, they know immediately.
  * In fact, the provided RequiredTextCondition, RegExpCondition, and StringLengthCondition
- * have already been setup for this, although their ConditionDescriptors let you disable
+ * have already been setup for this, although their ConditionConfigs let you disable
  * this feature.
  */
 export interface IEvaluateConditionDuringEdits extends ICondition
@@ -255,7 +260,7 @@ export interface IEvaluateConditionDuringEdits extends ICondition
      * care of that yourself.
      * @param valueHost - the ValueHost that invoked this.
      * @param services - just in case, your logic needs more info. However, if the data you need
-     * is constant, add a property to your condition's ConditionDescriptor to supply it.
+     * is constant, add a property to your condition's ConditionConfig to supply it.
      */
     evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult;
 }
@@ -276,14 +281,14 @@ export function toIEvaluateConditionDuringEdits(source: any): IEvaluateCondition
 
 
 /**
- * Creates instances of Conditions given an ConditionDescriptor.
- * ConditionDescriptor.Type is used to determine the Condition class to create.
+ * Creates instances of Conditions given an ConditionConfig.
+ * ConditionConfig.type is used to determine the Condition class to create.
  */
 export interface IConditionFactory {
     /**
-     * Create an instance of a Condition from the ConditionDescriptor.
-     * @param descriptor 
+     * Create an instance of a Condition from the ConditionConfig.
+     * @param config 
      * @returns 
      */
-    create(descriptor: ConditionDescriptor): ICondition;
+    create(config: ConditionConfig): ICondition;
 }

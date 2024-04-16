@@ -2,9 +2,9 @@
  * {@inheritDoc NonInputValueHost}
  * @module ValueHosts/ConcreteClasses/NonInputValueHost
  */
-import { InputValueHostDescriptor } from '../Interfaces/InputValueHost';
-import { INonInputValueHost, NonInputValueHostDescriptor, NonInputValueHostState } from '../Interfaces/NonInputValueHost';
-import { ValueHostDescriptor } from '../Interfaces/ValueHost';
+import { InputValueHostConfig } from '../Interfaces/InputValueHost';
+import { INonInputValueHost, NonInputValueHostConfig, NonInputValueHostState } from '../Interfaces/NonInputValueHost';
+import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
@@ -12,7 +12,7 @@ import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 
 /**
  * ValueHost implementation that does not handle validation. (See InputValueHost for validation)
- * Use ValueHostDescriptor.Type = "NonInput" for the ValidationManager to use this class.
+ * Use ValueHostConfig.type = "NonInput" for the ValidationManager to use this class.
  * 
  * Generally create these when:
  * - Expose a value from the UI that doesn't need validation, but its value is used by 
@@ -27,35 +27,35 @@ import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
  *   your input fields/elements to get their value from ValidationManager and upon change, provide
  *   the new values back.
  */
-export class NonInputValueHost extends ValueHostBase<NonInputValueHostDescriptor, NonInputValueHostState>
+export class NonInputValueHost extends ValueHostBase<NonInputValueHostConfig, NonInputValueHostState>
     implements INonInputValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, descriptor: NonInputValueHostDescriptor, state: NonInputValueHostState)
+    constructor(valueHostsManager: IValueHostsManager, config: NonInputValueHostConfig, state: NonInputValueHostState)
     {
-        super(valueHostsManager, descriptor, state);
+        super(valueHostsManager, config, state);
     }
 }
 
 /**
- * Supports NonInputValueHost class. Used when the Descriptor.Type = NonInputValueHostType
+ * Supports NonInputValueHost class. Used when the Config.type = ValueHostType.NonInput
  * or when the Type property is null/undefined and there are no InputValueHost specific
- * properties, like ValidationDescriptors or InputValue.
+ * properties, like ValidationConfigs or InputValue.
  */
 export class NonInputValueHostGenerator extends ValueHostBaseGenerator {
 
-    public canCreate(descriptor: ValueHostDescriptor): boolean {
-        if (descriptor.type != null)    // null/undefined
-            return descriptor.type === ValueHostType.NonInput;
-        let test = descriptor as unknown as InputValueHostDescriptor;
-        if (test.validatorDescriptors === undefined)
+    public canCreate(config: ValueHostConfig): boolean {
+        if (config.type != null)    // null/undefined
+            return config.type === ValueHostType.NonInput;
+        let test = config as unknown as InputValueHostConfig;
+        if (test.validatorConfigs === undefined)
             return true;
         return false;
     }
-    public create(valueHostsManager: IValueHostsManager, descriptor: NonInputValueHostDescriptor, state: NonInputValueHostState): INonInputValueHost {
-        return new NonInputValueHost(valueHostsManager, descriptor, state);
+    public create(valueHostsManager: IValueHostsManager, config: NonInputValueHostConfig, state: NonInputValueHostState): INonInputValueHost {
+        return new NonInputValueHost(valueHostsManager, config, state);
     }
 
-    public cleanupState(state: NonInputValueHostState, descriptor: NonInputValueHostDescriptor): void {
+    public cleanupState(state: NonInputValueHostState, config: NonInputValueHostConfig): void {
         // nothing needed.
     }
 }

@@ -6,21 +6,21 @@
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { ConditionDescriptor, ConditionEvaluateResult, ICondition, ConditionCategory } from '../Interfaces/Conditions';
+import { ConditionConfig, ConditionEvaluateResult, ICondition, ConditionCategory } from '../Interfaces/Conditions';
 import { IValueHost, toIGatherValueHostNames } from '../Interfaces/ValueHost';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { ConditionBase } from './ConditionBase';
 
 /**
- * Descriptor for all implementations of EvaluateChildConditionResultsBase.
+ * Config for all implementations of EvaluateChildConditionResultsBase.
  */
-export interface EvaluateChildConditionResultsDescriptor extends ConditionDescriptor {
+export interface EvaluateChildConditionResultsConfig extends ConditionConfig {
     /**
      * Conditions for this condition to evaluate and apply its rules based on those results.
      * When left empty, the condition evaluates as Undetermined.
      */
-    conditionDescriptors: Array<ConditionDescriptor>;
+    conditionConfigs: Array<ConditionConfig>;
 
     /**
      * When a child condition evaluates as Undetermined, this indicates how to handle it.
@@ -34,8 +34,8 @@ export interface EvaluateChildConditionResultsDescriptor extends ConditionDescri
  * do with their results. In this case, the value of the current input field/element passed into 
  * Evaluate(vh) is ignored. All child conditions must specify their ValueHost sources explicitly.
  */
-export abstract class EvaluateChildConditionResultsBase<TDescriptor extends EvaluateChildConditionResultsDescriptor>
-    extends ConditionBase<TDescriptor>
+export abstract class EvaluateChildConditionResultsBase<TConfig extends EvaluateChildConditionResultsConfig>
+    extends ConditionBase<TConfig>
 {
     /**
      * 
@@ -58,9 +58,9 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
     }
     protected generateConditions(valueHostResolver: IValueHostResolver): Array<ICondition> {
         let conditions: Array<ICondition> = [];
-        for (let condDescriptor of this.descriptor.conditionDescriptors) {
-            // expect exceptions here for invalid Descriptors
-            let condition = valueHostResolver.services.conditionFactory.create(condDescriptor);
+        for (let condConfig of this.config.conditionConfigs) {
+            // expect exceptions here for invalid Configs
+            let condition = valueHostResolver.services.conditionFactory.create(condConfig);
             conditions.push(condition);
         }
         return conditions;
@@ -70,7 +70,7 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
     protected abstract evaluateChildren(conditions: Array<ICondition>, parentValueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
 
     /**
-     * Utility for EvaluateChildren to apply the Descriptor.treatUndeterminedAs
+     * Utility for EvaluateChildren to apply the Config.treatUndeterminedAs
      * @param childResult 
      * @returns 
      */
@@ -78,7 +78,7 @@ export abstract class EvaluateChildConditionResultsBase<TDescriptor extends Eval
         if (childResult instanceof Promise)
             throw new CodingError('Promises are not supported for child conditions at this time.');
         if (childResult === ConditionEvaluateResult.Undetermined)
-            return this.descriptor.treatUndeterminedAs ?? ConditionEvaluateResult.Undetermined;
+            return this.config.treatUndeterminedAs ?? ConditionEvaluateResult.Undetermined;
         return childResult;
     }
 

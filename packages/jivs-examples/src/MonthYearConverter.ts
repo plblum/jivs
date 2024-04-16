@@ -36,7 +36,7 @@ export function registerMonthYear(validationServices: IValidationServices): void
     // or move just this line into registerDataTypeConverters() function         
     dtcs.register(new UTCMonthYearConverter()); 
 
-    // This gets used ONLY when the ValueHostDescriptor.DataType with "MonthYear".
+    // This gets used ONLY when the ValueHostConfig.dataType with "MonthYear".
     // When its time to compare, the UTCMonthYearConverter is asked if it supports the value.
     // If so, the comparision immediately calls convert and now has a Date value.
     // The dataTypeConverterService knows to convert Date to a number, so it can be used by the 

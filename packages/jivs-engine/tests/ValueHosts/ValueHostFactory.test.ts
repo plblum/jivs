@@ -1,5 +1,5 @@
 import { InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
-import { ValueHostState, IValueHost, ValueHostDescriptor } from "../../src/Interfaces/ValueHost";
+import { ValueHostState, IValueHost, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
@@ -16,28 +16,28 @@ interface IFactoryTestsValueHostState extends ValueHostState
     Counter: number;    // incremented each time the state is cleaned    
 }
 
-class FactoryTestsValueHost extends ValueHostBase<ValueHostDescriptor, IFactoryTestsValueHostState>
+class FactoryTestsValueHost extends ValueHostBase<ValueHostConfig, IFactoryTestsValueHostState>
 {
-    constructor(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IFactoryTestsValueHostState) {
-        super(valueHostsManager, descriptor, state);
+    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IFactoryTestsValueHostState) {
+        super(valueHostsManager, config, state);
     }
 }
 
 const FactoryTestGeneratorType = 'FactoryTest';
 class FactoryTestsValueHostGenerator implements IValueHostGenerator {
-    public canCreate(descriptor: ValueHostDescriptor): boolean {
-        return descriptor.type === FactoryTestGeneratorType;
+    public canCreate(config: ValueHostConfig): boolean {
+        return config.type === FactoryTestGeneratorType;
     }
-    public create(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IFactoryTestsValueHostState): IValueHost {
-        return new FactoryTestsValueHost(valueHostsManager, descriptor, state);
+    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IFactoryTestsValueHostState): IValueHost {
+        return new FactoryTestsValueHost(valueHostsManager, config, state);
     }
-    public cleanupState(state: IFactoryTestsValueHostState, descriptor: ValueHostDescriptor): void {
+    public cleanupState(state: IFactoryTestsValueHostState, config: ValueHostConfig): void {
         state.Counter = 0;
     }
-    public createState(descriptor: ValueHostDescriptor): IFactoryTestsValueHostState {
+    public createState(config: ValueHostConfig): IFactoryTestsValueHostState {
         let state: IFactoryTestsValueHostState = {
-            name: descriptor.name,
-            value: descriptor.initialValue,
+            name: config.name,
+            value: config.initialValue,
             Counter: 0
         };
         return state;
@@ -62,12 +62,12 @@ describe('ValueHostFactory.register', () => {
     });    
 });
 
-// create(validationManager: IValidationManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost
+// create(validationManager: IValidationManager, config: ValueHostConfig, state: ValueHostState): IValueHost
 describe('ValueHostFactory.create', () => {
     test('create using FactoryTestValueHostGenerator creates FactoryTestValueHost', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let descriptor: ValueHostDescriptor = {
+        let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
             type: FactoryTestGeneratorType,
@@ -83,7 +83,7 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(vm, descriptor, state)).not.toThrow();
+        expect(() => valueHost = testItem.create(vm, config, state)).not.toThrow();
         expect(valueHost).not.toBeNull();
         expect(valueHost!.getName()).toBe('Field1');
         expect(valueHost!.getValue()).toBe('Value');
@@ -91,7 +91,7 @@ describe('ValueHostFactory.create', () => {
     test('create with null in parameters throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let descriptor: ValueHostDescriptor = {
+        let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
             type: FactoryTestGeneratorType,
@@ -107,14 +107,14 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(null!, descriptor, state)).toThrow(/valueHostsManager/);
-        expect(() => valueHost = testItem.create(vm, null!, state)).toThrow(/descriptor/);
-        expect(() => valueHost = testItem.create(vm, descriptor, null!)).toThrow(/state/);
+        expect(() => valueHost = testItem.create(null!, config, state)).toThrow(/valueHostsManager/);
+        expect(() => valueHost = testItem.create(vm, null!, state)).toThrow(/config/);
+        expect(() => valueHost = testItem.create(vm, config, null!)).toThrow(/state/);
     });
-    test('create with Descriptor.Type of null throws', () => {
+    test('create with Config.type of null throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let descriptor: ValueHostDescriptor = {
+        let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
             type: null!,
@@ -130,13 +130,13 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(vm, descriptor, state)).toThrow(/ValueHostDescriptor\.Type/);
+        expect(() => valueHost = testItem.create(vm, config, state)).toThrow(/ValueHostConfig\.Type/);
 
     });    
-    test('create with Descriptor.Type that has no matching registration throws', () => {
+    test('create with Config.type that has no matching registration throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let descriptor: ValueHostDescriptor = {
+        let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
             type: 'Unregistered',
@@ -152,16 +152,16 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(vm, descriptor, state)).toThrow(/Unsupported/);
+        expect(() => valueHost = testItem.create(vm, config, state)).toThrow(/Unsupported/);
 
     });        
 });
 
-// cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void
+// cleanupState(state: ValueHostState, config: ValueHostConfig): void
 describe('ValueHostFactory.cleanupState', () => {
     test('Changes State.Counter to 0', () => {
 
-        let descriptor: ValueHostDescriptor = {
+        let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
             type: FactoryTestGeneratorType,
@@ -177,7 +177,7 @@ describe('ValueHostFactory.cleanupState', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
 
-        expect(() => testItem.cleanupState(state, descriptor)).not.toThrow();
+        expect(() => testItem.cleanupState(state, config)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.name).toBe('Field1');
         expect(state!.value).toBe('Value');
@@ -188,7 +188,7 @@ describe('ValueHostFactory.cleanupState', () => {
 describe('ValueHostFactory.createState', () => {
     test('With InitialValue = undefined, creates with Value = undefined', () => {
 
-        let descriptor: ValueHostDescriptor = {
+        let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
             type: FactoryTestGeneratorType,
@@ -199,7 +199,7 @@ describe('ValueHostFactory.createState', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let state: ValueHostState | null = null;
-        expect(() => state = testItem.createState(descriptor)).not.toThrow();
+        expect(() => state = testItem.createState(config)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.name).toBe('Field1');
         expect(state!.value).toBeUndefined();
