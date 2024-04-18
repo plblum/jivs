@@ -3,10 +3,11 @@
   * @module Services/ConcreteClasses/DataTypeConverterService
  */
 
+import { LoggingLevel, LoggingCategory } from "../Interfaces/LoggerService";
 import { UTCDateOnlyConverter } from "../DataTypes/DataTypeConverters";
 import { IDataTypeConverterService } from "../Interfaces/DataTypeConverterService";
 import { IDataTypeConverter } from "../Interfaces/DataTypeConverters";
-import { DataTypeServiceBaseWithServices } from "./DataTypeServiceBase";
+import { DataTypeConverterServiceBase } from "./DataTypeServiceBase";
 
 /**
  * A service for changing the original value into 
@@ -18,18 +19,15 @@ import { DataTypeServiceBaseWithServices } from "./DataTypeServiceBase";
  * or user defined class to a string, number, or boolean.
  * They are built on {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}.
  */
-export class DataTypeConverterService extends DataTypeServiceBaseWithServices<IDataTypeConverter>
-    implements IDataTypeConverterService
-{
-    constructor()
-    {
+export class DataTypeConverterService extends DataTypeConverterServiceBase<IDataTypeConverter>
+    implements IDataTypeConverterService {
+    constructor() {
         super();
         this.preRegister();
     }
-    protected preRegister(): void
-    {
+    protected preRegister(): void {
         this.register(new UTCDateOnlyConverter());
-       // any other predefined are found in create_services so users can opt out
+        // any other predefined are found in create_services so users can opt out
     }
 
     protected indexOfExisting(item: IDataTypeConverter): number {
@@ -38,13 +36,48 @@ export class DataTypeConverterService extends DataTypeServiceBaseWithServices<ID
 
     /**
      * {@inheritDoc Services/Types/IDataTypeConverterService!IDataTypeConverterService#convert }
-     */    
-    public convert(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined
+     */
+    public convert(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined {
+        try {
+            let dtc = this.find(value, dataTypeLookupKey);
+
+            if (dtc)
+                return dtc.convert(value, dataTypeLookupKey!);
+            return undefined;
+        }
+        catch (e) {
+            if (e instanceof Error)
+                this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Convert, 'DataTypeComparerService');
+            return undefined;
+        }
+
+    }
+    /**
+     * Converts the value using the DataTypeConverter identified in dataTypeLookupKey.
+     * If the new value is not a primitive (number, string, boolean),
+     * try to convert the new value using the DataTypeIdentifier to resolve a new Lookup Key.
+     * Repeat until number, string, boolean or no further conversion is possible.
+     * Return null if the value represents null.
+     * Return undefined if the value was unconvertable.
+     * @param value 
+     * @param dataTypeLookupKey - if not supplied, it will attempt to resolve it with
+     * the DataTypeIdentifiers.
+     */
+    public convertToPrimitive(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined
     {
-        let dtc = this.find(value, dataTypeLookupKey);
-        if (dtc)
-            return dtc.convert(value, dataTypeLookupKey!);
-        return undefined;
+        try {
+            if (value == null) // null or undefined
+                return value;
+
+            dataTypeLookupKey = this.resolveLookupKey(value, dataTypeLookupKey, 'CalcValueHost function');
+
+            return this.cleanupConvertableValue(value, dataTypeLookupKey);
+        }
+        catch (e) {
+            if (e instanceof Error)
+                this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeConverterService');
+            return undefined;
+        }
     }
 
     /**

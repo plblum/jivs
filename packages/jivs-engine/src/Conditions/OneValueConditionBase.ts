@@ -1,6 +1,6 @@
 /**
  * Base implementation for Conditions that get a value from a single ValueHostName.
- * The Config introduces ValueHostName.
+ * The Config introduces valueHostName.
  * @module Conditions/AbstractClasses/OneValueConditionBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -9,11 +9,9 @@ import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionBase } from './ConditionBase';
 
-
-
 /**
  * Base implementation of ICondition with OneValueConditionConfig.
- * The Config introduces ValueHostName.
+ * The Config introduces valueHostName.
  */
 export abstract class OneValueConditionBase<TConditionConfig extends OneValueConditionConfig>
     extends ConditionBase<TConditionConfig>
@@ -74,17 +72,4 @@ export interface OneValueConditionConfig extends ConditionConfig {
      */
     valueHostName: ValueHostName | null;
 
-}
-
-
-/**
- * For conditions where it takes 2 values to evaluate properly, like
- * when comparing the values of two properties.
- */
-export interface TwoValueConditionConfig extends OneValueConditionConfig {
-    /**
-     * ValueHostName to retrieve a ValueHost that will be the source
-     * of another value for the evaluate() method.
-     */
-    secondValueHostName: string | null;
 }

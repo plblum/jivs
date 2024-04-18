@@ -19,7 +19,7 @@ import {
     type ICondition,
     ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter, IEvaluateConditionDuringEdits
 } from '../Interfaces/Conditions';
-import { OneValueConditionConfig, OneValueConditionBase, TwoValueConditionConfig } from './OneValueConditionBase';
+import { OneValueConditionConfig, OneValueConditionBase } from './OneValueConditionBase';
 import { StringConditionConfig, StringConditionBase } from './StringConditionBase';
 import { InputValueConditionBase } from './InputValueConditionBase';
 import { EvaluateChildConditionResultsBase, EvaluateChildConditionResultsConfig } from './EvaluateChildConditionResultsBase';
@@ -30,6 +30,7 @@ import { IValidationServices } from '../Interfaces/ValidationServices';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { TwoValueConditionBase, TwoValueConditionConfig } from './TwoValueConditionBase';
 
 
 /**
@@ -373,7 +374,7 @@ export interface CompareToConditionConfig extends TwoValueConditionConfig, Suppo
  * Subclasses implement the actual comparison operator (equals, greater than, etc)
  * Supports tokens: {CompareTo}, the value from the second value host.
  */
-export abstract class CompareToConditionBase<TConfig extends CompareToConditionConfig> extends OneValueConditionBase<TConfig>
+export abstract class CompareToConditionBase<TConfig extends CompareToConditionConfig> extends TwoValueConditionBase<TConfig>
 {
     public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);

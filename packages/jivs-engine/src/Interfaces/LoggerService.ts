@@ -46,6 +46,7 @@ export enum LoggingCategory {
     Formatting = 'Formatting',
     Validation = 'Validation',
     LookupKey = 'LookupKey',
-    Compare = 'Compare'
+    Compare = 'Compare',
+    Convert = 'Convert'
 }
 

@@ -1033,6 +1033,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let validateResults: Array<ValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
+        expect(validateResults.length).toBe(1);
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
         expect(setup.validationManager.isValid).toBe(true);
@@ -1047,6 +1048,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let validateResults: Array<ValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
+        expect(validateResults.length).toBe(1);
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid,
             [{
@@ -1082,7 +1084,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let validateResults: Array<ValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
-
+        expect(validateResults.length).toBe(1);
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid,
             [{
@@ -1122,6 +1124,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let validateResults: Array<ValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
+        expect(validateResults.length).toBe(2);
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
         testIssueFoundFromValidateResults(validateResults, 1, ValidationResult.Valid, null);
@@ -1132,7 +1135,26 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config2.name)).toEqual([]);
         expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
-    test('With 2 inputValueHost that are both undetermined, returns 2 ValidateResults without issues found. isValid=true. DoNotSave=false', () => {
+    test('With 2 inputValueHost where only one has validators, it should return only one ValidateResult, for the one with validators', () => {
+
+        let config1 = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
+        let config2 = config().input('Field2');
+
+        let setup = setupValidationManager([config1, config2.parentConfig]);
+
+        let validateResults: Array<ValidateResult> = [];
+        expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
+        expect(validateResults.length).toBe(1);
+
+        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
+        expect(setup.validationManager.isValid).toBe(true);
+        expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
+
+        expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([]);
+        expect(setup.validationManager.getIssuesForInput(config2.parentConfig.name)).toEqual([]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([]);
+    });    
+    test('With 2 inputValueHost that are both undetermined, returns an empty array of ValidateResults as we strip out undetermineds. isValid=true. DoNotSave=false', () => {
 
         let config1 = setupInputValueHostConfig(0, [IsUndeterminedConditionType]);
         let config2 = setupInputValueHostConfig(1, [IsUndeterminedConditionType]);
@@ -1141,9 +1163,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let validateResults: Array<ValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
+        expect(validateResults.length).toBe(0);
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Undetermined, null);
-        testIssueFoundFromValidateResults(validateResults, 1, ValidationResult.Undetermined, null);
         expect(setup.validationManager.isValid).toBe(true);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
         expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([]);
@@ -1316,7 +1337,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
                 summaryMessage: 'BL_ERROR'
             }]);
     });
-    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationResult.Valid because Required should be skipped, leaving NO validators which means Valid', () => {
+    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationResult.Undetermined because Required should be skipped, leaving NO validators', () => {
         const conditionType = 'TEST';
         let config = setupInputValueHostConfig(0, [conditionType]);
         let setup = setupValidationManager([config]);
@@ -1331,7 +1352,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
         expect(() => validateResults = setup.validationManager.validate({ preliminary: true })).not.toThrow();
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
+        expect(validateResults.length).toBe(0);
+//        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
         expect(setup.validationManager.isValid).toBe(true);
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([]);
@@ -1403,15 +1425,24 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             conditionType: NeverMatchesConditionType
         }]);
     });    
-    test('With 1 inputValueHost and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Valid', () => {
+    test('With 1 inputValueHost that has a string value and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Valid', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
-
+        setup.validationManager.getInputValueHost(config.name)?.setInputValue('Text');
         let validateResults: Array<ValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
     });        
+    test('With 1 inputValueHost that has an undefined value and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Undetermined because DuringEdit requires a string value', () => {
+        let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
+        let setup = setupValidationManager([config]);
+        setup.validationManager.getInputValueHost(config.name)?.setInputValue(undefined);
+        let validateResults: Array<ValidateResult> = [];
+        expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+
+        expect(validateResults.length).toBe(0);
+    });          
     test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit has no impact on Required validators', () => {
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
@@ -1424,7 +1455,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             conditionType: NeverMatchesConditionType
         }]);
     });
-    test('With 1 inputValueHost and a condition that does not implement IEvaluateConditionDuringEdits, use option DuringEdit=true, expect condition to be skipped and ValidationResult=valid', () => {
+    test('With 1 inputValueHost and a condition that does not implement IEvaluateConditionDuringEdits, use option DuringEdit=true, expect condition to be skipped and array of ValidateResults = []', () => {
         let config = setupInputValueHostConfig(0, [UserSuppliedResultConditionType]);
         (config.validatorConfigs![0].conditionConfig as UserSuppliedResultConditionConfig).result = ConditionEvaluateResult.Match;
         let setup = setupValidationManager([config]);
@@ -1433,7 +1464,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let vh = (setup.validationManager.getValueHost('Field1')! as IInputValueHost);
         vh.setInputValue('');
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
+        expect(validateResults.length).toBe(0);
+//        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Undetermined, null);
     });
     test('With 1 inputValueHost and a NeverMatch condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit=false has no impact on including validators', () => {
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);

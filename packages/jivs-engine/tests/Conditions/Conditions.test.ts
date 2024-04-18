@@ -1098,6 +1098,35 @@ describe('class RangeCondition', () => {
 });
 
 describe('CompareToConditionBase class additional cases', () => {
+    test('getValuesForTokens with secondValueHostName assigned supports {SecondLabel} token', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let vh2 = vm.addInputValueHost('Property2', LookupKey.Number, 'Second label');
+
+        let config: CompareToConditionConfig = {
+            type: ConditionType.EqualTo,
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
+        };
+        let testItem = new EqualToCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'SecondLabel',
+                associatedValue: 'Second label',
+                purpose: 'label'
+            },
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: null,
+                purpose: 'value'
+            }
+        ]);
+    });    
+
     test('Config.secondValueHostName with unknown name logs and throws', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -1301,6 +1330,11 @@ describe('class EqualToCondition', () => {
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },        
+            {
                 tokenLabel: 'CompareTo',
                 associatedValue: 100,
                 purpose: 'value'
@@ -1322,6 +1356,11 @@ describe('class EqualToCondition', () => {
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
+            {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },
             {
                 tokenLabel: 'CompareTo',
                 associatedValue: null,
@@ -1487,6 +1526,11 @@ describe('class NotEqualToCondition', () => {
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },                
+            {
                 tokenLabel: 'CompareTo',
                 associatedValue: 100,
                 purpose: 'value'
@@ -1512,6 +1556,11 @@ describe('class NotEqualToCondition', () => {
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
+                tokenLabel: 'SecondLabel',
+                associatedValue: 'Label2',
+                purpose: 'label'
+            },
+            {
                 tokenLabel: 'CompareTo',
                 associatedValue: 100,
                 purpose: 'value'
@@ -1533,6 +1582,11 @@ describe('class NotEqualToCondition', () => {
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
+            {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },
             {
                 tokenLabel: 'CompareTo',
                 associatedValue: null,
@@ -1698,6 +1752,11 @@ describe('class GreaterThanCondition', () => {
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },                
+            {
                 tokenLabel: 'CompareTo',
                 associatedValue: 100,
                 purpose: 'value'
@@ -1719,6 +1778,11 @@ describe('class GreaterThanCondition', () => {
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
+            {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },
             {
                 tokenLabel: 'CompareTo',
                 associatedValue: null,
@@ -1884,6 +1948,11 @@ describe('class GreaterThanOrEqualCondition', () => {
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },
+            {
                 tokenLabel: 'CompareTo',
                 associatedValue: 100,
                 purpose: 'value'
@@ -1905,6 +1974,11 @@ describe('class GreaterThanOrEqualCondition', () => {
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
+            {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },                
             {
                 tokenLabel: 'CompareTo',
                 associatedValue: null,
@@ -2071,6 +2145,11 @@ describe('class LessThanCondition', () => {
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },                
+            {
                 tokenLabel: 'CompareTo',
                 associatedValue: 100,
                 purpose: 'value'
@@ -2092,6 +2171,11 @@ describe('class LessThanCondition', () => {
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
+            {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },                
             {
                 tokenLabel: 'CompareTo',
                 associatedValue: null,
@@ -2257,6 +2341,11 @@ describe('class LessThanOrEqualCondition', () => {
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },                
+            {
                 tokenLabel: 'CompareTo',
                 associatedValue: 100,
                 purpose: 'value'
@@ -2278,6 +2367,11 @@ describe('class LessThanOrEqualCondition', () => {
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
+            {
+                tokenLabel: 'SecondLabel',
+                associatedValue: '',
+                purpose: 'label'
+            },                
             {
                 tokenLabel: 'CompareTo',
                 associatedValue: null,

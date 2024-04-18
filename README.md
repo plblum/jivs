@@ -105,14 +105,16 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 -   <a href="#valuehosts">`ValueHost classes`</a> – Identifies a single value to be validated
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
-	- `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
-	- `NonInputValueHost class` – For values that are not validated but contribute to validation. 
+	+ `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
+	+ `NonInputValueHost class` – For values that are not validated but contribute to validation. 
 	
 	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `NonInputValueHost` to pass in a country
 	code your app is using, and let the validation internally select the right
 	expression by retrieving the country code first.
 	
-	If you are using a Model, you might also use NonInputValueHost for all remaining properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
+	> If you are using a Model, you might also use NonInputValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
+		
+	+ `CalcValueHost class` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
 
 -   <a href="#validationmanager">`ValidationManager class`</a> – The "face" of this API. Your validation-related UI elements will need access to it to do their work. It's where you
     configure the `ValueHosts`, get access to a `ValueHost`, validate, and get the validation results.
@@ -172,7 +174,7 @@ The `evaluate function` entirely handles the validation rule, and returns a resu
 <summary>Expand for details on the results.</summary>
 
 - `Match` – Data conformed to the rule
-- `NoMatch` -Data violated the rule
+- `NoMatch` – Data violated the rule
 - `Undetermined` – Data wasn’t appropriate for evaluation. Example: an empty textbox’s value isn’t ready for a “Compare the input’s date value to Today”. There needs to be text representing a date first.
 </details>
 
@@ -180,9 +182,9 @@ Jivs provides numerous `Condition classes`.
 <details>
 <summary>Expand to see just a few.</summary>
 
-- `RequireTextCondition`, `NotNullCondition` - for required fields
-- `DataTypeCheckCondition`, `RegExpCondition` - for checking the data conforms to the data type.
-- `RangeCondition`, `EqualToCondition`, `GreaterThanCondition` - Comparing values
+- `RequireTextCondition`, `NotNullCondition` – for required fields
+- `DataTypeCheckCondition`, `RegExpCondition` – for checking the data conforms to the data type.
+- `RangeCondition`, `EqualToCondition`, `GreaterThanCondition` – Comparing values
 - `AllMatchCondition`, `AnyMatchCondition` - For creating complex logic by using multiple `Conditions`.
 </details>
 
@@ -246,10 +248,11 @@ class Factory
 ```
 <a name="valuehosts"></a>
 ## ValueHosts
-Every value that you expose to Jivs is kept in a ValueHost. There are two types:
+Every value that you expose to Jivs is kept in a ValueHost. There are several types:
 
-- InputValueHost - The value may have validation rules applied. It actually keeps two values around when working with a UI: the value fully compatible with the model's property, and the value from within the editor.
-- NonInputValueHost - The value may be used in validation or is a member of the Model that is retained when Jivs is the single-source of truth.
+- InputValueHost – The value may have validation rules applied. It actually keeps two values around when working with a UI: the value fully compatible with the model's property, and the value from within the editor.
+- NonInputValueHost – The value may be used in validation or is a member of the Model that is retained when Jivs is the single-source of truth.
+- CalcValueHost – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
 
 These objects are added to the ValidationManager while configuring. Here is pseudocode representation of their interfaces (omitting many members).
 ```ts
@@ -279,6 +282,10 @@ interface IInputValueHost extends IValueHost
 }
 interface INonInputValueHost extends IValueHost
 {
+}
+interface ICalcValueHost extends IValueHost
+{
+  convert(source, validationManager): number | Date | string | null | undefined;
 }
 ```
 <a name="naming"></a>
@@ -330,6 +337,11 @@ interface InputValueHostConfig extends ValueHostConfig
 interface NonInputValueHostConfig extends ValueHostConfig 
 {
   type: 'NonInput' // shown here for documentation purposes
+}
+interface CalcValueHostConfig extends ValueHostConfig 
+{
+  type: 'Calc', // shown here for documentation purposes
+  calcFn: CalculationHandler // a function definition
 }
 ```
 Here’s how your configuration actually looks:

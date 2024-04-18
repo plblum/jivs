@@ -21,9 +21,23 @@ export interface IDataTypeConverterService extends IDataTypeServiceBase, IServic
      * Return null if the value represents null.
      * Return undefined if the value was unconvertable.
      * @param value 
-     * @param dataTypeLookupKey 
+     * @param dataTypeLookupKey - if not supplied, a converter must determine if it supports
+     * the value itself to be used.
      */
     convert(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined;
+
+    /**
+     * Converts the value using the DataTypeConverter identified in dataTypeLookupKey.
+     * If the new value is not a primitive (number, string, boolean),
+     * try to convert the new value using the DataTypeIdentifier to resolve a new Lookup Key.
+     * Repeat until number, string, boolean or no further conversion is possible.
+     * Return null if the value represents null.
+     * Return undefined if the value was unconvertable.
+     * @param value 
+     * @param dataTypeLookupKey - if not supplied, it will attempt to resolve it with
+     * the DataTypeIdentifiers.
+     */
+    convertToPrimitive(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined;    
  
     /**
      * Finds the first {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}

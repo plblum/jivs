@@ -1,4 +1,5 @@
 ## 0.12.0
+- **Major feature**. CalcValueHost is used for calculating values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
 - **Breaking API change.** Renamed "Descriptor" to "Config" throughout. I felt that the descriptor objects
 were better described as configuration objects.
 - **Breaking API change.** Renamed "RequiredTextCondition" to "RequireTextCondition" throughout.

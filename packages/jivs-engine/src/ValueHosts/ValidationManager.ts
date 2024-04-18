@@ -10,7 +10,7 @@ import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
-import type { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from '../Interfaces/Validation';
+import { type ValidateOptions, type ValidateResult, type BusinessLogicError, type IssueFound, ValidationResult } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from './InputValueHost';
@@ -267,7 +267,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * Discards a ValueHost. 
      * Does not trigger any notifications.
-     * @param config 
+     * @param valueHostName 
      */
     public discardValueHost(valueHostName: ValueHostName): void {
         assertNotNull(valueHostName, 'valueHostName');
@@ -370,7 +370,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         let list: Array<ValidateResult> = [];
 
         for (let vh of this.inputValueHost()) {
-            list.push(vh.validate(options));
+            let valResult = vh.validate(options);
+            if (valResult.validationResult !== ValidationResult.Undetermined ||
+                valResult.issuesFound !== null)
+                list.push(valResult);
         }
         if (!options || !options.omitCallback)
             this.onValidated?.(this, list);

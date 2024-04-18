@@ -64,12 +64,13 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * Runs validation against some of all validators.
-     * If at least one validator was NoMatch, it returns IValidatorStateDictionary
-     * with all of the NoMatches.
-     * If all were Matched or Undetermined, it returns null indicating
-     * validation isn't blocking saving the data.
+     * If at least one validator was NoMatch, it returns ValidateResult
+     * with all of the NoMatches in issuesFound.
+     * If all were Matched, it returns ValidateResult.Value and issuesFound=null.
+     * If there are no validators, or all validators were skipped (disabled),
+     * it returns ValidationResult.Undetermined.
+     * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-     * @returns IValidationResultDetails
      */
     validate(options?: ValidateOptions): ValidateResult;
 

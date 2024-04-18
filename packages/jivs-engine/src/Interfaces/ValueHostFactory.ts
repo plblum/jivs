@@ -80,5 +80,10 @@ export enum ValueHostType
 /**
  * Associated with InputValueHost
  */    
-    Input = 'Input'
+    Input = 'Input',
+
+/**
+ * Associated with CalcValueHost
+ */    
+    Calc = 'Calc'
 }
