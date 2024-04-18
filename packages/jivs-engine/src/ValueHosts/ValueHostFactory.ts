@@ -1,6 +1,6 @@
 /**
- * Factory for generating classes that implement IValueHost that use ValueHostDescriptor.
- * ValueHostDescriptor identifies the desired implementation.
+ * Factory for generating classes that implement IValueHost that use ValueHostConfig.
+ * ValueHostConfig identifies the desired implementation.
  * Most apps will use the ValueHost and InputValueHost class implementations.
  * When adding a new ValueHost class, implement an IValueHostGenerator and register it
  * with the ValueHostFactory.
@@ -10,10 +10,11 @@
 import { BusinessLogicInputValueHostGenerator } from './BusinessLogicInputValueHost';
 import { InputValueHostGenerator } from './InputValueHost';
 import { assertNotNull } from '../Utilities/ErrorHandling';
-import type { ValueHostState, IValueHost, ValueHostDescriptor } from '../Interfaces/ValueHost';
+import type { ValueHostState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
 import type { IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { NonInputValueHostGenerator } from './NonInputValueHost';
 import type { IValueHostFactory, IValueHostGenerator } from '../Interfaces/ValueHostFactory';
+import { CalcValueHostGenerator } from './CalcValueHost';
 
 /**
  * Supports creating and working with various ValueHost implementations.
@@ -22,75 +23,75 @@ export class ValueHostFactory implements IValueHostFactory {
     /**
      * Creates the instance.
      * @param valueHostsManager 
-     * @param descriptor 
+     * @param config 
      * @param state 
      */
-    public create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost {
+    public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostState): IValueHost {
         assertNotNull(valueHostsManager, 'valueHostsManager');
-        assertNotNull(descriptor, 'descriptor');
+        assertNotNull(config, 'config');
         assertNotNull(state, 'state');
-        let generator = this.resolveDescriptor(descriptor);
+        let generator = this.resolveConfig(config);
         // // we are going to modify the state without notifying the parent.
         // // This is intentional --- removed. Leave it to caller
-        // if (!state && descriptor.InitialValue !== undefined) {
-        //     state = generator.createState(descriptor);
+        // if (!state && config.InitialValue !== undefined) {
+        //     state = generator.createState(config);
         // }        
-        return generator.create(valueHostsManager, descriptor, state);
+        return generator.create(valueHostsManager, config, state);
     }
     /**
      * Always returns a Generator or throws an exception if it fails.
-     * @param descriptor 
+     * @param config 
      * @returns 
      */
-    private resolveDescriptor(descriptor: ValueHostDescriptor): IValueHostGenerator {
-        if (!descriptor.type)
-            throw new Error('ValueHostDescriptor.Type field required');
-        for (const generator of this._descriptorResolvers) {
-            if (generator.canCreate(descriptor))
+    private resolveConfig(config: ValueHostConfig): IValueHostGenerator {
+        if (!config.type)
+            throw new Error('ValueHostConfig.type field required');
+        for (const generator of this._configResolvers) {
+            if (generator.canCreate(config))
                 return generator;
         }
-        throw new Error(`Unsupported ValueHostDescriptor ${descriptor.type}`);
+        throw new Error(`Unsupported ValueHostConfig ${config.type}`);
     }
 
     /**
-     * Adjusts the state from a previous time to conform to the Descriptor.
-     * For example, if the Descriptor had a rule change, some data in the state may
+     * Adjusts the state from a previous time to conform to the Config.
+     * For example, if the Config had a rule change, some data in the state may
      * be obsolete and can be discarded.
      * @param state 
-     * @param descriptor 
+     * @param config 
      */
-    public cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void {
-        assertNotNull(descriptor, 'descriptor');
-        this.resolveDescriptor(descriptor).cleanupState(state, descriptor);
+    public cleanupState(state: ValueHostState, config: ValueHostConfig): void {
+        assertNotNull(config, 'config');
+        this.resolveConfig(config).cleanupState(state, config);
     }
     /**
      * Creates an initialized State object
-     * @param descriptor 
+     * @param config 
      */
-    public createState(descriptor: ValueHostDescriptor): ValueHostState {
-        assertNotNull(descriptor, 'descriptor');
-        return this.resolveDescriptor(descriptor).createState(descriptor);
+    public createState(config: ValueHostConfig): ValueHostState {
+        assertNotNull(config, 'config');
+        return this.resolveConfig(config).createState(config);
     }
 
-    private readonly _descriptorResolvers: Array<IValueHostGenerator> = [];
+    private readonly _configResolvers: Array<IValueHostGenerator> = [];
 
     /**
      * Add an ValueHostGenerator. The built-in generators are already registered.
      * @param generator 
      */
     public register(generator: IValueHostGenerator): void {
-        this._descriptorResolvers.push(generator);
+        this._configResolvers.push(generator);
     }
 
     /**
      * Utility to check for a registration
-     * @param descriptor 
+     * @param config 
      * @returns 
      */
-    public isRegistered(descriptor: ValueHostDescriptor): boolean
+    public isRegistered(config: ValueHostConfig): boolean
     {
-        for (const generator of this._descriptorResolvers) {
-            if (generator.canCreate(descriptor))
+        for (const generator of this._configResolvers) {
+            if (generator.canCreate(config))
                 return true;
         }
         return false;
@@ -101,5 +102,6 @@ export class ValueHostFactory implements IValueHostFactory {
 export function registerStandardValueHostGenerators(factory: ValueHostFactory): void {
     factory.register(new InputValueHostGenerator());
     factory.register(new NonInputValueHostGenerator());
-    factory.register(new BusinessLogicInputValueHostGenerator());
+    factory.register(new CalcValueHostGenerator());
+    factory.register(new BusinessLogicInputValueHostGenerator());    
 }

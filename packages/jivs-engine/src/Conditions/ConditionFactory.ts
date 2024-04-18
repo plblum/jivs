@@ -1,47 +1,47 @@
 /**
- * For creating Conditions given an ConditionDescriptor.
+ * For creating Conditions given an ConditionConfig.
  * Setup its instance on ValidationServices.ConditionFactory.
  * @module Conditions/ConcreteClasses/ConditionFactory
  */
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
-import type { ConditionDescriptor, ICondition, IConditionCore, IConditionFactory } from '../Interfaces/Conditions';
+import type { ConditionConfig, ICondition, IConditionCore, IConditionFactory } from '../Interfaces/Conditions';
 import { ConditionType } from './ConditionTypes';
 
 //#region ConditionFactory
 
 
 /**
- * Creates instances of Conditions given an ConditionDescriptor.
+ * Creates instances of Conditions given an ConditionConfig.
  * Setup its instance on ValidationServices.ConditionFactory.
- * ConditionDescriptor.Type is used to determine the Condition class to create.
+ * ConditionConfig.type is used to determine the Condition class to create.
  * Supports IConditionCore implementations of ICondition.
  */
 export class ConditionFactory implements IConditionFactory {
     /**
-     * Create an instance of a Condition from the ConditionDescriptor.
-     * @param descriptor 
+     * Create an instance of a Condition from the ConditionConfig.
+     * @param config 
      * @returns 
      */
-    public create<TDescriptor extends ConditionDescriptor>
-        (descriptor: TDescriptor): IConditionCore<TDescriptor> {
-        let fn = this._map.get(descriptor.type);
+    public create<TConfig extends ConditionConfig>
+        (config: TConfig): IConditionCore<TConfig> {
+        let fn = this._map.get(config.type);
         if (fn)
-            return fn(descriptor) as IConditionCore<TDescriptor>;
-        throw new Error(`Condition Type not supported: ${descriptor.type}`);
+            return fn(config) as IConditionCore<TConfig>;
+        throw new Error(`Condition Type not supported: ${config.type}`);
     }
-    // user supplies JSON string or object implementing ConditionDescriptor
+    // user supplies JSON string or object implementing ConditionConfig
     // and it returns an instance of IValidator.
 
-    private readonly _map = new NameToFunctionMapper<ConditionDescriptor, ICondition>();
+    private readonly _map = new NameToFunctionMapper<ConditionConfig, ICondition>();
 
     /**
      * Add or replace a function to create an instance of the Condition
-     * given a ConditionDescriptor.
-     * @param type - Unique way to select the function. Uses ConditionDescriptor.Type.
+     * given a ConditionConfig.
+     * @param type - Unique way to select the function. Uses ConditionConfig.type.
      * @param fn - Expected to create an instance of a Condition.
      */
-    public register<TDescriptor extends ConditionDescriptor>(type: string,
-        fn: (descriptor: TDescriptor) => IConditionCore<TDescriptor>): void {
+    public register<TConfig extends ConditionConfig>(type: string,
+        fn: (config: TConfig) => IConditionCore<TConfig>): void {
         this._map.register(type, fn as any);
     }
 

@@ -1,9 +1,9 @@
 /**
  * ValidationManager is the central object for using this system.
  * It is where you describe the shape of your inputs and their validation
- * through the Descriptor classes.
+ * through the Config classes.
  * Once setup, it has a list of ValueHost objects, one for each
- * descriptor that was supplied. Those that are InputValueHosts
+ * config that was supplied. Those that are InputValueHosts
  * contain validators.
  * 
  * ValidationManager's job is:
@@ -28,9 +28,9 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostsManager } from './ValueHostResolver';
 import { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from './Validation';
 import { IValidationServices } from './ValidationServices';
-import { ValueHostDescriptor, ValueHostState } from './ValueHost';
+import { ValueHostConfig, ValueHostState } from './ValueHost';
 import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './ValidatableValueHostBase';
-import { IInputValueHostDescriptorResolver } from './InputValueHost';
+import { IInputValueHostConfigResolver } from './InputValueHost';
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -123,7 +123,7 @@ export interface IValidationManager extends IValueHostsManager {
  * is created with the retained state.
  * In a SPA, it may not be necessary to handle states like that.
  * The SPA may keep an instance of ValidationManager for the duration needed.
- * Each entry in ValueHostStates must have a companion in ValueHosts and ValueHostDescriptors.
+ * Each entry in ValueHostStates must have a companion in ValueHosts and ValueHostConfigs.
  */
 export interface ValidationManagerState {
     /**
@@ -145,13 +145,13 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      */
     services: IValidationServices;
     /**
-     * Initial list of ValueHostDescriptors. Here's where all of the action is!
-     * Each ValueHostDescriptor describes one ValueHost (which is info about one value in your app),
+     * Initial list of ValueHostConfigs. Here's where all of the action is!
+     * Each ValueHostConfig describes one ValueHost (which is info about one value in your app),
      * plus its validation rules.
      * If rules need to be changed later, either create a new instance of ValidationManager
      * or use its addValueHost, updateValueHost, discardValueHost methods.
      */
-    valueHostDescriptors: ConfigValueHostDescriptors;
+    valueHostConfigs: ConfigValueHostConfigs;
     /**
      * The state for the ValidationManager itself.
      * Its up to you to retain stateful information so that the service works statelessly.
@@ -163,7 +163,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      */
     savedState?: ValidationManagerState | null;
     /**
-     * The state for each ValueHost. The array may not have the same states for all the ValueHostDescriptors
+     * The state for each ValueHost. The array may not have the same states for all the ValueHostConfigs
      * you are supplying. It will create defaults for those missing and discard those no longer in use.
      * 
      * Its up to you to retain stateful information so that the service works statelessly.
@@ -177,10 +177,10 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
     savedValueHostStates?: Array<ValueHostState> | null;
 }
 /**
- * Type for the ValidationManagerConfig.valueHostDescriptors that permits
- * several types, so long as they result in a ValueHostDescriptor.
+ * Type for the ValidationManagerConfig.valueHostConfigs that permits
+ * several types, so long as they result in a ValueHostConfig.
  */
-export type ConfigValueHostDescriptors = Array<ValueHostDescriptor | IInputValueHostDescriptorResolver>;
+export type ConfigValueHostConfigs = Array<ValueHostConfig | IInputValueHostConfigResolver>;
 
 export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;
 export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<ValidateResult>) => void;

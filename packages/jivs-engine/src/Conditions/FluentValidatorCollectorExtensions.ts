@@ -7,33 +7,32 @@
  */
 
 import {
-    FluentValidatorCollector, FluentInputValidatorDescriptor, FluentConditionCollector, finishFluentValidatorCollector
+    FluentValidatorCollector, FluentInputValidatorConfig, FluentConditionCollector, finishFluentValidatorCollector
 } from "../ValueHosts/Fluent";
 import { ConditionType } from "./ConditionTypes";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import {
-    FluentEqualToConditionDescriptor,
-    FluentEqualToValueConditionDescriptor,
-    FluentGreaterThanConditionDescriptor,
-    FluentGreaterThanOrEqualConditionDescriptor,
-    FluentGreaterThanOrEqualValueConditionDescriptor,
-    FluentGreaterThanValueConditionDescriptor,
-    FluentLessThanConditionDescriptor,
-    FluentLessThanOrEqualConditionDescriptor,
-    FluentLessThanOrEqualValueConditionDescriptor,
-    FluentLessThanValueConditionDescriptor,
-    FluentNotEqualToConditionDescriptor,
-    FluentNotEqualToValueConditionDescriptor,
-    FluentRegExpConditionDescriptor,
-    FluentRequiredTextConditionDescriptor,
-    FluentStringLengthConditionDescriptor,
-    FluentStringNotEmptyConditionDescriptor,
+    FluentEqualToConditionConfig,
+    FluentEqualToValueConditionConfig,
+    FluentGreaterThanConditionConfig,
+    FluentGreaterThanOrEqualConditionConfig,
+    FluentGreaterThanOrEqualValueConditionConfig,
+    FluentGreaterThanValueConditionConfig,
+    FluentLessThanConditionConfig,
+    FluentLessThanOrEqualConditionConfig,
+    FluentLessThanOrEqualValueConditionConfig,
+    FluentLessThanValueConditionConfig,
+    FluentNotEqualToConditionConfig,
+    FluentNotEqualToValueConditionConfig,
+    FluentRegExpConditionConfig,
+    FluentRequireTextConditionConfig,
+    FluentStringLengthConditionConfig,
     _genCDDataTypeCheck, _genCDRange, _genCDRegExp, _genDCAll, _genDCAny,
     _genDCCountMatches, _genDCEqualTo, _genDCEqualToValue, _genDCGreaterThan,
     _genDCGreaterThanOrEqual, _genDCGreaterThanOrEqualValue, _genDCGreaterThanValue,
     _genDCLessThan, _genDCLessThanOrEqual, _genDCLessThanOrEqualValue, _genDCLessThanValue,
-    _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCRequiredText,
-    _genDCStringLength, _genDCStringNotEmpty, enableFluentConditions
+    _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCRequireText,
+    _genDCStringLength, enableFluentConditions
 } from "./FluentConditionCollectorExtensions";
 
 // How TypeScript merges functions with the FluentValidatorCollector class
@@ -53,151 +52,144 @@ declare module "./../ValueHosts/Fluent"
          */
         dataTypeCheck(
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
-
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
+        requireText(
+            conditionConfig?: FluentRequireTextConditionConfig | null,
+            errorMessage?: string | null,
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
+        notNull(
+            errorMessage?: string | null,
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
         regExp(
             expression: RegExp | string | null, ignoreCase?: boolean | null,
-            conditionDescriptor?: FluentRegExpConditionDescriptor | null,
+            conditionConfig?: FluentRegExpConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
-
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         range(
             minimum: any, maximum: any,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         equalToValue(
             secondValue: any,
-            conditionDescriptor?: FluentEqualToValueConditionDescriptor | null,
+            conditionConfig?: FluentEqualToValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         equalTo(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentEqualToConditionDescriptor | null,
+            conditionConfig?: FluentEqualToConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         notEqualToValue(
             secondValue: any,
-            conditionDescriptor?: FluentNotEqualToValueConditionDescriptor | null,
+            conditionConfig?: FluentNotEqualToValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         notEqualTo(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentNotEqualToConditionDescriptor | null,
+            conditionConfig?: FluentNotEqualToConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         lessThanValue(
             secondValue: any,
-            conditionDescriptor?: FluentLessThanValueConditionDescriptor | null,
+            conditionConfig?: FluentLessThanValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         lessThan(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentLessThanConditionDescriptor | null,
+            conditionConfig?: FluentLessThanConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         lessThanOrEqualValue(
             secondValue: any,
-            conditionDescriptor?: FluentLessThanOrEqualValueConditionDescriptor | null,
+            conditionConfig?: FluentLessThanOrEqualValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         lessThanOrEqual(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentLessThanOrEqualConditionDescriptor | null,
+            conditionConfig?: FluentLessThanOrEqualConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         greaterThanValue(
             secondValue: any,
-            conditionDescriptor?: FluentGreaterThanValueConditionDescriptor | null,
+            conditionConfig?: FluentGreaterThanValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         greaterThan(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentGreaterThanConditionDescriptor | null,
+            conditionConfig?: FluentGreaterThanConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         greaterThanOrEqualValue(
             secondValue: any,
-            conditionDescriptor?: FluentGreaterThanOrEqualValueConditionDescriptor | null,
+            conditionConfig?: FluentGreaterThanOrEqualValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         greaterThanOrEqual(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentGreaterThanOrEqualConditionDescriptor| null,
+            conditionConfig?: FluentGreaterThanOrEqualConditionConfig| null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
        
         stringLength(
             maximum: number | null,
-            conditionDescriptor?: FluentStringLengthConditionDescriptor | null,
+            conditionConfig?: FluentStringLengthConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         all(
-            configChildren: FluentConditionCollector,
+            collector: FluentConditionCollector,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         any(
-            configChildren: FluentConditionCollector,
+            collector: FluentConditionCollector,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;        
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
         countMatches(
             minimum: number | null, maximum: number | null,
-            configChildren: FluentConditionCollector,
+            collector: FluentConditionCollector,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
-        stringNotEmpty(
-            conditionDescriptor?: FluentStringNotEmptyConditionDescriptor | null,
-            errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;        
-        requiredText(
-            conditionDescriptor?: FluentRequiredTextConditionDescriptor | null,
-            errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;        
-        notNull(
-            errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;        
-        
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;      
         
     //#region shorter names for some
         ltValue(
             secondValue: any,
-            conditionDescriptor?: FluentLessThanValueConditionDescriptor | null,
+            conditionConfig?: FluentLessThanValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         lt(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentLessThanConditionDescriptor | null,
+            conditionConfig?: FluentLessThanConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         lteValue(
             secondValue: any,
-            conditionDescriptor?: FluentLessThanOrEqualValueConditionDescriptor | null,
+            conditionConfig?: FluentLessThanOrEqualValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         lte(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentLessThanOrEqualConditionDescriptor | null,
+            conditionConfig?: FluentLessThanOrEqualConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         gtValue(
             secondValue: any,
-            conditionDescriptor?: FluentGreaterThanValueConditionDescriptor | null,
+            conditionConfig?: FluentGreaterThanValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         gt(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentGreaterThanConditionDescriptor | null,
+            conditionConfig?: FluentGreaterThanConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         gteValue(
             secondValue: any,
-            conditionDescriptor?: FluentGreaterThanOrEqualValueConditionDescriptor | null,
+            conditionConfig?: FluentGreaterThanOrEqualValueConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;
         gte(
             secondValueHostName: ValueHostName,
-            conditionDescriptor?: FluentGreaterThanOrEqualConditionDescriptor | null,
+            conditionConfig?: FluentGreaterThanOrEqualConditionConfig | null,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector;        
+            inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector;        
     //#endregion shorter names for some        
         
     }
@@ -214,6 +206,8 @@ export function enableFluent(): void {
         return;
     // How JavaScript sees the functions added to the FluentValidatorCollector class
     FluentValidatorCollector.prototype.dataTypeCheck = dataTypeCheck;
+    FluentValidatorCollector.prototype.requireText = requireText;
+    FluentValidatorCollector.prototype.notNull = notNull;
     FluentValidatorCollector.prototype.regExp = regExp;
     FluentValidatorCollector.prototype.range = range;
     FluentValidatorCollector.prototype.equalToValue = equalToValue;
@@ -232,9 +226,7 @@ export function enableFluent(): void {
     FluentValidatorCollector.prototype.all = all;
     FluentValidatorCollector.prototype.any = any;
     FluentValidatorCollector.prototype.countMatches = countMatches;
-    FluentValidatorCollector.prototype.stringNotEmpty = stringNotEmpty;
-    FluentValidatorCollector.prototype.requiredText = requiredText;
-    FluentValidatorCollector.prototype.notNull = notNull;
+
 
     //#region shorter names for some
     FluentValidatorCollector.prototype.ltValue = lessThanValue;
@@ -254,26 +246,44 @@ export function enableFluent(): void {
 
 function dataTypeCheck(
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
-// no ConditionDescriptor parameter because without type and valueHostName, it will always be empty    
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
+// no ConditionConfig parameter because without type and valueHostName, it will always be empty    
     return finishFluentValidatorCollector(this,
         ConditionType.DataTypeCheck, _genCDDataTypeCheck(),
         errorMessage, inputValidatorParameters);
 }
 
+function requireText(
+    conditionConfig?: FluentRequireTextConditionConfig | null,
+    errorMessage?: string | null,
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
+    return finishFluentValidatorCollector(this,
+        ConditionType.RequireText, _genDCRequireText(conditionConfig),
+        errorMessage, inputValidatorParameters);
+}
+
+function notNull(
+    errorMessage?: string | null,
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
+    // no ConditionConfig parameter because without type and valueHostName, it will always be empty        
+    return finishFluentValidatorCollector(this,
+        ConditionType.NotNull, _genDCNotNull(),
+        errorMessage, inputValidatorParameters);
+}
+
 function regExp(
     expression: RegExp | string, ignoreCase?: boolean | null,
-    conditionDescriptor?: FluentRegExpConditionDescriptor | null,
+    conditionConfig?: FluentRegExpConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.RegExp, _genCDRegExp(expression, ignoreCase, conditionDescriptor),
+        ConditionType.RegExp, _genCDRegExp(expression, ignoreCase, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function range(
     minimum: any, maximum: any,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
         ConditionType.Range, _genCDRange(minimum, maximum),
         errorMessage, inputValidatorParameters);
@@ -281,180 +291,153 @@ function range(
 
 function equalToValue(
     secondValue: any,
-    conditionDescriptor?: FluentEqualToValueConditionDescriptor | null,
+    conditionConfig?: FluentEqualToValueConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this, ConditionType.EqualTo,
-        _genDCEqualToValue(secondValue, conditionDescriptor),
+        _genDCEqualToValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function equalTo(
     secondValueHostName: ValueHostName,
-    conditionDescriptor?: FluentEqualToConditionDescriptor | null,
+    conditionConfig?: FluentEqualToConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.EqualTo, _genDCEqualTo(secondValueHostName, conditionDescriptor),
+        ConditionType.EqualTo, _genDCEqualTo(secondValueHostName, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function notEqualToValue(
     secondValue: any,
-    conditionDescriptor?: FluentNotEqualToValueConditionDescriptor | null,
+    conditionConfig?: FluentNotEqualToValueConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this, ConditionType.NotEqualTo,
-        _genDCNotEqualToValue(secondValue, conditionDescriptor),
+        _genDCNotEqualToValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function notEqualTo(
     secondValueHostName: ValueHostName,
-    conditionDescriptor?: FluentNotEqualToConditionDescriptor | null,
+    conditionConfig?: FluentNotEqualToConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.NotEqualTo, _genDCNotEqualTo(secondValueHostName, conditionDescriptor),
+        ConditionType.NotEqualTo, _genDCNotEqualTo(secondValueHostName, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 
 function lessThanValue(
     secondValue: any,
-    conditionDescriptor?: FluentLessThanValueConditionDescriptor | null,
+    conditionConfig?: FluentLessThanValueConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.LessThan, _genDCLessThanValue(secondValue, conditionDescriptor),
+        ConditionType.LessThan, _genDCLessThanValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function lessThan(
     secondValueHostName: ValueHostName,
-    conditionDescriptor?: FluentLessThanConditionDescriptor| null,
+    conditionConfig?: FluentLessThanConditionConfig| null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.LessThan, _genDCLessThan(secondValueHostName, conditionDescriptor),
+        ConditionType.LessThan, _genDCLessThan(secondValueHostName, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 
 function lessThanOrEqualValue(
     secondValue: any,
-    conditionDescriptor?: FluentLessThanOrEqualValueConditionDescriptor | null,
+    conditionConfig?: FluentLessThanOrEqualValueConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.LessThanOrEqual, _genDCLessThanOrEqualValue(secondValue, conditionDescriptor),
+        ConditionType.LessThanOrEqual, _genDCLessThanOrEqualValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function lessThanOrEqual(
     secondValueHostName: ValueHostName,
-    conditionDescriptor?: FluentLessThanOrEqualConditionDescriptor | null,
+    conditionConfig?: FluentLessThanOrEqualConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.LessThanOrEqual, _genDCLessThanOrEqual(secondValueHostName, conditionDescriptor),
+        ConditionType.LessThanOrEqual, _genDCLessThanOrEqual(secondValueHostName, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 
 function greaterThanValue(
     secondValue: any,
-    conditionDescriptor?: FluentGreaterThanValueConditionDescriptor | null,
+    conditionConfig?: FluentGreaterThanValueConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.GreaterThan, _genDCGreaterThanValue(secondValue, conditionDescriptor),
+        ConditionType.GreaterThan, _genDCGreaterThanValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function greaterThan(
     secondValueHostName: ValueHostName,
-    conditionDescriptor?: FluentGreaterThanConditionDescriptor | null,
+    conditionConfig?: FluentGreaterThanConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.GreaterThan, _genDCGreaterThan(secondValueHostName, conditionDescriptor),
+        ConditionType.GreaterThan, _genDCGreaterThan(secondValueHostName, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 
 function greaterThanOrEqualValue(
     secondValue: any,
-    conditionDescriptor?: FluentGreaterThanOrEqualValueConditionDescriptor | null,
+    conditionConfig?: FluentGreaterThanOrEqualValueConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.GreaterThanOrEqual, _genDCGreaterThanOrEqualValue(secondValue, conditionDescriptor),
+        ConditionType.GreaterThanOrEqual, _genDCGreaterThanOrEqualValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function greaterThanOrEqual(
     secondValueHostName: ValueHostName,
-    conditionDescriptor?: FluentGreaterThanOrEqualConditionDescriptor | null,
+    conditionConfig?: FluentGreaterThanOrEqualConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.GreaterThanOrEqual, _genDCGreaterThanOrEqual(secondValueHostName, conditionDescriptor),
+        ConditionType.GreaterThanOrEqual, _genDCGreaterThanOrEqual(secondValueHostName, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 
 function stringLength(
     maximum: number | null,
-    conditionDescriptor?: FluentStringLengthConditionDescriptor | null,
+    conditionConfig?: FluentStringLengthConditionConfig | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
-// no ConditionDescriptor parameter because without type, valueHostName, minimum and maximum, it will always be empty        
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
+// no ConditionConfig parameter because without type, valueHostName, minimum and maximum, it will always be empty        
     return finishFluentValidatorCollector(this,
-        ConditionType.StringLength, _genDCStringLength(maximum, conditionDescriptor),
+        ConditionType.StringLength, _genDCStringLength(maximum, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 
 function all(
-    configChildren: FluentConditionCollector,
+    collector: FluentConditionCollector,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.All, _genDCAll(configChildren),
+        ConditionType.All, _genDCAll(collector),
         errorMessage, inputValidatorParameters);
 }
 
 function any(
-    configChildren: FluentConditionCollector,
+    collector: FluentConditionCollector,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.Any, _genDCAny(configChildren),
+        ConditionType.Any, _genDCAny(collector),
         errorMessage, inputValidatorParameters);
 }
 
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    configChildren: FluentConditionCollector,
+    collector: FluentConditionCollector,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
+    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, configChildren),
-        errorMessage, inputValidatorParameters);
-}
-
-function stringNotEmpty(
-    conditionDescriptor?: FluentStringNotEmptyConditionDescriptor | null,
-    errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
-    return finishFluentValidatorCollector(this,
-        ConditionType.StringNotEmpty, _genDCStringNotEmpty(conditionDescriptor),
-        errorMessage, inputValidatorParameters);
-}
-
-function requiredText(
-    conditionDescriptor?: FluentRequiredTextConditionDescriptor | null,
-    errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
-    return finishFluentValidatorCollector(this,
-        ConditionType.RequiredText, _genDCRequiredText(conditionDescriptor),
-        errorMessage, inputValidatorParameters);
-}
-
-function notNull(
-    errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorDescriptor): FluentValidatorCollector {
-    // no ConditionDescriptor parameter because without type and valueHostName, it will always be empty        
-    return finishFluentValidatorCollector(this,
-        ConditionType.NotNull, _genDCNotNull(),
+        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, collector),
         errorMessage, inputValidatorParameters);
 }

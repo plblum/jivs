@@ -1,11 +1,11 @@
-import { NonInputValueHostDescriptor, NonInputValueHostState, INonInputValueHost } from "../../src/Interfaces/NonInputValueHost";
+import { NonInputValueHostConfig, NonInputValueHostState, INonInputValueHost } from "../../src/Interfaces/NonInputValueHost";
 import { IGatherValueHostNames, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { NonInputValueHost, NonInputValueHostGenerator } from "../../src/ValueHosts/NonInputValueHost";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 
 describe('NonInputValueHost constructor', () => {
-    test('constructor with valid parameters created and sets up Services, Descriptor, and State', () => {
+    test('constructor with valid parameters created and sets up Services, Config, and State', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let testItem: NonInputValueHost | null = null;
@@ -45,7 +45,7 @@ describe('NonInputValueHostGenerator members', () => {
             label: ''
         })).toBe(false);
     });
-    test('CanCreate returns true for Type not defined and lack of ValidatorDescriptors property', () => {
+    test('CanCreate returns true for Type not defined and lack of ValidatorConfigs property', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate({
             name: 'Field1',
@@ -53,7 +53,7 @@ describe('NonInputValueHostGenerator members', () => {
         })).toBe(true);
     });    
 
-    test('CanCreate returns true for Type=undefined and lack of ValidatorDescriptors property', () => {
+    test('CanCreate returns true for Type=undefined and lack of ValidatorConfigs property', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate({
             type: undefined,
@@ -62,26 +62,26 @@ describe('NonInputValueHostGenerator members', () => {
         })).toBe(true);
     });        
 
-    test('CanCreate returns false for Type not defined and presence of ValidatorDescriptors property (using null as a value)', () => {
+    test('CanCreate returns false for Type not defined and presence of ValidatorConfigs property (using null as a value)', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate(<any>{
             name: 'Field1',
             label: '',
-            validatorDescriptors: null
+            validatorConfigs: null
         })).toBe(false);
     });        
-    test('CanCreate returns false for Type not defined and presence of ValidatorDescriptors property using [] as a value', () => {
+    test('CanCreate returns false for Type not defined and presence of ValidatorConfigs property using [] as a value', () => {
         let testItem = new NonInputValueHostGenerator();
         expect(testItem.canCreate(<any>{
             name: 'Field1',
             label: '',
-            validatorDescriptors: []
+            validatorConfigs: []
         })).toBe(false);
     });             
-    test('create returns instance of NonInputValueHost with VM, Descriptor and State established', () => {
+    test('create returns instance of NonInputValueHost with VM, Config and State established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);        
-        let descriptor: NonInputValueHostDescriptor = {
+        let config: NonInputValueHostConfig = {
             name: 'Field1',
             type: ValueHostType.NonInput,
             label: ''
@@ -92,10 +92,10 @@ describe('NonInputValueHostGenerator members', () => {
         };
         let testItem = new NonInputValueHostGenerator();
         let vh: INonInputValueHost | null = null;
-        expect(() => vh = testItem.create(vm, descriptor, state)).not.toThrow();
+        expect(() => vh = testItem.create(vm, config, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(NonInputValueHost);
-        expect(vh!.getName()).toBe(descriptor.name);    // check Descriptor values
+        expect(vh!.getName()).toBe(config.name);    // check Config values
         expect(vh!.getValue()).toBe("ABC");
     });
     test('cleanupState existing state takes no action. Returns the same data', () => {
@@ -104,29 +104,29 @@ describe('NonInputValueHostGenerator members', () => {
             value: 10
         };
         let state = { ...originalState };
-        let descriptor: NonInputValueHostDescriptor = {
+        let config: NonInputValueHostConfig = {
             name: 'Field1',
             type: ValueHostType.NonInput,
             label: ''
         };
         let testItem = new NonInputValueHostGenerator();
-        expect(() => testItem.cleanupState(state, descriptor)).not.toThrow();
+        expect(() => testItem.cleanupState(state, config)).not.toThrow();
         expect(state).toEqual(originalState);
     });
  
-    test('createState returns instance with name and InitialValue from Descriptor', () => {
+    test('createState returns instance with name and InitialValue from Config', () => {
         let testItem = new NonInputValueHostGenerator();
-        let descriptor: NonInputValueHostDescriptor = {
+        let config: NonInputValueHostConfig = {
             name: 'Field1',
             type: ValueHostType.NonInput,
             label: '',
             initialValue: 'TEST'
         };
         let state: NonInputValueHostState | null = null;
-        expect(() => state = testItem.createState(descriptor)).not.toThrow();
+        expect(() => state = testItem.createState(config)).not.toThrow();
         expect(state).not.toBeNull();
-        expect(state!.name).toBe(descriptor.name);
-        expect(state!.value).toBe(descriptor.initialValue);
+        expect(state!.name).toBe(config.name);
+        expect(state!.value).toBe(config.initialValue);
     });
 });
 describe('toIGatherValueHostNames function', () => {

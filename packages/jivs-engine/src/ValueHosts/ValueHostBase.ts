@@ -6,21 +6,21 @@ import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
-import { type IValueHost, type SetValueOptions, type ValueHostState, type ValueHostDescriptor, toIValueHostCallbacks, ValidTypesForStateStorage } from '../Interfaces/ValueHost';
+import { type IValueHost, type SetValueOptions, type ValueHostState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForStateStorage } from '../Interfaces/ValueHost';
 import type { IValueHostsManager, IValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 
 /**
  * Standard implementation of IValueHost
  */
-export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TState extends ValueHostState>
+export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState extends ValueHostState>
     implements IValueHost, IValueHostsManagerAccessor {
-    constructor(valueHostsManager: IValueHostsManager, descriptor: TDescriptor, state: TState) {
+    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
         assertNotNull(valueHostsManager, 'valueHostsManager');
-        assertNotNull(descriptor, 'descriptor');
+        assertNotNull(config, 'config');
         assertNotNull(state, 'state');
         this._valueHostsManager = valueHostsManager;
-        this._descriptor = descriptor;
+        this._config = config;
         this._state = state;
     }
 //#region IValueHostsManagerAccessor
@@ -36,14 +36,15 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
         return this.valueHostsManager.services;
     }
     /**
-     * Everything the programmer can change between invocations.
-     * Designed to be stored in a React state.
-     * When used in React, change its members with UpdateDescriptor
+     * Always supplied by constructor. Treat it as immutable.
+     * Expected to be changed only by the caller (business logic)
+     * and at that time, it must replace this instance with 
+     * a new one and a new Config instance.
      */
-    protected get descriptor(): TDescriptor {
-        return this._descriptor;
+    protected get config(): TConfig {
+        return this._config;
     }
-    private readonly _descriptor: TDescriptor;
+    private readonly _config: TConfig;
 
     //#region IValueHost
     /**
@@ -52,30 +53,30 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
      * for which they will transfer a value, via ValueHostsManager.getValueHost(this name)
      */
     public getName(): valueHostName {
-        return this.descriptor.name;
+        return this.config.name;
     }
 
     /**
      * A user friendly name for this ValueHost, to be shown in tooltips, error messages,
-     * etc found in this ValueHostDescriptor that have the {Label} token.
-     * Localization should occur when setting up the ValueHostDescriptor.
-     * Use setLabel to override the ValueHostDescriptor value.
+     * etc found in this ValueHostConfig that have the {Label} token.
+     * Localization should occur when setting up the ValueHostConfig.
+     * Use setLabel to override the ValueHostConfig value.
      */
     public getLabel(): string {
-        let label = (this.getFromState('_label') ?? (this.descriptor.label ?? '')) as string;
-        let labell10n: string | null = (this.getFromState('_labell10n') ?? this.descriptor.labell10n ?? null) as string | null;
+        let label = (this.getFromState('_label') ?? (this.config.label ?? '')) as string;
+        let labell10n: string | null = (this.getFromState('_labell10n') ?? this.config.labell10n ?? null) as string | null;
         if (labell10n)
             return this.services.textLocalizerService.localize(this.services.activeCultureId, labell10n, label) ?? '';
         return label;
     }
     /**
      * Use to change the label and/or labell10n values. 
-     * It overrides the values from ValueHostDescriptor.label and labell10n.
+     * It overrides the values from ValueHostConfig.label and labell10n.
      * Use case: Business logic supplies a default values for label and labell10n which the UI needs to change.
      * The value is stored with the state.
-     * @param label - If undefined, reverts to ValueHostDescriptor.label.
+     * @param label - If undefined, reverts to ValueHostConfig.label.
      * If null, does not make any changes.
-     * @param labell10n - If undefined, reverts to ValueHostDescriptor.labell10n.
+     * @param labell10n - If undefined, reverts to ValueHostConfig.labell10n.
      * If null, does not make any changes.
      */
     public setLabel(label: string | null | undefined, labell10n?: string | null | undefined): void
@@ -163,7 +164,7 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
  */    
     public getDataType(): string | null
     {
-        return this.descriptor.dataType ?? null;
+        return this.config.dataType ?? null;
     }
 
     /**
@@ -185,13 +186,13 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
 
     //#region State
     /* 
-        Current state for the associated ValueHost.
-        Only ValidationManager owns the state. This instance is a reference
-        to the value in ValidationManager.
-        State is considered immutable. If it needs to change,
-        the ValidationManager must discard the current ValueHost instance
-        and create a new one. The State contained in the validationManager
-        must be supplied to the new ValueHost instance to restore the state.
+     * Current state for the associated ValueHost.
+     * Only ValidationManager owns the state. This instance is a reference
+     * to the value in ValidationManager.
+     * State is considered immutable. If it needs to change,
+     * the ValidationManager must discard the current ValueHost instance
+     * and create a new one. The State contained in the validationManager
+     * must be supplied to the new ValueHost instance to restore the state.
     */
     protected get state(): TState {
         return this._state;
@@ -254,22 +255,22 @@ export abstract class ValueHostBase<TDescriptor extends ValueHostDescriptor, TSt
 
 
 export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
-    public abstract canCreate(descriptor: ValueHostDescriptor): boolean;
+    public abstract canCreate(config: ValueHostConfig): boolean;
 
-    public abstract create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
+    public abstract create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostState): IValueHost;
 
     /**
-     * Looking for changes to the ValidationDescriptors to impact IssuesFound.
+     * Looking for changes to the ValidationConfigs to impact IssuesFound.
      * If IssuesFound did change, fix ValidationResult for when Invalid to 
      * review IssuesFound in case it is only a Warning, which makes ValidationResult Valid.
      * @param state 
-     * @param descriptor 
+     * @param config 
      */
-    public abstract cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
-    public createState(descriptor: ValueHostDescriptor): ValueHostState {
+    public abstract cleanupState(state: ValueHostState, config: ValueHostConfig): void;
+    public createState(config: ValueHostConfig): ValueHostState {
         return {
-            name: descriptor.name,
-            value: descriptor.initialValue
+            name: config.name,
+            value: config.initialValue
         };
     }
 

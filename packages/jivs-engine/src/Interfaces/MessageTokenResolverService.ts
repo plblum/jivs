@@ -14,7 +14,7 @@ import { IValueHostResolver } from "./ValueHostResolver";
  * The syntax is {token:formatterkey}.
  * Legal characters in token and formatterkey are letters, digits, and underscore.
  * These are matched case insensitively.
- * Some values are found in the Validator's ConditionDescriptor, 
+ * Some values are found in the Validator's ConditionConfig, 
  * such as the {Minimum} and {Maximum} of a RangeCondition. 
  * They need to be formatted according to the data type,
  * such as "number" will convert 1000 into "1,000" and "date" will convert 

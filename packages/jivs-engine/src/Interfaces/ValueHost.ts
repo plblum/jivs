@@ -62,11 +62,11 @@ export interface IValueHost {
 
     /**
      * Use to change the label and/or labell10n values. 
-     * It overrides the values from ValueHostDescriptor.label and labell10n.
+     * It overrides the values from ValueHostConfig.label and labell10n.
      * Use case: Business logic supplies a default values for label and labell10n which the UI needs to change.
-     * @param label - If undefined, reverts to ValueHostDescriptor.label.
+     * @param label - If undefined, reverts to ValueHostConfig.label.
      * If null, does not make any changes.
-     * @param labell10n - If undefined, reverts to ValueHostDescriptor.labell10n.
+     * @param labell10n - If undefined, reverts to ValueHostConfig.labell10n.
      * If null, does not make any changes.
      */
     setLabel(label: string, labell10n?: string): void;
@@ -234,15 +234,15 @@ interface CustomItems {
  * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
  */
-export interface ValueHostDescriptor {
+export interface ValueHostConfig {
     /**
      * Identifies the type of ValueHost that will be created to 
-     * support the Descriptor.
+     * support the Config.
      * InputValueHost - 'Input'
      * NonInputValueHost - 'Noninput'
      * HTMLElementValueHost - 'HTMLElement'
      * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
-     * by checking for inclusion of the InputValueHostDescriptor.ValidationDescriptors property.
+     * by checking for inclusion of the InputValueHostConfig.validationConfigs property.
      */
     type?: string;
     /**
@@ -298,7 +298,7 @@ export interface ValueHostDescriptor {
     // /**
     //  * Handy way to allow users to enter known properties without getting ts errors.
     //  * However, they can improve things if they typecast to the appropriate
-    //  * valueHost's Descriptor.
+    //  * valueHost's Config.
     //  */
     // [propName: string]: any;    
 }
@@ -313,7 +313,7 @@ export interface ValueHostDescriptor {
 export interface IGatherValueHostNames {
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
-     * Descriptor.
+     * Config.
      */
     gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void;
 }
@@ -374,8 +374,8 @@ export function toIValueHostCallbacks(source: any): IValueHostCallbacks | null
 }
 
 /**
- * Factory for generating classes that implement IValueHost that use ValueHostDescriptor.
- * ValueHostDescriptor identifies the desired ValueHost class.
+ * Factory for generating classes that implement IValueHost that use ValueHostConfig.
+ * ValueHostConfig identifies the desired ValueHost class.
  * Most apps will use the standard InputValueHost class.
  * This interface targets unit testing with mocks.
  */
@@ -383,21 +383,21 @@ export interface IValueHostFactory {
     /**
      * Creates the instance.
      * @param valueHostsManager 
-     * @param descriptor - determines the class. All classes supported here must ValueHostDescriptor to get their setup.
+     * @param config - determines the class. All classes supported here must ValueHostConfig to get their setup.
      * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.createState() to create an initial value.
      */
-    create(valueHostsManager: IValueHostsManager, descriptor: ValueHostDescriptor, state: ValueHostState): IValueHost;
+    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostState): IValueHost;
     /**
-     * Adjusts the state from a previous time to conform to the Descriptor.
-     * For example, if the Descriptor had a rule change, some data in the state may
+     * Adjusts the state from a previous time to conform to the Config.
+     * For example, if the Config had a rule change, some data in the state may
      * be obsolete and can be discarded.
      * @param state 
-     * @param descriptor 
+     * @param config 
      */
-    cleanupState(state: ValueHostState, descriptor: ValueHostDescriptor): void;
+    cleanupState(state: ValueHostState, config: ValueHostConfig): void;
     /**
      * Creates an initialized State object
-     * @param descriptor 
+     * @param config 
      */
-    createState(descriptor: ValueHostDescriptor): ValueHostState;
+    createState(config: ValueHostConfig): ValueHostState;
 }

@@ -1,11 +1,11 @@
 /** 
- * Identifies values for the ConditionDescriptor.Type property and anywhere with
+ * Identifies values for the ConditionConfig.type property and anywhere with
  * the name "ConditionType".
  * @module Conditions/Types/ConditionType
  */
 
 /**
- * Identifies values for the ConditionDescriptor.Type property and anywhere with
+ * Identifies values for the ConditionConfig.type property and anywhere with
  * the name "ConditionType".
  * These identify the Concrete Condition classes supplied within Jivs.
  * The enum type ConditionType will host all of these values. So the user can
@@ -21,9 +21,9 @@ export enum ConditionType
     DataTypeCheck = 'DataTypeCheck',
 
     /**
-     * Associated with RequiredTextCondition class.
+     * Associated with RequireTextCondition class.
      */
-    RequiredText = 'RequiredText',
+    RequireText = 'RequireText',
 
     /**
      * Associated with RegExpCondition class.
@@ -95,11 +95,6 @@ export enum ConditionType
      * Associated with CountMatchesCondition class.
      */
     CountMatches = 'CountMatches',
-
-    /**
-     * Associated with StringNotEmptyCondition class.
-     */
-    StringNotEmpty = 'StringNotEmpty',
 
     /**
      * Associated with NotNullCondition class.

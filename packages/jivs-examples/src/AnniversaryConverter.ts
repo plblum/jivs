@@ -36,7 +36,7 @@ export function registerAnniversary(validationServices: IValidationServices): vo
     // or move just this line into registerDataTypeConverters() function         
     dtcs.register(new UTCAnniversaryConverter()); 
 
-    // This gets used ONLY when the ValueHostDescriptor.DataType with "Anniversary".
+    // This gets used ONLY when the ValueHostConfig.dataType with "Anniversary".
     // When its time to compare, the UTCAnniversaryConverter is asked if it supports the value.
     // If so, the comparision immediately calls convert and now has a Date value.
     // The dataTypeConverterService knows to convert Date to a number, so it can be used by the 

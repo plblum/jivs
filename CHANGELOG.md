@@ -1,3 +1,11 @@
+## 0.12.0
+- **Major feature**. CalcValueHost is used for calculating values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
+- **Breaking API change.** Renamed "Descriptor" to "Config" throughout. I felt that the descriptor objects
+were better described as configuration objects.
+- **Breaking API change.** Renamed "RequiredTextCondition" to "RequireTextCondition" throughout.
+- **Breaking API change.** Removed "StringNotEmptyCondition" and expect users to use RequireTextCondition instead.
+- **Breaking API change.** Reworked Fluent syntax. configInput() -> config().input(); configNonInput() -> config().nonInput();
+configChildren() -> config().conditions().
 ## 0.11.0
 - **Breaking API change.** Renamed LessThanOrEqualTo and GreaterThanOrEqualTo to 
 LessThanOrEqual and GreaterThanOrEqual.
