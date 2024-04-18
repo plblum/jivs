@@ -11,12 +11,12 @@
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { StringConditionDescriptor, StringConditionBase } from './StringConditionBase';
+import { StringConditionConfig, StringConditionBase } from './StringConditionBase';
 
 /**
  * For any regular expression condition
  */
-export interface RegExpConditionBaseDescriptor extends StringConditionDescriptor {
+export interface RegExpConditionBaseConfig extends StringConditionConfig {
 
 }
 
@@ -28,8 +28,8 @@ export interface RegExpConditionBaseDescriptor extends StringConditionDescriptor
  * such as USPhoneNumberCondition and EmailAddressCondition.
  * The user can also use RegExpCondition as a way to assign a RegExp on demand.
  */
-export abstract class RegExpConditionBase<TDescriptor extends RegExpConditionBaseDescriptor>
-    extends StringConditionBase<TDescriptor>
+export abstract class RegExpConditionBase<TConfig extends RegExpConditionBaseConfig>
+    extends StringConditionBase<TConfig>
 {
     protected evaluateString(text: string, valueHost: IValueHost, services: IValidationServices): ConditionEvaluateResult {
 
@@ -44,7 +44,7 @@ export abstract class RegExpConditionBase<TDescriptor extends RegExpConditionBas
     /**
      * Most of time, this represents a pattern that defines a data type, like USPhoneNumber and EmailAddress.
      * Sometimes, the user develops a regular expression with another purpose, like checking an area code
-     * of a USPhoneNumber. They should set ConditionDescriptor.category to Contents
+     * of a USPhoneNumber. They should set ConditionConfig.category to Contents
      */
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.DataTypeCheck;

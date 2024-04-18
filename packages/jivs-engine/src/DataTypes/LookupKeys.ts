@@ -1,7 +1,7 @@
 /**
  * Lookup keys that identify data types and associated formatters.
  * These are used throughout the system such as:
- * - ValueHostDescriptor.DataType property is a Lookup Key to best identify the data type.
+ * - ValueHostConfig.dataType property is a Lookup Key to best identify the data type.
  *   By "best", think of a string data type. While you can use a Lookup Key of "String" (LookupKey.String const),
  *   it may actually be a phone number or email address. These are in fact data types.
  *   So you might want to create Lookup Keys for them, and where appropriate, provide a supporting
@@ -11,7 +11,7 @@
  * - ValidationServices.dataTypeConverterService to work with IDataTypeConverters.
  * - ValidationServices.dataTypeComparerService to work with IDataTypeComparers.
  * - Error message tokens, like "{Value}" and "{Minimum}", get native values replaced by formatted and localized strings.
- *   By default, they select a IDataTypeFormatter from the ValueHostDescriptor.DataType property
+ *   By default, they select a IDataTypeFormatter from the ValueHostConfig.dataType property
  *   or the native data type itself. However, you may want different formatting.
  *   That comes from specifying a Lookup Key as part of the token like this: "{Value:AbbrevDate}" and "{Minimum:Uppercase}"
  * - Conditions that compare two values have a ConversionLookupKey property to override any default conversion. 
@@ -355,7 +355,7 @@ export enum LookupKey {
      * 
      * @Group Converter
      * @remarks
-     * For case insensitive string comparisons. Generally set this on the ConditionDescriptor's
+     * For case insensitive string comparisons. Generally set this on the ConditionConfig's
      * ConversionLookupKey and SecondConversionLookupKey properties.
      */
     CaseInsensitive = 'CaseInsensitive'

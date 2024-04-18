@@ -8,7 +8,7 @@
  * - Severity: Error, Severe, and Warning
  * - Rules to disable the validator: Enabler condition, Enabled property and several ValidateOptions.
  * - Resolves error message tokens
-  * Attached to InputValueHosts through their InputValueHostDescriptor.
+  * Attached to InputValueHosts through their InputValueHostConfig.
   * @module InputValidator/ConcreteClasses
  */
 
@@ -18,7 +18,7 @@ import { toIGatherValueHostNames, type IValueHost, ValidTypesForStateStorage } f
 import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
-import { type InputValidateResult, type IInputValidator, type InputValidatorDescriptor, type IInputValidatorFactory } from '../Interfaces/InputValidator';
+import { type InputValidateResult, type IInputValidator, type InputValidatorConfig, type IInputValidatorFactory } from '../Interfaces/InputValidator';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
@@ -38,7 +38,7 @@ import { IInputValueHost } from '../Interfaces/InputValueHost';
  * Each instance depends on a few things, all passed into the constructor
  * and treated as immutable.
  * - IInputValueHost - name, label, and values from the consuming system.
- * - InputValidatorDescriptor - The business logic supplies these rules
+ * - InputValidatorConfig - The business logic supplies these rules
  *   to implement validation including Condition, Enabler, and error messages
  * If the caller changes any of these, discard the instance
  * and create a new one. The IInputValidatorState will restore the state.
@@ -46,18 +46,18 @@ import { IInputValueHost } from '../Interfaces/InputValueHost';
 export class InputValidator implements IInputValidator {
     // As a rule, InputValueHost discards InputValidator when anything contained in these objects
     // has changed.
-    constructor(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor) {
+    constructor(valueHost: IInputValueHost, config: InputValidatorConfig) {
         assertNotNull(valueHost, 'valueHost');
-        assertNotNull(descriptor, 'descriptor');
+        assertNotNull(config, 'config');
         this._valueHost = valueHost;
-        this._descriptor = descriptor;
+        this._config = config;
     }
     private readonly _valueHost: IInputValueHost;
     /**
     * The business rules behind this validator.
     */
-    protected get descriptor(): InputValidatorDescriptor {
-        return this._descriptor;
+    protected get config(): InputValidatorConfig {
+        return this._config;
     }
 
     protected get services(): IValidationServices {
@@ -78,29 +78,29 @@ export class InputValidator implements IInputValidator {
      * Always supplied by constructor. Treat it as immutable.
      * Expected to be changed only by the caller (business logic)
      * and at that time, it must replace this instance with 
-     * a new one and a new Descriptor instance.
+     * a new one and a new Config instance.
      */
-    private readonly _descriptor: InputValidatorDescriptor;
+    private readonly _config: InputValidatorConfig;
 
 
     /**
      * Condition used to validate the data.
-     * Run by validate(), but only if the Validator is enabled (Severity<>Off and Enabler == Match)
+     * Run by validate(), but only if the Validator is enabled (severity<>Off and Enabler == Match)
      * The actual Condition instance is created by the caller
-     * and supplied in the InputValidatorDescriptor.
+     * and supplied in the InputValidatorConfig.
      */
     public get condition(): ICondition {
         if (!this._condition) {
             try {
-                if (this.descriptor.conditionCreator) {
-                    if (this.descriptor.conditionDescriptor)
-                        throw new Error('Cannot assign both ConditionDescriptor and ConditionCreator');
-                    this._condition = this.descriptor.conditionCreator(this.descriptor);
+                if (this.config.conditionCreator) {
+                    if (this.config.conditionConfig)
+                        throw new Error('Cannot assign both ConditionConfig and ConditionCreator');
+                    this._condition = this.config.conditionCreator(this.config);
                     if (!this._condition)
                         throw new Error('ConditionCreator function must return an instance');
                 }
-                else if (this.descriptor.conditionDescriptor)
-                    this._condition = this.services.conditionFactory.create(this.descriptor.conditionDescriptor);
+                else if (this.config.conditionConfig)
+                    this._condition = this.services.conditionFactory.create(this.config.conditionConfig);
                 else
                     throw new Error('Condition must be setup');
             }
@@ -122,20 +122,20 @@ export class InputValidator implements IInputValidator {
 
     /**
      * Condition used to enable or disable this validator based on rules.
-     * Severity = Off takes precedence.
+     * severity = Off takes precedence.
      */
     protected get enabler(): ICondition | null {
         if (!this._enabler)
             try {
-                if (this.descriptor.enablerCreator) {
-                    if (this.descriptor.enablerDescriptor)
-                        throw new Error('Cannot assign both EnablerDescriptor and EnablerCreator');
-                    this._enabler = this.descriptor.enablerCreator(this.descriptor);
+                if (this.config.enablerCreator) {
+                    if (this.config.enablerConfig)
+                        throw new Error('Cannot assign both EnablerConfig and EnablerCreator');
+                    this._enabler = this.config.enablerCreator(this.config);
                     if (!this._enabler)
                         throw new Error('EnablerCreator function must return an instance');
                 }
-                else if (this.descriptor.enablerDescriptor)
-                    this._enabler = this.services.conditionFactory.create(this.descriptor.enablerDescriptor);
+                else if (this.config.enablerConfig)
+                    this._enabler = this.services.conditionFactory.create(this.config.enablerConfig);
             }
             catch (e) {
                 if (e instanceof Error)
@@ -147,12 +147,12 @@ export class InputValidator implements IInputValidator {
     private _enabler: ICondition | null = null;
 
     /**
-     * Determined from the Descriptor.Enabled.
+     * Determined from the Config.enabled.
      * Does not use the Enabler.
      */
     public get enabled(): boolean {
         let value = this.getFromState('enabled') ??
-            this.descriptor.enabled;
+            this.config.enabled;
         if (typeof value == 'function')
             value = value(this);
         if (value == null)  // null/undefined
@@ -161,10 +161,10 @@ export class InputValidator implements IInputValidator {
     }
 
     /**
-     * Determined from Descriptor.Severity.
+     * Determined from Config.severity.
      */
     protected get severity(): ValidationSeverity {
-        let value = this.getFromState('severity') ?? this.descriptor.severity;
+        let value = this.getFromState('severity') ?? this.config.severity;
         if (typeof value == 'function')
             value = value(this);
         if (value == null)  // null/undefined
@@ -182,20 +182,20 @@ export class InputValidator implements IInputValidator {
     /**
      * Resolves the errorMessage as a template - before it has its tokens processed.
      * It uses several sources to get the template. The first to have text is used.
-     * 1. Descriptor.errorMessagel10n gets data from TextLocalizerService with Descriptor.errorMessage as fallback
-     * 2. Overridden Descriptor.errorMessage or Descriptor.errorMessage
+     * 1. Config.errorMessagel10n gets data from TextLocalizerService with Config.errorMessage as fallback
+     * 2. Overridden Config.errorMessage or Config.errorMessage
      * 3. TextLocalizerService.getErrorMessage
      * @returns Error message from errorMessage property with localization applied
      * if ErrorMessagel10n is setup.
      */
     protected getErrorMessageTemplate(): string {
         let direct = this.getFromState('errorMessage') ??
-                    this.descriptor.errorMessage;
+                    this.config.errorMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
         let l10n = (this.getFromState('errorMessagel10n') ??
-                    this.descriptor.errorMessagel10n) as string | null;
+                    this.config.errorMessagel10n) as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
                 l10n, msg);
@@ -205,24 +205,24 @@ export class InputValidator implements IInputValidator {
                 this.conditionType, this.valueHost.getDataType());
         }
         if (msg == null)
-            throw new Error('Must supply a value for Descriptor.errorMessage');
+            throw new Error('Must supply a value for Config.errorMessage');
         return msg;
     }
 
     /**
      * Resolves the summaryMessage as a template - before it has its tokens processed.
-     * Falls back to use GetErrorMessageTemplate if Descriptor doesn't supply a value.
+     * Falls back to use GetErrorMessageTemplate if Config doesn't supply a value.
      * @returns Error message from summaryMessage property with localization applied
      * if SummaryMessagel10n is setup.
      */
     protected getSummaryMessageTemplate(): string {
         let direct = this.getFromState('summaryMessage') ??
-                    this.descriptor.summaryMessage;
+                    this.config.summaryMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
         let l10n = (this.getFromState('summaryMessagel10n') ??
-                    this.descriptor.summaryMessagel10n) as string | null;
+                    this.config.summaryMessagel10n) as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
                 l10n, msg ?? '');
@@ -267,12 +267,12 @@ export class InputValidator implements IInputValidator {
 
             // enabled
             if (!this.enabled)
-                return bailout('Descriptor.Enabled is false');
+                return bailout('Config.enabled is false');
 
             // enabler
             let enabler = this.enabler;
             if (enabler) { // Many enablers don't use the current value host.
-                // When that is the case, their ConditionDescriptor.valueHostName
+                // When that is the case, their ConditionConfig.valueHostName
                 // must be setup to retrieve the correct one.
                 // ValueHostName takes precedence.
                 let result = enabler.evaluate(this.valueHost, this.valueHostsManager);
@@ -436,9 +436,9 @@ export class InputValidator implements IInputValidator {
     /**
      * Returns an entry from the ValueHostState.
      * 
-     * Often used to store values that override an entry in the InputValidationDescriptor.
+     * Often used to store values that override an entry in the InputValidationConfig.
      * In that case, typical implementation is:
-     * let value = this.getFromState('identifier') ?? this.descriptor.identifier;
+     * let value = this.getFromState('identifier') ?? this.config.identifier;
      * @param identifier - used together with the conditionType to form a key in the State.
      * @returns The value or undefined if the key is not stored in state.
      */
@@ -447,14 +447,14 @@ export class InputValidator implements IInputValidator {
     }
     //#endregion state management
 
-    //#region descriptor overrides
+    //#region config overrides
 
     /**
-     * Use to change the enabled flag. It overrides the value from InputValidatorDescriptor.enabled.
+     * Use to change the enabled flag. It overrides the value from InputValidatorConfig.enabled.
      * Use case: the list of validators on InputValueHost might change while the form is active.
      * Add all possible cases to InputValueHost and change their enabled flag here when needed.
      * Also remember that you can use the enabler property on 
-     * InputValidatorDescriptor to automatically determine if the validator
+     * InputValidatorConfig to automatically determine if the validator
      * should run or not. Enabler may not be ideal in some cases though.
      * @param enabled 
      */
@@ -464,11 +464,11 @@ export class InputValidator implements IInputValidator {
 
     /**
      * Use to change the errorMessage and/or errorMessagel10n values. 
-     * It overrides the values from InputValidatorDescriptor.errorMessage and errorMessagel10n.
+     * It overrides the values from InputValidatorConfig.errorMessage and errorMessagel10n.
      * Use case: Business logic supplies a default values for errorMessage and errorMessagel10n which the UI needs to change.
-     * @param errorMessage  - If undefined, reverts to InputValidatorDescriptor.errorMessage.
+     * @param errorMessage  - If undefined, reverts to InputValidatorConfig.errorMessage.
      * If null, does not make any changes.
-     * @param errorMessagel10n  - If undefined, reverts to InputValidatorDescriptor.errorMessagel10n.
+     * @param errorMessagel10n  - If undefined, reverts to InputValidatorConfig.errorMessagel10n.
      * If null, does not make any changes.
      */
     public setErrorMessage(errorMessage: string | undefined, errorMessagel10n?: string | undefined): void {
@@ -480,11 +480,11 @@ export class InputValidator implements IInputValidator {
 
     /**
      * Use to change the summaryMessage and/or summaryMessagel10n values. 
-     * It overrides the values from InputValidatorDescriptor.summaryMessage and summaryMessagel10n.
+     * It overrides the values from InputValidatorConfig.summaryMessage and summaryMessagel10n.
      * Use case: Business logic supplies a default values for summaryMessage and summaryMessagel10n which the UI needs to change.
-     * @param summaryMessage  - If undefined, reverts to InputValidatorDescriptor.summaryMessage.
+     * @param summaryMessage  - If undefined, reverts to InputValidatorConfig.summaryMessage.
      * If null, does not make any changes.
-     * @param summaryMessagel10n  - If undefined, reverts to InputValidatorDescriptor.summaryMessagel10n.
+     * @param summaryMessagel10n  - If undefined, reverts to InputValidatorConfig.summaryMessagel10n.
      * If null, does not make any changes.
      */
     public setSummaryMessage(summaryMessage: string | undefined, summaryMessagel10n?: string | undefined): void {
@@ -495,7 +495,7 @@ export class InputValidator implements IInputValidator {
     }
 
     /**
-     * Use to change the severity option. It overrides the value from InputValidatorDescriptor.severity.
+     * Use to change the severity option. It overrides the value from InputValidatorConfig.severity.
      * Use case: Business logic supplies a default value for severity which the UI needs to change.
      * @param severity 
      */
@@ -503,12 +503,12 @@ export class InputValidator implements IInputValidator {
         this.saveIntoState('severity', severity);
     }
 
-    //#endregion descriptor overrides
+    //#endregion config overrides
 
 
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
-     * Descriptor.
+     * Config.
      */
     public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
         toIGatherValueHostNames(this.condition)?.gatherValueHostNames(collection, valueHostResolver);
@@ -519,7 +519,7 @@ export class InputValidator implements IInputValidator {
      * Each returned has the token supported (omitting {} so {Label} is "Label")
      * and the value in its native data type (such as Date, number, or string).
      * Supports these tokens:
-     * {Label} - the Descriptor.Label property verbatim
+     * {Label} - the Config.label property verbatim
      * {Value} - the native value in State.Value. If null/undefined, the value in State.LastRawValue.
      * Plus any from the Condition in use.     
      */
@@ -564,8 +564,8 @@ export function createIssueFound(valueHost: IValueHost,
  * InputValidatorFactory creates the appropriate IInputValidator class
  */
 export class InputValidatorFactory implements IInputValidatorFactory {
-    public create(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor): IInputValidator {
-        return new InputValidator(valueHost, descriptor);
+    public create(valueHost: IInputValueHost, config: InputValidatorConfig): IInputValidator {
+        return new InputValidator(valueHost, config);
     }
 }
 

@@ -1,6 +1,6 @@
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import {
-    type ValueHostState, type IValueHost, ValueHostDescriptor, IValueHostCallbacks, toIValueHostCallbacks
+    type ValueHostState, type IValueHost, ValueHostConfig, IValueHostCallbacks, toIValueHostCallbacks
 } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
@@ -19,17 +19,17 @@ interface IPublicifiedValueHostState extends ValueHostState
  * Subclass of ValueHostBase to focus testing on ValueHostBase members
  * including exposing protected members
  */
-class PublicifiedValueHostBase extends ValueHostBase<ValueHostDescriptor, IPublicifiedValueHostState>
+class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifiedValueHostState>
 {
-    constructor(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IPublicifiedValueHostState) {
-        super(valueHostsManager, descriptor, state);
+    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostState) {
+        super(valueHostsManager, config, state);
     }
     public ExposeServices(): IValidationServices {
         return this.services;
     }
 
-    public ExposeDescriptor(): ValueHostDescriptor {
-        return this.descriptor;
+    public ExposeConfig(): ValueHostConfig {
+        return this.config;
     }
 
     public ExposeState(): IPublicifiedValueHostState {
@@ -40,19 +40,19 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostDescriptor, IPubli
  * This implementation of IValueHostGenerator is actually tested in ValueHostFactory.tests.ts
  */
 class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
-    public canCreate(descriptor: ValueHostDescriptor): boolean {
-        return descriptor.type === 'PublicifyValueHostBase';
+    public canCreate(config: ValueHostConfig): boolean {
+        return config.type === 'PublicifyValueHostBase';
     }
-    public create(valueHostsManager : IValueHostsManager, descriptor: ValueHostDescriptor, state: IPublicifiedValueHostState): IValueHost {
-        return new PublicifiedValueHostBase(valueHostsManager, descriptor, state);
+    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostState): IValueHost {
+        return new PublicifiedValueHostBase(valueHostsManager, config, state);
     }
-    public cleanupState(state: IPublicifiedValueHostState, descriptor: ValueHostDescriptor): void {
+    public cleanupState(state: IPublicifiedValueHostState, config: ValueHostConfig): void {
         state.Counter = 0;
     }
-    public createState(descriptor: ValueHostDescriptor): IPublicifiedValueHostState {
+    public createState(config: ValueHostConfig): IPublicifiedValueHostState {
         let state: IPublicifiedValueHostState = {
-            name: descriptor.name,
-            value: descriptor.initialValue,
+            name: config.name,
+            value: config.initialValue,
             Counter: 0
         };
         return state;
@@ -62,7 +62,7 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
 
 /**
  * Returns an ValueHost (PublicifiedValueHost subclass) ready for testing.
- * @param descriptor - Provide just the properties that you want to test.
+ * @param config - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
  * name: 'Field1',
  * Label: 'Label1',
@@ -70,13 +70,13 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
  * DataType: LookupKey.String,
  * InitialValue: 'DATA'
  * @returns An object with all of the parts that were setup including 
- * ValidationManager, Services, ValueHosts, the complete Descriptor,
+ * ValidationManager, Services, ValueHosts, the complete Config,
  * and the state.
  */
-function setupValueHost(descriptor?: Partial<ValueHostDescriptor>, initialValue?: any): {
+function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): {
     services: MockValidationServices,
     validationManager: MockValidationManager,
-    descriptor: ValueHostDescriptor,
+    config: ValueHostConfig,
     state: ValueHostState,
     valueHost: PublicifiedValueHostBase
 } {
@@ -86,42 +86,42 @@ function setupValueHost(descriptor?: Partial<ValueHostDescriptor>, initialValue?
     services.valueHostFactory = factory;
     let vm = new MockValidationManager(services);
 
-    let defaultDescriptor: ValueHostDescriptor = {
+    let defaultConfig: ValueHostConfig = {
         name: 'Field1',
         label: 'Label1',
         type: 'PublicifyValueHostBase',
         dataType: LookupKey.String,
         initialValue: 'DATA'
     };
-    let updatedDescriptor: ValueHostDescriptor = (!descriptor) ?
-        defaultDescriptor :
-        { ...defaultDescriptor, ...descriptor };
+    let updatedConfig: ValueHostConfig = (!config) ?
+        defaultConfig :
+        { ...defaultConfig, ...config };
     let state: IPublicifiedValueHostState = {
         name: 'Field1',
         value: initialValue,
         Counter: 0
     };
     let vh = new PublicifiedValueHostBase(vm,
-        updatedDescriptor, state);
+        updatedConfig, state);
     return {
         services: services,
         validationManager: vm,
-        descriptor: updatedDescriptor,
+        config: updatedConfig,
         state: state,
         valueHost: vh
     };
 }
 
-// constructor(validationManager: IValidationManager, descriptor: TDescriptor, state: TState)
+// constructor(validationManager: IValidationManager, config: TConfig, state: TState)
 describe('constructor and resulting property values', () => {
 
-    test('constructor with valid parameters created and sets up Services, Descriptor, and State', () => {
-        let config = setupValueHost({});
-        let testItem = config.valueHost;
-        expect(testItem.ExposeServices()).toBe(config.services);
-        expect(testItem.ExposeDescriptor()).toBe(config.descriptor);
+    test('constructor with valid parameters created and sets up Services, Config, and State', () => {
+        let setup = setupValueHost({});
+        let testItem = setup.valueHost;
+        expect(testItem.ExposeServices()).toBe(setup.services);
+        expect(testItem.ExposeConfig()).toBe(setup.config);
         expect(testItem.ExposeState().name).toBe('Field1');
-        expect(testItem.valueHostsManager).toBe(config.validationManager);
+        expect(testItem.valueHostsManager).toBe(setup.validationManager);
 
         expect(testItem.getName()).toBe('Field1');
         expect(testItem.getLabel()).toBe('Label1');
@@ -130,11 +130,11 @@ describe('constructor and resulting property values', () => {
         expect(testItem.isChanged).toBe(false);
     });
 
-    test('constructor with Descriptor.DataType undefined results in GetDataType = null', () => {
-        let config = setupValueHost({
+    test('constructor with Config.dataType undefined results in getDataType = null', () => {
+        let setup = setupValueHost({
             dataType: undefined
         });
-        let testItem = config.valueHost;
+        let testItem = setup.valueHost;
         expect(testItem.getDataType()).toBeNull();
     });
 
@@ -142,7 +142,7 @@ describe('constructor and resulting property values', () => {
 
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);        
-        let descriptor: ValueHostDescriptor = {
+        let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
             type: 'PublicifyValueHostBase',
@@ -156,11 +156,11 @@ describe('constructor and resulting property values', () => {
         };
         let testItem: PublicifiedValueHostBase | null = null;
         expect(() => testItem = new PublicifiedValueHostBase(null!,
-            descriptor, state)).toThrow(/valueHostsManager/);
+            config, state)).toThrow(/valueHostsManager/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
-            null!, state)).toThrow(/descriptor/);
+            null!, state)).toThrow(/config/);
         expect(() => testItem = new PublicifiedValueHostBase(vm,
-            descriptor, null!)).toThrow(/state/);
+            config, null!)).toThrow(/state/);
     });
 });
 
@@ -168,8 +168,8 @@ describe('updateState', () => {
     test('Update value with +1 results in new instance of State and report to ValidationManager',
         () => {
             let initialValue = 100;
-            let config = setupValueHost({}, initialValue);
-            let testItem = config.valueHost;
+            let setup = setupValueHost({}, initialValue);
+            let testItem = setup.valueHost;
             expect(testItem.getValue()).toBe(initialValue);
             let fn = (stateToUpdate: IPublicifiedValueHostState): IPublicifiedValueHostState => {
                 stateToUpdate.value = stateToUpdate.value + 1;
@@ -182,7 +182,7 @@ describe('updateState', () => {
                 expect(testItem.getValue()).toBe(initialValue + i);
                 expect(testItem.ExposeState()).not.toBe(originalState);   // different instances
             }
-            let changes = config.validationManager.getHostStateChanges();
+            let changes = setup.validationManager.getHostStateChanges();
             expect(changes.length).toBe(3);
             for (let i = 1; i <= 3; i++) {
 
@@ -194,8 +194,8 @@ describe('updateState', () => {
     test('Update value with +0 results in no change to the state instance or notification to ValidationManager',
         () => {
             let initialValue = 100;
-            let config = setupValueHost({}, initialValue);
-            let testItem = config.valueHost;
+            let setup = setupValueHost({}, initialValue);
+            let testItem = setup.valueHost;
             expect(testItem.getValue()).toBe(initialValue);
             let fn = (stateToUpdate: IPublicifiedValueHostState): IPublicifiedValueHostState => {
                 stateToUpdate.value = stateToUpdate.value + 0;  // not actually changing anything
@@ -208,15 +208,15 @@ describe('updateState', () => {
                 expect(testItem.getValue()).toBe(initialValue);
                 expect(testItem.ExposeState()).toBe(originalState);   // same instance
             }
-            let changes = config.validationManager.getHostStateChanges();
+            let changes = setup.validationManager.getHostStateChanges();
             expect(changes.length).toBe(0);
 
 
         });
         test('Updater function is null throws',
         () => {
-            let config = setupValueHost({});
-            let testItem = config.valueHost;
+            let setup = setupValueHost({});
+            let testItem = setup.valueHost;
             expect(() => testItem.updateState(null!, testItem)).toThrow(/updater/);
         });    
 });
@@ -225,13 +225,13 @@ describe('setValue', () => {
     test('Value was changed. State changes.', () => {
         const initialValue = 100;
         const finalValue = 200;
-        let config = setupValueHost({}, initialValue);
-        let testItem = config.valueHost;
+        let setup = setupValueHost({}, initialValue);
+        let testItem = setup.valueHost;
         expect(() => testItem.setValue(finalValue)).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(true);
 
-        let changes = config.validationManager.getHostStateChanges();
+        let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].value).toBe(finalValue);
@@ -240,26 +240,26 @@ describe('setValue', () => {
     test('Value was not changed. State did not change', () => {
         const initialValue = 100;
         const finalValue = initialValue;
-        let config = setupValueHost({}, initialValue);
-        let testItem = config.valueHost;
+        let setup = setupValueHost({}, initialValue);
+        let testItem = setup.valueHost;
         expect(() => testItem.setValue(finalValue)).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
 
-        let changes = config.validationManager.getHostStateChanges();
+        let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(0);
 
     });
     test('Value was changed with option.Reset = true. State changes, but IsChanged is false.', () => {
         const initialValue = 100;
         const finalValue = 200;
-        let config = setupValueHost({}, initialValue);
-        let testItem = config.valueHost;
+        let setup = setupValueHost({}, initialValue);
+        let testItem = setup.valueHost;
         expect(() => testItem.setValue(finalValue, { reset: true })).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
 
-        let changes = config.validationManager.getHostStateChanges();
+        let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].value).toBe(finalValue);
@@ -270,16 +270,16 @@ describe('setValue', () => {
         const secondValue = 150;
         const finalValue = 200;
 
-        let config = setupValueHost({}, initialValue);
+        let setup = setupValueHost({}, initialValue);
         let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        config.validationManager.onValueChanged = (valueHost, oldValue) => {
+        setup.validationManager.onValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
             });
         };
 
-        let testItem = config.valueHost;
+        let testItem = setup.valueHost;
         expect(() => testItem.setValue(secondValue)).not.toThrow();
         expect(() => testItem.setValue(finalValue)).not.toThrow();
 
@@ -292,16 +292,16 @@ describe('setValue', () => {
     test('Value was not changed. OnValueChanged is not called.', () => {
         const initialValue = 100;
 
-        let config = setupValueHost({}, initialValue);
+        let setup = setupValueHost({}, initialValue);
         let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        config.validationManager.onValueChanged = (valueHost, oldValue) => {
+        setup.validationManager.onValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
             });
         };
 
-        let testItem = config.valueHost;
+        let testItem = setup.valueHost;
         expect(() => testItem.setValue(initialValue)).not.toThrow();
         expect(() => testItem.setValue(initialValue)).not.toThrow();
 
@@ -313,16 +313,16 @@ describe('setValue', () => {
         const secondValue = 150;
         const finalValue = 200;
 
-        let config = setupValueHost({}, initialValue);
+        let setup = setupValueHost({}, initialValue);
         let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        config.validationManager.onValueChanged = (valueHost, oldValue) => {
+        setup.validationManager.onValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
             });
         };
 
-        let testItem = config.valueHost;
+        let testItem = setup.valueHost;
         expect(() => testItem.setValue(secondValue, { skipValueChangedCallback: true })).not.toThrow();
         expect(() => testItem.setValue(finalValue, { skipValueChangedCallback: true })).not.toThrow();
 
@@ -333,16 +333,16 @@ describe('setValue', () => {
         const secondValue = 150;
         const finalValue = 200;
 
-        let config = setupValueHost({}, initialValue);
+        let setup = setupValueHost({}, initialValue);
         let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        config.validationManager.onValueChanged = (valueHost, oldValue) => {
+        setup.validationManager.onValueChanged = (valueHost, oldValue) => {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
             });
         };
 
-        let testItem = config.valueHost;
+        let testItem = setup.valueHost;
         expect(() => testItem.setValue(secondValue, { skipValueChangedCallback: false })).not.toThrow();
         expect(() => testItem.setValue(finalValue, { skipValueChangedCallback:false })).not.toThrow();
 
@@ -358,13 +358,13 @@ describe('setValue', () => {
         const secondValue = 150;
         const finalValue = 200;
 
-        let config = setupValueHost({}, initialValue);
+        let setup = setupValueHost({}, initialValue);
         let changedState: Array<ValueHostState> = [];
-        config.validationManager.onValueHostStateChanged = (valueHost, stateToRetain) => {
+        setup.validationManager.onValueHostStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };
 
-        let testItem = config.valueHost;
+        let testItem = setup.valueHost;
         expect(() => testItem.setValue(secondValue)).not.toThrow();
         expect(() => testItem.setValue(finalValue)).not.toThrow();
 
@@ -376,13 +376,13 @@ describe('setValue', () => {
     test('Value was not changed. OnValueHostStateChanged is not called.', () => {
         const initialValue = 100;
 
-        let config = setupValueHost({}, initialValue);
+        let setup = setupValueHost({}, initialValue);
         let changedState: Array<ValueHostState> = [];
-        config.validationManager.onValueHostStateChanged = (valueHost, stateToRetain) => {
+        setup.validationManager.onValueHostStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };
 
-        let testItem = config.valueHost;
+        let testItem = setup.valueHost;
         expect(() => testItem.setValue(initialValue)).not.toThrow();
         expect(() => testItem.setValue(initialValue)).not.toThrow();
 
@@ -393,13 +393,13 @@ describe('setValueToUndefined', () => {
     test('Value was changed. State changes.', () => {
         const initialValue = 100;
         const finalValue = undefined;
-        let config = setupValueHost({}, initialValue);
-        let testItem = config.valueHost;
+        let setup = setupValueHost({}, initialValue);
+        let testItem = setup.valueHost;
         expect(() => testItem.setValueToUndefined()).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(true);
 
-        let changes = config.validationManager.getHostStateChanges();
+        let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].value).toBe(finalValue);
@@ -407,39 +407,39 @@ describe('setValueToUndefined', () => {
     test('Value was not changed. State did not change', () => {
         const initialValue = undefined;
         const finalValue = initialValue;
-        let config = setupValueHost({}, initialValue);
-        let testItem = config.valueHost;
+        let setup = setupValueHost({}, initialValue);
+        let testItem = setup.valueHost;
         expect(() => testItem.setValueToUndefined()).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
 
-        let changes = config.validationManager.getHostStateChanges();
+        let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(0);
 
     });    
 });
 describe('ValueHostBase.setLabel', () => {
     test('Override label without intl', () => {
-        let config = setupValueHost({
+        let setup = setupValueHost({
             label: 'Label-original'
         });
-        let testItem = config.valueHost;
+        let testItem = setup.valueHost;
         expect(() => testItem.setLabel('Label-replaced')).not.toThrow();
         expect(testItem.getLabel()).toBe('Label-replaced');
     });
     test('Override label and labell10n', () => {
-        let config = setupValueHost({
+        let setup = setupValueHost({
             label: 'Label-original',
             labell10n: 'Label-original-key'
         });
-        let tls = config.services.textLocalizerService as TextLocalizerService;
+        let tls = setup.services.textLocalizerService as TextLocalizerService;
         tls.register('Label-original-key', {
             '*': '*-Label-original'
         });
         tls.register('Label-replaced-key', {
             '*': '*-Label-replaced'
         });        
-        let testItem = config.valueHost;
+        let testItem = setup.valueHost;
 
         expect(() => testItem.setLabel('Label-replaced', 'Label-replaced-key')).not.toThrow();
 
@@ -462,11 +462,11 @@ describe('ValueHostBase.setLabel', () => {
 describe('ValueHostBase.saveIntoStore and getFromStore', () => {
     test('Save 10 and get it back.', () => {
 
-        let config = setupValueHost({});
-        let testItem = config.valueHost;
+        let setup = setupValueHost({});
+        let testItem = setup.valueHost;
         expect(() => testItem.saveIntoState('KEY', 10)).not.toThrow();
 
-        let changes = config.validationManager.getHostStateChanges();
+        let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
@@ -475,19 +475,19 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
     });
     test('Get without prior Store returns undefined.', () => {
 
-        let config = setupValueHost({});
-        let testItem = config.valueHost;
+        let setup = setupValueHost({});
+        let testItem = setup.valueHost;
 
         expect(testItem.getFromState('KEY')).toBeUndefined();       
     });
     test('Save 10 and save undefined to remove it.', () => {
 
-        let config = setupValueHost({});
-        let testItem = config.valueHost;
+        let setup = setupValueHost({});
+        let testItem = setup.valueHost;
         expect(() => testItem.saveIntoState('KEY', 10)).not.toThrow();
         expect(() => testItem.saveIntoState('KEY', undefined)).not.toThrow();
 
-        let changes = config.validationManager.getHostStateChanges();
+        let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
@@ -499,12 +499,12 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
     });
     test('Save two different keys and retrieve both.', () => {
 
-        let config = setupValueHost({});
-        let testItem = config.valueHost;
+        let setup = setupValueHost({});
+        let testItem = setup.valueHost;
         expect(() => testItem.saveIntoState('KEY1', 10)).not.toThrow();
         expect(() => testItem.saveIntoState('KEY2', 20)).not.toThrow();
 
-        let changes = config.validationManager.getHostStateChanges();
+        let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
@@ -517,12 +517,12 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
     });    
     test('Save two different keys, delete the second, and retrieve both.', () => {
 
-        let config = setupValueHost({});
-        let testItem = config.valueHost;
+        let setup = setupValueHost({});
+        let testItem = setup.valueHost;
         expect(() => testItem.saveIntoState('KEY1', 10)).not.toThrow();
         expect(() => testItem.saveIntoState('KEY2', 20)).not.toThrow();
         expect(() => testItem.saveIntoState('KEY2', undefined)).not.toThrow();
-        let changes = config.validationManager.getHostStateChanges();
+        let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(3);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();

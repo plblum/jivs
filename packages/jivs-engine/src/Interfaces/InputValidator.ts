@@ -2,7 +2,7 @@
  * {@inheritDoc InputValidator/ConcreteClasses!}
  * @module InputValidator/Types
  */
-import { ConditionEvaluateResult, ICondition, ConditionDescriptor } from './Conditions';
+import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditions';
 import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
 import { IGatherValueHostNames } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
@@ -40,11 +40,11 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
     conditionType: string;
 
     /**
-     * Use to change the enabled option. It overrides the value from InputValidatorDescriptor.enabled.
+     * Use to change the enabled option. It overrides the value from InputValidatorConfig.enabled.
      * Use case: the list of validators on InputValueHost might change while the form is active.
      * Add all possible cases to InputValueHost and change their enabled flag here when needed.
      * Also remember that you can use the enabler property on 
-     * InputValidatorDescriptor to automatically determine if the validator
+     * InputValidatorConfig to automatically determine if the validator
      * should run or not. Enabler may not be ideal in some cases though.
      * @param enabled 
      */
@@ -52,28 +52,28 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
 
     /**
      * Use to change the errorMessage and/or errorMessagel10n values. 
-     * It overrides the values from InputValidatorDescriptor.errorMessage and errorMessagel10n.
+     * It overrides the values from InputValidatorConfig.errorMessage and errorMessagel10n.
      * Use case: Business logic supplies a default values for errorMessage and errorMessagel10n which the UI needs to change.
-     * @param errorMessage  - If undefined, reverts to InputValidatorDescriptor.errorMessage.
+     * @param errorMessage  - If undefined, reverts to InputValidatorConfig.errorMessage.
      * If null, does not make any changes.
-     * @param errorMessagel10n  - If undefined, reverts to InputValidatorDescriptor.errorMessagel10n.
+     * @param errorMessagel10n  - If undefined, reverts to InputValidatorConfig.errorMessagel10n.
      * If null, does not make any changes.
      */
     setErrorMessage(errorMessage: string | undefined, errorMessagel10n?: string | undefined): void;
 
     /**
      * Use to change the summaryMessage and/or summaryMessagel10n values. 
-     * It overrides the values from InputValidatorDescriptor.summaryMessage and summaryMessagel10n.
+     * It overrides the values from InputValidatorConfig.summaryMessage and summaryMessagel10n.
      * Use case: Business logic supplies a default values for summaryMessage and summaryMessagel10n which the UI needs to change.
-     * @param summaryMessage  - If undefined, reverts to InputValidatorDescriptor.summaryMessage.
+     * @param summaryMessage  - If undefined, reverts to InputValidatorConfig.summaryMessage.
      * If null, does not make any changes.
-     * @param summaryMessagel10n  - If undefined, reverts to InputValidatorDescriptor.summaryMessagel10n.
+     * @param summaryMessagel10n  - If undefined, reverts to InputValidatorConfig.summaryMessagel10n.
      * If null, does not make any changes.
      */
     setSummaryMessage(summaryMessage: string | undefined, summaryMessagel10n?: string | undefined): void;    
 
     /**
-     * Use to change the severity option. It overrides the value from InputValidatorDescriptor.severity.
+     * Use to change the severity option. It overrides the value from InputValidatorConfig.severity.
      * Use case: Business logic supplies a default value for severity which the UI needs to change.
      * @param severity 
      */
@@ -84,7 +84,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
 /**
  * Just the data that is used to describe one validator assigned to a ValueHost.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to InputValidatorDescriptor.
+ * It should be generatable from JSON, and simply gets typed to InputValidatorConfig.
  * This provides the backing data for each InputValidatorInfo.
  * When placed into the InputValidatorInfo, it is treated as immutable
  * and can be used as state in React.
@@ -94,57 +94,57 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  */
-export interface InputValidatorDescriptor {
+export interface InputValidatorConfig {
     // -----------------------
     // There are two ways to supply this validator's Condition.
-    // 1. Pass a ConditionDescriptor and we'll create the correct Condition instance
+    // 1. Pass a ConditionConfig and we'll create the correct Condition instance
     // registered with the ValidationServices.ConditionFactory.
-    // This is limited to Condition instances that implement IConditionCore<ConditionDescriptor>.
+    // This is limited to Condition instances that implement IConditionCore<ConditionConfig>.
     // 2. Provide a function that will return the instance.
-    // This is ideal for when the Condition does not implement IConditionCore<ConditionDescriptor>
+    // This is ideal for when the Condition does not implement IConditionCore<ConditionConfig>
     // such as your custom validation functions that hook back into your business logic.
     // -----------------------
 
     /** 
-    * ConditionDescriptor that allows the ConditionFactory to provide the Condition.
-    * Like all Descriptors in this system, this is expected to be immutable.
+    * ConditionConfig that allows the ConditionFactory to provide the Condition.
+    * Like all Configs in this system, this is expected to be immutable.
     * Only use this when ConditionCreator is null.
     */
-    conditionDescriptor: ConditionDescriptor | null;
+    conditionConfig: ConditionConfig | null;
 
     /* eslint-disable @typescript-eslint/naming-convention */
     /**
      * Use to create the Condition instance yourself, especially to support
-     * implementations of ICondition that don't implement IConditionCore<ConditionDescriptor>.
-     * Only use this when ConditionDescriptor is null.
+     * implementations of ICondition that don't implement IConditionCore<ConditionConfig>.
+     * Only use this when ConditionConfig is null.
      * @param requester
      * @returns 
      */
-    conditionCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
+    conditionCreator?: (requester: InputValidatorConfig) => ICondition | null;
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
-     * The ConditionDescriptor to create an Enabler Condition.
+     * The ConditionConfig to create an Enabler Condition.
      * An Enabler is a Condition used to determine if validation is enabled.
      * For example, evaluate the state of a checkbox before
      * reporting an error in a textbox associated with that checkbox
      * being checked.
      * Leave it null if not needed.
-     * An EnablerDescriptor instance should be considered immutable once assigned here.
-     * Use this when the Condition extends IConditionCore<ConditionDescriptor>.
+     * An EnablerConfig instance should be considered immutable once assigned here.
+     * Use this when the Condition extends IConditionCore<ConditionConfig>.
      * Leave null if EnablerCreator is asssigned.
      */
-    enablerDescriptor?: ConditionDescriptor | null | undefined;
+    enablerConfig?: ConditionConfig | null | undefined;
 
     /* eslint-disable @typescript-eslint/naming-convention */
     /**
      * Use to create the Condition instance yourself, especially to support
-     * implementations of ICondition that don't implement IConditionCore<ConditionDescriptor>.
-     * Only use this when EnablerDescriptor is null.
+     * implementations of ICondition that don't implement IConditionCore<ConditionConfig>.
+     * Only use this when EnablerConfig is null.
      * @param requester
      * @returns 
      */
-    enablerCreator?: (requester: InputValidatorDescriptor) => ICondition | null;
+    enablerCreator?: (requester: InputValidatorConfig) => ICondition | null;
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
@@ -152,7 +152,7 @@ export interface InputValidatorDescriptor {
      * Values:
      * * true/false obviously.
      * * undefined - tells the InputValidator to treat it as true. (Its value 
-     *   will not be updated as we want this to be immutable while the Descriptor
+     *   will not be updated as we want this to be immutable while the Config
      *   is assigned to the host.)
      * * function - Provide a function that will return true or false, 
      *   given the InputValidator as a parameter.
@@ -227,7 +227,7 @@ export interface InputValidatorDescriptor {
     // /**
     //  * Handy way to allow users to enter known properties without getting ts errors.
     //  * However, they can improve things if they typecast to the appropriate
-    //  * inputValidator's Descriptor.
+    //  * inputValidator's Config.
     //  */
     // [propName: string]: any;    
 }
@@ -259,6 +259,6 @@ export interface InputValidateResult {
  * This interface targets unit testing with mocks.
  */
 export interface IInputValidatorFactory {
-    create(valueHost: IInputValueHost, descriptor: InputValidatorDescriptor): IInputValidator;
+    create(valueHost: IInputValueHost, config: InputValidatorConfig): IInputValidator;
 }
 

@@ -15,7 +15,7 @@ export interface ValidateOptions
      * Group validation name, a tool to group InputValueHosts with a specific submit command when validating.
      * Use when there is more than one group of InputValueHosts to be validated together.
      * For example, the ValidationManager handles two forms at once. Give
-     * the InputValueHostDescriptor.Group a name for each form. Then make their submit command
+     * the InputValueHostConfig.group a name for each form. Then make their submit command
      * pass in the same group name.
      * When Group is undefined or "*", validate() does not check group names. All InputValueHosts 
      * within the ValidationManager are validated.
@@ -95,7 +95,7 @@ export enum ValidationResult {
      */
     ValueChangedButUnvalidated,
     /**
-     * Validation was not run, including when the InputValidator.Severity is Off.
+     * Validation was not run, including when the InputValidator.severity is Off.
      */
     Undetermined,
 
@@ -186,7 +186,7 @@ export interface IssueFound {
 /**
  * When Business Logic gathers data from the UI, it runs its own final validation.
  * If its own business rule has been violated, it should be recorded with this interface
- * and passed to ValidationManager.SetBusinessLogicErrors where it becomes exposed to 
+ * and passed to ValidationManager.setBusinessLogicErrors where it becomes exposed to 
  * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
  * by specifying that valueHostName in AssociatedValueHostName.
  */

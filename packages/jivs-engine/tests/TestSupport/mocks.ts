@@ -3,13 +3,13 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { type ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService  } from "../../src/Services/MessageTokenResolverService";
 import { toIServicesAccessor, type IValidationServices } from "../../src/Interfaces/ValidationServices";
-import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, ValueHostDescriptor, ValueChangedHandler, ValueHostStateChangedHandler } from "../../src/Interfaces/ValueHost";
+import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostStateChangedHandler } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
-import { IInputValueHost, IInputValueHostDescriptorResolver, InputValueHostDescriptor, InputValueHostState } from "../../src/Interfaces/InputValueHost";
+import { IInputValueHost, IInputValueHostConfigResolver, InputValueHostConfig, InputValueHostState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
-import { IInputValidator, IInputValidatorFactory, InputValidatorDescriptor } from "../../src/Interfaces/InputValidator";
+import { IInputValidator, IInputValidatorFactory, InputValidatorConfig } from "../../src/Interfaces/InputValidator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
@@ -187,7 +187,7 @@ export class MockInputValueHost extends MockValueHost
     getValidator(conditionType: string): IInputValidator | null {
         throw new Error("Method not implemented.");
     }
-    addValidator(descriptor: InputValidatorDescriptor): void
+    addValidator(config: InputValidatorConfig): void
     {
         throw new Error("Method not implemented.");
     }
@@ -388,8 +388,8 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     }
     private _services: IValidationServices;
 /**
- * ValueHosts for all ValueHostDescriptors.
- * Always replace a ValueHost when the associated Descriptor or State are changed.
+ * ValueHosts for all ValueHostConfigs.
+ * Always replace a ValueHost when the associated Config or State are changed.
  */    
     private _valueHosts: Map<string, IValueHost> = new Map<string, IValueHost>();  
     
@@ -409,13 +409,13 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         vh._value = nativeValue;
         return vh;
     }
-    public addInputValueHostWithDescriptor(descriptor: ValueHostDescriptor,
+    public addInputValueHostWithConfig(config: ValueHostConfig,
         state: InputValueHostState | null): IInputValueHost
     {
         if (!state)
-            state = this.services.valueHostFactory.createState(descriptor) as InputValueHostState;
-        let vh = this.services.valueHostFactory.create(this, descriptor, state) as IInputValueHost;
-        this._valueHosts.set(descriptor.name, vh);    
+            state = this.services.valueHostFactory.createState(config) as InputValueHostState;
+        let vh = this.services.valueHostFactory.create(this, config, state) as IInputValueHost;
+        this._valueHosts.set(config.name, vh);    
   //      vh.SetValues(nativeValue, inputValue);
         return vh;
     }
@@ -570,11 +570,11 @@ export interface MockCapturedLog
     source: string | undefined
 }
 
-export class MockInputValueHostDescriptorResolver implements IInputValueHostDescriptorResolver
+export class MockInputValueHostConfigResolver implements IInputValueHostConfigResolver
 {
-    constructor(descriptor: Omit<InputValueHostDescriptor, 'type'>)
+    constructor(config: Omit<InputValueHostConfig, 'type'>)
     {
-        this.descriptor = { ...descriptor as InputValueHostDescriptor, type: ValueHostType.Input };
+        this.parentConfig = { ...config as InputValueHostConfig, type: ValueHostType.Input };
     }
-    public descriptor: InputValueHostDescriptor;
+    public parentConfig: InputValueHostConfig;
 }

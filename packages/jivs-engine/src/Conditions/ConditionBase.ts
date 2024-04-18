@@ -1,11 +1,11 @@
 /**
  * ConditionBase is the base implementation of {@link Conditions/Types!ICondition | ICondition}, 
- * tying it to {@link Conditions/Types!ConditionDescriptor | ConditionDescriptor}
+ * tying it to {@link Conditions/Types!ConditionConfig | ConditionConfig}
  * @module Conditions/AbstractClasses/ConditionBase
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { type ConditionDescriptor, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
+import { type ConditionConfig, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull } from '../Utilities/ErrorHandling';
@@ -20,36 +20,36 @@ import { IInputValueHost } from '../Interfaces/InputValueHost';
  * required, string matches the data type, compare value to another.
  * Instances should be registered in the ConditionFactory.
  */
-export abstract class ConditionBase<TConditionDescriptor extends ConditionDescriptor>
-    implements IConditionCore<TConditionDescriptor>, IMessageTokenSource, IGatherValueHostNames {
-    constructor(descriptor: TConditionDescriptor) {
-        assertNotNull(descriptor, 'descriptor');
-        this._descriptor = descriptor;
+export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
+    implements IConditionCore<TConditionConfig>, IMessageTokenSource, IGatherValueHostNames {
+    constructor(config: TConditionConfig) {
+        assertNotNull(config, 'config');
+        this._config = config;
     }
     /**
      * A unique identifier for the specific implementation, like "Required" or "Range".
      * Its value appears in the IssueFound that comes from Validation, and in 
      * IssueFound that comes from retrieving a list of errors to display.
      * It allows the consumer of both to correlate those instances with the specific condition.
-     * When defining conditions through a ConditionDescriptor, the Type property must 
+     * When defining conditions through a ConditionConfig, the Type property must 
      * be assigned with a valid ConditionType.
-     * This property always returns what the user supplied in the Descriptor.Type, not
+     * This property always returns what the user supplied in the Config.type, not
      * the default conditiontype. That allows multiple instances of the same condition Class
      * to participate in one validator's list of conditions, because each has a unique ConditionType.
      */
     public get conditionType(): string
     {
-        return this.descriptor.type;
+        return this.config.type;
     }
 
     /**
-     * Evaluate a value using its business rule and configuration in the Descriptor.
+     * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the raw value from input field/element and the value resolved by data type.
      * The evaluate function can use either. It should always return Undetermined if the value it gets
      * is 'undefined' or no compatible with its requirements (like wrong data type).
-     * If the ConditionDescriptor.valueHostName is assigned, it will be used to retrieve
+     * If the ConditionConfig.valueHostName is assigned, it will be used to retrieve
      * the ValueHost from the Model, and this parameter is ignored.
-     * This parameter can be null, but the ConditionDescriptor will need to supply a ValueHostName
+     * This parameter can be null, but the ConditionConfig will need to supply a ValueHostName
      * to a value host instead.
      * @param valueHostResolver 
      */
@@ -60,23 +60,23 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
      * Consider this immutable.
      * Expect to create a new Condition instance if its data needs to be changed.
      */
-    public get descriptor(): TConditionDescriptor {
-        return this._descriptor;
+    public get config(): TConditionConfig {
+        return this._config;
     }
-    private readonly _descriptor: TConditionDescriptor;
+    private readonly _config: TConditionConfig;
 
     /**
      * Helps identify the purpose of the Condition. Impacts:
      * * Sort order of the list of Conditions evaluated by an InputValidator,
      *   placing Required first and DataTypeCheck second.
-     * * Sets InputValueHostDescriptor.Required.
-     * * Sets InputValidatorDescriptor.Severity when undefined, where Required
+     * * Sets InputValueHostConfig.required.
+     * * Sets InputValidatorConfig.severity when undefined, where Required
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
-     * override it with ConditionDescriptor.category.
+     * override it with ConditionConfig.category.
      */
     public get category(): ConditionCategory {
-        return this.descriptor.category ?? this.defaultCategory;
+        return this.config.category ?? this.defaultCategory;
     }
     /**
      * Supplies the Condition's default Category
@@ -85,13 +85,13 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
 
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
-     * Descriptor.
+     * Config.
      */
     public abstract gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void;
 
     /**
      * Implementation for IMessageTokenSource.
-     *  Conditions havea number of values that are appropriate for tokens on the ConditionDescriptor.
+     *  Conditions havea number of values that are appropriate for tokens on the ConditionConfig.
      *  Examples:
      *  - In RangeCondition, Minimum and Maximum properties become {Mininum} and {Maximum} tokens.
      *  - In CompareToValueCondition, secondValueHostName property is the source for the {CompareTo} token.
@@ -106,7 +106,7 @@ export abstract class ConditionBase<TConditionDescriptor extends ConditionDescri
     }
 
     /**
-     * Utility to log when a conditionDescriptor property is incorrectly setup.
+     * Utility to log when a conditionConfig property is incorrectly setup.
      * @param errorMessage 
      * @param valueHostResolver 
      */

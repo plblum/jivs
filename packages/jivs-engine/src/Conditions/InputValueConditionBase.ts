@@ -9,7 +9,7 @@ import { IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { OneValueConditionDescriptor, OneValueConditionBase } from './OneValueConditionBase';
+import { OneValueConditionConfig, OneValueConditionBase } from './OneValueConditionBase';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 
@@ -18,11 +18,11 @@ import { toIInputValueHost } from '../ValueHosts/InputValueHost';
  * Abstract class for developing Conditions that use the value from ValueHost.getInputValue().
  * Most classes use ValueHost.getValue() (the native value).
  */
-export abstract class InputValueConditionBase<TDescriptor extends OneValueConditionDescriptor>
-    extends OneValueConditionBase<TDescriptor>
+export abstract class InputValueConditionBase<TConfig extends OneValueConditionConfig>
+    extends OneValueConditionBase<TConfig>
 {
     /**
-     * Evaluate a value using its business rule and configuration in the Descriptor.
+     * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the value from input field/element and the native value resolved by data type.
      * This function checks both in valueHost to determine a string source.
      * @param valueHostResolver 

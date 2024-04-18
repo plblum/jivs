@@ -8,7 +8,7 @@
  * @module ValueHosts/Types/NonInputValueHost
  */
 
-import { IValueHost, ValueHostDescriptor, ValueHostState } from './ValueHost';
+import { IValueHost, ValueHostConfig, ValueHostState } from './ValueHost';
 
 export interface INonInputValueHost extends IValueHost {
 }
@@ -20,7 +20,7 @@ export interface NonInputValueHostState extends ValueHostState {
 }
 
 /**
- * Descriptor for configuring NonInputValueHost
+ * Config for configuring NonInputValueHost
  */
-export interface NonInputValueHostDescriptor extends ValueHostDescriptor {
+export interface NonInputValueHostConfig extends ValueHostConfig {
 }    

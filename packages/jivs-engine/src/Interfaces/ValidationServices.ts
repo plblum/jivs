@@ -114,7 +114,7 @@ export interface IValidationServices extends IServices {
     messageTokenResolverService: IMessageTokenResolverService;
 
     /**
-     * Factory for generating classes that implement IValueHost that use ValueHostDescriptor.
+     * Factory for generating classes that implement IValueHost that use ValueHostConfig.
      */
     valueHostFactory: IValueHostFactory;
 
