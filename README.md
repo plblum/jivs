@@ -384,6 +384,10 @@ The `ValueHost` names are also used to help a `Condition` retrieve a value from 
   ]
 }
 ```
+<a name="calcvaluehost"></a>
+### Using CalcValueHost
+See a practical example here: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts)
+
 <a name="inputvalidators"></a>
 ## InputValidators: Connecting Conditions to Error Messages
 
