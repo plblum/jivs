@@ -48,7 +48,7 @@ describe('Difference between dates is less than 10', () => {
                 issuesFound:  [{
                     errorMessage: 'The two dates must be less than 10 days apart.',
                     summaryMessage: 'The two dates must be less than 10 days apart.',
-                    conditionType: ConditionType.LessThan,
+                    errorCode: ConditionType.LessThan,
                     severity: ValidationSeverity.Error,
                     valueHostName: 'StartDate'
                  }],
@@ -69,7 +69,7 @@ describe('Difference between dates is less than 10', () => {
                 issuesFound:  [{
                     errorMessage: 'Start date must be less than or equal to End date.',
                     summaryMessage: 'Start date must be less than or equal to End date.',
-                    conditionType: ConditionType.LessThanOrEqual,
+                    errorCode: ConditionType.LessThanOrEqual,
                     severity: ValidationSeverity.Severe,
                     valueHostName: 'StartDate'
                  }],

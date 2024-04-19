@@ -456,7 +456,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - conditionType - Identifies the condition supplying the issue.
+     * - errorCode - Identifies the validator supplying the issue.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
@@ -478,7 +478,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - conditionType - Identifies the condition supplying the issue.
+     * - errorCode - Identifies the validator supplying the issue.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.

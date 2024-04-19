@@ -149,8 +149,46 @@ describe('Inputvalidator.constructor and initial property values', () => {
         });
         expect(setup.inputValidator.ExposeConfig()).toBe(setup.config);
         expect(setup.inputValidator.ExposeValidationManager()).toBe(setup.vm);
-
+        expect(()=>setup.inputValidator.errorCode).toThrow();   // because errorCode is undefined and type=''
     });
+});
+describe('errorCode', () => {
+    test('Value assigned is returned regardless of ConditionType', () => {
+        let setup = setupWithField1AndField2({
+            errorCode: 'TEST',
+            conditionConfig: { type: ConditionType.RequireText },
+        });
+        expect(setup.inputValidator.errorCode).toBe('TEST');
+    });
+    test('Value assigned with whitespace is returned trimmed regardless of ConditionType', () => {
+        let setup = setupWithField1AndField2({
+            errorCode: ' TEST ',
+            conditionConfig: { type: ConditionType.RequireText },
+        });
+        expect(setup.inputValidator.errorCode).toBe('TEST');
+    });    
+    test('Value empty string returns ConditionType', () => {
+        let setup = setupWithField1AndField2({
+            errorCode: '',
+            conditionConfig: { type: ConditionType.RequireText },
+        });
+        expect(setup.inputValidator.errorCode).toBe(ConditionType.RequireText);
+    });    
+    test('Value undefined returns ConditionType', () => {
+        let setup = setupWithField1AndField2({
+            conditionConfig: { type: ConditionType.RequireText },
+        });
+        expect(setup.inputValidator.errorCode).toBe(ConditionType.RequireText);
+    });   
+    /* Couldn't find a way to set this up as omitted and unknown types both throw exceptions.
+    test('Value undefined and same with conditiontype returns"UNKNOWN"', () => {
+        let setup = setupWithField1AndField2({
+            conditionConfig: { type: '' },
+        });
+        
+        expect(setup.inputValidator.errorCode).toBe(ConditionType.Unknown);
+    });     
+    */
 });
 describe('InputValidator.condition', () => {
     test('Successful creation of RequireTextCondition using ConditionConfig', () => {
@@ -816,7 +854,7 @@ describe('InputValidator.validate', () => {
         expect(vrResult).not.toBeInstanceOf(Promise);
         vrResult = vrResult as unknown as InputValidateResult;
         expect(vrResult!.issueFound).not.toBeNull();
-        expect(vrResult!.issueFound!.conditionType).toBe(ConditionType.RequireText);
+        expect(vrResult!.issueFound!.errorCode).toBe(ConditionType.RequireText);
         expect(vrResult!.issueFound!.severity).toBe(severity);
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
     }
@@ -845,7 +883,7 @@ describe('InputValidator.validate', () => {
         expect(vrResult!.issueFound).not.toBeNull();
 
         let issueFound = vrResult!.issueFound;
-        expect(issueFound!.conditionType).toBe(ConditionType.RequireText);
+        expect(issueFound!.errorCode).toBe(ConditionType.RequireText);
         expect(issueFound!.errorMessage).toBe(expectedErrorMessage);
         expect(issueFound!.summaryMessage).toBe(expectedSummaryMessage);
     }
@@ -1055,7 +1093,7 @@ describe('InputValidator.validate', () => {
             expect(result).toEqual(<InputValidateResult>{
                 conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
                 issueFound: {
-                    conditionType: 'TEST',
+                    errorCode: 'TEST',
                     errorMessage: 'Local',
                     summaryMessage: 'Summary',
                     severity: ValidationSeverity.Error,

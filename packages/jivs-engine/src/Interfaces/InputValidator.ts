@@ -35,6 +35,13 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
     condition: ICondition;
 
     /**
+     * Provides the error code associated with this instance.
+     * It uses InputValidatorConfig.errorCode when assigned
+     * and ConditionType when not assigned.
+     */
+    errorCode: string;
+
+    /**
      * Gets the conditionType associated with the condition
      */
     conditionType: string;
@@ -95,6 +102,12 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
  * for the purpose of logging and blocking.)
  */
 export interface InputValidatorConfig {
+    /**
+     * Provides the error code associated with this instance.
+     * When unassigned, the InputValidator uses the ConditionType as the error code.
+     */
+    errorCode?: string;
+    
     // -----------------------
     // There are two ways to supply this validator's Condition.
     // 1. Pass a ConditionConfig and we'll create the correct Condition instance

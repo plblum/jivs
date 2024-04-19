@@ -437,7 +437,7 @@ describe('ValidationManager.addValueHost', () => {
             issuesFound: [{
                 errorMessage: 'msg',
                 valueHostName: 'Field1',
-                conditionType: ConditionType.RequireText,
+                errorCode: ConditionType.RequireText,
                 severity: ValidationSeverity.Error
             }]
         };
@@ -496,7 +496,7 @@ describe('ValidationManager.addValueHost', () => {
             issuesFound: [{
                 errorMessage: 'msg',
                 valueHostName: 'Field1',
-                conditionType: ConditionType.RequireText,
+                errorCode: ConditionType.RequireText,
                 severity: ValidationSeverity.Error
             }]
         };
@@ -968,11 +968,11 @@ function testIssueFoundFromValidateResults(validateResults: Array<ValidateResult
     if (issuesFound) {
         if (expectedIssuesFound) {
             for (let eif of expectedIssuesFound) {
-                if (!eif.conditionType)
+                if (!eif.errorCode)
                     throw new Error('Forgot to set ConditionType property on IssueFound');
                 expect(issuesFound).not.toBeNull();
-                let type = eif.conditionType!;
-                let issueFound = issuesFound.find((value) => value.conditionType === type);
+                let type = eif.errorCode!;
+                let issueFound = issuesFound.find((value) => value.errorCode === type);
                 expect(issueFound).toBeDefined();
                 testIssueFound(issueFound!, eif);
             }
@@ -1052,7 +1052,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid,
             [{
-                conditionType: NeverMatchesConditionType,
+                errorCode: NeverMatchesConditionType,
                 valueHostName: 'Field1',
                 errorMessage: 'Error 1: ' + NeverMatchesConditionType,
                 summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
@@ -1063,14 +1063,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
         let inputSnapshot: IssueFound = {
             valueHostName: config.name,
-            conditionType: NeverMatchesConditionType,
+            errorCode: NeverMatchesConditionType,
             severity: ValidationSeverity.Error,
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,        };
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([inputSnapshot]);
         let summarySnapshot: IssueFound = {
             valueHostName: config.name,
-            conditionType: NeverMatchesConditionType,
+            errorCode: NeverMatchesConditionType,
             severity: ValidationSeverity.Error,
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
@@ -1088,7 +1088,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid,
             [{
-                conditionType: NeverMatchesConditionType,
+                errorCode: NeverMatchesConditionType,
                 valueHostName: 'Field1',
                 errorMessage: 'Error 1: ' + NeverMatchesConditionType,
                 summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
@@ -1100,7 +1100,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let inputSnapshot: IssueFound = {
             valueHostName: config.name,
-            conditionType: NeverMatchesConditionType,
+            errorCode: NeverMatchesConditionType,
             severity: ValidationSeverity.Error,
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
@@ -1108,7 +1108,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([inputSnapshot]);
         let summarySnapshot: IssueFound = {
             valueHostName: config.name,
-            conditionType: NeverMatchesConditionType,
+            errorCode: NeverMatchesConditionType,
             severity: ValidationSeverity.Error,
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
@@ -1183,7 +1183,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [
             {
-                conditionType: NeverMatchesConditionType,
+                errorCode: NeverMatchesConditionType,
                 valueHostName: 'Field1',
                 errorMessage: 'Error 1: ' + NeverMatchesConditionType,
                 summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
@@ -1192,7 +1192,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         ]);
         testIssueFoundFromValidateResults(validateResults, 1, ValidationResult.Invalid, [
             {
-                conditionType: NeverMatchesConditionType,
+                errorCode: NeverMatchesConditionType,
                 valueHostName: 'Field2',
                 errorMessage: 'Error 2: ' + NeverMatchesConditionType,
                 summaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
@@ -1204,7 +1204,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let inputSnapshot1: IssueFound = {
             valueHostName: config1.name,
-            conditionType: NeverMatchesConditionType,
+            errorCode: NeverMatchesConditionType,
             severity: ValidationSeverity.Error,
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
@@ -1212,7 +1212,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([inputSnapshot1]);
         let inputSnapshot2: IssueFound = {
             valueHostName: config2.name,
-            conditionType: NeverMatchesConditionType,
+            errorCode: NeverMatchesConditionType,
             severity: ValidationSeverity.Error,
             errorMessage: 'Error 2: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
@@ -1220,14 +1220,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config2.name)).toEqual([inputSnapshot2]);
         let summarySnapshot1: IssueFound = {
             valueHostName: config1.name,
-            conditionType: NeverMatchesConditionType,
+            errorCode: NeverMatchesConditionType,
             severity: ValidationSeverity.Error,
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
         };
         let summarySnapshot2: IssueFound = {
             valueHostName: config2.name,
-            conditionType: NeverMatchesConditionType,
+            errorCode: NeverMatchesConditionType,
             severity: ValidationSeverity.Error,
             errorMessage: 'Error 2: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
@@ -1247,7 +1247,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
             valueHostName: BusinessLogicValueHostName,
-            conditionType: '',
+            errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
         expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeInstanceOf(BusinessLogicInputValueHost);
@@ -1256,7 +1256,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
             valueHostName: BusinessLogicValueHostName,
-            conditionType: '',
+            errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
     });
@@ -1276,14 +1276,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
             valueHostName: config.name,
-            conditionType: '',
+            errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
             valueHostName: config.name,
-            conditionType: '',
+            errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
 
@@ -1309,21 +1309,21 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
                 errorMessage: 'CONDITION ERROR',
                 severity: ValidationSeverity.Error,
                 valueHostName: config.name,
-                conditionType: NeverMatchesConditionType,
+                errorCode: NeverMatchesConditionType,
                 summaryMessage: 'SUMMARY CONDITION ERROR'
             },
             <IssueFound>{
                 errorMessage: 'BL_ERROR',
                 severity: ValidationSeverity.Error,
                 valueHostName: BusinessLogicValueHostName,
-                conditionType: '',
+                errorCode: 'GENERATED_0',
                 summaryMessage: 'BL_ERROR'
             }]);
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([<IssueFound>{
             errorMessage: 'CONDITION ERROR',
             severity: ValidationSeverity.Error,
             valueHostName: config.name,
-            conditionType: NeverMatchesConditionType,
+            errorCode: NeverMatchesConditionType,
             summaryMessage: 'SUMMARY CONDITION ERROR'
         }]);
 
@@ -1333,7 +1333,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
                 errorMessage: 'BL_ERROR',
                 severity: ValidationSeverity.Error,
                 valueHostName: BusinessLogicValueHostName,
-                conditionType: '',
+                errorCode: 'GENERATED_0',
                 summaryMessage: 'BL_ERROR'
             }]);
     });
@@ -1375,7 +1375,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validateResults = setup.validationManager.validate({ preliminary: false })).not.toThrow();
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            conditionType: conditionType,
+            errorCode: conditionType,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + conditionType,
             summaryMessage: 'Summary 1: ' + conditionType,
@@ -1388,14 +1388,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             valueHostName: config.name,
             severity: ValidationSeverity.Severe, // only because Required conditions default to Severe
             errorMessage: 'Error 1: ' + conditionType,
-            conditionType: conditionType,
+            errorCode: conditionType,
             summaryMessage: 'Summary 1: ' + conditionType
         };
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([inputSnapshot]);
         let summarySnapshot: IssueFound = {
             valueHostName: config.name,
             severity: ValidationSeverity.Severe, // only because Required conditions default to Severe
-            conditionType: conditionType,
+            errorCode: conditionType,
             errorMessage: 'Error 1: ' + conditionType,
             summaryMessage: 'Summary 1: ' + conditionType,
         };
@@ -1410,7 +1410,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            conditionType: NeverMatchesConditionType
+            errorCode: NeverMatchesConditionType
         }]);
     });
     test('With 1 inputValueHost and a condition that will evaluate as NoMatch during edit, use option DuringEdit=true, expect Invalid', () => {
@@ -1422,7 +1422,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            conditionType: NeverMatchesConditionType
+            errorCode: NeverMatchesConditionType
         }]);
     });    
     test('With 1 inputValueHost that has a string value and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Valid', () => {
@@ -1452,7 +1452,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            conditionType: NeverMatchesConditionType
+            errorCode: NeverMatchesConditionType
         }]);
     });
     test('With 1 inputValueHost and a condition that does not implement IEvaluateConditionDuringEdits, use option DuringEdit=true, expect condition to be skipped and array of ValidateResults = []', () => {
@@ -1476,7 +1476,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            conditionType: NeverMatchesConditionType
+            errorCode: NeverMatchesConditionType
         }]);
     });
     test('OnValidated callback test', () => {

@@ -1,3 +1,9 @@
+## 0.13.0
+- InputValidator now has an errorcode whose value inherits from Condition.ConditionType
+  unless the user assigns it to InputValidatorConfig. Fixes a problem where you want
+  to use the same condition several times in the same InputValueHost.
+- **Breaking API change** - IssuesFound.conditionType property renamed to errorCode.
+- Introduce config().calc() to the fluent syntax for CalcValueHost.
 ## 0.12.0
 - **Major feature**. CalcValueHost is used for calculating values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
 - **Breaking API change.** Renamed "Descriptor" to "Config" throughout. I felt that the descriptor objects

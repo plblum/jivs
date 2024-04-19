@@ -20,22 +20,22 @@ export interface ITextLocalizerService
     localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null;
 
     /**
-     * Attempts to get the localized error message for the ConditionType and optional DataTypeLookupKey
-     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ConditionType.
-     * @param conditionType 
+     * Attempts to get the localized error message for the ErrorCode and optional DataTypeLookupKey
+     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ErrorCode.
+     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns The error message or null if not available.
      */
-    getErrorMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null;
+    getErrorMessage(cultureIdToMatch: string, errorCode: string, dataTypeLookupKey: string | null): string | null;
 
     /**
-     * Attempts to get the localized Summary error message for the ConditionType and optional DataTypeLookupKey
-     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ConditionType.
-     * @param conditionType 
+     * Attempts to get the localized Summary error message for the ErrorCode and optional DataTypeLookupKey
+     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ErrorCode.
+     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property 
      * @param dataTypeLookupKey 
      * @returns The Summary error message or null if not available.
      */
-    getSummaryMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null;
+    getSummaryMessage(cultureIdToMatch: string, errorCode: string, dataTypeLookupKey: string | null): string | null;
 }
 
 

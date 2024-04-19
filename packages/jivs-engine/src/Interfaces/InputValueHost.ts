@@ -11,11 +11,11 @@ import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableV
 export interface IInputValueHost extends IValidatableValueHostBase {
     /**
      * Gets an InputValidator already assigned to this InputValueHost.
-     * @param conditionType - The ConditionType value assigned to the InputValidator
-     * that you want.
+     * @param errorCode - The errorCode value assigned to the InputValidator
+     * that you want. Same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @returns The InputValidator or null if the condition type does not match.
      */
-        getValidator(conditionType: string): IInputValidator | null;
+        getValidator(errorCode: string): IInputValidator | null;
     
         /**
          * Intended for the UI developer to add their own UI specific validators

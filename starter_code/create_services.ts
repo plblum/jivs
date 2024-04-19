@@ -345,12 +345,14 @@ export function createTextLocalizerService(): ITextLocalizerService
     // Validator error messages can use these instead of having to be setup on individual InputValidatorConfigs.
     // So long as you don't supply a value to the InputValidatorConfig.errorMessage property, it will
     // create a lookup key using this pattern, and see if the TextLocalizerService has a value for it.
-    // EM-ConditionType-DataTypeLookupKey
+    // EM-ErrorCode-DataTypeLookupKey
     // and a fallback:
-    // EM-ConditionType
+    // EM-ErrorCode
     // Similar for summaryMessage, only with SEM- prefix:
-    // SEM-ConditionType-DataTypeLookupKey
-    // SEM-ConditionType
+    // SEM-ErrorCode-DataTypeLookupKey
+    // SEM-ErrorCode
+    // The term "ErrorCode" is usually the ConditionType on the Condition, but can be overridden 
+    // on InputValidatorConfig.errorCode. 
     // 
     // This becomes important for auto-generating the "Data type check" validators, a step that the UI developer
     // would normally have to inject into the list of validators from business logic.
