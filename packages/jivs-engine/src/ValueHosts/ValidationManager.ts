@@ -97,6 +97,21 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         let savedServices = config.services ?? null;
         config.services = null as any; // to ignore during DeepClone
+
+        // avoid passing FluentCollectors into deepClone
+        // Convert them to real configs first
+        if (config.valueHostConfigs) {
+            let valueHostConfigs: Array<ValueHostConfig> = [];
+            config.valueHostConfigs.forEach((item) => {
+                let resolver = toIInputValueHostConfigResolver(item);
+                if (resolver)
+                    valueHostConfigs.push(resolver.parentConfig);
+                else
+                    valueHostConfigs.push(item as ValueHostConfig);
+            });
+            config.valueHostConfigs = valueHostConfigs;
+        }
+
         let internalConfig = deepClone(config) as ValidationManagerConfig;
         config.services = savedServices;
         internalConfig.services = savedServices;
