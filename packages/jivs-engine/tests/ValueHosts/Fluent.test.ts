@@ -6,6 +6,8 @@ import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { InputValidatorConfig } from '../../src/Interfaces/InputValidator';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
+import { IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
+import { ICalcValueHost, CalculationHandlerResult } from '../../src/Interfaces/CalcValueHost';
 import {
     FluentInputValidatorConfig, FluentValidatorCollector, FluentFactory, config, customRule,
     IFluentValidatorCollector, FluentConditionCollector, IFluentConditionCollector, 
@@ -241,7 +243,7 @@ describe('FluentFactory', () => {
     })    
 });
 
-describe('configNonInput', () => {
+describe('config().nonInput()', () => {
     test('Valid name, null data type and defined config returned as new object with addition of type', () => {
         let testItem = config().nonInput('Field1', null, { label: 'Field 1' });
         expect(testItem).toEqual({
@@ -282,7 +284,7 @@ describe('configNonInput', () => {
         expect(() => config().nonInput(100 as any)).toThrow('pass');
     });
 });
-describe('configInput', () => {
+describe('config().input()', () => {
     test('Valid name, null data type and defined config returned as new object with addition of type', () => {
         let testItem = config().input('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
@@ -331,7 +333,7 @@ describe('configInput', () => {
         expect(() => config().input(100 as any)).toThrow('pass');
     });
 });
-describe('configChildren', () => {
+describe('config().conditions', () => {
     test('Undefined parameter creates a FluentConditionCollector with config containing type=TBD and collectionConfig=[]', () => {
         let testItem = config().conditions();
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
@@ -373,6 +375,53 @@ describe('configChildren', () => {
         });
     });        
 });
+
+describe('configCalc', () => {
+    function calcFn(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): CalculationHandlerResult
+    {
+        return 1;
+    }
+    test('Valid name, null data type and defined config returned as new object with addition of type', () => {
+        let testItem = config().calc('Field1', null, calcFn);
+        expect(testItem).toEqual({
+            type: ValueHostType.Calc,
+            name: 'Field1',
+            calcFn: calcFn
+        });
+    });
+    test('Valid name, valid data type and undefined config returned as new object with addition of type', () => {
+        let testItem = config().calc('Field1', 'Test', calcFn);
+        expect(testItem).toEqual({
+            type: ValueHostType.Calc,
+            name: 'Field1',
+            dataType: 'Test',
+            calcFn: calcFn
+        });
+    });
+
+    test('First parameter is a config returned as new object with addition of type', () => {
+        let testItem = config().calc({ name: 'Field1', dataType: 'Test', label: 'Field 1', calcFn: calcFn });
+        expect(testItem).toEqual({
+            type: ValueHostType.Calc,
+            name: 'Field1',
+            dataType: 'Test',
+            label: 'Field 1',
+            calcFn: calcFn
+        });
+    });
+    test('Null name throws', () => {
+        expect(() => config().calc(null!)).toThrow('arg1');
+
+    });
+    test('First parameter is not compatible with overload throws', () => {
+        expect(() => config().calc(100 as any)).toThrow('pass');
+    });
+    test('Invalid function throws', () => {
+        expect(() => config().calc('Field1', 'Test', () => true)).toThrow(/supply/);
+    });    
+});
+
+
 // Test cases for creating fluent functions...
 function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>,
     errorMessage?: string | null,

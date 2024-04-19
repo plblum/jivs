@@ -19,12 +19,15 @@
  * 
  * `config().nonInput('valueHostName', 'datatype lookup key', { label: 'label' }).[chained functions]`
  * 
+ *  `config().calc('valueHostName', 'datatype lookup key', function callback);`
+ * 
  * For example:
  * ```ts
  * let valueHostConfigs = [
  *   config().nonInput('productVisible', LookupKey.Boolean),
  *   config().input('productName', LookupKey.String, { label: 'Name' }).required().regExp('^\w[\s\w]*$')`,
  *   config().input('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqual(0.0)`,
+ *   config().calc('maxPrice', LookupKey.Currency, calcMaxPrice) // calcMaxPrice is a function declared elsewhere
  * ];
  * let vm = new ValidationManager({
  *   services: createValidationServices(),
@@ -41,7 +44,7 @@
  * the conditions to the InputValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
  * - StartFluent - Class that starts a fluent chain. Its methods start InputValueHost (input()),
- *   NonInputValueHost (nonInput()), and a collection of Conditions (conditions()).
+ *   NonInputValueHost (nonInput()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  * 
  * - FluentValidatorCollector - Class that supplies Conditions and InputValidators
  *   to the preceding InputValueHost. It is returned by config().input() and each chained object that follows.
@@ -121,11 +124,12 @@ import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { IInputValueHostConfigResolver, InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { NonInputValueHostConfig } from "../Interfaces/NonInputValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
-import { assertNotNull } from "../Utilities/ErrorHandling";
+import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { EvaluateChildConditionResultsConfig } from '../Conditions/EvaluateChildConditionResultsBase';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { OneValueConditionConfig } from '../Conditions/OneValueConditionBase';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
+import { CalcValueHostConfig, CalculationHandler } from 'src/Interfaces/CalcValueHost';
 
 /**
  * Starts a fluent chain. Its methods start InputValueHost (input()),
@@ -225,6 +229,39 @@ export class StartFluent
     {
         let collector = new FluentConditionCollector(config ?? null);
         return collector;
+    }    
+
+    /**
+     * Fluent format to create a CalcValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param name - the ValueHost name
+     * @param dataType - can be null. The value for ValueHost.dataType.
+     * @param calcFn - required. Function callback.
+     */
+    calc(name: string, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
+    /**
+     * Fluent format to create a CalcValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
+     * You can omit the type property.
+     */
+    calc(config: Omit<CalcValueHostConfig, 'type'>): CalcValueHostConfig;
+    // overload resolution
+    calc(arg1: string | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
+    {
+        assertNotNull(arg1, 'arg1');
+        if (typeof arg1 === 'object')
+            return { ...arg1 as CalcValueHostConfig, type: ValueHostType.Calc };
+        if (typeof arg1 === 'string') {
+            if (!calcFn)
+                throw new CodingError('Must supply a calculation function');
+            let config: CalcValueHostConfig = { type: ValueHostType.Calc, name: arg1, calcFn: calcFn };
+            if (dataType)
+                config.dataType = dataType;
+        
+            return config;
+        }
+        throw new TypeError('Must pass valuehost name or CalcValueHostConfig');
     }    
 }
 export function config(): StartFluent
@@ -570,7 +607,7 @@ export function customRule(conditionCreator: (requester: InputValidatorConfig) =
 }
 export class FluentSyntaxRequiredError extends Error
 {
-    constructor(errorMessage: string = 'Call only when chaining with configInput function.')
+    constructor(errorMessage: string = 'Call only when chaining with config().input() function.')
     {
         super(errorMessage);
     }
