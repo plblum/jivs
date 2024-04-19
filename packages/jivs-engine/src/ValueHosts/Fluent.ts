@@ -129,7 +129,7 @@ import { EvaluateChildConditionResultsConfig } from '../Conditions/EvaluateChild
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { OneValueConditionConfig } from '../Conditions/OneValueConditionBase';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
-import { CalcValueHostConfig, CalculationHandler } from 'src/Interfaces/CalcValueHost';
+import { CalcValueHostConfig, CalculationHandler } from '../Interfaces/CalcValueHost';
 
 /**
  * Starts a fluent chain. Its methods start InputValueHost (input()),

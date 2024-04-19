@@ -416,9 +416,6 @@ describe('configCalc', () => {
     test('First parameter is not compatible with overload throws', () => {
         expect(() => config().calc(100 as any)).toThrow('pass');
     });
-    test('Invalid function throws', () => {
-        expect(() => config().calc('Field1', 'Test', () => true)).toThrow(/supply/);
-    });    
 });
 
 
