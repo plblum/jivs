@@ -35,6 +35,13 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
     condition: ICondition;
 
     /**
+     * Provides the error code associated with this instance.
+     * It uses InputValidatorConfig.errorCode when assigned
+     * and ConditionType when not assigned.
+     */
+    errorCode: string;
+
+    /**
      * Gets the conditionType associated with the condition
      */
     conditionType: string;
@@ -95,6 +102,12 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
  * for the purpose of logging and blocking.)
  */
 export interface InputValidatorConfig {
+    /**
+     * Provides the error code associated with this instance.
+     * When unassigned, the InputValidator uses the ConditionType as the error code.
+     */
+    errorCode?: string;
+    
     // -----------------------
     // There are two ways to supply this validator's Condition.
     // 1. Pass a ConditionConfig and we'll create the correct Condition instance
@@ -120,7 +133,7 @@ export interface InputValidatorConfig {
      * @param requester
      * @returns 
      */
-    conditionCreator?: (requester: InputValidatorConfig) => ICondition | null;
+    conditionCreator?: ConditionCreatorHandler;
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
@@ -144,7 +157,7 @@ export interface InputValidatorConfig {
      * @param requester
      * @returns 
      */
-    enablerCreator?: (requester: InputValidatorConfig) => ICondition | null;
+    enablerCreator?: ConditionCreatorHandler;
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
@@ -231,6 +244,11 @@ export interface InputValidatorConfig {
     //  */
     // [propName: string]: any;    
 }
+
+/**
+ * Function definition used with InputValidatorConfig.conditionCreator and enablerCreator.
+ */
+export type ConditionCreatorHandler = (requester: InputValidatorConfig) => ICondition | null;
 
 /**
  * Result of the validate() function.

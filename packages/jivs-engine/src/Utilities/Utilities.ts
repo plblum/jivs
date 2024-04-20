@@ -97,3 +97,20 @@ export function cultureLanguageCode(cultureId: string): string
         return cultureId.substring(0, pos);
     return cultureId;
 }
+
+/**
+ * Ensures that if the value is actually assigned a string, that string is
+ * trimmed and not empty. If null, undefined or empty (after trimming),
+ * it returns null.
+ * @param value 
+ * @returns trimmed string or null.
+ */
+export function cleanString(value: string | null | undefined): string | null
+{
+    if (typeof value === 'string')
+    {
+        let text = value.trim();
+        return text.length > 0 ? text : null;
+    }
+    return null;
+}

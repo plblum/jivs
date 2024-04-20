@@ -35,10 +35,9 @@ import { IInputValueHost } from './InputValueHost';
 export interface ICondition {
     /**
      * A unique identifier for the specific implementation, like "Required" or "Range".
-     * Its value appears in the IssueFound that comes from Validation, and in 
-     * IssueFound that comes from retrieving a list of errors to display.
+     * Its value appears in the IssueFound.errorCode property unless overridden in InputValidatorConfig.errorCode.
      * It allows the consumer of both to correlate those instances with the specific condition.
-     * When defining conditions through a ConditionConfig, the Type property must 
+     * When defining conditions through a ConditionConfig, the type property must 
      * be assigned with a valid ConditionType.
      */
     conditionType: string;

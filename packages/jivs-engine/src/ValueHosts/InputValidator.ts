@@ -23,6 +23,8 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { cleanString } from '../Utilities/Utilities';
+import { ConditionType } from '../Conditions/ConditionTypes';
 
 /**
  * An IInputValidator implementation that represents a single validator 
@@ -82,6 +84,16 @@ export class InputValidator implements IInputValidator {
      */
     private readonly _config: InputValidatorConfig;
 
+    /**
+     * Provides the error code associated with this instance.
+     * It uses InputValidatorConfig.errorCode when assigned
+     * and ConditionType when not assigned.
+     */
+    public get errorCode(): string
+    {
+        return cleanString(this.config.errorCode) ?? this.conditionType;
+    }
+
 
     /**
      * Condition used to validate the data.
@@ -117,7 +129,7 @@ export class InputValidator implements IInputValidator {
      * Gets the conditionType associated with the condition
      */
     public get conditionType(): string {
-        return this.condition.conditionType;
+        return cleanString(this.condition.conditionType) ?? ConditionType.Unknown;
     }
 
     /**
@@ -200,9 +212,9 @@ export class InputValidator implements IInputValidator {
             msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
                 l10n, msg);
         if (msg == null)  // null/undefined
-        {// fallback: see if TextLocalizerService has an entry specific to the ConditionType and DataTypeLookupKey.
+        {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
             msg = this.services.textLocalizerService.getErrorMessage(this.services.activeCultureId,
-                this.conditionType, this.valueHost.getDataType());
+                this.errorCode, this.valueHost.getDataType());
         }
         if (msg == null)
             throw new Error('Must supply a value for Config.errorMessage');
@@ -227,9 +239,9 @@ export class InputValidator implements IInputValidator {
             msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
                 l10n, msg ?? '');
         if (msg == null)  // null/undefined
-        {// fallback: see if TextLocalizerService has an entry specific to the ConditionType and DataTypeLookupKey.
+        {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
             msg = this.services.textLocalizerService.getSummaryMessage(this.services.activeCultureId,
-                this.conditionType, this.valueHost.getDataType());
+                this.errorCode, this.valueHost.getDataType());
         }
         if (msg == null)
             return this.getErrorMessageTemplate();
@@ -249,7 +261,7 @@ export class InputValidator implements IInputValidator {
         let self = this;
         logInfo(() => {
             return {
-                message: `Validating with condition ${this.conditionType}`
+                message: `Validating for error code ${this.errorCode}`
             }
         });
 
@@ -314,7 +326,7 @@ export class InputValidator implements IInputValidator {
         finally {
             if (resultState.issueFound)
                 logInfo(() => {
-                    let msg = `Condition ${this.conditionType} with issue found: ${JSON.stringify(resultState.issueFound)}`;
+                    let msg = `Validation error ${this.errorCode} found this issue: ${JSON.stringify(resultState.issueFound)}`;
                     return {
                         message: msg
                     };
@@ -415,18 +427,18 @@ export class InputValidator implements IInputValidator {
 
     /**
      * State is stored in ValueHost's State using its saveInToStore/getFromStore.
-     * Each entry needs to be associated with the conditionType of this InputValidator
+     * Each entry needs to be associated with the errorCode of this InputValidator
      * and have its own identifier for the value.
      * This function creates a name to use with saveToStore and getFromStore.
      * @param identifier 
      */
     protected nameForState(identifier: string): string {
-        return `_IV[${this.conditionType}].${identifier}`;
+        return `_IV[${this.errorCode}].${identifier}`;
     }
 
     /**
      * Saves an entry into the ValueHostState.
-     * @param identifier - used together with the conditionType to form a key in the State.
+     * @param identifier - used together with the errorCode to form a key in the State.
      * @param value - value to store. Use undefined to remove existing value.
      */
     protected saveIntoState(identifier: string, value: ValidTypesForStateStorage | undefined): void {
@@ -439,7 +451,7 @@ export class InputValidator implements IInputValidator {
      * Often used to store values that override an entry in the InputValidationConfig.
      * In that case, typical implementation is:
      * let value = this.getFromState('identifier') ?? this.config.identifier;
-     * @param identifier - used together with the conditionType to form a key in the State.
+     * @param identifier - used together with the errorCode to form a key in the State.
      * @returns The value or undefined if the key is not stored in state.
      */
     protected getFromState(identifier: string): ValidTypesForStateStorage | undefined {
@@ -551,7 +563,7 @@ export function createIssueFound(valueHost: IValueHost,
     validator: IInputValidator): IssueFound {
     return {
         valueHostName: valueHost.getName(),
-        conditionType: validator.condition.conditionType,
+        errorCode: validator.errorCode,
         severity: ValidationSeverity.Error,
         errorMessage: '',
         summaryMessage: undefined
@@ -571,3 +583,16 @@ export class InputValidatorFactory implements IInputValidatorFactory {
 
 
 //#endregion Factory
+
+/**
+ * When using an InputValidatorConfig object, its errorCode property
+ * may not be defined, but it still has an errorCode through
+ * the Condition's ConditionType.
+ * Use this function to get the expected error code.
+ * @param ivConfig 
+ * @returns 
+ */
+export function resolveErrorCode(ivConfig: InputValidatorConfig): string
+{
+    return ivConfig.errorCode ?? ivConfig.conditionConfig?.type ?? ConditionType.Unknown;
+}

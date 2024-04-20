@@ -10,6 +10,7 @@ import { ValidateOptions, ValidateResult, ValidationResult, IssueFound, Validati
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
+import { cleanString } from '../Utilities/Utilities';
 
 
 /**
@@ -38,11 +39,11 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
 
             for (let error of this.businessLogicErrors)
             {
-                let errorCode = error.errorCode ?? `GENERATED_${issueCount}`;
+                let errorCode = cleanString(error.errorCode) ?? `GENERATED_${issueCount}`;
                 if (error.severity !== ValidationSeverity.Warning)
                     errorFound = true;
                 iif.push({
-                    conditionType: errorCode,
+                    errorCode: errorCode,
                     errorMessage: error.errorMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
                     valueHostName: '*'

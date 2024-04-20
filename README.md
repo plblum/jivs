@@ -98,9 +98,11 @@ Here are a few terms used.
 - **Service** – A class provides Jivs with dependency injection or a factory. Jivs has you create a master service object, ValidationServices, and connect individual services to it. 
 - **Business Logic** – The code dedicated to describing your Model/Entity. It provides the validation rules for individual fields and to run before saving. It should be separate from the UI, and Jivs is designed for that approach.
 
+<a name="apioverview"></a>
 ## Quick API overview
 
 You will be working with classes and interfaces. Here are the primary pieces to orient you to its API.
+
 
 -   <a href="#valuehosts">`ValueHost classes`</a> – Identifies a single value to be validated
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
@@ -135,6 +137,75 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 		+ Changing a value to something else. Take the Date object again. Instead of working with its complete date and time, you may be interested only in the date, the time, or even parts like Month or Hours.
 	- There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
 	- `ConditionFactory` – Creates the Condition objects used by business rules.
+	
+### Configuring Overview
+Jivs takes this approach to populating the ValidationManager: Create simple objects that configure each of the pieces into the ValidationManagerConfig object. Then create the ValidationManager with it. Jivs creates all of the actual objects from those simple objects.
+
+Whenever you see "Config" in a type name, it is one of these configuration objects.
+
+There are a couple of approaches to configuration, based on whether you want to let your business layer define the input and validator rules.
+
+#### When starting with Business Logic
+1. UI creates the ValidationManagerConfig object including the services
+2. Business logic populates vmConfig.valueHostConfig
+3. With the Builder, UI replaces error messages and labels. 
+4. With the Builder, UI adds additional ValueHosts and validators8. 
+5. Create the ValidationManager
+
+```ts
+let vmConfig: ValidationManagerConfig = {
+  services: createValidationServices(),
+  valueHostConfigs: []	
+};
+
+... run code that transcribes business logic rules into vmConfig.valueHostConfigs ...
+
+let builder = build(vmConfig);
+builder.favorUIMessages();
+builder.updateInput('StartDate', { label: 'Start date'});
+builder.updateValidator('StartDate', ConditionType.LessThan, {
+  errorMessage: 'The two dates must be less than {CompareTo} days apart.',
+  summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
+});
+
+builder.addValidator('EndDate').requireText();
+let vm = new ValidationManager(vmConfig);
+
+```
+
+#### When UI creates everything
+1. UI creates the ValidationManagerConfig object including the services
+2. With the Builder, use <a href="#fluentsyntax">fluent syntax</a> to create all ValueHosts and their validators.  
+3. Create the ValidationManager
+
+```ts
+let vmConfig: ValidationManagerConfig = {
+  services: createValidationServices(),
+  valueHostConfigs: []	
+};
+
+let builder = build(vmConfig);
+builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
+  .lessThan('EndDate', null, null, { severity: ValidationSeverity.Severe })
+  .lessThan('NumOfDays', { valueHostName: 'DiffDays' }, 'The two dates must be less than {CompareTo} days apart.', 
+  { 
+    errorCode: 'NumOfDays',
+    summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
+  });
+builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).requireText();
+
+let vm = new ValidationManager(vmConfig);
+```
+
+
+Here's how that populated ValidationManagerConfig looks.
+
+We want you to convert the validation rules from your business rules. Its better to write code that does the conversion for you, so that as business rules change, your UI does not have to.
+
+
+When you don't provide any conversion code, you can use the fluent syntax as shown here.
+
+
 <a name="conditions"></a>
 ## Conditions - the validation rules
 You need to build a class that adapts your validation rules to Jivs own types and classes. Jivs uses the classes that implement the `ICondition interface` to package up a validation rule, and `ConditionConfig type` to inform the `Condition` class how to configure itself. The class is a bridge between business logic and your UI. This section provides the details.
@@ -277,7 +348,7 @@ interface IInputValueHost extends IValueHost
     
     validate(options): ValidateResult;
     isValid: boolean;
-    getIssueFound(conditionType): IssueFound | null;
+    getIssueFound(errorCode): IssueFound | null;
     getIssuesFound(group?): IssueFound[];	
 }
 interface INonInputValueHost extends IValueHost
@@ -532,34 +603,36 @@ let validationManager = new ValidationManager(config);
 ```
 <a name="fluentsyntax"></a>
 ## Fluent syntax
-If you are typing in those Config objects, you are probably not happy. Config objects are meant for code that converts your business logic objects into them.
+If you are typing in those Config objects, you are probably not happy. Config objects are meant for code that transcribes your business logic rules into them.
 
 Jivs comes with a fluent syntax to simplify the manual configuration work.
 Here's how the example with FirstName and LastName properties looks with this syntax.
 ```ts
-let firstNameConfig = config().input('FirstName', 'String', { label: 'First Name' })
+let vmConfig = <IValidationManagerConfig>{
+  services: createValidationServices(),
+  valueHostConfigs: []
+}
+let builder = build(vmConfig);
+builder().input('FirstName', 'String', { label: 'First Name' })
    .requireText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.')
    .notEqualTo('LastName', 'Are you sure...', { summaryMessage: 'In {Label}, are you sure...');
-let lastNameConfig = config.input('LastName', 'String', { label: 'Last Name'})
+builder.input('LastName', 'String', { label: 'Last Name'})
    .requireText(null, 'This field requires a value', { summaryMessage: '{Label} requires a value.' );
    //NOTE: Error messages can be omitted if you set them up in the TextLocalizationService
    // or let the UI developer attach them later.
    
-let config = <IValidationManagerConfig>{
-  services: createValidationServices(),
-  valueHostConfigs: [firstNameConfig, lastNameConfig]
-}
-let validationManager = new ValidationManager(config);   
+let validationManager = new ValidationManager(vmConfig);   
 ```
-You can also use the config() object to add NonInputValueHosts and a list of Conditions to these Conditions: All, Any, CountMatches.
+You can also use the builder object to add NonInputValueHosts, CalcValueHosts, and a list of Conditions to these Conditions: All, Any, CountMatches.
 
 ```ts
-let visibleConfig = config().nonInput('PersonVisible', 'Boolean');
-let activeConfig = config().nonInput('PersonActive', 'Boolean');
-let personName = config().input('Name').any(
-     config().conditions()
+builder.nonInput('PersonVisible', 'Boolean');
+builder.nonInput('PersonActive', 'Boolean');
+builder.input('Name').any(
+     builder.conditions()
      	.equalTo(true, { valueHostName: 'PersonVisible'})
         .equalTo(true, { valueHostName: 'PersonActive'}));
+builder.calc('DiffInDays', 'Integer', diffInDaysFunctionCallback);        
 ```
 <a name="createconditions"></a>
 ## Creating your own Conditions

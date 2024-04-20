@@ -30,7 +30,6 @@ import { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from 
 import { IValidationServices } from './ValidationServices';
 import { ValueHostConfig, ValueHostState } from './ValueHost';
 import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './ValidatableValueHostBase';
-import { IInputValueHostConfigResolver } from './InputValueHost';
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -90,7 +89,7 @@ export interface IValidationManager extends IValueHostsManager {
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - conditionType - Identifies the condition supplying the issue.
+     * - errorCode - Identifies the validator supplying the issue.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
@@ -108,7 +107,7 @@ export interface IValidationManager extends IValueHostsManager {
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - conditionType - Identifies the condition supplying the issue.
+     * - errorCode - Identifies the validator supplying the issue.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.
@@ -151,7 +150,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * If rules need to be changed later, either create a new instance of ValidationManager
      * or use its addValueHost, updateValueHost, discardValueHost methods.
      */
-    valueHostConfigs: ConfigValueHostConfigs;
+    valueHostConfigs: Array<ValueHostConfig>;
     /**
      * The state for the ValidationManager itself.
      * Its up to you to retain stateful information so that the service works statelessly.
@@ -176,11 +175,6 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      */
     savedValueHostStates?: Array<ValueHostState> | null;
 }
-/**
- * Type for the ValidationManagerConfig.valueHostConfigs that permits
- * several types, so long as they result in a ValueHostConfig.
- */
-export type ConfigValueHostConfigs = Array<ValueHostConfig | IInputValueHostConfigResolver>;
 
 export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;
 export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<ValidateResult>) => void;

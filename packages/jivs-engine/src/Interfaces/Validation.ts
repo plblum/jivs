@@ -155,9 +155,10 @@ export interface IssueFound {
      */
     valueHostName: ValueHostName;
     /**
-     * Type of Condition that resulted in an error message
+     * Error code is either what was supplied on InputValidatorConfig.errorCode
+     * or Condition.ConditionType.
      */
-    conditionType: string;
+    errorCode: string;
 
     /**
      * Determines how a Validator will behave when a Condition evaluates as NoMatch.
@@ -212,11 +213,9 @@ export interface BusinessLogicError {
     severity?: ValidationSeverity;
     /**
      * Optional information about the error to pass along to the ValidationSummary.
-     * It should be a short error code as a string. It will be used in the IssueFound
-     * returned from validate() and getIssuesFound() in IssueFound.conditionType.
-     * ConditionType is used to uniquely identify each IssueFound, and your value
-     * here will serve the same role. As a result, its value cannot match any
-     * ConditionType.
+     * It should be a short error code as a string. It will be used in the IssueFound instance
+     * returned from validate() and getIssuesFound().
+     * Same as ConditionType unless you set the InputValidatorConfig.errorCode property.
      * If not supplied, the IssueFound.ConditionType will be assigned a generated value.
      */
     errorCode?: string;
