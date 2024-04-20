@@ -14,9 +14,9 @@ import { type ValidateOptions, type ValidateResult, type BusinessLogicError, typ
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from './InputValueHost';
-import { IInputValueHost, toIInputValueHostConfigResolver } from '../Interfaces/InputValueHost';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from './ValidatableValueHostBase';
-import { FluentCollectorBase, FluentValidatorCollector } from './Fluent';
+import { FluentValidatorCollector } from './Fluent';
 
 
 /**
@@ -110,11 +110,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         this._lastValueHostStates = internalConfig.savedValueHostStates ?? [];
         let configs = internalConfig.valueHostConfigs ?? [];
         for (let item of configs) {
-            let resolver = toIInputValueHostConfigResolver(item);
-            if (resolver)
-                this.addValueHost(resolver.parentConfig, null);
-            else
-                this.addValueHost(item as ValueHostConfig, null);
+            this.addValueHost(item as ValueHostConfig, null);
         }
     }
     protected get config(): ValidationManagerConfig
@@ -196,7 +192,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
      * @param config 
-     * Can use config().nonInput() or any ValueConfigHost.
+     * Can use fluent().nonInput() or any ValueConfigHost.
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupState() first.
@@ -208,11 +204,11 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * Adds a ValueHostConfig for an InputValueHost not previously added. 
      * Expects fluent syntax where the first parameter starts with
-     * config().input() followed by chained validation rules.
+     * fluent().input() followed by chained validation rules.
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
      * @param fluentCollector
-     * Pass in `config().input("valueHostName"[, parameters]).validator().validator()`. 
+     * Pass in `fluent().input("valueHostName"[, parameters]).validator().validator()`. 
      * @param initialState
      * When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
@@ -246,7 +242,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Replaces a ValueHostConfig for an already added ValueHost. 
      * Does not trigger any notifications.
      * Expects fluent syntax where the first parameter starts with
-     * config().input() followed by chained validation rules.
+     * fluent().input() followed by chained validation rules.
      * If the name isn't found, it will be added.
      * @param collector 
      * @param initialState - When not null, this state object is used instead of an initial state.
@@ -456,7 +452,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - conditionType - Identifies the condition supplying the issue.
+     * - errorCode - Identifies the validator supplying the issue.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
@@ -478,7 +474,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - conditionType - Identifies the condition supplying the issue.
+     * - errorCode - Identifies the validator supplying the issue.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.

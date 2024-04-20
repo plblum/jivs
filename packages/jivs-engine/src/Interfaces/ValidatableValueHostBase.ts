@@ -121,10 +121,10 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * The results of validation specific to one condiiton Type.
-     * @param conditionType 
+     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @returns The issue or null if none.
      */
-    getIssueFound(conditionType: string): IssueFound | null;
+    getIssueFound(errorCode: string): IssueFound | null;
 
     /**
      * A list of all issues found.

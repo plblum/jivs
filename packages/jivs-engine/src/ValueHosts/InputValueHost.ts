@@ -10,7 +10,7 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { objectKeysCount, groupsMatch } from '../Utilities/Utilities';
+import { objectKeysCount, groupsMatch, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
 import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from '../Interfaces/Validation';
@@ -22,6 +22,7 @@ import { InputValueHostConfig, InputValueHostState, IInputValueHost } from '../I
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { FluentValidatorCollector } from './Fluent';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
+import { ConditionType } from '../Conditions/ConditionTypes';
 
 
 /**
@@ -335,14 +336,15 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
 
     /**
      * Gets an InputValidator already assigned to this InputValueHost.
-     * @param conditionType - The ConditionType value assigned to the InputValidator
-     * that you want.
+     * @param errorCode - Same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @returns The InputValidator or null if the condition type does not match.
      */
-    public getValidator(conditionType: string): IInputValidator | null { 
-        for (let iv of this.validators())
-            if (iv.conditionType === conditionType)
-                return iv;
+    public getValidator(errorCode: string): IInputValidator | null { 
+        let ec = cleanString(errorCode);
+        if (ec)
+            for (let iv of this.validators())
+                if (iv.errorCode === ec)
+                    return iv;
         return null;
     }
 
@@ -464,16 +466,18 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
             let oldState = state.issuesFound;
 
             config.validatorConfigs?.forEach((valConfig) => {
-                let condType = 'UNKNOWN';
-                if (valConfig.conditionConfig)
-                    condType = valConfig.conditionConfig.type;
+                let errorCode: string | null = cleanString(valConfig.errorCode);
+                if (!errorCode && valConfig.conditionConfig)
+                    errorCode = valConfig.conditionConfig.type;
                 else if (valConfig.conditionCreator)
                 {
                     let cond = valConfig.conditionCreator(valConfig);   // return null is actually a configuration bug reported to the user in InputValidator.Condition
                     if (cond)
-                        condType = cond.conditionType;
+                        errorCode = cond.conditionType;
                 }
-                let found = oldState.find((value) => value.conditionType === condType);
+                if (!errorCode)
+                    errorCode = ConditionType.Unknown;
+                let found = oldState.find((value) => value.errorCode === errorCode);
                 if (found) {
                     if (!issuesFound)
                         issuesFound = [];

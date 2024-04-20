@@ -78,7 +78,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
         expect(vr!.issuesFound).not.toBeNull();
         expect(objectKeysCount(vr!.issuesFound)).toBe(1);
         expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
-            conditionType: "GENERATED_0",
+            errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
             valueHostName: BusinessLogicValueHostName
@@ -97,7 +97,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
         expect(vr!.issuesFound).not.toBeNull();
         expect(objectKeysCount(vr!.issuesFound)).toBe(1);
         expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
-            conditionType: "GENERATED_0",
+            errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
             valueHostName: BusinessLogicValueHostName
@@ -116,7 +116,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
         expect(vr!.issuesFound).not.toBeNull();
         expect(objectKeysCount(vr!.issuesFound)).toBe(1);
         expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
-            conditionType: "GENERATED_0",
+            errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Severe,
             valueHostName: BusinessLogicValueHostName
@@ -135,7 +135,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
         expect(vr!.issuesFound).not.toBeNull();
         expect(objectKeysCount(vr!.issuesFound)).toBe(1);
         expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
-            conditionType: "GENERATED_0",
+            errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
             valueHostName: BusinessLogicValueHostName
@@ -155,7 +155,7 @@ describe('BusinessLogicInputValueHost.validate', () => {
         expect(vr!.issuesFound).not.toBeNull();
         expect(objectKeysCount(vr!.issuesFound)).toBe(1);
         expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
-            conditionType: "EC1",
+            errorCode: "EC1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
             valueHostName: BusinessLogicValueHostName
@@ -178,13 +178,13 @@ describe('BusinessLogicInputValueHost.validate', () => {
         expect(vr!.issuesFound).not.toBeNull();
         expect(objectKeysCount(vr!.issuesFound)).toBe(2);
         expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
-            conditionType: "GENERATED_0",
+            errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
             valueHostName: BusinessLogicValueHostName
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
-            conditionType: "GENERATED_1",
+            errorCode: "GENERATED_1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
             valueHostName: BusinessLogicValueHostName
@@ -207,13 +207,13 @@ describe('BusinessLogicInputValueHost.validate', () => {
         expect(vr!.issuesFound).not.toBeNull();
         expect(objectKeysCount(vr!.issuesFound)).toBe(2);
         expect(vr!.issuesFound![0]).toEqual(<IssueFound>{
-            conditionType: "GENERATED_0",
+            errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
             valueHostName: BusinessLogicValueHostName
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
-            conditionType: "GENERATED_1",
+            errorCode: "GENERATED_1",
             errorMessage: "WARNING2",
             severity: ValidationSeverity.Warning,
             valueHostName: BusinessLogicValueHostName

@@ -37,7 +37,8 @@
  *   dataType: LookupKey.Integer,
  *   calcFn: differenceBetweenDates
  * };
- * // fluent: config().calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
+ * // fluent: 
+ * //   fluent().calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
  * 
  * // create the 'StartDate' input with a LessThanCondition
  * let startDateConfig: InputValueHostConfig = {
@@ -56,7 +57,8 @@
  *      }
  *   ]
  * };
- * // fluent: config().input('StartDate', 'Date', { label: 'Start date' })
+ * // fluent: 
+ * // fluent().input('StartDate', 'Date', { label: 'Start date' })
  * //                .lessThan(10, { valueHostName: 'DiffDays' });
  * ```
  * Your function can also save stateful information with the valueHost.saveIntoState.

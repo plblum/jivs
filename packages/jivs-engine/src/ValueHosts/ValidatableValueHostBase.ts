@@ -3,7 +3,7 @@
  * @module ValueHosts/AbstractClasses/ValidatableValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { deepEquals, groupsMatch } from '../Utilities/Utilities';
+import { cleanString, deepEquals, groupsMatch } from '../Utilities/Utilities';
 import { type SetValueOptions} from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
@@ -334,16 +334,17 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     //#region access to validation results    
     /**
      * The results of validation specific to one condiiton Type.
-     * @param conditionType 
+     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @returns The issue or null if none.
      */    
-    public getIssueFound(conditionType: string): IssueFound | null {
-        if (!conditionType)
+    public getIssueFound(errorCode: string): IssueFound | null {
+        let ec = cleanString(errorCode);
+        if (!ec)
             return null;
 
         return this.state.issuesFound ?
             (this.state.issuesFound.find((value) =>
-                value.conditionType === conditionType) ?? null) :
+                value.errorCode === ec) ?? null) :
             null;
     }
 
@@ -356,7 +357,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
      *   that scrolls the associated input field/element into view and sets focus.
-     * - ConditionType - Identifies the condition supplying the issue.
+     * - errorCode - Identifies the validator supplying the issue.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
@@ -375,14 +376,16 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     private addBusinessLogicErrorsToSnapshotList(list: Array<IssueFound>): void {
         if (this.businessLogicErrors) {
+            let issueCount = 0;
             for (let error of this.businessLogicErrors) {
                 list.push({
                     valueHostName: this.getName(),
-                    conditionType: error.errorCode ?? '',
+                    errorCode: cleanString(error.errorCode)  ?? `GENERATED_${issueCount}`,
                     severity: error.severity ?? ValidationSeverity.Error,
                     errorMessage: error.errorMessage,
                     summaryMessage: error.errorMessage
                 });
+                issueCount++;
             }
         }
     }

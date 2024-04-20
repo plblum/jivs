@@ -99,5 +99,10 @@ export enum ConditionType
     /**
      * Associated with NotNullCondition class.
      */
-    NotNull = 'NotNull'
+    NotNull = 'NotNull',
+
+    /**
+     * Returned when ConditionType is not supplied
+     */
+    Unknown = 'UNKNOWN'
 }

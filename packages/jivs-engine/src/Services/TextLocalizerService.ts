@@ -57,56 +57,56 @@ export class TextLocalizerService implements ITextLocalizerService
     }
 
     /**
-     * Attempts to get the localized error message for the ConditionType and optional DataTypeLookupKey.
-     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ConditionType.
-     * @param conditionType 
+     * Attempts to get the localized error message for the ErrorCode and optional DataTypeLookupKey.
+     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ErrorCode.
+     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns The error message or null if not available.
      */
-    public getErrorMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null
+    public getErrorMessage(cultureIdToMatch: string, errorCode: string, dataTypeLookupKey: string | null): string | null
     {
-        let text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(conditionType, dataTypeLookupKey), null);
+        let text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(errorCode, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
-            text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(conditionType, null), null);
+            text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(errorCode, null), null);
         return text;
     }
     /**
      * Constructs the l10nText for the Error Message.
-     * @param conditionType 
+     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns 
      */
-    protected getErrorMessagel10nText(conditionType: string, dataTypeLookupKey: string | null): string
+    protected getErrorMessagel10nText(errorCode: string, dataTypeLookupKey: string | null): string
     {
-        let l10nText = 'EM-' + conditionType;
+        let l10nText = 'EM-' + errorCode;
         if (dataTypeLookupKey)
             l10nText += '-' + dataTypeLookupKey;
         return l10nText;
     }
 
     /**
-     * Attempts to get the localized Summary error message for the ConditionType and optional DataTypeLookupKey
-     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ConditionType.
-     * @param conditionType 
+     * Attempts to get the localized Summary error message for the ErrorCode and optional DataTypeLookupKey
+     * If dataTypeLookupKey is supplied and no match is found, it tries with just the ErrorCode.
+     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns The Summary error message or null if not available.
      */
-    public getSummaryMessage(cultureIdToMatch: string, conditionType: string, dataTypeLookupKey: string | null): string | null
+    public getSummaryMessage(cultureIdToMatch: string, errorCode: string, dataTypeLookupKey: string | null): string | null
     {
-        let text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(conditionType, dataTypeLookupKey), null);
+        let text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
-            text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(conditionType, null), null);
+            text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(errorCode, null), null);
         return text;
     }
     /**
      * Constructs the l10nText for the Summary error message.
-     * @param conditionType 
+     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns 
      */
-    protected getSummaryMessagel10nText(conditionType: string, dataTypeLookupKey: string | null): string
+    protected getSummaryMessagel10nText(errorCode: string, dataTypeLookupKey: string | null): string
     {
-        let l10nText = 'SEM-' + conditionType;
+        let l10nText = 'SEM-' + errorCode;
         if (dataTypeLookupKey)
             l10nText += '-' + dataTypeLookupKey;
         return l10nText;
@@ -128,28 +128,28 @@ export class TextLocalizerService implements ITextLocalizerService
     /**
      * Utility to add an error message for a validator.
      * The localization key (l10ntext) will use this pattern:
-     * 'EM-' + ConditionType + '-' + DataTypeLookupKey
-     * 'EM-' + ConditionType   // this is a fallback
-     * @param conditionType
+     * 'EM-' + ErrorCode + '-' + DataTypeLookupKey
+     * 'EM-' + ErrorCode   // this is a fallback
+     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @param dataTypeLookupKey - optional. 
      * @param cultureToText 
      */
-    public registerErrorMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
+    public registerErrorMessage(errorCode: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
     {
-        this.register(this.getErrorMessagel10nText(conditionType, dataTypeLookupKey), cultureToText);
+        this.register(this.getErrorMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
     }
     /**
      * Utility to add a summary error message for a validator
      * The localization key (l10ntext) will use this pattern:
-     * 'SEM-' + ConditionType + '-' + DataTypeLookupKey
-     * 'SEM-' + ConditionType   // this is a fallback
-     * @param conditionType
+     * 'SEM-' + ErrorCode + '-' + DataTypeLookupKey
+     * 'SEM-' + ErrorCode   // this is a fallback
+     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property
      * @param dataTypeLookupKey - optional. 
      * @param cultureToText 
      */
-    public registerSummaryMessage(conditionType: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
+    public registerSummaryMessage(errorCode: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
     {
-        this.register(this.getSummaryMessagel10nText(conditionType, dataTypeLookupKey), cultureToText);
+        this.register(this.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
     }    
 
     /**
