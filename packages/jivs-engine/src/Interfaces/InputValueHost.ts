@@ -77,33 +77,3 @@ export interface InputValueHostConfig extends ValidatableValueHostBaseConfig {
 export interface InputValueHostState extends ValidatableValueHostBaseState {
 
 }
-
-/**
- * Provides a way to get an InputValueHostConfig from another object,
- * as an alternative to being supplied one directly.
- * Fluent uses this to supply the config to ValidationManagerConfig.valueHostConfigs.
- */
-export interface IInputValueHostConfigResolver
-{
-    /**
-     * The InputValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.
-     */
-    parentConfig: InputValueHostConfig;
-}
-
-/**
- * Determines if the object implements IInputValueHostConfigResolver.
- * @param source 
- * @returns source typecasted to IInputValueHostConfigResolver if appropriate or null if not.
- */
-export function toIInputValueHostConfigResolver(source: any): IInputValueHostConfigResolver | null
-{
-    if (source && typeof source === 'object')
-    {
-        let test = source as IInputValueHostConfigResolver;    
-        // some select members of IInputValueHostConfigResolver
-        if (test.parentConfig)
-            return test;
-    }
-    return null;
-}

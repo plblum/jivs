@@ -21,7 +21,8 @@ import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHost
 import { ValueHostType } from "@plblum/jivs-engine/src/Interfaces/ValueHostFactory";
 import { NonInputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/NonInputValueHost";
 import { ValidationManager } from "@plblum/jivs-engine/src/ValueHosts/ValidationManager";
-import { config } from "@plblum/jivs-engine/src/ValueHosts/Fluent";
+import { fluent } from "@plblum/jivs-engine/src/ValueHosts/Fluent";
+import { build } from "@plblum/jivs-engine/src/ValueHosts/ValueHostsBuilder";
 
 export interface FilterDatesModel
 {
@@ -107,43 +108,41 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     return vmConfig;
 }
 
-// In this case, the user has decided that they won't use business logic
-// to drive the configuration. They can use the fluent syntax.
+// Goal is to create the same configuration as seen above,
+// but using fluent syntax.
 function BusinessLogicPhase_UseFluentSyntax(): ValidationManagerConfig
 {
+    let vmConfig: ValidationManagerConfig = {
+        services: createValidationServices(),
+        valueHostConfigs: []
+    };
+
+    let builder = build(vmConfig);
+
     // create the 'StartDate' input with two conditions:
     // startDate <= endDate
     // abs(endDate-startDate) < num of days
     // Because both validators are LessThan, we need to further differentiate them
     // by supplying an error code on one. The other will use the default errorCode of its conditionType.
-    let startDateConfig = config().input('StartDate', LookupKey.Date, { label: 'Start date' })
+    builder.input('StartDate', LookupKey.Date)
         .lessThan('EndDate', {}, 'StartDate must be less than to EndDate.', { severity: ValidationSeverity.Severe })    // FYI: errorCode="LessThan"
         .lessThan('NumOfDays', { valueHostName: 'DiffDays' }, 'Less than 10 days apart.', { errorCode: 'NumOfDays'});
 
     // No validators needed on EndDate. Jivs adds a DataTypeCheckCondition
     // to validate the input is indeed a date.
-    let endDateConfig = config().input('EndDate', LookupKey.Date, { label: 'End date' });
+    builder.input('EndDate', LookupKey.Date);
 
 
     // We need to use a calculation to get the difference in days part
     // of the validation rule where diff in days < X days.
     // This Config uses the differenceBetweenDates function to do the work.
-    let diffDaysConfig = config().calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
+    builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
 
     // supply the value for the number of days used in validation
     // through this NonInputValueHost. Alternatively, it could
     // be assigned directly in the LessThanConditionConfig.
-    let numOfDaysConfig = config().nonInput('NumOfDays', LookupKey.Integer);
+    builder.nonInput('NumOfDays', LookupKey.Integer);
 
-    let vmConfig: ValidationManagerConfig = {
-        services: createValidationServices(),
-        valueHostConfigs: [
-            startDateConfig,
-            endDateConfig,
-            diffDaysConfig,
-            numOfDaysConfig
-        ]
-    };
     return vmConfig;
 }
 
@@ -154,8 +153,26 @@ export function UIPhase_Customize(use: 'objects' | 'fluent'): IValidationManager
     let vmConfig = use === 'objects' ? 
         BusinessLogicPhase_UseConfigObjects() :
         BusinessLogicPhase_UseFluentSyntax();
-    let vm = new ValidationManager(vmConfig);
+    // update the labels and error messages previously supplied
+    // to conform to the needs of the UI.
+    // Use the ValueHostBuilder to modify vmConfig...
+    let builder = build(vmConfig);
 
+    // abandon any error messages if the TextLocalizationService handles
+    // because the UI has its standardized messages there.
+    // In this case, we registered a message for the LessThanCondition.
+    builder.favorUIMessages(); 
+
+    // replace the error message for errorCode='NumOfDays' validator
+    builder.updateValidator('StartDate', 'NumOfDays', {
+        errorMessage: 'The two dates must be less than {CompareTo} days apart.',
+        summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
+    });
+    builder.updateInput('StartDate', { label: 'Start date' });
+    builder.updateInput('EndDate', { label: 'End date' });
+    
+    let vm = new ValidationManager(vmConfig);
+/* If you needed to do any of that customization after this point, here's how:
     // Apply any error messages and labels
     let startDateVH = vm.getInputValueHost('StartDate')!;
     startDateVH.setLabel('Start date');    // a second parameter is for localization
@@ -166,7 +183,7 @@ export function UIPhase_Customize(use: 'objects' | 'fluent'): IValidationManager
 
     let endDateVH = vm.getInputValueHost('EndDate')!;
     endDateVH.setLabel('End date');
-
+*/
     return vm;
 }
 

@@ -14,9 +14,9 @@ import { type ValidateOptions, type ValidateResult, type BusinessLogicError, typ
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from './InputValueHost';
-import { IInputValueHost, toIInputValueHostConfigResolver } from '../Interfaces/InputValueHost';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from './ValidatableValueHostBase';
-import { FluentCollectorBase, FluentValidatorCollector } from './Fluent';
+import { FluentValidatorCollector } from './Fluent';
 
 
 /**
@@ -97,21 +97,6 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         let savedServices = config.services ?? null;
         config.services = null as any; // to ignore during DeepClone
-
-        // avoid passing FluentCollectors into deepClone
-        // Convert them to real configs first
-        if (config.valueHostConfigs) {
-            let valueHostConfigs: Array<ValueHostConfig> = [];
-            config.valueHostConfigs.forEach((item) => {
-                let resolver = toIInputValueHostConfigResolver(item);
-                if (resolver)
-                    valueHostConfigs.push(resolver.parentConfig);
-                else
-                    valueHostConfigs.push(item as ValueHostConfig);
-            });
-            config.valueHostConfigs = valueHostConfigs;
-        }
-
         let internalConfig = deepClone(config) as ValidationManagerConfig;
         config.services = savedServices;
         internalConfig.services = savedServices;
@@ -125,11 +110,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         this._lastValueHostStates = internalConfig.savedValueHostStates ?? [];
         let configs = internalConfig.valueHostConfigs ?? [];
         for (let item of configs) {
-            let resolver = toIInputValueHostConfigResolver(item);
-            if (resolver)
-                this.addValueHost(resolver.parentConfig, null);
-            else
-                this.addValueHost(item as ValueHostConfig, null);
+            this.addValueHost(item as ValueHostConfig, null);
         }
     }
     protected get config(): ValidationManagerConfig
@@ -211,7 +192,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
      * @param config 
-     * Can use config().nonInput() or any ValueConfigHost.
+     * Can use fluent().nonInput() or any ValueConfigHost.
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupState() first.
@@ -223,11 +204,11 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * Adds a ValueHostConfig for an InputValueHost not previously added. 
      * Expects fluent syntax where the first parameter starts with
-     * config().input() followed by chained validation rules.
+     * fluent().input() followed by chained validation rules.
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
      * @param fluentCollector
-     * Pass in `config().input("valueHostName"[, parameters]).validator().validator()`. 
+     * Pass in `fluent().input("valueHostName"[, parameters]).validator().validator()`. 
      * @param initialState
      * When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
@@ -261,7 +242,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Replaces a ValueHostConfig for an already added ValueHost. 
      * Does not trigger any notifications.
      * Expects fluent syntax where the first parameter starts with
-     * config().input() followed by chained validation rules.
+     * fluent().input() followed by chained validation rules.
      * If the name isn't found, it will be added.
      * @param collector 
      * @param initialState - When not null, this state object is used instead of an initial state.

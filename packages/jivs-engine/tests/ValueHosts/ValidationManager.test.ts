@@ -1,14 +1,17 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValueHost, ValueHostConfig, ValueHostState } from "../../src/Interfaces/ValueHost";
-import { MockInputValueHostConfigResolver, MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
+import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
 import { BusinessLogicInputValueHost, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostState } from '../../src/Interfaces/InputValueHost';
 import { ValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
-import { ConfigValueHostConfigs, IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerState, ValidationManagerStateChangedHandler, toIValidationManagerCallbacks } from '../../src/Interfaces/ValidationManager';
+import {
+    IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerState,
+    ValidationManagerStateChangedHandler, toIValidationManagerCallbacks
+} from '../../src/Interfaces/ValidationManager';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { deepClone } from '../../src/Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, toIValueHostResolver, toIValueHostsManager, toIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
@@ -19,8 +22,11 @@ import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
-import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig, UserSuppliedResultCondition, UserSuppliedResultConditionType } from "../TestSupport/conditionsForTesting";
-import { config } from "../../src/ValueHosts/Fluent";
+import {
+    AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig,
+    UserSuppliedResultCondition, UserSuppliedResultConditionType
+} from "../TestSupport/conditionsForTesting";
+import { fluent } from "../../src/ValueHosts/Fluent";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<ValidationManagerState> {
@@ -68,7 +74,7 @@ describe('constructor and initial property values', () => {
     });
 
     test('Config for 1 ValueHost supplied. Other parameters are null', () => {
-        let configs: ConfigValueHostConfigs = [{
+        let configs: Array<ValueHostConfig> = [{
             name: 'Field1',
             type: ValueHostType.Input,
             label: 'Field 1'
@@ -98,18 +104,19 @@ describe('constructor and initial property values', () => {
         expect(testItem!.exposedValueHostConfigs['Field1']).not.toBe(configs[0]);
         expect(testItem!.exposedValueHostConfigs['Field1']).toEqual(configs[0]);
     });
-    test('Config and IInputValueHostConfigResolver for 2 ValueHosts supplied. Other parameters are null', () => {
-        let configs: ConfigValueHostConfigs = [
+    test('Configs for 2 ValueHosts supplied. Other parameters are null', () => {
+        let configs: Array<ValueHostConfig> = [
             {
                 name: 'Field1',
                 type: ValueHostType.Input,
                 label: 'Field 1'
             },
-            new MockInputValueHostConfigResolver({
+            <InputValueHostConfig>{
+                type: ValueHostType.Input,
                 name: 'Field2',
                 label: 'Field 2',
                 validatorConfigs: []
-            })
+            }
         ];
         let testItem: PublicifiedValidationManager | null = null;
         let services = new MockValidationServices(false, false);
@@ -158,7 +165,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onInputValueChanged).toBeNull();
     });
     test('Config and ValueHostState for 1 ValueHost supplied. Other parameters are null', () => {
-        let configs: ConfigValueHostConfigs = [{
+        let configs: Array<ValueHostConfig> = [{
             name: 'Field1',
             type: ValueHostType.Input,
             label: 'Field 1'
@@ -345,11 +352,12 @@ describe('ValidationManager.addValueHost', () => {
     });    
 
     test('Using fluent syntax, add InputValueHostConfig with required ConditionConfig', () => {
-        let testItem = new PublicifiedValidationManager({
+        let vmConfig: ValidationManagerConfig = {
             services: new MockValidationServices(true, false), valueHostConfigs: []
-        });
+        };
+        let testItem = new PublicifiedValidationManager(vmConfig);
 
-        testItem.addValueHost(config().input('Field1', null, { label: 'Field 1' }).requireText(null, 'msg'),
+        testItem.addValueHost(fluent().input('Field1', null, { label: 'Field 1' }).requireText(null, 'msg'),
             null);
         expect(testItem.exposedValueHostConfigs['Field1']).toBeDefined();     
         expect(testItem.exposedValueHostConfigs['Field1']).toEqual({
@@ -657,10 +665,10 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
     });
     test('Using fluent syntax, replace the config with existing ValueHostState.ValidationResult of Invalid retains state when replacement is the same type', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
-        let ivConfig = config().input('Field1', null, { label: 'Field 1'});
+        let ivConfig = fluent().input('Field1', null, { label: 'Field 1'});
         let initialValueHost = testItem.addValueHost(ivConfig, null);
 
-        let replacementConfig = config().input('Field1', null, { label: 'Field 1'}).requireText({}, 'Error');
+        let replacementConfig = fluent().input('Field1', null, { label: 'Field 1'}).requireText({}, 'Error');
 
         let replacementValueHost: IValueHost | null = null;
         expect(() => replacementValueHost = testItem.updateValueHost(replacementConfig, null)).not.toThrow();
@@ -874,7 +882,7 @@ describe('ValidationManager.getValueHost and getInputValue', () => {
         expect(vh4).toBeInstanceOf(InputValueHost);
         expect(vh4!.getName()).toBe('Field2');        
     });
-    test('With 2 ValueHostConfigs, get each with both functions. getValueHost returns VH, getInputValueHost returns null', () => {
+    test('With 2 Array<ValueHostConfig>, get each with both functions. getValueHost returns VH, getInputValueHost returns null', () => {
 
         let config1: ValueHostConfig = {
             name: 'Field1',
@@ -1138,7 +1146,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
     test('With 2 inputValueHost where only one has validators, it should return only one ValidateResult, for the one with validators', () => {
 
         let config1 = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
-        let config2 = config().input('Field2');
+        let config2 = fluent().input('Field2');
 
         let setup = setupValidationManager([config1, config2.parentConfig]);
 

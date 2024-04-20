@@ -31,6 +31,7 @@ function testVM(vm: IValidationManager): void
     expect(dateDiffLessThanNumOfDays?.errorCode).toBe('NumOfDays');
     expect(dateDiffLessThanNumOfDays?.conditionType).toBe(ConditionType.LessThan);
 }
+
 describe('Using Config objects', () => {
 
     test('Confirm expecting ValueHosts and InputValidators exist', () => {

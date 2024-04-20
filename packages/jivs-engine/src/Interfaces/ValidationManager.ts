@@ -30,7 +30,6 @@ import { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from 
 import { IValidationServices } from './ValidationServices';
 import { ValueHostConfig, ValueHostState } from './ValueHost';
 import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './ValidatableValueHostBase';
-import { IInputValueHostConfigResolver } from './InputValueHost';
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -151,7 +150,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      * If rules need to be changed later, either create a new instance of ValidationManager
      * or use its addValueHost, updateValueHost, discardValueHost methods.
      */
-    valueHostConfigs: ConfigValueHostConfigs;
+    valueHostConfigs: Array<ValueHostConfig>;
     /**
      * The state for the ValidationManager itself.
      * Its up to you to retain stateful information so that the service works statelessly.
@@ -176,11 +175,6 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      */
     savedValueHostStates?: Array<ValueHostState> | null;
 }
-/**
- * Type for the ValidationManagerConfig.valueHostConfigs that permits
- * several types, so long as they result in a ValueHostConfig.
- */
-export type ConfigValueHostConfigs = Array<ValueHostConfig | IInputValueHostConfigResolver>;
 
 export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;
 export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<ValidateResult>) => void;

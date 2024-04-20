@@ -6,7 +6,7 @@ import { toIServicesAccessor, type IValidationServices } from "../../src/Interfa
 import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostStateChangedHandler } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
-import { IInputValueHost, IInputValueHostConfigResolver, InputValueHostConfig, InputValueHostState } from "../../src/Interfaces/InputValueHost";
+import { IInputValueHost, InputValueHostConfig, InputValueHostState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IInputValidator, IInputValidatorFactory, InputValidatorConfig } from "../../src/Interfaces/InputValidator";
@@ -568,13 +568,4 @@ export interface MockCapturedLog
     level: LoggingLevel,
     category: string | undefined,
     source: string | undefined
-}
-
-export class MockInputValueHostConfigResolver implements IInputValueHostConfigResolver
-{
-    constructor(config: Omit<InputValueHostConfig, 'type'>)
-    {
-        this.parentConfig = { ...config as InputValueHostConfig, type: ValueHostType.Input };
-    }
-    public parentConfig: InputValueHostConfig;
 }
