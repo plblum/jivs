@@ -133,7 +133,7 @@ export interface InputValidatorConfig {
      * @param requester
      * @returns 
      */
-    conditionCreator?: (requester: InputValidatorConfig) => ICondition | null;
+    conditionCreator?: ConditionCreatorHandler;
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
@@ -157,7 +157,7 @@ export interface InputValidatorConfig {
      * @param requester
      * @returns 
      */
-    enablerCreator?: (requester: InputValidatorConfig) => ICondition | null;
+    enablerCreator?: ConditionCreatorHandler;
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
@@ -244,6 +244,11 @@ export interface InputValidatorConfig {
     //  */
     // [propName: string]: any;    
 }
+
+/**
+ * Function definition used with InputValidatorConfig.conditionCreator and enablerCreator.
+ */
+export type ConditionCreatorHandler = (requester: InputValidatorConfig) => ICondition | null;
 
 /**
  * Result of the validate() function.

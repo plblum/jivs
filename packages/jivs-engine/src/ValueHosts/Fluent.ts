@@ -141,11 +141,11 @@ export class StartFluent
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * @param name - the ValueHost name
+     * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a InputValueHostConfig.
      */
-    public input(name: string, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
+    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -154,7 +154,7 @@ export class StartFluent
      */
     public input(config: FluentInputValueConfig): FluentValidatorCollector;
     // overload resolution
-    public input(arg1: string | FluentInputValueConfig, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector
+    public input(arg1: ValueHostName | FluentInputValueConfig, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector
     {
         assertNotNull(arg1, 'arg1');
         
@@ -184,11 +184,11 @@ export class StartFluent
     /**
      * Fluent format to create a NonInputValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param name - the ValueHost name
+     * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a NonInputValueHostConfig.
      */
-    nonInput(name: string, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig;
+    nonInput(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig;
     /**
      * Fluent format to create a NonInputValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -197,7 +197,7 @@ export class StartFluent
      */
     nonInput(config: Omit<NonInputValueHostConfig, 'type'>): NonInputValueHostConfig;
     // overload resolution
-    nonInput(arg1: string | NonInputValueHostConfig, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig
+    nonInput(arg1: ValueHostName | NonInputValueHostConfig, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig
     {
         assertNotNull(arg1, 'arg1');
         if (typeof arg1 === 'object')
@@ -234,11 +234,11 @@ export class StartFluent
     /**
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param name - the ValueHost name
+     * @param valueHostName - the ValueHost name
      * @param dataType - can be null. The value for ValueHost.dataType.
      * @param calcFn - required. Function callback.
      */
-    calc(name: string, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
+    calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
     /**
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -247,7 +247,7 @@ export class StartFluent
      */
     calc(config: Omit<CalcValueHostConfig, 'type'>): CalcValueHostConfig;
     // overload resolution
-    calc(arg1: string | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
+    calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
     {
         assertNotNull(arg1, 'arg1');
         if (typeof arg1 === 'object')
@@ -264,6 +264,11 @@ export class StartFluent
         throw new TypeError('Must pass valuehost name or CalcValueHostConfig');
     }    
 }
+
+/**
+ * Access point for starting a fluent syntax chain
+ * @returns 
+ */
 export function config(): StartFluent
 {
     enableFluent();
