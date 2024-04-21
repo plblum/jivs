@@ -12,7 +12,7 @@
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import type { ILoggerService } from '../Interfaces/LoggerService';
 import type { IInputValidatorFactory } from '../Interfaces/InputValidator';
-import { ServiceName, toIServicesAccessor, type IValidationServices } from '../Interfaces/ValidationServices';
+import { IServiceWithFallback, ServiceName, toIServicesAccessor, type IValidationServices } from '../Interfaces/ValidationServices';
 import type { IConditionFactory } from '../Interfaces/Conditions';
 import { IValueHostFactory } from '../Interfaces/ValueHost';
 import { InputValidatorFactory } from '../ValueHosts/InputValidator';
@@ -271,4 +271,27 @@ export class ValidationServices implements IValidationServices {
     }
 
     //#endregion InputValidatorFactory        
+}
+
+/**
+ * Call when assigning the IServiceWithFallback.fallbackService property to ensure
+ * it does not loop around to the original.
+ * @param fallbackService - The service to assign to startingService.fallbackService.
+ * @param hostService - the service that is getting is fallbackService property assigned 
+ */
+export function assertValidFallbacks(fallbackService: IServiceWithFallback<any> | null, hostService: IServiceWithFallback<any>): void
+{
+    if (fallbackService === null)
+        return;
+    let service = fallbackService;
+    let limit = 10;
+    while (service.fallbackService)
+    {
+        if (service.fallbackService === hostService)
+            throw new CodingError('Service fallback loops back to itself.');
+        limit--;
+        if (limit === 0)
+            throw new CodingError('Reached the limit of fallbacks');
+        service = service.fallbackService;
+    }
 }

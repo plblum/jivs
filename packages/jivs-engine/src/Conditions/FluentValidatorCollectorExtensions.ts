@@ -294,7 +294,7 @@ function equalToValue(
     conditionConfig?: FluentEqualToValueConditionConfig | null,
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
-    return finishFluentValidatorCollector(this, ConditionType.EqualTo,
+    return finishFluentValidatorCollector(this, ConditionType.EqualToValue,
         _genDCEqualToValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
@@ -312,7 +312,7 @@ function notEqualToValue(
     conditionConfig?: FluentNotEqualToValueConditionConfig | null,
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
-    return finishFluentValidatorCollector(this, ConditionType.NotEqualTo,
+    return finishFluentValidatorCollector(this, ConditionType.NotEqualToValue,
         _genDCNotEqualToValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
@@ -332,7 +332,7 @@ function lessThanValue(
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.LessThan, _genDCLessThanValue(secondValue, conditionConfig),
+        ConditionType.LessThanValue, _genDCLessThanValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function lessThan(
@@ -351,7 +351,7 @@ function lessThanOrEqualValue(
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.LessThanOrEqual, _genDCLessThanOrEqualValue(secondValue, conditionConfig),
+        ConditionType.LessThanOrEqualValue, _genDCLessThanOrEqualValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function lessThanOrEqual(
@@ -370,7 +370,7 @@ function greaterThanValue(
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.GreaterThan, _genDCGreaterThanValue(secondValue, conditionConfig),
+        ConditionType.GreaterThanValue, _genDCGreaterThanValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function greaterThan(
@@ -389,7 +389,7 @@ function greaterThanOrEqualValue(
     errorMessage?: string | null,
     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.GreaterThanOrEqual, _genDCGreaterThanOrEqualValue(secondValue, conditionConfig),
+        ConditionType.GreaterThanOrEqualValue, _genDCGreaterThanOrEqualValue(secondValue, conditionConfig),
         errorMessage, inputValidatorParameters);
 }
 function greaterThanOrEqual(

@@ -5,6 +5,7 @@
  */
 
 
+import { ValueHostName } from "../DataTypes/BasicTypes";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/MessageTokenSource";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
@@ -30,6 +31,12 @@ export interface TwoValueConditionConfig extends OneValueConditionConfig {
 export abstract class TwoValueConditionBase<TConfig extends TwoValueConditionConfig> extends OneValueConditionBase<TConfig>
     implements IMessageTokenSource
 {
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
+        super.gatherValueHostNames(collection, valueHostResolver);
+        if (this.config.secondValueHostName)
+            collection.add(this.config.secondValueHostName);
+    }
+
     public getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));

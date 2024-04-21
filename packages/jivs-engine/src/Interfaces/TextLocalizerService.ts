@@ -1,11 +1,25 @@
 /**
  * @module Services/Types
  */
+
+import { IServiceWithFallback } from "./ValidationServices";
+
 /**
  * A service to offer text alternatives to the default text
  * based on cultureId.
+ * 
+ * It supports having fallbacks, so the app can have a standard implementation
+ * and another that introduces special cases.
+ * 
+ * To set that up:
+ * ```ts
+ * let vs = createValidationServices(); // provides the standard case in vs.textLocalizerService
+ * let special = new TextLocalizerService();
+ * special.fallbackService = vs.textLocalizerService;
+ * vs.textLocalizerService = special;
+ * ```
  */
-export interface ITextLocalizerService
+export interface ITextLocalizerService extends IServiceWithFallback<ITextLocalizerService>
 {
     /**
      * Returns the localized version of the text for the given culture.

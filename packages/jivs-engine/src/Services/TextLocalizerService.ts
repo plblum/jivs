@@ -3,10 +3,23 @@
  */
 import { CultureToText, ITextLocalizerService } from '../Interfaces/TextLocalizerService';
 import { cultureLanguageCode } from '../Utilities/Utilities';
+import { assertValidFallbacks } from './ValidationServices';
 
 /**
  * A service to offer text alternatives to the default text
  * based on cultureId.
+ * 
+ * It supports having fallbacks, so the app can have a standard implementation
+ * and another that introduces special cases.
+ * 
+ * To set that up:
+ * ```ts
+ * let vs = createValidationServices(); // provides the standard case in vs.textLocalizerService
+ * let special = new TextLocalizerService();
+ * special.fallbackService = vs.textLocalizerService;
+ * vs.textLocalizerService = special;
+ * ```
+ * 
  * This implementation is independent of third party libraries
  * that you may be using. 
  * Thus, you may prefer to implement ITextLocalizerService yourself.
@@ -18,6 +31,22 @@ import { cultureLanguageCode } from '../Utilities/Utilities';
  */
 export class TextLocalizerService implements ITextLocalizerService
 {
+    /**
+     * Reference to a fallback of the same service or null if no fallback.
+     * When assigned, a call to any function (except registration) will
+     * first try itself, and if not found, try the fallback.
+     */    
+    public get fallbackService(): ITextLocalizerService | null
+    {
+        return this._fallbackService;
+    }
+    public set fallbackService(service: ITextLocalizerService | null)
+    {
+        assertValidFallbacks(service, this);
+        this._fallbackService = service;
+    }
+    private _fallbackService: ITextLocalizerService | null = null;
+
     /**
      * Returns the localized version of the text for the given culture.
      * Will try the language from the culture ('en' from 'en-US')
@@ -53,6 +82,8 @@ export class TextLocalizerService implements ITextLocalizerService
             if (text !== undefined)
                 return text;
         }
+        if (this.fallbackService !== null)
+            return this.fallbackService.localize(cultureIdToMatch, l10nKey, fallback);
         return fallback;
     }
 
@@ -68,6 +99,8 @@ export class TextLocalizerService implements ITextLocalizerService
         let text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(errorCode, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
             text = this.localize(cultureIdToMatch, this.getErrorMessagel10nText(errorCode, null), null);
+        if (text === null && this.fallbackService !== null)
+            return this.fallbackService.getErrorMessage(cultureIdToMatch, errorCode, dataTypeLookupKey);        
         return text;
     }
     /**
@@ -96,6 +129,8 @@ export class TextLocalizerService implements ITextLocalizerService
         let text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
             text = this.localize(cultureIdToMatch, this.getSummaryMessagel10nText(errorCode, null), null);
+        if (text === null && this.fallbackService !== null)
+            return this.fallbackService.getSummaryMessage(cultureIdToMatch, errorCode, dataTypeLookupKey);                
         return text;
     }
     /**

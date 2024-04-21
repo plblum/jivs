@@ -26,6 +26,7 @@ export function groupsMatch(group1: string | Array<string> | undefined | null,
             return [source.toLowerCase()];
         if (Array.isArray(source))
             return source.map((value) => value.toLowerCase());
+        /* istanbul ignore next */
         return [];  // should not get here
     }
 

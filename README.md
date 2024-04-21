@@ -196,16 +196,6 @@ builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).requireText();
 
 let vm = new ValidationManager(vmConfig);
 ```
-
-
-Here's how that populated ValidationManagerConfig looks.
-
-We want you to convert the validation rules from your business rules. Its better to write code that does the conversion for you, so that as business rules change, your UI does not have to.
-
-
-When you don't provide any conversion code, you can use the fluent syntax as shown here.
-
-
 <a name="conditions"></a>
 ## Conditions - the validation rules
 You need to build a class that adapts your validation rules to Jivs own types and classes. Jivs uses the classes that implement the `ICondition interface` to package up a validation rule, and `ConditionConfig type` to inform the `Condition` class how to configure itself. The class is a bridge between business logic and your UI. This section provides the details.

@@ -196,6 +196,7 @@ export class StartFluent
 
             return new FluentValidatorCollector(config);;
         }
+        /* istanbul ignore next */
         throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
     }    
     /**
@@ -229,6 +230,7 @@ export class StartFluent
         
             return config;
         }
+        /* istanbul ignore next */
         throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
     }
     /**
@@ -278,6 +280,7 @@ export class StartFluent
         
             return config;
         }
+        /* istanbul ignore next */
         throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
     }    
 

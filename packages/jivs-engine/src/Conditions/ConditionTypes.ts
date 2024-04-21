@@ -66,6 +66,36 @@ export enum ConditionType
     LessThanOrEqual = 'LessThanOrEqual',
 
     /**
+     * Associated with EqualToValueCondition class.
+     */
+    EqualToValue = 'EqualToValue',
+
+    /**
+     * Associated with NotEqualToValueCondition class.
+     */
+    NotEqualToValue = 'NotEqualToValue',
+
+    /**
+     * Associated with GreaterThanValueCondition class.
+     */
+    GreaterThanValue = 'GreaterThanValue',
+
+    /**
+     * Associated with LessThanValueCondition class.
+     */
+    LessThanValue = 'LessThanValue',
+
+    /**
+     * Associated with GreaterThanOrEqualValueCondition class.
+     */
+    GreaterThanOrEqualValue = 'GreaterThanOrEqualValue',
+
+    /**
+     * Associated with LessThanOrEqualValueCondition class.
+     */
+    LessThanOrEqualValue = 'LessThanOrEqualValue',
+
+    /**
      * Associated with StringLengthCondition class.
      */
     StringLength = 'StringLength',

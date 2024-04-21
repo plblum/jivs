@@ -2,7 +2,8 @@ import {
     AbbrevDOWDateFormatter, AbbrevDateFormatter, BooleanFormatter, CapitalizeStringFormatter, CurrencyFormatter,
     DataTypeFormatterBase, DateFormatter, DateTimeFormatter, LongDOWDateFormatter, LongDateFormatter,
     LowercaseStringFormatter, NumberFormatter, Percentage100Formatter, PercentageFormatter, StringFormatter,
-    TimeofDayHMSFormatter, TimeofDayFormatter, UppercaseStringFormatter
+    TimeofDayHMSFormatter, TimeofDayFormatter, UppercaseStringFormatter,
+    IntegerFormatter
 } from '../../src/DataTypes/DataTypeFormatters';
 
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
@@ -559,6 +560,85 @@ describe('CurrencyFormatter', () => {
         expect(dts.errorMessage).toBe('Not a number');
         
     });    
+});
+describe('IntegerFormatter', () => {
+    test('en: supports LookupKey.Integer is true, others false', () => {
+        let testItem = new IntegerFormatter();
+        
+        expect(testItem.supports(LookupKey.Integer, 'en')).toBe(true);       
+        expect(testItem.supports('anythingelse', 'en')).toBe(false);              
+    });
+    test('supports LookupKey.Integer is true no matter the culture', () => {
+        let testItem = new IntegerFormatter();
+        
+        expect(testItem.supports(LookupKey.Integer, 'fr')).toBe(true);        
+        expect(testItem.supports('anythingelse', 'fr')).toBe(false);
+    });
+    test('en culture with various valid numbers', () => {
+        let testItem = new IntegerFormatter();
+        
+        let dts = testItem.format(1, LookupKey.Integer, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1');
+        expect(dts.errorMessage).toBeUndefined();
+        
+        dts = testItem.format(1.5, LookupKey.Integer, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('2');
+        dts = testItem.format(1000000, LookupKey.Integer, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1,000,000');
+        dts = testItem.format(-9.50101, LookupKey.Integer, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('-10');
+    });
+
+    test('fr culture with various valid numbers', () => {
+        let testItem = new IntegerFormatter();
+        
+
+        let dts = testItem.format(1, LookupKey.Integer, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1');
+        expect(dts.errorMessage).toBeUndefined();
+        
+        dts = testItem.format(1.5, LookupKey.Integer, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('2');
+        dts = testItem.format(1000000, LookupKey.Integer, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1\u{202F}000\u{202F}000');
+        dts = testItem.format(-9.50101, LookupKey.Integer, 'fr');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('-10');
+    });    
+    test('en culture with ways to output empty string', () => {
+        let testItem = new IntegerFormatter();
+        
+
+        let dts = testItem.format(null, LookupKey.Integer, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('');
+        expect(dts.errorMessage).toBeUndefined();
+        
+        dts = testItem.format(undefined, LookupKey.Integer, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('');
+    });
+    test('Invalid type returns errorMessage', () => {
+        let testItem = new IntegerFormatter();
+        
+
+        let dts = testItem.format('A', LookupKey.Integer, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBeUndefined();
+        expect(dts.errorMessage).toBe('Not a number');
+        
+        dts = testItem.format({}, LookupKey.Integer, 'en');
+        expect(dts.value).toBeUndefined();
+        expect(dts.errorMessage).toBe('Not a number');
+        
+    });
 });
 describe('PercentageFormatter', () => {
     test('en: supports LookupKey.Percentage is true. All others false', () => {
