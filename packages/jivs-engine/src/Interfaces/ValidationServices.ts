@@ -202,3 +202,29 @@ export enum ServiceName {
      */
     parsers = 'Parsers'
 }
+
+/**
+ * Assign to services that support a fallback version of itself,
+ * so the user can override the service with a special case,
+ * and the fallback handles the rest.
+ */
+export interface IServiceWithFallback<T>
+{
+    /**
+     * Reference to a fallback of the same service or null if no fallback.
+     */
+    fallbackService: T | null;
+}
+/**
+ * Determines if the source implements IServiceWithFallback, and returns it typecasted.
+ * If not, it returns null.
+ * @param source 
+ */
+export function toIServiceWithFallback(source: any): IServiceWithFallback<any> | null {
+    if (source && typeof source === 'object') {
+        let test = source as IServiceWithFallback<any>;       
+        if ('fallbackService' in test)
+            return test;
+    }
+    return null;
+}

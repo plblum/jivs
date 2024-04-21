@@ -3,7 +3,7 @@
 // that compares two values, one is the difference in days between StartDate and EndDate,
 // the other is the number of days. It uses the LessThan condition, with the number of days set to 10.
 
-import { DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition, LessThanOrEqualConditionConfig } from "@plblum/jivs-engine/src/Conditions/ConcreteConditions";
+import { DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition, LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig } from "@plblum/jivs-engine/src/Conditions/ConcreteConditions";
 import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
 import { LookupKey } from "@plblum/jivs-engine/src/DataTypes/LookupKeys";
 import { ICalcValueHost, CalcValueHostConfig, CalculationHandlerResult } from "@plblum/jivs-engine/src/Interfaces/CalcValueHost";
@@ -15,9 +15,8 @@ import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validatio
 import { IValidationManager } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
 import { DataTypeConverterService } from "@plblum/jivs-engine/src/Services/DataTypeConverterService";
 import { IntegerConverter, TotalDaysConverter } from "@plblum/jivs-engine/src/DataTypes/DataTypeConverters";
-import { IntegerFormatter, NumberFormatter, StringFormatter } from "@plblum/jivs-engine/src/DataTypes/DataTypeFormatters";
+import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/src/DataTypes/DataTypeFormatters";
 import { ConditionFactory } from "@plblum/jivs-engine/src/Conditions/ConditionFactory";
-import { MessageTokenResolverService } from "@plblum/jivs-engine/src/Services/MessageTokenResolverService";
 import { LoggingLevel } from "@plblum/jivs-engine/src/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/src/Services/DataTypeFormatterService";
 
@@ -65,8 +64,8 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
                 severity: ValidationSeverity.Severe // to avoid running the next validator when there is an error
             },        
             {
-                conditionConfig: <LessThanConditionConfig>{
-                    type: ConditionType.LessThan,
+                conditionConfig: <LessThanValueConditionConfig>{
+                    type: ConditionType.LessThanValue,
                     valueHostName: 'DiffDays',  // source is our CalcValueHost
                     secondValue: 10,    // must be less than 10 days
                 },
@@ -97,8 +96,8 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
     // DataTypeCheck is auto generated. So its needed here.
     conditionFactory.register<DataTypeCheckConditionConfig>(ConditionType.DataTypeCheck,
         (config) => new DataTypeCheckCondition(config));
-    conditionFactory.register<LessThanConditionConfig>(ConditionType.LessThan,
-        (config) => new LessThanCondition(config));
+    conditionFactory.register<LessThanValueConditionConfig>(ConditionType.LessThanValue,
+        (config) => new LessThanValueCondition(config));
     conditionFactory.register<LessThanOrEqualConditionConfig>(ConditionType.LessThanOrEqual,
         (config) => new LessThanOrEqualCondition(config));
     services.loggerService.minLevel = LoggingLevel.Debug;

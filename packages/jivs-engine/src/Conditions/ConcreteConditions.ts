@@ -193,11 +193,6 @@ export interface RegExpConditionConfig extends RegExpConditionBaseConfig {
      * If undefined, it is treated as false.
      */
     ignoreCase?: boolean;
-    /**
-     * Used together with expressionAsString to set the global search option on the Regexp when true.
-     * If undefined, it is treated as false.
-     */
-    global?: boolean;
 
     /**
      * Used together with expressionAsString to set the multiline option on the Regexp when true.
@@ -246,7 +241,6 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
                     // this may throw an exception due to bad expression pattern
                     re = new RegExp(this.config.expressionAsString,
                         (this.config.ignoreCase ? 'i' : '') +
-                        (this.config.global ? 'g' : '') +
                         (this.config.multiline ? 'm' : ''));
                 }
                 else
@@ -349,16 +343,13 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
         return ConditionCategory.Comparison;
     }
 }
+//#region CompareToSecondValueHost conditions
 /**
- * Config for CompareToConditionBase.
+ * Config for CompareToSecondValueHostConditionBase.
  */
-export interface CompareToConditionConfig extends TwoValueConditionConfig, SupportsDataTypeConverter {
+export interface CompareToSecondValueHostConditionConfig extends TwoValueConditionConfig, SupportsDataTypeConverter {
     /**
-     * Native data type representing the minimum of the range.
-     */
-    secondValue?: any;
-    /**
-     * Associated with secondValue/secondValueHostName only.
+     * Associated with secondValueHostName only.
      * Assign to a LookupKey that is associated with a DataTypeConverter.
      * Use it to convert the value prior to comparing, to handle special cases like
      * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Round"),
@@ -368,13 +359,11 @@ export interface CompareToConditionConfig extends TwoValueConditionConfig, Suppo
 }
 
 /**
- * Compare the native datatype value against a second value.
- * The second value can be supplied in the Config.value property
- * or as another ValueHost identified in Config.secondValueHostName.
+ * Compare the native datatype value against a second ValueHost, from config.secondvalueHostName.
  * Subclasses implement the actual comparison operator (equals, greater than, etc)
  * Supports tokens: {CompareTo}, the value from the second value host.
  */
-export abstract class CompareToConditionBase<TConfig extends CompareToConditionConfig> extends TwoValueConditionBase<TConfig>
+export abstract class CompareToSecondValueHostConditionBase<TConfig extends CompareToSecondValueHostConditionConfig> extends TwoValueConditionBase<TConfig>
 {
     public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
@@ -388,20 +377,16 @@ export abstract class CompareToConditionBase<TConfig extends CompareToConditionC
             if (!vh2) {
                 const msg = 'secondValueHostName is unknown';
                 this.logInvalidPropertyData('secondValueHostName', msg, valueHostResolver);
-                throw new Error(msg);
+                return ConditionEvaluateResult.Undetermined;
             }
             secondValue = vh2.getValue();
             secondValueLookupKey = this.config.secondConversionLookupKey ?? vh2.getDataType();
         }
         if (secondValue == null)  // null/undefined
         {
-            if (this.config.secondValue == null)    // null/undefined
-            {
-                const msg = 'secondValue lacks value to evaluate';
-                this.logInvalidPropertyData('secondValue', msg, valueHostResolver);
-                throw new Error(msg);
-            }
-            secondValue = this.config.secondValue;
+            const msg = 'secondValue lacks value to evaluate';
+            this.logInvalidPropertyData('secondValue', msg, valueHostResolver);
+            return ConditionEvaluateResult.Undetermined;
         }
 
         let comparison = valueHostResolver.services.dataTypeComparerService.compare(
@@ -426,16 +411,11 @@ export abstract class CompareToConditionBase<TConfig extends CompareToConditionC
     public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
-        // same order of precidence as in Evaluate
         let secondValue: any = undefined;
         if (this.config.secondValueHostName) {
             let vh = this.getValueHost(this.config.secondValueHostName, valueHostResolver);
             if (vh)
                 secondValue = vh.getValue();
-        }
-        if (secondValue == null)  // includes undefined
-        {
-            secondValue = this.config.secondValue;
         }
         list.push({
             tokenLabel: 'CompareTo',
@@ -452,7 +432,7 @@ export abstract class CompareToConditionBase<TConfig extends CompareToConditionC
 /**
  * Two values must be equal. Values are native datatype.
  */
-export class EqualToCondition extends CompareToConditionBase<EqualToConditionConfig> {
+export class EqualToCondition extends CompareToSecondValueHostConditionBase<EqualToConditionConfig> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.EqualTo; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -464,12 +444,12 @@ export class EqualToCondition extends CompareToConditionBase<EqualToConditionCon
 /**
  * Config for EqualToCondition
  */
-export interface EqualToConditionConfig extends CompareToConditionConfig { }
+export interface EqualToConditionConfig extends CompareToSecondValueHostConditionConfig { }
 
 /**
  * Two values must not be equal. Values are native datatype.
  */
-export class NotEqualToCondition extends CompareToConditionBase<NotEqualToConditionConfig> {
+export class NotEqualToCondition extends CompareToSecondValueHostConditionBase<NotEqualToConditionConfig> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.NotEqualTo; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -483,12 +463,12 @@ export class NotEqualToCondition extends CompareToConditionBase<NotEqualToCondit
 /**
  * Config for NotEqualToCondition
  */
-export interface NotEqualToConditionConfig extends CompareToConditionConfig { }
+export interface NotEqualToConditionConfig extends CompareToSecondValueHostConditionConfig { }
 /**
  * Value 1 must be greater than Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class GreaterThanCondition extends CompareToConditionBase<GreaterThanConditionConfig> {
+export class GreaterThanCondition extends CompareToSecondValueHostConditionBase<GreaterThanConditionConfig> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThan; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -506,12 +486,12 @@ export class GreaterThanCondition extends CompareToConditionBase<GreaterThanCond
 /**
  * Config for GreaterThanCondition
  */
-export interface GreaterThanConditionConfig extends CompareToConditionConfig { }
+export interface GreaterThanConditionConfig extends CompareToSecondValueHostConditionConfig { }
 /**
  * Value 1 must be less than Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class LessThanCondition extends CompareToConditionBase<LessThanConditionConfig> {
+export class LessThanCondition extends CompareToSecondValueHostConditionBase<LessThanConditionConfig> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.LessThan; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -529,12 +509,12 @@ export class LessThanCondition extends CompareToConditionBase<LessThanConditionC
 /**
  * Config for LessThanCondition
  */
-export interface LessThanConditionConfig extends CompareToConditionConfig { }
+export interface LessThanConditionConfig extends CompareToSecondValueHostConditionConfig { }
 /**
  * Value 1 must be greater than or equal Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class GreaterThanOrEqualCondition extends CompareToConditionBase<GreaterThanOrEqualConditionConfig> {
+export class GreaterThanOrEqualCondition extends CompareToSecondValueHostConditionBase<GreaterThanOrEqualConditionConfig> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqual; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -553,12 +533,12 @@ export class GreaterThanOrEqualCondition extends CompareToConditionBase<GreaterT
 /**
  * Config for GreaterThanOrEqualCondition
  */
-export interface GreaterThanOrEqualConditionConfig extends CompareToConditionConfig { }
+export interface GreaterThanOrEqualConditionConfig extends CompareToSecondValueHostConditionConfig { }
 /**
  * Value 1 must be less than or equal Value 2. Values are native datatype.
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class LessThanOrEqualCondition extends CompareToConditionBase<LessThanOrEqualConditionConfig> {
+export class LessThanOrEqualCondition extends CompareToSecondValueHostConditionBase<LessThanOrEqualConditionConfig> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqual; }    
 
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
@@ -577,7 +557,220 @@ export class LessThanOrEqualCondition extends CompareToConditionBase<LessThanOrE
 /**
  * Config for LessThanOrEqualCondition
  */
-export interface LessThanOrEqualConditionConfig extends CompareToConditionConfig { }
+export interface LessThanOrEqualConditionConfig extends CompareToSecondValueHostConditionConfig { }
+//#endregion CompareToSecondValueHost
+
+//#region CompareToSecondValue
+
+/**
+ * Config for CompareToValueConditionBase.
+ */
+export interface CompareToValueConditionConfig extends OneValueConditionConfig, SupportsDataTypeConverter {
+    /**
+     * Native data type representing the minimum of the range.
+     */
+    secondValue?: any;
+
+    /**
+     * Associated with secondValue only.
+     * Assign to a LookupKey that is associated with a DataTypeConverter.
+     * Use it to convert the value prior to comparing, to handle special cases like
+     * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Round"),
+     * just the Day or Month or any other number in a Date object ("Day", "Month").
+     */
+    secondConversionLookupKey?: string | null;
+}
+
+/**
+ * Compare the native datatype value against a second value, supplied in 
+ * CompareToValueConditionConfig.secondValue.
+ * Subclasses implement the actual comparison operator (equals, greater than, etc)
+ * Supports tokens: {CompareTo}, the value from the second value.
+ */
+export abstract class CompareToValueConditionBase<TConfig extends CompareToValueConditionConfig> extends OneValueConditionBase<TConfig>
+{
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+        let value = valueHost.getValue();
+        if (value == null)  // null/undefined
+            return ConditionEvaluateResult.Undetermined;
+        let secondValue: any = undefined;
+
+        if (this.config.secondValue == null)    // null/undefined
+        {
+            const msg = 'secondValue lacks value to evaluate';
+            this.logInvalidPropertyData('secondValue', msg, valueHostResolver);
+            return ConditionEvaluateResult.Undetermined;
+        }
+        secondValue = this.config.secondValue;
+
+        let comparison = valueHostResolver.services.dataTypeComparerService.compare(
+            value, secondValue,
+            this.config.conversionLookupKey ?? valueHost.getDataType(), this.config.secondConversionLookupKey ?? null);
+        if (comparison === ComparersResult.Undetermined) {
+            valueHostResolver.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
+                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `${this.constructor.name} for ${valueHost.getName()}`);
+            return ConditionEvaluateResult.Undetermined;
+        }
+        return this.compareTwoValues(comparison);
+    }
+    protected abstract compareTwoValues(comparison: ComparersResult):
+        ConditionEvaluateResult;
+
+    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+        let list: Array<TokenLabelAndValue> = [];
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
+        let secondValue = this.config.secondValue;
+        
+        list.push({
+            tokenLabel: 'CompareTo',
+            associatedValue: secondValue ?? null,
+            purpose: 'value'
+        });
+        return list;
+    }
+    protected get defaultCategory(): ConditionCategory {
+        return ConditionCategory.Comparison;
+    }
+}
+
+/**
+ * ValueHost must be equal to secondValue.
+ */
+export class EqualToValueCondition extends CompareToValueConditionBase<EqualToValueConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.EqualToValue; }
+    
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+        return comparison === ComparersResult.Equals ?
+            ConditionEvaluateResult.Match :
+            ConditionEvaluateResult.NoMatch;
+    }
+}
+/**
+ * Config for EqualToValueCondition
+ */
+export interface EqualToValueConditionConfig extends CompareToValueConditionConfig { }
+
+/**
+ * Two values must not be equal. Values are native datatype.
+ */
+export class NotEqualToValueCondition extends CompareToValueConditionBase<NotEqualToValueConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.NotEqualToValue; }
+    
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+
+        return comparison !== ComparersResult.Equals ?
+            ConditionEvaluateResult.Match :
+            ConditionEvaluateResult.NoMatch;
+    }
+}
+
+/**
+ * Config for NotEqualToValueCondition
+ */
+export interface NotEqualToValueConditionConfig extends CompareToValueConditionConfig { }
+/**
+ * ValueHost must be greater than secondValue
+ * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
+ */
+export class GreaterThanValueCondition extends CompareToValueConditionBase<GreaterThanValueConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanValue; }
+    
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+        switch (comparison) {
+            case ComparersResult.GreaterThan:
+                return ConditionEvaluateResult.Match;
+            case ComparersResult.NotEquals:
+                return ConditionEvaluateResult.Undetermined;
+            default:
+                return ConditionEvaluateResult.NoMatch;
+        }
+    }
+}
+
+/**
+ * Config for GreaterThanValueCondition
+ */
+export interface GreaterThanValueConditionConfig extends CompareToValueConditionConfig { }
+/**
+ * ValueHost must be less than secondValue.
+ * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
+ */
+export class LessThanValueCondition extends CompareToValueConditionBase<LessThanValueConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanValue; }
+    
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+        switch (comparison) {
+            case ComparersResult.LessThan:
+                return ConditionEvaluateResult.Match;
+            case ComparersResult.NotEquals:
+                return ConditionEvaluateResult.Undetermined;
+            default:
+                return ConditionEvaluateResult.NoMatch;
+        }
+    }
+}
+
+/**
+ * Config for LessThanValueCondition
+ */
+export interface LessThanValueConditionConfig extends CompareToValueConditionConfig { }
+/**
+ * ValueHost must be greater than or equal secondValue.
+ * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
+ */
+export class GreaterThanOrEqualValueCondition extends CompareToValueConditionBase<GreaterThanOrEqualValueConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqualValue; }
+    
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+        switch (comparison) {
+            case ComparersResult.GreaterThan:
+            case ComparersResult.Equals:
+                return ConditionEvaluateResult.Match;
+            case ComparersResult.NotEquals:
+                return ConditionEvaluateResult.Undetermined;
+            default:
+                return ConditionEvaluateResult.NoMatch;
+        }
+    }
+}
+
+/**
+ * Config for GreaterThanOrEqualValueCondition
+ */
+export interface GreaterThanOrEqualValueConditionConfig extends CompareToValueConditionConfig { }
+/**
+ * ValueHost must be less than or equal secondValue.
+ * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
+ */
+export class LessThanOrEqualValueCondition extends CompareToValueConditionBase<LessThanOrEqualValueConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqualValue; }    
+
+    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+        switch (comparison) {
+            case ComparersResult.LessThan:
+            case ComparersResult.Equals:
+                return ConditionEvaluateResult.Match;
+            case ComparersResult.NotEquals:
+                return ConditionEvaluateResult.Undetermined;
+            default:
+                return ConditionEvaluateResult.NoMatch;
+        }
+    }
+}
+
+/**
+ * Config for LessThanOrEqualValueCondition
+ */
+export interface LessThanOrEqualValueConditionConfig extends CompareToValueConditionConfig { }
+
+
+//#endregion CompareToSecondValue
+
+
+
+
+
 /**
  * Config for StringLengthCondition
  */

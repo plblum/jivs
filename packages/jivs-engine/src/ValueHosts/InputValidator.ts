@@ -74,6 +74,7 @@ export class InputValidator implements IInputValidator {
         let vh = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
         if (vh)
             return vh;
+        /* istanbul ignore next */
         throw new CodingError('ValueHost must implement IValueHostsManagerAccessor');
     }
     /**

@@ -163,7 +163,7 @@ export abstract class DataTypeConverterServiceBase<T> extends DataTypeServiceBas
                         return value;
                     value = this.cleanupConvertableValue(value, null);
                     break;
-                default:
+                default:/* istanbul ignore next */
                     throw new CodingError('Type converted to unsupported value.');
             }
         }

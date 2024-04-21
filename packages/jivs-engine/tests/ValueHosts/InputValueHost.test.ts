@@ -1,11 +1,12 @@
 import {
-    CompareToConditionConfig, DataTypeCheckConditionConfig, RangeConditionConfig,
+    DataTypeCheckConditionConfig, RangeConditionConfig,
     RequireTextConditionConfig, RequireTextCondition, RegExpConditionConfig, RegExpCondition,
     EqualToCondition,
     AllMatchCondition,
     AllMatchConditionConfig,
     StringLengthCondition,
     StringLengthConditionConfig,
+    EqualToConditionConfig,
 } from "../../src/Conditions/ConcreteConditions";
 import { InputValidator } from "../../src/ValueHosts/InputValidator";
 import { InputValueHost, InputValueHostGenerator, toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
@@ -3371,7 +3372,7 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: [{
-                    conditionConfig: <CompareToConditionConfig>{
+                    conditionConfig: <EqualToConditionConfig>{
                         type: ConditionType.EqualTo,
                         secondValueHostName: 'Field2',
                         valueHostName: null
@@ -3406,7 +3407,7 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
         ];
         let services = createValidationServicesForTesting();
         let cf = services.conditionFactory as ConditionFactory;
-        cf.register<CompareToConditionConfig>(
+        cf.register<EqualToConditionConfig>(
             ConditionType.EqualTo, (config) => new EqualToCondition(config));
         let vm = new ValidationManager({ services: services, valueHostConfigs: vhConfigs });   // the real thing so we use real InputValueHosts
 
