@@ -1,8 +1,9 @@
 import {
     type RangeConditionConfig,
     RequireTextCondition, EqualToCondition,
-    type RequireTextConditionConfig, type CompareToConditionConfig,
-    RangeCondition, 
+    type RequireTextConditionConfig, 
+    RangeCondition,
+    EqualToConditionConfig, 
     
 } from "../../src/Conditions/ConcreteConditions";
 
@@ -276,7 +277,7 @@ describe('InputValidator.enabler', () => {
     });
     test('Successful creation of EqualToCondition', () => {
         let setup = setupWithField1AndField2({
-            enablerConfig: <CompareToConditionConfig>{
+            enablerConfig: <EqualToConditionConfig>{
                 type: ConditionType.EqualTo,
                 valueHostName: null
             }

@@ -3,8 +3,8 @@ import { FluentConditionCollector, fluent } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
-    EqualToConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, NotEqualToConditionConfig, NotNullConditionConfig, RangeConditionConfig,
+    EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, LessThanConditionConfig,
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, RangeConditionConfig,
     RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
 } from '../../src/Conditions/ConcreteConditions';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
@@ -145,38 +145,38 @@ describe('range on conditions', () => {
 });
 
 describe('equalToValue on conditions', () => {
-    test('With secondValue assigned, creates InputValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () => {
+    test('With secondValue assigned, creates InputValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().equalToValue(1);
-        TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
-            type: ConditionType.EqualTo,
+        TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
+            type: ConditionType.EqualToValue,
             secondValue: 1
         });
     });
-    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () => {
+    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().equalToValue(1, {});
-        TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
-            type: ConditionType.EqualTo,
+        TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
+            type: ConditionType.EqualToValue,
             secondValue: 1
         });
     });
-    test('With ValueHostName and secondValue assigned, creates InputValidatorConfig with EqualToCondition with type=EqualTo, secondValue and valueHostName assigned', () => {
+    test('With ValueHostName and secondValue assigned, creates InputValidatorConfig with EqualToValueCondition with type=EqualToValue, secondValue and valueHostName assigned', () => {
 
         let testItem = fluent().conditions().equalToValue(1, null, 'Field2');
-        TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
-            type: ConditionType.EqualTo,
+        TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
+            type: ConditionType.EqualToValue,
             valueHostName: 'Field2',
             secondValue: 1
         });
     });
 
 
-    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with EqualToCondition with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () => {
+    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with EqualToValueCondition with type=EqualToValue, secondValue, and secondConversionLookupKey assigned', () => {
 
         let testItem = fluent().conditions().equalToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
-            type: ConditionType.EqualTo,
+        TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
+            type: ConditionType.EqualToValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -223,37 +223,37 @@ describe('equalTo on conditions', () => {
 });
 
 describe('notEqualToValue on conditions', () => {
-    test('With secondValue assigned, creates InputValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () => {
+    test('With secondValue assigned, creates InputValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().notEqualToValue(1);
-        TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
-            type: ConditionType.NotEqualTo,
+        TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
+            type: ConditionType.NotEqualToValue,
             secondValue: 1
         });
     });
-    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () => {
+    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().notEqualToValue(1, {});
-        TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
-            type: ConditionType.NotEqualTo,
+        TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
+            type: ConditionType.NotEqualToValue,
             secondValue: 1
         });
     });
     test('With valueHostName and secondValue assigned, creates InputValidatorConfig with NotEqualToCondition with type=NotEqualTo, valueHostName, and secondValue assigned', () => {
 
         let testItem = fluent().conditions().notEqualToValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
-            type: ConditionType.NotEqualTo,
+        TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
+            type: ConditionType.NotEqualToValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
     });
 
-    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with NotEqualToCondition with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () => {
+    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue, secondValue, and secondConversionLookupKey assigned', () => {
 
         let testItem = fluent().conditions().notEqualToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
-            type: ConditionType.NotEqualTo,
+        TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
+            type: ConditionType.NotEqualToValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -300,38 +300,38 @@ describe('notEqualTo on conditions', () => {
 });
 
 describe('lessThanValue on conditions', () => {
-    test('With secondValue assigned, creates InputValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () => {
+    test('With secondValue assigned, creates InputValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().lessThanValue(1);
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+        TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
+            type: ConditionType.LessThanValue,
             secondValue: 1
         });
     });
     
-    test('With valueHostName and secondValue assigned, creates InputValidatorConfig with LessThanCondition with type=LessThan, valueHostName and secondValue assigned', () => {
+    test('With valueHostName and secondValue assigned, creates InputValidatorConfig with LessThanValueCondition with type=LessThanValue, valueHostName and secondValue assigned', () => {
 
         let testItem = fluent().conditions().lessThanValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+        TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
+            type: ConditionType.LessThanValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
     });
-    test('Shorthand version "ltValue" With secondValue, creates InputValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () => {
+    test('Shorthand version "ltValue" With secondValue, creates InputValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().ltValue(1);
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+        TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
+            type: ConditionType.LessThanValue,
             secondValue: 1
         });
     });
 
-    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with LessThanCondition with type=LessThan, secondValue, and secondConversionLookupKey assigned', () => {
+    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with LessThanValueCondition with type=LessThanValue, secondValue, and secondConversionLookupKey assigned', () => {
 
         let testItem = fluent().conditions().lessThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+        TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
+            type: ConditionType.LessThanValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -397,65 +397,65 @@ describe('lessThan on conditions', () => {
     });
 });
 describe('lessThanOrEqualValue on conditions', () => {
-    test('With secondValue assigned, creates InputValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
+    test('With secondValue assigned, creates InputValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().lessThanOrEqualValue(1);
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+            type: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
     });
-    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
+    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().lessThanOrEqualValue(1, {});
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+            type: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
     });    
 
-    test('With valueHostName and secondValue assigned, creates InputValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual, valueHostName, and secondValue assigned', () => {
+    test('With valueHostName and secondValue assigned, creates InputValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () => {
 
         let testItem = fluent().conditions().lessThanOrEqualValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+            type: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
     });
 
-    test('Shorthand version "lteValue" with secondValue assigned, creates InputValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
+    test('Shorthand version "lteValue" with secondValue assigned, creates InputValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().lteValue(1);
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+            type: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
     });
 
-    test('Shorthand version "lteValue" with secondValue assigned and condDesc={}, creates InputValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
+    test('Shorthand version "lteValue" with secondValue assigned and condDesc={}, creates InputValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().lteValue(1, {});
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+            type: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
     });
-    test('Shorthand version "lteValue" with valueHostName and secondValue assigned, creates InputValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual, valueHostName, and secondValue assigned', () => {
+    test('Shorthand version "lteValue" with valueHostName and secondValue assigned, creates InputValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () => {
 
         let testItem = fluent().conditions().lteValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+            type: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
     });
 
-    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
+    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () => {
 
         let testItem = fluent().conditions().lessThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+            type: ConditionType.LessThanOrEqualValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -521,63 +521,63 @@ describe('lessThanOrEqual on conditions', () => {
 
 
 describe('greaterThanValue on conditions', () => {
-    test('With secondValue assigned, creates InputValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
+    test('With secondValue assigned, creates InputValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().greaterThanValue(1);
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+            type: ConditionType.GreaterThanValue,
             secondValue: 1
         });
     });
-    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
+    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().greaterThanValue(1, {});
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+            type: ConditionType.GreaterThanValue,
             secondValue: 1
         });
     });
-    test('With valueHostName and secondValue assigned, creates InputValidatorConfig with GreaterThanCondition with type=GreaterThan, valueHostName, and secondValue assigned', () => {
+    test('With valueHostName and secondValue assigned, creates InputValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue, valueHostName, and secondValue assigned', () => {
 
         let testItem = fluent().conditions().greaterThanValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+            type: ConditionType.GreaterThanValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
     });
 
-    test('Shorthand version "gtValue" with secondValue assigned, creates InputValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
+    test('Shorthand version "gtValue" with secondValue assigned, creates InputValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().gtValue(1);
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+            type: ConditionType.GreaterThanValue,
             secondValue: 1
         });
     });
-    test('Shorthand version "gtValue" with secondValue assigned and condDesc={}, creates InputValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
+    test('Shorthand version "gtValue" with secondValue assigned and condDesc={}, creates InputValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().gtValue(1, {});
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+            type: ConditionType.GreaterThanValue,
             secondValue: 1
         });
     });
-    test('Shorthand version "gtValue" with valueHostName and secondValue assigned, creates InputValidatorConfig with GreaterThanCondition with type=GreaterThan, valueHostName, and secondValue assigned', () => {
+    test('Shorthand version "gtValue" with valueHostName and secondValue assigned, creates InputValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue, valueHostName, and secondValue assigned', () => {
 
         let testItem = fluent().conditions().gtValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+            type: ConditionType.GreaterThanValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
     });
 
-    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with GreaterThanCondition with type=GreaterThan, secondValue, and secondConversionLookupKey assigned', () => {
+    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue, secondValue, and secondConversionLookupKey assigned', () => {
 
         let testItem = fluent().conditions().greaterThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+            type: ConditionType.GreaterThanValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -649,62 +649,62 @@ describe('greaterThan on conditions', () => {
     });
 });
 describe('greaterThanOrEqualValue on conditions', () => {
-    test('With secondValue assigned, creates InputValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
+    test('With secondValue assigned, creates InputValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqualValue(1);
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+            type: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
     });
-    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
+    test('With secondValue assigned and condDesc={}, creates InputValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqualValue(1, {});
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+            type: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
     });
-    test('With valueHostName and secondValue assigned, creates InputValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, valueHostName, and secondValue assigned', () => {
+    test('With valueHostName and secondValue assigned, creates InputValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue, valueHostName, and secondValue assigned', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqualValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+            type: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
     });
-    test('Shorthand version "gteValue" with secondValue assigned, creates InputValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
+    test('Shorthand version "gteValue" with secondValue assigned, creates InputValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().gteValue(1);
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+            type: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
     });
-    test('Shorthand version "gteValue" with secondValue assigned and condDesc={}, creates InputValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
+    test('Shorthand version "gteValue" with secondValue assigned and condDesc={}, creates InputValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
 
         let testItem = fluent().conditions().gteValue(1, {});
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+            type: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
     });
-    test('Shorthand version "gteValue" with valueHostName and secondValue assigned, creates InputValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, valueHostName, and secondValue assigned', () => {
+    test('Shorthand version "gteValue" with valueHostName and secondValue assigned, creates InputValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue, valueHostName, and secondValue assigned', () => {
 
         let testItem = fluent().conditions().gteValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+            type: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
     });
 
-    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
+    test('With secondValue and secondConversionLookupKey assigned, creates InputValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+            type: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer

@@ -1,8 +1,26 @@
 import {
-    DataTypeCheckCondition, RequireTextCondition, RegExpCondition, RangeCondition, CompareToConditionConfig,
+    DataTypeCheckCondition, RequireTextCondition, RegExpCondition, RangeCondition,
     EqualToCondition, StringLengthConditionConfig, StringLengthCondition, AllMatchCondition, AllMatchConditionConfig, AnyMatchCondition,
     AnyMatchConditionConfig, CountMatchesCondition, CountMatchesConditionConfig, GreaterThanCondition, GreaterThanOrEqualCondition, LessThanCondition,
-    LessThanOrEqualCondition, NotEqualToCondition, NotNullCondition, NotNullConditionConfig
+    LessThanOrEqualCondition, NotEqualToCondition, NotNullCondition, NotNullConditionConfig,
+    GreaterThanOrEqualConditionConfig,
+    LessThanOrEqualConditionConfig,
+    GreaterThanConditionConfig,
+    LessThanConditionConfig,
+    NotEqualToConditionConfig,
+    EqualToConditionConfig,
+    EqualToValueCondition,
+    EqualToValueConditionConfig,
+    GreaterThanOrEqualValueCondition,
+    GreaterThanOrEqualValueConditionConfig,
+    GreaterThanValueCondition,
+    LessThanOrEqualValueCondition,
+    LessThanOrEqualValueConditionConfig,
+    LessThanValueCondition,
+    LessThanValueConditionConfig,
+    NotEqualToValueCondition,
+    NotEqualToValueConditionConfig,
+    GreaterThanValueConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -119,18 +137,31 @@ export function registerAllConditions(cf: ConditionFactory): void
         ConditionType.RegExp, (config) => new RegExpCondition(config));
     cf.register<RangeConditionConfig>(
         ConditionType.Range, (config) => new RangeCondition(config));
-    cf.register<CompareToConditionConfig>(
+    cf.register<EqualToConditionConfig>(
         ConditionType.EqualTo, (config) => new EqualToCondition(config));
-    cf.register<CompareToConditionConfig>
+    cf.register<NotEqualToConditionConfig>
         (ConditionType.NotEqualTo, (config) => new NotEqualToCondition(config));
-    cf.register<CompareToConditionConfig>
+    cf.register<GreaterThanConditionConfig>
         (ConditionType.GreaterThan, (config) => new GreaterThanCondition(config));
-    cf.register<CompareToConditionConfig>
+    cf.register<LessThanConditionConfig>
         (ConditionType.LessThan, (config) => new LessThanCondition(config));
-    cf.register<CompareToConditionConfig>
+    cf.register<GreaterThanOrEqualConditionConfig>
         (ConditionType.GreaterThanOrEqual, (config) => new GreaterThanOrEqualCondition(config));
-    cf.register<CompareToConditionConfig>
+    cf.register<LessThanOrEqualConditionConfig>
         (ConditionType.LessThanOrEqual, (config) => new LessThanOrEqualCondition(config));
+    cf.register<EqualToValueConditionConfig>(
+        ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
+    cf.register<NotEqualToValueConditionConfig>
+        (ConditionType.NotEqualToValue, (config) => new NotEqualToValueCondition(config));
+    cf.register<GreaterThanValueConditionConfig>
+        (ConditionType.GreaterThanValue, (config) => new GreaterThanValueCondition(config));
+    cf.register<LessThanValueConditionConfig>
+        (ConditionType.LessThanValue, (config) => new LessThanValueCondition(config));
+    cf.register<GreaterThanOrEqualValueConditionConfig>
+        (ConditionType.GreaterThanOrEqualValue, (config) => new GreaterThanOrEqualValueCondition(config));
+    cf.register<LessThanOrEqualValueConditionConfig>
+        (ConditionType.LessThanOrEqualValue, (config) => new LessThanOrEqualValueCondition(config));    
+    
     cf.register<StringLengthConditionConfig>
         (ConditionType.StringLength, (config) => new StringLengthCondition(config));
     cf.register<AllMatchConditionConfig>

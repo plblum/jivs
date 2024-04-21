@@ -3,10 +3,14 @@
 import { ValidateResult, ValidationResult, ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
 import { configureVMForDifferentBetweenDate } from "../src/DifferenceBetweenDates";
 import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
+import { MockCapturingLogger } from "@plblum/jivs-engine/tests/TestSupport/mocks";
+import { LoggingLevel } from "@plblum/jivs-engine/src/Interfaces/LoggerService";
 
 describe('Difference between dates is less than 10', () => {
     test('StartDate = EndDate. No errors', () => {
         let vm = configureVMForDifferentBetweenDate();
+        vm.services.loggerService = new MockCapturingLogger();
+        vm.services.loggerService.minLevel = LoggingLevel.Debug;
         vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
         vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));  
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
@@ -48,7 +52,7 @@ describe('Difference between dates is less than 10', () => {
                 issuesFound:  [{
                     errorMessage: 'The two dates must be less than 10 days apart.',
                     summaryMessage: 'The two dates must be less than 10 days apart.',
-                    errorCode: ConditionType.LessThan,
+                    errorCode: ConditionType.LessThanValue,
                     severity: ValidationSeverity.Error,
                     valueHostName: 'StartDate'
                  }],

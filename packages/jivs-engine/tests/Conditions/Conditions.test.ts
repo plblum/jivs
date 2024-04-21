@@ -1,6 +1,6 @@
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import {
-    type RequireTextConditionConfig, type RangeConditionConfig, type CompareToConditionConfig,
+    type RequireTextConditionConfig, type RangeConditionConfig, 
     RequireTextCondition,
     RangeCondition, EqualToCondition, 
     NotEqualToCondition, GreaterThanCondition,
@@ -9,7 +9,27 @@ import {
     RegExpConditionConfig, RegExpCondition, 
     AllMatchCondition, DataTypeCheckConditionConfig, DataTypeCheckCondition,
     AnyMatchCondition, CountMatchesCondition,
-    CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig, NotNullCondition, NotNullConditionConfig
+    CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig, NotNullCondition, NotNullConditionConfig,
+    CompareToSecondValueHostConditionConfig,
+    EqualToConditionConfig,
+    NotEqualToConditionConfig,
+    GreaterThanConditionConfig,
+    GreaterThanOrEqualConditionConfig,
+    LessThanConditionConfig,
+    LessThanOrEqualConditionConfig,
+    CompareToValueConditionConfig,
+    EqualToValueCondition,
+    EqualToValueConditionConfig,
+    GreaterThanOrEqualValueCondition,
+    GreaterThanOrEqualValueConditionConfig,
+    GreaterThanValueCondition,
+    GreaterThanValueConditionConfig,
+    LessThanOrEqualValueCondition,
+    LessThanOrEqualValueConditionConfig,
+    LessThanValueCondition,
+    LessThanValueConditionConfig,
+    NotEqualToValueCondition,
+    NotEqualToValueConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
@@ -1132,7 +1152,7 @@ describe('CompareToConditionBase class additional cases', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost('Property2', LookupKey.Number, 'Second label');
 
-        let config: CompareToConditionConfig = {
+        let config: CompareToSecondValueHostConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -1154,88 +1174,72 @@ describe('CompareToConditionBase class additional cases', () => {
         ]);
     });    
 
-    test('Config.secondValueHostName with unknown name logs and throws', () => {
+    test('Config.secondValueHostName with unknown name logs and returns Undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let logger = services.loggerService as MockCapturingLogger;
         vh.setValue('');
-        let config: CompareToConditionConfig = {
+        let config: CompareToSecondValueHostConditionConfig = {
             type: ConditionType.EqualTo,
             secondValueHostName: 'PropertyNotRegistered',
             valueHostName: null
         };
         let testItem = new EqualToCondition(config);
-        expect(() => testItem.evaluate(vh, vm)).toThrow(/secondValueHostName/);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         expect(logger.entryCount()).toBe(1);
         expect(logger.getLatest()?.message).toMatch(/secondValueHostName/);
     });
     
-    test('Config.secondValueHostName and secondValue both with null logs and throws', () => {
+    test('Config.secondValueHostName with null logs and returns undefined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let logger = services.loggerService as MockCapturingLogger;
         vh.setValue('');
-        let config: CompareToConditionConfig = {
+        let config: CompareToSecondValueHostConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: null,
-            secondValueHostName: null,
-            secondValue: null
+            secondValueHostName: null
         };
         let testItem = new EqualToCondition(config);
-        expect(() => testItem.evaluate(vh, vm)).toThrow(/secondValue/);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         expect(logger.entryCount()).toBe(1);
         expect(logger.getLatest()?.message).toMatch(/secondValue/);
     });
 });
 
-
-
 describe('class EqualToCondition', () => {
     test('DefaultConditionType', () => {
         expect(EqualToCondition.DefaultConditionType).toBe(ConditionType.EqualTo);
     });
-    test('evaluate using secondValue property with number for Match or NoMatch', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
-            type: ConditionType.EqualTo,
-            valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
-        };
-        let testItem = new EqualToCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh.setValue(101);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(100);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-    });
-    test('evaluate using secondValue property with boolean for Match or NoMatch', () => {
+
+    test('evaluate using boolean for Match or NoMatch', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
+        let vh1 = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Boolean, 'Label2');
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
-            secondValue: false,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh.setValue(true);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh1.setInputValue('---- does not matter ----');
+        vh1.setValue(false);
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
+        vh1.setValue(true);
+        vh2.setValue(true);
+        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);        
+        vh1.setValue(true);
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.NoMatch);        
     });
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -1244,7 +1248,7 @@ describe('class EqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
-        let config: CompareToConditionConfig = {
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -1262,20 +1266,21 @@ describe('class EqualToCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
 
-
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label');
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(config);
         vh.setValue(null);
+        vh2.setValue(100);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(undefined);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1283,6 +1288,16 @@ describe('class EqualToCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        // vh is a number, vh2 is not
+        vh.setValue(100);
+        vh2.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
     });
     
     test('Using ConversionLookupKey = Integer, show ValueHost(but not Second) is impacted by conversion', () => {
@@ -1292,14 +1307,16 @@ describe('class EqualToCondition', () => {
         dsc.register(new IntegerConverter());        
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label');
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
             conversionLookupKey: LookupKey.Integer,
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(config);
+        vh2.setValue(100);
         vh.setInputValue('---- does not matter ----');
         vh.setValue(99.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -1310,7 +1327,7 @@ describe('class EqualToCondition', () => {
         vh.setValue(100.6);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
-    test('Using SecondConversionLookupKey = RoundToWhole, show SecondValueHost(but not ValueHost) is impacted by conversion', () => {
+    test('Using SecondConversionLookupKey = Integer, show SecondValueHost(but not ValueHost) is impacted by conversion', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let dsc = services.dataTypeConverterService as DataTypeConverterService;
@@ -1320,10 +1337,10 @@ describe('class EqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
-            conversionLookupKey: LookupKey.Integer,
+            conversionLookupKey: null,
             secondValueHostName: 'Property2',
             secondConversionLookupKey: LookupKey.Integer
         };
@@ -1346,19 +1363,21 @@ describe('class EqualToCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(config);
+        vh2.setValue(100);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
                 tokenLabel: 'SecondLabel',
-                associatedValue: '',
+                associatedValue: 'Label2',
                 purpose: 'label'
             },        
             {
@@ -1373,13 +1392,15 @@ describe('class EqualToCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
-            secondValue: undefined,
             secondValueHostName: null
         };
         let testItem = new EqualToCondition(config);
+        vh2.setValue(null);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
@@ -1396,20 +1417,18 @@ describe('class EqualToCondition', () => {
         ]);
     });    
     test('category is Comparison', () => {
-        let config: CompareToConditionConfig = {
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null
         };
         let testItem = new EqualToCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () => {
-        let config: CompareToConditionConfig = {
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null,
             category: ConditionCategory.Contents
         };
@@ -1420,7 +1439,7 @@ describe('class EqualToCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -1436,7 +1455,7 @@ describe('class EqualToCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: EqualToConditionConfig = {
             type: ConditionType.EqualTo,
             valueHostName: null,
             secondValueHostName: null
@@ -1451,43 +1470,30 @@ describe('class NotEqualToCondition', () => {
     test('DefaultConditionType', () => {
         expect(NotEqualToCondition.DefaultConditionType).toBe(ConditionType.NotEqualTo);
     });
-    test('evaluate using secondValue property with number for Match or NoMatch', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
-            type: ConditionType.NotEqualTo,
-            valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
-        };
-        let testItem = new NotEqualToCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh.setValue(101);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(100);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-    });
-    test('evaluate using secondValue property with boolean for Match or NoMatch', () => {
+
+    test('evaluate with boolean for Match or NoMatch', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Boolean, 'Label2');
+        let config: NotEqualToConditionConfig = {
             type: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
-            secondValue: false,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new NotEqualToCondition(config);
         vh.setInputValue('---- does not matter ----');
         vh.setValue(true);
+        vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(true);
+        vh2.setValue(true);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(false);
+        vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
@@ -1497,7 +1503,7 @@ describe('class NotEqualToCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
-        let config: CompareToConditionConfig = {
+        let config: NotEqualToConditionConfig = {
             type: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -1521,13 +1527,15 @@ describe('class NotEqualToCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: NotEqualToConditionConfig = {
             type: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new NotEqualToCondition(config);
+        vh2.setValue(100);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(undefined);
@@ -1536,34 +1544,18 @@ describe('class NotEqualToCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        // now swap them
+        vh.setValue(100);
+        vh2.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
-    test('getValuesForTokens using secondValue', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
-            type: ConditionType.NotEqualTo,
-            valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
-        };
-        let testItem = new NotEqualToCondition(config);
-        let list = testItem.getValuesForTokens(vh, vm);
-        expect(list).not.toBeNull();
-        expect(list).toEqual([
-            {
-                tokenLabel: 'SecondLabel',
-                associatedValue: '',
-                purpose: 'label'
-            },                
-            {
-                tokenLabel: 'CompareTo',
-                associatedValue: 100,
-                purpose: 'value'
-            }
-        ]);
-    });
+
     test('getValuesForTokens using secondValueHostName', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -1572,10 +1564,9 @@ describe('class NotEqualToCondition', () => {
         let vh2 = vm.addValueHost(
             'Property2', LookupKey.Number, 'Label2');
         vh2.setValue(100);
-        let config: CompareToConditionConfig = {
+        let config: NotEqualToConditionConfig = {
             type: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
-            secondValue: null,
             secondValueHostName: 'Property2'
         };
         let testItem = new NotEqualToCondition(config);
@@ -1599,10 +1590,9 @@ describe('class NotEqualToCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let config: NotEqualToConditionConfig = {
             type: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
-            secondValue: null,
             secondValueHostName: null
         };
         let testItem = new NotEqualToCondition(config);
@@ -1622,20 +1612,18 @@ describe('class NotEqualToCondition', () => {
         ]);
     });    
     test('category is Comparison', () => {
-        let config: CompareToConditionConfig = {
+        let config: NotEqualToConditionConfig = {
             type: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null
         };
         let testItem = new NotEqualToCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () => {
-        let config: CompareToConditionConfig = {
+        let config: NotEqualToConditionConfig = {
             type: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null,
             category: ConditionCategory.Contents
         };
@@ -1646,7 +1634,7 @@ describe('class NotEqualToCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: NotEqualToConditionConfig = {
             type: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -1662,7 +1650,7 @@ describe('class NotEqualToCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: NotEqualToConditionConfig = {
             type: ConditionType.NotEqualTo,
             valueHostName: null,
             secondValueHostName: null
@@ -1677,43 +1665,26 @@ describe('class GreaterThanCondition', () => {
     test('DefaultConditionType', () => {
         expect(GreaterThanCondition.DefaultConditionType).toBe(ConditionType.GreaterThan);
     });
-    test('evaluate using secondValue property with number for Match or NoMatch', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
-            type: ConditionType.GreaterThan,
-            valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
-        };
-        let testItem = new GreaterThanCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh.setValue(101);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(100);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-    });
+
     test('evaluate using boolean results in Undetermined because no support for GT operator', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Boolean, 'Label2');
+        let config: GreaterThanConditionConfig = {
             type: ConditionType.GreaterThan,
             valueHostName: 'Property1',
-            secondValue: false,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new GreaterThanCondition(config);
-        vh.setInputValue('---- does not matter ----');
         vh.setValue(true);
+        vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So NoMatch because operator is GT
+        vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
@@ -1723,7 +1694,7 @@ describe('class GreaterThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanConditionConfig = {
             type: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -1747,12 +1718,14 @@ describe('class GreaterThanCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: GreaterThanConditionConfig = {
             type: ConditionType.GreaterThan,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
+        vh2.setValue(100);
         let testItem = new GreaterThanCondition(config);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1768,19 +1741,21 @@ describe('class GreaterThanCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: GreaterThanConditionConfig = {
             type: ConditionType.GreaterThan,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
+        vh2.setValue(100);
         let testItem = new GreaterThanCondition(config);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
                 tokenLabel: 'SecondLabel',
-                associatedValue: '',
+                associatedValue: 'Label2',
                 purpose: 'label'
             },                
             {
@@ -1795,10 +1770,9 @@ describe('class GreaterThanCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanConditionConfig = {
             type: ConditionType.GreaterThan,
             valueHostName: 'Property1',
-            secondValue: null,
             secondValueHostName: null
         };
         let testItem = new GreaterThanCondition(config);
@@ -1818,20 +1792,18 @@ describe('class GreaterThanCondition', () => {
         ]);
     });    
     test('category is Comparison', () => {
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanConditionConfig = {
             type: ConditionType.GreaterThan,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null
         };
         let testItem = new GreaterThanCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () => {
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanConditionConfig = {
             type: ConditionType.GreaterThan,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null,
             category: ConditionCategory.Contents
         };
@@ -1842,7 +1814,7 @@ describe('class GreaterThanCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanConditionConfig = {
             type: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -1858,7 +1830,7 @@ describe('class GreaterThanCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanConditionConfig = {
             type: ConditionType.GreaterThan,
             valueHostName: null,
             secondValueHostName: null
@@ -1873,43 +1845,28 @@ describe('class GreaterThanOrEqualCondition', () => {
     test('DefaultConditionType', () => {
         expect(GreaterThanOrEqualCondition.DefaultConditionType).toBe(ConditionType.GreaterThanOrEqual);
     });
-    test('evaluate using secondValue property with number for Match or NoMatch', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
-            valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
-        };
-        let testItem = new GreaterThanOrEqualCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh.setValue(101);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(100);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-    });
     test('evaluate using boolean results in Undetermined because no support for GTE operator', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Boolean, 'Label2');
+        let config: GreaterThanOrEqualConditionConfig = {
             type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: false,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new GreaterThanOrEqualCondition(config);
-        vh.setInputValue('---- does not matter ----');
         vh.setValue(true);
+        vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So Match because operator is GTE
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(true); // secondValue == this value. So Match because operator is GTE
+        vh2.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
@@ -1919,7 +1876,7 @@ describe('class GreaterThanOrEqualCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanOrEqualConditionConfig = {
             type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -1937,19 +1894,21 @@ describe('class GreaterThanOrEqualCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
 
-
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+
+        let config: GreaterThanOrEqualConditionConfig = {
             type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: 100,
             secondValueHostName: null
         };
         let testItem = new GreaterThanOrEqualCondition(config);
+        vh2.setValue(100);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(undefined);
@@ -1958,25 +1917,37 @@ describe('class GreaterThanOrEqualCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        // now swap them
+        vh.setValue(100);
+        vh2.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: GreaterThanOrEqualConditionConfig = {
             type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
+        vh2.setValue(100);
         let testItem = new GreaterThanOrEqualCondition(config);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
                 tokenLabel: 'SecondLabel',
-                associatedValue: '',
+                associatedValue: 'Label2',
                 purpose: 'label'
             },
             {
@@ -1991,10 +1962,9 @@ describe('class GreaterThanOrEqualCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanOrEqualConditionConfig = {
             type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: null,
             secondValueHostName: null
         };
         let testItem = new GreaterThanOrEqualCondition(config);
@@ -2014,20 +1984,18 @@ describe('class GreaterThanOrEqualCondition', () => {
         ]);
     });    
     test('category is Comparison', () => {
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanOrEqualConditionConfig = {
             type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null
         };
         let testItem = new GreaterThanOrEqualCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () => {
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanOrEqualConditionConfig = {
             type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null,
             category: ConditionCategory.Contents
         };
@@ -2038,7 +2006,7 @@ describe('class GreaterThanOrEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanOrEqualConditionConfig = {
             type: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -2054,7 +2022,7 @@ describe('class GreaterThanOrEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: GreaterThanOrEqualConditionConfig = {
             type: ConditionType.GreaterThanOrEqual,
             valueHostName: null,
             secondValueHostName: null
@@ -2075,14 +2043,15 @@ describe('class LessThanCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new LessThanCondition(config);
-        vh.setInputValue('---- does not matter ----');
+        vh2.setValue(100);
         vh.setValue(101);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(100);
@@ -2096,18 +2065,25 @@ describe('class LessThanCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Boolean, 'Label2');
+        
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: 'Property1',
-            secondValue: false,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new LessThanCondition(config);
-        vh.setInputValue('---- does not matter ----');
         vh.setValue(true);
+        vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false); // secondValue == this value. So NoMatch because operator is LT
+        vh.setValue(true); // secondValue == this value. So NoMatch because operator is LT
+        vh2.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(false); // secondValue == this value. So NoMatch because operator is LT
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+
     });
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
         let services = new MockValidationServices(false, true);
@@ -2116,7 +2092,7 @@ describe('class LessThanCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
-        let config: CompareToConditionConfig = {
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -2134,19 +2110,20 @@ describe('class LessThanCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
 
-
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new LessThanCondition(config);
+        vh2.setValue(100);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(undefined);
@@ -2155,25 +2132,37 @@ describe('class LessThanCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        // swap them
+        vh.setValue(100);
+        vh2.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
     });
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new LessThanCondition(config);
+        vh2.setValue(100);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
                 tokenLabel: 'SecondLabel',
-                associatedValue: '',
+                associatedValue: 'Label2',
                 purpose: 'label'
             },                
             {
@@ -2188,10 +2177,9 @@ describe('class LessThanCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: 'Property1',
-            secondValue: null,
             secondValueHostName: null
         };
         let testItem = new LessThanCondition(config);
@@ -2211,20 +2199,18 @@ describe('class LessThanCondition', () => {
         ]);
     });    
     test('category is Comparison', () => {
-        let config: CompareToConditionConfig = {
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null
         };
         let testItem = new LessThanCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () => {
-        let config: CompareToConditionConfig = {
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null,
             category: ConditionCategory.Contents
         };
@@ -2235,7 +2221,7 @@ describe('class LessThanCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -2251,7 +2237,7 @@ describe('class LessThanCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: LessThanConditionConfig = {
             type: ConditionType.LessThan,
             valueHostName: null,
             secondValueHostName: null
@@ -2266,43 +2252,30 @@ describe('class LessThanOrEqualCondition', () => {
     test('DefaultConditionType', () => {
         expect(LessThanOrEqualCondition.DefaultConditionType).toBe(ConditionType.LessThanOrEqual);
     });
-    test('evaluate using secondValue property with number for Match or NoMatch', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
-            valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
-        };
-        let testItem = new LessThanOrEqualCondition(config);
-        vh.setInputValue('---- does not matter ----');
-        vh.setValue(101);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(100);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(99);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-    });
+
     test('evaluate using boolean results in Undetermined because no support for LTE operator', () => {
         // boolean chosen because Comparers don't support GreaterThan/LessThan
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Boolean, 'Label2');
+        let config: LessThanOrEqualConditionConfig = {
             type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: false,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new LessThanOrEqualCondition(config);
         vh.setInputValue('---- does not matter ----');
         vh.setValue(true);
+        vh2.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false); // secondValue == this value. So Match because operator is LTE
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(true); // secondValue == this value. So Match because operator is LTE
+        vh2.setValue(true);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('evaluate using secondValueHostName property with number for Match or NoMatch', () => {
@@ -2312,7 +2285,7 @@ describe('class LessThanOrEqualCondition', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
-        let config: CompareToConditionConfig = {
+        let config: LessThanOrEqualConditionConfig = {
             type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -2330,19 +2303,20 @@ describe('class LessThanOrEqualCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
 
-
     test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');
+        let config: LessThanOrEqualConditionConfig = {
             type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: 100,
             secondValueHostName: null
         };
         let testItem = new LessThanOrEqualCondition(config);
+        vh2.setValue(100);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(undefined);
@@ -2351,25 +2325,38 @@ describe('class LessThanOrEqualCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        // swap them
+        vh.setValue(100);
+        vh2.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh2.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        
     });
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let vh2 = vm.addInputValueHost(
+            'Property2', LookupKey.Number, 'Label2');        
+        let config: LessThanOrEqualConditionConfig = {
             type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: 100,
-            secondValueHostName: null
+            secondValueHostName: 'Property2'
         };
         let testItem = new LessThanOrEqualCondition(config);
+        vh2.setValue(100);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
                 tokenLabel: 'SecondLabel',
-                associatedValue: '',
+                associatedValue: 'Label2',
                 purpose: 'label'
             },                
             {
@@ -2384,10 +2371,9 @@ describe('class LessThanOrEqualCondition', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
-        let config: CompareToConditionConfig = {
+        let config: LessThanOrEqualConditionConfig = {
             type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: null,
             secondValueHostName: null
         };
         let testItem = new LessThanOrEqualCondition(config);
@@ -2407,20 +2393,18 @@ describe('class LessThanOrEqualCondition', () => {
         ]);
     });    
     test('category is Comparison', () => {
-        let config: CompareToConditionConfig = {
+        let config: LessThanOrEqualConditionConfig = {
             type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null
         };
         let testItem = new LessThanOrEqualCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () => {
-        let config: CompareToConditionConfig = {
+        let config: LessThanOrEqualConditionConfig = {
             type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
-            secondValue: 10,
             secondValueHostName: null,
             category: ConditionCategory.Contents
         };
@@ -2431,7 +2415,7 @@ describe('class LessThanOrEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: LessThanOrEqualConditionConfig = {
             type: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -2447,7 +2431,7 @@ describe('class LessThanOrEqualCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
 
-        let config: CompareToConditionConfig = {
+        let config: LessThanOrEqualConditionConfig = {
             type: ConditionType.LessThanOrEqual,
             valueHostName: null,
             secondValueHostName: null
@@ -2458,6 +2442,797 @@ describe('class LessThanOrEqualCondition', () => {
         expect(testItem.size).toBe(0);
     });            
 });
+
+
+describe('CompareToValueConditionBase class additional cases', () => {
+    test('getValuesForTokens supports {CompareTo} token', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let vh2 = vm.addInputValueHost('Property2', LookupKey.Number, 'Second label');
+
+        let config: CompareToValueConditionConfig= {
+            type: ConditionType.Unknown,
+            valueHostName: 'Property1',
+        };
+        let testItem = new EqualToValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: null,
+                purpose: 'value'
+            }
+        ]);
+    });    
+    
+    test('Config secondValue with null logs and returns Undetermined', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let logger = services.loggerService as MockCapturingLogger;
+        vh.setValue('');
+        let config: CompareToValueConditionConfig= {
+            type: ConditionType.EqualTo,
+            valueHostName: null,
+            secondValue: null
+        };
+        let testItem = new EqualToValueCondition(config);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(logger.entryCount()).toBe(1);
+        expect(logger.getLatest()?.message).toMatch(/secondValue/);
+    });
+});
+
+describe('class EqualToValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(EqualToValueCondition.DefaultConditionType).toBe(ConditionType.EqualToValue);
+    });
+    test('evaluate using secondValue property with number for Match or NoMatch', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: EqualToValueConditionConfig= {
+            type: ConditionType.EqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new EqualToValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(101);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(100);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(0);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+    test('evaluate using secondValue property with boolean for Match or NoMatch', () => {
+        // boolean chosen because Comparers don't support GreaterThan/LessThan
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Boolean, 'Label');
+        let config: EqualToValueConditionConfig= {
+            type: ConditionType.EqualToValue,
+            valueHostName: 'Property1',
+            secondValue: false,
+        };
+        let testItem = new EqualToValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(true);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });
+ 
+    test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: EqualToValueConditionConfig= {
+            type: ConditionType.EqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 100,
+        };
+        let testItem = new EqualToValueCondition(config);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+    });
+    
+    test('Using ConversionLookupKey = Integer, show ValueHost(but not Second) is impacted by conversion', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let dsc = services.dataTypeConverterService as DataTypeConverterService;
+        dsc.register(new IntegerConverter());        
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: EqualToValueConditionConfig= {
+            type: ConditionType.EqualToValue,
+            valueHostName: 'Property1',
+            conversionLookupKey: LookupKey.Integer,
+            secondValue: 100,
+        };
+        let testItem = new EqualToValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(99.1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(99.9);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(100.1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(100.6);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+    test('Using SecondConversionLookupKey = Integer, show secondvalue (but not ValueHost) is impacted by conversion', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let dsc = services.dataTypeConverterService as DataTypeConverterService;
+        dsc.register(new IntegerConverter());
+
+        let vh1 = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+
+        let config: EqualToValueConditionConfig= {
+            type: ConditionType.EqualToValue,
+            valueHostName: 'Property1',
+            conversionLookupKey: null,
+            secondValue: 100.2,
+            secondConversionLookupKey: LookupKey.Integer
+        };
+        let testItem = new EqualToValueCondition(config);
+        vh1.setInputValue('---- does not matter ----');
+        vh1.setValue(100);
+        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
+        vh1.setValue(100.2);
+        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });    
+
+    test('getValuesForTokens with non-null values', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: EqualToValueConditionConfig= {
+            type: ConditionType.EqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 100,
+        };
+        let testItem = new EqualToValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: 100,
+                purpose: 'value'
+            }
+        ]);
+    });
+    test('getValuesForTokens with null value', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: EqualToValueConditionConfig= {
+            type: ConditionType.EqualToValue,
+            valueHostName: 'Property1',
+            secondValue: undefined,
+        };
+        let testItem = new EqualToValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: null,
+                purpose: 'value'
+            }
+        ]);
+    });    
+    test('category is Comparison', () => {
+        let config: EqualToValueConditionConfig= {
+            type: ConditionType.EqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 10,
+        };
+        let testItem = new EqualToValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Comparison);
+    });
+    test('category is overridden', () => {
+        let config: EqualToValueConditionConfig= {
+            type: ConditionType.EqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 10,
+            category: ConditionCategory.Contents
+        };
+        let testItem = new EqualToValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Contents);
+    });
+});
+describe('class NotEqualToValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(NotEqualToValueCondition.DefaultConditionType).toBe(ConditionType.NotEqualToValue);
+    });
+    test('evaluate using secondValue property with number for Match or NoMatch', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: NotEqualToValueConditionConfig= {
+            type: ConditionType.NotEqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new NotEqualToValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(101);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(100);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(0);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });
+    test('evaluate using secondValue property with boolean for Match or NoMatch', () => {
+        // boolean chosen because Comparers don't support GreaterThan/LessThan
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Boolean, 'Label');
+        let config: NotEqualToValueConditionConfig= {
+            type: ConditionType.NotEqualToValue,
+            valueHostName: 'Property1',
+            secondValue: false
+        };
+        let testItem = new NotEqualToValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(true);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+
+    test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: NotEqualToValueConditionConfig= {
+            type: ConditionType.NotEqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new NotEqualToValueCondition(config);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+    });
+    test('getValuesForTokens using secondValue', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: NotEqualToValueConditionConfig= {
+            type: ConditionType.NotEqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new NotEqualToValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: 100,
+                purpose: 'value'
+            }
+        ]);
+    });
+
+    test('getValuesForTokens using null', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: NotEqualToValueConditionConfig= {
+            type: ConditionType.NotEqualToValue,
+            valueHostName: 'Property1',
+            secondValue: null
+        };
+        let testItem = new NotEqualToValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: null,
+                purpose: 'value'
+            }
+        ]);
+    });    
+    test('category is Comparison', () => {
+        let config: NotEqualToValueConditionConfig= {
+            type: ConditionType.NotEqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 10
+        };
+        let testItem = new NotEqualToValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Comparison);
+    });
+    test('category is overridden', () => {
+        let config: NotEqualToValueConditionConfig= {
+            type: ConditionType.NotEqualToValue,
+            valueHostName: 'Property1',
+            secondValue: 10,
+            category: ConditionCategory.Contents
+        };
+        let testItem = new NotEqualToValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Contents);
+    });
+
+});
+describe('class GreaterThanValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(GreaterThanValueCondition.DefaultConditionType).toBe(ConditionType.GreaterThanValue);
+    });
+    test('evaluate using secondValue property with number for Match or NoMatch', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: GreaterThanValueConditionConfig= {
+            type: ConditionType.GreaterThanValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new GreaterThanValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(101);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(100);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(0);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+    test('evaluate using boolean results in Undetermined because no support for GT operator', () => {
+        // boolean chosen because Comparers don't support GreaterThan/LessThan
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Boolean, 'Label');
+        let config: GreaterThanValueConditionConfig= {
+            type: ConditionType.GreaterThanValue,
+            valueHostName: 'Property1',
+            secondValue: false
+        };
+        let testItem = new GreaterThanValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(true);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false); // secondValue == this value. So NoMatch because operator is GT
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+
+    test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: GreaterThanValueConditionConfig= {
+            type: ConditionType.GreaterThanValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new GreaterThanValueCondition(config);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+    });
+    test('getValuesForTokens with non-null values', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: GreaterThanValueConditionConfig= {
+            type: ConditionType.GreaterThanValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new GreaterThanValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: 100,
+                purpose: 'value'
+            }
+        ]);
+    });
+    test('getValuesForTokens with null values', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: GreaterThanValueConditionConfig= {
+            type: ConditionType.GreaterThanValue,
+            valueHostName: 'Property1',
+            secondValue: null
+        };
+        let testItem = new GreaterThanValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: null,
+                purpose: 'value'
+            }
+        ]);
+    });    
+    test('category is Comparison', () => {
+        let config: GreaterThanValueConditionConfig= {
+            type: ConditionType.GreaterThanValue,
+            valueHostName: 'Property1',
+            secondValue: 10
+        };
+        let testItem = new GreaterThanValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Comparison);
+    });
+    test('category is overridden', () => {
+        let config: GreaterThanValueConditionConfig= {
+            type: ConditionType.GreaterThanValue,
+            valueHostName: 'Property1',
+            secondValue: 10,
+            category: ConditionCategory.Contents
+        };
+        let testItem = new GreaterThanValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Contents);
+    });
+});
+describe('class GreaterThanOrEqualValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(GreaterThanOrEqualValueCondition.DefaultConditionType).toBe(ConditionType.GreaterThanOrEqualValue);
+    });
+    test('evaluate using secondValue property with number for Match or NoMatch', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: GreaterThanOrEqualValueConditionConfig= {
+            type: ConditionType.GreaterThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new GreaterThanOrEqualValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(101);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(100);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(0);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+    test('evaluate using boolean results in Undetermined because no support for GTE operator', () => {
+        // boolean chosen because Comparers don't support GreaterThan/LessThan
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Boolean, 'Label');
+        let config: GreaterThanOrEqualValueConditionConfig= {
+            type: ConditionType.GreaterThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: false
+        };
+        let testItem = new GreaterThanOrEqualValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(true);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false); // secondValue == this value. So Match because operator is GTE
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });
+
+    test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: GreaterThanOrEqualValueConditionConfig= {
+            type: ConditionType.GreaterThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new GreaterThanOrEqualValueCondition(config);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+    });
+    test('getValuesForTokens with non-null values', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: GreaterThanOrEqualValueConditionConfig= {
+            type: ConditionType.GreaterThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new GreaterThanOrEqualValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: 100,
+                purpose: 'value'
+            }
+        ]);
+    });
+    test('getValuesForTokens with null values', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: GreaterThanOrEqualValueConditionConfig= {
+            type: ConditionType.GreaterThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: null
+        };
+        let testItem = new GreaterThanOrEqualValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: null,
+                purpose: 'value'
+            }
+        ]);
+    });    
+    test('category is Comparison', () => {
+        let config: GreaterThanOrEqualValueConditionConfig= {
+            type: ConditionType.GreaterThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 10
+        };
+        let testItem = new GreaterThanOrEqualValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Comparison);
+    });
+    test('category is overridden', () => {
+        let config: GreaterThanOrEqualValueConditionConfig= {
+            type: ConditionType.GreaterThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 10,
+            category: ConditionCategory.Contents
+        };
+        let testItem = new GreaterThanOrEqualValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Contents);
+    });
+});
+
+describe('class LessThanValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(LessThanValueCondition.DefaultConditionType).toBe(ConditionType.LessThanValue);
+    });
+    test('evaluate using secondValue property with number for Match or NoMatch', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: LessThanValueConditionConfig= {
+            type: ConditionType.LessThanValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new LessThanValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(101);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(100);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(99);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });
+    test('evaluate using boolean results in Undetermined because no support for LT operator', () => {
+        // boolean chosen because Comparers don't support GreaterThan/LessThan
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Boolean, 'Label');
+        let config: LessThanValueConditionConfig= {
+            type: ConditionType.LessThanValue,
+            valueHostName: 'Property1',
+            secondValue: false
+        };
+        let testItem = new LessThanValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(true);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false); // secondValue == this value. So NoMatch because operator is LT
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+    test('getValuesForTokens with non-null values', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: LessThanValueConditionConfig= {
+            type: ConditionType.LessThanValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new LessThanValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: 100,
+                purpose: 'value'
+            }
+        ]);
+    });
+
+    test('category is overridden', () => {
+        let config: LessThanValueConditionConfig= {
+            type: ConditionType.LessThanValue,
+            valueHostName: 'Property1',
+            secondValue: 10,
+            category: ConditionCategory.Contents
+        };
+        let testItem = new LessThanValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Contents);
+    });
+});
+describe('class LessThanOrEqualValueCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(LessThanOrEqualValueCondition.DefaultConditionType).toBe(ConditionType.LessThanOrEqualValue);
+    });
+    test('evaluate using secondValue property with number for Match or NoMatch', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: LessThanOrEqualValueConditionConfig= {
+            type: ConditionType.LessThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new LessThanOrEqualValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(101);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(100);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(99);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });
+    test('evaluate using boolean results in Undetermined because no support for LTE operator', () => {
+        // boolean chosen because Comparers don't support GreaterThan/LessThan
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Boolean, 'Label');
+        let config: LessThanOrEqualValueConditionConfig= {
+            type: ConditionType.LessThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: false
+        };
+        let testItem = new LessThanOrEqualValueCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(true);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false); // secondValue == this value. So Match because operator is LTE
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });
+    test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: LessThanOrEqualValueConditionConfig= {
+            type: ConditionType.LessThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new LessThanOrEqualValueCondition(config);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue('string');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+    });
+    test('getValuesForTokens with non-null values', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: LessThanOrEqualValueConditionConfig= {
+            type: ConditionType.LessThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new LessThanOrEqualValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: 100,
+                purpose: 'value'
+            }
+        ]);
+    });
+    test('getValuesForTokens with null values', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: LessThanOrEqualValueConditionConfig= {
+            type: ConditionType.LessThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: null
+        };
+        let testItem = new LessThanOrEqualValueCondition(config);
+        let list = testItem.getValuesForTokens(vh, vm);
+        expect(list).not.toBeNull();
+        expect(list).toEqual([
+            {
+                tokenLabel: 'CompareTo',
+                associatedValue: null,
+                purpose: 'value'
+            }
+        ]);
+    });    
+    test('category is Comparison', () => {
+        let config: LessThanOrEqualValueConditionConfig= {
+            type: ConditionType.LessThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 10
+        };
+        let testItem = new LessThanOrEqualValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Comparison);
+    });
+    test('category is overridden', () => {
+        let config: LessThanOrEqualValueConditionConfig= {
+            type: ConditionType.LessThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 10,
+            category: ConditionCategory.Contents
+        };
+        let testItem = new LessThanOrEqualValueCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Contents);
+    });
+});
+
 
 
 describe('class StringLengthCondition', () => {
