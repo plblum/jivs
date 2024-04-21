@@ -5,6 +5,8 @@ import {
 } from "../../src/Conditions/ConcreteConditions";
 import type { IConditionCore, ConditionConfig } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { FluentConditionCollector } from "../../src/ValueHosts/Fluent";
+import { enableFluentConditions } from "../../src/Conditions/FluentConditionCollectorExtensions";
 
 describe('ConditionFactory.create', () => {
     test('create with registered Condition creates the correct instance', () => {
@@ -32,5 +34,22 @@ describe('ConditionFactory.create', () => {
             ValueHostName: null
         })).toThrow(/not supported/);
 
+    });
+    test('isRegistered', () => {
+        let factory = new ConditionFactory();
+        expect(factory.isRegistered(ConditionType.RequireText)).toBe(false);
+        expect(() => factory.register<RequireTextConditionConfig>(
+            ConditionType.RequireText, (config) => new RequireTextCondition(config))).not.toThrow();
+        expect(factory.isRegistered(ConditionType.RequireText)).toBe(true);
+
+    });    
+});
+describe('enableFluentConditions', () => {
+    test('First call works and second call does not throw', () => {
+        expect(FluentConditionCollector.prototype.dataTypeCheck).toBeUndefined();
+        enableFluentConditions();
+        expect(FluentConditionCollector.prototype.dataTypeCheck).toBeDefined();
+        expect(() => enableFluentConditions()).not.toThrow();
+        expect(FluentConditionCollector.prototype.dataTypeCheck).toBeDefined();
     });
 });

@@ -122,8 +122,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     * appear in the Required validator within the {ConversionError} token.
      */
     public setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {
-        if (!options)
-            options = options ?? {};
+        options = options ?? {};
         let oldNative: any = this.state.value;
         let nativeChanged = !deepEquals(nativeValue, oldNative);
         let oldInput: any = this.state.inputValue;

@@ -1,6 +1,6 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { ValidationServices } from "../../src/Services/ValidationServices";
-import { MockCapturingLogger } from "../TestSupport/mocks";
+import { ValidationServices, assertValidFallbacks } from "../../src/Services/ValidationServices";
+import { MockCapturingLogger, MockValidationServices } from "../TestSupport/mocks";
 import { InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
@@ -11,6 +11,7 @@ import { DataTypeConverterService } from "../../src/Services/DataTypeConverterSe
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
+import { IServiceWithFallback, IServicesAccessor, toIServiceWithFallback, toIServicesAccessor } from "../../src/Interfaces/ValidationServices";
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
     test('Has parameters', () => {
@@ -140,4 +141,134 @@ describe('inputValidatorFactory property', () => {
         expect(x).toBeInstanceOf(InputValidatorFactory);
     });
   
+});
+
+describe('toIServicesAccessor', () => {
+    test('Valid object returns it', () => {
+        let test: IServicesAccessor = {
+            services: new MockValidationServices(false, false)
+        };
+        expect(toIServicesAccessor(test)).toBe(test);
+    });
+    test('Invalid object returns null', () => {
+        expect(toIServicesAccessor({})).toBeNull();
+        expect(toIServicesAccessor({ SERVICES: new MockValidationServices(false, false) })).toBeNull();        
+    });    
+});
+
+describe('toIServiceWithFallback', () => {
+    test('Valid object with fallbackService=null returns it', () => {
+        let test: IServiceWithFallback<any> = {
+            fallbackService: null
+        };
+        expect(toIServiceWithFallback(test)).toBe(test);
+    });
+    test('Valid object with fallbackService=service returns it', () => {
+        let test: IServiceWithFallback<any> = {
+            fallbackService: {
+                fallbackService: null
+            }
+        };
+        expect(toIServiceWithFallback(test)).toBe(test);
+    });    
+    test('Invalid object returns null', () => {
+        expect(toIServiceWithFallback({})).toBeNull();
+        expect(toIServiceWithFallback({ FALLBACKSERVICE: null })).toBeNull();        
+    });    
+});
+
+describe('assertValidFallbacks', () => {
+    test('Pass null does not throw', () => {
+        let hostService: IServiceWithFallback<any> = {
+            fallbackService: null
+        };
+        expect(()=> assertValidFallbacks(null, hostService)).not.toThrow();
+    });
+    test('Pass service with its fallbackService=null does not throw', () => {
+        let hostService: IServiceWithFallback<any> = {
+            fallbackService: null
+        };
+        let fallbackService: IServiceWithFallback<any> = {
+            fallbackService: null
+        };        
+        expect(()=> assertValidFallbacks(fallbackService, hostService)).not.toThrow();
+    });    
+    test('hostService already has 9 ancestors, but does not throw', () => {
+        let hostService: IServiceWithFallback<any> = {
+            fallbackService: null,
+        }
+        let fallbackService: IServiceWithFallback<any> = {
+            fallbackService: {
+                fallbackService: {
+                    fallbackService: {
+                        fallbackService: { 
+                            fallbackService: {
+                                fallbackService: {
+                                    fallbackService: {
+                                        fallbackService: {
+                                            fallbackService: {}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };        
+        expect(()=> assertValidFallbacks(fallbackService, hostService)).not.toThrow();
+    });        
+    test('hostService already has 10 ancestors, throws', () => {
+        let hostService: IServiceWithFallback<any> = {
+            fallbackService: null
+        };
+        let fallbackService: IServiceWithFallback<any> = {
+            fallbackService: {
+                fallbackService: {
+                    fallbackService: {
+                        fallbackService: { 
+                            fallbackService: {
+                                fallbackService: {
+                                    fallbackService: {
+                                        fallbackService: {
+                                            fallbackService: {
+                                                fallbackService: {
+                                                    
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };        
+        expect(()=> assertValidFallbacks(fallbackService, hostService)).toThrow(/limit/);
+    });            
+    test('fallback already points to hostService, causing a loop, throws', () => {
+        let hostService: IServiceWithFallback<any> = {
+            fallbackService: null
+        };
+        let fallbackService: IServiceWithFallback<any> = {
+            fallbackService: null
+        };        
+        fallbackService.fallbackService = hostService;
+        expect(()=> assertValidFallbacks(fallbackService, hostService)).toThrow(/loops/);
+    });                
+    test('fallback already points to hostService through its child, causing a loop, throws', () => {
+        let hostService: IServiceWithFallback<any> = {
+            fallbackService: null
+        };
+        let fallbackService1: IServiceWithFallback<any> = {
+            fallbackService: null
+        };      
+        let fallbackService2: IServiceWithFallback<any> = {
+            fallbackService: null
+        };                
+        fallbackService1.fallbackService = fallbackService2;
+        fallbackService2.fallbackService = hostService;
+        expect(()=> assertValidFallbacks(fallbackService1, hostService)).toThrow(/loops/);
+    });                    
 });

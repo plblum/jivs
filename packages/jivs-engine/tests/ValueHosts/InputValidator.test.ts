@@ -8,7 +8,7 @@ import {
 
 import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
-import type { TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
+import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger } from "../TestSupport/mocks";
 import { IValueHostResolver, IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
@@ -1223,4 +1223,23 @@ describe('InputValidatorFactory.create', () => {
         expect(created).not.toBeNull();
         expect(created).toBeInstanceOf(InputValidator);
     });
+});
+
+describe('toIMessageTokenSource', () => {
+    test('Valid object with getValuesForTokens=null returns it', () => {
+        let test: IMessageTokenSource = {
+            getValuesForTokens: null!
+        };
+        expect(toIMessageTokenSource(test)).toBe(test);
+    });
+    test('Valid object with getValuesForTokens assigned returns it', () => {
+        let test: IMessageTokenSource = {
+            getValuesForTokens: (vh: IInputValueHost, vhr: IValueHostResolver) => []
+        };
+        expect(toIMessageTokenSource(test)).toBe(test);
+    });    
+    test('Invalid object returns null', () => {
+        expect(toIMessageTokenSource({})).toBeNull();
+        expect(toIMessageTokenSource({ GETValuesForTokens: null })).toBeNull();        
+    });    
 });

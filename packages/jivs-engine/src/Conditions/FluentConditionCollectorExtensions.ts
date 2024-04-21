@@ -586,6 +586,7 @@ function stringLength(
 export function _genDCAll(
     collector: FluentConditionCollector): AllMatchConditionConfig {
     assertNotNull(collector, 'collector');
+    assertNotNull(collector.parentConfig, 'collector.parentConfig');    
     return { conditionConfigs: collector.parentConfig.conditionConfigs } as AllMatchConditionConfig;
 }
 function all(
@@ -601,6 +602,7 @@ function all(
 export function _genDCAny(
     collector: FluentConditionCollector): AnyMatchConditionConfig {
     assertNotNull(collector, 'collector');
+    assertNotNull(collector.parentConfig, 'collector.parentConfig');
     return { conditionConfigs: collector.parentConfig.conditionConfigs } as AnyMatchConditionConfig;
 }
 function any(
@@ -619,6 +621,7 @@ export function _genDCCountMatches(
     maximum: number | null,
     collector: FluentConditionCollector): CountMatchesConditionConfig {
     assertNotNull(collector, 'collector');
+    assertNotNull(collector.parentConfig, 'collector.parentConfig');    
     let condConfig: CountMatchesConditionConfig =
         { conditionConfigs: collector.parentConfig.conditionConfigs } as CountMatchesConditionConfig;
     if (minimum !== null)

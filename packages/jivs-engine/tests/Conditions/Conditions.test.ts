@@ -142,6 +142,21 @@ describe('class DataTypeCheckCondition', () => {
         vh.setValue(10);    // doesn't change InputValue...
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
+    test('Using NonInputValueHost for property throws', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: DataTypeCheckConditionConfig = {
+            type: ConditionType.DataTypeCheck,
+            valueHostName: 'Property1',
+        };
+        let testItem = new DataTypeCheckCondition(config);
+        expect(() => testItem.evaluate(vh, vm)).toThrow(/Invalid ValueHost/);
+        let logger = vm.services.loggerService as MockCapturingLogger;
+        expect(logger.findMessage('Invalid ValueHost', LoggingLevel.Error, null, null)).toBeDefined();
+
+    });    
     test('getValuesForTokens where ConversionErrorTokenValue is setup shows that token', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -263,7 +278,19 @@ describe('class RequireTextCondition', () => {
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
- 
+    test('evaluate with value of null and config.nullValueResult is undefined, returns NoMatch', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: RequireTextConditionConfig = {
+            type: ConditionType.RequireText,
+            valueHostName: 'Property1'
+        };
+        let testItem = new RequireTextCondition(config);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
     test('evaluate not influenced by Config.trim=true because trim is for evaluateDuringEdit', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);

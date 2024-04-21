@@ -82,8 +82,7 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
         if (typeof value === 'object')
             return { errorMessage: 'Not a string or primitive' };
         return {
-            value: value != null // null/undefined
-                ? value.toString() : ''
+            value: value.toString()
         };
     }    
 

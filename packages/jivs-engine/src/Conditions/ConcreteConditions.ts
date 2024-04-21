@@ -193,11 +193,6 @@ export interface RegExpConditionConfig extends RegExpConditionBaseConfig {
      * If undefined, it is treated as false.
      */
     ignoreCase?: boolean;
-    /**
-     * Used together with expressionAsString to set the global search option on the Regexp when true.
-     * If undefined, it is treated as false.
-     */
-    global?: boolean;
 
     /**
      * Used together with expressionAsString to set the multiline option on the Regexp when true.
@@ -246,7 +241,6 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
                     // this may throw an exception due to bad expression pattern
                     re = new RegExp(this.config.expressionAsString,
                         (this.config.ignoreCase ? 'i' : '') +
-                        (this.config.global ? 'g' : '') +
                         (this.config.multiline ? 'm' : ''));
                 }
                 else
