@@ -3,7 +3,7 @@ import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { EvaluateChildConditionResultsConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
-import { InputValidatorConfig } from '../../src/Interfaces/InputValidator';
+import { InputValidatorConfig } from '../../src/Interfaces/Validator';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import {

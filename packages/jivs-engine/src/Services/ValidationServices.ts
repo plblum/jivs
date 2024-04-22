@@ -11,11 +11,11 @@
 
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import type { ILoggerService } from '../Interfaces/LoggerService';
-import type { IInputValidatorFactory } from '../Interfaces/InputValidator';
+import type { IInputValidatorFactory } from '../Interfaces/Validator';
 import { IServiceWithFallback, ServiceName, toIServicesAccessor, type IValidationServices } from '../Interfaces/ValidationServices';
 import type { IConditionFactory } from '../Interfaces/Conditions';
 import { IValueHostFactory } from '../Interfaces/ValueHost';
-import { InputValidatorFactory } from '../ValueHosts/InputValidator';
+import { InputValidatorFactory } from '../ValueHosts/Validator';
 import { ValueHostFactory, registerStandardValueHostGenerators } from '../ValueHosts/ValueHostFactory';
 import { ConsoleLoggerService } from './ConsoleLoggerService';
 import { ITextLocalizerService } from '../Interfaces/TextLocalizerService';

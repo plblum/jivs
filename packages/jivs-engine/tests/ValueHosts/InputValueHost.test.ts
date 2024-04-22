@@ -8,7 +8,7 @@ import {
     StringLengthConditionConfig,
     EqualToConditionConfig,
 } from "../../src/Conditions/ConcreteConditions";
-import { InputValidator } from "../../src/ValueHosts/InputValidator";
+import { InputValidator } from "../../src/ValueHosts/Validator";
 import { InputValueHost, InputValueHostGenerator, toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
@@ -20,11 +20,11 @@ import {
     ValidationResult, IssueFound, ValidateResult, ValidationSeverity, ValidateOptions,
     BusinessLogicError
 } from "../../src/Interfaces/Validation";
-import { InputValidateResult, IInputValidator, InputValidatorConfig, IInputValidatorFactory } from "../../src/Interfaces/InputValidator";
+import { InputValidateResult, IInputValidator, InputValidatorConfig, IInputValidatorFactory } from "../../src/Interfaces/Validator";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { SetValueOptions, IValueHost, ValueHostState, ValueHostStateChangedHandler, ValidTypesForStateStorage, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
-import { ConditionWithPromiseTester } from "./InputValidator.test";
+import { ConditionWithPromiseTester } from "./Validator.test";
 import { ConditionCategory, ConditionEvaluateResult, ICondition, ConditionConfig, IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";

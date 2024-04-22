@@ -4,7 +4,7 @@
  */
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { InputValidatorConfig } from "../Interfaces/InputValidator";
+import { InputValidatorConfig } from "../Interfaces/Validator";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
@@ -14,7 +14,7 @@ import { NonInputValueHostConfig } from "../Interfaces/NonInputValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { CalcValueHostConfig, CalculationHandler } from "../Interfaces/CalcValueHost";
 import { EvaluateChildConditionResultsConfig } from "../Conditions/EvaluateChildConditionResultsBase";
-import { resolveErrorCode } from "./InputValidator";
+import { resolveErrorCode } from "./Validator";
 
 
 /**

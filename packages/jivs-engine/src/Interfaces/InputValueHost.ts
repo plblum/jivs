@@ -1,7 +1,7 @@
 /**
  * @module ValueHosts/Types/InputValueHost
  */
-import { IInputValidator, InputValidatorConfig } from "./InputValidator";
+import { IInputValidator, InputValidatorConfig } from "./Validator";
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseState } from "./ValidatableValueHostBase";
 
 /**

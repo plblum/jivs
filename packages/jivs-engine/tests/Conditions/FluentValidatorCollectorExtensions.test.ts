@@ -2,7 +2,7 @@ import { LookupKey } from './../../src/DataTypes/LookupKeys';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 import { FluentCollectorBase, FluentValidatorCollector, fluent } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
-import { InputValidatorConfig } from '../../src/Interfaces/InputValidator';
+import { InputValidatorConfig } from '../../src/Interfaces/Validator';
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
     EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, LessThanConditionConfig,

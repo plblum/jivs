@@ -7,7 +7,7 @@ import {
     
 } from "../../src/Conditions/ConcreteConditions";
 
-import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
+import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/Validator";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
@@ -17,7 +17,7 @@ import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
 import { ValidationSeverity, ValidateOptions } from '../../src/Interfaces/Validation';
-import { InputValidateResult, IInputValidator, InputValidatorConfig } from '../../src/Interfaces/InputValidator';
+import { InputValidateResult, IInputValidator, InputValidatorConfig } from '../../src/Interfaces/Validator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";

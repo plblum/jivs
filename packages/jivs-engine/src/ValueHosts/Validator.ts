@@ -18,7 +18,7 @@ import { toIGatherValueHostNames, type IValueHost, ValidTypesForStateStorage } f
 import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
-import { type InputValidateResult, type IInputValidator, type InputValidatorConfig, type IInputValidatorFactory } from '../Interfaces/InputValidator';
+import { type InputValidateResult, type IInputValidator, type InputValidatorConfig, type IInputValidatorFactory } from '../Interfaces/Validator';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';

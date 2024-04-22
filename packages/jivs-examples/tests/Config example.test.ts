@@ -6,7 +6,7 @@ import { INonInputValueHost } from "@plblum/jivs-engine/src/Interfaces/NonInputV
 import { CalcValueHost } from "@plblum/jivs-engine/src/ValueHosts/CalcValueHost";
 import { InputValueHost } from "@plblum/jivs-engine/src/ValueHosts/InputValueHost";
 import { NonInputValueHost } from "@plblum/jivs-engine/src/ValueHosts/NonInputValueHost";
-import { InputValidator } from "@plblum/jivs-engine/src/ValueHosts/InputValidator";
+import { InputValidator } from "@plblum/jivs-engine/src/ValueHosts/Validator";
 import { IValidationManager } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
 
 function testVM(vm: IValidationManager): void

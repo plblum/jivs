@@ -3,7 +3,7 @@
  * @module Validation/Types
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { InputValidateResult } from './InputValidator';
+import { InputValidateResult } from './Validator';
 
 /**
  * Parameter for the validate() function on InputValueHost and ValidationManager.

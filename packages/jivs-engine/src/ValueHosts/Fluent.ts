@@ -122,7 +122,7 @@
  * Just register it with fluentFactory.singleton.register().
  */
 
-import { InputValidatorConfig } from './../Interfaces/InputValidator';
+import { InputValidatorConfig } from '../Interfaces/Validator';
 import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { NonInputValueHostConfig } from "../Interfaces/NonInputValueHost";
@@ -136,7 +136,7 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { ValidationManagerConfig } from '../Interfaces/ValidationManager';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ConditionType } from '../Conditions/ConditionTypes';
-import { resolveErrorCode } from './InputValidator';
+import { resolveErrorCode } from './Validator';
 
 /**
  * Starts a fluent chain. Its methods start InputValueHost (input()),

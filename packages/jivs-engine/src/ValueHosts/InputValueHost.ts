@@ -14,7 +14,7 @@ import { objectKeysCount, groupsMatch, cleanString } from '../Utilities/Utilitie
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
 import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from '../Interfaces/Validation';
-import { InputValidateResult, IInputValidator, InputValidatorConfig } from '../Interfaces/InputValidator';
+import { InputValidateResult, IInputValidator, InputValidatorConfig } from '../Interfaces/Validator';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';

@@ -9,7 +9,7 @@ import { IDataTypeComparerService } from './DataTypeComparerService';
 import { IDataTypeConverterService } from './DataTypeConverterService';
 import { IDataTypeFormatterService } from './DataTypeFormatterService';
 import { IDataTypeIdentifierService } from './DataTypeIdentifierService';
-import { IInputValidatorFactory } from './InputValidator';
+import { IInputValidatorFactory } from './Validator';
 import { ILoggerService } from './LoggerService';
 import { ITextLocalizerService } from './TextLocalizerService';
 import { IValueHostFactory } from './ValueHost';
