@@ -397,7 +397,7 @@ interface InputValueHostConfig extends ValueHostConfig
 }
 interface StaticValueHostConfig extends ValueHostConfig 
 {
-  conditionType: 'Static' // shown here for documentation purposes
+  valueHostType: 'Static' // shown here for documentation purposes
 }
 interface CalcValueHostConfig extends ValueHostConfig 
 {
@@ -559,7 +559,7 @@ interface ValidationManagerConfig {
 Let’s go through this type.
 
 -	`services` – Always takes a <a href="#validationservices">`ValidationServices object`</a>, which is rich with services for dependency injection and factories. You will need to do a bunch to configure this, but don’t worry, we have a code snippet to inject into your app to assist. (Described below.)
--	<a href="#configuringvaluehosts">`valueHostConfigs`</a> – Configures each InputValueHost associated with your Inputs and StaticValueHost associated with additional values needed by validator rules.
+-	<a href="#configuringvaluehosts">`valueHostConfigs`</a> – Configures each ValueHost. This is where a majority of the setup work goes.
 -	`savedState` and `savedValueHostStates` – `ValidationManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onStateChanged` and `onValueHostStateChanged` events, and pass the values back into these two Config properties when you recreate it.
 -	`onStateChanged` and `onValueHostStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 -	`onValueChanged` notifies you when a `ValueHost` had its value changed.
