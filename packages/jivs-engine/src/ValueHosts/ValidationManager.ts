@@ -434,7 +434,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
                 let vh = this.getValueHost(error.associatedValueHostName ?? BusinessLogicValueHostName);
                 if (!vh && !error.associatedValueHostName) {
                     vh = this.addValueHost({
-                        type: BusinessLogicInputValueHostType,
+                        valueHostType: BusinessLogicInputValueHostType,
                         label: '*',
                         name: BusinessLogicValueHostName
                     }, null);

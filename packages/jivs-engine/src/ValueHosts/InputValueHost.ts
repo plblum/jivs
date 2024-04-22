@@ -438,8 +438,8 @@ export function toIInputValueHost(source: any): IInputValueHost | null
 
 export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
     public canCreate(config: InputValueHostConfig): boolean {
-        if (config.type != null)    // null/undefined
-            return config.type === ValueHostType.Input;
+        if (config.valueHostType != null)    // null/undefined
+            return config.valueHostType === ValueHostType.Input;
 
         if (config.validatorConfigs === undefined)
             return false;

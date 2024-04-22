@@ -44,13 +44,13 @@ export class ValueHostFactory implements IValueHostFactory {
      * @returns 
      */
     private resolveConfig(config: ValueHostConfig): IValueHostGenerator {
-        if (!config.type)
+        if (!config.valueHostType)
             throw new Error('ValueHostConfig.type field required');
         for (const generator of this._configResolvers) {
             if (generator.canCreate(config))
                 return generator;
         }
-        throw new Error(`Unsupported ValueHostConfig ${config.type}`);
+        throw new Error(`Unsupported ValueHostConfig ${config.valueHostType}`);
     }
 
     /**

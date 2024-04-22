@@ -39,7 +39,7 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     // startDate < endDate
     // abs(endDate-startDate) < 10
     let startDateConfig: InputValueHostConfig = {
-        type: ValueHostType.Input,  // = "Input"          
+        valueHostType: ValueHostType.Input,  // = "Input"          
         name: 'StartDate',          // we refer to this as "ValueHostName" throughout documentation
         dataType: LookupKey.Date,   // = "Date" which is just the Date part of DateTime and assumes UTC
         validatorConfigs: [
@@ -71,7 +71,7 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     // No validators needed on EndDate. Jivs adds a DataTypeCheckCondition
     // to validate the input is indeed a date.
     let endDateConfig: InputValueHostConfig = {
-        type: ValueHostType.Input,
+        valueHostType: ValueHostType.Input,
         name: 'EndDate',
         dataType: LookupKey.Date, 
         validatorConfigs: []
@@ -81,7 +81,7 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     // of the validation rule where diff in days < X days.
     // This Config uses the differenceBetweenDates function to do the work.
     let diffDaysConfig: CalcValueHostConfig = {
-        type: ValueHostType.Calc,   // = "Calc"
+        valueHostType: ValueHostType.Calc,   // = "Calc"
         name: 'DiffDays',
         dataType: LookupKey.Integer,    // = "Integer"
         calcFn: differenceBetweenDates
@@ -91,7 +91,7 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     // through this StaticValueHost. Alternatively, it could
     // be assigned directly in the LessThanConditionConfig.
     let numOfDaysConfig: StaticValueHostConfig = {
-        type: ValueHostType.Static,   // = "Static"
+        valueHostType: ValueHostType.Static,   // = "Static"
         name: 'NumOfDays',
         dataType: LookupKey.Integer
     };

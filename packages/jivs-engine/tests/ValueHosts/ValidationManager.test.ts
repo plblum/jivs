@@ -76,7 +76,7 @@ describe('constructor and initial property values', () => {
     test('Config for 1 ValueHost supplied. Other parameters are null', () => {
         let configs: Array<ValueHostConfig> = [{
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1'
         }];
         let testItem: PublicifiedValidationManager | null = null;
@@ -108,11 +108,11 @@ describe('constructor and initial property values', () => {
         let configs: Array<ValueHostConfig> = [
             {
                 name: 'Field1',
-                type: ValueHostType.Input,
+                valueHostType: ValueHostType.Input,
                 label: 'Field 1'
             },
             <InputValueHostConfig>{
-                type: ValueHostType.Input,
+                valueHostType: ValueHostType.Input,
                 name: 'Field2',
                 label: 'Field 2',
                 validatorConfigs: []
@@ -140,7 +140,7 @@ describe('constructor and initial property values', () => {
         expect(testItem!.exposedValueHostConfigs['Field2']).toEqual({
             name: 'Field2',
             label: 'Field 2',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             validatorConfigs: []
         });
     });    
@@ -167,7 +167,7 @@ describe('constructor and initial property values', () => {
     test('Config and ValueHostState for 1 ValueHost supplied. Other parameters are null', () => {
         let configs: Array<ValueHostConfig> = [{
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1'
         }];
         let savedState: ValidationManagerState = {};
@@ -263,7 +263,7 @@ describe('ValidationManager.addValueHost', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: ValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1'
         };
         expect(() => testItem.addValueHost(config, null)).not.toThrow();
@@ -285,13 +285,13 @@ describe('ValidationManager.addValueHost', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config1: ValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1'
         };
         expect(() => testItem.addValueHost(config1, null)).not.toThrow();
         let config2: ValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1'
         };
         expect(() => testItem.addValueHost(config1, null)).toThrow();
@@ -300,14 +300,14 @@ describe('ValidationManager.addValueHost', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config1: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: null,
         };
         let initialValueHost1 = testItem.addValueHost(config1, null);
         let config2: InputValueHostConfig = {
             name: 'Field2',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 2',
             validatorConfigs: null,
         };
@@ -335,7 +335,7 @@ describe('ValidationManager.addValueHost', () => {
         });
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: [
                 {
@@ -362,7 +362,7 @@ describe('ValidationManager.addValueHost', () => {
         expect(testItem.exposedValueHostConfigs['Field1']).toBeDefined();     
         expect(testItem.exposedValueHostConfigs['Field1']).toEqual({
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: [
                 {
@@ -378,7 +378,7 @@ describe('ValidationManager.addValueHost', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: ValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1'
         };
         let state: ValueHostState = {
@@ -419,7 +419,7 @@ describe('ValidationManager.addValueHost', () => {
         });
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: [
                 {
@@ -456,7 +456,7 @@ describe('ValidationManager.addValueHost', () => {
         });
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: [
                 {
@@ -475,7 +475,7 @@ describe('ValidationManager.addValueHost', () => {
     test('State already exists in two places: lastValueHostState and as parameter for addValueHost. State is sourced from addValueHost.', () => {
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: [
                 {
@@ -529,7 +529,7 @@ describe('ValidationManager.addValueHost', () => {
         });
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: [
                 {
@@ -554,7 +554,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: null,
         };
@@ -598,7 +598,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: ValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1'
         };
         expect(() => testItem.updateValueHost(config, null)).not.toThrow();
@@ -620,7 +620,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: null,
         };
@@ -702,7 +702,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: [
                 {
@@ -736,7 +736,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: [
                 {
@@ -768,7 +768,7 @@ describe('ValidationManager.discardValueHost completely removes ValueHost, its s
     test('After adding in the VM Config, discard the only one leaves empty valueHosts, configs, and state', () => {
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: null,
         };
@@ -800,7 +800,7 @@ describe('ValidationManager.discardValueHost completely removes ValueHost, its s
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: null,
         };
@@ -820,14 +820,14 @@ describe('ValidationManager.discardValueHost completely removes ValueHost, its s
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config1: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: null,
         };
         let initialValueHost1 = testItem.addValueHost(config1, null);
         let config2: InputValueHostConfig = {
             name: 'Field2',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 2',
             validatorConfigs: null,
         };
@@ -851,13 +851,13 @@ describe('ValidationManager.getValueHost and getInputValue', () => {
 
         let config1: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: null,
         };
         let config2: InputValueHostConfig = {
             name: 'Field2',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 2',
             validatorConfigs: null,
         };
@@ -886,12 +886,12 @@ describe('ValidationManager.getValueHost and getInputValue', () => {
 
         let config1: ValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             label: 'Field 1'
         };
         let config2: ValueHostConfig = {
             name: 'Field2',
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             label: 'Field 2'
         };
         let testItem = new PublicifiedValidationManager({
@@ -917,7 +917,7 @@ describe('ValidationManager.getValueHost and getInputValue', () => {
 
         let config1: InputValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             label: 'Field 1',
             validatorConfigs: null,
         };
@@ -994,7 +994,7 @@ function setupInputValueHostConfig(fieldIndex: number,
     let labelNumber = fieldIndex + 1;
     let config: InputValueHostConfig = {
         name: `Field${labelNumber}`,
-        type: ValueHostType.Input,
+        valueHostType: ValueHostType.Input,
         label: `Field ${labelNumber}`,
         validatorConfigs: null,
     };

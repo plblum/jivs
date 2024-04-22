@@ -27,7 +27,7 @@ function createVMConfig(): ValidationManagerConfig
 describe('FluentValidatorCollector', () => {
     test('constructor with vhConfig sets up vhConfig property', () => {
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
             dataType: LookupKey.Currency,
@@ -38,7 +38,7 @@ describe('FluentValidatorCollector', () => {
     });
     test('constructor with vhConfig that has validatorConfig=null sets up vhConfig property with empty validatorConfig array', () => {
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
             dataType: LookupKey.Currency,
@@ -55,7 +55,7 @@ describe('FluentValidatorCollector', () => {
 
     test('add() with all parameters correctly defined', () => {
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
             dataType: LookupKey.Currency,
@@ -77,7 +77,7 @@ describe('FluentValidatorCollector', () => {
     });
     test('add() with null for conditionType, and other parameters correctly defined', () => {
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
             dataType: LookupKey.Currency,
@@ -102,7 +102,7 @@ describe('FluentValidatorCollector', () => {
     });
     test('add() with null for error message and error message already assigned', () => {
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
             dataType: LookupKey.Currency,
@@ -187,7 +187,7 @@ describe('fluent(vmConfig).static()', () => {
     test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = fluent().static('Field1', null, { label: 'Field 1' });
         expect(testItem).toEqual({
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             label: 'Field 1'
         });
@@ -195,7 +195,7 @@ describe('fluent(vmConfig).static()', () => {
     test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = fluent().static('Field1', 'Test');
         expect(testItem).toEqual({
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: 'Test'
         });
@@ -204,7 +204,7 @@ describe('fluent(vmConfig).static()', () => {
     test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = fluent().static('Field1');
         expect(testItem).toEqual({
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
         });
     });
@@ -212,7 +212,7 @@ describe('fluent(vmConfig).static()', () => {
     test('Pass in a StaticValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let testItem = fluent().static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toEqual({
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1'
@@ -231,7 +231,7 @@ describe('fluent().input()', () => {
         let testItem = fluent().input('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
             validatorConfigs: []
@@ -241,7 +241,7 @@ describe('fluent().input()', () => {
         let testItem = fluent().input('Field1', 'Test');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: 'Test',
             validatorConfigs: []
@@ -253,7 +253,7 @@ describe('fluent().input()', () => {
         let testItem = fluent().input('Field1');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
         };
@@ -263,7 +263,7 @@ describe('fluent().input()', () => {
         let testItem = fluent().input({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1',
@@ -330,7 +330,7 @@ describe('configCalc', () => {
     test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = fluent().calc('Field1', null, calcFnForTests);
         expect(testItem).toEqual({
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             calcFn: calcFnForTests
         });
@@ -338,7 +338,7 @@ describe('configCalc', () => {
     test('Valid name, data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = fluent().calc('Field1', 'Test', calcFnForTests);
         expect(testItem).toEqual({
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             dataType: 'Test',
             calcFn: calcFnForTests
@@ -348,7 +348,7 @@ describe('configCalc', () => {
     test('Pass in a CalcValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let testItem = fluent().calc({ name: 'Field1', dataType: 'Test', label: 'Field 1', calcFn: calcFnForTests });
         expect(testItem).toEqual({
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1',
@@ -376,7 +376,7 @@ describe('FluentFactory', () => {
     test('Constructor followed by create will return an instance of FluentValidatorCollector with correct vhConfig', () => {
         let testItem = new FluentFactory();
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
         };
@@ -400,7 +400,7 @@ describe('FluentFactory', () => {
         testItem.registerValidatorCollector((vhConfig) => new TestFluentValidatorCollector(vhConfig));
 
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
         };

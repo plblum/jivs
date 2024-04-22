@@ -26,7 +26,7 @@ class FactoryTestsValueHost extends ValueHostBase<ValueHostConfig, IFactoryTests
 const FactoryTestGeneratorType = 'FactoryTest';
 class FactoryTestsValueHostGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
-        return config.type === FactoryTestGeneratorType;
+        return config.valueHostType === FactoryTestGeneratorType;
     }
     public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IFactoryTestsValueHostState): IValueHost {
         return new FactoryTestsValueHost(valueHostsManager, config, state);
@@ -47,18 +47,18 @@ class FactoryTestsValueHostGenerator implements IValueHostGenerator {
 describe('ValueHostFactory.register', () => {
     test('Add FactoryTestsValueHostGenerator', () => {
         let factory = new ValueHostFactory();
-        expect(factory.isRegistered({ type: FactoryTestGeneratorType, name: '', label: '' })).toBe(false);
+        expect(factory.isRegistered({ valueHostType: FactoryTestGeneratorType, name: '', label: '' })).toBe(false);
         expect(() => factory.register(new FactoryTestsValueHostGenerator())).not.toThrow();
-        expect(factory.isRegistered({ type: FactoryTestGeneratorType, name: '', label: '' })).toBe(true);
+        expect(factory.isRegistered({ valueHostType: FactoryTestGeneratorType, name: '', label: '' })).toBe(true);
     });
     test('Add Two Generators retains both', () => {
         let factory = new ValueHostFactory();
-        expect(factory.isRegistered({ type: FactoryTestGeneratorType, name: '', label: '' })).toBe(false);
-        expect(factory.isRegistered({ type: ValueHostType.Input, name: '', label: '' })).toBe(false);
+        expect(factory.isRegistered({ valueHostType: FactoryTestGeneratorType, name: '', label: '' })).toBe(false);
+        expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '', label: '' })).toBe(false);
         expect(() => factory.register(new FactoryTestsValueHostGenerator())).not.toThrow();
         expect(() => factory.register(new InputValueHostGenerator())).not.toThrow();
-        expect(factory.isRegistered({ type: FactoryTestGeneratorType, name: '', label: '' })).toBe(true);
-        expect(factory.isRegistered({ type: ValueHostType.Input, name: '', label: '' })).toBe(true);
+        expect(factory.isRegistered({ valueHostType: FactoryTestGeneratorType, name: '', label: '' })).toBe(true);
+        expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '', label: '' })).toBe(true);
     });    
 });
 
@@ -70,7 +70,7 @@ describe('ValueHostFactory.create', () => {
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
-            type: FactoryTestGeneratorType,
+            valueHostType: FactoryTestGeneratorType,
             dataType: LookupKey.String,
             initialValue: 'DATA'
         };
@@ -94,7 +94,7 @@ describe('ValueHostFactory.create', () => {
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
-            type: FactoryTestGeneratorType,
+            valueHostType: FactoryTestGeneratorType,
             dataType: LookupKey.String,
             initialValue: 'DATA'
         };
@@ -117,7 +117,7 @@ describe('ValueHostFactory.create', () => {
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
-            type: null!,
+            valueHostType: null!,
             dataType: LookupKey.String,
             initialValue: 'DATA'
         };
@@ -139,7 +139,7 @@ describe('ValueHostFactory.create', () => {
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
-            type: 'Unregistered',
+            valueHostType: 'Unregistered',
             dataType: LookupKey.String,
             initialValue: 'DATA'
         };
@@ -164,7 +164,7 @@ describe('ValueHostFactory.cleanupState', () => {
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
-            type: FactoryTestGeneratorType,
+            valueHostType: FactoryTestGeneratorType,
             dataType: LookupKey.String,
             initialValue: 'DATA'
         };
@@ -191,7 +191,7 @@ describe('ValueHostFactory.createState', () => {
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
-            type: FactoryTestGeneratorType,
+            valueHostType: FactoryTestGeneratorType,
             dataType: LookupKey.String,
             initialValue: undefined
         };
@@ -210,9 +210,9 @@ describe('ValueHostFactory.createState', () => {
 describe('registerDefaultValueHostGenerators', () => {
     test('Ensure InputValueHostType gets registered', () => {
         let factory = new ValueHostFactory();
-        expect(factory.isRegistered({ type: ValueHostType.Input, name: '', label: '' })).toBe(false);
+        expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '', label: '' })).toBe(false);
         expect(() => registerStandardValueHostGenerators(factory)).not.toThrow();
-        expect(factory.isRegistered({ type: ValueHostType.Input, name: '', label: '' })).toBe(true);
+        expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '', label: '' })).toBe(true);
         
     });
 });

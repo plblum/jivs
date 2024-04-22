@@ -177,7 +177,7 @@ export class StartFluent
         
         if (typeof arg1 === 'object') {
             let config: InputValueHostConfig =
-                { ...arg1 as InputValueHostConfig, type: ValueHostType.Input };
+                { ...arg1 as InputValueHostConfig, valueHostType: ValueHostType.Input };
             if (!config.validatorConfigs)
                 config.validatorConfigs = [];
 
@@ -186,7 +186,7 @@ export class StartFluent
         if (typeof arg1 === 'string') {
 
             let config: InputValueHostConfig =
-                { type: ValueHostType.Input, name: arg1 } as InputValueHostConfig;
+                { valueHostType: ValueHostType.Input, name: arg1 } as InputValueHostConfig;
             if (dataType)
                 config.dataType = dataType;
             if (parameters)
@@ -219,10 +219,10 @@ export class StartFluent
     {
         this.assertFirstParameterValid(arg1);
         if (typeof arg1 === 'object')
-            return { ...arg1 as StaticValueHostConfig, type: ValueHostType.Static };
+            return { ...arg1 as StaticValueHostConfig, valueHostType: ValueHostType.Static };
         if (typeof arg1 === 'string') {
 
-            let config: StaticValueHostConfig = { type: ValueHostType.Static, name: arg1 };
+            let config: StaticValueHostConfig = { valueHostType: ValueHostType.Static, name: arg1 };
             if (dataType)
                 config.dataType = dataType;
             if (parameters)
@@ -270,11 +270,11 @@ export class StartFluent
     {
         this.assertFirstParameterValid(arg1);
         if (typeof arg1 === 'object')
-            return { ...arg1 as CalcValueHostConfig, type: ValueHostType.Calc };
+            return { ...arg1 as CalcValueHostConfig, valueHostType: ValueHostType.Calc };
         if (typeof arg1 === 'string') {
             if (typeof calcFn !== 'function')
                 throw new CodingError('Must supply a calculation function');
-            let config: CalcValueHostConfig = { type: ValueHostType.Calc, name: arg1, calcFn: calcFn };
+            let config: CalcValueHostConfig = { valueHostType: ValueHostType.Calc, name: arg1, calcFn: calcFn };
             if (dataType)
                 config.dataType = dataType;
         

@@ -391,7 +391,7 @@ interface ValueHostConfig
 }
 interface InputValueHostConfig extends ValueHostConfig 
 {
-  type: 'Input',	// shown here for documentation purposes
+  valueHostType: 'Input',	// shown here for documentation purposes
   validatorConfigs: ValidatorConfig[] | null;
   group?: string | Array<string> | null;
 }
@@ -401,7 +401,7 @@ interface StaticValueHostConfig extends ValueHostConfig
 }
 interface CalcValueHostConfig extends ValueHostConfig 
 {
-  type: 'Calc', // shown here for documentation purposes
+  valueHostType: 'Calc', // shown here for documentation purposes
   calcFn: CalculationHandler // a function definition
 }
 ```
@@ -409,14 +409,14 @@ Here’s how your configuration actually looks:
 ```ts
 [
   {
-    type: 'Input',
+    valueHostType: 'Input',
     name: 'FirstName',
     dataType: 'String',
     label: 'First name', // localized, of course!
     validatorConfigs: [ ValidatorConfigs ]
   },
   {
-    type: 'Input',
+    valueHostType: 'Input',
     name: 'LastName',
     dataType: 'String',
     label: 'Last name',
@@ -486,7 +486,7 @@ Because this is so full of goodness, let’s go through each property.
 Now let’s place an `ValidatorConfig` into our previous example using a Model with FirstName and LastName.
 ```ts
 [{
-  type: 'Input',
+  valueHostType: 'Input',
   name: 'FirstName',
   dataType: 'String',
   label: 'First name',
@@ -510,7 +510,7 @@ Now let’s place an `ValidatorConfig` into our previous example using a Model w
   }]
 },
 {
-  type: 'Input',
+  valueHostType: 'Input',
   name: 'LastName',
   dataType: 'String',
   label: 'Last name',
@@ -689,7 +689,7 @@ Here are two ways to start:
 Choose one of the methodologies below. When establishing the InputValueHost with your condition, it goes here:
 ```ts
 {
-  type: 'Input',
+  valueHostType: 'Input',
   name: ...,
   validatorConfigs: [{
     conditionCreator: (requester) => ...create your object here...
@@ -751,7 +751,7 @@ interface ValueHostConfig
 }
 
 let firstNameConfig = <ValueHostConfig>{
-  type: 'Input',
+  valueHostType: 'Input',
   name: 'FirstName',
   dataType: 'String',
   validatorConfigs: [ ValidatorConfigs ]
@@ -788,7 +788,7 @@ Consider these *Use Cases*:
 	Here is the NotEqualToCondition configured with CaseInsensitive:
 	```ts
 	{
-	  type: 'Input',
+	  valueHostType: 'Input',
 	  name: 'FirstName',
 	  dataType: 'String',
 	  label: 'First name',
@@ -877,7 +877,7 @@ Let's suppose that you have a label "First Name" which you want in several langu
 2. Assign both label and labell10n properties during configuration.
 	```ts
 	{
-	  type: 'Input',
+	  valueHostType: 'Input',
 	  name: 'FirstName',
 	  label: 'First Name',
 	  labell10n: 'FirstName'

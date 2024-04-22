@@ -39,7 +39,7 @@ describe('CalcValueHost constructor', () => {
         let testItem: CalcValueHost | null = null;
         expect(() => testItem = new CalcValueHost(vm, {
             name: 'Field1',
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             label: 'Label1',
             calcFn: TestCalcFunctionReturnsOne
         },
@@ -62,7 +62,7 @@ describe('CalcValueHostGenerator members', () => {
     test('CanCreate returns true for ValueHostType.Calc', () => {
         let testItem = new CalcValueHostGenerator();
         expect(testItem.canCreate({
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             label: ''
         })).toBe(true);
@@ -70,7 +70,7 @@ describe('CalcValueHostGenerator members', () => {
     test('CanCreate returns false for unexpected type', () => {
         let testItem = new CalcValueHostGenerator();
         expect(testItem.canCreate({
-            type: 'Unexpected',
+            valueHostType: 'Unexpected',
             name: 'Field1',
             label: ''
         })).toBe(false);
@@ -88,7 +88,7 @@ describe('CalcValueHostGenerator members', () => {
         let vm = new MockValidationManager(services);
         let config: CalcValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             label: '',
             calcFn: TestCalcFunctionReturnsOne
         };
@@ -119,7 +119,7 @@ describe('CalcValueHostGenerator members', () => {
         let state = { ...originalState };
         let config: CalcValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             label: '',
             calcFn: TestCalcFunctionReturnsOne
         };
@@ -132,7 +132,7 @@ describe('CalcValueHostGenerator members', () => {
         let testItem = new CalcValueHostGenerator();
         let config: CalcValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             label: '',
             initialValue: 'TEST',
             calcFn: TestCalcFunctionReturnsOne
@@ -152,7 +152,7 @@ describe('getValue using the calcFn', () => {
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
                     name: 'Field1',
-                    type: ValueHostType.Calc,
+                    valueHostType: ValueHostType.Calc,
                     calcFn: TestCalcFunctionReturnsOne
                 }
             ]
@@ -168,12 +168,12 @@ describe('getValue using the calcFn', () => {
             valueHostConfigs: [ 
                 {
                     name: 'Field1',
-                    type: ValueHostType.Static,
+                    valueHostType: ValueHostType.Static,
                     dataType: LookupKey.String
                 },
                 <CalcValueHostConfig>{
                     name: 'Field2',
-                    type: ValueHostType.Calc,
+                    valueHostType: ValueHostType.Calc,
                     calcFn: TestCalcFunctionReturnsValueOfField1
                 }
             ]
@@ -194,7 +194,7 @@ describe('getValue using the calcFn', () => {
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
                     name: 'Field1',
-                    type: ValueHostType.Calc,
+                    valueHostType: ValueHostType.Calc,
                     calcFn: TestCalcFunctionReentrant
                 }
             ]
@@ -213,7 +213,7 @@ describe('getValue using the calcFn', () => {
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
                     name: 'Field1',
-                    type: ValueHostType.Calc,
+                    valueHostType: ValueHostType.Calc,
                     calcFn: null as any
                 }
             ]
@@ -231,7 +231,7 @@ describe('getValue using the calcFn', () => {
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
                     name: 'Field1',
-                    type: ValueHostType.Calc,
+                    valueHostType: ValueHostType.Calc,
                     calcFn: TestCalcFunctionUsingConvert
                 }
             ]
@@ -247,7 +247,7 @@ describe('getValue using the calcFn', () => {
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
                     name: 'Field1',
-                    type: ValueHostType.Calc,
+                    valueHostType: ValueHostType.Calc,
                     calcFn: TestCalcFunctionUsingConvertToPrimitive
                 }
             ]
@@ -268,7 +268,7 @@ describe('setValue', () => {
             valueHostConfigs: [ 
                 <CalcValueHostConfig>{
                     name: 'Field1',
-                    type: ValueHostType.Calc,
+                    valueHostType: ValueHostType.Calc,
                     calcFn: TestCalcFunctionReturnsOne
                 }
             ]

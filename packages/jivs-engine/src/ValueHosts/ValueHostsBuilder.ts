@@ -275,7 +275,7 @@ export class ValueHostsBuilder
     protected assertValueHostType(valueHostConfig: ValueHostConfig | null, expectedType: ValueHostType): void
     {
         assertNotNull(valueHostConfig, 'valueHostConfig');
-        if (valueHostConfig!.type !== expectedType)
+        if (valueHostConfig!.valueHostType !== expectedType)
             throw new CodingError(`ValueHost name ${valueHostConfig!.name ?? 'Unknown'} is not type=${expectedType}.`);
 
     }

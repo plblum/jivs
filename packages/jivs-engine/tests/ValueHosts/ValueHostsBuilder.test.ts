@@ -36,7 +36,7 @@ describe('ValueHostsBuilder constructor', () => {
         let testItem = createVMConfig();
         let valueHostsConfigs: Array<ValueHostConfig> = [
             {
-                type: ValueHostType.Input,
+                valueHostType: ValueHostType.Input,
                 name: 'Field1'
             }
         ];
@@ -52,7 +52,7 @@ describe('build(vmConfig).static()', () => {
         let testItem = build(vmConfig).static('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             label: 'Field 1'
         }]);
@@ -63,7 +63,7 @@ describe('build(vmConfig).static()', () => {
         let testItem = build(vmConfig).static('Field1', 'Test');
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: 'Test'
         }]);
@@ -74,7 +74,7 @@ describe('build(vmConfig).static()', () => {
         let testItem = build(vmConfig).static('Field1');
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
         }]);
     });
@@ -84,7 +84,7 @@ describe('build(vmConfig).static()', () => {
         let testItem = build(vmConfig).static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1'
@@ -96,11 +96,11 @@ describe('build(vmConfig).static()', () => {
         let testItem = build(vmConfig).static('Field1').static('Field2');
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
         },
         {
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field2',
         }]);
     });
@@ -129,7 +129,7 @@ describe('build(vmConfig).input()', () => {
         let testItem = build(vmConfig).input('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
             validatorConfigs: []
@@ -141,7 +141,7 @@ describe('build(vmConfig).input()', () => {
         let testItem = build(vmConfig).input('Field1', 'Test');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: 'Test',
             validatorConfigs: []
@@ -156,7 +156,7 @@ describe('build(vmConfig).input()', () => {
         let testItem = build(vmConfig).input('Field1');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
         };
@@ -168,7 +168,7 @@ describe('build(vmConfig).input()', () => {
         let testItem = build(vmConfig).input({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1',
@@ -189,7 +189,7 @@ describe('build(vmConfig).input()', () => {
         let testItem1 = build(vmConfig).input('Field1');
         expect(testItem1).toBeInstanceOf(FluentValidatorCollector);
         let expected1 = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
         };
@@ -197,7 +197,7 @@ describe('build(vmConfig).input()', () => {
         let testItem2 = build(vmConfig).input('Field2');
         expect(testItem2).toBeInstanceOf(FluentValidatorCollector);
         let expected2 = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field2',
             validatorConfigs: []
         };
@@ -205,7 +205,7 @@ describe('build(vmConfig).input()', () => {
 
         let testItem3 = build(vmConfig).static('Field3');
         let expected3 = {
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field3'
         };
         expect(vmConfig.valueHostConfigs).toEqual([expected1, expected2, expected3]);
@@ -279,7 +279,7 @@ describe('build(vmConfig).calc', () => {
         let testItem = build(vmConfig).calc('Field1', null, calcFnForTests);
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             calcFn: calcFnForTests
         }]);
@@ -290,7 +290,7 @@ describe('build(vmConfig).calc', () => {
         let testItem = build(vmConfig).calc('Field1', 'Test', calcFnForTests);
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             dataType: 'Test',
             calcFn: calcFnForTests
@@ -302,7 +302,7 @@ describe('build(vmConfig).calc', () => {
         let testItem = build(vmConfig).calc({ name: 'Field1', dataType: 'Test', label: 'Field 1', calcFn: calcFnForTests });
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1',
@@ -514,7 +514,7 @@ describe('updateInput', () => {
         build(vmConfig).updateInput('Field1', { dataType: 'TEST', group: 'GROUP', initialValue: '1', label: 'UpdatedLabel', labell10n: 'ULl10n' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: 'TEST',
             group: 'GROUP',
@@ -534,7 +534,7 @@ describe('updateInput', () => {
         });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: LookupKey.Integer,
             label: 'UpdatedLabel',
@@ -559,7 +559,7 @@ describe('updateStatic', () => {
         let testItem = build(vmConfig).static('Field1', LookupKey.Integer, { label: 'Field 1' });
         build(vmConfig).updateStatic('Field1', { dataType: 'TEST', initialValue: '1', label: 'UpdatedLabel', labell10n: 'ULl10n' });
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: 'TEST',
             initialValue: '1',
@@ -577,7 +577,7 @@ describe('updateStatic', () => {
         });
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: LookupKey.Integer,
             label: 'UpdatedLabel'
@@ -609,7 +609,7 @@ describe('updateValidator', () => {
             });
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -637,7 +637,7 @@ describe('updateValidator', () => {
             });
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -674,7 +674,7 @@ describe('addValidatorsTo', () => {
         build(vmConfig).addValidatorsTo('Field1').requireText(null, 'RequiredMessage');
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -691,7 +691,7 @@ describe('addValidatorsTo', () => {
         build(vmConfig).addValidatorsTo('Field1').requireText().regExp('\\d');
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -753,7 +753,7 @@ describe('favorUIMessages', () => {
         build(vmConfig).favorUIMessages();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -766,7 +766,7 @@ describe('favorUIMessages', () => {
             }]
         },
         {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field2',
             validatorConfigs: [
                 {
@@ -815,7 +815,7 @@ describe('favorUIMessages', () => {
         build(vmConfig).favorUIMessages();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -824,7 +824,7 @@ describe('favorUIMessages', () => {
             }]
         },
         {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field2',
             validatorConfigs: [
                 {

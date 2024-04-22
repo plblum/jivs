@@ -36,7 +36,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
     // create the CalcValueHostConfig to supply to the ValidationManager
         // fluent: let diffDaysConfig = config().calc('DiffDays', LookupKey.Integer, differenceBetweenDates);    
     let diffDaysConfig: CalcValueHostConfig = {
-        type: 'Calc',
+        valueHostType: 'Calc',
         name: 'DiffDays',
         dataType: LookupKey.Integer,
         calcFn: differenceBetweenDates
@@ -50,7 +50,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
         //                .lessThanOrEqual('EndDate', 'Start date must be less than or equal to End date.', { severity: ValidationSeverity.Severe });
         //                .lessThanValue(10, 'The two dates must be less than {CompareTo} days apart.', { valueHostName: 'DiffDays' });
     let startDateConfig: InputValueHostConfig = {
-        type: 'Input',
+        valueHostType: 'Input',
         name: 'StartDate',
         dataType: 'Date',
         label: 'Start date',
@@ -76,7 +76,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
 
         // fluent: let endDateConfig = config().input('EndDate', 'Date', { label: 'End date' }); 
     let endDateConfig: InputValueHostConfig = {
-        type: 'Input',
+        valueHostType: 'Input',
         name: 'EndDate',
         dataType: 'Date',
         label: 'End date',

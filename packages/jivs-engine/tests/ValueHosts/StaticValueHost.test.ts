@@ -11,7 +11,7 @@ describe('StaticValueHost constructor', () => {
         let testItem: StaticValueHost | null = null;
         expect(() => testItem = new StaticValueHost(vm, {
             name: 'Field1',
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             label: 'Label1'
         }, {
             name: 'Field1',
@@ -32,7 +32,7 @@ describe('StaticValueHostGenerator members', () => {
     test('CanCreate returns true for ValueHostType.Static', () => {
         let testItem = new StaticValueHostGenerator();
         expect(testItem.canCreate({
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             label: ''
         })).toBe(true);
@@ -40,7 +40,7 @@ describe('StaticValueHostGenerator members', () => {
     test('CanCreate returns false for unexpected type', () => {
         let testItem = new StaticValueHostGenerator();
         expect(testItem.canCreate({
-            type: 'Unexpected',
+            valueHostType: 'Unexpected',
             name: 'Field1',
             label: ''
         })).toBe(false);
@@ -56,7 +56,7 @@ describe('StaticValueHostGenerator members', () => {
     test('CanCreate returns true for Type=undefined and lack of ValidatorConfigs property', () => {
         let testItem = new StaticValueHostGenerator();
         expect(testItem.canCreate({
-            type: undefined,
+            valueHostType: undefined,
             name: 'Field1',
             label: ''
         })).toBe(true);
@@ -83,7 +83,7 @@ describe('StaticValueHostGenerator members', () => {
         let vm = new MockValidationManager(services);        
         let config: StaticValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             label: ''
         };
         let state: StaticValueHostState = {
@@ -106,7 +106,7 @@ describe('StaticValueHostGenerator members', () => {
         let state = { ...originalState };
         let config: StaticValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             label: ''
         };
         let testItem = new StaticValueHostGenerator();
@@ -118,7 +118,7 @@ describe('StaticValueHostGenerator members', () => {
         let testItem = new StaticValueHostGenerator();
         let config: StaticValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.Static,
+            valueHostType: ValueHostType.Static,
             label: '',
             initialValue: 'TEST'
         };

@@ -236,7 +236,7 @@ export interface ValueHostConfig {
      * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
      * by checking for inclusion of the InputValueHostConfig.validationConfigs property.
      */
-    type?: string;
+    valueHostType?: string;
     /**
      * Provides a unique name for this ValueHost, within the scope of one
      * ValueHostsManager instance.

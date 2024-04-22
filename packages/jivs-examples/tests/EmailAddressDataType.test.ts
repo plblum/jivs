@@ -16,7 +16,7 @@ describe('EmailAddressCondition tests', () => {
             valueHostConfigs: []
         });
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
+            valueHostType: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
             name: 'Field1',
             dataType: EmailAddressLookupKey,
             validatorConfigs: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
@@ -54,7 +54,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
             valueHostConfigs: []
         });
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
+            valueHostType: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
             name: 'Field1',
             dataType: EmailAddressLookupKey,
             validatorConfigs: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly

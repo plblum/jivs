@@ -37,15 +37,15 @@ export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, Static
 }
 
 /**
- * Supports StaticValueHost class. Used when the Config.type = ValueHostType.Static
+ * Supports StaticValueHost class. Used when the Config.valueHostType = ValueHostType.Static
  * or when the Type property is null/undefined and there are no InputValueHost specific
  * properties, like ValidationConfigs or InputValue.
  */
 export class StaticValueHostGenerator extends ValueHostBaseGenerator {
 
     public canCreate(config: ValueHostConfig): boolean {
-        if (config.type != null)    // null/undefined
-            return config.type === ValueHostType.Static;
+        if (config.valueHostType != null)    // null/undefined
+            return config.valueHostType === ValueHostType.Static;
         let test = config as unknown as InputValueHostConfig;
         if (test.validatorConfigs === undefined)
             return true;
