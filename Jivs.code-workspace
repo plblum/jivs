@@ -63,11 +63,14 @@
 			"**/build/**"
 		],
 		"search.exclude": {
+			"**/.git": true,
 			"**/build": true,
 			"**/coverage": true,
-			"**/.git": true,
-			"docs": true,
-			"CHANGELOG.md": true
+			"/.github/": true,
+			"/*.js": true,
+			"/*.json": true,
+			"CHANGELOG.md": true,
+			"docs": true
 		},
 		"notebook.find.scope": {
 

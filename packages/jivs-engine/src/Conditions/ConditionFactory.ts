@@ -5,7 +5,6 @@
  */
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import type { ConditionConfig, ICondition, IConditionCore, IConditionFactory } from '../Interfaces/Conditions';
-import { ConditionType } from './ConditionTypes';
 
 //#region ConditionFactory
 
@@ -13,7 +12,7 @@ import { ConditionType } from './ConditionTypes';
 /**
  * Creates instances of Conditions given an ConditionConfig.
  * Setup its instance on ValidationServices.ConditionFactory.
- * ConditionConfig.type is used to determine the Condition class to create.
+ * ConditionConfig.conditionType is used to determine the Condition class to create.
  * Supports IConditionCore implementations of ICondition.
  */
 export class ConditionFactory implements IConditionFactory {
@@ -24,10 +23,10 @@ export class ConditionFactory implements IConditionFactory {
      */
     public create<TConfig extends ConditionConfig>
         (config: TConfig): IConditionCore<TConfig> {
-        let fn = this._map.get(config.type);
+        let fn = this._map.get(config.conditionType);
         if (fn)
             return fn(config) as IConditionCore<TConfig>;
-        throw new Error(`Condition Type not supported: ${config.type}`);
+        throw new Error(`ConditionType not supported: ${config.conditionType}`);
     }
     // user supplies JSON string or object implementing ConditionConfig
     // and it returns an instance of IValidator.
@@ -37,12 +36,12 @@ export class ConditionFactory implements IConditionFactory {
     /**
      * Add or replace a function to create an instance of the Condition
      * given a ConditionConfig.
-     * @param type - Unique way to select the function. Uses ConditionConfig.type.
+     * @param conditionType - Unique way to select the function. Uses ConditionConfig.conditionType.
      * @param fn - Expected to create an instance of a Condition.
      */
-    public register<TConfig extends ConditionConfig>(type: string,
+    public register<TConfig extends ConditionConfig>(conditionType: string,
         fn: (config: TConfig) => IConditionCore<TConfig>): void {
-        this._map.register(type, fn as any);
+        this._map.register(conditionType, fn as any);
     }
 
     /**

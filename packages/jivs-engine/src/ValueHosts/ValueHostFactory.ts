@@ -12,7 +12,7 @@ import { InputValueHostGenerator } from './InputValueHost';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
 import type { IValueHostsManager } from '../Interfaces/ValueHostResolver';
-import { NonInputValueHostGenerator } from './NonInputValueHost';
+import { StaticValueHostGenerator } from './StaticValueHost';
 import type { IValueHostFactory, IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { CalcValueHostGenerator } from './CalcValueHost';
 
@@ -44,13 +44,13 @@ export class ValueHostFactory implements IValueHostFactory {
      * @returns 
      */
     private resolveConfig(config: ValueHostConfig): IValueHostGenerator {
-        if (!config.type)
-            throw new Error('ValueHostConfig.type field required');
+        if (!config.valueHostType)
+            throw new Error('ValueHostConfig.valueHostType field required');
         for (const generator of this._configResolvers) {
             if (generator.canCreate(config))
                 return generator;
         }
-        throw new Error(`Unsupported ValueHostConfig ${config.type}`);
+        throw new Error(`Unsupported ValueHostConfig ${config.valueHostType}`);
     }
 
     /**
@@ -101,7 +101,7 @@ export class ValueHostFactory implements IValueHostFactory {
 
 export function registerStandardValueHostGenerators(factory: ValueHostFactory): void {
     factory.register(new InputValueHostGenerator());
-    factory.register(new NonInputValueHostGenerator());
+    factory.register(new StaticValueHostGenerator());
     factory.register(new CalcValueHostGenerator());
     factory.register(new BusinessLogicInputValueHostGenerator());    
 }

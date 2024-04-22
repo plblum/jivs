@@ -8,13 +8,13 @@ import { ValidatorConfig } from "../Interfaces/Validator";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
-import { FluentConditionCollector, FluentInputParameters, FluentInputValueConfig, FluentNonInputParameters, FluentValidatorCollector, StartFluent } from "./Fluent";
+import { FluentConditionCollector, FluentInputParameters, FluentInputValueConfig, FluentStaticParameters, FluentValidatorCollector, StartFluent } from "./Fluent";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
-import { NonInputValueHostConfig } from "../Interfaces/NonInputValueHost";
+import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { CalcValueHostConfig, CalculationHandler } from "../Interfaces/CalcValueHost";
 import { EvaluateChildConditionResultsConfig } from "../Conditions/EvaluateChildConditionResultsBase";
-import { resolveErrorCode } from "./Validator";
+import { resolveErrorCode } from "../Validation/Validator";
 
 
 /**
@@ -70,7 +70,7 @@ export class ValueHostsBuilder
  * be assigned to vmConfig.valueHostsConfig, and the developer
  * will be modifying those configs and adding their own.
  * If the UI is going to create all ValueHostConfigs, vmConfig.valueHostsConfig
- * can be null or []. The user will use the input(), nonInput(), and calc() functions
+ * can be null or []. The user will use the input(), static(), and calc() functions
  * to populate it.
  * @param vmConfig - Expects services to be defined, as it uses the LoggingService
  * and TextLocalizationService.
@@ -104,7 +104,7 @@ export class ValueHostsBuilder
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire InputValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
      */
     public input(config: FluentInputValueConfig): FluentValidatorCollector;
@@ -126,34 +126,34 @@ export class ValueHostsBuilder
         throw new TypeError('Must pass valuehost name or InputValueHostConfig');
     }    
     /**
-     * Fluent format to create a NonInputValueHostConfig.
+     * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a NonInputValueHostConfig.
+     * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
      * @returns Same instance for chaining.
      */
-    nonInput(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentNonInputParameters): ValueHostsBuilder;
+    static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): ValueHostsBuilder;
     /**
-     * Fluent format to create a NonInputValueHostConfig.
+     * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param config - Supply the entire NonInputValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
+     * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
-    nonInput(config: Omit<NonInputValueHostConfig, 'type'>): ValueHostsBuilder;
+    static(config: Omit<StaticValueHostConfig, 'valueHostType'>): ValueHostsBuilder;
     // overload resolution
-    nonInput(arg1: ValueHostName | NonInputValueHostConfig, dataType?: string | null, parameters?: FluentNonInputParameters): ValueHostsBuilder
+    static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): ValueHostsBuilder
     {
         let fluent = new StartFluent(this.vmConfig);
       
         if (typeof arg1 === 'object') {
-            let vhConfig = fluent.nonInput(arg1);
+            let vhConfig = fluent.static(arg1);
             this.vmConfig.valueHostConfigs.push(vhConfig);
             return this;
         }
         if (typeof arg1 === 'string') {
-            let vhConfig = fluent.nonInput(arg1, dataType, parameters);
+            let vhConfig = fluent.static(arg1, dataType, parameters);
             this.vmConfig.valueHostConfigs.push(vhConfig);
             return this;
         }
@@ -190,10 +190,10 @@ export class ValueHostsBuilder
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
-    calc(config: Omit<CalcValueHostConfig, 'type'>): ValueHostsBuilder;
+    calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): ValueHostsBuilder;
     // overload resolution
     calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): ValueHostsBuilder
     {
@@ -216,36 +216,36 @@ export class ValueHostsBuilder
     
     /**
      * Replace any of the InputValueHostConfig properties supported by UI.
-     * Not supported: 'type', 'name', 'validatorConfigs'
+     * Not supported: 'valueHostType', 'name', 'validatorConfigs'
      * @param valueHostName 
      * @param propsToUpdate 
      * @returns Same instance for chaining.
      */
-    public updateInput(valueHostName: string, propsToUpdate: Partial<Omit<InputValueHostConfig, 'type' | 'name' | 'validatorConfigs'>>): ValueHostsBuilder
+    public updateInput(valueHostName: string, propsToUpdate: Partial<Omit<InputValueHostConfig, 'valueHostType' | 'name' | 'validatorConfigs'>>): ValueHostsBuilder
     {
         assertNotNull(propsToUpdate, 'propsToUpdate');        
         let vhConfig = this.getValueHostConfig(valueHostName, true);
         this.assertValueHostType(vhConfig, ValueHostType.Input);
         for (let propName in propsToUpdate)
-            if (!['type', 'name', 'validatorConfigs'].includes(propName))
+            if (!['valueHostType', 'name', 'validatorConfigs'].includes(propName))
                 (vhConfig as any)[propName] = (propsToUpdate as any)[propName];
         return this;
     }
 
     /**
-     * Replace any of the NonInputValueHostConfig properties supported by UI.
-     * Not supported: 'type', 'name'
+     * Replace any of the StaticValueHostConfig properties supported by UI.
+     * Not supported: 'valueHostType', 'name'
      * @param valueHostName 
      * @param propsToUpdate 
      * @returns Same instance for chaining.
      */
-    public updateNonInput(valueHostName: string, propsToUpdate: Partial<Omit<NonInputValueHostConfig, 'type' | 'name' >>): ValueHostsBuilder
+    public updateStatic(valueHostName: string, propsToUpdate: Partial<Omit<StaticValueHostConfig, 'valueHostType' | 'name' >>): ValueHostsBuilder
     {
         assertNotNull(propsToUpdate, 'propsToUpdate');        
         let vhConfig = this.getValueHostConfig(valueHostName, true);
-        this.assertValueHostType(vhConfig, ValueHostType.NonInput);
+        this.assertValueHostType(vhConfig, ValueHostType.Static);
         for (let propName in propsToUpdate)
-            if (!['type', 'name'].includes(propName))
+            if (!['valueHostType', 'name'].includes(propName))
                 (vhConfig as any)[propName] = (propsToUpdate as any)[propName];
 
         return this;
@@ -259,14 +259,14 @@ export class ValueHostsBuilder
      * @param propsToUpdate 
      * @returns Same instance for chaining.
      */    
-    public updateValidator(valueHostName: ValueHostName, errorCode: string, propsToUpdate: Partial<Omit<ValidatorConfig, 'type' | 'conditionConfig' | 'conditionCreator' | 'errorCode'>>): ValueHostsBuilder
+    public updateValidator(valueHostName: ValueHostName, errorCode: string, propsToUpdate: Partial<Omit<ValidatorConfig, 'validatorType' | 'conditionConfig' | 'conditionCreator' | 'errorCode'>>): ValueHostsBuilder
     {
         assertNotNull(propsToUpdate, 'propsToUpdate');
         let ivConfig = this.getValidatorConfig(valueHostName, errorCode, true);
         if (ivConfig)
         {
             for (let propName in propsToUpdate)
-                if (!['type', 'conditionConfig', 'conditionCreator', 'errorCode'].includes(propName))
+                if (!['validatorType', 'conditionConfig', 'conditionCreator', 'errorCode'].includes(propName))
                     (ivConfig as any)[propName] = (propsToUpdate as any)[propName];
         }
         return this;
@@ -275,7 +275,7 @@ export class ValueHostsBuilder
     protected assertValueHostType(valueHostConfig: ValueHostConfig | null, expectedType: ValueHostType): void
     {
         assertNotNull(valueHostConfig, 'valueHostConfig');
-        if (valueHostConfig!.type !== expectedType)
+        if (valueHostConfig!.valueHostType !== expectedType)
             throw new CodingError(`ValueHost name ${valueHostConfig!.name ?? 'Unknown'} is not type=${expectedType}.`);
 
     }

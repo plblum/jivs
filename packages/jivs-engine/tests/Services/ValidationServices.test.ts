@@ -1,7 +1,7 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ValidationServices, assertValidFallbacks } from "../../src/Services/ValidationServices";
 import { MockCapturingLogger, MockValidationServices } from "../TestSupport/mocks";
-import { ValidatorFactory } from "../../src/ValueHosts/Validator";
+import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";

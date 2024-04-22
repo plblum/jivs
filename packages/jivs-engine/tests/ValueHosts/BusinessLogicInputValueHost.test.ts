@@ -21,7 +21,7 @@ function setupInputValueHost(
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
     let defaultConfig: ValidatableValueHostBaseConfig = {
-        type: BusinessLogicInputValueHostType,
+        valueHostType: BusinessLogicInputValueHostType,
         name: BusinessLogicValueHostName,
         label: '*',
     };
@@ -225,7 +225,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
     test('CanCreate returns true for BusinessLogicInputValueHostType', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         expect(testItem.canCreate({
-            type: BusinessLogicInputValueHostType,
+            valueHostType: BusinessLogicInputValueHostType,
             name: 'Field1',
             label: '',
         })).toBe(true);
@@ -233,7 +233,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
     test('CanCreate returns false for unexpected type', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         expect(testItem.canCreate({
-            type: 'Unexpected',
+            valueHostType: 'Unexpected',
             name: 'Field1',
             label: '',
         })).toBe(false);
@@ -243,7 +243,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         let vm = new MockValidationManager(services);
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',
-            type: BusinessLogicInputValueHostType,
+            valueHostType: BusinessLogicInputValueHostType,
             label: '',
         };
         let state: ValidatableValueHostBaseState = {
@@ -272,7 +272,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         let state = { ...originalState };
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',
-            type: BusinessLogicInputValueHostType,
+            valueHostType: BusinessLogicInputValueHostType,
             label: '',
         };
         let testItem = new BusinessLogicInputValueHostGenerator();
@@ -284,7 +284,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',
-            type: BusinessLogicInputValueHostType,
+            valueHostType: BusinessLogicInputValueHostType,
             label: '',
             initialValue: 'TEST',
         };

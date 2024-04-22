@@ -28,7 +28,7 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 /**
  * Standard implementation of IInputValueHost. It owns a list of Validators
  * which support its validate() function.
- * Use ValueHostConfig.type = "Input" for the ValidationManager to use this class.
+ * Use ValueHostConfig.valueHostType = "Input" for the ValidationManager to use this class.
  * 
 * Each instance depends on a few things, all passed into the constructor:
 * - valueHostsManager - Typically this is the ValidationManager.
@@ -371,11 +371,11 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         if (!this.config.validatorConfigs)
             this.config.validatorConfigs = [];
         let knownConditionType: string | null =
-            config.conditionConfig ? config.conditionConfig.type : null;
+            config.conditionConfig ? config.conditionConfig.conditionType : null;
         if (knownConditionType)
         {
             let index = this.config.validatorConfigs.findIndex((ivd) =>
-                (ivd.conditionConfig ? ivd.conditionConfig.type : '') ===
+                (ivd.conditionConfig ? ivd.conditionConfig.conditionType : '') ===
                 knownConditionType
             );    
             if (index > -1) {
@@ -438,8 +438,8 @@ export function toIInputValueHost(source: any): IInputValueHost | null
 
 export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
     public canCreate(config: InputValueHostConfig): boolean {
-        if (config.type != null)    // null/undefined
-            return config.type === ValueHostType.Input;
+        if (config.valueHostType != null)    // null/undefined
+            return config.valueHostType === ValueHostType.Input;
 
         if (config.validatorConfigs === undefined)
             return false;
@@ -468,7 +468,7 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
             config.validatorConfigs?.forEach((valConfig) => {
                 let errorCode: string | null = cleanString(valConfig.errorCode);
                 if (!errorCode && valConfig.conditionConfig)
-                    errorCode = valConfig.conditionConfig.type;
+                    errorCode = valConfig.conditionConfig.conditionType;
                 else if (valConfig.conditionCreator)
                 {
                     let cond = valConfig.conditionCreator(valConfig);   // return null is actually a configuration bug reported to the user in Validator.Condition

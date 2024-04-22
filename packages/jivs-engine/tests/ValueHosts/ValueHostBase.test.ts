@@ -41,7 +41,7 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
  */
 class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
-        return config.type === 'PublicifyValueHostBase';
+        return config.valueHostType === 'PublicifyValueHostBase';
     }
     public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostState): IValueHost {
         return new PublicifiedValueHostBase(valueHostsManager, config, state);
@@ -89,7 +89,7 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
     let defaultConfig: ValueHostConfig = {
         name: 'Field1',
         label: 'Label1',
-        type: 'PublicifyValueHostBase',
+        valueHostType: 'PublicifyValueHostBase',
         dataType: LookupKey.String,
         initialValue: 'DATA'
     };
@@ -145,7 +145,7 @@ describe('constructor and resulting property values', () => {
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
-            type: 'PublicifyValueHostBase',
+            valueHostType: 'PublicifyValueHostBase',
             dataType: LookupKey.String,
             initialValue: 'DATA'
         };

@@ -7,7 +7,7 @@ import {
     
 } from "../../src/Conditions/ConcreteConditions";
 
-import { Validator, ValidatorFactory } from "../../src/ValueHosts/Validator";
+import { Validator, ValidatorFactory } from "../../src/Validation/Validator";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
@@ -25,6 +25,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { registerAllConditions } from "../TestSupport/createValidationServices";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
+import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested
@@ -81,7 +82,7 @@ function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
     let vh2 = vm.addInputValueHost('Field2', LookupKey.String, 'Label2');
     const defaultConfig: ValidatorConfig = {
         conditionConfig: <RequireTextConditionConfig>
-            { type: ConditionType.RequireText, valueHostName: 'Field1' },
+            { conditionType: ConditionType.RequireText, valueHostName: 'Field1' },
         errorMessage: 'Local',
         summaryMessage: 'Summary'
     };
@@ -133,7 +134,7 @@ export class ConditionWithPromiseTester implements ICondition {
 describe('Validator.constructor and initial property values', () => {
     test('valueHost parameter null throws', () => {
         let config: ValidatorConfig = {
-            conditionConfig: { type: '' },
+            conditionConfig: { conditionType: '' },
             errorMessage: ''
         };
         expect(() => new Validator(null!, config)).toThrow(/valueHost/);
@@ -146,7 +147,7 @@ describe('Validator.constructor and initial property values', () => {
     });
     test('Valid parameters create and setup supporting properties', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: { type: '' },
+            conditionConfig: { conditionType: '' },
         });
         expect(setup.validator.ExposeConfig()).toBe(setup.config);
         expect(setup.validator.ExposeValidationManager()).toBe(setup.vm);
@@ -157,34 +158,34 @@ describe('errorCode', () => {
     test('Value assigned is returned regardless of ConditionType', () => {
         let setup = setupWithField1AndField2({
             errorCode: 'TEST',
-            conditionConfig: { type: ConditionType.RequireText },
+            conditionConfig: { conditionType: ConditionType.RequireText },
         });
         expect(setup.validator.errorCode).toBe('TEST');
     });
     test('Value assigned with whitespace is returned trimmed regardless of ConditionType', () => {
         let setup = setupWithField1AndField2({
             errorCode: ' TEST ',
-            conditionConfig: { type: ConditionType.RequireText },
+            conditionConfig: { conditionType: ConditionType.RequireText },
         });
         expect(setup.validator.errorCode).toBe('TEST');
     });    
     test('Value empty string returns ConditionType', () => {
         let setup = setupWithField1AndField2({
             errorCode: '',
-            conditionConfig: { type: ConditionType.RequireText },
+            conditionConfig: { conditionType: ConditionType.RequireText },
         });
         expect(setup.validator.errorCode).toBe(ConditionType.RequireText);
     });    
     test('Value undefined returns ConditionType', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: { type: ConditionType.RequireText },
+            conditionConfig: { conditionType: ConditionType.RequireText },
         });
         expect(setup.validator.errorCode).toBe(ConditionType.RequireText);
     });   
     /* Couldn't find a way to set this up as omitted and unknown types both throw exceptions.
     test('Value undefined and same with conditiontype returns"UNKNOWN"', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: { type: '' },
+            conditionConfig: { conditionType: '' },
         });
         
         expect(setup.validator.errorCode).toBe(ConditionType.Unknown);
@@ -195,7 +196,7 @@ describe('Validator.condition', () => {
     test('Successful creation of RequireTextCondition using ConditionConfig', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <RequireTextConditionConfig>
-                { type: ConditionType.RequireText, valueHostName: null },
+                { conditionType: ConditionType.RequireText, valueHostName: null },
         });
 
         let condition: ICondition | null = null;
@@ -205,7 +206,7 @@ describe('Validator.condition', () => {
     });
     test('Attempt to create Condition with ConditionConfig with invalid type throws', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: { type: 'UnknownType' },
+            conditionConfig: { conditionType: 'UnknownType' },
         });
 
         let condition: ICondition | null = null;
@@ -242,7 +243,7 @@ describe('Validator.condition', () => {
     });
     test('Both Config and Creator setup throws', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: { type: ConditionType.RequireText },
+            conditionConfig: { conditionType: ConditionType.RequireText },
             conditionCreator: (requestor) => {
                 return {
                     conditionType: 'TEST',
@@ -278,7 +279,7 @@ describe('Validator.enabler', () => {
     test('Successful creation of EqualToCondition', () => {
         let setup = setupWithField1AndField2({
             enablerConfig: <EqualToConditionConfig>{
-                type: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualTo,
                 valueHostName: null
             }
         });
@@ -291,7 +292,7 @@ describe('Validator.enabler', () => {
     test('Attempt to create Enabler with invalid type throws', () => {
         let setup = setupWithField1AndField2({
             enablerConfig: {
-                type: 'UnknownType'
+                conditionType: 'UnknownType'
             }
         });
 
@@ -328,7 +329,7 @@ describe('Validator.enabler', () => {
     });
     test('Both Config and Creator setup throws', () => {
         let setup = setupWithField1AndField2({
-            enablerConfig: { type: ConditionType.RequireText },
+            enablerConfig: { conditionType: ConditionType.RequireText },
             enablerCreator: (requestor) => {
                 return {
                     conditionType: 'TEST',
@@ -443,7 +444,7 @@ describe('Validator.severity', () => {
         function checkDefaultSeverity(conditionType: string, ) {
             let setup = setupWithField1AndField2({
                 conditionConfig: {
-                    type: conditionType
+                    conditionType: conditionType
                 },
                 severity: undefined
             });
@@ -460,7 +461,7 @@ describe('Validator.severity', () => {
         function checkDefaultSeverity(conditionType: string) {
             let setup = setupWithField1AndField2({
                 conditionConfig: {
-                    type: conditionType
+                    conditionType: conditionType
                 },
                 severity: undefined
             });
@@ -483,7 +484,7 @@ describe('Validator.severity', () => {
     test('RangeCondition Config.severity = undefined, severity=Error', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: {
-                type: ConditionType.Range
+                conditionType: ConditionType.Range
             },
             severity: undefined
         });
@@ -493,7 +494,7 @@ describe('Validator.severity', () => {
     test('AllMatchCondition Config.severity = undefined, severity=Error', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: {
-                type: ConditionType.And
+                conditionType: ConditionType.And
             },
             severity: undefined
         });
@@ -615,7 +616,7 @@ describe('Validator.getErrorMessageTemplate', () => {
       
         let setup = setupWithField1AndField2({
             conditionConfig: {
-                type: ConditionType.DataTypeCheck
+                conditionType: ConditionType.DataTypeCheck
             },
             errorMessage: null,
             errorMessagel10n: null,
@@ -633,7 +634,7 @@ describe('Validator.getErrorMessageTemplate', () => {
       
         let setup = setupWithField1AndField2({
             conditionConfig: {
-                type: ConditionType.DataTypeCheck
+                conditionType: ConditionType.DataTypeCheck
             },
             errorMessage: null,
             errorMessagel10n: null,
@@ -771,7 +772,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
       
         let setup = setupWithField1AndField2({
             conditionConfig: {
-                type: ConditionType.DataTypeCheck
+                conditionType: ConditionType.DataTypeCheck
             },
             summaryMessage: null,
             summaryMessagel10n: null,
@@ -789,7 +790,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
       
         let setup = setupWithField1AndField2({
             conditionConfig: {
-                type: ConditionType.DataTypeCheck
+                conditionType: ConditionType.DataTypeCheck
             },
             summaryMessage: null,
             summaryMessagel10n: null,
@@ -921,7 +922,7 @@ describe('Validator.validate', () => {
     test('Issue exists. Enabler = NoMatch. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
             enablerConfig: <RequireTextConditionConfig>{
-                type: ConditionType.RequireText,
+                conditionType: ConditionType.RequireText,
                 valueHostName: 'Field2'
             }
         });
@@ -930,7 +931,7 @@ describe('Validator.validate', () => {
         testConditionHasIssueButDisabledReturnsNull({
             enablerConfig: <ConditionConfig>{
                 // the input value is '', which causes this condition to return Undetermined
-                type: IsUndeterminedConditionType, valueHostName: 'Field2'
+                conditionType: IsUndeterminedConditionType, valueHostName: 'Field2'
             }
         });
     });
@@ -959,7 +960,7 @@ describe('Validator.validate', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             enablerConfig: <RequireTextConditionConfig>{
                 // the input value is 'ABC', which causes this condition to return Match
-                type: ConditionType.RequireText, valueHostName: 'Field2'
+                conditionType: ConditionType.RequireText, valueHostName: 'Field2'
             }
         }, {}, 3);
     });
@@ -979,14 +980,14 @@ describe('Validator.validate', () => {
     test('Issue exists but NeverMatchCondition is skipped because IValidateOption.DuringEdit = true.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             conditionConfig: {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             }
         }, { duringEdit: true }, 2, false);
     });
     test('Issue exists and NeverMatchCondition is run because IValidateOption.DuringEdit = false.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             conditionConfig: {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             }
         }, { duringEdit: false }, 3, true);
     });
@@ -1021,7 +1022,7 @@ describe('Validator.validate', () => {
     });        
     test('Condition throws causing result of Undetermined and log to identify exception', () => {
         let setup = setupWithField1AndField2({
-            conditionConfig: { type: ThrowsExceptionConditionType }
+            conditionConfig: { conditionType: ThrowsExceptionConditionType }
         });
 
         let logger = setup.services.loggerService as MockCapturingLogger;
@@ -1132,7 +1133,7 @@ describe('Validator.gatherValueHostNames', () => {
     test('RequireTextCondition supplies its ValueHostName', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <RequireTextConditionConfig>
-                { type: ConditionType.RequireText, valueHostName: 'Property1' },
+                { conditionType: ConditionType.RequireText, valueHostName: 'Property1' },
         });
         let collection = new Set<ValueHostName>();
         expect(() => setup.validator.gatherValueHostNames(collection, setup.vm)).not.toThrow();
@@ -1145,7 +1146,7 @@ describe('getValuesForTokens', () => {
     test('RequireTextCondition returns 2 tokens: Label and Value', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <RequireTextConditionConfig>{
-                type: ConditionType.RequireText,
+                conditionType: ConditionType.RequireText,
                 valueHostName: null
             }
         });
@@ -1169,7 +1170,7 @@ describe('getValuesForTokens', () => {
     test('RangeCondition returns 4 tokens: Label, Value, Minimum, Maximum', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <RangeConditionConfig>{
-                type: ConditionType.Range, valueHostName: null,
+                conditionType: ConditionType.Range, valueHostName: null,
                 minimum: 'A',
                 maximum: 'Z'
             }
@@ -1206,24 +1207,74 @@ describe('getValuesForTokens', () => {
 });
 
 describe('ValidatorFactory.create', () => {
-    test('Returns an Validator', () => {
+    function setupValidatorFactory(): {
+        vm: MockValidationManager,
+        vh: MockInputValueHost,
+        validatorConfig: ValidatorConfig,
+        factory: ValidatorFactory
+    }
+    {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Label1');
         const config: ValidatorConfig = {
             conditionConfig: <RequireTextConditionConfig>{
-                type: ConditionType.RequireText,
+                conditionType: ConditionType.RequireText,
                 valueHostName: 'Field1'
             },
             errorMessage: 'Local',
             summaryMessage: 'Summary'
         };
-        let testItem = new ValidatorFactory();
+        let factory = new ValidatorFactory();
+        return {
+            vm: vm,
+            vh: vh,
+            validatorConfig: config,
+            factory: factory
+        }
+    }
+    class TestValidator extends Validator
+    {
+        constructor(valueHost: IInputValueHost, validatorConfig: ValidatorConfig)
+        {
+            super(valueHost, validatorConfig);
+        }
+    }
+    test('ValidatorConfig.validatorType = undefined returns a Validator', () => {
+        let setup = setupValidatorFactory();
+        let testItem = setup.factory;
         let created: IValidator | null = null;
-        expect(() => created = testItem.create(vh, config)).not.toThrow();
+        expect(() => created = testItem.create(setup.vh, setup.validatorConfig)).not.toThrow();
         expect(created).not.toBeNull();
         expect(created).toBeInstanceOf(Validator);
     });
+    test('ValidatorConfig.validatorType = null returns a Validator', () => {
+        let setup = setupValidatorFactory();
+        setup.validatorConfig.validatorType = null!;
+        let testItem = setup.factory;
+        let created: IValidator | null = null;
+        expect(() => created = testItem.create(setup.vh, setup.validatorConfig)).not.toThrow();
+        expect(created).not.toBeNull();
+        expect(created).toBeInstanceOf(Validator);
+    });    
+    test('ValidatorConfig.validatorType non null and nothing matching registered throws', () => {
+        let setup = setupValidatorFactory();
+        setup.validatorConfig.validatorType = 'TEST';
+        let testItem = setup.factory;
+        let created: IValidator | null = null;
+        expect(() => created = testItem.create(setup.vh, setup.validatorConfig)).toThrow(/not supported/);
+    });    
+    test('Register new Validator and confirm it gets created returns that class', () => {
+        let setup = setupValidatorFactory();
+        setup.validatorConfig.validatorType = 'TEST';
+        let testItem = setup.factory;
+        expect(testItem.isRegistered('TEST')).toBe(false);
+        testItem.register('TEST', (config) => new TestValidator(setup.vh, config));
+        let created: IValidator | null = null;
+        expect(() => created = testItem.create(setup.vh, setup.validatorConfig)).not.toThrow();
+        expect(created).not.toBeNull();
+        expect(created).toBeInstanceOf(TestValidator);
+    });        
 });
 
 describe('toIMessageTokenSource', () => {

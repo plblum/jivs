@@ -74,9 +74,9 @@ export interface IValueHostGenerator {
 export enum ValueHostType
 {
 /**
- * Associated with NonInputValueHost
+ * Associated with StaticValueHost
  */    
-    NonInput = 'NonInput',
+    Static = 'Static',
 /**
  * Associated with InputValueHost
  */    

@@ -32,7 +32,7 @@
  * 
  * // create the CalcValueHostConfig to supply to the ValidationManager
  * let diffDaysConfig: CalcValueHostConfig = {
- *   type: 'Calc',
+ *   valueHostType: 'Calc',
  *   name: 'DiffDays',
  *   dataType: LookupKey.Integer,
  *   calcFn: differenceBetweenDates
@@ -42,14 +42,14 @@
  * 
  * // create the 'StartDate' input with a LessThanCondition
  * let startDateConfig: InputValueHostConfig = {
- *   type: 'Input',
+ *   valueHostType: 'Input',
  *   name: 'StartDate',
  *   dataType: 'Date',
  *   label: 'Start date',
  *   validatorConfigs: [
  *      {
  *          conditionConfig: {
- *              type: ConditionType.LessThan,
+ *              conditionType: ConditionType.LessThan,
  *              valueHostName: 'DiffDays',  // source is our CalcValueHost
  *              secondValue: 10,    // must be less than 10 days
  *          },
@@ -100,7 +100,7 @@ export interface ICalcValueHost extends IValueHost
 }
 /**
  * How the user configures the CalcValueHost. They are expected to supply
- * type = 'Calc'
+ * valueHostType - 'Calc'
  * dataType = assigned to the output value's data type lookup key
  * calcFn = the function matching the calculationHandler
  */

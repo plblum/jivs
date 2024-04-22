@@ -36,7 +36,7 @@ describe('ValueHostsBuilder constructor', () => {
         let testItem = createVMConfig();
         let valueHostsConfigs: Array<ValueHostConfig> = [
             {
-                type: ValueHostType.Input,
+                valueHostType: ValueHostType.Input,
                 name: 'Field1'
             }
         ];
@@ -46,80 +46,80 @@ describe('ValueHostsBuilder constructor', () => {
     });
 });
 
-describe('build(vmConfig).nonInput()', () => {
-    test('Valid name, null data type and defined vhConfig. Adds NonInputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+describe('build(vmConfig).static()', () => {
+    test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = build(vmConfig).nonInput('Field1', null, { label: 'Field 1' });
+        let testItem = build(vmConfig).static('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.NonInput,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             label: 'Field 1'
         }]);
     });
 
-    test('Valid name, data type assigned. Adds NonInputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = build(vmConfig).nonInput('Field1', 'Test');
+        let testItem = build(vmConfig).static('Field1', 'Test');
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.NonInput,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: 'Test'
         }]);
     });
 
-    test('Valid name. Adds NonInputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+    test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = build(vmConfig).nonInput('Field1');
+        let testItem = build(vmConfig).static('Field1');
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.NonInput,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
         }]);
     });
 
-    test('Pass in a NonInputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+    test('Pass in a StaticValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = build(vmConfig).nonInput({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        let testItem = build(vmConfig).static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.NonInput,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1'
         }]);
     });
 
-    test('Add two differently named NonInputValueHostConfigs creates two entries in vmConfig', () => {
+    test('Add two differently named StaticValueHostConfigs creates two entries in vmConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = build(vmConfig).nonInput('Field1').nonInput('Field2');
+        let testItem = build(vmConfig).static('Field1').static('Field2');
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.NonInput,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
         },
         {
-            type: ValueHostType.NonInput,
+            valueHostType: ValueHostType.Static,
             name: 'Field2',
         }]);
     });
 
     test('Valid name but added twice throws', () => {
         let vmConfig = createVMConfig();
-        let testItem = build(vmConfig).nonInput('Field1');
-        expect(() => testItem.nonInput('Field1')).toThrow(/already defined/);
+        let testItem = build(vmConfig).static('Field1');
+        expect(() => testItem.static('Field1')).toThrow(/already defined/);
     });
 
 
     test('Null name throws', () => {
         let vmConfig = createVMConfig();
-        expect(() => build(vmConfig).nonInput(null!)).toThrow('arg1');
+        expect(() => build(vmConfig).static(null!)).toThrow('arg1');
 
     });
     test('First parameter is not compatible with overload throws', () => {
         let vmConfig = createVMConfig();
-        expect(() => build(vmConfig).nonInput(100 as any)).toThrow('pass');
+        expect(() => build(vmConfig).static(100 as any)).toThrow('pass');
     });
 });
 describe('build(vmConfig).input()', () => {
@@ -129,7 +129,7 @@ describe('build(vmConfig).input()', () => {
         let testItem = build(vmConfig).input('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             label: 'Field 1',
             validatorConfigs: []
@@ -141,7 +141,7 @@ describe('build(vmConfig).input()', () => {
         let testItem = build(vmConfig).input('Field1', 'Test');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: 'Test',
             validatorConfigs: []
@@ -156,7 +156,7 @@ describe('build(vmConfig).input()', () => {
         let testItem = build(vmConfig).input('Field1');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
         };
@@ -168,7 +168,7 @@ describe('build(vmConfig).input()', () => {
         let testItem = build(vmConfig).input({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1',
@@ -189,7 +189,7 @@ describe('build(vmConfig).input()', () => {
         let testItem1 = build(vmConfig).input('Field1');
         expect(testItem1).toBeInstanceOf(FluentValidatorCollector);
         let expected1 = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
         };
@@ -197,15 +197,15 @@ describe('build(vmConfig).input()', () => {
         let testItem2 = build(vmConfig).input('Field2');
         expect(testItem2).toBeInstanceOf(FluentValidatorCollector);
         let expected2 = {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field2',
             validatorConfigs: []
         };
         expect(testItem2.parentConfig).toEqual(expected2);
 
-        let testItem3 = build(vmConfig).nonInput('Field3');
+        let testItem3 = build(vmConfig).static('Field3');
         let expected3 = {
-            type: ValueHostType.NonInput,
+            valueHostType: ValueHostType.Static,
             name: 'Field3'
         };
         expect(vmConfig.valueHostConfigs).toEqual([expected1, expected2, expected3]);
@@ -225,7 +225,7 @@ describe('build(vmConfig).conditions', () => {
         let testItem = build(vmConfig).conditions();
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: 'TBD',
+            conditionType: 'TBD',
             conditionConfigs: []
         });
     });
@@ -235,7 +235,7 @@ describe('build(vmConfig).conditions', () => {
         let testItem = build(vmConfig).conditions(null!);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: 'TBD',
+            conditionType: 'TBD',
             conditionConfigs: []
         });
     });
@@ -243,13 +243,13 @@ describe('build(vmConfig).conditions', () => {
         let vmConfig = createVMConfig();
 
         let parentConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         }
         let testItem = build(vmConfig).conditions(parentConfig);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         });
     });
@@ -257,13 +257,13 @@ describe('build(vmConfig).conditions', () => {
         let vmConfig = createVMConfig();
 
         let parentConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
         let testItem = build(vmConfig).conditions(parentConfig);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         });
     });
@@ -279,7 +279,7 @@ describe('build(vmConfig).calc', () => {
         let testItem = build(vmConfig).calc('Field1', null, calcFnForTests);
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             calcFn: calcFnForTests
         }]);
@@ -290,7 +290,7 @@ describe('build(vmConfig).calc', () => {
         let testItem = build(vmConfig).calc('Field1', 'Test', calcFnForTests);
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             dataType: 'Test',
             calcFn: calcFnForTests
@@ -302,7 +302,7 @@ describe('build(vmConfig).calc', () => {
         let testItem = build(vmConfig).calc({ name: 'Field1', dataType: 'Test', label: 'Field 1', calcFn: calcFnForTests });
         expect(testItem).toBeInstanceOf(ValueHostsBuilder);
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Calc,
+            valueHostType: ValueHostType.Calc,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1',
@@ -320,19 +320,19 @@ describe('build(vmConfig).calc', () => {
 
 
 // Test cases for creating fluent functions...
-function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>,
+function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig
 ): FluentValidatorCollector {
     return finishFluentValidatorCollector(this, ConditionType.RequireText, conditionConfig, errorMessage, validatorParameters);
 }
-function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>
+function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
 ): FluentConditionCollector {
     return finishFluentConditionCollector(this, ConditionType.RequireText, conditionConfig, 'valueHostName');
 
 }
 
-function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'type' | 'valueHostName'>,
+function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig
 ): FluentValidatorCollector {
@@ -340,7 +340,7 @@ function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'type'
     return finishFluentValidatorCollector(this, ConditionType.RegExp, conditionConfig,
         errorMessage, validatorParameters);
 }
-function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'type' | 'valueHostName'>): FluentConditionCollector {
+function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>): FluentConditionCollector {
 
     return finishFluentConditionCollector(this, ConditionType.RegExp, conditionConfig, 'valueHostName');
 }
@@ -348,21 +348,21 @@ function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'type
 declare module './../../src/ValueHosts/Fluent'
 {
     export interface FluentValidatorCollector {
-        testChainRequireText(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>,
+        testChainRequireText(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig
         ): FluentValidatorCollector;
-        testChainRegExp(conditionConfig: Omit<RegExpConditionConfig, 'type' | 'valueHostName'>,
+        testChainRegExp(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig
         ): FluentValidatorCollector;
     }
     export interface FluentConditionCollector {
         testChainRequireText(conditionConfig:
-            Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>
+            Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
         ): FluentConditionCollector;
         testChainRegExp(conditionConfig:
-            Omit<RegExpConditionConfig, 'type' | 'valueHostName'>
+            Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>
         ): FluentConditionCollector;
     }
 }
@@ -381,7 +381,7 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequireText);
+        expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
     });
     test('build(vmConfig).input: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
@@ -393,9 +393,9 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(2);
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequireText);
+        expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
         expect(parentConfig.validatorConfigs![1].conditionConfig).not.toBeNull();
-        expect(parentConfig.validatorConfigs![1].conditionConfig!.type).toBe(ConditionType.RegExp);
+        expect(parentConfig.validatorConfigs![1].conditionConfig!.conditionType).toBe(ConditionType.RegExp);
         expect((parentConfig.validatorConfigs![1].conditionConfig! as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
 });
@@ -404,7 +404,7 @@ describe('customRule', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1').customRule((requester) => {
-            return new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: null });
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
             'Error',
             {
@@ -422,7 +422,7 @@ describe('customRule', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1').customRule((requester) => {
-            return new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: null });
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
@@ -435,7 +435,7 @@ describe('customRule', () => {
 
     test('Stand-alone call throws', () => {
         expect(() => customRule((requester) => {
-            return new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: null });
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
             'Error',
             {
@@ -452,7 +452,7 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         let parentConfig = (testItem as FluentConditionCollector).parentConfig;
         expect(parentConfig.conditionConfigs!.length).toBe(1);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].type).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
     });
     test('build(vmConfig).conditions: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
@@ -464,16 +464,16 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         let parentConfig = (testItem as FluentConditionCollector).parentConfig;
         expect(parentConfig.conditionConfigs!.length).toBe(2);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].type).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
         expect(parentConfig.conditionConfigs![1]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![1].type).toBe(ConditionType.RegExp);
+        expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
         expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
     test('build(vmConfig).conditions with EvaluateChildConditionResultsConfig parameter: Add RequiredTest condition to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let eccrConfig: EvaluateChildConditionResultsConfig = {
-            type: 'All',
+            conditionType: 'All',
             conditionConfigs: []
         };
         let testItem = build(vmConfig).conditions(eccrConfig).testChainRequireText({});
@@ -482,13 +482,13 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         expect(parentConfig).toBe(eccrConfig);
         expect(parentConfig.conditionConfigs!.length).toBe(1);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].type).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
     });
     test('build(vmConfig).conditions with EvaluateChildConditionResultsConfig parameter: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let eccrConfig: EvaluateChildConditionResultsConfig = {
-            type: 'All',
+            conditionType: 'All',
             conditionConfigs: []
         };
         let testItem = build(vmConfig).conditions(eccrConfig)
@@ -499,9 +499,9 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         expect(parentConfig).toBe(eccrConfig);
         expect(parentConfig.conditionConfigs!.length).toBe(2);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].type).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
         expect(parentConfig.conditionConfigs![1]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![1].type).toBe(ConditionType.RegExp);
+        expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
         expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
 });
@@ -514,7 +514,7 @@ describe('updateInput', () => {
         build(vmConfig).updateInput('Field1', { dataType: 'TEST', group: 'GROUP', initialValue: '1', label: 'UpdatedLabel', labell10n: 'ULl10n' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: 'TEST',
             group: 'GROUP',
@@ -529,12 +529,12 @@ describe('updateInput', () => {
 
         let testItem = build(vmConfig).input('Field1', LookupKey.Integer, { label: 'Field 1' });
         build(vmConfig).updateInput('Field1', <any>{
-            name: 'ToIgnore', type: 'IgnoreType',
+            name: 'ToIgnore', valueHostType: 'IgnoreType',
             validatorConfigs: [{}], label: 'UpdatedLabel'
         });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             dataType: LookupKey.Integer,
             label: 'UpdatedLabel',
@@ -544,7 +544,7 @@ describe('updateInput', () => {
     test('With name assigned to another type of valueHost, throws.', () => {
         let vmConfig = createVMConfig();
 
-        let testItem = build(vmConfig).nonInput('Field1', LookupKey.Integer, { label: 'Field 1' });
+        let testItem = build(vmConfig).static('Field1', LookupKey.Integer, { label: 'Field 1' });
         expect(() => build(vmConfig).updateInput('Field1', { label: 'UpdatedLabel' })).toThrow(/not type/);
     });
     test('With no matching ValueHostName, throws', () => {
@@ -552,14 +552,14 @@ describe('updateInput', () => {
         expect(() => build(vmConfig).updateInput('Field1', { label: 'UpdatedLabel' })).toThrow(/not defined/);
     });
 });
-describe('updateNonInput', () => {
-    test('With existing NonInputValueHost, all values supplied are updated', () => {
+describe('updateStatic', () => {
+    test('With existing StaticValueHost, all values supplied are updated', () => {
         let vmConfig = createVMConfig();
 
-        let testItem = build(vmConfig).nonInput('Field1', LookupKey.Integer, { label: 'Field 1' });
-        build(vmConfig).updateNonInput('Field1', { dataType: 'TEST', initialValue: '1', label: 'UpdatedLabel', labell10n: 'ULl10n' });
+        let testItem = build(vmConfig).static('Field1', LookupKey.Integer, { label: 'Field 1' });
+        build(vmConfig).updateStatic('Field1', { dataType: 'TEST', initialValue: '1', label: 'UpdatedLabel', labell10n: 'ULl10n' });
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.NonInput,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: 'TEST',
             initialValue: '1',
@@ -567,17 +567,17 @@ describe('updateNonInput', () => {
             labell10n: 'ULl10n'
         }]);
     });
-    test('With existing NonInputValueHost, supply unwanted properties. They are not applied, but valid ones are.', () => {
+    test('With existing StaticValueHost, supply unwanted properties. They are not applied, but valid ones are.', () => {
         let vmConfig = createVMConfig();
 
-        let testItem = build(vmConfig).nonInput('Field1', LookupKey.Integer, { label: 'Field 1' });
-        build(vmConfig).updateNonInput('Field1', <any>{
-            name: 'ToIgnore', type: 'IgnoreType',
+        let testItem = build(vmConfig).static('Field1', LookupKey.Integer, { label: 'Field 1' });
+        build(vmConfig).updateStatic('Field1', <any>{
+            name: 'ToIgnore', valueHostType: 'IgnoreType',
             label: 'UpdatedLabel'
         });
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.NonInput,
+            valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: LookupKey.Integer,
             label: 'UpdatedLabel'
@@ -587,11 +587,11 @@ describe('updateNonInput', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1', LookupKey.Integer, { label: 'Field 1' });
-        expect(() => build(vmConfig).updateNonInput('Field1', { label: 'UpdatedLabel' })).toThrow(/not type/);
+        expect(() => build(vmConfig).updateStatic('Field1', { label: 'UpdatedLabel' })).toThrow(/not type/);
     });
     test('With no matching ValueHostName, throws', () => {
         let vmConfig = createVMConfig();
-        expect(() => build(vmConfig).updateNonInput('Field1', { label: 'UpdatedLabel' })).toThrow(/not defined/);
+        expect(() => build(vmConfig).updateStatic('Field1', { label: 'UpdatedLabel' })).toThrow(/not defined/);
     });
 });
 
@@ -609,11 +609,11 @@ describe('updateValidator', () => {
             });
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
                 enabled: true,
                 errorMessage: 'UpdatedMessage',
@@ -631,17 +631,17 @@ describe('updateValidator', () => {
         build(vmConfig).updateValidator('Field1', ConditionType.RequireText,
             <any>{
                 errorMessage: 'Wanted',
-                type: 'Unwanted',
-                conditionConfig: { type: 'TEST' },
+                validatorType: 'Unwanted',
+                conditionConfig: { conditionType: 'TEST' },
                 conditionCreator: (x: unknown) => null
             });
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
                 errorMessage: 'Wanted',
             }]
@@ -650,7 +650,7 @@ describe('updateValidator', () => {
     test('With name assigned to another type of valueHost, throws.', () => {
         let vmConfig = createVMConfig();
 
-        let testItem = build(vmConfig).nonInput('Field1', LookupKey.Integer, { label: 'Field 1' });
+        let testItem = build(vmConfig).static('Field1', LookupKey.Integer, { label: 'Field 1' });
         expect(() => build(vmConfig).updateInput('Field1', { label: 'UpdatedLabel' })).toThrow(/not type/);
     });
     test('With no matching ValueHostName, throws', () => {
@@ -674,11 +674,11 @@ describe('addValidatorsTo', () => {
         build(vmConfig).addValidatorsTo('Field1').requireText(null, 'RequiredMessage');
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
                 errorMessage: 'RequiredMessage',
             }]
@@ -691,16 +691,16 @@ describe('addValidatorsTo', () => {
         build(vmConfig).addValidatorsTo('Field1').requireText().regExp('\\d');
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
             },
             {
                 conditionConfig: {
-                    type: ConditionType.RegExp,
+                    conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d'
                 },
             }]
@@ -709,7 +709,7 @@ describe('addValidatorsTo', () => {
     test('With name assigned to another type of valueHost, throws.', () => {
         let vmConfig = createVMConfig();
 
-        let testItem = build(vmConfig).nonInput('Field1', LookupKey.Integer, { label: 'Field 1' });
+        let testItem = build(vmConfig).static('Field1', LookupKey.Integer, { label: 'Field 1' });
         expect(() => build(vmConfig).addValidatorsTo('Field1')).toThrow(/not type/);
     });
     test('With no matching ValueHostName, throws', () => {
@@ -753,11 +753,11 @@ describe('favorUIMessages', () => {
         build(vmConfig).favorUIMessages();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
                 errorMessage: 'RequiredMessage',
                 errorMessagel10n: 'eml10n',
@@ -766,12 +766,12 @@ describe('favorUIMessages', () => {
             }]
         },
         {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field2',
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RegExp,
+                        conditionType: ConditionType.RegExp,
                         expressionAsString: '\\d'
                     },
                     errorMessage: 'RegExpMessage',
@@ -781,7 +781,7 @@ describe('favorUIMessages', () => {
                 },
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText
+                        conditionType: ConditionType.RequireText
                     },
                     errorMessage: 'Field2Required',
                 }]
@@ -815,27 +815,27 @@ describe('favorUIMessages', () => {
         build(vmConfig).favorUIMessages();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 }
             }]
         },
         {
-            type: ValueHostType.Input,
+            valueHostType: ValueHostType.Input,
             name: 'Field2',
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RegExp,
+                        conditionType: ConditionType.RegExp,
                         expressionAsString: '\\d'
                     }
                 },
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText
+                        conditionType: ConditionType.RequireText
                     },
 
                 }]

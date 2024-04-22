@@ -8,7 +8,7 @@
  * In this example, the class calculates a date relative today with properties of Days, Months, and Years.
  * You want to setup the the EqualToCondition like this:
  * <IEqualToConditionConfig>{
- *   type: "EqualTo",
+ *   conditionType: "EqualTo",
  *   valueHostId: "TextBox1", // your code supplies the textbox value to its ValueHost as a RelativeDate
  *   secondValue: new Date(2000, 0, 1) // Compare to this date
  * }

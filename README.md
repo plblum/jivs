@@ -108,13 +108,13 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
 	+ `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
-	+ `NonInputValueHost class` – For values that are not validated but contribute to validation. 
+	+ `StaticValueHost class` – For values that do not need validating, but support validation rules of InputValueHosts. 
 	
-	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `NonInputValueHost` to pass in a country
+	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
 	code your app is using, and let the validation internally select the right
 	expression by retrieving the country code first.
 	
-	> If you are using a Model, you might also use NonInputValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
+	> If you are using a Model, you might also use StaticValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
 		
 	+ `CalcValueHost class` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
 
@@ -257,7 +257,7 @@ We'll work with this example: Compare a date from the Input to today's date.
 The `EqualToCondition` is the right Condition for the job.  You need to create a `EqualToConditionConfig` that Jivs will use later to prepare the `EqualToCondition`. Here's its `ConditionConfig`:
 ```ts
 interface EqualToConditionConfig {
-    type: string;
+    conditionType: string;
     valueHostName: null | string;
     secondValueHostName: null | string;
     secondValue?: any;
@@ -271,7 +271,7 @@ interface EqualToConditionConfig {
 Your new code should look like this, where `ValueHostName` is your identifier for a field on the Model that you call “SignedOnDate”. (More on <a href="#naming">`ValueHost Names`</a> later.)
 ```ts
 {
-    type: 'EqualTo';
+    conditionType: 'EqualTo';
     valueHostName: 'SignedOnDate';
     secondValue: ...date object representing Today...;
 }
@@ -299,7 +299,7 @@ class Factory
       {
         case ConditionOperators.Equals:
           return <EqualTosConditionConfig>{
-            type: 'EqualTo',
+            conditionType: 'EqualTo',
             valueHostName: fieldRef,
             secondValue: businessLogicRule.secondValue
           }
@@ -312,7 +312,7 @@ class Factory
 Every value that you expose to Jivs is kept in a ValueHost. There are several types:
 
 - InputValueHost – The value may have validation rules applied. It actually keeps two values around when working with a UI: the value fully compatible with the model's property, and the value from within the editor.
-- NonInputValueHost – The value may be used in validation or is a member of the Model that is retained when Jivs is the single-source of truth.
+- StaticValueHost – The value that is not validated itself, but its value is used in an InputValueHost's validation rule or is a member of the Model that is retained when Jivs is the single-source of truth.
 - CalcValueHost – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
 
 These objects are added to the ValidationManager while configuring. Here is pseudocode representation of their interfaces (omitting many members).
@@ -341,7 +341,7 @@ interface IInputValueHost extends IValueHost
     getIssueFound(errorCode): IssueFound | null;
     getIssuesFound(group?): IssueFound[];	
 }
-interface INonInputValueHost extends IValueHost
+interface IStaticValueHost extends IValueHost
 {
 }
 interface ICalcValueHost extends IValueHost
@@ -382,7 +382,7 @@ In fact, that’s about right, only with more properties. Those objects use the 
 ```ts
 interface ValueHostConfig
 {
-  type?: string;
+  valueHostType?: string;
   name: string;
   dataType?: string;
   label?: string;
@@ -391,17 +391,17 @@ interface ValueHostConfig
 }
 interface InputValueHostConfig extends ValueHostConfig 
 {
-  type: 'Input',	// shown here for documentation purposes
+  valueHostType: 'Input',	// shown here for documentation purposes
   validatorConfigs: ValidatorConfig[] | null;
   group?: string | Array<string> | null;
 }
-interface NonInputValueHostConfig extends ValueHostConfig 
+interface StaticValueHostConfig extends ValueHostConfig 
 {
-  type: 'NonInput' // shown here for documentation purposes
+  valueHostType: 'Static' // shown here for documentation purposes
 }
 interface CalcValueHostConfig extends ValueHostConfig 
 {
-  type: 'Calc', // shown here for documentation purposes
+  valueHostType: 'Calc', // shown here for documentation purposes
   calcFn: CalculationHandler // a function definition
 }
 ```
@@ -409,14 +409,14 @@ Here’s how your configuration actually looks:
 ```ts
 [
   {
-    type: 'Input',
+    valueHostType: 'Input',
     name: 'FirstName',
     dataType: 'String',
     label: 'First name', // localized, of course!
     validatorConfigs: [ ValidatorConfigs ]
   },
   {
-    type: 'Input',
+    valueHostType: 'Input',
     name: 'LastName',
     dataType: 'String',
     label: 'Last name',
@@ -435,7 +435,7 @@ The `ValueHost` names are also used to help a `Condition` retrieve a value from 
     {
       conditionConfig: 
       {
-        type: 'NotEqualTo',
+        conditionType: 'NotEqualTo',
         valueHostName: null, // because owning ValueHost is provided automatically to the Condition.evaluate function.
         secondValueHostName: 'LastName'
       }      
@@ -486,13 +486,13 @@ Because this is so full of goodness, let’s go through each property.
 Now let’s place an `ValidatorConfig` into our previous example using a Model with FirstName and LastName.
 ```ts
 [{
-  type: 'Input',
+  valueHostType: 'Input',
   name: 'FirstName',
   dataType: 'String',
   label: 'First name',
   validatorConfigs: [{
     conditionConfig: {
-      type: 'RequireText',
+      conditionType: 'RequireText',
       valueHostName: null
     },
     errorMessage: 'This field requires a value',
@@ -500,7 +500,7 @@ Now let’s place an `ValidatorConfig` into our previous example using a Model w
   },
   {
     conditionConfig: {
-      type: 'NotEqualTo',
+      conditionType: 'NotEqualTo',
       valueHostName: null,
       secondValueHostName: 'LastName'
     },
@@ -510,13 +510,13 @@ Now let’s place an `ValidatorConfig` into our previous example using a Model w
   }]
 },
 {
-  type: 'Input',
+  valueHostType: 'Input',
   name: 'LastName',
   dataType: 'String',
   label: 'Last name',
   validatorConfigs: [{
     conditionConfig: {
-      type: 'RequireText',
+      conditionType: 'RequireText',
       valueHostName: null
     },
     errorMessage: 'This field requires a value',
@@ -559,7 +559,7 @@ interface ValidationManagerConfig {
 Let’s go through this type.
 
 -	`services` – Always takes a <a href="#validationservices">`ValidationServices object`</a>, which is rich with services for dependency injection and factories. You will need to do a bunch to configure this, but don’t worry, we have a code snippet to inject into your app to assist. (Described below.)
--	<a href="#configuringvaluehosts">`valueHostConfigs`</a> – Configures each InputValueHost associated with your Inputs and NonInputValueHost associated with additional values needed by validator rules.
+-	<a href="#configuringvaluehosts">`valueHostConfigs`</a> – Configures each ValueHost. This is where a majority of the setup work goes.
 -	`savedState` and `savedValueHostStates` – `ValidationManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onStateChanged` and `onValueHostStateChanged` events, and pass the values back into these two Config properties when you recreate it.
 -	`onStateChanged` and `onValueHostStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 -	`onValueChanged` notifies you when a `ValueHost` had its value changed.
@@ -613,11 +613,11 @@ builder.input('LastName', 'String', { label: 'Last Name'})
    
 let validationManager = new ValidationManager(vmConfig);   
 ```
-You can also use the builder object to add NonInputValueHosts, CalcValueHosts, and a list of Conditions to these Conditions: All, Any, CountMatches.
+You can also use the builder object to add StaticValueHosts, CalcValueHosts, and a list of Conditions to these Conditions: All, Any, CountMatches.
 
 ```ts
-builder.nonInput('PersonVisible', 'Boolean');
-builder.nonInput('PersonActive', 'Boolean');
+builder.static('PersonVisible', 'Boolean');
+builder.static('PersonActive', 'Boolean');
 builder.input('Name').any(
      builder.conditions()
      	.equalTo(true, { valueHostName: 'PersonVisible'})
@@ -689,7 +689,7 @@ Here are two ways to start:
 Choose one of the methodologies below. When establishing the InputValueHost with your condition, it goes here:
 ```ts
 {
-  type: 'Input',
+  valueHostType: 'Input',
   name: ...,
   validatorConfigs: [{
     conditionCreator: (requester) => ...create your object here...
@@ -751,7 +751,7 @@ interface ValueHostConfig
 }
 
 let firstNameConfig = <ValueHostConfig>{
-  type: 'Input',
+  valueHostType: 'Input',
   name: 'FirstName',
   dataType: 'String',
   validatorConfigs: [ ValidatorConfigs ]
@@ -788,7 +788,7 @@ Consider these *Use Cases*:
 	Here is the NotEqualToCondition configured with CaseInsensitive:
 	```ts
 	{
-	  type: 'Input',
+	  valueHostType: 'Input',
 	  name: 'FirstName',
 	  dataType: 'String',
 	  label: 'First name',
@@ -796,7 +796,7 @@ Consider these *Use Cases*:
 	  	{
 	  	  conditionConfig: 
 	  	  {
-	  	    type: 'NotEqual',
+	  	    conditionType: 'NotEqual',
 	  	    secondValueHostName: 'LastName',
 	  	    conversionLookupKey: 'CaseInsensitive',
 	  	    secondConversionLookupKey: 'CaseInsensitive'
@@ -877,7 +877,7 @@ Let's suppose that you have a label "First Name" which you want in several langu
 2. Assign both label and labell10n properties during configuration.
 	```ts
 	{
-	  type: 'Input',
+	  valueHostType: 'Input',
 	  name: 'FirstName',
 	  label: 'First Name',
 	  labell10n: 'FirstName'

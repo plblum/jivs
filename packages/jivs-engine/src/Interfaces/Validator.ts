@@ -103,6 +103,11 @@ export interface IValidator extends IMessageTokenSource, IGatherValueHostNames {
  */
 export interface ValidatorConfig {
     /**
+     * The ValidatorType used by the ValidatorFactory.
+     * Leave it null or undefined to use the built-in Validator class.
+     */
+    validatorType?: string;
+    /**
      * Provides the error code associated with this instance.
      * When unassigned, the Validator uses the ConditionType as the error code.
      */

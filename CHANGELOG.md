@@ -5,6 +5,10 @@
 - InputValidator now has an errorcode whose value inherits from Condition.ConditionType
   unless the user assigns it to InputValidatorConfig. Fixes a problem where you want
   to use the same condition several times in the same InputValueHost.
+- **Breaking API change** - Renamed InputValidator to Validator.
+- **Breaking API change** - Renamed NonInputValueHost to StaticValueHost.
+- **Breaking API change** - Renamed "type" on ValueHostConfig to "valueHostType" to avoid associating it with "data type"
+- **Breaking API change** - Renamed "type" on ConditionConfig to "conditionType"
 - **Breaking API change** - IssuesFound.conditionType property renamed to errorCode.
 - Introduce config().calc() to the fluent syntax for CalcValueHost.
 - TextLocalizerService now can have fallbacks, allowing you to have a base service definition

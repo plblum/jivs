@@ -27,14 +27,14 @@ describe('dataTypeCheck on conditions', () => {
 
         let testItem = fluent().conditions().dataTypeCheck();
         TestFluentConditionCollector(testItem, <DataTypeCheckConditionConfig>{
-            type: ConditionType.DataTypeCheck
+            conditionType: ConditionType.DataTypeCheck
         });
     });
     test('With only errorMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage assigned', () => {
 
         let testItem = fluent().conditions().dataTypeCheck();
         TestFluentConditionCollector(testItem, <DataTypeCheckConditionConfig>{
-            type: ConditionType.DataTypeCheck
+            conditionType: ConditionType.DataTypeCheck
         });
     });
 
@@ -45,7 +45,7 @@ describe('regExp on conditions', () => {
 
         let testItem = fluent().conditions().regExp( '\\d');
         TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             expressionAsString: '\\d'
         });
     });
@@ -53,7 +53,7 @@ describe('regExp on conditions', () => {
 
         let testItem = fluent().conditions().regExp('\\d', null, {});
         TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             expressionAsString: '\\d'
         });
     });
@@ -61,7 +61,7 @@ describe('regExp on conditions', () => {
 
         let testItem = fluent().conditions().regExp('\\d', null, null, 'Field2');
         TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             expressionAsString: '\\d',
             valueHostName: 'Field2'
         });
@@ -70,7 +70,7 @@ describe('regExp on conditions', () => {
 
         let testItem = fluent().conditions().regExp(/\d/i);
         TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             expression: /\d/i
         });
     });
@@ -78,7 +78,7 @@ describe('regExp on conditions', () => {
 
         let testItem = fluent().conditions().regExp('\\d', true);
         TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             expressionAsString: '\\d',
             ignoreCase: true
         });
@@ -87,7 +87,7 @@ describe('regExp on conditions', () => {
 
         let testItem = fluent().conditions().regExp('\\d', false);
         TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             expressionAsString: '\\d',
             ignoreCase: false
         });
@@ -96,7 +96,7 @@ describe('regExp on conditions', () => {
 
         let testItem = fluent().conditions().regExp('\\d', null, { not: true });
         TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             expressionAsString: '\\d',
             not: true
         });
@@ -108,7 +108,7 @@ describe('range on conditions', () => {
 
         let testItem = fluent().conditions().range(1, 4);
         TestFluentConditionCollector(testItem, <RangeConditionConfig>{
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             minimum: 1,
             maximum: 4
         });
@@ -117,7 +117,7 @@ describe('range on conditions', () => {
 
         let testItem = fluent().conditions().range(1, 4, 'Field2');
         TestFluentConditionCollector(testItem, <RangeConditionConfig>{
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Field2',
             minimum: 1,
             maximum: 4
@@ -129,7 +129,7 @@ describe('range on conditions', () => {
 
         let testItem = fluent().conditions().range(1, null);
         TestFluentConditionCollector(testItem, <RangeConditionConfig>{
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             minimum: 1
         });
     });
@@ -137,7 +137,7 @@ describe('range on conditions', () => {
 
         let testItem = fluent().conditions().range(null, 4);
         TestFluentConditionCollector(testItem, <RangeConditionConfig>{
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             maximum: 4
         });
     });
@@ -149,7 +149,7 @@ describe('equalToValue on conditions', () => {
 
         let testItem = fluent().conditions().equalToValue(1);
         TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             secondValue: 1
         });
     });
@@ -157,7 +157,7 @@ describe('equalToValue on conditions', () => {
 
         let testItem = fluent().conditions().equalToValue(1, {});
         TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             secondValue: 1
         });
     });
@@ -165,7 +165,7 @@ describe('equalToValue on conditions', () => {
 
         let testItem = fluent().conditions().equalToValue(1, null, 'Field2');
         TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Field2',
             secondValue: 1
         });
@@ -176,7 +176,7 @@ describe('equalToValue on conditions', () => {
 
         let testItem = fluent().conditions().equalToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -188,7 +188,7 @@ describe('equalTo on conditions', () => {
 
         let testItem = fluent().conditions().equalTo('Field2');
         TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             secondValueHostName: 'Field2'
         });
     });
@@ -196,7 +196,7 @@ describe('equalTo on conditions', () => {
 
         let testItem = fluent().conditions().equalTo('Field2', {});
         TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             secondValueHostName: 'Field2'
         });
     });    
@@ -204,7 +204,7 @@ describe('equalTo on conditions', () => {
 
         let testItem = fluent().conditions().equalTo('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -214,7 +214,7 @@ describe('equalTo on conditions', () => {
 
         let testItem = fluent().conditions().equalTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -227,7 +227,7 @@ describe('notEqualToValue on conditions', () => {
 
         let testItem = fluent().conditions().notEqualToValue(1);
         TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             secondValue: 1
         });
     });
@@ -235,7 +235,7 @@ describe('notEqualToValue on conditions', () => {
 
         let testItem = fluent().conditions().notEqualToValue(1, {});
         TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             secondValue: 1
         });
     });
@@ -243,7 +243,7 @@ describe('notEqualToValue on conditions', () => {
 
         let testItem = fluent().conditions().notEqualToValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
@@ -253,7 +253,7 @@ describe('notEqualToValue on conditions', () => {
 
         let testItem = fluent().conditions().notEqualToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -265,7 +265,7 @@ describe('notEqualTo on conditions', () => {
 
         let testItem = fluent().conditions().notEqualTo('Field2');
         TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             secondValueHostName: 'Field2'
         });
     });
@@ -273,7 +273,7 @@ describe('notEqualTo on conditions', () => {
 
         let testItem = fluent().conditions().notEqualTo('Field2', {});
         TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             secondValueHostName: 'Field2'
         });
     });
@@ -281,7 +281,7 @@ describe('notEqualTo on conditions', () => {
 
         let testItem = fluent().conditions().notEqualTo('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -291,7 +291,7 @@ describe('notEqualTo on conditions', () => {
 
         let testItem = fluent().conditions().notEqualTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -304,7 +304,7 @@ describe('lessThanValue on conditions', () => {
 
         let testItem = fluent().conditions().lessThanValue(1);
         TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
-            type: ConditionType.LessThanValue,
+            conditionType: ConditionType.LessThanValue,
             secondValue: 1
         });
     });
@@ -313,7 +313,7 @@ describe('lessThanValue on conditions', () => {
 
         let testItem = fluent().conditions().lessThanValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
-            type: ConditionType.LessThanValue,
+            conditionType: ConditionType.LessThanValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
@@ -322,7 +322,7 @@ describe('lessThanValue on conditions', () => {
 
         let testItem = fluent().conditions().ltValue(1);
         TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
-            type: ConditionType.LessThanValue,
+            conditionType: ConditionType.LessThanValue,
             secondValue: 1
         });
     });
@@ -331,7 +331,7 @@ describe('lessThanValue on conditions', () => {
 
         let testItem = fluent().conditions().lessThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
-            type: ConditionType.LessThanValue,
+            conditionType: ConditionType.LessThanValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -343,7 +343,7 @@ describe('lessThan on conditions', () => {
 
         let testItem = fluent().conditions().lessThan('Field2');
         TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             secondValueHostName: 'Field2'
 
         });
@@ -352,7 +352,7 @@ describe('lessThan on conditions', () => {
 
         let testItem = fluent().conditions().lessThan('Field2', {});
         TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             secondValueHostName: 'Field2'
         });
     });
@@ -360,7 +360,7 @@ describe('lessThan on conditions', () => {
 
         let testItem = fluent().conditions().lessThan('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -370,7 +370,7 @@ describe('lessThan on conditions', () => {
 
         let testItem = fluent().conditions().lt('Field2');
         TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             secondValueHostName: 'Field2'
         });
     });
@@ -378,7 +378,7 @@ describe('lessThan on conditions', () => {
 
         let testItem = fluent().conditions().lt('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -389,7 +389,7 @@ describe('lessThan on conditions', () => {
 
         let testItem = fluent().conditions().lessThan( 'Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -401,7 +401,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().lessThanOrEqualValue(1);
         TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
     });
@@ -409,7 +409,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().lessThanOrEqualValue(1, {});
         TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
     });    
@@ -418,7 +418,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().lessThanOrEqualValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
@@ -428,7 +428,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().lteValue(1);
         TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
     });
@@ -437,7 +437,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().lteValue(1, {});
         TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
     });
@@ -445,7 +445,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().lteValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
@@ -455,7 +455,7 @@ describe('lessThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().lessThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -467,7 +467,7 @@ describe('lessThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().lessThanOrEqual('Field2');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             secondValueHostName: 'Field2'
         });
     });
@@ -475,7 +475,7 @@ describe('lessThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().lessThanOrEqual('Field2', {});
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             secondValueHostName: 'Field2'
         });
     });
@@ -483,7 +483,7 @@ describe('lessThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().lessThanOrEqual('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -493,7 +493,7 @@ describe('lessThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().lte('Field2');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             secondValueHostName: 'Field2'
         });
     });
@@ -501,7 +501,7 @@ describe('lessThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().lte('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -511,7 +511,7 @@ describe('lessThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().lessThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -525,7 +525,7 @@ describe('greaterThanValue on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanValue(1);
         TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             secondValue: 1
         });
     });
@@ -533,7 +533,7 @@ describe('greaterThanValue on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanValue(1, {});
         TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             secondValue: 1
         });
     });
@@ -541,7 +541,7 @@ describe('greaterThanValue on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
@@ -551,7 +551,7 @@ describe('greaterThanValue on conditions', () => {
 
         let testItem = fluent().conditions().gtValue(1);
         TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             secondValue: 1
         });
     });
@@ -559,7 +559,7 @@ describe('greaterThanValue on conditions', () => {
 
         let testItem = fluent().conditions().gtValue(1, {});
         TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             secondValue: 1
         });
     });
@@ -567,7 +567,7 @@ describe('greaterThanValue on conditions', () => {
 
         let testItem = fluent().conditions().gtValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
@@ -577,7 +577,7 @@ describe('greaterThanValue on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -590,7 +590,7 @@ describe('greaterThan on conditions', () => {
 
         let testItem = fluent().conditions().greaterThan('Field2');
         TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2'
         });
     });
@@ -598,7 +598,7 @@ describe('greaterThan on conditions', () => {
 
         let testItem = fluent().conditions().greaterThan('Field2', {});
         TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2'
         });
     });
@@ -606,7 +606,7 @@ describe('greaterThan on conditions', () => {
 
         let testItem = fluent().conditions().greaterThan('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -615,7 +615,7 @@ describe('greaterThan on conditions', () => {
 
         let testItem = fluent().conditions().gt('Field2');
         TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2'
         });
     });
@@ -623,7 +623,7 @@ describe('greaterThan on conditions', () => {
 
         let testItem = fluent().conditions().gt('Field2', {});
         TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2'
         });
     });
@@ -631,7 +631,7 @@ describe('greaterThan on conditions', () => {
 
         let testItem = fluent().conditions().gt('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -641,7 +641,7 @@ describe('greaterThan on conditions', () => {
 
         let testItem = fluent().conditions().greaterThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -653,7 +653,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqualValue(1);
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
     });
@@ -661,7 +661,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqualValue(1, {});
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
     });
@@ -669,7 +669,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqualValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
@@ -678,7 +678,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().gteValue(1);
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
     });
@@ -686,7 +686,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().gteValue(1, {});
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
     });
@@ -694,7 +694,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().gteValue(1, null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
         });
@@ -704,7 +704,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -716,7 +716,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqual('Field2');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2'
         });
     });
@@ -724,7 +724,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqual('Field2', {});
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2'
         });
     });
@@ -733,7 +733,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqual('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -743,7 +743,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().gte('Field2');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2'
         });
     });
@@ -751,7 +751,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().gte('Field2', {});
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2'
         });
     });
@@ -759,7 +759,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().gte('Field2', null, 'Field1');
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
         });
@@ -769,7 +769,7 @@ describe('greaterThanOrEqual on conditions', () => {
 
         let testItem = fluent().conditions().greaterThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
             secondConversionLookupKey: LookupKey.Integer
@@ -782,7 +782,7 @@ describe('stringLength on conditions', () => {
 
         let testItem = fluent().conditions().stringLength(4);
         TestFluentConditionCollector(testItem, <StringLengthConditionConfig>{
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             maximum: 4
         });
     });
@@ -790,7 +790,7 @@ describe('stringLength on conditions', () => {
 
         let testItem = fluent().conditions().stringLength(4, {});
         TestFluentConditionCollector(testItem, <StringLengthConditionConfig>{
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             maximum: 4
         });
     });
@@ -798,7 +798,7 @@ describe('stringLength on conditions', () => {
 
         let testItem = fluent().conditions().stringLength(4, null, 'Field1');
         TestFluentConditionCollector(testItem, <StringLengthConditionConfig>{
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Field1',
             maximum: 4
         });
@@ -808,7 +808,7 @@ describe('stringLength on conditions', () => {
 
         let testItem = fluent().conditions().stringLength(4, { minimum: 1 });
         TestFluentConditionCollector(testItem, <StringLengthConditionConfig>{
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             maximum: 4,
             minimum: 1
         });
@@ -820,7 +820,7 @@ describe('requireText on conditions', () => {
 
         let testItem = fluent().conditions().requireText();
         TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
-            type: ConditionType.RequireText
+            conditionType: ConditionType.RequireText
         });
     });
 
@@ -828,14 +828,14 @@ describe('requireText on conditions', () => {
 
         let testItem = fluent().conditions().requireText({});
         TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
-            type: ConditionType.RequireText
+            conditionType: ConditionType.RequireText
         });
     });
     test('With valueHostName assigned, creates ValidatorConfig with RequireTextCondition with type=RequireText and valueHostName', () => {
 
         let testItem = fluent().conditions().requireText(null, 'Field1');
         TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Field1'
         });
     });
@@ -844,7 +844,7 @@ describe('requireText on conditions', () => {
 
         let testItem = fluent().conditions().requireText({ nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             nullValueResult: ConditionEvaluateResult.NoMatch
         });
     });
@@ -854,14 +854,14 @@ describe('notNull on conditions', () => {
 
         let testItem = fluent().conditions().notNull();
         TestFluentConditionCollector(testItem, <NotNullConditionConfig>{
-            type: ConditionType.NotNull
+            conditionType: ConditionType.NotNull
         });
     });
     test('With valueHostName assigned, creates ValidatorConfig with NotNullCondition with type=NotNull and valueHostName assigned', () => {
 
         let testItem = fluent().conditions().notNull('Field1');
         TestFluentConditionCollector(testItem, <NotNullConditionConfig>{
-            type: ConditionType.NotNull,
+            conditionType: ConditionType.NotNull,
             valueHostName: 'Field1'
         });
     });
@@ -873,7 +873,7 @@ describe('all on conditions', () => {
 
         let testItem = fluent().conditions().all(fluent().conditions());
         TestFluentConditionCollector(testItem, <AllMatchConditionConfig>{
-                type: ConditionType.All,
+                conditionType: ConditionType.All,
                 conditionConfigs: []
            });
     });
@@ -881,13 +881,13 @@ describe('all on conditions', () => {
 
         let testItem = fluent().conditions().all(fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentConditionCollector(testItem, <AllMatchConditionConfig>{
-                type: ConditionType.All,
+                conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             });
@@ -898,7 +898,7 @@ describe('any on conditions', () => {
 
         let testItem = fluent().conditions().any(fluent().conditions());
         TestFluentConditionCollector(testItem, <AnyMatchConditionConfig>{
-                type: ConditionType.Any,
+                conditionType: ConditionType.Any,
                 conditionConfigs: []
             });
     });
@@ -906,13 +906,13 @@ describe('any on conditions', () => {
 
         let testItem = fluent().conditions().any(fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentConditionCollector(testItem, <AnyMatchConditionConfig>{
-                type: ConditionType.Any,
+                conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             });
@@ -924,7 +924,7 @@ describe('countMatches on conditions', () => {
 
         let testItem = fluent().conditions().countMatches(1, 2, fluent().conditions());
         TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 minimum: 1,
                 maximum: 2,
                 conditionConfigs: []
@@ -934,7 +934,7 @@ describe('countMatches on conditions', () => {
 
         let testItem = fluent().conditions().countMatches(1, null, fluent().conditions());
         TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 minimum: 1,
                 conditionConfigs: []
             });
@@ -943,7 +943,7 @@ describe('countMatches on conditions', () => {
 
         let testItem = fluent().conditions().countMatches(null, 2, fluent().conditions());
         TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 maximum: 2,
                 conditionConfigs: []
             });
@@ -952,15 +952,15 @@ describe('countMatches on conditions', () => {
 
         let testItem = fluent().conditions().countMatches(0, 2, fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 minimum: 0,
                 maximum: 2,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             });

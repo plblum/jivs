@@ -85,12 +85,12 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
 }
 
 /**
- * Supports CalcValueHost class. Used when the Config.type = ValueHostType.Calc
+ * Supports CalcValueHost class. Used when the Config.valueHostType = ValueHostType.Calc
  */
 export class CalcValueHostGenerator extends ValueHostBaseGenerator {
 
     public canCreate(config: ValueHostConfig): boolean {
-        return config.type === ValueHostType.Calc;
+        return config.valueHostType === ValueHostType.Calc;
     }
     public create(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostState): ICalcValueHost {
         return new CalcValueHost(valueHostsManager, config, state);
