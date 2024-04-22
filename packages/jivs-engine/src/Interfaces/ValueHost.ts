@@ -9,14 +9,6 @@
  * - NonInputValueHosts - reflects values that are needed by validation
  *   but are not editable by the user. Often these are properties from the same
  *   Model being edited.
- * - HTMLElementValueHost - Its value is an HTML Element in the DOM which it gets
- *   by a queryselector.
- *   Conditions are expected to use its data in a read-only fashion. 
- *   Example info from HTML elements are:
- *   visible, enabled, readonly, classname, attribute name (exists), and attribute value.
- *   These are mostly used by a validator's Enabler condition
- *   to determine if something in the UI might block validation, like
- *   a disabled field.
  * 
  * There are two types of values associated with an input:
  * - input - the value supplied by the input field/element.
