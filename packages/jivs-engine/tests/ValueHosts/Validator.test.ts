@@ -25,6 +25,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { registerAllConditions } from "../TestSupport/createValidationServices";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
+import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested
@@ -1206,7 +1207,13 @@ describe('getValuesForTokens', () => {
 });
 
 describe('ValidatorFactory.create', () => {
-    test('Returns an Validator', () => {
+    function setupValidatorFactory(): {
+        vm: MockValidationManager,
+        vh: MockInputValueHost,
+        validatorConfig: ValidatorConfig,
+        factory: ValidatorFactory
+    }
+    {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Label1');
@@ -1218,12 +1225,56 @@ describe('ValidatorFactory.create', () => {
             errorMessage: 'Local',
             summaryMessage: 'Summary'
         };
-        let testItem = new ValidatorFactory();
+        let factory = new ValidatorFactory();
+        return {
+            vm: vm,
+            vh: vh,
+            validatorConfig: config,
+            factory: factory
+        }
+    }
+    class TestValidator extends Validator
+    {
+        constructor(valueHost: IInputValueHost, validatorConfig: ValidatorConfig)
+        {
+            super(valueHost, validatorConfig);
+        }
+    }
+    test('ValidatorConfig.validatorType = undefined returns a Validator', () => {
+        let setup = setupValidatorFactory();
+        let testItem = setup.factory;
         let created: IValidator | null = null;
-        expect(() => created = testItem.create(vh, config)).not.toThrow();
+        expect(() => created = testItem.create(setup.vh, setup.validatorConfig)).not.toThrow();
         expect(created).not.toBeNull();
         expect(created).toBeInstanceOf(Validator);
     });
+    test('ValidatorConfig.validatorType = null returns a Validator', () => {
+        let setup = setupValidatorFactory();
+        setup.validatorConfig.validatorType = null!;
+        let testItem = setup.factory;
+        let created: IValidator | null = null;
+        expect(() => created = testItem.create(setup.vh, setup.validatorConfig)).not.toThrow();
+        expect(created).not.toBeNull();
+        expect(created).toBeInstanceOf(Validator);
+    });    
+    test('ValidatorConfig.validatorType non null and nothing matching registered throws', () => {
+        let setup = setupValidatorFactory();
+        setup.validatorConfig.validatorType = 'TEST';
+        let testItem = setup.factory;
+        let created: IValidator | null = null;
+        expect(() => created = testItem.create(setup.vh, setup.validatorConfig)).toThrow(/not supported/);
+    });    
+    test('Register new Validator and confirm it gets created returns that class', () => {
+        let setup = setupValidatorFactory();
+        setup.validatorConfig.validatorType = 'TEST';
+        let testItem = setup.factory;
+        expect(testItem.isRegistered('TEST')).toBe(false);
+        testItem.register('TEST', (config) => new TestValidator(setup.vh, config));
+        let created: IValidator | null = null;
+        expect(() => created = testItem.create(setup.vh, setup.validatorConfig)).not.toThrow();
+        expect(created).not.toBeNull();
+        expect(created).toBeInstanceOf(TestValidator);
+    });        
 });
 
 describe('toIMessageTokenSource', () => {

@@ -5,7 +5,6 @@
  */
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import type { ConditionConfig, ICondition, IConditionCore, IConditionFactory } from '../Interfaces/Conditions';
-import { ConditionType } from './ConditionTypes';
 
 //#region ConditionFactory
 
@@ -27,7 +26,7 @@ export class ConditionFactory implements IConditionFactory {
         let fn = this._map.get(config.type);
         if (fn)
             return fn(config) as IConditionCore<TConfig>;
-        throw new Error(`Condition Type not supported: ${config.type}`);
+        throw new Error(`ConditionType not supported: ${config.type}`);
     }
     // user supplies JSON string or object implementing ConditionConfig
     // and it returns an instance of IValidator.
