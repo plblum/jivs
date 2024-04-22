@@ -4,7 +4,7 @@
  */
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { InputValidatorConfig } from "../Interfaces/InputValidator";
+import { ValidatorConfig } from "../Interfaces/Validator";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
@@ -14,7 +14,7 @@ import { NonInputValueHostConfig } from "../Interfaces/NonInputValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { CalcValueHostConfig, CalculationHandler } from "../Interfaces/CalcValueHost";
 import { EvaluateChildConditionResultsConfig } from "../Conditions/EvaluateChildConditionResultsBase";
-import { resolveErrorCode } from "./InputValidator";
+import { resolveErrorCode } from "./Validator";
 
 
 /**
@@ -252,17 +252,17 @@ export class ValueHostsBuilder
     }
 
     /**
-     * Replace any of the InputValidatorConfig properties supported by UI (most are).
+     * Replace any of the ValidatorConfig properties supported by UI (most are).
      * Not supported (in the domain of the business logic): 'errorCode', 'conditionConfig', 'conditionCreator'
      * @param valueHostName 
      * @param errorCode
      * @param propsToUpdate 
      * @returns Same instance for chaining.
      */    
-    public updateValidator(valueHostName: ValueHostName, errorCode: string, propsToUpdate: Partial<Omit<InputValidatorConfig, 'type' | 'conditionConfig' | 'conditionCreator' | 'errorCode'>>): ValueHostsBuilder
+    public updateValidator(valueHostName: ValueHostName, errorCode: string, propsToUpdate: Partial<Omit<ValidatorConfig, 'type' | 'conditionConfig' | 'conditionCreator' | 'errorCode'>>): ValueHostsBuilder
     {
         assertNotNull(propsToUpdate, 'propsToUpdate');
-        let ivConfig = this.getInputValidatorConfig(valueHostName, errorCode, true);
+        let ivConfig = this.getValidatorConfig(valueHostName, errorCode, true);
         if (ivConfig)
         {
             for (let propName in propsToUpdate)
@@ -354,14 +354,14 @@ export class ValueHostsBuilder
     }
 
 /**
- * Gets InputValidatorConfig based on the valueHostName and errorCode pair.
+ * Gets ValidatorConfig based on the valueHostName and errorCode pair.
  * Note: Not public to discourage working around defenses that disallow changing
  * certain properties.
  * @param valueHostName 
  * @param errorCode
  * @returns 
  */        
-    protected getInputValidatorConfig(valueHostName: ValueHostName, errorCode: string, throwWhenNotFound: boolean): InputValidatorConfig | null
+    protected getValidatorConfig(valueHostName: ValueHostName, errorCode: string, throwWhenNotFound: boolean): ValidatorConfig | null
     {
         let vhConfig = this.getValueHostConfig(valueHostName, true);
         if (vhConfig && (vhConfig as InputValueHostConfig).validatorConfigs) { 

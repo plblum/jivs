@@ -1,7 +1,7 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ValidationServices, assertValidFallbacks } from "../../src/Services/ValidationServices";
 import { MockCapturingLogger, MockValidationServices } from "../TestSupport/mocks";
-import { InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
+import { ValidatorFactory } from "../../src/ValueHosts/Validator";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
@@ -29,7 +29,7 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(() => x = testItem.messageTokenResolverService).toThrow(/MessageTokenResolverService/);
         expect(testItem.loggerService).toBeInstanceOf(ConsoleLoggerService);
         expect(testItem.valueHostFactory).toBeInstanceOf(ValueHostFactory);
-        expect(testItem.inputValidatorFactory).toBeInstanceOf(InputValidatorFactory);
+        expect(testItem.validatorFactory).toBeInstanceOf(ValidatorFactory);
         expect(testItem.textLocalizerService).toBeInstanceOf(TextLocalizerService);
     });
 });
@@ -97,11 +97,11 @@ describe('Replace factories and services', () => {
         testItem.valueHostFactory = replacement;
         expect(testItem.valueHostFactory).toBe(replacement);
     });    
-    test('Replace inputValidatorFactory', () => {
-        let replacement = new InputValidatorFactory();
+    test('Replace validatorFactory', () => {
+        let replacement = new ValidatorFactory();
         let testItem = new ValidationServices();
-        testItem.inputValidatorFactory = replacement;
-        expect(testItem.inputValidatorFactory).toBe(replacement);
+        testItem.validatorFactory = replacement;
+        expect(testItem.validatorFactory).toBe(replacement);
     });    
     test('Replace activeCultureID', () => {
         let replacement = 'fr';
@@ -126,19 +126,19 @@ describe('valueHostFactory property', () => {
     });
   
 });
-describe('inputValidatorFactory property', () => {
+describe('validatorFactory property', () => {
     test('Set and Get', () => {
         let testItem = new ValidationServices();
-        let factory = new InputValidatorFactory();
-        testItem.inputValidatorFactory = factory;
-        expect(testItem.inputValidatorFactory).toBe(factory);
-        expect(() => testItem.inputValidatorFactory = null!).toThrow();
+        let factory = new ValidatorFactory();
+        testItem.validatorFactory = factory;
+        expect(testItem.validatorFactory).toBe(factory);
+        expect(() => testItem.validatorFactory = null!).toThrow();
     });
     test('Get without Set throws', () => {
         let testItem = new ValidationServices();
         let x: any;
-        expect(() => x = testItem.inputValidatorFactory).not.toThrow();
-        expect(x).toBeInstanceOf(InputValidatorFactory);
+        expect(() => x = testItem.validatorFactory).not.toThrow();
+        expect(x).toBeInstanceOf(ValidatorFactory);
     });
   
 });

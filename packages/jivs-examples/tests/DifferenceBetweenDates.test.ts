@@ -1,6 +1,6 @@
 // Tests run the same cases demonstrated in the example source, ../src/DifferenceBetweenDates
 
-import { ValidateResult, ValidationResult, ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
+import { ValueHostValidateResult, ValidationResult, ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
 import { configureVMForDifferentBetweenDate } from "../src/DifferenceBetweenDates";
 import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
 import { MockCapturingLogger } from "@plblum/jivs-engine/tests/TestSupport/mocks";
@@ -16,7 +16,7 @@ describe('Difference between dates is less than 10', () => {
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
         expect(diffDays).toBe(0);
         let result = vm.validate();
-        let expected: Array<ValidateResult> = [
+        let expected: Array<ValueHostValidateResult> = [
             {
                 validationResult: ValidationResult.Valid,
                 issuesFound: null
@@ -31,7 +31,7 @@ describe('Difference between dates is less than 10', () => {
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
         expect(diffDays).toBe(9);
         let result = vm.validate();
-        let expected: Array<ValidateResult> = [
+        let expected: Array<ValueHostValidateResult> = [
             {
                 validationResult: ValidationResult.Valid,
                 issuesFound: null
@@ -46,7 +46,7 @@ describe('Difference between dates is less than 10', () => {
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
         expect(diffDays).toBe(10);
         let result = vm.validate();
-        let expected: Array<ValidateResult> = [
+        let expected: Array<ValueHostValidateResult> = [
             {
                 validationResult: ValidationResult.Invalid,
                 issuesFound:  [{
@@ -67,7 +67,7 @@ describe('Difference between dates is less than 10', () => {
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
         expect(diffDays).toBe(1);
         let result = vm.validate();
-        let expected: Array<ValidateResult> = [
+        let expected: Array<ValueHostValidateResult> = [
             {
                 validationResult: ValidationResult.Invalid,
                 issuesFound:  [{

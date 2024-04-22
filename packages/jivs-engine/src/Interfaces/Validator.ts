@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc InputValidator/ConcreteClasses!}
- * @module InputValidator/Types
+ * {@inheritDoc Validator/ConcreteClasses!}
+ * @module Validator/Types
  */
 import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditions';
 import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
@@ -18,7 +18,7 @@ import { IInputValueHost } from './InputValueHost';
  * allowing the system consumer to know how to deal with the data
  * of the ValueHost (save or not) and the UI to display the state.
  */
-export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNames {
+export interface IValidator extends IMessageTokenSource, IGatherValueHostNames {
     /**
      * Perform validation activity and provide the results including
      * whether there is an error (ValidationResult), fully formatted
@@ -27,7 +27,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
      * @returns Identifies the ConditionEvaluationResult.
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
-    validate(options: ValidateOptions): InputValidateResult | Promise<InputValidateResult>;
+    validate(options: ValidateOptions): ValidatorValidateResult | Promise<ValidatorValidateResult>;
 
     /**
      * Exposes the Condition behind the validator
@@ -36,7 +36,7 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
 
     /**
      * Provides the error code associated with this instance.
-     * It uses InputValidatorConfig.errorCode when assigned
+     * It uses ValidatorConfig.errorCode when assigned
      * and ConditionType when not assigned.
      */
     errorCode: string;
@@ -47,11 +47,11 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
     conditionType: string;
 
     /**
-     * Use to change the enabled option. It overrides the value from InputValidatorConfig.enabled.
+     * Use to change the enabled option. It overrides the value from ValidatorConfig.enabled.
      * Use case: the list of validators on InputValueHost might change while the form is active.
      * Add all possible cases to InputValueHost and change their enabled flag here when needed.
      * Also remember that you can use the enabler property on 
-     * InputValidatorConfig to automatically determine if the validator
+     * ValidatorConfig to automatically determine if the validator
      * should run or not. Enabler may not be ideal in some cases though.
      * @param enabled 
      */
@@ -59,28 +59,28 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
 
     /**
      * Use to change the errorMessage and/or errorMessagel10n values. 
-     * It overrides the values from InputValidatorConfig.errorMessage and errorMessagel10n.
+     * It overrides the values from ValidatorConfig.errorMessage and errorMessagel10n.
      * Use case: Business logic supplies a default values for errorMessage and errorMessagel10n which the UI needs to change.
-     * @param errorMessage  - If undefined, reverts to InputValidatorConfig.errorMessage.
+     * @param errorMessage  - If undefined, reverts to ValidatorConfig.errorMessage.
      * If null, does not make any changes.
-     * @param errorMessagel10n  - If undefined, reverts to InputValidatorConfig.errorMessagel10n.
+     * @param errorMessagel10n  - If undefined, reverts to ValidatorConfig.errorMessagel10n.
      * If null, does not make any changes.
      */
     setErrorMessage(errorMessage: string | undefined, errorMessagel10n?: string | undefined): void;
 
     /**
      * Use to change the summaryMessage and/or summaryMessagel10n values. 
-     * It overrides the values from InputValidatorConfig.summaryMessage and summaryMessagel10n.
+     * It overrides the values from ValidatorConfig.summaryMessage and summaryMessagel10n.
      * Use case: Business logic supplies a default values for summaryMessage and summaryMessagel10n which the UI needs to change.
-     * @param summaryMessage  - If undefined, reverts to InputValidatorConfig.summaryMessage.
+     * @param summaryMessage  - If undefined, reverts to ValidatorConfig.summaryMessage.
      * If null, does not make any changes.
-     * @param summaryMessagel10n  - If undefined, reverts to InputValidatorConfig.summaryMessagel10n.
+     * @param summaryMessagel10n  - If undefined, reverts to ValidatorConfig.summaryMessagel10n.
      * If null, does not make any changes.
      */
     setSummaryMessage(summaryMessage: string | undefined, summaryMessagel10n?: string | undefined): void;    
 
     /**
-     * Use to change the severity option. It overrides the value from InputValidatorConfig.severity.
+     * Use to change the severity option. It overrides the value from ValidatorConfig.severity.
      * Use case: Business logic supplies a default value for severity which the UI needs to change.
      * @param severity 
      */
@@ -91,9 +91,9 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
 /**
  * Just the data that is used to describe one validator assigned to a ValueHost.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to InputValidatorConfig.
- * This provides the backing data for each InputValidatorInfo.
- * When placed into the InputValidatorInfo, it is treated as immutable
+ * It should be generatable from JSON, and simply gets typed to ValidatorConfig.
+ * This provides the backing data for each ValidatorInfo.
+ * When placed into the ValidatorInfo, it is treated as immutable
  * and can be used as state in React.
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this. However, there are sometimes
@@ -101,10 +101,10 @@ export interface IInputValidator extends IMessageTokenSource, IGatherValueHostNa
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
  */
-export interface InputValidatorConfig {
+export interface ValidatorConfig {
     /**
      * Provides the error code associated with this instance.
-     * When unassigned, the InputValidator uses the ConditionType as the error code.
+     * When unassigned, the Validator uses the ConditionType as the error code.
      */
     errorCode?: string;
     
@@ -164,22 +164,22 @@ export interface InputValidatorConfig {
      * When false, validation is never run. This supersedes the Enabler too.
      * Values:
      * * true/false obviously.
-     * * undefined - tells the InputValidator to treat it as true. (Its value 
+     * * undefined - tells the Validator to treat it as true. (Its value 
      *   will not be updated as we want this to be immutable while the Config
      *   is assigned to the host.)
      * * function - Provide a function that will return true or false, 
-     *   given the InputValidator as a parameter.
+     *   given the Validator as a parameter.
      */
-    enabled?: undefined | boolean | ((host: IInputValidator) => boolean);
+    enabled?: undefined | boolean | ((host: IValidator) => boolean);
     /**
      * Resolves the Severity for when the Condition evaluates as NoMatch.
      * Values:
      * * ValidationSeverity itself. Recommended to set to Severe for Required and CanConvertToNativeDataTypeCondition.
-     * * Undefined - tells the InputValidator to treat it as Error.
+     * * Undefined - tells the Validator to treat it as Error.
      * * function - Provide a function that will return the ValidationSeverity, 
-     *   given the InputValidator as a parameter.
+     *   given the Validator as a parameter.
      */
-    severity?: undefined | ValidationSeverity | ((host: IInputValidator) => ValidationSeverity);
+    severity?: undefined | ValidationSeverity | ((host: IValidator) => ValidationSeverity);
 
     /**
      * The error message "template" that will appear on screen when the condition is NoMatch.
@@ -188,10 +188,10 @@ export interface InputValidatorConfig {
      * It should already be localized, except for the tokens.
      * It can contain HTML tags if the platform supports them. In that case,
      * be sure to use HTML encoded characters.
-     * The string shown to the actual user is stored in InputValidatorState.errorMessage.
+     * The string shown to the actual user is stored in ValidatorState.errorMessage.
      * Values:
      * * String - The error message with tokens and optional HTML tags.
-     * * function - Returns the error message, given the InputValidator,
+     * * function - Returns the error message, given the Validator,
      *   allowing you to replace or customize the message during validation.
      *   The function must return a string, although an empty string is valid.
      * When localization is setup in ErrorMessagel10n, the value can be set to ''
@@ -200,7 +200,7 @@ export interface InputValidatorConfig {
      * If you have setup defaults for error messages with TextLocalizerService,
      * leave this null to use the default. Any value here supersedes default error messages.
      */
-    errorMessage?: undefined | null | string | ((host: IInputValidator) => string);
+    errorMessage?: undefined | null | string | ((host: IValidator) => string);
 
     /**
      * Localization key for errorMessage. Its value will be matched to an entry
@@ -217,7 +217,7 @@ export interface InputValidatorConfig {
      * Values:
      * * undefined and null - use the errorMessage as the template.
      * * String - The error message with tokens and optional HTML tags.
-     * * function - Returns the error message, given the InputValidator,
+     * * function - Returns the error message, given the Validator,
      *   allowing you to replace or customize the message during validation.
      *   The function must return a string, although an empty string is valid.
      * When localization is setup in SummaryMessagel10n, the value can be set to ''
@@ -226,7 +226,7 @@ export interface InputValidatorConfig {
      * If you have setup defaults for error messages with TextLocalizerService,
      * leave this null to use the default. Any value here supersedes default error messages.
      */
-    summaryMessage?: undefined | null | string | ((host: IInputValidator) => string);
+    summaryMessage?: undefined | null | string | ((host: IValidator) => string);
 
     /**
      * Localization key for summaryMessage. Its value will be matched to an entry
@@ -240,20 +240,20 @@ export interface InputValidatorConfig {
     // /**
     //  * Handy way to allow users to enter known properties without getting ts errors.
     //  * However, they can improve things if they typecast to the appropriate
-    //  * inputValidator's Config.
+    //  * validator's Config.
     //  */
     // [propName: string]: any;    
 }
 
 /**
- * Function definition used with InputValidatorConfig.conditionCreator and enablerCreator.
+ * Function definition used with ValidatorConfig.conditionCreator and enablerCreator.
  */
-export type ConditionCreatorHandler = (requester: InputValidatorConfig) => ICondition | null;
+export type ConditionCreatorHandler = (requester: ValidatorConfig) => ICondition | null;
 
 /**
  * Result of the validate() function.
  */
-export interface InputValidateResult {
+export interface ValidatorValidateResult {
     /**
      * The result of validate()
      */
@@ -272,11 +272,11 @@ export interface InputValidateResult {
 }
 
 /**
- * Factory for generating InputValidator.
- * Most apps will use the standard InputValidator class.
+ * Factory for generating Validator.
+ * Most apps will use the standard Validator class.
  * This interface targets unit testing with mocks.
  */
-export interface IInputValidatorFactory {
-    create(valueHost: IInputValueHost, config: InputValidatorConfig): IInputValidator;
+export interface IValidatorFactory {
+    create(valueHost: IInputValueHost, config: ValidatorConfig): IValidator;
 }
 

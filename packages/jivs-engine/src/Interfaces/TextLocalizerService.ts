@@ -36,7 +36,7 @@ export interface ITextLocalizerService extends IServiceWithFallback<ITextLocaliz
     /**
      * Attempts to get the localized error message for the ErrorCode and optional DataTypeLookupKey
      * If dataTypeLookupKey is supplied and no match is found, it tries with just the ErrorCode.
-     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property
+     * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns The error message or null if not available.
      */
@@ -45,7 +45,7 @@ export interface ITextLocalizerService extends IServiceWithFallback<ITextLocaliz
     /**
      * Attempts to get the localized Summary error message for the ErrorCode and optional DataTypeLookupKey
      * If dataTypeLookupKey is supplied and no match is found, it tries with just the ErrorCode.
-     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property 
+     * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property 
      * @param dataTypeLookupKey 
      * @returns The Summary error message or null if not available.
      */

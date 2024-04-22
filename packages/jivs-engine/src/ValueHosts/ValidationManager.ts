@@ -10,7 +10,7 @@ import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type ValidateOptions, type ValidateResult, type BusinessLogicError, type IssueFound, ValidationResult } from '../Interfaces/Validation';
+import { type ValidateOptions, type ValueHostValidateResult, type BusinessLogicError, type IssueFound, ValidationResult } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from './InputValueHost';
@@ -28,8 +28,8 @@ import { FluentValidatorCollector } from './Fluent';
  * Configs are interfaces you use with plain objects to fashion them into 
  * ValidationManager's configuration. ValueHostConfig describes a ValueHost.
  * InputValueHostConfig describes an InputValueHost (which supports validation).
- * An InputValueHost takes InputValidatorConfigs to fashion its list of Validators.
- * An InputValidator takes various ConditionConfigs to fashion the specific 
+ * An InputValueHost takes ValidatorConfigs to fashion its list of Validators.
+ * An Validator takes various ConditionConfigs to fashion the specific 
  * validation rule.
  * 
  * ValidationManager's constructor takes a single parameter, but its a potent one:
@@ -40,7 +40,7 @@ import { FluentValidatorCollector } from './Fluent';
  * the Configuration object.
  * 
  * We recommend using your business logic to host the validation rules.
- * For that, you will need code that translates those rules into InputValidatorConfigs.
+ * For that, you will need code that translates those rules into ValidatorConfigs.
  * Try to keep validation rules separate from your UI's code.
  * 
  * All Configs are considered immutable. If you need to make a change, you can
@@ -357,13 +357,13 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * even if they are considered Valid.
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-     * @returns Array of ValidateResult with empty array if all are valid
+     * @returns Array of ValueHostValidateResult with empty array if all are valid
      */
-    public validate(options?: ValidateOptions): Array<ValidateResult> 
+    public validate(options?: ValidateOptions): Array<ValueHostValidateResult> 
     {
         if (!options)
             options = {};
-        let list: Array<ValidateResult> = [];
+        let list: Array<ValueHostValidateResult> = [];
 
         for (let vh of this.inputValueHost()) {
             let valResult = vh.validate(options);
