@@ -2,10 +2,10 @@ import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes
 import { UIPhase_Customize } from "../src/Config example";
 import { ICalcValueHost } from "@plblum/jivs-engine/src/Interfaces/CalcValueHost";
 import { IInputValueHost } from "@plblum/jivs-engine/src/Interfaces/InputValueHost";
-import { INonInputValueHost } from "@plblum/jivs-engine/src/Interfaces/NonInputValueHost";
+import { INonInputValueHost } from "@plblum/jivs-engine/src/Interfaces/UtilityValueHost";
 import { CalcValueHost } from "@plblum/jivs-engine/src/ValueHosts/CalcValueHost";
 import { InputValueHost } from "@plblum/jivs-engine/src/ValueHosts/InputValueHost";
-import { NonInputValueHost } from "@plblum/jivs-engine/src/ValueHosts/NonInputValueHost";
+import { NonInputValueHost } from "@plblum/jivs-engine/src/ValueHosts/UtilityValueHost";
 import { Validator } from "@plblum/jivs-engine/src/ValueHosts/Validator";
 import { IValidationManager } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
 

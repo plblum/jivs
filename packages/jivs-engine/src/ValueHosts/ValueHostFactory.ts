@@ -12,7 +12,7 @@ import { InputValueHostGenerator } from './InputValueHost';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
 import type { IValueHostsManager } from '../Interfaces/ValueHostResolver';
-import { NonInputValueHostGenerator } from './NonInputValueHost';
+import { NonInputValueHostGenerator } from './UtilityValueHost';
 import type { IValueHostFactory, IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { CalcValueHostGenerator } from './CalcValueHost';
 

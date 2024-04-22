@@ -1,7 +1,7 @@
-import { NonInputValueHostConfig, NonInputValueHostState, INonInputValueHost } from "../../src/Interfaces/NonInputValueHost";
+import { NonInputValueHostConfig, NonInputValueHostState, INonInputValueHost } from "../../src/Interfaces/UtilityValueHost";
 import { IGatherValueHostNames, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { NonInputValueHost, NonInputValueHostGenerator } from "../../src/ValueHosts/NonInputValueHost";
+import { NonInputValueHost, NonInputValueHostGenerator } from "../../src/ValueHosts/UtilityValueHost";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 
 describe('NonInputValueHost constructor', () => {

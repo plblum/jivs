@@ -3,7 +3,7 @@
  * @module ValueHosts/ConcreteClasses/NonInputValueHost
  */
 import { InputValueHostConfig } from '../Interfaces/InputValueHost';
-import { INonInputValueHost, NonInputValueHostConfig, NonInputValueHostState } from '../Interfaces/NonInputValueHost';
+import { INonInputValueHost, NonInputValueHostConfig, NonInputValueHostState } from '../Interfaces/UtilityValueHost';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostResolver';

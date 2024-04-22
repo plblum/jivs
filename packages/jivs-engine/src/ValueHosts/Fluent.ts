@@ -125,7 +125,7 @@
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
-import { NonInputValueHostConfig } from "../Interfaces/NonInputValueHost";
+import { NonInputValueHostConfig } from "../Interfaces/UtilityValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { EvaluateChildConditionResultsConfig } from '../Conditions/EvaluateChildConditionResultsBase';
 import { ValueHostName } from '../DataTypes/BasicTypes';
