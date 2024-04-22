@@ -5,8 +5,8 @@
  * These tools are applied to ValueHostBuilder class, which is what the developer
  * creates with the ValidatorManagerConfig that they are constructing.
  * With the following, assume 'let builder = new ValueHostsBuilder(vmConfig)'.
- * The user will start the fluent syntax with builder.input() or builder.nonInput().
- * Those will setup the configs for InputValueHost or NonInputValueHost
+ * The user will start the fluent syntax with builder.input() or builder.static().
+ * Those will setup the configs for InputValueHost or StaticValueHost
  * taking advantage of intellisense to expose the available properties
  * of the config, which may be a subset of the original.
  * 
@@ -16,18 +16,18 @@
  * 
  * `builder.input('valueHostName', 'datatype lookup key', { label: 'label' }).[chained validators];`
  * 
- * `builder.nonInput('valueHostName').[chained functions]`
+ * `builder.static('valueHostName').[chained functions]`
  * 
  *  With optional parameters
  * 
- * `builder.nonInput('valueHostName', 'datatype lookup key', { label: 'label' }).[chained builder functions];`
+ * `builder.static('valueHostName', 'datatype lookup key', { label: 'label' }).[chained builder functions];`
  * 
  *  `builder.calc('valueHostName', 'datatype lookup key', function callback).[chained builder functions];`
  * 
  * For example:
  * ```ts
  * let valueHostConfigs = [
- *   builder.nonInput('productVisible', LookupKey.Boolean),
+ *   builder.static('productVisible', LookupKey.Boolean),
  *   builder.input('productName', LookupKey.String, { label: 'Name' }).required().regExp('^\w[\s\w]*$')`,
  *   builder.input('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqual(0.0)`,
  *   builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice) // calcMaxPrice is a function declared elsewhere
@@ -47,7 +47,7 @@
  * the conditions to the InputValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
  * - StartFluent - Class that starts a fluent chain. Its methods start InputValueHost (input()),
- *   NonInputValueHost (nonInput()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
+ *   StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  * 
  * - FluentValidatorCollector - Class that supplies Conditions and Validators
  *   to the preceding InputValueHost. It is returned by builder.input() and each chained object that follows.
@@ -62,7 +62,7 @@
  * 
  * Fluent functions should look like this: 
  * @example
- * export type FluentRegExpConditionConfig = Omit<RegExpConditionConfig, 'type' | 'valueHostName' | 'expressionAsString' | 'expression' | 'ignoreCase'>;
+ * export type FluentRegExpConditionConfig = Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName' | 'expressionAsString' | 'expression' | 'ignoreCase'>;
  * 
  * function _genCDRegExp(
  *     expression: RegExp | string, ignoreCase?: boolean | null,
@@ -125,7 +125,7 @@
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
-import { NonInputValueHostConfig } from "../Interfaces/NonInputValueHost";
+import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { EvaluateChildConditionResultsConfig } from '../Conditions/EvaluateChildConditionResultsBase';
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -136,11 +136,11 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { ValidationManagerConfig } from '../Interfaces/ValidationManager';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ConditionType } from '../Conditions/ConditionTypes';
-import { resolveErrorCode } from './Validator';
+import { resolveErrorCode } from '../Validation/Validator';
 
 /**
  * Starts a fluent chain. Its methods start InputValueHost (input()),
- * NonInputValueHost (nonInput()), and a collection of Conditions (conditions()).
+ * StaticValueHost (static()), and a collection of Conditions (conditions()).
  * You access it through the global fluent() function
  */
 export class StartFluent
@@ -167,7 +167,7 @@ export class StartFluent
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire InputValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      */
     public input(config: FluentInputValueConfig): FluentValidatorCollector;
     // overload resolution
@@ -177,7 +177,7 @@ export class StartFluent
         
         if (typeof arg1 === 'object') {
             let config: InputValueHostConfig =
-                { ...arg1 as InputValueHostConfig, type: ValueHostType.Input };
+                { ...arg1 as InputValueHostConfig, valueHostType: ValueHostType.Input };
             if (!config.validatorConfigs)
                 config.validatorConfigs = [];
 
@@ -186,7 +186,7 @@ export class StartFluent
         if (typeof arg1 === 'string') {
 
             let config: InputValueHostConfig =
-                { type: ValueHostType.Input, name: arg1 } as InputValueHostConfig;
+                { valueHostType: ValueHostType.Input, name: arg1 } as InputValueHostConfig;
             if (dataType)
                 config.dataType = dataType;
             if (parameters)
@@ -200,29 +200,29 @@ export class StartFluent
         throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
     }    
     /**
-     * Fluent format to create a NonInputValueHostConfig.
+     * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a NonInputValueHostConfig.
+     * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
      */
-    nonInput(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig;
+    static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig;
     /**
-     * Fluent format to create a NonInputValueHostConfig.
+     * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param config - Supply the entire NonInputValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
+     * You can omit the valueHostType property.
      */
-    nonInput(config: Omit<NonInputValueHostConfig, 'type'>): NonInputValueHostConfig;
+    static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
     // overload resolution
-    nonInput(arg1: ValueHostName | NonInputValueHostConfig, dataType?: string | null, parameters?: FluentNonInputParameters): NonInputValueHostConfig
+    static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
     {
         this.assertFirstParameterValid(arg1);
         if (typeof arg1 === 'object')
-            return { ...arg1 as NonInputValueHostConfig, type: ValueHostType.NonInput };
+            return { ...arg1 as StaticValueHostConfig, valueHostType: ValueHostType.Static };
         if (typeof arg1 === 'string') {
 
-            let config: NonInputValueHostConfig = { type: ValueHostType.NonInput, name: arg1 };
+            let config: StaticValueHostConfig = { valueHostType: ValueHostType.Static, name: arg1 };
             if (dataType)
                 config.dataType = dataType;
             if (parameters)
@@ -262,19 +262,19 @@ export class StartFluent
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      */
-    calc(config: Omit<CalcValueHostConfig, 'type'>): CalcValueHostConfig;
+    calc(config: Omit<CalcValueHostConfig, 'conditionType'>): CalcValueHostConfig;
     // overload resolution
     calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
     {
         this.assertFirstParameterValid(arg1);
         if (typeof arg1 === 'object')
-            return { ...arg1 as CalcValueHostConfig, type: ValueHostType.Calc };
+            return { ...arg1 as CalcValueHostConfig, valueHostType: ValueHostType.Calc };
         if (typeof arg1 === 'string') {
             if (typeof calcFn !== 'function')
                 throw new CodingError('Must supply a calculation function');
-            let config: CalcValueHostConfig = { type: ValueHostType.Calc, name: arg1, calcFn: calcFn };
+            let config: CalcValueHostConfig = { valueHostType: ValueHostType.Calc, name: arg1, calcFn: calcFn };
             if (dataType)
                 config.dataType = dataType;
         
@@ -324,14 +324,14 @@ export function fluent(): StartFluent
 
 
 /**
- * For fluent configNonInput function.
+ * For fluent configStatic function.
  */
-export type FluentNonInputParameters = Omit<NonInputValueHostConfig, 'type' | 'name' | 'dataType'>;
+export type FluentStaticParameters = Omit<StaticValueHostConfig, 'conditionType' | 'name' | 'dataType'>;
 
 /**
  * For fluent configInput function.
  */
-export type FluentInputValueConfig = Omit<InputValueHostConfig, 'type' | 'validatorConfigs'>;
+export type FluentInputValueConfig = Omit<InputValueHostConfig, 'conditionType' | 'validatorConfigs'>;
 export type FluentInputParameters = Omit<FluentInputValueConfig, 'name' | 'dataType'>;
 /**
  * Targets fluent functions for conditions as their second parameter, hosting most of the 
@@ -443,7 +443,7 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
         if (conditionConfig)
             ivDesc.conditionConfig = { ...conditionConfig as ConditionConfig };
         if (conditionType && ivDesc.conditionConfig)
-            ivDesc.conditionConfig.type = conditionType;
+            ivDesc.conditionConfig.conditionType = conditionType;
         // prevent duplicate errorcodes
         let errorCode = resolveErrorCode(ivDesc);
         if (this.parentConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode))
@@ -505,7 +505,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
     {
         super();
         if (!parentConfig)
-            parentConfig = { conditionConfigs: [], type: 'TBD' };
+            parentConfig = { conditionConfigs: [], conditionType: 'TBD' };
         if (!parentConfig.conditionConfigs)
             parentConfig.conditionConfigs = [];
         this._parentConfig = parentConfig;
@@ -532,7 +532,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
     {
         assertNotNull(conditionConfig, 'conditionConfig');
         if (conditionType)
-            conditionConfig.type = conditionType;
+            conditionConfig.conditionType = conditionType;
         this.parentConfig.conditionConfigs!.push(conditionConfig as ConditionConfig);
     }
 }

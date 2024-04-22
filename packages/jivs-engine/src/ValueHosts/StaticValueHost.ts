@@ -1,9 +1,9 @@
 /**
- * {@inheritDoc NonInputValueHost}
- * @module ValueHosts/ConcreteClasses/NonInputValueHost
+ * {@inheritDoc StaticValueHost}
+ * @module ValueHosts/ConcreteClasses/StaticValueHost
  */
 import { InputValueHostConfig } from '../Interfaces/InputValueHost';
-import { INonInputValueHost, NonInputValueHostConfig, NonInputValueHostState } from '../Interfaces/NonInputValueHost';
+import { IStaticValueHost, StaticValueHostConfig, StaticValueHostState } from '../Interfaces/StaticValueHost';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostResolver';
@@ -12,7 +12,7 @@ import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 
 /**
  * ValueHost implementation that does not handle validation. (See InputValueHost for validation)
- * Use ValueHostConfig.type = "NonInput" for the ValidationManager to use this class.
+ * Use ValueHostConfig.valueHostType = "Static" for the ValidationManager to use this class.
  * 
  * Generally create these when:
  * - Expose a value from the UI that doesn't need validation, but its value is used by 
@@ -27,35 +27,35 @@ import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
  *   your input fields/elements to get their value from ValidationManager and upon change, provide
  *   the new values back.
  */
-export class NonInputValueHost extends ValueHostBase<NonInputValueHostConfig, NonInputValueHostState>
-    implements INonInputValueHost
+export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, StaticValueHostState>
+    implements IStaticValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, config: NonInputValueHostConfig, state: NonInputValueHostState)
+    constructor(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostState)
     {
         super(valueHostsManager, config, state);
     }
 }
 
 /**
- * Supports NonInputValueHost class. Used when the Config.type = ValueHostType.NonInput
+ * Supports StaticValueHost class. Used when the Config.valueHostType = ValueHostType.Static
  * or when the Type property is null/undefined and there are no InputValueHost specific
  * properties, like ValidationConfigs or InputValue.
  */
-export class NonInputValueHostGenerator extends ValueHostBaseGenerator {
+export class StaticValueHostGenerator extends ValueHostBaseGenerator {
 
     public canCreate(config: ValueHostConfig): boolean {
-        if (config.type != null)    // null/undefined
-            return config.type === ValueHostType.NonInput;
+        if (config.valueHostType != null)    // null/undefined
+            return config.valueHostType === ValueHostType.Static;
         let test = config as unknown as InputValueHostConfig;
         if (test.validatorConfigs === undefined)
             return true;
         return false;
     }
-    public create(valueHostsManager: IValueHostsManager, config: NonInputValueHostConfig, state: NonInputValueHostState): INonInputValueHost {
-        return new NonInputValueHost(valueHostsManager, config, state);
+    public create(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostState): IStaticValueHost {
+        return new StaticValueHost(valueHostsManager, config, state);
     }
 
-    public cleanupState(state: NonInputValueHostState, config: NonInputValueHostConfig): void {
+    public cleanupState(state: StaticValueHostState, config: StaticValueHostConfig): void {
         // nothing needed.
     }
 }

@@ -247,7 +247,7 @@ export function enableFluent(): void {
 function dataTypeCheck(
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
-// no ConditionConfig parameter because without type and valueHostName, it will always be empty    
+// no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty    
     return finishFluentValidatorCollector(this,
         ConditionType.DataTypeCheck, _genCDDataTypeCheck(),
         errorMessage, validatorParameters);
@@ -265,7 +265,7 @@ function requireText(
 function notNull(
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
-    // no ConditionConfig parameter because without type and valueHostName, it will always be empty        
+    // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty        
     return finishFluentValidatorCollector(this,
         ConditionType.NotNull, _genDCNotNull(),
         errorMessage, validatorParameters);
@@ -407,7 +407,7 @@ function stringLength(
     conditionConfig?: FluentStringLengthConditionConfig | null,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
-// no ConditionConfig parameter because without type, valueHostName, minimum and maximum, it will always be empty        
+// no ConditionConfig parameter because without conditionType, valueHostName, minimum and maximum, it will always be empty        
     return finishFluentValidatorCollector(this,
         ConditionType.StringLength, _genDCStringLength(maximum, conditionConfig),
         errorMessage, validatorParameters);

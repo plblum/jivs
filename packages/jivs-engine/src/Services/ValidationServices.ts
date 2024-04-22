@@ -15,7 +15,7 @@ import type { IValidatorFactory } from '../Interfaces/Validator';
 import { IServiceWithFallback, ServiceName, toIServicesAccessor, type IValidationServices } from '../Interfaces/ValidationServices';
 import type { IConditionFactory } from '../Interfaces/Conditions';
 import { IValueHostFactory } from '../Interfaces/ValueHost';
-import { ValidatorFactory } from '../ValueHosts/Validator';
+import { ValidatorFactory } from '../Validation/Validator';
 import { ValueHostFactory, registerStandardValueHostGenerators } from '../ValueHosts/ValueHostFactory';
 import { ConsoleLoggerService } from './ConsoleLoggerService';
 import { ITextLocalizerService } from '../Interfaces/TextLocalizerService';

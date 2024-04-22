@@ -25,6 +25,7 @@ import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
+import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 
 /**
  * An IValidator implementation that represents a single validator 
@@ -574,12 +575,42 @@ export function createIssueFound(valueHost: IValueHost,
 //#region Factory
 
 /**
- * ValidatorFactory creates the appropriate IValidator class
+ * ValidatorFactory creates the appropriate IValidator class.
+ * It supports the built-in Validator class when ValidatorConfig.validatorType=null/undefined.
  */
 export class ValidatorFactory implements IValidatorFactory {
     public create(valueHost: IInputValueHost, config: ValidatorConfig): IValidator {
-        return new Validator(valueHost, config);
+        if (config.validatorType == null)   // null or undefined
+            return new Validator(valueHost, config);
+        let fn = this._map.get(config.validatorType);
+        if (fn)
+            return fn(config) as IValidator;
+        throw new Error(`ValidationType not supported: ${config.validatorType}`);        
     }
+   // user supplies JSON string or object implementing ValidatorConfig
+    // and it returns an instance of IValidator.
+
+    private readonly _map = new NameToFunctionMapper<ValidatorConfig, IValidator>();
+
+    /**
+     * Add or replace a function to create an instance of the Validator
+     * given a ValidatorConfig.
+     * @param validatorType - Unique way to select the function. Uses ValidatorConfig.validatorType.
+     * @param fn - Expected to create an instance of a Validator.
+     */
+    public register<TConfig extends ValidatorConfig>(validatorType: string,
+        fn: (config: TConfig) => IValidator): void {
+        this._map.register(validatorType, fn as any);
+    }
+
+    /**
+     * Utility to determine if a ValidatorType has been registered.
+     * @param validatorType 
+     * @returns 
+     */
+    public isRegistered(validatorType: string): boolean {
+        return this._map.get(validatorType) !== undefined;
+    }    
 }
 
 
@@ -595,5 +626,5 @@ export class ValidatorFactory implements IValidatorFactory {
  */
 export function resolveErrorCode(ivConfig: ValidatorConfig): string
 {
-    return ivConfig.errorCode ?? ivConfig.conditionConfig?.type ?? ConditionType.Unknown;
+    return ivConfig.errorCode ?? ivConfig.conditionConfig?.conditionType ?? ConditionType.Unknown;
 }

@@ -29,7 +29,7 @@ describe('dataTypeCheck on fluent().input', () => {
         let testItem = fluent().input('Field1').dataTypeCheck();
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
-                type: ConditionType.DataTypeCheck
+                conditionType: ConditionType.DataTypeCheck
             }
         });
     });
@@ -38,7 +38,7 @@ describe('dataTypeCheck on fluent().input', () => {
         let testItem = fluent().input('Field1').dataTypeCheck('Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
-                type: ConditionType.DataTypeCheck
+                conditionType: ConditionType.DataTypeCheck
             },
             errorMessage: 'Error'
         });
@@ -48,7 +48,7 @@ describe('dataTypeCheck on fluent().input', () => {
         let testItem = fluent().input('Field1').dataTypeCheck('Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
-                type: ConditionType.DataTypeCheck
+                conditionType: ConditionType.DataTypeCheck
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -59,7 +59,7 @@ describe('dataTypeCheck on fluent().input', () => {
         let testItem = fluent().input('Field1').dataTypeCheck(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
-                type: ConditionType.DataTypeCheck
+                conditionType: ConditionType.DataTypeCheck
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -70,7 +70,7 @@ describe('dataTypeCheck on fluent().input', () => {
         let testItem = fluent().input('Field1').dataTypeCheck('FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
-                type: ConditionType.DataTypeCheck
+                conditionType: ConditionType.DataTypeCheck
             },
             errorMessage: 'FirstError'
         });
@@ -83,7 +83,7 @@ describe('regExp on fluent().input', () => {
         let testItem = fluent().input('Field1').regExp('\\d');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp,
+                conditionType: ConditionType.RegExp,
                 expressionAsString: '\\d'
             }
         });
@@ -93,7 +93,7 @@ describe('regExp on fluent().input', () => {
         let testItem = fluent().input('Field1').regExp(/\d/i);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp,
+                conditionType: ConditionType.RegExp,
                 expression: /\d/i
             }
         });
@@ -103,7 +103,7 @@ describe('regExp on fluent().input', () => {
         let testItem = fluent().input('Field1').regExp('\\d', true);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp,
+                conditionType: ConditionType.RegExp,
                 expressionAsString: '\\d',
                 ignoreCase: true
             }
@@ -114,7 +114,7 @@ describe('regExp on fluent().input', () => {
         let testItem = fluent().input('Field1').regExp('\\d', false);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp,
+                conditionType: ConditionType.RegExp,
                 expressionAsString: '\\d',
                 ignoreCase: false
             }
@@ -125,7 +125,7 @@ describe('regExp on fluent().input', () => {
         let testItem = fluent().input('Field1').regExp('\\d', null, { not: true });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp,
+                conditionType: ConditionType.RegExp,
                 expressionAsString: '\\d',
                 not: true
             }
@@ -136,7 +136,7 @@ describe('regExp on fluent().input', () => {
         let testItem = fluent().input('Field1').regExp(null, null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp
+                conditionType: ConditionType.RegExp
             },
             errorMessage: 'Error'
         });
@@ -146,7 +146,7 @@ describe('regExp on fluent().input', () => {
         let testItem = fluent().input('Field1').regExp(null, null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp
+                conditionType: ConditionType.RegExp
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -157,7 +157,7 @@ describe('regExp on fluent().input', () => {
         let testItem = fluent().input('Field1').regExp(null, null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp
+                conditionType: ConditionType.RegExp
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -168,7 +168,7 @@ describe('regExp on fluent().input', () => {
         let testItem = fluent().input('Field1').regExp(null, null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp
+                conditionType: ConditionType.RegExp
             },
             errorMessage: 'FirstError'
         });
@@ -181,7 +181,7 @@ describe('range on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).range(1, 4);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
-                type: ConditionType.Range,
+                conditionType: ConditionType.Range,
                 minimum: 1,
                 maximum: 4
             }
@@ -193,7 +193,7 @@ describe('range on fluent().input', () => {
         let testItem = fluent().input('Field1').range(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
-                type: ConditionType.Range,
+                conditionType: ConditionType.Range,
                 minimum: 1
             }
         });
@@ -203,7 +203,7 @@ describe('range on fluent().input', () => {
         let testItem = fluent().input('Field1').range(null, 4);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
-                type: ConditionType.Range,
+                conditionType: ConditionType.Range,
                 maximum: 4
             }
         });
@@ -214,7 +214,7 @@ describe('range on fluent().input', () => {
         let testItem = fluent().input('Field1').range(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
-                type: ConditionType.Range
+                conditionType: ConditionType.Range
             },
             errorMessage: 'Error'
         });
@@ -224,7 +224,7 @@ describe('range on fluent().input', () => {
         let testItem = fluent().input('Field1').range(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
-                type: ConditionType.Range
+                conditionType: ConditionType.Range
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -235,7 +235,7 @@ describe('range on fluent().input', () => {
         let testItem = fluent().input('Field1').range(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
-                type: ConditionType.Range
+                conditionType: ConditionType.Range
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -246,7 +246,7 @@ describe('range on fluent().input', () => {
         let testItem = fluent().input('Field1').range(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
-                type: ConditionType.Range
+                conditionType: ConditionType.Range
             },
             errorMessage: 'FirstError'
         });
@@ -259,7 +259,7 @@ describe('equalToValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).equalToValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
-                type: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualToValue,
                 secondValue: 1
             }
         });
@@ -269,7 +269,7 @@ describe('equalToValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).equalToValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
-                type: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualToValue,
                 secondValue: 1
             }
         });
@@ -279,7 +279,7 @@ describe('equalToValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).equalToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
-                type: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualToValue,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -291,7 +291,7 @@ describe('equalToValue on fluent().input', () => {
         let testItem = fluent().input('Field1').equalToValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
-                type: ConditionType.EqualToValue
+                conditionType: ConditionType.EqualToValue
             },
             errorMessage: 'Error'
         });
@@ -301,7 +301,7 @@ describe('equalToValue on fluent().input', () => {
         let testItem = fluent().input('Field1').equalToValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
-                type: ConditionType.EqualToValue
+                conditionType: ConditionType.EqualToValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -312,7 +312,7 @@ describe('equalToValue on fluent().input', () => {
         let testItem = fluent().input('Field1').equalToValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
-                type: ConditionType.EqualToValue
+                conditionType: ConditionType.EqualToValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -323,7 +323,7 @@ describe('equalToValue on fluent().input', () => {
         let testItem = fluent().input('Field1').equalToValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
-                type: ConditionType.EqualToValue
+                conditionType: ConditionType.EqualToValue
             },
             errorMessage: 'FirstError'
         });
@@ -335,7 +335,7 @@ describe('equalTo on fluent().input', () => {
         let testItem = fluent().input('Field1').equalTo('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
-                type: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
             }
         });
@@ -346,7 +346,7 @@ describe('equalTo on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).equalTo('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
-                type: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
             }
         });
@@ -356,7 +356,7 @@ describe('equalTo on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).equalTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
-                type: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -368,7 +368,7 @@ describe('equalTo on fluent().input', () => {
         let testItem = fluent().input('Field1').equalTo('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
-                type: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error'
@@ -379,7 +379,7 @@ describe('equalTo on fluent().input', () => {
         let testItem = fluent().input('Field1').equalTo('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
-                type: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -391,7 +391,7 @@ describe('equalTo on fluent().input', () => {
         let testItem = fluent().input('Field1').equalTo('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
-                type: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -403,7 +403,7 @@ describe('equalTo on fluent().input', () => {
         let testItem = fluent().input('Field1').equalTo('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
-                type: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'FirstError'
@@ -417,7 +417,7 @@ describe('notEqualToValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).notEqualToValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
-                type: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
             }
         });
@@ -427,7 +427,7 @@ describe('notEqualToValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).notEqualToValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
-                type: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1
             }
         });
@@ -437,7 +437,7 @@ describe('notEqualToValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).notEqualToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
-                type: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualToValue,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -449,7 +449,7 @@ describe('notEqualToValue on fluent().input', () => {
         let testItem = fluent().input('Field1').notEqualToValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
-                type: ConditionType.NotEqualToValue
+                conditionType: ConditionType.NotEqualToValue
             },
             errorMessage: 'Error'
         });
@@ -459,7 +459,7 @@ describe('notEqualToValue on fluent().input', () => {
         let testItem = fluent().input('Field1').notEqualToValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
-                type: ConditionType.NotEqualToValue
+                conditionType: ConditionType.NotEqualToValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -470,7 +470,7 @@ describe('notEqualToValue on fluent().input', () => {
         let testItem = fluent().input('Field1').notEqualToValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
-                type: ConditionType.NotEqualToValue
+                conditionType: ConditionType.NotEqualToValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -481,7 +481,7 @@ describe('notEqualToValue on fluent().input', () => {
         let testItem = fluent().input('Field1').notEqualToValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
-                type: ConditionType.NotEqualToValue
+                conditionType: ConditionType.NotEqualToValue
             },
             errorMessage: 'FirstError'
         });
@@ -493,7 +493,7 @@ describe('notEqualTo on fluent().input', () => {
         let testItem = fluent().input('Field1').notEqualTo('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
-                type: ConditionType.NotEqualTo,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
             }
         });
@@ -504,7 +504,7 @@ describe('notEqualTo on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).notEqualTo('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
-                type: ConditionType.NotEqualTo,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
             }
         });
@@ -514,7 +514,7 @@ describe('notEqualTo on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).notEqualTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
-                type: ConditionType.NotEqualTo,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -526,7 +526,7 @@ describe('notEqualTo on fluent().input', () => {
         let testItem = fluent().input('Field1').notEqualTo('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
-                type: ConditionType.NotEqualTo,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error'
@@ -537,7 +537,7 @@ describe('notEqualTo on fluent().input', () => {
         let testItem = fluent().input('Field1').notEqualTo('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
-                type: ConditionType.NotEqualTo,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -549,7 +549,7 @@ describe('notEqualTo on fluent().input', () => {
         let testItem = fluent().input('Field1').notEqualTo('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
-                type: ConditionType.NotEqualTo,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -561,7 +561,7 @@ describe('notEqualTo on fluent().input', () => {
         let testItem = fluent().input('Field1').notEqualTo('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
-                type: ConditionType.NotEqualTo,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'FirstError'
@@ -574,7 +574,7 @@ describe('lessThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThanValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
-                type: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThanValue,
                 secondValue: 1
             }
         });
@@ -584,7 +584,7 @@ describe('lessThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).ltValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
-                type: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThanValue,
                 secondValue: 1
             }
         });
@@ -595,7 +595,7 @@ describe('lessThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThanValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
-                type: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThanValue,
                 secondValue: 1
             }
         });
@@ -605,7 +605,7 @@ describe('lessThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
-                type: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThanValue,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -617,7 +617,7 @@ describe('lessThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
-                type: ConditionType.LessThanValue
+                conditionType: ConditionType.LessThanValue
             },
             errorMessage: 'Error'
         });
@@ -627,7 +627,7 @@ describe('lessThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
-                type: ConditionType.LessThanValue
+                conditionType: ConditionType.LessThanValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -638,7 +638,7 @@ describe('lessThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
-                type: ConditionType.LessThanValue
+                conditionType: ConditionType.LessThanValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -649,7 +649,7 @@ describe('lessThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
-                type: ConditionType.LessThanValue
+                conditionType: ConditionType.LessThanValue
             },
             errorMessage: 'FirstError'
         });
@@ -661,7 +661,7 @@ describe('lessThan on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThan('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
-                type: ConditionType.LessThan,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             }
         });
@@ -671,7 +671,7 @@ describe('lessThan on fluent().input', () => {
         let testItem = fluent().input('Field1').lt('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
-                type: ConditionType.LessThan,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             }
         });
@@ -681,7 +681,7 @@ describe('lessThan on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThan('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
-                type: ConditionType.LessThan,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             }
         });
@@ -691,7 +691,7 @@ describe('lessThan on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
-                type: ConditionType.LessThan,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -703,7 +703,7 @@ describe('lessThan on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThan('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
-                type: ConditionType.LessThan,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error'
@@ -714,7 +714,7 @@ describe('lessThan on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThan('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
-                type: ConditionType.LessThan,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -726,7 +726,7 @@ describe('lessThan on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThan('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
-                type: ConditionType.LessThan,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -738,7 +738,7 @@ describe('lessThan on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThan('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
-                type: ConditionType.LessThan,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'FirstError'
@@ -751,7 +751,7 @@ describe('lessThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThanOrEqualValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
-                type: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
             }
         });
@@ -761,7 +761,7 @@ describe('lessThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lteValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
-                type: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
             }
         });
@@ -771,7 +771,7 @@ describe('lessThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
-                type: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1
             }
         });
@@ -781,7 +781,7 @@ describe('lessThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
-                type: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqualValue,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -793,7 +793,7 @@ describe('lessThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanOrEqualValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
-                type: ConditionType.LessThanOrEqualValue
+                conditionType: ConditionType.LessThanOrEqualValue
             },
             errorMessage: 'Error'
         });
@@ -803,7 +803,7 @@ describe('lessThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanOrEqualValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
-                type: ConditionType.LessThanOrEqualValue
+                conditionType: ConditionType.LessThanOrEqualValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -814,7 +814,7 @@ describe('lessThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanOrEqualValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
-                type: ConditionType.LessThanOrEqualValue
+                conditionType: ConditionType.LessThanOrEqualValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -825,7 +825,7 @@ describe('lessThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanOrEqualValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
-                type: ConditionType.LessThanOrEqualValue
+                conditionType: ConditionType.LessThanOrEqualValue
             },
             errorMessage: 'FirstError'
         });
@@ -837,7 +837,7 @@ describe('lessThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanOrEqual('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
-                type: ConditionType.LessThanOrEqual,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             }
         });
@@ -847,7 +847,7 @@ describe('lessThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').lte('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
-                type: ConditionType.LessThanOrEqual,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             }
         });
@@ -859,7 +859,7 @@ describe('lessThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThanOrEqual('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
-                type: ConditionType.LessThanOrEqual,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             }
         });
@@ -869,7 +869,7 @@ describe('lessThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).lessThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
-                type: ConditionType.LessThanOrEqual,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -881,7 +881,7 @@ describe('lessThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanOrEqual('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
-                type: ConditionType.LessThanOrEqual,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error'
@@ -892,7 +892,7 @@ describe('lessThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanOrEqual('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
-                type: ConditionType.LessThanOrEqual,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -904,7 +904,7 @@ describe('lessThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanOrEqual('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
-                type: ConditionType.LessThanOrEqual,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -916,7 +916,7 @@ describe('lessThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').lessThanOrEqual('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
-                type: ConditionType.LessThanOrEqual,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'FirstError'
@@ -931,7 +931,7 @@ describe('greaterThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThanValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
-                type: ConditionType.GreaterThanValue,
+                conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
             }
         });
@@ -941,7 +941,7 @@ describe('greaterThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).gtValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
-                type: ConditionType.GreaterThanValue,
+                conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
             }
         });
@@ -952,7 +952,7 @@ describe('greaterThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThanValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
-                type: ConditionType.GreaterThanValue,
+                conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1
             }
         });
@@ -962,7 +962,7 @@ describe('greaterThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
-                type: ConditionType.GreaterThanValue,
+                conditionType: ConditionType.GreaterThanValue,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -974,7 +974,7 @@ describe('greaterThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
-                type: ConditionType.GreaterThanValue
+                conditionType: ConditionType.GreaterThanValue
             },
             errorMessage: 'Error'
         });
@@ -984,7 +984,7 @@ describe('greaterThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
-                type: ConditionType.GreaterThanValue
+                conditionType: ConditionType.GreaterThanValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -995,7 +995,7 @@ describe('greaterThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
-                type: ConditionType.GreaterThanValue
+                conditionType: ConditionType.GreaterThanValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -1006,7 +1006,7 @@ describe('greaterThanValue on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
-                type: ConditionType.GreaterThanValue
+                conditionType: ConditionType.GreaterThanValue
             },
             errorMessage: 'FirstError'
         });
@@ -1018,7 +1018,7 @@ describe('greaterThan on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThan('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
-                type: ConditionType.GreaterThan,
+                conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
             }
         });
@@ -1028,7 +1028,7 @@ describe('greaterThan on fluent().input', () => {
         let testItem = fluent().input('Field1').gt('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
-                type: ConditionType.GreaterThan,
+                conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
             }
         });
@@ -1039,7 +1039,7 @@ describe('greaterThan on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThan('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
-                type: ConditionType.GreaterThan,
+                conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
             }
         });
@@ -1049,7 +1049,7 @@ describe('greaterThan on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
-                type: ConditionType.GreaterThan,
+                conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -1061,7 +1061,7 @@ describe('greaterThan on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThan('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
-                type: ConditionType.GreaterThan,
+                conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error'
@@ -1072,7 +1072,7 @@ describe('greaterThan on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThan('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
-                type: ConditionType.GreaterThan,
+                conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -1084,7 +1084,7 @@ describe('greaterThan on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThan('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
-                type: ConditionType.GreaterThan,
+                conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -1096,7 +1096,7 @@ describe('greaterThan on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThan('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
-                type: ConditionType.GreaterThan,
+                conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'FirstError'
@@ -1109,7 +1109,7 @@ describe('greaterThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThanOrEqualValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
-                type: ConditionType.GreaterThanOrEqualValue,
+                conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
             }
         });
@@ -1119,7 +1119,7 @@ describe('greaterThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).gteValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
-                type: ConditionType.GreaterThanOrEqualValue,
+                conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
             }
         });
@@ -1129,7 +1129,7 @@ describe('greaterThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
-                type: ConditionType.GreaterThanOrEqualValue,
+                conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1
             }
         });
@@ -1139,7 +1139,7 @@ describe('greaterThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
-                type: ConditionType.GreaterThanOrEqualValue,
+                conditionType: ConditionType.GreaterThanOrEqualValue,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -1151,7 +1151,7 @@ describe('greaterThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqualValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
-                type: ConditionType.GreaterThanOrEqualValue
+                conditionType: ConditionType.GreaterThanOrEqualValue
             },
             errorMessage: 'Error'
         });
@@ -1161,7 +1161,7 @@ describe('greaterThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqualValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
-                type: ConditionType.GreaterThanOrEqualValue
+                conditionType: ConditionType.GreaterThanOrEqualValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -1172,7 +1172,7 @@ describe('greaterThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqualValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
-                type: ConditionType.GreaterThanOrEqualValue
+                conditionType: ConditionType.GreaterThanOrEqualValue
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -1183,7 +1183,7 @@ describe('greaterThanOrEqualValue on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqualValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
-                type: ConditionType.GreaterThanOrEqualValue
+                conditionType: ConditionType.GreaterThanOrEqualValue
             },
             errorMessage: 'FirstError'
         });
@@ -1195,7 +1195,7 @@ describe('greaterThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqual('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
-                type: ConditionType.GreaterThanOrEqual,
+                conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
             }
         });
@@ -1205,7 +1205,7 @@ describe('greaterThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqual('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
-                type: ConditionType.GreaterThanOrEqual,
+                conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
             }
         });
@@ -1216,7 +1216,7 @@ describe('greaterThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThanOrEqual('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
-                type: ConditionType.GreaterThanOrEqual,
+                conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
             }
         });
@@ -1226,7 +1226,7 @@ describe('greaterThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1', LookupKey.Integer).greaterThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
-                type: ConditionType.GreaterThanOrEqual,
+                conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -1238,7 +1238,7 @@ describe('greaterThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqual('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
-                type: ConditionType.GreaterThanOrEqual,
+                conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error'
@@ -1249,7 +1249,7 @@ describe('greaterThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqual('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
-                type: ConditionType.GreaterThanOrEqual,
+                conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -1261,7 +1261,7 @@ describe('greaterThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqual('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
-                type: ConditionType.GreaterThanOrEqual,
+                conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'Error',
@@ -1273,7 +1273,7 @@ describe('greaterThanOrEqual on fluent().input', () => {
         let testItem = fluent().input('Field1').greaterThanOrEqual('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
-                type: ConditionType.GreaterThanOrEqual,
+                conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
             },
             errorMessage: 'FirstError'
@@ -1287,7 +1287,7 @@ describe('stringLength on fluent().input', () => {
         let testItem = fluent().input('Field1').stringLength(4);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
-                type: ConditionType.StringLength,
+                conditionType: ConditionType.StringLength,
                 maximum: 4
             }
         });
@@ -1298,7 +1298,7 @@ describe('stringLength on fluent().input', () => {
         let testItem = fluent().input('Field1').stringLength(4, { minimum: 1 });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
-                type: ConditionType.StringLength,
+                conditionType: ConditionType.StringLength,
                 maximum: 4,
                 minimum: 1
             }
@@ -1310,7 +1310,7 @@ describe('stringLength on fluent().input', () => {
         let testItem = fluent().input('Field1').stringLength(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
-                type: ConditionType.StringLength
+                conditionType: ConditionType.StringLength
             },
             errorMessage: 'Error'
         });
@@ -1320,7 +1320,7 @@ describe('stringLength on fluent().input', () => {
         let testItem = fluent().input('Field1').stringLength(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
-                type: ConditionType.StringLength
+                conditionType: ConditionType.StringLength
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -1331,7 +1331,7 @@ describe('stringLength on fluent().input', () => {
         let testItem = fluent().input('Field1').stringLength(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
-                type: ConditionType.StringLength
+                conditionType: ConditionType.StringLength
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -1342,7 +1342,7 @@ describe('stringLength on fluent().input', () => {
         let testItem = fluent().input('Field1').stringLength(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
-                type: ConditionType.StringLength
+                conditionType: ConditionType.StringLength
             },
             errorMessage: 'FirstError'
         });
@@ -1355,7 +1355,7 @@ describe('requireText on fluent().input', () => {
         let testItem = fluent().input('Field1').requireText();
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             }
         });
     });
@@ -1365,7 +1365,7 @@ describe('requireText on fluent().input', () => {
         let testItem = fluent().input('Field1').requireText({ nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
-                type: ConditionType.RequireText,
+                conditionType: ConditionType.RequireText,
                 nullValueResult: ConditionEvaluateResult.NoMatch
             }
         });
@@ -1376,7 +1376,7 @@ describe('requireText on fluent().input', () => {
         let testItem = fluent().input('Field1').requireText(null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             },
             errorMessage: 'Error'
         });
@@ -1386,7 +1386,7 @@ describe('requireText on fluent().input', () => {
         let testItem = fluent().input('Field1').requireText(null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -1397,7 +1397,7 @@ describe('requireText on fluent().input', () => {
         let testItem = fluent().input('Field1').requireText(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -1408,7 +1408,7 @@ describe('requireText on fluent().input', () => {
         let testItem = fluent().input('Field1').requireText(null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             },
             errorMessage: 'FirstError'
         });
@@ -1420,7 +1420,7 @@ describe('notNull on fluent().input', () => {
         let testItem = fluent().input('Field1').notNull();
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
-                type: ConditionType.NotNull
+                conditionType: ConditionType.NotNull
             }
         });
     });
@@ -1430,7 +1430,7 @@ describe('notNull on fluent().input', () => {
         let testItem = fluent().input('Field1').notNull('Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
-                type: ConditionType.NotNull
+                conditionType: ConditionType.NotNull
             },
             errorMessage: 'Error'
         });
@@ -1440,7 +1440,7 @@ describe('notNull on fluent().input', () => {
         let testItem = fluent().input('Field1').notNull('Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
-                type: ConditionType.NotNull
+                conditionType: ConditionType.NotNull
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -1451,7 +1451,7 @@ describe('notNull on fluent().input', () => {
         let testItem = fluent().input('Field1').notNull(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
-                type: ConditionType.NotNull
+                conditionType: ConditionType.NotNull
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -1462,7 +1462,7 @@ describe('notNull on fluent().input', () => {
         let testItem = fluent().input('Field1').notNull('FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
-                type: ConditionType.NotNull
+                conditionType: ConditionType.NotNull
             },
             errorMessage: 'FirstError'
         });
@@ -1475,7 +1475,7 @@ describe('all on fluent().input', () => {
         let testItem = fluent().input('Field1').all(fluent().conditions());
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
-                type: ConditionType.All,
+                conditionType: ConditionType.All,
                 conditionConfigs: []
             }
         });
@@ -1485,13 +1485,13 @@ describe('all on fluent().input', () => {
         let testItem = fluent().input('Field1').all(fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
-                type: ConditionType.All,
+                conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             }
@@ -1503,13 +1503,13 @@ describe('all on fluent().input', () => {
         let testItem = fluent().input('Field1').all(fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
-                type: ConditionType.All,
+                conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1521,13 +1521,13 @@ describe('all on fluent().input', () => {
         let testItem = fluent().input('Field1').all(fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
-                type: ConditionType.All,
+                conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1540,7 +1540,7 @@ describe('all on fluent().input', () => {
         let testItem = fluent().input('Field1').all(fluent().conditions(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
-                type: ConditionType.All,
+                conditionType: ConditionType.All,
                 conditionConfigs: []
             },
             errorMessage: 'Error',
@@ -1552,7 +1552,7 @@ describe('all on fluent().input', () => {
         let testItem = fluent().input('Field1').all(fluent().conditions(), 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
-                type: ConditionType.All,
+                conditionType: ConditionType.All,
                 conditionConfigs: []
             },
             errorMessage: 'FirstError'
@@ -1565,7 +1565,7 @@ describe('any on fluent().input', () => {
         let testItem = fluent().input('Field1').any(fluent().conditions());
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
-                type: ConditionType.Any,
+                conditionType: ConditionType.Any,
                 conditionConfigs: []
             }
         });
@@ -1575,13 +1575,13 @@ describe('any on fluent().input', () => {
         let testItem = fluent().input('Field1').any(fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
-                type: ConditionType.Any,
+                conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             }
@@ -1593,13 +1593,13 @@ describe('any on fluent().input', () => {
         let testItem = fluent().input('Field1').any(fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
-                type: ConditionType.Any,
+                conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1611,13 +1611,13 @@ describe('any on fluent().input', () => {
         let testItem = fluent().input('Field1').any(fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
-                type: ConditionType.Any,
+                conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1630,7 +1630,7 @@ describe('any on fluent().input', () => {
         let testItem = fluent().input('Field1').any(fluent().conditions(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
-                type: ConditionType.Any,
+                conditionType: ConditionType.Any,
                 conditionConfigs: []
             },
             errorMessage: 'Error',
@@ -1642,7 +1642,7 @@ describe('any on fluent().input', () => {
         let testItem = fluent().input('Field1').any(fluent().conditions(), 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
-                type: ConditionType.Any,
+                conditionType: ConditionType.Any,
                 conditionConfigs: []
             },
             errorMessage: 'FirstError'
@@ -1656,7 +1656,7 @@ describe('countMatches on fluent().input', () => {
         let testItem = fluent().input('Field1').countMatches(1, 2, fluent().conditions());
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 minimum: 1,
                 maximum: 2,
                 conditionConfigs: []
@@ -1668,7 +1668,7 @@ describe('countMatches on fluent().input', () => {
         let testItem = fluent().input('Field1').countMatches(1, null, fluent().conditions());
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 minimum: 1,
                 conditionConfigs: []
             }
@@ -1679,7 +1679,7 @@ describe('countMatches on fluent().input', () => {
         let testItem = fluent().input('Field1').countMatches(null, 2, fluent().conditions());
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 maximum: 2,
                 conditionConfigs: []
             }
@@ -1690,15 +1690,15 @@ describe('countMatches on fluent().input', () => {
         let testItem = fluent().input('Field1').countMatches(0, 2, fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 minimum: 0,
                 maximum: 2,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             }
@@ -1710,15 +1710,15 @@ describe('countMatches on fluent().input', () => {
         let testItem = fluent().input('Field1').countMatches(1, 4, fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 minimum: 1,
                 maximum: 4,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1730,15 +1730,15 @@ describe('countMatches on fluent().input', () => {
         let testItem = fluent().input('Field1').countMatches(1, 2, fluent().conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 minimum: 1,
                 maximum: 2,
                 conditionConfigs: [<any>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 },
                 {
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'F2'
                 }]
             },
@@ -1751,7 +1751,7 @@ describe('countMatches on fluent().input', () => {
         let testItem = fluent().input('Field1').countMatches(null, null, fluent().conditions(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 conditionConfigs: []
             },
             errorMessage: 'Error',
@@ -1763,7 +1763,7 @@ describe('countMatches on fluent().input', () => {
         let testItem = fluent().input('Field1').countMatches(null, null, fluent().conditions(), 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
-                type: ConditionType.CountMatches,
+                conditionType: ConditionType.CountMatches,
                 conditionConfigs: []
             },
             errorMessage: 'FirstError'

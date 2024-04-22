@@ -14,7 +14,7 @@ export abstract class MockConditionBase<TConfig extends ConditionConfig> impleme
 
     public get conditionType(): string
     {
-        return this.config.type;
+        return this.config.conditionType;
     }
 
     public abstract evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
@@ -59,7 +59,7 @@ export class NeverMatchesCondition extends MockConditionBase<ConditionConfig> im
 export const IsUndeterminedConditionType = "AlwaysUndetermined";
 
 export class IsUndeterminedCondition extends MockConditionBase<ConditionConfig>{
-    protected get DefaultConditionType(): string { return this.config.type; }
+    protected get DefaultConditionType(): string { return this.config.conditionType; }
     
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         return ConditionEvaluateResult.Undetermined;
@@ -70,7 +70,7 @@ export class IsUndeterminedCondition extends MockConditionBase<ConditionConfig>{
 export const ThrowsExceptionConditionType = "AlwaysThrows";
 
 export class ThrowsExceptionCondition extends MockConditionBase<ConditionConfig>{
-    protected get DefaultConditionType(): string { return this.config.type; }    
+    protected get DefaultConditionType(): string { return this.config.conditionType; }    
     public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         throw new Error("Always Throws");
     }

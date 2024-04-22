@@ -10,7 +10,7 @@ import { ICalcValueHost, CalcValueHostConfig, CalculationHandlerResult } from "@
 import { InputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/InputValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostResolver";
 import { createMinimalValidationServices } from "./support";
-import { ValidationManager } from '@plblum/jivs-engine/src/ValueHosts/ValidationManager';
+import { ValidationManager } from '@plblum/jivs-engine/src/Validation/ValidationManager';
 import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
 import { IValidationManager } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
 import { DataTypeConverterService } from "@plblum/jivs-engine/src/Services/DataTypeConverterService";
@@ -36,7 +36,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
     // create the CalcValueHostConfig to supply to the ValidationManager
         // fluent: let diffDaysConfig = config().calc('DiffDays', LookupKey.Integer, differenceBetweenDates);    
     let diffDaysConfig: CalcValueHostConfig = {
-        type: 'Calc',
+        valueHostType: 'Calc',
         name: 'DiffDays',
         dataType: LookupKey.Integer,
         calcFn: differenceBetweenDates
@@ -50,14 +50,14 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
         //                .lessThanOrEqual('EndDate', 'Start date must be less than or equal to End date.', { severity: ValidationSeverity.Severe });
         //                .lessThanValue(10, 'The two dates must be less than {CompareTo} days apart.', { valueHostName: 'DiffDays' });
     let startDateConfig: InputValueHostConfig = {
-        type: 'Input',
+        valueHostType: 'Input',
         name: 'StartDate',
         dataType: 'Date',
         label: 'Start date',
         validatorConfigs: [
             {
                 conditionConfig: <LessThanOrEqualConditionConfig>{
-                    type: ConditionType.LessThanOrEqual,
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'EndDate',
                 },
                 errorMessage: '{Label} must be less than or equal to {SecondLabel}.',
@@ -65,7 +65,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
             },        
             {
                 conditionConfig: <LessThanValueConditionConfig>{
-                    type: ConditionType.LessThanValue,
+                    conditionType: ConditionType.LessThanValue,
                     valueHostName: 'DiffDays',  // source is our CalcValueHost
                     secondValue: 10,    // must be less than 10 days
                 },
@@ -76,7 +76,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
 
         // fluent: let endDateConfig = config().input('EndDate', 'Date', { label: 'End date' }); 
     let endDateConfig: InputValueHostConfig = {
-        type: 'Input',
+        valueHostType: 'Input',
         name: 'EndDate',
         dataType: 'Date',
         label: 'End date',

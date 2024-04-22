@@ -15,12 +15,12 @@ describe('ConditionFactory.create', () => {
             ConditionType.RequireText, (config) => new RequireTextCondition(config))).not.toThrow();
         let condition: IConditionCore<RequireTextConditionConfig> | null = null;
         expect(() => condition = factory.create<RequireTextConditionConfig>({
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: null
         })).not.toThrow();
         expect(condition).not.toBeNull();
         expect(condition).toBeInstanceOf(RequireTextCondition);
-        expect(condition!.config.type).toBe(ConditionType.RequireText);
+        expect(condition!.config.conditionType).toBe(ConditionType.RequireText);
         expect(condition!.config.valueHostName).toBeNull();
 
     });
@@ -30,7 +30,7 @@ describe('ConditionFactory.create', () => {
             ConditionType.RequireText, (config) => new RequireTextCondition(config))).not.toThrow();
         let condition: IConditionCore<ConditionConfig> | null = null;
         expect(() => condition = factory.create(<ConditionConfig>{
-            type: 'UnknownType',
+            conditionType: 'UnknownType',
             ValueHostName: null
         })).toThrow(/not supported/);
 

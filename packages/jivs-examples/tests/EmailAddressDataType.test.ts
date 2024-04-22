@@ -4,7 +4,7 @@ import { ConditionEvaluateResult } from '@plblum/jivs-engine/src/Interfaces/Cond
 import { InputValueHostConfig } from '@plblum/jivs-engine/src/Interfaces/InputValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/src/Interfaces/ValueHostFactory';
 import { InputValueHost } from '@plblum/jivs-engine/src/ValueHosts/InputValueHost';
-import { ValidationManager } from '@plblum/jivs-engine/src/ValueHosts/ValidationManager';
+import { ValidationManager } from '@plblum/jivs-engine/src/Validation/ValidationManager';
 import { EmailAddressCondition, EmailAddressConditionType, EmailAddressDataTypeCheckGenerator, EmailAddressLookupKey } from '../src/EmailAddressDataType';
 import { createMinimalValidationServices } from '../src/support';
 
@@ -16,14 +16,14 @@ describe('EmailAddressCondition tests', () => {
             valueHostConfigs: []
         });
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
+            valueHostType: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
             name: 'Field1',
             dataType: EmailAddressLookupKey,
             validatorConfigs: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
         };
         let vh = vm.addValueHost(vhConfig, null);
         let config: RegExpConditionConfig = {
-            type: EmailAddressConditionType,
+            conditionType: EmailAddressConditionType,
             valueHostName: 'Field1',
         };
         let testItem = new EmailAddressCondition(config);
@@ -54,7 +54,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
             valueHostConfigs: []
         });
         let vhConfig: InputValueHostConfig = {
-            type: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
+            valueHostType: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
             name: 'Field1',
             dataType: EmailAddressLookupKey,
             validatorConfigs: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly

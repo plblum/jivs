@@ -19,8 +19,8 @@ import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validatio
 import { CalcValueHostConfig, CalculationHandlerResult, ICalcValueHost } from "@plblum/jivs-engine/src/Interfaces/CalcValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostResolver";
 import { ValueHostType } from "@plblum/jivs-engine/src/Interfaces/ValueHostFactory";
-import { NonInputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/NonInputValueHost";
-import { ValidationManager } from "@plblum/jivs-engine/src/ValueHosts/ValidationManager";
+import { StaticValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/StaticValueHost";
+import { ValidationManager } from "@plblum/jivs-engine/src/Validation/ValidationManager";
 import { fluent } from "@plblum/jivs-engine/src/ValueHosts/Fluent";
 import { build } from "@plblum/jivs-engine/src/ValueHosts/ValueHostsBuilder";
 
@@ -39,13 +39,13 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     // startDate < endDate
     // abs(endDate-startDate) < 10
     let startDateConfig: InputValueHostConfig = {
-        type: ValueHostType.Input,  // = "Input"          
+        valueHostType: ValueHostType.Input,  // = "Input"          
         name: 'StartDate',          // we refer to this as "ValueHostName" throughout documentation
         dataType: LookupKey.Date,   // = "Date" which is just the Date part of DateTime and assumes UTC
         validatorConfigs: [
             {
                 conditionConfig: <LessThanConditionConfig>{
-                    type: ConditionType.LessThan,
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'EndDate',
                 },
                 // we expect error messages here to be from business logic layer.
@@ -58,7 +58,7 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     // by supplying an error code on one. The other will use the default errorCode of its conditionType.                
                 errorCode: 'NumOfDays', 
                 conditionConfig: <LessThanConditionConfig>{
-                    type: ConditionType.LessThan,
+                    conditionType: ConditionType.LessThan,
                     valueHostName: 'DiffDays',          // source is our CalcValueHost
                     secondValueHostName: 'NumOfDays',    // must be less than this
                 },
@@ -71,7 +71,7 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     // No validators needed on EndDate. Jivs adds a DataTypeCheckCondition
     // to validate the input is indeed a date.
     let endDateConfig: InputValueHostConfig = {
-        type: ValueHostType.Input,
+        valueHostType: ValueHostType.Input,
         name: 'EndDate',
         dataType: LookupKey.Date, 
         validatorConfigs: []
@@ -81,17 +81,17 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     // of the validation rule where diff in days < X days.
     // This Config uses the differenceBetweenDates function to do the work.
     let diffDaysConfig: CalcValueHostConfig = {
-        type: ValueHostType.Calc,   // = "Calc"
+        valueHostType: ValueHostType.Calc,   // = "Calc"
         name: 'DiffDays',
         dataType: LookupKey.Integer,    // = "Integer"
         calcFn: differenceBetweenDates
     };    
 
     // supply the value for the number of days used in validation
-    // through this NonInputValueHost. Alternatively, it could
+    // through this StaticValueHost. Alternatively, it could
     // be assigned directly in the LessThanConditionConfig.
-    let numOfDaysConfig: NonInputValueHostConfig = {
-        type: ValueHostType.NonInput,   // = "NonInput"
+    let numOfDaysConfig: StaticValueHostConfig = {
+        valueHostType: ValueHostType.Static,   // = "Static"
         name: 'NumOfDays',
         dataType: LookupKey.Integer
     };
@@ -139,9 +139,9 @@ function BusinessLogicPhase_UseFluentSyntax(): ValidationManagerConfig
     builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
 
     // supply the value for the number of days used in validation
-    // through this NonInputValueHost. Alternatively, it could
+    // through this StaticValueHost. Alternatively, it could
     // be assigned directly in the LessThanConditionConfig.
-    builder.nonInput('NumOfDays', LookupKey.Integer);
+    builder.static('NumOfDays', LookupKey.Integer);
 
     return vmConfig;
 }

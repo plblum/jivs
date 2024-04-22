@@ -33,13 +33,13 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * It allows the consumer of both to correlate those instances with the specific condition.
      * When defining conditions through a ConditionConfig, the Type property must 
      * be assigned with a valid ConditionType.
-     * This property always returns what the user supplied in the Config.type, not
+     * This property always returns what the user supplied in the Config.conditionType, not
      * the default conditiontype. That allows multiple instances of the same condition Class
      * to participate in one validator's list of conditions, because each has a unique ConditionType.
      */
     public get conditionType(): string
     {
-        return this.config.type;
+        return this.config.conditionType;
     }
 
     /**

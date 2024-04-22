@@ -78,7 +78,7 @@ export const BusinessLogicInputValueHostType = 'BusinessLogic';
 export class BusinessLogicInputValueHostGenerator extends ValidatableValueHostBaseGenerator {
 
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {
-        return config.type === BusinessLogicInputValueHostType;
+        return config.valueHostType === BusinessLogicInputValueHostType;
     }
     public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseState): IValidatableValueHostBase {
         return new BusinessLogicInputValueHost(valueHostsManager, config, state);

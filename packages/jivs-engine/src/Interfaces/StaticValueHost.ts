@@ -1,26 +1,26 @@
 /**
  * Interfaces that extend IValueHost to support ValueHosts without validation.
- * The NonInputValueHost is used in many situations:
+ * The StaticValueHost is used in many situations:
  * - A value from the Model that is needed by validation
  * - A value external from the Model, such as a global, that is needed by validation
  * - When using ValidationManager as a Single Source of Truth, all values from the model
  *   that were not assigned to InputValueHosts
- * @module ValueHosts/Types/NonInputValueHost
+ * @module ValueHosts/Types/StaticValueHost
  */
 
 import { IValueHost, ValueHostConfig, ValueHostState } from './ValueHost';
 
-export interface INonInputValueHost extends IValueHost {
+export interface IStaticValueHost extends IValueHost {
 }
 
 /**
- * State for NonInputValueHost
+ * State for StaticValueHost
  */
-export interface NonInputValueHostState extends ValueHostState {
+export interface StaticValueHostState extends ValueHostState {
 }
 
 /**
- * Config for configuring NonInputValueHost
+ * Config for configuring StaticValueHost
  */
-export interface NonInputValueHostConfig extends ValueHostConfig {
+export interface StaticValueHostConfig extends ValueHostConfig {
 }    

@@ -6,17 +6,9 @@
  * There are several types of ValueHosts:
  * - InputValueHosts - reflects values from user input. 
  *   These have validation capability.
- * - NonInputValueHosts - reflects values that are needed by validation
+ * - StaticValueHosts - reflects values that are needed by validation
  *   but are not editable by the user. Often these are properties from the same
  *   Model being edited.
- * - HTMLElementValueHost - Its value is an HTML Element in the DOM which it gets
- *   by a queryselector.
- *   Conditions are expected to use its data in a read-only fashion. 
- *   Example info from HTML elements are:
- *   visible, enabled, readonly, classname, attribute name (exists), and attribute value.
- *   These are mostly used by a validator's Enabler condition
- *   to determine if something in the UI might block validation, like
- *   a disabled field.
  * 
  * There are two types of values associated with an input:
  * - input - the value supplied by the input field/element.
@@ -239,12 +231,12 @@ export interface ValueHostConfig {
      * Identifies the type of ValueHost that will be created to 
      * support the Config.
      * InputValueHost - 'Input'
-     * NonInputValueHost - 'Noninput'
+     * StaticValueHost - 'static'
      * HTMLElementValueHost - 'HTMLElement'
      * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
      * by checking for inclusion of the InputValueHostConfig.validationConfigs property.
      */
-    type?: string;
+    valueHostType?: string;
     /**
      * Provides a unique name for this ValueHost, within the scope of one
      * ValueHostsManager instance.
