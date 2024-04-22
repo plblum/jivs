@@ -40,7 +40,7 @@ import { DataTypeComparerService } from "../../src/Services/DataTypeComparerServ
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
-import { NonInputValueHost } from '../../src/ValueHosts/StaticValueHost';
+import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { BusinessLogicInputValueHost } from "../../src/ValueHosts/BusinessLogicInputValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { ValueHostValidatedHandler, IValidatableValueHostBase, ValidatableValueHostBaseState, toIInputValueHostCallbacks, IInputValueHostCallbacks } from "../../src/Interfaces/ValidatableValueHostBase";
@@ -2754,7 +2754,7 @@ describe('toIInputValueHost', () => {
     });
     test('Wrong instance class returns null', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let vh = new NonInputValueHost(vm, {
+        let vh = new StaticValueHost(vm, {
             name: 'Field1',
         }, {
             name: 'Field1',

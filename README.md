@@ -108,13 +108,13 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
 	+ `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
-	+ `NonInputValueHost class` – For values that are not validated but contribute to validation. 
+	+ `StaticValueHost class` – For values that are not validated but contribute to validation. 
 	
-	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `NonInputValueHost` to pass in a country
+	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
 	code your app is using, and let the validation internally select the right
 	expression by retrieving the country code first.
 	
-	> If you are using a Model, you might also use NonInputValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
+	> If you are using a Model, you might also use StaticValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
 		
 	+ `CalcValueHost class` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
 
@@ -312,7 +312,7 @@ class Factory
 Every value that you expose to Jivs is kept in a ValueHost. There are several types:
 
 - InputValueHost – The value may have validation rules applied. It actually keeps two values around when working with a UI: the value fully compatible with the model's property, and the value from within the editor.
-- NonInputValueHost – The value may be used in validation or is a member of the Model that is retained when Jivs is the single-source of truth.
+- StaticValueHost – The value may be used in validation or is a member of the Model that is retained when Jivs is the single-source of truth.
 - CalcValueHost – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
 
 These objects are added to the ValidationManager while configuring. Here is pseudocode representation of their interfaces (omitting many members).
@@ -341,7 +341,7 @@ interface IInputValueHost extends IValueHost
     getIssueFound(errorCode): IssueFound | null;
     getIssuesFound(group?): IssueFound[];	
 }
-interface INonInputValueHost extends IValueHost
+interface IStaticValueHost extends IValueHost
 {
 }
 interface ICalcValueHost extends IValueHost
@@ -395,9 +395,9 @@ interface InputValueHostConfig extends ValueHostConfig
   validatorConfigs: ValidatorConfig[] | null;
   group?: string | Array<string> | null;
 }
-interface NonInputValueHostConfig extends ValueHostConfig 
+interface StaticValueHostConfig extends ValueHostConfig 
 {
-  type: 'NonInput' // shown here for documentation purposes
+  type: 'Static' // shown here for documentation purposes
 }
 interface CalcValueHostConfig extends ValueHostConfig 
 {
@@ -559,7 +559,7 @@ interface ValidationManagerConfig {
 Let’s go through this type.
 
 -	`services` – Always takes a <a href="#validationservices">`ValidationServices object`</a>, which is rich with services for dependency injection and factories. You will need to do a bunch to configure this, but don’t worry, we have a code snippet to inject into your app to assist. (Described below.)
--	<a href="#configuringvaluehosts">`valueHostConfigs`</a> – Configures each InputValueHost associated with your Inputs and NonInputValueHost associated with additional values needed by validator rules.
+-	<a href="#configuringvaluehosts">`valueHostConfigs`</a> – Configures each InputValueHost associated with your Inputs and StaticValueHost associated with additional values needed by validator rules.
 -	`savedState` and `savedValueHostStates` – `ValidationManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onStateChanged` and `onValueHostStateChanged` events, and pass the values back into these two Config properties when you recreate it.
 -	`onStateChanged` and `onValueHostStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 -	`onValueChanged` notifies you when a `ValueHost` had its value changed.
@@ -613,11 +613,11 @@ builder.input('LastName', 'String', { label: 'Last Name'})
    
 let validationManager = new ValidationManager(vmConfig);   
 ```
-You can also use the builder object to add NonInputValueHosts, CalcValueHosts, and a list of Conditions to these Conditions: All, Any, CountMatches.
+You can also use the builder object to add StaticValueHosts, CalcValueHosts, and a list of Conditions to these Conditions: All, Any, CountMatches.
 
 ```ts
-builder.nonInput('PersonVisible', 'Boolean');
-builder.nonInput('PersonActive', 'Boolean');
+builder.static('PersonVisible', 'Boolean');
+builder.static('PersonActive', 'Boolean');
 builder.input('Name').any(
      builder.conditions()
      	.equalTo(true, { valueHostName: 'PersonVisible'})

@@ -162,7 +162,7 @@ describe('class DataTypeCheckCondition', () => {
         vh.setValue(10);    // doesn't change InputValue...
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
-    test('Using NonInputValueHost for property throws', () => {
+    test('Using StaticValueHost for property throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.addValueHost(

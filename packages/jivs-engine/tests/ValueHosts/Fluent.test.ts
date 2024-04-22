@@ -183,47 +183,47 @@ describe('FluentConditionCollector', () => {
     });
 });
 
-describe('fluent(vmConfig).nonInput()', () => {
-    test('Valid name, null data type and defined vhConfig. Adds NonInputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().nonInput('Field1', null, { label: 'Field 1' });
+describe('fluent(vmConfig).static()', () => {
+    test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().static('Field1', null, { label: 'Field 1' });
         expect(testItem).toEqual({
-            type: ValueHostType.NonInput,
+            type: ValueHostType.Static,
             name: 'Field1',
             label: 'Field 1'
         });
     });
-    test('Valid name, data type assigned. Adds NonInputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().nonInput('Field1', 'Test');
+    test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().static('Field1', 'Test');
         expect(testItem).toEqual({
-            type: ValueHostType.NonInput,
+            type: ValueHostType.Static,
             name: 'Field1',
             dataType: 'Test'
         });
     });
 
-    test('Valid name. Adds NonInputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().nonInput('Field1');
+    test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().static('Field1');
         expect(testItem).toEqual({
-            type: ValueHostType.NonInput,
+            type: ValueHostType.Static,
             name: 'Field1',
         });
     });
 
-    test('Pass in a NonInputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().nonInput({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+    test('Pass in a StaticValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toEqual({
-            type: ValueHostType.NonInput,
+            type: ValueHostType.Static,
             name: 'Field1',
             dataType: 'Test',
             label: 'Field 1'
         });        
     });
     test('Null name throws', () => {
-        expect(() => fluent().nonInput(null!)).toThrow('arg1');
+        expect(() => fluent().static(null!)).toThrow('arg1');
 
     });
     test('First parameter is not compatible with overload throws', () => {
-        expect(() => fluent().nonInput(100 as any)).toThrow('pass');
+        expect(() => fluent().static(100 as any)).toThrow('pass');
     });
 });
 describe('fluent().input()', () => {

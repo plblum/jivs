@@ -6,7 +6,7 @@
  * There are several types of ValueHosts:
  * - InputValueHosts - reflects values from user input. 
  *   These have validation capability.
- * - NonInputValueHosts - reflects values that are needed by validation
+ * - StaticValueHosts - reflects values that are needed by validation
  *   but are not editable by the user. Often these are properties from the same
  *   Model being edited.
  * 
@@ -231,7 +231,7 @@ export interface ValueHostConfig {
      * Identifies the type of ValueHost that will be created to 
      * support the Config.
      * InputValueHost - 'Input'
-     * NonInputValueHost - 'Noninput'
+     * StaticValueHost - 'static'
      * HTMLElementValueHost - 'HTMLElement'
      * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
      * by checking for inclusion of the InputValueHostConfig.validationConfigs property.

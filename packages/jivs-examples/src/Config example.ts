@@ -19,7 +19,7 @@ import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validatio
 import { CalcValueHostConfig, CalculationHandlerResult, ICalcValueHost } from "@plblum/jivs-engine/src/Interfaces/CalcValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostResolver";
 import { ValueHostType } from "@plblum/jivs-engine/src/Interfaces/ValueHostFactory";
-import { NonInputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/StaticValueHost";
+import { StaticValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/StaticValueHost";
 import { ValidationManager } from "@plblum/jivs-engine/src/ValueHosts/ValidationManager";
 import { fluent } from "@plblum/jivs-engine/src/ValueHosts/Fluent";
 import { build } from "@plblum/jivs-engine/src/ValueHosts/ValueHostsBuilder";
@@ -88,10 +88,10 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     };    
 
     // supply the value for the number of days used in validation
-    // through this NonInputValueHost. Alternatively, it could
+    // through this StaticValueHost. Alternatively, it could
     // be assigned directly in the LessThanConditionConfig.
-    let numOfDaysConfig: NonInputValueHostConfig = {
-        type: ValueHostType.NonInput,   // = "NonInput"
+    let numOfDaysConfig: StaticValueHostConfig = {
+        type: ValueHostType.Static,   // = "Static"
         name: 'NumOfDays',
         dataType: LookupKey.Integer
     };
@@ -139,9 +139,9 @@ function BusinessLogicPhase_UseFluentSyntax(): ValidationManagerConfig
     builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
 
     // supply the value for the number of days used in validation
-    // through this NonInputValueHost. Alternatively, it could
+    // through this StaticValueHost. Alternatively, it could
     // be assigned directly in the LessThanConditionConfig.
-    builder.nonInput('NumOfDays', LookupKey.Integer);
+    builder.static('NumOfDays', LookupKey.Integer);
 
     return vmConfig;
 }

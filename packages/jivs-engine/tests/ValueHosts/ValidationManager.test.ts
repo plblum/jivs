@@ -15,7 +15,7 @@ import {
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { deepClone } from '../../src/Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, toIValueHostResolver, toIValueHostsManager, toIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
-import { NonInputValueHost } from '../../src/ValueHosts/StaticValueHost';
+import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
@@ -886,12 +886,12 @@ describe('ValidationManager.getValueHost and getInputValue', () => {
 
         let config1: ValueHostConfig = {
             name: 'Field1',
-            type: ValueHostType.NonInput,
+            type: ValueHostType.Static,
             label: 'Field 1'
         };
         let config2: ValueHostConfig = {
             name: 'Field2',
-            type: ValueHostType.NonInput,
+            type: ValueHostType.Static,
             label: 'Field 2'
         };
         let testItem = new PublicifiedValidationManager({
@@ -900,11 +900,11 @@ describe('ValidationManager.getValueHost and getInputValue', () => {
         });
         let vh1: IValueHost | null = null;
         expect(() => vh1 = testItem.getValueHost('Field1')).not.toThrow();
-        expect(vh1).toBeInstanceOf(NonInputValueHost);
+        expect(vh1).toBeInstanceOf(StaticValueHost);
         expect(vh1!.getName()).toBe('Field1');
         let vh2: IValueHost | null = null;
         expect(() => vh2 = testItem.getValueHost('Field2')).not.toThrow();
-        expect(vh2).toBeInstanceOf(NonInputValueHost);
+        expect(vh2).toBeInstanceOf(StaticValueHost);
         expect(vh2!.getName()).toBe('Field2');
         let vh3: IInputValueHost | null = null;
         expect(() => vh3 = testItem.getInputValueHost('Field1')).not.toThrow();
@@ -1681,7 +1681,7 @@ describe('toIValueHostsManagerAccessor function', () => {
     });
     test('ValueHost matches and returns itself.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new NonInputValueHost(vm, {
+        let testItem = new StaticValueHost(vm, {
             name: 'Field1',
             label: 'Label1',
         },

@@ -192,7 +192,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
      * @param config 
-     * Can use fluent().nonInput() or any ValueConfigHost.
+     * Can use fluent().static() or any ValueConfigHost.
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
      * It will be run through ValueHostFactory.cleanupState() first.

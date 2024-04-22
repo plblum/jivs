@@ -168,7 +168,7 @@ describe('getValue using the calcFn', () => {
             valueHostConfigs: [ 
                 {
                     name: 'Field1',
-                    type: ValueHostType.NonInput,
+                    type: ValueHostType.Static,
                     dataType: LookupKey.String
                 },
                 <CalcValueHostConfig>{
