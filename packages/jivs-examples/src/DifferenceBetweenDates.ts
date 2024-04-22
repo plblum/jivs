@@ -10,7 +10,7 @@ import { ICalcValueHost, CalcValueHostConfig, CalculationHandlerResult } from "@
 import { InputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/InputValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostResolver";
 import { createMinimalValidationServices } from "./support";
-import { ValidationManager } from '@plblum/jivs-engine/src/ValueHosts/ValidationManager';
+import { ValidationManager } from '@plblum/jivs-engine/src/Validation/ValidationManager';
 import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
 import { IValidationManager } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
 import { DataTypeConverterService } from "@plblum/jivs-engine/src/Services/DataTypeConverterService";

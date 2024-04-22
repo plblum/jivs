@@ -4,7 +4,7 @@ import { ConditionEvaluateResult } from '@plblum/jivs-engine/src/Interfaces/Cond
 import { InputValueHostConfig } from '@plblum/jivs-engine/src/Interfaces/InputValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/src/Interfaces/ValueHostFactory';
 import { InputValueHost } from '@plblum/jivs-engine/src/ValueHosts/InputValueHost';
-import { ValidationManager } from '@plblum/jivs-engine/src/ValueHosts/ValidationManager';
+import { ValidationManager } from '@plblum/jivs-engine/src/Validation/ValidationManager';
 import { EmailAddressCondition, EmailAddressConditionType, EmailAddressDataTypeCheckGenerator, EmailAddressLookupKey } from '../src/EmailAddressDataType';
 import { createMinimalValidationServices } from '../src/support';
 

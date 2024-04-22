@@ -4,7 +4,7 @@
  * Its methods provide validation and the results of validation.
  * @module ValidationManager/ConcreteClasses
  */
-import { BusinessLogicInputValueHostType, BusinessLogicValueHostName } from './BusinessLogicInputValueHost';
+import { BusinessLogicInputValueHostType, BusinessLogicValueHostName } from '../ValueHosts/BusinessLogicInputValueHost';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
@@ -13,10 +13,10 @@ import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostVali
 import { type ValidateOptions, type ValueHostValidateResult, type BusinessLogicError, type IssueFound, ValidationResult } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
-import { toIInputValueHost } from './InputValueHost';
+import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
-import { ValidatableValueHostBase } from './ValidatableValueHostBase';
-import { FluentValidatorCollector } from './Fluent';
+import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
+import { FluentValidatorCollector } from '../ValueHosts/Fluent';
 
 
 /**

@@ -136,7 +136,7 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { ValidationManagerConfig } from '../Interfaces/ValidationManager';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ConditionType } from '../Conditions/ConditionTypes';
-import { resolveErrorCode } from './Validator';
+import { resolveErrorCode } from '../Validation/Validator';
 
 /**
  * Starts a fluent chain. Its methods start InputValueHost (input()),

@@ -14,7 +14,7 @@ import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { CalcValueHostConfig, CalculationHandler } from "../Interfaces/CalcValueHost";
 import { EvaluateChildConditionResultsConfig } from "../Conditions/EvaluateChildConditionResultsBase";
-import { resolveErrorCode } from "./Validator";
+import { resolveErrorCode } from "../Validation/Validator";
 
 
 /**

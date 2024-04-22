@@ -8,10 +8,10 @@ import {
     StringLengthConditionConfig,
     EqualToConditionConfig,
 } from "../../src/Conditions/ConcreteConditions";
-import { Validator } from "../../src/ValueHosts/Validator";
+import { Validator } from "../../src/Validation/Validator";
 import { InputValueHost, InputValueHostGenerator, toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
+import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { MockCapturingLogger, MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ValidationServices } from '../../src/Services/ValidationServices';
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";

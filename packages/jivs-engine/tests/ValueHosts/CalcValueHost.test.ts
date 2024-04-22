@@ -5,7 +5,7 @@ import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { CalcValueHost, CalcValueHostGenerator } from "../../src/ValueHosts/CalcValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { MockValidationServices, MockValidationManager, MockCapturingLogger } from "../TestSupport/mocks";
-import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
+import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 
 function TestCalcFunctionReturnsOne(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):

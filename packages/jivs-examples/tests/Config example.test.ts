@@ -6,7 +6,7 @@ import { IStaticValueHost } from "@plblum/jivs-engine/src/Interfaces/StaticValue
 import { CalcValueHost } from "@plblum/jivs-engine/src/ValueHosts/CalcValueHost";
 import { InputValueHost } from "@plblum/jivs-engine/src/ValueHosts/InputValueHost";
 import { StaticValueHost } from "@plblum/jivs-engine/src/ValueHosts/StaticValueHost";
-import { Validator } from "@plblum/jivs-engine/src/ValueHosts/Validator";
+import { Validator } from "@plblum/jivs-engine/src/Validation/Validator";
 import { IValidationManager } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
 
 function testVM(vm: IValidationManager): void

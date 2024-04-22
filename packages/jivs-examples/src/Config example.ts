@@ -20,7 +20,7 @@ import { CalcValueHostConfig, CalculationHandlerResult, ICalcValueHost } from "@
 import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostResolver";
 import { ValueHostType } from "@plblum/jivs-engine/src/Interfaces/ValueHostFactory";
 import { StaticValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/StaticValueHost";
-import { ValidationManager } from "@plblum/jivs-engine/src/ValueHosts/ValidationManager";
+import { ValidationManager } from "@plblum/jivs-engine/src/Validation/ValidationManager";
 import { fluent } from "@plblum/jivs-engine/src/ValueHosts/Fluent";
 import { build } from "@plblum/jivs-engine/src/ValueHosts/ValueHostsBuilder";
 

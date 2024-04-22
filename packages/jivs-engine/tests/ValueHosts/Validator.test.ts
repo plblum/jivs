@@ -7,7 +7,7 @@ import {
     
 } from "../../src/Conditions/ConcreteConditions";
 
-import { Validator, ValidatorFactory } from "../../src/ValueHosts/Validator";
+import { Validator, ValidatorFactory } from "../../src/Validation/Validator";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";

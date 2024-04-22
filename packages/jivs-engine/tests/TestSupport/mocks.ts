@@ -12,7 +12,7 @@ import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueH
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
-import { ValidatorFactory } from "../../src/ValueHosts/Validator";
+import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { IDataTypeFormatterService } from "../../src/Interfaces/DataTypeFormatterService";

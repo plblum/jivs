@@ -18,7 +18,7 @@ import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, toI
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { ValidationManager } from "../../src/ValueHosts/ValidationManager";
+import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
