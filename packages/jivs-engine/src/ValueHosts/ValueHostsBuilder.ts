@@ -141,7 +141,7 @@ export class ValueHostsBuilder
      * You can omit the type property.
      * @returns Same instance for chaining.
      */
-    static(config: Omit<StaticValueHostConfig, 'type'>): ValueHostsBuilder;
+    static(config: Omit<StaticValueHostConfig, 'valueHostType'>): ValueHostsBuilder;
     // overload resolution
     static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): ValueHostsBuilder
     {
@@ -193,7 +193,7 @@ export class ValueHostsBuilder
      * You can omit the type property.
      * @returns Same instance for chaining.
      */
-    calc(config: Omit<CalcValueHostConfig, 'type'>): ValueHostsBuilder;
+    calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): ValueHostsBuilder;
     // overload resolution
     calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): ValueHostsBuilder
     {
@@ -216,36 +216,36 @@ export class ValueHostsBuilder
     
     /**
      * Replace any of the InputValueHostConfig properties supported by UI.
-     * Not supported: 'type', 'name', 'validatorConfigs'
+     * Not supported: 'valueHostType', 'name', 'validatorConfigs'
      * @param valueHostName 
      * @param propsToUpdate 
      * @returns Same instance for chaining.
      */
-    public updateInput(valueHostName: string, propsToUpdate: Partial<Omit<InputValueHostConfig, 'type' | 'name' | 'validatorConfigs'>>): ValueHostsBuilder
+    public updateInput(valueHostName: string, propsToUpdate: Partial<Omit<InputValueHostConfig, 'valueHostType' | 'name' | 'validatorConfigs'>>): ValueHostsBuilder
     {
         assertNotNull(propsToUpdate, 'propsToUpdate');        
         let vhConfig = this.getValueHostConfig(valueHostName, true);
         this.assertValueHostType(vhConfig, ValueHostType.Input);
         for (let propName in propsToUpdate)
-            if (!['type', 'name', 'validatorConfigs'].includes(propName))
+            if (!['valueHostType', 'name', 'validatorConfigs'].includes(propName))
                 (vhConfig as any)[propName] = (propsToUpdate as any)[propName];
         return this;
     }
 
     /**
      * Replace any of the StaticValueHostConfig properties supported by UI.
-     * Not supported: 'type', 'name'
+     * Not supported: 'valueHostType', 'name'
      * @param valueHostName 
      * @param propsToUpdate 
      * @returns Same instance for chaining.
      */
-    public updateStatic(valueHostName: string, propsToUpdate: Partial<Omit<StaticValueHostConfig, 'type' | 'name' >>): ValueHostsBuilder
+    public updateStatic(valueHostName: string, propsToUpdate: Partial<Omit<StaticValueHostConfig, 'valueHostType' | 'name' >>): ValueHostsBuilder
     {
         assertNotNull(propsToUpdate, 'propsToUpdate');        
         let vhConfig = this.getValueHostConfig(valueHostName, true);
         this.assertValueHostType(vhConfig, ValueHostType.Static);
         for (let propName in propsToUpdate)
-            if (!['type', 'name'].includes(propName))
+            if (!['valueHostType', 'name'].includes(propName))
                 (vhConfig as any)[propName] = (propsToUpdate as any)[propName];
 
         return this;
@@ -259,14 +259,14 @@ export class ValueHostsBuilder
      * @param propsToUpdate 
      * @returns Same instance for chaining.
      */    
-    public updateValidator(valueHostName: ValueHostName, errorCode: string, propsToUpdate: Partial<Omit<ValidatorConfig, 'type' | 'conditionConfig' | 'conditionCreator' | 'errorCode'>>): ValueHostsBuilder
+    public updateValidator(valueHostName: ValueHostName, errorCode: string, propsToUpdate: Partial<Omit<ValidatorConfig, 'validatorType' | 'conditionConfig' | 'conditionCreator' | 'errorCode'>>): ValueHostsBuilder
     {
         assertNotNull(propsToUpdate, 'propsToUpdate');
         let ivConfig = this.getValidatorConfig(valueHostName, errorCode, true);
         if (ivConfig)
         {
             for (let propName in propsToUpdate)
-                if (!['type', 'conditionConfig', 'conditionCreator', 'errorCode'].includes(propName))
+                if (!['validatorType', 'conditionConfig', 'conditionCreator', 'errorCode'].includes(propName))
                     (ivConfig as any)[propName] = (propsToUpdate as any)[propName];
         }
         return this;

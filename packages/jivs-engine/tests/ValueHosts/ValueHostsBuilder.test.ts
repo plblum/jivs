@@ -529,7 +529,7 @@ describe('updateInput', () => {
 
         let testItem = build(vmConfig).input('Field1', LookupKey.Integer, { label: 'Field 1' });
         build(vmConfig).updateInput('Field1', <any>{
-            name: 'ToIgnore', type: 'IgnoreType',
+            name: 'ToIgnore', valueHostType: 'IgnoreType',
             validatorConfigs: [{}], label: 'UpdatedLabel'
         });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
@@ -572,7 +572,7 @@ describe('updateStatic', () => {
 
         let testItem = build(vmConfig).static('Field1', LookupKey.Integer, { label: 'Field 1' });
         build(vmConfig).updateStatic('Field1', <any>{
-            name: 'ToIgnore', type: 'IgnoreType',
+            name: 'ToIgnore', valueHostType: 'IgnoreType',
             label: 'UpdatedLabel'
         });
 
@@ -631,7 +631,7 @@ describe('updateValidator', () => {
         build(vmConfig).updateValidator('Field1', ConditionType.RequireText,
             <any>{
                 errorMessage: 'Wanted',
-                type: 'Unwanted',
+                validatorType: 'Unwanted',
                 conditionConfig: { type: 'TEST' },
                 conditionCreator: (x: unknown) => null
             });
