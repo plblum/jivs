@@ -306,9 +306,9 @@ export interface ValueHostConfig {
 
 
 /**
- * Provides a service to ValueHosts, their InputValidators, and Conditions that gathers
+ * Provides a service to ValueHosts, their Validators, and Conditions that gathers
  * all of the ValueHostNames being referenced amongst them. Generally Conditions provide all of them,
- * both from InputValidator.Condition and InputValidator.Enabler.
+ * both from Validator.Condition and Validator.Enabler.
  */
 export interface IGatherValueHostNames {
     /**

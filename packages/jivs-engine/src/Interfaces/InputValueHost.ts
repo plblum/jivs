@@ -1,27 +1,27 @@
 /**
  * @module ValueHosts/Types/InputValueHost
  */
-import { IInputValidator, InputValidatorConfig } from "./Validator";
+import { IValidator, ValidatorConfig } from "./Validator";
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseState } from "./ValidatableValueHostBase";
 
 /**
-* Manages a value that uses InputValidators for its input validation.
+* Manages a value that uses Validators for its input validation.
 * This level is associated with the input field/element itself.
 */
 export interface IInputValueHost extends IValidatableValueHostBase {
     /**
-     * Gets an InputValidator already assigned to this InputValueHost.
-     * @param errorCode - The errorCode value assigned to the InputValidator
-     * that you want. Same as ConditionType unless you set the InputValidatorConfig.errorCode property
-     * @returns The InputValidator or null if the condition type does not match.
+     * Gets an Validator already assigned to this InputValueHost.
+     * @param errorCode - The errorCode value assigned to the Validator
+     * that you want. Same as ConditionType unless you set the ValidatorConfig.errorCode property
+     * @returns The Validator or null if the condition type does not match.
      */
-        getValidator(errorCode: string): IInputValidator | null;
+        getValidator(errorCode: string): IValidator | null;
     
         /**
          * Intended for the UI developer to add their own UI specific validators
          * to those already configured within ValidationManager.
          * It adds or replaces when the ConditionType matches an existing 
-         * InputValidatorConfig.
+         * ValidatorConfig.
          * 
          * Try to avoid using it for validators coming from business logic.
          * 
@@ -34,7 +34,7 @@ export interface IInputValueHost extends IValidatableValueHostBase {
          * to these conditions during setup in ValidationManager.
          * @param config 
          */
-        addValidator(config: InputValidatorConfig): void;
+        addValidator(config: ValidatorConfig): void;
         
         /**
          * While you normally set the validation group name with InputValueHostConfig.group,
@@ -68,7 +68,7 @@ export interface InputValueHostConfig extends ValidatableValueHostBaseConfig {
      * This array may need to host validators that are client-side only,
      * such as parser error converting "abc" to number.
      */
-    validatorConfigs: Array<InputValidatorConfig> | null;
+    validatorConfigs: Array<ValidatorConfig> | null;
 }
 
 /**

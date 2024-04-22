@@ -61,9 +61,9 @@ export interface OneValueConditionConfig extends ConditionConfig {
      * 
      * Assign this to a ValueHostName if you want to have it looked up in the ValueHostsManager.getValueHost().
      * 
-     * Typically leave InputValidator.ConditionConfig.valueHostName null
+     * Typically leave Validator.ConditionConfig.valueHostName null
      * because Condition.evaluate() is passed the correct valueHost.
-     * However, InputValidator.EnablerConfig needs it assigned.
+     * However, Validator.EnablerConfig needs it assigned.
      * Same with any Condition that is a child of another, like in MultiConditions.
      * 
      * Many conditions need two or more sources for values.

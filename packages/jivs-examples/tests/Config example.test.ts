@@ -6,7 +6,7 @@ import { INonInputValueHost } from "@plblum/jivs-engine/src/Interfaces/NonInputV
 import { CalcValueHost } from "@plblum/jivs-engine/src/ValueHosts/CalcValueHost";
 import { InputValueHost } from "@plblum/jivs-engine/src/ValueHosts/InputValueHost";
 import { NonInputValueHost } from "@plblum/jivs-engine/src/ValueHosts/NonInputValueHost";
-import { InputValidator } from "@plblum/jivs-engine/src/ValueHosts/Validator";
+import { Validator } from "@plblum/jivs-engine/src/ValueHosts/Validator";
 import { IValidationManager } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
 
 function testVM(vm: IValidationManager): void
@@ -24,24 +24,24 @@ function testVM(vm: IValidationManager): void
 
     let startLessThanEnd = startDateVH!.getValidator(ConditionType.LessThan);
     let dateDiffLessThanNumOfDays = startDateVH!.getValidator('NumOfDays');
-    expect(startLessThanEnd).toBeInstanceOf(InputValidator);
+    expect(startLessThanEnd).toBeInstanceOf(Validator);
     expect(startLessThanEnd?.errorCode).toBe(ConditionType.LessThan);
     expect(startLessThanEnd?.conditionType).toBe(ConditionType.LessThan);
-    expect(dateDiffLessThanNumOfDays).toBeInstanceOf(InputValidator);
+    expect(dateDiffLessThanNumOfDays).toBeInstanceOf(Validator);
     expect(dateDiffLessThanNumOfDays?.errorCode).toBe('NumOfDays');
     expect(dateDiffLessThanNumOfDays?.conditionType).toBe(ConditionType.LessThan);
 }
 
 describe('Using Config objects', () => {
 
-    test('Confirm expecting ValueHosts and InputValidators exist', () => {
+    test('Confirm expecting ValueHosts and Validators exist', () => {
         let vm = UIPhase_Customize('objects');
         testVM(vm);
     });
 });
 describe('Using Fluent Syntax', () => {
 
-    test('Confirm expecting ValueHosts and InputValidators exist', () => {
+    test('Confirm expecting ValueHosts and Validators exist', () => {
         let vm = UIPhase_Customize('fluent');
         testVM(vm);
     });

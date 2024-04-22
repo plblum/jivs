@@ -9,7 +9,7 @@ import { IDataTypeComparerService } from './DataTypeComparerService';
 import { IDataTypeConverterService } from './DataTypeConverterService';
 import { IDataTypeFormatterService } from './DataTypeFormatterService';
 import { IDataTypeIdentifierService } from './DataTypeIdentifierService';
-import { IInputValidatorFactory } from './Validator';
+import { IValidatorFactory } from './Validator';
 import { ILoggerService } from './LoggerService';
 import { ITextLocalizerService } from './TextLocalizerService';
 import { IValueHostFactory } from './ValueHost';
@@ -119,9 +119,9 @@ export interface IValidationServices extends IServices {
     valueHostFactory: IValueHostFactory;
 
     /**
-     * Factory for generating InputValidator.
+     * Factory for generating Validator.
      */
-    inputValidatorFactory: IInputValidatorFactory;
+    validatorFactory: IValidatorFactory;
 
 }
 
@@ -186,9 +186,9 @@ export enum ServiceName {
      */
     valueHostFactory = 'ValueHostFactory',
     /**
-     * IInputValidatorFactory
+     * IValidatorFactory
      */
-    inputValidatorFactory = 'InputValidatorFactory',
+    validatorFactory = 'ValidatorFactory',
     /**
      * IModelToValuesFactory - in jivs-model
      */

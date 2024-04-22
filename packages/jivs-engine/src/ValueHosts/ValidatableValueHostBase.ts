@@ -9,7 +9,7 @@ import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseState } from '../Interfaces/ValidatableValueHostBase';
-import { BusinessLogicError, IssueFound, ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity } from '../Interfaces/Validation';
+import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationResult, ValidationSeverity } from '../Interfaces/Validation';
 
 
 /**
@@ -228,7 +228,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * @param options - Provides guidance on which validators to include.
     * @returns IValidationResultDetails if at least one is invalid or null if all valid.
     */
-    public abstract validate(options?: ValidateOptions): ValidateResult;
+    public abstract validate(options?: ValidateOptions): ValueHostValidateResult;
 
     /**
      * Value is setup by calling validate(). It does not run validate() itself.
@@ -333,7 +333,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     //#region access to validation results    
     /**
      * The results of validation specific to one condiiton Type.
-     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
+     * @param errorCode  - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @returns The issue or null if none.
      */    
     public getIssueFound(errorCode: string): IssueFound | null {

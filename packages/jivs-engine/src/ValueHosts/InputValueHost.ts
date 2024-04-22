@@ -3,7 +3,7 @@
  * It is associated with the input field/element itself.
  * It provides:
  * - validate() function which returns Validation Results in the form of a list of IssuesFound.
- * - A list of InputValidators, each for a single validation rule and containing their own error messages
+ * - A list of Validators, each for a single validation rule and containing their own error messages
  * - An additional value that can be validated, the value directly from the Input, which is often
  *   quite different from the value intended to be stored in the Model/Entity.
  * @module ValueHosts/ConcreteClasses/InputValueHost
@@ -13,8 +13,8 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, groupsMatch, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
-import { ValidateOptions, ValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from '../Interfaces/Validation';
-import { InputValidateResult, IInputValidator, InputValidatorConfig } from '../Interfaces/Validator';
+import { ValidateOptions, ValueHostValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from '../Interfaces/Validation';
+import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
@@ -26,7 +26,7 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 
 
 /**
- * Standard implementation of IInputValueHost. It owns a list of InputValidators
+ * Standard implementation of IInputValueHost. It owns a list of Validators
  * which support its validate() function.
  * Use ValueHostConfig.type = "Input" for the ValidationManager to use this class.
  * 
@@ -49,15 +49,15 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
 
     /**
      * Runs validation against some of all validators.
-     * If at least one validator was NoMatch, it returns ValidateResult
+     * If at least one validator was NoMatch, it returns ValueHostValidateResult
      * with all of the NoMatches in issuesFound.
-     * If all were Matched, it returns ValidateResult.Value and issuesFound=null.
+     * If all were Matched, it returns ValueHostValidateResult.Value and issuesFound=null.
      * If there are no validators, or all validators were skipped (disabled),
      * it returns ValidationResult.Undetermined.
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      */
-    public validate(options?: ValidateOptions): ValidateResult {
+    public validate(options?: ValidateOptions): ValueHostValidateResult {
         let self = this;
         if (!options)
             options = {};
@@ -65,7 +65,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         // Its properties collect all validator results, including those delayed by async.
         // By being an object, any closure referring to result will still get those
         // property changes for all validators completed.
-        let result: ValidateResult = {
+        let result: ValueHostValidateResult = {
             validationResult: ValidationResult.Undetermined,
             issuesFound: null
         };
@@ -93,7 +93,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                         continue;
                     }
                 // synchronous (normal) processing
-                    let inputValResult = potentialIVR as InputValidateResult;
+                    let inputValResult = potentialIVR as ValidatorValidateResult;
                     if (inputValResult.skipped)
                         continue;
                     validatorsInUse++;
@@ -146,7 +146,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                 };
             });
         }
-        function updateStateWithResult(result: ValidateResult): boolean
+        function updateStateWithResult(result: ValueHostValidateResult): boolean
         {
             return self.updateState((stateToUpdate) => {
                 stateToUpdate.validationResult = result.validationResult;
@@ -160,7 +160,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                 return stateToUpdate;
             }, self);
         }
-        function processPromise(promise: Promise<InputValidateResult>): void
+        function processPromise(promise: Promise<ValidatorValidateResult>): void
         {
             function completeThePromise(finish: () => void): void
             {
@@ -215,9 +215,9 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         // no change to the ValidationResult here            
         }
 
-        function bailout(errorMessage: string): ValidateResult
+        function bailout(errorMessage: string): ValueHostValidateResult
         {
-            let resultState: ValidateResult = {
+            let resultState: ValueHostValidateResult = {
                 validationResult: ValidationResult.Undetermined,
                 issuesFound: null
             };
@@ -248,26 +248,26 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
 
     //#region validation
     /**
-     * Provides the list of IInputValidator instances derived
+     * Provides the list of IValidator instances derived
      * from the ValidatorConfigs. Lazy loads the instances.
      */
-    protected validators(): Array<IInputValidator> {
+    protected validators(): Array<IValidator> {
         if (this._validators === null)
             this._validators = this.generateValidators();
         return this._validators;
     }
     // populated by Validators() when null. Set to null by UpdateValueHostConfig
     // to account for changes made there.
-    private _validators: Array<IInputValidator> | null = null;
+    private _validators: Array<IValidator> | null = null;
 
     /**
-     * Generates an array of all InputValidators from ValueHostConfig.validatorConfigs.
+     * Generates an array of all Validators from ValueHostConfig.validatorConfigs.
      * Sorts the by Category so Required is always first, DataTypeCheck is just after Required.
      * @returns 
      */
-    protected generateValidators(): Array<IInputValidator> {
-        let factory = this.services.inputValidatorFactory;
-        let validators: Array<IInputValidator> = [];
+    protected generateValidators(): Array<IValidator> {
+        let factory = this.services.validatorFactory;
+        let validators: Array<IValidator> = [];
         let needsDataTypeCheck = true;
         this.config.validatorConfigs?.forEach((valDesc) => {
             let pv = factory.create(this, valDesc);
@@ -279,15 +279,15 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
             this.tryAutoGenerateDataTypeCheckCondition(validators);
         return this.orderValidators(validators);
     }
-    protected orderValidators(unordered: Array<IInputValidator>): Array<IInputValidator>
+    protected orderValidators(unordered: Array<IValidator>): Array<IValidator>
     {
-        let fn = (a: IInputValidator, b: IInputValidator) : number => a.condition.category - b.condition.category;
+        let fn = (a: IValidator, b: IValidator) : number => a.condition.category - b.condition.category;
         if (unordered.toSorted)    // recently introduced API, so provide fallback
             return unordered.toSorted(fn);
         else
             return unordered.sort(fn);
     }
-    protected tryAutoGenerateDataTypeCheckCondition(validators: Array<IInputValidator>): boolean
+    protected tryAutoGenerateDataTypeCheckCondition(validators: Array<IValidator>): boolean
     {
         let created = false;
         if (this.services.autoGenerateDataTypeCheckService.enabled) {
@@ -295,16 +295,16 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
             if (lookupKey) {
                 let dtcCondition = this.services.autoGenerateDataTypeCheckService.autoGenerateDataTypeCondition(this, lookupKey);
                 if (dtcCondition != null) {
-                    let config: InputValidatorConfig = {
+                    let config: ValidatorConfig = {
                         /* eslint-disable-next-line @typescript-eslint/naming-convention */
                         conditionCreator: (requester) => dtcCondition,
                         conditionConfig: null,
                         errorMessage: null, // expecting TextLocalizationService to contribute based on ConditionType + DataTypeLookupKey
                         severity: ValidationSeverity.Severe
                     };
-                    validators.push(this.services.inputValidatorFactory.create(this, config));
+                    validators.push(this.services.validatorFactory.create(this, config));
                     this.services.loggerService.log(`Added ${dtcCondition.conditionType} Condition for Data Type Check`,
-                        LoggingLevel.Info, LoggingCategory.Configuration, `InputValidator on ${this.getName()}`);
+                        LoggingLevel.Info, LoggingCategory.Configuration, `Validator on ${this.getName()}`);
                     created = true;
                 }
             }
@@ -312,7 +312,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         return created;
     }
     /**
-     * Resolves from the generated InputValidators by checking the first for
+     * Resolves from the generated Validators by checking the first for
      * Condition.category = Required
      */
     public get requiresInput(): boolean
@@ -335,11 +335,11 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
     }
 
     /**
-     * Gets an InputValidator already assigned to this InputValueHost.
-     * @param errorCode - Same as ConditionType unless you set the InputValidatorConfig.errorCode property
-     * @returns The InputValidator or null if the condition type does not match.
+     * Gets an Validator already assigned to this InputValueHost.
+     * @param errorCode - Same as ConditionType unless you set the ValidatorConfig.errorCode property
+     * @returns The Validator or null if the condition type does not match.
      */
-    public getValidator(errorCode: string): IInputValidator | null { 
+    public getValidator(errorCode: string): IValidator | null { 
         let ec = cleanString(errorCode);
         if (ec)
             for (let iv of this.validators())
@@ -353,7 +353,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
      * to those already configured within ValidationManager.
      * 
      * It adds or replaces when the ConditionType matches an existing 
-     * InputValidatorConfig.
+     * ValidatorConfig.
      * 
      * Try to avoid using it for validators coming from business logic.
      * This fits well with Data Type Check cases that were
@@ -365,7 +365,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
      * to these conditions during setup in ValidationManager.
      * @param config 
      */
-    public addValidator(config: InputValidatorConfig): void
+    public addValidator(config: ValidatorConfig): void
     {
         this._validators = null;    // force recreation
         if (!this.config.validatorConfigs)
@@ -471,7 +471,7 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
                     errorCode = valConfig.conditionConfig.type;
                 else if (valConfig.conditionCreator)
                 {
-                    let cond = valConfig.conditionCreator(valConfig);   // return null is actually a configuration bug reported to the user in InputValidator.Condition
+                    let cond = valConfig.conditionCreator(valConfig);   // return null is actually a configuration bug reported to the user in Validator.Condition
                     if (cond)
                         errorCode = cond.conditionType;
                 }

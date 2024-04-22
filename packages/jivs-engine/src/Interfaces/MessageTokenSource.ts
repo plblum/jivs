@@ -1,5 +1,5 @@
 /**
- * @module InputValidator/Types/MessageTokenSource
+ * @module Validator/Types/MessageTokenSource
  */
 
 import { IInputValueHost } from "./InputValueHost";

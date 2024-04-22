@@ -90,7 +90,7 @@ export class TextLocalizerService implements ITextLocalizerService
     /**
      * Attempts to get the localized error message for the ErrorCode and optional DataTypeLookupKey.
      * If dataTypeLookupKey is supplied and no match is found, it tries with just the ErrorCode.
-     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
+     * @param errorCode  - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns The error message or null if not available.
      */
@@ -105,7 +105,7 @@ export class TextLocalizerService implements ITextLocalizerService
     }
     /**
      * Constructs the l10nText for the Error Message.
-     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
+     * @param errorCode  - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns 
      */
@@ -120,7 +120,7 @@ export class TextLocalizerService implements ITextLocalizerService
     /**
      * Attempts to get the localized Summary error message for the ErrorCode and optional DataTypeLookupKey
      * If dataTypeLookupKey is supplied and no match is found, it tries with just the ErrorCode.
-     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
+     * @param errorCode  - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns The Summary error message or null if not available.
      */
@@ -135,7 +135,7 @@ export class TextLocalizerService implements ITextLocalizerService
     }
     /**
      * Constructs the l10nText for the Summary error message.
-     * @param errorCode  - same as ConditionType unless you set the InputValidatorConfig.errorCode property
+     * @param errorCode  - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @param dataTypeLookupKey 
      * @returns 
      */
@@ -165,7 +165,7 @@ export class TextLocalizerService implements ITextLocalizerService
      * The localization key (l10ntext) will use this pattern:
      * 'EM-' + ErrorCode + '-' + DataTypeLookupKey
      * 'EM-' + ErrorCode   // this is a fallback
-     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property
+     * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @param dataTypeLookupKey - optional. 
      * @param cultureToText 
      */
@@ -178,7 +178,7 @@ export class TextLocalizerService implements ITextLocalizerService
      * The localization key (l10ntext) will use this pattern:
      * 'SEM-' + ErrorCode + '-' + DataTypeLookupKey
      * 'SEM-' + ErrorCode   // this is a fallback
-     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property
+     * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @param dataTypeLookupKey - optional. 
      * @param cultureToText 
      */

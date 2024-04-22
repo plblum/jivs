@@ -49,7 +49,7 @@
  * - StartFluent - Class that starts a fluent chain. Its methods start InputValueHost (input()),
  *   NonInputValueHost (nonInput()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  * 
- * - FluentValidatorCollector - Class that supplies Conditions and InputValidators
+ * - FluentValidatorCollector - Class that supplies Conditions and Validators
  *   to the preceding InputValueHost. It is returned by builder.input() and each chained object that follows.
  * 
  * - FluentConditionCollector - Class that supplies Conditions to Conditions based upon EvaluateChildConditionResultsConfig:
@@ -81,10 +81,10 @@
  *     expression: RegExp | string, ignoreCase?: boolean | null,
  *     conditionConfig?: FluentRegExpConditionConfig | null,
  *     errorMessage?: string | null,
- *     inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector {
+ *     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
  *     return finishFluentValidatorCollector(this,
  *         ConditionType.RegExp, _genCDRegExp(expression, ignoreCase, conditionConfig),
- *         errorMessage, inputValidatorParameters);
+ *         errorMessage, validatorParameters);
  * }
  * function regExp_forConditions(
  *     valueHostName: ValueHostName | null,
@@ -102,7 +102,7 @@
  *       regExp(expression: RegExp | string, ignoreCase?: boolean | null,
  *          conditionConfig?: FluentRegExpConditionConfig | null, 
  *          errorMessage?: string | null, 
- *          inputValidatorParameters : FluentInputValidationConfig) : FluentValidatorCollector
+ *          validatorParameters : FluentRegExpConditionConfig) : FluentValidatorCollector
  *    }
  *    export interface FluentConditionCollector
  *    {
@@ -122,7 +122,7 @@
  * Just register it with fluentFactory.singleton.register().
  */
 
-import { InputValidatorConfig } from '../Interfaces/Validator';
+import { ValidatorConfig } from '../Interfaces/Validator';
 import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { NonInputValueHostConfig } from "../Interfaces/NonInputValueHost";
@@ -335,9 +335,9 @@ export type FluentInputValueConfig = Omit<InputValueHostConfig, 'type' | 'valida
 export type FluentInputParameters = Omit<FluentInputValueConfig, 'name' | 'dataType'>;
 /**
  * Targets fluent functions for conditions as their second parameter, hosting most of the 
- * properties needed for InputValidatorConfig
+ * properties needed for ValidatorConfig
  */
-export type FluentInputValidatorConfig = Omit<InputValidatorConfig, 'conditionConfig'>;
+export type FluentValidatorConfig = Omit<ValidatorConfig, 'conditionConfig'>;
 
 
 /**
@@ -370,25 +370,25 @@ export interface IFluentValidatorCollector
     parentConfig: InputValueHostConfig;    
     /**
      * For any implementation of a fluent function that works with FluentValidatorCollector.
-     * It takes the parameters passed into that function (conditionConfig and inputvalidatorconfig)
-     * and assemble the final InputValidatorConfig, which it adds to the InputValueHostConfig.
+     * It takes the parameters passed into that function (conditionConfig and validatorconfig)
+     * and assemble the final ValidatorConfig, which it adds to the InputValueHostConfig.
      * @oaram conditionType - When not null, this will be assigned to conditionConfig for you.
-     * @param conditionConfig - if null, expects inputValidatorConfig to supply either conditionConfig
+     * @param conditionConfig - if null, expects validatorConfig to supply either conditionConfig
      * or conditionCreator. If your fluent function supplies stand-alone parameters that belong
      * in conditionConfig, assign them to conditionConfig.
-     * @param errorMessage - optional error message. Will overwrite any from inputValidatorConfig if
+     * @param errorMessage - optional error message. Will overwrite any from validatorConfig if
      * supplied.
-     * @param inputValidatorConfig - does not expect conditionConfig to be setup, but if it is, it
+     * @param validatorConfig - does not expect conditionConfig to be setup, but if it is, it
      * will be replaced when conditionConfig is not null.
      */
     add(conditionType: string | null,
         conditionConfig: Partial<ConditionConfig> | null,
         errorMessage: string | null | undefined,
-        inputValidatorConfig: FluentInputValidatorConfig | undefined | null): void;
+        validatorConfig: FluentValidatorConfig | undefined | null): void;
 }
 
 /**
- * Supplies Conditions and InputValidators the preceding InputValueHost in a fluent chain. 
+ * Supplies Conditions and Validators the preceding InputValueHost in a fluent chain. 
  * It is returned by ValueHostsBuilder.input() and each chained object that follows.
  * 
  * This class will dynamically get fluent functions for each condition
@@ -418,24 +418,24 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
 
     /**
      * For any implementation of a fluent function that works with FluentValidationRule.
-     * It takes the parameters passed into that function (conditionConfig and inputValidatorConfig)
-     * and assemble the final InputValidatorConfig, which it adds to the InputValueHostConfig.
+     * It takes the parameters passed into that function (conditionConfig and validatorConfig)
+     * and assemble the final ValidatorConfig, which it adds to the InputValueHostConfig.
      * @oaram conditionType - When not null, this will be assigned to conditionConfig for you.
-     * @param conditionConfig - if null, expects inputValidatorConfig to supply either conditionConfig
+     * @param conditionConfig - if null, expects validatorConfig to supply either conditionConfig
      * or conditionCreator. If your fluent function supplies stand-alone parameters that belong
      * in conditionConfig, assign them to conditionConfig.
-     * @param errorMessage - optional error message. Will overwrite any from inputValidatorConfig if
+     * @param errorMessage - optional error message. Will overwrite any from validatorConfig if
      * supplied.
-     * @param inputValidatorConfig - does not expect conditionConfig to be setup, but if it is, it
+     * @param validatorConfig - does not expect conditionConfig to be setup, but if it is, it
      * will be replaced when conditionConfig is not null.
      */
     public add(conditionType: string | null,
         conditionConfig: Partial<ConditionConfig> | null,
         errorMessage: string | null | undefined,
-        inputValidatorConfig: FluentInputValidatorConfig | undefined | null): void
+        validatorConfig: FluentValidatorConfig | undefined | null): void
     {
-        let ivDesc: InputValidatorConfig = inputValidatorConfig ?
-            { ...inputValidatorConfig as InputValidatorConfig } :
+        let ivDesc: ValidatorConfig = validatorConfig ?
+            { ...validatorConfig as ValidatorConfig } :
             { conditionConfig: null };
         if (errorMessage != null)   // null or undefined
             ivDesc.errorMessage = errorMessage;
@@ -449,16 +449,16 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
         if (this.parentConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode))
             throw new CodingError(`ValueHost name ${this._parentConfig.name} with errorCode ${errorCode} already defined.`);
 
-        this.parentConfig.validatorConfigs!.push(ivDesc as InputValidatorConfig);
+        this.parentConfig.validatorConfigs!.push(ivDesc as ValidatorConfig);
     }
 }
 
 /**
  * Conditions that use EvaluateChildConditionResultsConfig (All, Any, CountMatches, etc)
  * use this to collect child conditions. This differs from FluentValidatorCollector
- * as it does not deal with InputValidatorConfigs.
+ * as it does not deal with ValidatorConfigs.
  * Yet the same fluent functions are used for both this and FluentValidatorCollector.
- * As a result, any parameters associated with InputValidatorConfig must be optional.
+ * As a result, any parameters associated with ValidatorConfig must be optional.
  * Use this when using alternative conditions, as you will need to provide substitutes
  * for each fluent function. Your class should be registered with FluentFactory.
  */
@@ -547,17 +547,17 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
  * @param conditionType 
  * @param conditionConfig 
  * @param errorMessage 
- * @param inputValidatorParameters 
+ * @param validatorParameters 
  * @returns The same instance passed into the first parameter to allow for chaining.
  */
 export function finishFluentValidatorCollector(thisFromCaller: any, 
     conditionType: string | null,
     conditionConfig: Partial<ConditionConfig>,
     errorMessage: string | null | undefined,
-    inputValidatorParameters: FluentInputValidatorConfig | undefined | null): FluentValidatorCollector
+    validatorParameters: FluentValidatorConfig | undefined | null): FluentValidatorCollector
 {
     if (thisFromCaller instanceof FluentValidatorCollector) {
-        thisFromCaller.add(conditionType, conditionConfig, errorMessage, inputValidatorParameters);
+        thisFromCaller.add(conditionType, conditionConfig, errorMessage, validatorParameters);
         return thisFromCaller;
     }
     throw new FluentSyntaxRequiredError();
@@ -654,13 +654,13 @@ export class FluentFactory
  * For more on setting up your own fluent function, see @link ValueHosts/Fluent|Fluent.
  */
 
-export function customRule(conditionCreator: (requester: InputValidatorConfig) => ICondition | null,
+export function customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector
+    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector
 {
     if (this instanceof FluentValidatorCollector) {
-        let ivConfig: InputValidatorConfig = inputValidatorParameters ?
-            { ...inputValidatorParameters as InputValidatorConfig, conditionConfig: null } :
+        let ivConfig: ValidatorConfig = validatorParameters ?
+            { ...validatorParameters as ValidatorConfig, conditionConfig: null } :
             { conditionConfig: null}; 
         ivConfig.conditionCreator = conditionCreator;
         let self = this as FluentValidatorCollector;
@@ -684,9 +684,9 @@ export class FluentSyntaxRequiredError extends Error
 // interface that extends the class FluentValidationRule
 export declare interface FluentValidatorCollector
 {
-    customRule(conditionCreator: (requester: InputValidatorConfig) => ICondition | null,
+    customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         errorMessage?: string | null,
-        inputValidatorParameters?: FluentInputValidatorConfig): FluentValidatorCollector | InputValidatorConfig;
+        validatorParameters?: FluentValidatorConfig): FluentValidatorCollector | ValidatorConfig;
 }
 
 

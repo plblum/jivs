@@ -11,11 +11,11 @@
 
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import type { ILoggerService } from '../Interfaces/LoggerService';
-import type { IInputValidatorFactory } from '../Interfaces/Validator';
+import type { IValidatorFactory } from '../Interfaces/Validator';
 import { IServiceWithFallback, ServiceName, toIServicesAccessor, type IValidationServices } from '../Interfaces/ValidationServices';
 import type { IConditionFactory } from '../Interfaces/Conditions';
 import { IValueHostFactory } from '../Interfaces/ValueHost';
-import { InputValidatorFactory } from '../ValueHosts/Validator';
+import { ValidatorFactory } from '../ValueHosts/Validator';
 import { ValueHostFactory, registerStandardValueHostGenerators } from '../ValueHosts/ValueHostFactory';
 import { ConsoleLoggerService } from './ConsoleLoggerService';
 import { ITextLocalizerService } from '../Interfaces/TextLocalizerService';
@@ -253,24 +253,24 @@ export class ValidationServices implements IValidationServices {
 
     //#endregion ValueHostFactory
 
-    //#region InputValidatorFactory    
+    //#region ValidatorFactory    
     /**
-     * The InputValidatorFactory to use.
+     * The ValidatorFactory to use.
      * It supplies a default if not setup by the user.
      */
-    public get inputValidatorFactory(): IInputValidatorFactory {
-        let service = this.getService<IInputValidatorFactory>(ServiceName.inputValidatorFactory);
+    public get validatorFactory(): IValidatorFactory {
+        let service = this.getService<IValidatorFactory>(ServiceName.validatorFactory);
         if (!service) {
-            service = new InputValidatorFactory();
-            this.setService(ServiceName.inputValidatorFactory, service);
+            service = new ValidatorFactory();
+            this.setService(ServiceName.validatorFactory, service);
         }
         return service;
     }
-    public set inputValidatorFactory(factory: InputValidatorFactory) {
-        this.setService(ServiceName.inputValidatorFactory, factory);
+    public set validatorFactory(factory: ValidatorFactory) {
+        this.setService(ServiceName.validatorFactory, factory);
     }
 
-    //#endregion InputValidatorFactory        
+    //#endregion ValidatorFactory        
 }
 
 /**

@@ -4,8 +4,8 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
-    type ValidateOptions, type ValidateResult, ValidationResult,
-    type BusinessLogicError, type IssueFound, StatefulValidateResult
+    type ValidateOptions, type ValueHostValidateResult, ValidationResult,
+    type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult
 } from './Validation';
 import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostState } from './ValueHost';
 
@@ -64,15 +64,15 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * Runs validation against some of all validators.
-     * If at least one validator was NoMatch, it returns ValidateResult
+     * If at least one validator was NoMatch, it returns ValueHostValidateResult
      * with all of the NoMatches in issuesFound.
-     * If all were Matched, it returns ValidateResult.Value and issuesFound=null.
+     * If all were Matched, it returns ValueHostValidateResult.Value and issuesFound=null.
      * If there are no validators, or all validators were skipped (disabled),
      * it returns ValidationResult.Undetermined.
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      */
-    validate(options?: ValidateOptions): ValidateResult;
+    validate(options?: ValidateOptions): ValueHostValidateResult;
 
     /**
      * Changes the validation state to itself initial: Undetermined
@@ -121,7 +121,7 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * The results of validation specific to one condiiton Type.
-     * @param errorCode - same as ConditionType unless you set the InputValidatorConfig.errorCode property
+     * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @returns The issue or null if none.
      */
     getIssueFound(errorCode: string): IssueFound | null;
@@ -138,7 +138,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      *   that scrolls the associated input field/element into view and sets focus.
      * - severity - Helps style the error. Expect Severe, Error, and Warning levels.
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied, to 
-     *   show in the Validation Summary widget. Each InputValidator has 2 messages.
+     *   show in the Validation Summary widget. Each Validator has 2 messages.
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
@@ -201,7 +201,7 @@ export interface ValidatableValueHostBaseConfig extends ValueHostConfig {
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface ValidatableValueHostBaseState extends ValueHostState, StatefulValidateResult {
+export interface ValidatableValueHostBaseState extends ValueHostState, StatefulValueHostValidateResult {
 
     /**
      * The value from the input field/element, even if invalid.
@@ -233,13 +233,13 @@ export interface ValidatableValueHostBaseState extends ValueHostState, StatefulV
     businessLogicErrors?: Array<BusinessLogicError>;
 
     /**
-     * When true, an async InputValidator is running
+     * When true, an async Validator is running
      */
     asyncProcessing?: boolean;
 }
 
 
-export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validateResult: ValidateResult) => void;
+export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validateResult: ValueHostValidateResult) => void;
 export type InputValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
 
 /**

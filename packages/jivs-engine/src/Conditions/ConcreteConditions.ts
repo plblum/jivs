@@ -852,7 +852,7 @@ export interface AllMatchConditionConfig extends EvaluateChildConditionResultsCo
  * All Children must evaluate as Match for a result of Match.
  * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
  * Any child that does not specify its Config.valueHostName will have access to the ValueHost that
- * contains the InputValidator.
+ * contains the Validator.
  */
 export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatchConditionConfig>
 {
@@ -878,7 +878,7 @@ export interface AnyMatchConditionConfig extends EvaluateChildConditionResultsCo
  * At least one Child Condition must evaluate as Match for a result of Match.
  * If any are still Undetermined after treatUndeterminedAs is applied, this results as Undetermined.
  * Any child that does not specify its Config.valueHostName will have access to the ValueHost that
- * contains the InputValidator.
+ * contains the Validator.
  */
 export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatchConditionConfig>
 {
@@ -922,7 +922,7 @@ export interface CountMatchesConditionConfig extends EvaluateChildConditionResul
  * is within a range of Config.minimum to Config.maximum.
  * When Minimum isn't supplied, it defaults to 1.
  * Any child that does not specify its Config.valueHostName will have access to the ValueHost that
- * contains the InputValidator.
+ * contains the Validator.
  */
 export class CountMatchesCondition extends EvaluateChildConditionResultsBase<CountMatchesConditionConfig>
 {

@@ -9,7 +9,7 @@
  * - Rules to disable the validator: Enabler condition, Enabled property and several ValidateOptions.
  * - Resolves error message tokens
   * Attached to InputValueHosts through their InputValueHostConfig.
-  * @module InputValidator/ConcreteClasses
+  * @module Validator/ConcreteClasses
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -18,7 +18,7 @@ import { toIGatherValueHostNames, type IValueHost, ValidTypesForStateStorage } f
 import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
-import { type InputValidateResult, type IInputValidator, type InputValidatorConfig, type IInputValidatorFactory } from '../Interfaces/Validator';
+import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
@@ -27,7 +27,7 @@ import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
 
 /**
- * An IInputValidator implementation that represents a single validator 
+ * An IValidator implementation that represents a single validator 
  * for the value of an InputValueHost.
  * It is stateless.
  * Basically you want to call validate() to get all of the results
@@ -40,15 +40,15 @@ import { ConditionType } from '../Conditions/ConditionTypes';
  * Each instance depends on a few things, all passed into the constructor
  * and treated as immutable.
  * - IInputValueHost - name, label, and values from the consuming system.
- * - InputValidatorConfig - The business logic supplies these rules
+ * - ValidatorConfig - The business logic supplies these rules
  *   to implement validation including Condition, Enabler, and error messages
  * If the caller changes any of these, discard the instance
- * and create a new one. The IInputValidatorState will restore the state.
+ * and create a new one. The IValidatorState will restore the state.
  */
-export class InputValidator implements IInputValidator {
-    // As a rule, InputValueHost discards InputValidator when anything contained in these objects
+export class Validator implements IValidator {
+    // As a rule, InputValueHost discards Validator when anything contained in these objects
     // has changed.
-    constructor(valueHost: IInputValueHost, config: InputValidatorConfig) {
+    constructor(valueHost: IInputValueHost, config: ValidatorConfig) {
         assertNotNull(valueHost, 'valueHost');
         assertNotNull(config, 'config');
         this._valueHost = valueHost;
@@ -58,7 +58,7 @@ export class InputValidator implements IInputValidator {
     /**
     * The business rules behind this validator.
     */
-    protected get config(): InputValidatorConfig {
+    protected get config(): ValidatorConfig {
         return this._config;
     }
 
@@ -83,11 +83,11 @@ export class InputValidator implements IInputValidator {
      * and at that time, it must replace this instance with 
      * a new one and a new Config instance.
      */
-    private readonly _config: InputValidatorConfig;
+    private readonly _config: ValidatorConfig;
 
     /**
      * Provides the error code associated with this instance.
-     * It uses InputValidatorConfig.errorCode when assigned
+     * It uses ValidatorConfig.errorCode when assigned
      * and ConditionType when not assigned.
      */
     public get errorCode(): string
@@ -100,7 +100,7 @@ export class InputValidator implements IInputValidator {
      * Condition used to validate the data.
      * Run by validate(), but only if the Validator is enabled (severity<>Off and Enabler == Match)
      * The actual Condition instance is created by the caller
-     * and supplied in the InputValidatorConfig.
+     * and supplied in the ValidatorConfig.
      */
     public get condition(): ICondition {
         if (!this._condition) {
@@ -257,7 +257,7 @@ export class InputValidator implements IInputValidator {
      * @returns Identifies the ConditionEvaluateResult.
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
-    public validate(options: ValidateOptions): InputValidateResult | Promise<InputValidateResult> {
+    public validate(options: ValidateOptions): ValidatorValidateResult | Promise<ValidatorValidateResult> {
         assertNotNull(options, 'options');
         let self = this;
         logInfo(() => {
@@ -266,7 +266,7 @@ export class InputValidator implements IInputValidator {
             }
         });
 
-        let resultState: InputValidateResult = {
+        let resultState: ValidatorValidateResult = {
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
             issueFound: null
         };
@@ -333,7 +333,7 @@ export class InputValidator implements IInputValidator {
                     };
                 });
         }
-        function resolveCER(cer: ConditionEvaluateResult): InputValidateResult {
+        function resolveCER(cer: ConditionEvaluateResult): ValidatorValidateResult {
             logInfo(() => {
                 return {
                     message: `Condition ${self.conditionType} evaluated as ${ConditionEvaluateResultStrings[cer]}`
@@ -350,8 +350,8 @@ export class InputValidator implements IInputValidator {
             }
             return resultState;
         }
-        function processPromise(promiseCER: Promise<ConditionEvaluateResult>): Promise<InputValidateResult> {
-            let wrapperPromise = new Promise<InputValidateResult>((resolve, reject) => {
+        function processPromise(promiseCER: Promise<ConditionEvaluateResult>): Promise<ValidatorValidateResult> {
+            let wrapperPromise = new Promise<ValidatorValidateResult>((resolve, reject) => {
                 promiseCER.then(
                     (resultingCER) => {
                         resolve(resolveCER(resultingCER));
@@ -363,8 +363,8 @@ export class InputValidator implements IInputValidator {
             });
             return wrapperPromise;
         }
-        function bailout(errorMessage: string): InputValidateResult {
-            let resultState: InputValidateResult = {
+        function bailout(errorMessage: string): ValidatorValidateResult {
+            let resultState: ValidatorValidateResult = {
                 conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
                 issueFound: null
             };
@@ -406,7 +406,7 @@ export class InputValidator implements IInputValidator {
     private _supportsDuringEdit: boolean | null = null;
 
     /**
-     * validate() found NoMatch. Update the InputValidatorState's properties to show
+     * validate() found NoMatch. Update the ValidatorState's properties to show
      * the current ValidationResult and error messages.
      * @param stateToUpdate - this is a COPY of the State, as supplied by updateState().
      * Do not modify the actual instance as it is immutable.
@@ -428,7 +428,7 @@ export class InputValidator implements IInputValidator {
 
     /**
      * State is stored in ValueHost's State using its saveInToStore/getFromStore.
-     * Each entry needs to be associated with the errorCode of this InputValidator
+     * Each entry needs to be associated with the errorCode of this Validator
      * and have its own identifier for the value.
      * This function creates a name to use with saveToStore and getFromStore.
      * @param identifier 
@@ -449,7 +449,7 @@ export class InputValidator implements IInputValidator {
     /**
      * Returns an entry from the ValueHostState.
      * 
-     * Often used to store values that override an entry in the InputValidationConfig.
+     * Often used to store values that override an entry in the ValidatorConfig.
      * In that case, typical implementation is:
      * let value = this.getFromState('identifier') ?? this.config.identifier;
      * @param identifier - used together with the errorCode to form a key in the State.
@@ -463,11 +463,11 @@ export class InputValidator implements IInputValidator {
     //#region config overrides
 
     /**
-     * Use to change the enabled flag. It overrides the value from InputValidatorConfig.enabled.
+     * Use to change the enabled flag. It overrides the value from ValidatorConfig.enabled.
      * Use case: the list of validators on InputValueHost might change while the form is active.
      * Add all possible cases to InputValueHost and change their enabled flag here when needed.
      * Also remember that you can use the enabler property on 
-     * InputValidatorConfig to automatically determine if the validator
+     * ValidatorConfig to automatically determine if the validator
      * should run or not. Enabler may not be ideal in some cases though.
      * @param enabled 
      */
@@ -477,11 +477,11 @@ export class InputValidator implements IInputValidator {
 
     /**
      * Use to change the errorMessage and/or errorMessagel10n values. 
-     * It overrides the values from InputValidatorConfig.errorMessage and errorMessagel10n.
+     * It overrides the values from ValidatorConfig.errorMessage and errorMessagel10n.
      * Use case: Business logic supplies a default values for errorMessage and errorMessagel10n which the UI needs to change.
-     * @param errorMessage  - If undefined, reverts to InputValidatorConfig.errorMessage.
+     * @param errorMessage  - If undefined, reverts to ValidatorConfig.errorMessage.
      * If null, does not make any changes.
-     * @param errorMessagel10n  - If undefined, reverts to InputValidatorConfig.errorMessagel10n.
+     * @param errorMessagel10n  - If undefined, reverts to ValidatorConfig.errorMessagel10n.
      * If null, does not make any changes.
      */
     public setErrorMessage(errorMessage: string | undefined, errorMessagel10n?: string | undefined): void {
@@ -493,11 +493,11 @@ export class InputValidator implements IInputValidator {
 
     /**
      * Use to change the summaryMessage and/or summaryMessagel10n values. 
-     * It overrides the values from InputValidatorConfig.summaryMessage and summaryMessagel10n.
+     * It overrides the values from ValidatorConfig.summaryMessage and summaryMessagel10n.
      * Use case: Business logic supplies a default values for summaryMessage and summaryMessagel10n which the UI needs to change.
-     * @param summaryMessage  - If undefined, reverts to InputValidatorConfig.summaryMessage.
+     * @param summaryMessage  - If undefined, reverts to ValidatorConfig.summaryMessage.
      * If null, does not make any changes.
-     * @param summaryMessagel10n  - If undefined, reverts to InputValidatorConfig.summaryMessagel10n.
+     * @param summaryMessagel10n  - If undefined, reverts to ValidatorConfig.summaryMessagel10n.
      * If null, does not make any changes.
      */
     public setSummaryMessage(summaryMessage: string | undefined, summaryMessagel10n?: string | undefined): void {
@@ -508,7 +508,7 @@ export class InputValidator implements IInputValidator {
     }
 
     /**
-     * Use to change the severity option. It overrides the value from InputValidatorConfig.severity.
+     * Use to change the severity option. It overrides the value from ValidatorConfig.severity.
      * Use case: Business logic supplies a default value for severity which the UI needs to change.
      * @param severity 
      */
@@ -555,13 +555,13 @@ export class InputValidator implements IInputValidator {
     }
 
     protected getLogSourceText(): string {
-        return `InputValidator on ValueHost ${this._valueHost.getName()}`;
+        return `Validator on ValueHost ${this._valueHost.getName()}`;
     }
 }
 
 
 export function createIssueFound(valueHost: IValueHost,
-    validator: IInputValidator): IssueFound {
+    validator: IValidator): IssueFound {
     return {
         valueHostName: valueHost.getName(),
         errorCode: validator.errorCode,
@@ -574,11 +574,11 @@ export function createIssueFound(valueHost: IValueHost,
 //#region Factory
 
 /**
- * InputValidatorFactory creates the appropriate IInputValidator class
+ * ValidatorFactory creates the appropriate IValidator class
  */
-export class InputValidatorFactory implements IInputValidatorFactory {
-    public create(valueHost: IInputValueHost, config: InputValidatorConfig): IInputValidator {
-        return new InputValidator(valueHost, config);
+export class ValidatorFactory implements IValidatorFactory {
+    public create(valueHost: IInputValueHost, config: ValidatorConfig): IValidator {
+        return new Validator(valueHost, config);
     }
 }
 
@@ -586,14 +586,14 @@ export class InputValidatorFactory implements IInputValidatorFactory {
 //#endregion Factory
 
 /**
- * When using an InputValidatorConfig object, its errorCode property
+ * When using an ValidatorConfig object, its errorCode property
  * may not be defined, but it still has an errorCode through
  * the Condition's ConditionType.
  * Use this function to get the expected error code.
  * @param ivConfig 
  * @returns 
  */
-export function resolveErrorCode(ivConfig: InputValidatorConfig): string
+export function resolveErrorCode(ivConfig: ValidatorConfig): string
 {
     return ivConfig.errorCode ?? ivConfig.conditionConfig?.type ?? ConditionType.Unknown;
 }

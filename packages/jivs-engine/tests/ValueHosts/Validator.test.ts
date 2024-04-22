@@ -7,7 +7,7 @@ import {
     
 } from "../../src/Conditions/ConcreteConditions";
 
-import { InputValidator, InputValidatorFactory } from "../../src/ValueHosts/Validator";
+import { Validator, ValidatorFactory } from "../../src/ValueHosts/Validator";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
@@ -17,7 +17,7 @@ import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
 import { ValidationSeverity, ValidateOptions } from '../../src/Interfaces/Validation';
-import { InputValidateResult, IInputValidator, InputValidatorConfig } from '../../src/Interfaces/Validator';
+import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../../src/Interfaces/Validator';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -26,10 +26,10 @@ import { registerAllConditions } from "../TestSupport/createValidationServices";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
 
-// subclass of InputValidator to expose many of its protected members so they
+// subclass of Validator to expose many of its protected members so they
 // can be individually tested
-class PublicifiedInputValidator extends InputValidator {
-    public ExposeConfig(): InputValidatorConfig {
+class PublicifiedValidator extends Validator {
+    public ExposeConfig(): ValidatorConfig {
         return this.config;
     }
     public ExposeServices(): IValidationServices {
@@ -56,7 +56,7 @@ class PublicifiedInputValidator extends InputValidator {
     }
 }
 /**
- * Returns an InputValidator (PublicifiedInputValidator subclass) ready for testing.
+ * Returns an Validator (PublicifiedValidator subclass) ready for testing.
  * The returned ValidationManager includes two InputValueHosts with IDs "Field1" and "Field2".
  * @param config - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
@@ -65,39 +65,39 @@ class PublicifiedInputValidator extends InputValidator {
  * summaryMessage: 'Summary'
  * @returns An object with all of the parts that were setup including 
  * ValidationManager, Services, two ValueHosts, the complete Config,
- * and the InputValidator.
+ * and the Validator.
  */
-function setupWithField1AndField2(config?: Partial<InputValidatorConfig>): {
+function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
     vm: MockValidationManager,
     services: MockValidationServices,
     valueHost1: MockInputValueHost,
     valueHost2: MockInputValueHost,
-    config: InputValidatorConfig,
-    inputValidator: PublicifiedInputValidator
+    config: ValidatorConfig,
+    validator: PublicifiedValidator
 } {
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
     let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Label1');
     let vh2 = vm.addInputValueHost('Field2', LookupKey.String, 'Label2');
-    const defaultConfig: InputValidatorConfig = {
+    const defaultConfig: ValidatorConfig = {
         conditionConfig: <RequireTextConditionConfig>
             { type: ConditionType.RequireText, valueHostName: 'Field1' },
         errorMessage: 'Local',
         summaryMessage: 'Summary'
     };
 
-    let updatedConfig: InputValidatorConfig = (!config) ?
+    let updatedConfig: ValidatorConfig = (!config) ?
         defaultConfig :
         { ...defaultConfig, ...config };
 
-    let testItem = new PublicifiedInputValidator(vh, updatedConfig);
+    let testItem = new PublicifiedValidator(vh, updatedConfig);
     return {
         vm: vm,
         services: services,
         valueHost1: vh,
         valueHost2: vh2,
         config: updatedConfig,
-        inputValidator: testItem
+        validator: testItem
     };
 }
 export class ConditionWithPromiseTester implements ICondition {
@@ -129,28 +129,28 @@ export class ConditionWithPromiseTester implements ICondition {
         });
     }
 }
-// constructor(valueHost: IInputValueHost, config: InputValidatorConfig)
-describe('Inputvalidator.constructor and initial property values', () => {
+// constructor(valueHost: IInputValueHost, config: ValidatorConfig)
+describe('Validator.constructor and initial property values', () => {
     test('valueHost parameter null throws', () => {
-        let config: InputValidatorConfig = {
+        let config: ValidatorConfig = {
             conditionConfig: { type: '' },
             errorMessage: ''
         };
-        expect(() => new InputValidator(null!, config)).toThrow(/valueHost/);
+        expect(() => new Validator(null!, config)).toThrow(/valueHost/);
     });
     test('config parameter null throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = new MockInputValueHost(vm, '', '',);
-        expect(() => new InputValidator(vh, null!)).toThrow(/config/);
+        expect(() => new Validator(vh, null!)).toThrow(/config/);
     });
     test('Valid parameters create and setup supporting properties', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: { type: '' },
         });
-        expect(setup.inputValidator.ExposeConfig()).toBe(setup.config);
-        expect(setup.inputValidator.ExposeValidationManager()).toBe(setup.vm);
-        expect(()=>setup.inputValidator.errorCode).toThrow();   // because errorCode is undefined and type=''
+        expect(setup.validator.ExposeConfig()).toBe(setup.config);
+        expect(setup.validator.ExposeValidationManager()).toBe(setup.vm);
+        expect(()=>setup.validator.errorCode).toThrow();   // because errorCode is undefined and type=''
     });
 });
 describe('errorCode', () => {
@@ -159,27 +159,27 @@ describe('errorCode', () => {
             errorCode: 'TEST',
             conditionConfig: { type: ConditionType.RequireText },
         });
-        expect(setup.inputValidator.errorCode).toBe('TEST');
+        expect(setup.validator.errorCode).toBe('TEST');
     });
     test('Value assigned with whitespace is returned trimmed regardless of ConditionType', () => {
         let setup = setupWithField1AndField2({
             errorCode: ' TEST ',
             conditionConfig: { type: ConditionType.RequireText },
         });
-        expect(setup.inputValidator.errorCode).toBe('TEST');
+        expect(setup.validator.errorCode).toBe('TEST');
     });    
     test('Value empty string returns ConditionType', () => {
         let setup = setupWithField1AndField2({
             errorCode: '',
             conditionConfig: { type: ConditionType.RequireText },
         });
-        expect(setup.inputValidator.errorCode).toBe(ConditionType.RequireText);
+        expect(setup.validator.errorCode).toBe(ConditionType.RequireText);
     });    
     test('Value undefined returns ConditionType', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: { type: ConditionType.RequireText },
         });
-        expect(setup.inputValidator.errorCode).toBe(ConditionType.RequireText);
+        expect(setup.validator.errorCode).toBe(ConditionType.RequireText);
     });   
     /* Couldn't find a way to set this up as omitted and unknown types both throw exceptions.
     test('Value undefined and same with conditiontype returns"UNKNOWN"', () => {
@@ -187,11 +187,11 @@ describe('errorCode', () => {
             conditionConfig: { type: '' },
         });
         
-        expect(setup.inputValidator.errorCode).toBe(ConditionType.Unknown);
+        expect(setup.validator.errorCode).toBe(ConditionType.Unknown);
     });     
     */
 });
-describe('InputValidator.condition', () => {
+describe('Validator.condition', () => {
     test('Successful creation of RequireTextCondition using ConditionConfig', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <RequireTextConditionConfig>
@@ -199,7 +199,7 @@ describe('InputValidator.condition', () => {
         });
 
         let condition: ICondition | null = null;
-        expect(() => condition = setup.inputValidator.condition).not.toThrow();
+        expect(() => condition = setup.validator.condition).not.toThrow();
         expect(condition).not.toBeNull();
         expect(condition).toBeInstanceOf(RequireTextCondition);
     });
@@ -209,7 +209,7 @@ describe('InputValidator.condition', () => {
         });
 
         let condition: ICondition | null = null;
-        expect(() => condition = setup.inputValidator.condition).toThrow(/not supported/);
+        expect(() => condition = setup.validator.condition).toThrow(/not supported/);
     });
     test('Successful creation using ConditionCreator', () => {
         let setup = setupWithField1AndField2({
@@ -226,7 +226,7 @@ describe('InputValidator.condition', () => {
         });
 
         let condition: ICondition | null = null;
-        expect(() => condition = setup.inputValidator.condition).not.toThrow();
+        expect(() => condition = setup.validator.condition).not.toThrow();
         expect(condition).not.toBeNull();
         expect(condition!.conditionType).toBe('TEST');
         expect(condition!.category).toBe(ConditionCategory.Undetermined);
@@ -238,7 +238,7 @@ describe('InputValidator.condition', () => {
         });
 
         let condition: ICondition | null = null;
-        expect(() => condition = setup.inputValidator.condition).toThrow(/setup/);
+        expect(() => condition = setup.validator.condition).toThrow(/setup/);
     });
     test('Both Config and Creator setup throws', () => {
         let setup = setupWithField1AndField2({
@@ -255,7 +255,7 @@ describe('InputValidator.condition', () => {
         });
 
         let condition: ICondition | null = null;
-        expect(() => condition = setup.inputValidator.condition).toThrow(/both/);
+        expect(() => condition = setup.validator.condition).toThrow(/both/);
     });
     test('ConditionCreator returns null throws', () => {
         let setup = setupWithField1AndField2({
@@ -264,15 +264,15 @@ describe('InputValidator.condition', () => {
         });
 
         let condition: ICondition | null = null;
-        expect(() => condition = setup.inputValidator.condition).toThrow(/instance/);
+        expect(() => condition = setup.validator.condition).toThrow(/instance/);
     });
 });
-describe('InputValidator.enabler', () => {
-    test('InputValidatorConfig has no Enabler assigned sets Enabler to null', () => {
+describe('Validator.enabler', () => {
+    test('ValidatorConfig has no Enabler assigned sets Enabler to null', () => {
         let setup = setupWithField1AndField2({});
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.inputValidator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
     });
     test('Successful creation of EqualToCondition', () => {
@@ -284,7 +284,7 @@ describe('InputValidator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.inputValidator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
         expect(enabler).not.toBeNull();
         expect(enabler).toBeInstanceOf(EqualToCondition);
     });
@@ -296,7 +296,7 @@ describe('InputValidator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.inputValidator.ExposeEnabler()).toThrow(/not supported/);
+        expect(() => enabler = setup.validator.ExposeEnabler()).toThrow(/not supported/);
     });
     test('Successful creation using EnablerCreator', () => {
         let setup = setupWithField1AndField2({
@@ -312,7 +312,7 @@ describe('InputValidator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.inputValidator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
         expect(enabler).not.toBeNull();
         expect(enabler!.conditionType).toBe('TEST');
         expect(enabler!.category).toBe(ConditionCategory.Undetermined);
@@ -323,7 +323,7 @@ describe('InputValidator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.inputValidator.ExposeEnabler()).not.toThrow();
+        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
     });
     test('Both Config and Creator setup throws', () => {
@@ -341,7 +341,7 @@ describe('InputValidator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.inputValidator.ExposeEnabler()).toThrow(/both/);
+        expect(() => enabler = setup.validator.ExposeEnabler()).toThrow(/both/);
     });
     test('EnablerCreator returns null throws', () => {
         let setup = setupWithField1AndField2({
@@ -350,41 +350,41 @@ describe('InputValidator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.inputValidator.ExposeEnabler()).toThrow(/instance/);
+        expect(() => enabler = setup.validator.ExposeEnabler()).toThrow(/instance/);
     });
 });
-describe('InputValidator.enabled', () => {
+describe('Validator.enabled', () => {
     test('Config.enabled = true, Enabled=true', () => {
         let setup = setupWithField1AndField2({
             enabled: true
         });
 
-        expect(setup.inputValidator.enabled).toBe(true);
+        expect(setup.validator.enabled).toBe(true);
     });
     test('Config.enabled = false, Enabled=false', () => {
         let setup = setupWithField1AndField2({
             enabled: false
         });
 
-        expect(setup.inputValidator.enabled).toBe(false);
+        expect(setup.validator.enabled).toBe(false);
     });
     test('Config.enabled = undefined, Enabled=true', () => {
         let setup = setupWithField1AndField2({
             enabled: undefined
         });
 
-        expect(setup.inputValidator.enabled).toBe(true);
+        expect(setup.validator.enabled).toBe(true);
     });
     test('Config.enabled = function, Enabled= result of function', () => {
         let setup = setupWithField1AndField2({
 
-            enabled: (iv: IInputValidator) => enabledForFn
+            enabled: (iv: IValidator) => enabledForFn
         });
 
         let enabledForFn = true;
-        expect(setup.inputValidator.enabled).toBe(true);
+        expect(setup.validator.enabled).toBe(true);
         enabledForFn = false;
-        expect(setup.inputValidator.enabled).toBe(false);
+        expect(setup.validator.enabled).toBe(false);
     });
 
     test('Config.enabled = true but setEnabled sets it to false, Enabled=false', () => {
@@ -392,52 +392,52 @@ describe('InputValidator.enabled', () => {
             enabled: true
         });
 
-        setup.inputValidator.setEnabled(false);
-        expect(setup.inputValidator.enabled).toBe(false);
-        setup.inputValidator.setEnabled(true);
-        expect(setup.inputValidator.enabled).toBe(true);
+        setup.validator.setEnabled(false);
+        expect(setup.validator.enabled).toBe(false);
+        setup.validator.setEnabled(true);
+        expect(setup.validator.enabled).toBe(true);
     });    
 });
 
 
-describe('InputValidator.severity', () => {
+describe('Validator.severity', () => {
     test('Config.severity = Error, severity=Error', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Error
         });
 
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('Config.severity = Warning, severity=Warning', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Warning
         });
 
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
     });
     test('Config.severity = Severe, severity=Severe', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Severe
         });
 
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
     });
     test('Config.severity = Error but setSeverity sets it to Severe, severity = Severe', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Error
         });
 
-        setup.inputValidator.setSeverity(ValidationSeverity.Severe);
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
-        setup.inputValidator.setSeverity(ValidationSeverity.Error);
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        setup.validator.setSeverity(ValidationSeverity.Severe);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+        setup.validator.setSeverity(ValidationSeverity.Error);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
     });      
     test('Config.severity unassigned and setSeverity sets it to Severe, severity = Severe', () => {
         let setup = setupWithField1AndField2({
         });
 
-        setup.inputValidator.setSeverity(ValidationSeverity.Severe);
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+        setup.validator.setSeverity(ValidationSeverity.Severe);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
     });           
     test('Conditions that use severity=Severe when Config.severity = undefined', () => {
         function checkDefaultSeverity(conditionType: string, ) {
@@ -449,7 +449,7 @@ describe('InputValidator.severity', () => {
             });
             registerAllConditions((setup.services.conditionFactory as ConditionFactory));
 
-            expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+            expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
         }
         checkDefaultSeverity(ConditionType.RequireText);
         checkDefaultSeverity(ConditionType.DataTypeCheck);
@@ -465,7 +465,7 @@ describe('InputValidator.severity', () => {
                 severity: undefined
             });
 
-            expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+            expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
         }
         checkDefaultSeverity(ConditionType.Range);
         checkDefaultSeverity(ConditionType.StringLength);
@@ -488,7 +488,7 @@ describe('InputValidator.severity', () => {
             severity: undefined
         });
 
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('AllMatchCondition Config.severity = undefined, severity=Error', () => {
         let setup = setupWithField1AndField2({
@@ -498,23 +498,23 @@ describe('InputValidator.severity', () => {
             severity: undefined
         });
 
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
     });
     test('Config.severity = function, severity= result of function', () => {
         let setup = setupWithField1AndField2({
-            severity: (iv: IInputValidator) => severityForFn
+            severity: (iv: IValidator) => severityForFn
         });
 
         let severityForFn: ValidationSeverity = ValidationSeverity.Warning;
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Warning);
         severityForFn = ValidationSeverity.Error;
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
         severityForFn = ValidationSeverity.Severe;
-        expect(setup.inputValidator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
+        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
     });
 });
 
-function setupForLocalization(activeCultureID: string): PublicifiedInputValidator {
+function setupForLocalization(activeCultureID: string): PublicifiedValidator {
     let setup = setupWithField1AndField2({
         errorMessage: 'EM-fallback',
         errorMessagel10n: 'EM',
@@ -531,31 +531,31 @@ function setupForLocalization(activeCultureID: string): PublicifiedInputValidato
         'es': 'esSummaryMessage'
     });
     setup.services.activeCultureId = activeCultureID;
-    return setup.inputValidator;
+    return setup.validator;
 }
-describe('InputValidator.getErrorMessageTemplate', () => {
+describe('Validator.getErrorMessageTemplate', () => {
     test('Config.errorMessage = string, return the same string', () => {
         let setup = setupWithField1AndField2({
             errorMessage: 'Test',
         });
 
-        expect(setup.inputValidator.ExposeGetErrorMessageTemplate()).toBe('Test');
+        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test');
     });
 
     test('Config.errorMessage = function, getErrorMessageTemplate= result of function', () => {
         let setup = setupWithField1AndField2({
-            errorMessage: (iv: IInputValidator) => errorMessageForFn
+            errorMessage: (iv: IValidator) => errorMessageForFn
         });
 
         let errorMessageForFn = 'Test';
-        expect(setup.inputValidator.ExposeGetErrorMessageTemplate()).toBe('Test');
+        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test');
     });
     test('Config.errorMessage = function, throws when function returns null', () => {
         let setup = setupWithField1AndField2({
-            errorMessage: (iv: IInputValidator) => null!
+            errorMessage: (iv: IValidator) => null!
         });
 
-        expect(() => setup.inputValidator.ExposeGetErrorMessageTemplate()).toThrow(/Config\.errorMessage/);
+        expect(() => setup.validator.ExposeGetErrorMessageTemplate()).toThrow(/Config\.errorMessage/);
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
@@ -592,7 +592,7 @@ describe('InputValidator.getErrorMessageTemplate', () => {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
-        let testItem = setup.inputValidator;
+        let testItem = setup.validator;
     
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
     });    
@@ -607,7 +607,7 @@ describe('InputValidator.getErrorMessageTemplate', () => {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
-        let testItem = setup.inputValidator;
+        let testItem = setup.validator;
     
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('supplied');
     });        
@@ -625,7 +625,7 @@ describe('InputValidator.getErrorMessageTemplate', () => {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
-        let testItem = setup.inputValidator;
+        let testItem = setup.validator;
     
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
     });        
@@ -647,7 +647,7 @@ describe('InputValidator.getErrorMessageTemplate', () => {
             '*': 'Default Error Message-String'
         });
         setup.services.activeCultureId = 'en';
-        let testItem = setup.inputValidator;
+        let testItem = setup.validator;
     
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
     }); 
@@ -655,8 +655,8 @@ describe('InputValidator.getErrorMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             errorMessage: 'Test',
         });
-        setup.inputValidator.setErrorMessage('Test-Override');
-        expect(setup.inputValidator.ExposeGetErrorMessageTemplate()).toBe('Test-Override');
+        setup.validator.setErrorMessage('Test-Override');
+        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test-Override');
     });    
     test('Config.errorMessage = string and setErrorMessage overrides without l10n, return the override', () => {
         let setup = setupWithField1AndField2({
@@ -668,18 +668,18 @@ describe('InputValidator.getErrorMessageTemplate', () => {
                 '*': 'Localized Test'
             });        
     
-        setup.inputValidator.setErrorMessage('Test-Override', 'Testl10n');
-        expect(setup.inputValidator.ExposeGetErrorMessageTemplate()).toBe('Localized Test');
+        setup.validator.setErrorMessage('Test-Override', 'Testl10n');
+        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Localized Test');
     });
 });
-describe('InputValidator.GetSummaryMessageTemplate', () => {
+describe('Validator.GetSummaryMessageTemplate', () => {
     test('Config.summaryMessage = string, return the same string', () => {
         let setup = setupWithField1AndField2({
             errorMessage: 'Local',
             summaryMessage: 'Summary',
         });
 
-        expect(setup.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
+        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
     });
     test('Config.summaryMessage = null, return errorMessage', () => {
         let setup = setupWithField1AndField2({
@@ -687,7 +687,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             summaryMessage: null,
         });
 
-        expect(setup.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Local');
+        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Local');
     });
     test('Config.summaryMessage = undefined, return errorMessage', () => {
         let setup = setupWithField1AndField2({
@@ -695,24 +695,24 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             summaryMessage: undefined
         });
 
-        expect(setup.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Local');
+        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Local');
     });
     test('Config.summaryMessage = function, GetSummaryMessageTemplate= result of function', () => {
         let setup = setupWithField1AndField2({
             errorMessage: 'Local',
-            summaryMessage: (iv: IInputValidator) => summaryMessageForFn
+            summaryMessage: (iv: IValidator) => summaryMessageForFn
         });
 
         let summaryMessageForFn = 'Summary';
-        expect(setup.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
+        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Summary');
     });
     test('Config.summaryMessage = function that returns null GetSummaryMessageTemplate = errorMessage', () => {
         let setup = setupWithField1AndField2({
             errorMessage: 'Local',
-            summaryMessage: (iv: IInputValidator) => null!
+            summaryMessage: (iv: IValidator) => null!
         });
 
-        expect(setup.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Local');
+        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Local');
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
@@ -748,7 +748,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
-        let testItem = setup.inputValidator;
+        let testItem = setup.validator;
     
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     });    
@@ -763,7 +763,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
-        let testItem = setup.inputValidator;
+        let testItem = setup.validator;
     
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('supplied');
     });        
@@ -781,7 +781,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             '*': 'Default Error Message'
         });
         setup.services.activeCultureId = 'en';
-        let testItem = setup.inputValidator;
+        let testItem = setup.validator;
     
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     });        
@@ -803,7 +803,7 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
             '*': 'Default Error Message-String'
         });
         setup.services.activeCultureId = 'en';
-        let testItem = setup.inputValidator;
+        let testItem = setup.validator;
     
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     }); 
@@ -812,8 +812,8 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
         let setup = setupWithField1AndField2({
             summaryMessage: 'Test',
         });
-        setup.inputValidator.setSummaryMessage('Test-Override');
-        expect(setup.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Test-Override');
+        setup.validator.setSummaryMessage('Test-Override');
+        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Test-Override');
     });    
     test('Config.summaryMessage = string and setSummaryMessage overrides without l10n, return the override', () => {
         let setup = setupWithField1AndField2({
@@ -825,22 +825,22 @@ describe('InputValidator.GetSummaryMessageTemplate', () => {
                 '*': 'Localized Test'
             });        
     
-        setup.inputValidator.setSummaryMessage('Test-Override', 'Testl10n');
-        expect(setup.inputValidator.ExposeGetSummaryMessageTemplate()).toBe('Localized Test');
+        setup.validator.setSummaryMessage('Test-Override', 'Testl10n');
+        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Localized Test');
     });    
 });
 // validate(group?: string): IssueFound | null
-describe('InputValidator.validate', () => {
+describe('Validator.validate', () => {
 
     test('No issue found. Returns ConditionEvaluateResult.Match', () => {
         let setup = setupWithField1AndField2();
         setup.valueHost1.setValue('valid');
 
-        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
-        expect(() => vrResult = setup.inputValidator.validate({})).not.toThrow();
+        let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
+        expect(() => vrResult = setup.validator.validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as InputValidateResult;
+        vrResult = vrResult as unknown as ValidatorValidateResult;
         expect(vrResult!.issueFound).toBeNull();
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
     });
@@ -849,11 +849,11 @@ describe('InputValidator.validate', () => {
             severity: severity
         });
         setup.valueHost1.setValue('');   // will be invalid
-        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
-        expect(() => vrResult = setup.inputValidator.validate({})).not.toThrow();
+        let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
+        expect(() => vrResult = setup.validator.validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as InputValidateResult;
+        vrResult = vrResult as unknown as ValidatorValidateResult;
         expect(vrResult!.issueFound).not.toBeNull();
         expect(vrResult!.issueFound!.errorCode).toBe(ConditionType.RequireText);
         expect(vrResult!.issueFound!.severity).toBe(severity);
@@ -868,19 +868,19 @@ describe('InputValidator.validate', () => {
     test('Severe Issue found. Returns the issue with severity = severe', () => {
         testSeverity(ValidationSeverity.Severe);
     });
-    function testErrorMessages(errorMessage: string | ((host: IInputValidator) => string),
-        summaryMessage: string | ((host: IInputValidator) => string) | null,
+    function testErrorMessages(errorMessage: string | ((host: IValidator) => string),
+        summaryMessage: string | ((host: IValidator) => string) | null,
         expectedErrorMessage: string, expectedSummaryMessage: string): void {
         let setup = setupWithField1AndField2({
             errorMessage: errorMessage,
             summaryMessage: summaryMessage,
         });
         setup.valueHost1.setValue('');   // will be an issue
-        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
-        expect(() => vrResult = setup.inputValidator.validate({})).not.toThrow();
+        let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
+        expect(() => vrResult = setup.validator.validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as InputValidateResult;
+        vrResult = vrResult as unknown as ValidatorValidateResult;
         expect(vrResult!.issueFound).not.toBeNull();
 
         let issueFound = vrResult!.issueFound;
@@ -897,17 +897,17 @@ describe('InputValidator.validate', () => {
     test('Issue found. errorMessage and summaryMessage supplied each with tokens. Error messages both have correctly replaced the tokens.', () => {
         testErrorMessages('{Label} Local', '{Label} Summary', 'Label1 Local', 'Label1 Summary');
     });
-    function testConditionHasIssueButDisabledReturnsNull(configChanges: Partial<InputValidatorConfig>): void {
+    function testConditionHasIssueButDisabledReturnsNull(configChanges: Partial<ValidatorConfig>): void {
         let setup = setupWithField1AndField2(configChanges);
         let logger = setup.services.loggerService as MockCapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result        
         setup.valueHost1.setValue('');   // will be invalid
         setup.valueHost2.setValueToUndefined();   // for use by Enabler to be invalid
-        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
-        expect(() => vrResult = setup.inputValidator.validate({})).not.toThrow();
+        let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
+        expect(() => vrResult = setup.validator.validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as InputValidateResult;
+        vrResult = vrResult as unknown as ValidatorValidateResult;
         expect(vrResult!.issueFound).toBeNull();
 
         // 2 info level log entries: bailout and validation result
@@ -934,18 +934,18 @@ describe('InputValidator.validate', () => {
             }
         });
     });
-    function testConditionHasIssueAndBlockingCheckPermitsValidation(configChanges: Partial<InputValidatorConfig>,
+    function testConditionHasIssueAndBlockingCheckPermitsValidation(configChanges: Partial<ValidatorConfig>,
         validateOptions: ValidateOptions, logCount: number, issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
         let logger = setup.services.loggerService as MockCapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
         setup.valueHost1.setValue('');   // will be invalid
         setup.valueHost2.setValue('ABC');   // for use by Enabler to enable the condition
-        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
-        expect(() => vrResult = setup.inputValidator.validate(validateOptions)).not.toThrow();
+        let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
+        expect(() => vrResult = setup.validator.validate(validateOptions)).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as InputValidateResult;
+        vrResult = vrResult as unknown as ValidatorValidateResult;
         if (issueExpected)
             expect(vrResult!.issueFound).not.toBeNull();
         else
@@ -994,18 +994,18 @@ describe('InputValidator.validate', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { preliminary: false }, 3, true);
     });
-    function testDuringEditIsTrue(configChanges: Partial<InputValidatorConfig>,
+    function testDuringEditIsTrue(configChanges: Partial<ValidatorConfig>,
         inputValue: string, 
         logCount: number, issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
         let logger = setup.services.loggerService as MockCapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
         setup.valueHost1.setInputValue(inputValue);   // for RequireTextCondition.evaluateDuringEdit
-        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
-        expect(() => vrResult = setup.inputValidator.validate({ duringEdit: true})).not.toThrow();
+        let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
+        expect(() => vrResult = setup.validator.validate({ duringEdit: true})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as InputValidateResult;
+        vrResult = vrResult as unknown as ValidatorValidateResult;
         if (issueExpected)
             expect(vrResult!.issueFound).not.toBeNull();
         else
@@ -1026,11 +1026,11 @@ describe('InputValidator.validate', () => {
 
         let logger = setup.services.loggerService as MockCapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
-        let vrResult: InputValidateResult | Promise<InputValidateResult> | null = null;
-        expect(() => vrResult = setup.inputValidator.validate({})).not.toThrow();
+        let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
+        expect(() => vrResult = setup.validator.validate({})).not.toThrow();
         expect(vrResult).not.toBeNull();
         expect(vrResult).not.toBeInstanceOf(Promise);
-        vrResult = vrResult as unknown as InputValidateResult;
+        vrResult = vrResult as unknown as ValidatorValidateResult;
         expect(vrResult).not.toBeNull();
         expect(vrResult!.issueFound).toBeNull();
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
@@ -1045,13 +1045,13 @@ describe('InputValidator.validate', () => {
         vm: MockValidationManager,
         services: MockValidationServices,
         vh: IInputValueHost,
-        testItem: InputValidator
+        testItem: Validator
     } {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Field 1');
 
-        let config: InputValidatorConfig = {
+        let config: ValidatorConfig = {
             conditionConfig: null,
             conditionCreator: (requestor) => {
                 return new ConditionWithPromiseTester(result,
@@ -1061,7 +1061,7 @@ describe('InputValidator.validate', () => {
             summaryMessage: 'Summary'
         };
 
-        let testItem = new InputValidator(vh, config);
+        let testItem = new Validator(vh, config);
         return {
             vm: vm,
             services: services,
@@ -1070,7 +1070,7 @@ describe('InputValidator.validate', () => {
         };
     }
 
-    test('Condition using Promise to evaluate as Match results in InputValidateResult setup as Match with no IssuesFound', async () => {
+    test('Condition using Promise to evaluate as Match results in ValidatorValidateResult setup as Match with no IssuesFound', async () => {
         let setup = setupPromiseTest(ConditionEvaluateResult.Match, 0);
         let result = await setup.testItem.validate({});
         expect(result).toEqual({
@@ -1078,7 +1078,7 @@ describe('InputValidator.validate', () => {
             issueFound: null
         });
     });
-    test('With delay, Condition using Promise to evaluate as Match results in InputValidateResult setup as Match with no IssuesFound',
+    test('With delay, Condition using Promise to evaluate as Match results in ValidatorValidateResult setup as Match with no IssuesFound',
         async () => {
             let setup = setupPromiseTest(ConditionEvaluateResult.Match, 100);
             let result = await setup.testItem.validate({});
@@ -1087,11 +1087,11 @@ describe('InputValidator.validate', () => {
                 issueFound: null
             });
         });
-    test('Condition using Promise to evaluate as NoMatch results in InputValidateResult setup as Match with 1 IssueFound',
+    test('Condition using Promise to evaluate as NoMatch results in ValidatorValidateResult setup as Match with 1 IssueFound',
         async () => {
             let setup = setupPromiseTest(ConditionEvaluateResult.NoMatch, 0);
             let result = await setup.testItem.validate({});
-            expect(result).toEqual(<InputValidateResult>{
+            expect(result).toEqual(<ValidatorValidateResult>{
                 conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
                 issueFound: {
                     errorCode: 'TEST',
@@ -1102,7 +1102,7 @@ describe('InputValidator.validate', () => {
                 }
             });
         });
-    test('Condition using Promise to evaluate as Undetermined results in InputValidateResult setup as Undetermined with no IssuesFound',
+    test('Condition using Promise to evaluate as Undetermined results in ValidatorValidateResult setup as Undetermined with no IssuesFound',
         async () => {
             let setup = setupPromiseTest(ConditionEvaluateResult.Undetermined, 0);
             let result = await setup.testItem.validate({});
@@ -1128,14 +1128,14 @@ describe('InputValidator.validate', () => {
             }
         });
 });
-describe('InputValidator.gatherValueHostNames', () => {
+describe('Validator.gatherValueHostNames', () => {
     test('RequireTextCondition supplies its ValueHostName', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <RequireTextConditionConfig>
                 { type: ConditionType.RequireText, valueHostName: 'Property1' },
         });
         let collection = new Set<ValueHostName>();
-        expect(() => setup.inputValidator.gatherValueHostNames(collection, setup.vm)).not.toThrow();
+        expect(() => setup.validator.gatherValueHostNames(collection, setup.vm)).not.toThrow();
         expect(collection.size).toBe(1);
         expect(collection.has('Property1')).toBe(true);
     });
@@ -1151,7 +1151,7 @@ describe('getValuesForTokens', () => {
         });
         setup.valueHost1.setInputValue('Value1');
         let tlvs: Array<TokenLabelAndValue> | null = null;
-        expect(() => tlvs = setup.inputValidator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
+        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();
         expect(tlvs).toEqual([
             {
@@ -1178,7 +1178,7 @@ describe('getValuesForTokens', () => {
             ConditionType.RegExp, (config) => new RangeCondition(config));                
         setup.valueHost1.setInputValue('C');
         let tlvs: Array<TokenLabelAndValue> | null = null;
-        expect(() => tlvs = setup.inputValidator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
+        expect(() => tlvs = setup.validator.getValuesForTokens(setup.valueHost1, setup.vm)).not.toThrow();
         expect(tlvs).not.toBeNull();
         expect(tlvs).toEqual([
             {
@@ -1205,12 +1205,12 @@ describe('getValuesForTokens', () => {
     });
 });
 
-describe('InputValidatorFactory.create', () => {
-    test('Returns an InputValidator', () => {
+describe('ValidatorFactory.create', () => {
+    test('Returns an Validator', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Label1');
-        const config: InputValidatorConfig = {
+        const config: ValidatorConfig = {
             conditionConfig: <RequireTextConditionConfig>{
                 type: ConditionType.RequireText,
                 valueHostName: 'Field1'
@@ -1218,11 +1218,11 @@ describe('InputValidatorFactory.create', () => {
             errorMessage: 'Local',
             summaryMessage: 'Summary'
         };
-        let testItem = new InputValidatorFactory();
-        let created: IInputValidator | null = null;
+        let testItem = new ValidatorFactory();
+        let created: IValidator | null = null;
         expect(() => created = testItem.create(vh, config)).not.toThrow();
         expect(created).not.toBeNull();
-        expect(created).toBeInstanceOf(InputValidator);
+        expect(created).toBeInstanceOf(Validator);
     });
 });
 
