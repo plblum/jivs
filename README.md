@@ -108,7 +108,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
 	+ `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
-	+ `StaticValueHost class` – For values that are not validated but contribute to validation. 
+	+ `StaticValueHost class` – For values that do not need validating, but support validation rules of InputValueHosts. 
 	
 	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
 	code your app is using, and let the validation internally select the right
@@ -312,7 +312,7 @@ class Factory
 Every value that you expose to Jivs is kept in a ValueHost. There are several types:
 
 - InputValueHost – The value may have validation rules applied. It actually keeps two values around when working with a UI: the value fully compatible with the model's property, and the value from within the editor.
-- StaticValueHost – The value may be used in validation or is a member of the Model that is retained when Jivs is the single-source of truth.
+- StaticValueHost – The value that is not validated itself, but its value is used in an InputValueHost's validation rule or is a member of the Model that is retained when Jivs is the single-source of truth.
 - CalcValueHost – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
 
 These objects are added to the ValidationManager while configuring. Here is pseudocode representation of their interfaces (omitting many members).
