@@ -15,7 +15,7 @@ import {
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { deepClone } from '../../src/Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager, IValueHostsManagerAccessor, toIValueHostResolver, toIValueHostsManager, toIValueHostsManagerAccessor } from '../../src/Interfaces/ValueHostResolver';
-import { NonInputValueHost } from '../../src/ValueHosts/UtilityValueHost';
+import { NonInputValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ValidationManager } from "../../src/ValueHosts/ValidationManager";

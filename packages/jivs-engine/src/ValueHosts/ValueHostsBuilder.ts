@@ -10,7 +10,7 @@ import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { FluentConditionCollector, FluentInputParameters, FluentInputValueConfig, FluentNonInputParameters, FluentValidatorCollector, StartFluent } from "./Fluent";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
-import { NonInputValueHostConfig } from "../Interfaces/UtilityValueHost";
+import { NonInputValueHostConfig } from "../Interfaces/StaticValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { CalcValueHostConfig, CalculationHandler } from "../Interfaces/CalcValueHost";
 import { EvaluateChildConditionResultsConfig } from "../Conditions/EvaluateChildConditionResultsBase";
