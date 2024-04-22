@@ -49,7 +49,7 @@
  *   validatorConfigs: [
  *      {
  *          conditionConfig: {
- *              type: ConditionType.LessThan,
+ *              conditionType: ConditionType.LessThan,
  *              valueHostName: 'DiffDays',  // source is our CalcValueHost
  *              secondValue: 10,    // must be less than 10 days
  *          },

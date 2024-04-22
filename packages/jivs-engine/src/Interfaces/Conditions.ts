@@ -37,7 +37,7 @@ export interface ICondition {
      * A unique identifier for the specific implementation, like "Required" or "Range".
      * Its value appears in the IssueFound.errorCode property unless overridden in ValidatorConfig.errorCode.
      * It allows the consumer of both to correlate those instances with the specific condition.
-     * When defining conditions through a ConditionConfig, the type property must 
+     * When defining conditions through a ConditionConfig, the conditionType property must 
      * be assigned with a valid ConditionType.
      */
     conditionType: string;
@@ -94,17 +94,18 @@ export interface ICondition {
  * Examples: 
  * 
  * RequireTextCondition implements IConditionCore<RequireTextConditionConfig> which usually looks like:
- *  `{ type: 'Required' }`
+ *  `{ conditionType: 'Required' }`
  * 
  * RangeCondition implements IConditionCore<RangeConditionConfig> which usually looks like:  
- *  `{ type: 'Range', minimum: any, maximum: any }`
+ *  `{ conditionType: 'Range', minimum: any, maximum: any }`
  */
 export interface ConditionConfig {
     /**
-     * Also known as "ConditionType", it identifies the class for ConditionFactory to create
-     * and is used to gather the issues found within a ValueHost. 
+     * Identifies the class for ConditionFactory to create.
+     * It is also used as the Validator's errorCode when ValidatorConfig.errorCode 
+     * was not assigned. 
      */
-    type: string;
+    conditionType: string;
 
     /**
      * Most Condition classes have an official value for Category.
@@ -281,7 +282,7 @@ export function toIEvaluateConditionDuringEdits(source: any): IEvaluateCondition
 
 /**
  * Creates instances of Conditions given an ConditionConfig.
- * ConditionConfig.type is used to determine the Condition class to create.
+ * ConditionConfig.conditionType is used to determine the Condition class to create.
  */
 export interface IConditionFactory {
     /**

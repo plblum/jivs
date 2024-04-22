@@ -62,7 +62,7 @@
  * 
  * Fluent functions should look like this: 
  * @example
- * export type FluentRegExpConditionConfig = Omit<RegExpConditionConfig, 'type' | 'valueHostName' | 'expressionAsString' | 'expression' | 'ignoreCase'>;
+ * export type FluentRegExpConditionConfig = Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName' | 'expressionAsString' | 'expression' | 'ignoreCase'>;
  * 
  * function _genCDRegExp(
  *     expression: RegExp | string, ignoreCase?: boolean | null,
@@ -167,7 +167,7 @@ export class StartFluent
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire InputValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      */
     public input(config: FluentInputValueConfig): FluentValidatorCollector;
     // overload resolution
@@ -211,9 +211,9 @@ export class StartFluent
      * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      */
-    static(config: Omit<StaticValueHostConfig, 'type'>): StaticValueHostConfig;
+    static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
     // overload resolution
     static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
     {
@@ -262,9 +262,9 @@ export class StartFluent
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      */
-    calc(config: Omit<CalcValueHostConfig, 'type'>): CalcValueHostConfig;
+    calc(config: Omit<CalcValueHostConfig, 'conditionType'>): CalcValueHostConfig;
     // overload resolution
     calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
     {
@@ -326,12 +326,12 @@ export function fluent(): StartFluent
 /**
  * For fluent configStatic function.
  */
-export type FluentStaticParameters = Omit<StaticValueHostConfig, 'type' | 'name' | 'dataType'>;
+export type FluentStaticParameters = Omit<StaticValueHostConfig, 'conditionType' | 'name' | 'dataType'>;
 
 /**
  * For fluent configInput function.
  */
-export type FluentInputValueConfig = Omit<InputValueHostConfig, 'type' | 'validatorConfigs'>;
+export type FluentInputValueConfig = Omit<InputValueHostConfig, 'conditionType' | 'validatorConfigs'>;
 export type FluentInputParameters = Omit<FluentInputValueConfig, 'name' | 'dataType'>;
 /**
  * Targets fluent functions for conditions as their second parameter, hosting most of the 
@@ -443,7 +443,7 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
         if (conditionConfig)
             ivDesc.conditionConfig = { ...conditionConfig as ConditionConfig };
         if (conditionType && ivDesc.conditionConfig)
-            ivDesc.conditionConfig.type = conditionType;
+            ivDesc.conditionConfig.conditionType = conditionType;
         // prevent duplicate errorcodes
         let errorCode = resolveErrorCode(ivDesc);
         if (this.parentConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode))
@@ -505,7 +505,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
     {
         super();
         if (!parentConfig)
-            parentConfig = { conditionConfigs: [], type: 'TBD' };
+            parentConfig = { conditionConfigs: [], conditionType: 'TBD' };
         if (!parentConfig.conditionConfigs)
             parentConfig.conditionConfigs = [];
         this._parentConfig = parentConfig;
@@ -532,7 +532,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
     {
         assertNotNull(conditionConfig, 'conditionConfig');
         if (conditionType)
-            conditionConfig.type = conditionType;
+            conditionConfig.conditionType = conditionType;
         this.parentConfig.conditionConfigs!.push(conditionConfig as ConditionConfig);
     }
 }

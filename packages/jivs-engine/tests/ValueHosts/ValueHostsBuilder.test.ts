@@ -225,7 +225,7 @@ describe('build(vmConfig).conditions', () => {
         let testItem = build(vmConfig).conditions();
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: 'TBD',
+            conditionType: 'TBD',
             conditionConfigs: []
         });
     });
@@ -235,7 +235,7 @@ describe('build(vmConfig).conditions', () => {
         let testItem = build(vmConfig).conditions(null!);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: 'TBD',
+            conditionType: 'TBD',
             conditionConfigs: []
         });
     });
@@ -243,13 +243,13 @@ describe('build(vmConfig).conditions', () => {
         let vmConfig = createVMConfig();
 
         let parentConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         }
         let testItem = build(vmConfig).conditions(parentConfig);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         });
     });
@@ -257,13 +257,13 @@ describe('build(vmConfig).conditions', () => {
         let vmConfig = createVMConfig();
 
         let parentConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
         let testItem = build(vmConfig).conditions(parentConfig);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         });
     });
@@ -320,19 +320,19 @@ describe('build(vmConfig).calc', () => {
 
 
 // Test cases for creating fluent functions...
-function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>,
+function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig
 ): FluentValidatorCollector {
     return finishFluentValidatorCollector(this, ConditionType.RequireText, conditionConfig, errorMessage, validatorParameters);
 }
-function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>
+function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
 ): FluentConditionCollector {
     return finishFluentConditionCollector(this, ConditionType.RequireText, conditionConfig, 'valueHostName');
 
 }
 
-function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'type' | 'valueHostName'>,
+function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig
 ): FluentValidatorCollector {
@@ -340,7 +340,7 @@ function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'type'
     return finishFluentValidatorCollector(this, ConditionType.RegExp, conditionConfig,
         errorMessage, validatorParameters);
 }
-function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'type' | 'valueHostName'>): FluentConditionCollector {
+function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>): FluentConditionCollector {
 
     return finishFluentConditionCollector(this, ConditionType.RegExp, conditionConfig, 'valueHostName');
 }
@@ -348,21 +348,21 @@ function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'type
 declare module './../../src/ValueHosts/Fluent'
 {
     export interface FluentValidatorCollector {
-        testChainRequireText(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>,
+        testChainRequireText(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig
         ): FluentValidatorCollector;
-        testChainRegExp(conditionConfig: Omit<RegExpConditionConfig, 'type' | 'valueHostName'>,
+        testChainRegExp(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig
         ): FluentValidatorCollector;
     }
     export interface FluentConditionCollector {
         testChainRequireText(conditionConfig:
-            Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>
+            Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
         ): FluentConditionCollector;
         testChainRegExp(conditionConfig:
-            Omit<RegExpConditionConfig, 'type' | 'valueHostName'>
+            Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>
         ): FluentConditionCollector;
     }
 }
@@ -381,7 +381,7 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequireText);
+        expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
     });
     test('build(vmConfig).input: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
@@ -393,9 +393,9 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(2);
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequireText);
+        expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
         expect(parentConfig.validatorConfigs![1].conditionConfig).not.toBeNull();
-        expect(parentConfig.validatorConfigs![1].conditionConfig!.type).toBe(ConditionType.RegExp);
+        expect(parentConfig.validatorConfigs![1].conditionConfig!.conditionType).toBe(ConditionType.RegExp);
         expect((parentConfig.validatorConfigs![1].conditionConfig! as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
 });
@@ -404,7 +404,7 @@ describe('customRule', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1').customRule((requester) => {
-            return new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: null });
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
             'Error',
             {
@@ -422,7 +422,7 @@ describe('customRule', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1').customRule((requester) => {
-            return new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: null });
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
@@ -435,7 +435,7 @@ describe('customRule', () => {
 
     test('Stand-alone call throws', () => {
         expect(() => customRule((requester) => {
-            return new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: null });
+            return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         },
             'Error',
             {
@@ -452,7 +452,7 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         let parentConfig = (testItem as FluentConditionCollector).parentConfig;
         expect(parentConfig.conditionConfigs!.length).toBe(1);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].type).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
     });
     test('build(vmConfig).conditions: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
@@ -464,16 +464,16 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         let parentConfig = (testItem as FluentConditionCollector).parentConfig;
         expect(parentConfig.conditionConfigs!.length).toBe(2);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].type).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
         expect(parentConfig.conditionConfigs![1]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![1].type).toBe(ConditionType.RegExp);
+        expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
         expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
     test('build(vmConfig).conditions with EvaluateChildConditionResultsConfig parameter: Add RequiredTest condition to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let eccrConfig: EvaluateChildConditionResultsConfig = {
-            type: 'All',
+            conditionType: 'All',
             conditionConfigs: []
         };
         let testItem = build(vmConfig).conditions(eccrConfig).testChainRequireText({});
@@ -482,13 +482,13 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         expect(parentConfig).toBe(eccrConfig);
         expect(parentConfig.conditionConfigs!.length).toBe(1);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].type).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
     });
     test('build(vmConfig).conditions with EvaluateChildConditionResultsConfig parameter: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let eccrConfig: EvaluateChildConditionResultsConfig = {
-            type: 'All',
+            conditionType: 'All',
             conditionConfigs: []
         };
         let testItem = build(vmConfig).conditions(eccrConfig)
@@ -499,9 +499,9 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         expect(parentConfig).toBe(eccrConfig);
         expect(parentConfig.conditionConfigs!.length).toBe(2);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].type).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
         expect(parentConfig.conditionConfigs![1]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![1].type).toBe(ConditionType.RegExp);
+        expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
         expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
 });
@@ -613,7 +613,7 @@ describe('updateValidator', () => {
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
                 enabled: true,
                 errorMessage: 'UpdatedMessage',
@@ -632,7 +632,7 @@ describe('updateValidator', () => {
             <any>{
                 errorMessage: 'Wanted',
                 validatorType: 'Unwanted',
-                conditionConfig: { type: 'TEST' },
+                conditionConfig: { conditionType: 'TEST' },
                 conditionCreator: (x: unknown) => null
             });
 
@@ -641,7 +641,7 @@ describe('updateValidator', () => {
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
                 errorMessage: 'Wanted',
             }]
@@ -678,7 +678,7 @@ describe('addValidatorsTo', () => {
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
                 errorMessage: 'RequiredMessage',
             }]
@@ -695,12 +695,12 @@ describe('addValidatorsTo', () => {
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
             },
             {
                 conditionConfig: {
-                    type: ConditionType.RegExp,
+                    conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d'
                 },
             }]
@@ -757,7 +757,7 @@ describe('favorUIMessages', () => {
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 },
                 errorMessage: 'RequiredMessage',
                 errorMessagel10n: 'eml10n',
@@ -771,7 +771,7 @@ describe('favorUIMessages', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RegExp,
+                        conditionType: ConditionType.RegExp,
                         expressionAsString: '\\d'
                     },
                     errorMessage: 'RegExpMessage',
@@ -781,7 +781,7 @@ describe('favorUIMessages', () => {
                 },
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText
+                        conditionType: ConditionType.RequireText
                     },
                     errorMessage: 'Field2Required',
                 }]
@@ -819,7 +819,7 @@ describe('favorUIMessages', () => {
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 }
             }]
         },
@@ -829,13 +829,13 @@ describe('favorUIMessages', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RegExp,
+                        conditionType: ConditionType.RegExp,
                         expressionAsString: '\\d'
                     }
                 },
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText
+                        conditionType: ConditionType.RequireText
                     },
 
                 }]

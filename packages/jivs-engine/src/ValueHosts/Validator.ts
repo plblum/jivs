@@ -626,5 +626,5 @@ export class ValidatorFactory implements IValidatorFactory {
  */
 export function resolveErrorCode(ivConfig: ValidatorConfig): string
 {
-    return ivConfig.errorCode ?? ivConfig.conditionConfig?.type ?? ConditionType.Unknown;
+    return ivConfig.errorCode ?? ivConfig.conditionConfig?.conditionType ?? ConditionType.Unknown;
 }

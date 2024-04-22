@@ -111,7 +111,7 @@ describe('ValueHostFactory.create', () => {
         expect(() => valueHost = testItem.create(vm, null!, state)).toThrow(/config/);
         expect(() => valueHost = testItem.create(vm, config, null!)).toThrow(/state/);
     });
-    test('create with Config.type of null throws', () => {
+    test('create with Config.valueHostType of null throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValueHostConfig = {
@@ -130,10 +130,10 @@ describe('ValueHostFactory.create', () => {
         let testItem = new ValueHostFactory();
         testItem.register(new FactoryTestsValueHostGenerator());
         let valueHost: IValueHost | null = null;
-        expect(() => valueHost = testItem.create(vm, config, state)).toThrow(/ValueHostConfig\.type/);
+        expect(() => valueHost = testItem.create(vm, config, state)).toThrow(/ValueHostConfig\.valueHostType/);
 
     });    
-    test('create with Config.type that has no matching registration throws', () => {
+    test('create with Config.valueHostType that has no matching registration throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValueHostConfig = {

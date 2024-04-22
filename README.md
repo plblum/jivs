@@ -257,7 +257,7 @@ We'll work with this example: Compare a date from the Input to today's date.
 The `EqualToCondition` is the right Condition for the job.  You need to create a `EqualToConditionConfig` that Jivs will use later to prepare the `EqualToCondition`. Here's its `ConditionConfig`:
 ```ts
 interface EqualToConditionConfig {
-    type: string;
+    conditionType: string;
     valueHostName: null | string;
     secondValueHostName: null | string;
     secondValue?: any;
@@ -271,7 +271,7 @@ interface EqualToConditionConfig {
 Your new code should look like this, where `ValueHostName` is your identifier for a field on the Model that you call “SignedOnDate”. (More on <a href="#naming">`ValueHost Names`</a> later.)
 ```ts
 {
-    type: 'EqualTo';
+    conditionType: 'EqualTo';
     valueHostName: 'SignedOnDate';
     secondValue: ...date object representing Today...;
 }
@@ -299,7 +299,7 @@ class Factory
       {
         case ConditionOperators.Equals:
           return <EqualTosConditionConfig>{
-            type: 'EqualTo',
+            conditionType: 'EqualTo',
             valueHostName: fieldRef,
             secondValue: businessLogicRule.secondValue
           }
@@ -382,7 +382,7 @@ In fact, that’s about right, only with more properties. Those objects use the 
 ```ts
 interface ValueHostConfig
 {
-  type?: string;
+  valueHostType?: string;
   name: string;
   dataType?: string;
   label?: string;
@@ -397,7 +397,7 @@ interface InputValueHostConfig extends ValueHostConfig
 }
 interface StaticValueHostConfig extends ValueHostConfig 
 {
-  type: 'Static' // shown here for documentation purposes
+  conditionType: 'Static' // shown here for documentation purposes
 }
 interface CalcValueHostConfig extends ValueHostConfig 
 {
@@ -435,7 +435,7 @@ The `ValueHost` names are also used to help a `Condition` retrieve a value from 
     {
       conditionConfig: 
       {
-        type: 'NotEqualTo',
+        conditionType: 'NotEqualTo',
         valueHostName: null, // because owning ValueHost is provided automatically to the Condition.evaluate function.
         secondValueHostName: 'LastName'
       }      
@@ -492,7 +492,7 @@ Now let’s place an `ValidatorConfig` into our previous example using a Model w
   label: 'First name',
   validatorConfigs: [{
     conditionConfig: {
-      type: 'RequireText',
+      conditionType: 'RequireText',
       valueHostName: null
     },
     errorMessage: 'This field requires a value',
@@ -500,7 +500,7 @@ Now let’s place an `ValidatorConfig` into our previous example using a Model w
   },
   {
     conditionConfig: {
-      type: 'NotEqualTo',
+      conditionType: 'NotEqualTo',
       valueHostName: null,
       secondValueHostName: 'LastName'
     },
@@ -516,7 +516,7 @@ Now let’s place an `ValidatorConfig` into our previous example using a Model w
   label: 'Last name',
   validatorConfigs: [{
     conditionConfig: {
-      type: 'RequireText',
+      conditionType: 'RequireText',
       valueHostName: null
     },
     errorMessage: 'This field requires a value',
@@ -796,7 +796,7 @@ Consider these *Use Cases*:
 	  	{
 	  	  conditionConfig: 
 	  	  {
-	  	    type: 'NotEqual',
+	  	    conditionType: 'NotEqual',
 	  	    secondValueHostName: 'LastName',
 	  	    conversionLookupKey: 'CaseInsensitive',
 	  	    secondConversionLookupKey: 'CaseInsensitive'

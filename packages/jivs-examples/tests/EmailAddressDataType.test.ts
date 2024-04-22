@@ -23,7 +23,7 @@ describe('EmailAddressCondition tests', () => {
         };
         let vh = vm.addValueHost(vhConfig, null);
         let config: RegExpConditionConfig = {
-            type: EmailAddressConditionType,
+            conditionType: EmailAddressConditionType,
             valueHostName: 'Field1',
         };
         let testItem = new EmailAddressCondition(config);

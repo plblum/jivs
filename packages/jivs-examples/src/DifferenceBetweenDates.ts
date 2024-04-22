@@ -57,7 +57,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
         validatorConfigs: [
             {
                 conditionConfig: <LessThanOrEqualConditionConfig>{
-                    type: ConditionType.LessThanOrEqual,
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'EndDate',
                 },
                 errorMessage: '{Label} must be less than or equal to {SecondLabel}.',
@@ -65,7 +65,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
             },        
             {
                 conditionConfig: <LessThanValueConditionConfig>{
-                    type: ConditionType.LessThanValue,
+                    conditionType: ConditionType.LessThanValue,
                     valueHostName: 'DiffDays',  // source is our CalcValueHost
                     secondValue: 10,    // must be less than 10 days
                 },

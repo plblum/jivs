@@ -53,7 +53,7 @@ describe('ConditionBase class additional cases', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'PropertyNotRegistered',
             trim: true
         };
@@ -69,7 +69,7 @@ describe('ConditionBase class additional cases', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'PropertyNotRegistered',
             trim: true
         };
@@ -84,7 +84,7 @@ describe('ConditionBase class additional cases', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: null,
             trim: true
         };
@@ -98,7 +98,7 @@ describe('ConditionBase class additional cases', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: null,
             trim: true
         };
@@ -119,7 +119,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
@@ -138,7 +138,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
@@ -153,7 +153,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
@@ -168,7 +168,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.addValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
@@ -183,7 +183,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         vh.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
@@ -205,7 +205,7 @@ describe('class DataTypeCheckCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
@@ -222,7 +222,7 @@ describe('class DataTypeCheckCondition', () => {
     });    
     test('category is DataTypeCheck', () => {
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
@@ -230,7 +230,7 @@ describe('class DataTypeCheckCondition', () => {
     });
     test('category is overridden', () => {
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
@@ -241,7 +241,7 @@ describe('class DataTypeCheckCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let condition = new DataTypeCheckCondition(config);
@@ -254,7 +254,7 @@ describe('class DataTypeCheckCondition', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let config: DataTypeCheckConditionConfig = {
-            type: ConditionType.DataTypeCheck,
+            conditionType: ConditionType.DataTypeCheck,
             valueHostName: null,
         };
         let condition = new DataTypeCheckCondition(config);
@@ -273,7 +273,7 @@ describe('class RequireTextCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1'
         };
         let testItem = new RequireTextCondition(config);
@@ -291,7 +291,7 @@ describe('class RequireTextCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1'
         };
         let testItem = new RequireTextCondition(config);
@@ -304,7 +304,7 @@ describe('class RequireTextCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1'
         };
         let testItem = new RequireTextCondition(config);
@@ -317,7 +317,7 @@ describe('class RequireTextCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: true,
         };
@@ -339,7 +339,7 @@ describe('class RequireTextCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
             nullValueResult: nullValueResult
         };
@@ -363,7 +363,7 @@ describe('class RequireTextCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: true
         };
@@ -382,7 +382,7 @@ describe('class RequireTextCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: true
         };
@@ -396,7 +396,7 @@ describe('class RequireTextCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
             trim: true
         };
@@ -411,7 +411,7 @@ describe('class RequireTextCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
         };
         let testItem = new RequireTextCondition(config);
@@ -421,7 +421,7 @@ describe('class RequireTextCondition', () => {
 
     test('category is Required', () => {
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
         };
         let testItem = new RequireTextCondition(config);
@@ -429,7 +429,7 @@ describe('class RequireTextCondition', () => {
     });
     test('category is overridden', () => {
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
@@ -441,7 +441,7 @@ describe('class RequireTextCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
         };
         let condition = new RequireTextCondition(config);
@@ -455,7 +455,7 @@ describe('class RequireTextCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: RequireTextConditionConfig = {
-            type: ConditionType.RequireText,
+            conditionType: ConditionType.RequireText,
             valueHostName: null,
         };
         let condition = new RequireTextCondition(config);
@@ -475,7 +475,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: 'ABC'
         };
@@ -499,7 +499,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: 'ABC',
             ignoreCase: true
@@ -524,7 +524,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             multiline: false
@@ -549,7 +549,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             multiline: true
@@ -574,7 +574,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expression: /^ABC$/im
         };
@@ -598,7 +598,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: 'ABC',
             not: true
@@ -624,7 +624,7 @@ describe('class RegExpCondition', () => {
             'Property1', LookupKey.String, 'Label');
 
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             trim: true
@@ -642,7 +642,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: 'ABC'
         };
@@ -662,7 +662,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: 'ABC',
             not: true
@@ -684,7 +684,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
         };
         let testItem = new RegExpCondition(config);
@@ -698,7 +698,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             ignoreCase: true,
@@ -720,7 +720,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             ignoreCase: true,
@@ -742,7 +742,7 @@ describe('class RegExpCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: '^ABC$',
             ignoreCase: true,
@@ -761,7 +761,7 @@ describe('class RegExpCondition', () => {
 
     test('category is DataTypeCheck', () => {
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
         };
         let testItem = new RegExpCondition(config);
@@ -769,7 +769,7 @@ describe('class RegExpCondition', () => {
     });
     test('category is overridden', () => {
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
@@ -781,7 +781,7 @@ describe('class RegExpCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
         };
         let condition = new RegExpCondition(config);
@@ -795,7 +795,7 @@ describe('class RegExpCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: RegExpConditionConfig = {
-            type: ConditionType.RegExp,
+            conditionType: ConditionType.RegExp,
             valueHostName: null,
         };
         let condition = new RegExpCondition(config);
@@ -815,7 +815,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: 'C',
             maximum: 'G'
@@ -846,7 +846,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: -8,
             maximum: 25
@@ -875,7 +875,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Date, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: new Date(Date.UTC(2000, 5, 1)),
             maximum: new Date(Date.UTC(2000, 5, 30))
@@ -901,7 +901,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: undefined,
             maximum: 'G'
@@ -929,7 +929,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: 'C',
             maximum: null   // should work like undefined
@@ -961,7 +961,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: 'C',
             maximum: 'G'
@@ -978,7 +978,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: 'G',    // this is a mismatch
             maximum: 10  // this is OK
@@ -997,7 +997,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: 10, // this is OK
             maximum: 'G'    // this is a mismatch
@@ -1017,7 +1017,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: 1.6,
             maximum: 6.1,
@@ -1042,7 +1042,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: 'C',
             maximum: 'G'
@@ -1069,7 +1069,7 @@ describe('class RangeCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: undefined,
             maximum: null
@@ -1092,7 +1092,7 @@ describe('class RangeCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: 2,
             maximum: null
@@ -1102,7 +1102,7 @@ describe('class RangeCondition', () => {
     });
     test('category is overridden', () => {
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             category: ConditionCategory.Contents,
             minimum: 2,
@@ -1116,7 +1116,7 @@ describe('class RangeCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             minimum: 2,
             maximum: undefined,
             valueHostName: 'Property1',
@@ -1132,7 +1132,7 @@ describe('class RangeCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: RangeConditionConfig = {
-            type: ConditionType.Range,
+            conditionType: ConditionType.Range,
             minimum: 2,
             maximum: undefined,
             valueHostName: null,
@@ -1153,7 +1153,7 @@ describe('CompareToConditionBase class additional cases', () => {
         let vh2 = vm.addInputValueHost('Property2', LookupKey.Number, 'Second label');
 
         let config: CompareToSecondValueHostConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1182,7 +1182,7 @@ describe('CompareToConditionBase class additional cases', () => {
         let logger = services.loggerService as MockCapturingLogger;
         vh.setValue('');
         let config: CompareToSecondValueHostConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             secondValueHostName: 'PropertyNotRegistered',
             valueHostName: null
         };
@@ -1200,7 +1200,7 @@ describe('CompareToConditionBase class additional cases', () => {
         let logger = services.loggerService as MockCapturingLogger;
         vh.setValue('');
         let config: CompareToSecondValueHostConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: null,
             secondValueHostName: null
         };
@@ -1225,7 +1225,7 @@ describe('class EqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1249,7 +1249,7 @@ describe('class EqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1274,7 +1274,7 @@ describe('class EqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label');
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1310,7 +1310,7 @@ describe('class EqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label');
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             conversionLookupKey: LookupKey.Integer,
             secondValueHostName: 'Property2'
@@ -1338,7 +1338,7 @@ describe('class EqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label');
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             conversionLookupKey: null,
             secondValueHostName: 'Property2',
@@ -1366,7 +1366,7 @@ describe('class EqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1395,7 +1395,7 @@ describe('class EqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -1418,7 +1418,7 @@ describe('class EqualToCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -1427,7 +1427,7 @@ describe('class EqualToCondition', () => {
     });
     test('category is overridden', () => {
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: null,
             category: ConditionCategory.Contents
@@ -1440,7 +1440,7 @@ describe('class EqualToCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1456,7 +1456,7 @@ describe('class EqualToCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: EqualToConditionConfig = {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: null,
             secondValueHostName: null
         };
@@ -1480,7 +1480,7 @@ describe('class NotEqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: NotEqualToConditionConfig = {
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1504,7 +1504,7 @@ describe('class NotEqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: NotEqualToConditionConfig = {
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1530,7 +1530,7 @@ describe('class NotEqualToCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: NotEqualToConditionConfig = {
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1565,7 +1565,7 @@ describe('class NotEqualToCondition', () => {
             'Property2', LookupKey.Number, 'Label2');
         vh2.setValue(100);
         let config: NotEqualToConditionConfig = {
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1591,7 +1591,7 @@ describe('class NotEqualToCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToConditionConfig = {
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -1613,7 +1613,7 @@ describe('class NotEqualToCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: NotEqualToConditionConfig = {
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -1622,7 +1622,7 @@ describe('class NotEqualToCondition', () => {
     });
     test('category is overridden', () => {
         let config: NotEqualToConditionConfig = {
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: null,
             category: ConditionCategory.Contents
@@ -1635,7 +1635,7 @@ describe('class NotEqualToCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: NotEqualToConditionConfig = {
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1651,7 +1651,7 @@ describe('class NotEqualToCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: NotEqualToConditionConfig = {
-            type: ConditionType.NotEqualTo,
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: null,
             secondValueHostName: null
         };
@@ -1675,7 +1675,7 @@ describe('class GreaterThanCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: GreaterThanConditionConfig = {
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1695,7 +1695,7 @@ describe('class GreaterThanCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanConditionConfig = {
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1721,7 +1721,7 @@ describe('class GreaterThanCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanConditionConfig = {
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1744,7 +1744,7 @@ describe('class GreaterThanCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanConditionConfig = {
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1771,7 +1771,7 @@ describe('class GreaterThanCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanConditionConfig = {
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -1793,7 +1793,7 @@ describe('class GreaterThanCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: GreaterThanConditionConfig = {
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -1802,7 +1802,7 @@ describe('class GreaterThanCondition', () => {
     });
     test('category is overridden', () => {
         let config: GreaterThanConditionConfig = {
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: null,
             category: ConditionCategory.Contents
@@ -1815,7 +1815,7 @@ describe('class GreaterThanCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: GreaterThanConditionConfig = {
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1831,7 +1831,7 @@ describe('class GreaterThanCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: GreaterThanConditionConfig = {
-            type: ConditionType.GreaterThan,
+            conditionType: ConditionType.GreaterThan,
             valueHostName: null,
             secondValueHostName: null
         };
@@ -1854,7 +1854,7 @@ describe('class GreaterThanOrEqualCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: GreaterThanOrEqualConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1877,7 +1877,7 @@ describe('class GreaterThanOrEqualCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanOrEqualConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1903,7 +1903,7 @@ describe('class GreaterThanOrEqualCondition', () => {
             'Property2', LookupKey.Number, 'Label2');
 
         let config: GreaterThanOrEqualConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -1936,7 +1936,7 @@ describe('class GreaterThanOrEqualCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: GreaterThanOrEqualConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -1963,7 +1963,7 @@ describe('class GreaterThanOrEqualCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -1985,7 +1985,7 @@ describe('class GreaterThanOrEqualCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: GreaterThanOrEqualConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -1994,7 +1994,7 @@ describe('class GreaterThanOrEqualCondition', () => {
     });
     test('category is overridden', () => {
         let config: GreaterThanOrEqualConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: null,
             category: ConditionCategory.Contents
@@ -2007,7 +2007,7 @@ describe('class GreaterThanOrEqualCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: GreaterThanOrEqualConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2023,7 +2023,7 @@ describe('class GreaterThanOrEqualCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: GreaterThanOrEqualConditionConfig = {
-            type: ConditionType.GreaterThanOrEqual,
+            conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: null,
             secondValueHostName: null
         };
@@ -2046,7 +2046,7 @@ describe('class LessThanCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2069,7 +2069,7 @@ describe('class LessThanCondition', () => {
             'Property2', LookupKey.Boolean, 'Label2');
         
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2093,7 +2093,7 @@ describe('class LessThanCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2118,7 +2118,7 @@ describe('class LessThanCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2151,7 +2151,7 @@ describe('class LessThanCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2178,7 +2178,7 @@ describe('class LessThanCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -2200,7 +2200,7 @@ describe('class LessThanCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -2209,7 +2209,7 @@ describe('class LessThanCondition', () => {
     });
     test('category is overridden', () => {
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: null,
             category: ConditionCategory.Contents
@@ -2222,7 +2222,7 @@ describe('class LessThanCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2238,7 +2238,7 @@ describe('class LessThanCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: LessThanConditionConfig = {
-            type: ConditionType.LessThan,
+            conditionType: ConditionType.LessThan,
             valueHostName: null,
             secondValueHostName: null
         };
@@ -2262,7 +2262,7 @@ describe('class LessThanOrEqualCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Boolean, 'Label2');
         let config: LessThanOrEqualConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2286,7 +2286,7 @@ describe('class LessThanOrEqualCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanOrEqualConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2311,7 +2311,7 @@ describe('class LessThanOrEqualCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');
         let config: LessThanOrEqualConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -2345,7 +2345,7 @@ describe('class LessThanOrEqualCondition', () => {
         let vh2 = vm.addInputValueHost(
             'Property2', LookupKey.Number, 'Label2');        
         let config: LessThanOrEqualConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2372,7 +2372,7 @@ describe('class LessThanOrEqualCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -2394,7 +2394,7 @@ describe('class LessThanOrEqualCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: LessThanOrEqualConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: null
         };
@@ -2403,7 +2403,7 @@ describe('class LessThanOrEqualCondition', () => {
     });
     test('category is overridden', () => {
         let config: LessThanOrEqualConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: null,
             category: ConditionCategory.Contents
@@ -2416,7 +2416,7 @@ describe('class LessThanOrEqualCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: LessThanOrEqualConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
@@ -2432,7 +2432,7 @@ describe('class LessThanOrEqualCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: LessThanOrEqualConditionConfig = {
-            type: ConditionType.LessThanOrEqual,
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: null,
             secondValueHostName: null
         };
@@ -2453,7 +2453,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
         let vh2 = vm.addInputValueHost('Property2', LookupKey.Number, 'Second label');
 
         let config: CompareToValueConditionConfig= {
-            type: ConditionType.Unknown,
+            conditionType: ConditionType.Unknown,
             valueHostName: 'Property1',
         };
         let testItem = new EqualToValueCondition(config);
@@ -2476,7 +2476,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
         let logger = services.loggerService as MockCapturingLogger;
         vh.setValue('');
         let config: CompareToValueConditionConfig= {
-            type: ConditionType.EqualTo,
+            conditionType: ConditionType.EqualTo,
             valueHostName: null,
             secondValue: null
         };
@@ -2497,7 +2497,7 @@ describe('class EqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2517,7 +2517,7 @@ describe('class EqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: EqualToValueConditionConfig= {
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
             secondValue: false,
         };
@@ -2535,7 +2535,7 @@ describe('class EqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
             secondValue: 100,
         };
@@ -2558,7 +2558,7 @@ describe('class EqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
             conversionLookupKey: LookupKey.Integer,
             secondValue: 100,
@@ -2584,7 +2584,7 @@ describe('class EqualToValueCondition', () => {
             'Property1', LookupKey.Number, 'Label');
 
         let config: EqualToValueConditionConfig= {
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
             conversionLookupKey: null,
             secondValue: 100.2,
@@ -2604,7 +2604,7 @@ describe('class EqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
             secondValue: 100,
         };
@@ -2625,7 +2625,7 @@ describe('class EqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: EqualToValueConditionConfig= {
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
             secondValue: undefined,
         };
@@ -2642,7 +2642,7 @@ describe('class EqualToValueCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: EqualToValueConditionConfig= {
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
             secondValue: 10,
         };
@@ -2651,7 +2651,7 @@ describe('class EqualToValueCondition', () => {
     });
     test('category is overridden', () => {
         let config: EqualToValueConditionConfig= {
-            type: ConditionType.EqualToValue,
+            conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
@@ -2670,7 +2670,7 @@ describe('class NotEqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToValueConditionConfig= {
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2690,7 +2690,7 @@ describe('class NotEqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: NotEqualToValueConditionConfig= {
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             valueHostName: 'Property1',
             secondValue: false
         };
@@ -2708,7 +2708,7 @@ describe('class NotEqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToValueConditionConfig= {
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2728,7 +2728,7 @@ describe('class NotEqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToValueConditionConfig= {
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2750,7 +2750,7 @@ describe('class NotEqualToValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: NotEqualToValueConditionConfig= {
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             valueHostName: 'Property1',
             secondValue: null
         };
@@ -2767,7 +2767,7 @@ describe('class NotEqualToValueCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: NotEqualToValueConditionConfig= {
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             valueHostName: 'Property1',
             secondValue: 10
         };
@@ -2776,7 +2776,7 @@ describe('class NotEqualToValueCondition', () => {
     });
     test('category is overridden', () => {
         let config: NotEqualToValueConditionConfig= {
-            type: ConditionType.NotEqualToValue,
+            conditionType: ConditionType.NotEqualToValue,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
@@ -2796,7 +2796,7 @@ describe('class GreaterThanValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanValueConditionConfig= {
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2816,7 +2816,7 @@ describe('class GreaterThanValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: GreaterThanValueConditionConfig= {
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Property1',
             secondValue: false
         };
@@ -2834,7 +2834,7 @@ describe('class GreaterThanValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanValueConditionConfig= {
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2854,7 +2854,7 @@ describe('class GreaterThanValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanValueConditionConfig= {
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2875,7 +2875,7 @@ describe('class GreaterThanValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanValueConditionConfig= {
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Property1',
             secondValue: null
         };
@@ -2892,7 +2892,7 @@ describe('class GreaterThanValueCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: GreaterThanValueConditionConfig= {
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Property1',
             secondValue: 10
         };
@@ -2901,7 +2901,7 @@ describe('class GreaterThanValueCondition', () => {
     });
     test('category is overridden', () => {
         let config: GreaterThanValueConditionConfig= {
-            type: ConditionType.GreaterThanValue,
+            conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
@@ -2920,7 +2920,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2940,7 +2940,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: false
         };
@@ -2958,7 +2958,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2978,7 +2978,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -2999,7 +2999,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: GreaterThanOrEqualValueConditionConfig= {
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: null
         };
@@ -3016,7 +3016,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: GreaterThanOrEqualValueConditionConfig= {
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 10
         };
@@ -3025,7 +3025,7 @@ describe('class GreaterThanOrEqualValueCondition', () => {
     });
     test('category is overridden', () => {
         let config: GreaterThanOrEqualValueConditionConfig= {
-            type: ConditionType.GreaterThanOrEqualValue,
+            conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
@@ -3045,7 +3045,7 @@ describe('class LessThanValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanValueConditionConfig= {
-            type: ConditionType.LessThanValue,
+            conditionType: ConditionType.LessThanValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -3065,7 +3065,7 @@ describe('class LessThanValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: LessThanValueConditionConfig= {
-            type: ConditionType.LessThanValue,
+            conditionType: ConditionType.LessThanValue,
             valueHostName: 'Property1',
             secondValue: false
         };
@@ -3082,7 +3082,7 @@ describe('class LessThanValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanValueConditionConfig= {
-            type: ConditionType.LessThanValue,
+            conditionType: ConditionType.LessThanValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -3100,7 +3100,7 @@ describe('class LessThanValueCondition', () => {
 
     test('category is overridden', () => {
         let config: LessThanValueConditionConfig= {
-            type: ConditionType.LessThanValue,
+            conditionType: ConditionType.LessThanValue,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
@@ -3119,7 +3119,7 @@ describe('class LessThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -3139,7 +3139,7 @@ describe('class LessThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Boolean, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: false
         };
@@ -3156,7 +3156,7 @@ describe('class LessThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -3176,7 +3176,7 @@ describe('class LessThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 100
         };
@@ -3197,7 +3197,7 @@ describe('class LessThanOrEqualValueCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.Number, 'Label');
         let config: LessThanOrEqualValueConditionConfig= {
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: null
         };
@@ -3214,7 +3214,7 @@ describe('class LessThanOrEqualValueCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: LessThanOrEqualValueConditionConfig= {
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 10
         };
@@ -3223,7 +3223,7 @@ describe('class LessThanOrEqualValueCondition', () => {
     });
     test('category is overridden', () => {
         let config: LessThanOrEqualValueConditionConfig= {
-            type: ConditionType.LessThanOrEqualValue,
+            conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
@@ -3245,7 +3245,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: 2,
             maximum: 5
@@ -3277,7 +3277,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: 2,
             maximum: null
@@ -3301,7 +3301,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: null,
             maximum: 5
@@ -3330,7 +3330,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: undefined,
             maximum: undefined
@@ -3351,7 +3351,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: 2,
             maximum: 5,
@@ -3374,7 +3374,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: 2,
             maximum: 5,
@@ -3400,7 +3400,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: 2,
             maximum: 5,
@@ -3426,7 +3426,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: 2,
             maximum: 5,
@@ -3445,7 +3445,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: 2,
             maximum: 5
@@ -3477,7 +3477,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: 2,
             maximum: 5
@@ -3511,7 +3511,7 @@ describe('class StringLengthCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             minimum: null,
             maximum: null
@@ -3541,7 +3541,7 @@ describe('class StringLengthCondition', () => {
     });    
     test('category is Comparison', () => {
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
         };
         let testItem = new StringLengthCondition(config);
@@ -3549,7 +3549,7 @@ describe('class StringLengthCondition', () => {
     });
     test('category is overridden', () => {
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
@@ -3561,7 +3561,7 @@ describe('class StringLengthCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: 'Property1'
         };
         let condition = new StringLengthCondition(config);
@@ -3575,7 +3575,7 @@ describe('class StringLengthCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: StringLengthConditionConfig = {
-            type: ConditionType.StringLength,
+            conditionType: ConditionType.StringLength,
             valueHostName: null
         };
         let condition = new StringLengthCondition(config);
@@ -3595,7 +3595,7 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: []
         };
         let testItem = new AllMatchCondition(config);
@@ -3607,9 +3607,9 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             }]
         };
         let testItem = new AllMatchCondition(config);
@@ -3621,18 +3621,18 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             }]
         };
         let testItem = new AllMatchCondition(config);
@@ -3644,9 +3644,9 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             }]
         };
         let testItem = new AllMatchCondition(config);
@@ -3658,18 +3658,18 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             }]
         };
         let testItem = new AllMatchCondition(config);
@@ -3681,18 +3681,18 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             }]
         };
         let testItem = new AllMatchCondition(config);
@@ -3704,9 +3704,9 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType
+                conditionType: IsUndeterminedConditionType
             }]
         };
         let testItem = new AllMatchCondition(config);
@@ -3718,9 +3718,9 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType,
+                conditionType: IsUndeterminedConditionType,
 
             }],
             treatUndeterminedAs: ConditionEvaluateResult.Match
@@ -3734,9 +3734,9 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType,
+                conditionType: IsUndeterminedConditionType,
 
             }],
             treatUndeterminedAs: ConditionEvaluateResult.NoMatch
@@ -3750,9 +3750,9 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType,
+                conditionType: IsUndeterminedConditionType,
             }],
             treatUndeterminedAs: ConditionEvaluateResult.Undetermined
         };
@@ -3765,18 +3765,18 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType
+                conditionType: IsUndeterminedConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             }],
             treatUndeterminedAs: ConditionEvaluateResult.Match
         };
@@ -3789,16 +3789,16 @@ describe('class AllMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [{
-                type: ConditionType.RequireText,
+                conditionType: ConditionType.RequireText,
                 // valueHostName omitted meaning it must use parent ValueHost
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             <RegExpConditionConfig>{
-                type: ConditionType.RegExp,
+                conditionType: ConditionType.RegExp,
                 // valueHostName omitted meaning it must use parent ValueHost
                 expressionAsString: 'ABC'
             }            ],
@@ -3809,7 +3809,7 @@ describe('class AllMatchCondition', () => {
     });    
     test('category is Children', () => {
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: []
         };
         let testItem = new AllMatchCondition(config);
@@ -3817,7 +3817,7 @@ describe('class AllMatchCondition', () => {
     });
     test('category is overridden', () => {
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [],
             category: ConditionCategory.Contents
         };
@@ -3829,7 +3829,7 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: []
         };
         let condition = new AllMatchCondition(config);
@@ -3842,18 +3842,18 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -3871,18 +3871,18 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },                
             ]
@@ -3899,18 +3899,18 @@ describe('class AllMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AllMatchConditionConfig = {
-            type: ConditionType.And,
+            conditionType: ConditionType.And,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: null
                 },             
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -3933,7 +3933,7 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: []
         };
         let testItem = new AnyMatchCondition(config);
@@ -3945,9 +3945,9 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             }]
         };
         let testItem = new AnyMatchCondition(config);
@@ -3959,18 +3959,18 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             }]
         };
         let testItem = new AnyMatchCondition(config);
@@ -3982,9 +3982,9 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             }]
         };
         let testItem = new AnyMatchCondition(config);
@@ -3996,18 +3996,18 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             }]
         };
         let testItem = new AnyMatchCondition(config);
@@ -4019,18 +4019,18 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             },
             {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             },
             {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             }]
         };
         let testItem = new AnyMatchCondition(config);
@@ -4043,18 +4043,18 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             },
             {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             },
             {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             },
             {
-                type: NeverMatchesConditionType
+                conditionType: NeverMatchesConditionType
             }]
         };
         let testItem = new AnyMatchCondition(config);
@@ -4066,9 +4066,9 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType
+                conditionType: IsUndeterminedConditionType
             }]
         };
         let testItem = new AnyMatchCondition(config);
@@ -4080,9 +4080,9 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType,
+                conditionType: IsUndeterminedConditionType,
 
             }],
             treatUndeterminedAs: ConditionEvaluateResult.Match
@@ -4096,9 +4096,9 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType,
+                conditionType: IsUndeterminedConditionType,
 
             }],
             treatUndeterminedAs: ConditionEvaluateResult.NoMatch
@@ -4112,9 +4112,9 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType,
+                conditionType: IsUndeterminedConditionType,
             }],
             treatUndeterminedAs: ConditionEvaluateResult.Undetermined
         };
@@ -4127,18 +4127,18 @@ describe('class AnyMatchCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [{
-                type: IsUndeterminedConditionType
+                conditionType: IsUndeterminedConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             },
             {
-                type: AlwaysMatchesConditionType
+                conditionType: AlwaysMatchesConditionType
             }],
             treatUndeterminedAs: ConditionEvaluateResult.Match
         };
@@ -4147,7 +4147,7 @@ describe('class AnyMatchCondition', () => {
     });
     test('category is Children', () => {
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: []
         };
         let testItem = new AnyMatchCondition(config);
@@ -4155,7 +4155,7 @@ describe('class AnyMatchCondition', () => {
     });
     test('category is overridden', () => {
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [],
             category: ConditionCategory.Contents
         };
@@ -4167,7 +4167,7 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: []
         };
         let condition = new AnyMatchCondition(config);
@@ -4180,18 +4180,18 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -4209,18 +4209,18 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },                
             ]
@@ -4237,18 +4237,18 @@ describe('class AnyMatchCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: AnyMatchConditionConfig = {
-            type: ConditionType.Or,
+            conditionType: ConditionType.Or,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: null
                 },             
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -4274,7 +4274,7 @@ describe('class CountMatchesCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: CountMatchesConditionConfig = {
-            type: ConditionType.CountMatches,
+            conditionType: ConditionType.CountMatches,
             minimum: minimum,
             maximum: maximum,
             conditionConfigs: []
@@ -4283,7 +4283,7 @@ describe('class CountMatchesCondition', () => {
             config.treatUndeterminedAs = treatUndeterminedAs;
         for (let conType of conditionTypes)
             config.conditionConfigs.push({
-                type: conType
+                conditionType: conType
             });
         let testItem = new CountMatchesCondition(config);
         expect(testItem.evaluate(vh, vm)).toBe(expectedResult);
@@ -4353,7 +4353,7 @@ describe('class CountMatchesCondition', () => {
     });
     test('category is Children', () => {
         let config: CountMatchesConditionConfig = {
-            type: ConditionType.CountMatches,
+            conditionType: ConditionType.CountMatches,
             conditionConfigs: []
         };
         let testItem = new CountMatchesCondition(config);
@@ -4361,7 +4361,7 @@ describe('class CountMatchesCondition', () => {
     });
     test('category is overridden', () => {
         let config: CountMatchesConditionConfig = {
-            type: ConditionType.CountMatches,
+            conditionType: ConditionType.CountMatches,
             conditionConfigs: [],
             category: ConditionCategory.Contents
         };
@@ -4373,7 +4373,7 @@ describe('class CountMatchesCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: CountMatchesConditionConfig = {
-            type: ConditionType.CountMatches,
+            conditionType: ConditionType.CountMatches,
             conditionConfigs: []
         };
         let condition = new CountMatchesCondition(config);
@@ -4386,18 +4386,18 @@ describe('class CountMatchesCondition', () => {
         let vm = new MockValidationManager(services);
   
         let config: CountMatchesConditionConfig = {
-            type: ConditionType.CountMatches,
+            conditionType: ConditionType.CountMatches,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -4415,18 +4415,18 @@ describe('class CountMatchesCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: CountMatchesConditionConfig = {
-            type: ConditionType.CountMatches,
+            conditionType: ConditionType.CountMatches,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field2'
                 },             
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },                
             ]
@@ -4443,18 +4443,18 @@ describe('class CountMatchesCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: CountMatchesConditionConfig = {
-            type: ConditionType.CountMatches,
+            conditionType: ConditionType.CountMatches,
             conditionConfigs: [
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field1'
                 },
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: null
                 },             
                 <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Field3'
                 },                
             ]
@@ -4479,7 +4479,7 @@ describe('class NotNullCondition', () => {
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: NotNullConditionConfig = {
-            type: ConditionType.NotNull,
+            conditionType: ConditionType.NotNull,
             valueHostName: 'Property1',
         };
 
@@ -4510,7 +4510,7 @@ describe('class NotNullCondition', () => {
         let vh = vm.addValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: NotNullConditionConfig = {
-            type: ConditionType.NotNull,
+            conditionType: ConditionType.NotNull,
             valueHostName: 'UnknownProperty'
         };
         let testItem = new NotNullCondition(config);
@@ -4523,7 +4523,7 @@ describe('class NotNullCondition', () => {
     });
     test('category is Required', () => {
         let config: NotNullConditionConfig = {
-            type: ConditionType.NotNull,
+            conditionType: ConditionType.NotNull,
             valueHostName: 'Property1',
         };
         let testItem = new NotNullCondition(config);
@@ -4531,7 +4531,7 @@ describe('class NotNullCondition', () => {
     });
     test('category is overridden', () => {
         let config: NotNullConditionConfig = {
-            type: ConditionType.NotNull,
+            conditionType: ConditionType.NotNull,
             valueHostName: 'Property1',
             category: ConditionCategory.Contents
         };
@@ -4543,7 +4543,7 @@ describe('class NotNullCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: NotNullConditionConfig = {
-            type: ConditionType.NotNull,
+            conditionType: ConditionType.NotNull,
             valueHostName: 'Property1',
         };
         let condition = new NotNullCondition(config);
@@ -4557,7 +4557,7 @@ describe('class NotNullCondition', () => {
         let vm = new MockValidationManager(services);
 
         let config: NotNullConditionConfig = {
-            type: ConditionType.NotNull,
+            conditionType: ConditionType.NotNull,
             valueHostName: null,
         };
         let condition = new NotNullCondition(config);

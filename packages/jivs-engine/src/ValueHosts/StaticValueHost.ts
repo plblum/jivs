@@ -12,7 +12,7 @@ import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 
 /**
  * ValueHost implementation that does not handle validation. (See InputValueHost for validation)
- * Use ValueHostConfig.type = "Static" for the ValidationManager to use this class.
+ * Use ValueHostConfig.valueHostType = "Static" for the ValidationManager to use this class.
  * 
  * Generally create these when:
  * - Expose a value from the UI that doesn't need validation, but its value is used by 

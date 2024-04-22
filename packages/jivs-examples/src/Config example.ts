@@ -45,7 +45,7 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
         validatorConfigs: [
             {
                 conditionConfig: <LessThanConditionConfig>{
-                    type: ConditionType.LessThan,
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'EndDate',
                 },
                 // we expect error messages here to be from business logic layer.
@@ -58,7 +58,7 @@ function BusinessLogicPhase_UseConfigObjects(): ValidationManagerConfig
     // by supplying an error code on one. The other will use the default errorCode of its conditionType.                
                 errorCode: 'NumOfDays', 
                 conditionConfig: <LessThanConditionConfig>{
-                    type: ConditionType.LessThan,
+                    conditionType: ConditionType.LessThan,
                     valueHostName: 'DiffDays',          // source is our CalcValueHost
                     secondValueHostName: 'NumOfDays',    // must be less than this
                 },

@@ -104,7 +104,7 @@ export class ValueHostsBuilder
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire InputValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
      */
     public input(config: FluentInputValueConfig): FluentValidatorCollector;
@@ -138,7 +138,7 @@ export class ValueHostsBuilder
      * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
     static(config: Omit<StaticValueHostConfig, 'valueHostType'>): ValueHostsBuilder;
@@ -190,7 +190,7 @@ export class ValueHostsBuilder
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
-     * You can omit the type property.
+     * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
     calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): ValueHostsBuilder;

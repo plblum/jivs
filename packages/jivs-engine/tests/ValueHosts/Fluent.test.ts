@@ -69,7 +69,7 @@ describe('FluentValidatorCollector', () => {
         expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
         expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
             conditionConfig: {
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -85,7 +85,7 @@ describe('FluentValidatorCollector', () => {
         }
         let testItem = new FluentValidatorCollector(vhConfig);
         let conditionConfig: ConditionConfig = {
-            type: ConditionType.RequireText
+            conditionType: ConditionType.RequireText
         };
         let validatorConfig: FluentValidatorConfig = {
             summaryMessage: 'Summary'
@@ -94,7 +94,7 @@ describe('FluentValidatorCollector', () => {
         expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
         expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
             conditionConfig: {
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -117,7 +117,7 @@ describe('FluentValidatorCollector', () => {
         expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
         expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
             conditionConfig: {
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             },
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -128,7 +128,7 @@ describe('FluentValidatorCollector', () => {
 describe('FluentConditionCollector', () => {
     test('constructor with vhConfig sets up vhConfig property', () => {
         let vhConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         }
         let testItem = new FluentConditionCollector(vhConfig);
@@ -137,14 +137,14 @@ describe('FluentConditionCollector', () => {
     test('constructor with null parameter creates a Config with conditionConfigs=[] and type="TBD"', () => {
         let testItem = new FluentConditionCollector(null);
         expect(testItem.parentConfig).toEqual({
-            type: 'TBD',
+            conditionType: 'TBD',
             conditionConfigs: []
         });
     });    
 
     test('constructor with vhConfig that has conditionConfigs=null sets up vhConfig property with empty conditionConfigs array', () => {
         let vhConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
 
@@ -154,7 +154,7 @@ describe('FluentConditionCollector', () => {
     });
     test('add() with all parameters correctly defined', () => {
         let vhConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         }
         let testItem = new FluentConditionCollector(vhConfig);
@@ -162,23 +162,23 @@ describe('FluentConditionCollector', () => {
         expect(() => testItem.add(ConditionType.RequireText, {})).not.toThrow();
         expect(testItem.parentConfig.conditionConfigs!.length).toBe(1);
         expect(testItem.parentConfig.conditionConfigs![0]).toEqual({
-            type: ConditionType.RequireText
+            conditionType: ConditionType.RequireText
         });
     });
     test('add() with null for conditionType, and other parameters correctly defined', () => {
         let vhConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         }
         let testItem = new FluentConditionCollector(vhConfig);
         let conditionConfig: ConditionConfig = {
-            type: ConditionType.RequireText
+            conditionType: ConditionType.RequireText
         };
 
         expect(() => testItem.add(null, conditionConfig)).not.toThrow();
         expect(testItem.parentConfig.conditionConfigs!.length).toBe(1);
         expect(testItem.parentConfig.conditionConfigs![0]).toEqual({
-            type: ConditionType.RequireText
+            conditionType: ConditionType.RequireText
         });
     });
 });
@@ -285,7 +285,7 @@ describe('fluent(vmConfig).conditions', () => {
         let testItem = fluent().conditions();
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: 'TBD',
+            conditionType: 'TBD',
             conditionConfigs: []
         });
     });
@@ -293,31 +293,31 @@ describe('fluent(vmConfig).conditions', () => {
         let testItem = fluent().conditions(null!);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: 'TBD',
+            conditionType: 'TBD',
             conditionConfigs: []
         });
     });    
     test('Supplied parameter creates a FluentConditionCollector with the same vhConfig', () => {
         let parentConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         }
         let testItem = fluent().conditions(parentConfig);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         });
     });    
     test('Supplied parameter with conditionConfig=null creates a FluentValidatorCollector with the same vhConfig and conditionConfig=[]', () => {
         let parentConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
         let testItem = fluent().conditions(parentConfig);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         });
     });        
@@ -412,7 +412,7 @@ describe('FluentFactory', () => {
     test('Constructor followed by create will return an instance of FluentConditionCollector with correct vhConfig', () => {
         let testItem = new FluentFactory();
         let vhConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         }
         let result: IFluentConditionCollector | null = null;
@@ -423,7 +423,7 @@ describe('FluentFactory', () => {
     test('Register followed by create returns an instance of the test class with correct vhConfig', () => {
         class TestFluentConditionCollector implements IFluentConditionCollector {
             constructor(vhConfig: EvaluateChildConditionResultsConfig) {
-                this.parentConfig = { ...vhConfig, type: 'Test' };
+                this.parentConfig = { ...vhConfig, conditionType: 'Test' };
             }
             parentConfig: EvaluateChildConditionResultsConfig;
 
@@ -435,13 +435,13 @@ describe('FluentFactory', () => {
         testItem.registerConditionCollector((vhConfig) => new TestFluentConditionCollector(vhConfig));
 
         let vhConfig: EvaluateChildConditionResultsConfig = {
-            type: ConditionType.All,
+            conditionType: ConditionType.All,
             conditionConfigs: []
         }
         let result: IFluentConditionCollector | null = null;
         expect(() => result = testItem.createConditionCollector(vhConfig)).not.toThrow();
         expect(result).toBeInstanceOf(TestFluentConditionCollector);
-        expect(result!.parentConfig.type).toBe('Test');
+        expect(result!.parentConfig.conditionType).toBe('Test');
     })    
 });
 
@@ -454,7 +454,7 @@ describe('finishFluentValidatorCollector ', () => {
             testItem1,
             '', {}, null, null)
         ).not.toThrow();
-        let testItem2 = new FluentConditionCollector({ type: '', conditionConfigs: [] });
+        let testItem2 = new FluentConditionCollector({ conditionType: '', conditionConfigs: [] });
         expect(()=>finishFluentValidatorCollector(
             testItem2,
             '', {}, null, null)
@@ -472,7 +472,7 @@ describe('finishFluentValidatorCollector ', () => {
 describe('finishFluentConditionCollector ', () => {
     test('Only FluentConditionCollector legal for first parameter. Unexpect type throws', () => {
         let vmConfig = createVMConfig();
-        let testItem1 = new FluentConditionCollector({type: '', conditionConfigs: [] }); 
+        let testItem1 = new FluentConditionCollector({conditionType: '', conditionConfigs: [] }); 
         expect(()=>finishFluentConditionCollector(
             testItem1,
             '', {})

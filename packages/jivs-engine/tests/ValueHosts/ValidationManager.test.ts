@@ -340,7 +340,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -367,7 +367,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -424,7 +424,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -461,7 +461,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -480,7 +480,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -534,7 +534,7 @@ describe('ValidationManager.addValueHost', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                     },
                     errorMessage: 'msg'
                 }
@@ -564,7 +564,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         replacementConfig.validatorConfigs = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType,
+                    conditionType: AlwaysMatchesConditionType,
                 },
                 errorMessage: 'Error'
             }
@@ -630,7 +630,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         replacementConfig.validatorConfigs = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 },
                 errorMessage: 'Error'
             }
@@ -689,7 +689,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs!.length).toBe(1);
         expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].errorMessage).toBe('Error');        
         expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].conditionConfig).toBeDefined();
-        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].conditionConfig!.type).toBe(ConditionType.RequireText);
+        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
         
         // ensure ValueHost is supporting the Config
         expect(testItem.exposedValueHosts['Field1']).toBeInstanceOf(InputValueHost);
@@ -707,7 +707,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: AlwaysMatchesConditionType,
+                        conditionType: AlwaysMatchesConditionType,
                     },
                     errorMessage: 'Error'
                 }
@@ -741,7 +741,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: AlwaysMatchesConditionType,
+                        conditionType: AlwaysMatchesConditionType,
                     },
                     errorMessage: 'Error'
                 }
@@ -1004,7 +1004,7 @@ function setupInputValueHostConfig(fieldIndex: number,
                 config.validatorConfigs = [];
             config.validatorConfigs.push({
                 conditionConfig: {
-                    type: conditionType
+                    conditionType: conditionType
                 },
                 errorMessage: `Error ${labelNumber}: ${conditionType}`,
                 summaryMessage: `Summary ${labelNumber}: ${conditionType}`
@@ -1351,7 +1351,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let setup = setupValidationManager([config]);
         (setup.services.conditionFactory as ConditionFactory).register<UserSuppliedResultConditionConfig>(
             conditionType, (config) => new UserSuppliedResultCondition({
-                type: conditionType,
+                conditionType: conditionType,
                 category: ConditionCategory.Required,
             result: ConditionEvaluateResult.NoMatch
             }));
@@ -1373,7 +1373,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let setup = setupValidationManager([config]);
         (setup.services.conditionFactory as ConditionFactory).register<UserSuppliedResultConditionConfig>(
             conditionType, (config) => new UserSuppliedResultCondition({
-                type: conditionType,
+                conditionType: conditionType,
                 category: ConditionCategory.Required,
             result: ConditionEvaluateResult.NoMatch
         }));

@@ -763,7 +763,7 @@ describe('InputValueHost.getValidator', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 }
             }
         ];
@@ -777,7 +777,7 @@ describe('InputValueHost.getValidator', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 }
             }
         ];
@@ -792,22 +792,22 @@ describe('InputValueHost.getValidator', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 }
             },
             {
                 conditionConfig: {
-                    type: ConditionType.RegExp
+                    conditionType: ConditionType.RegExp
                 }
             },
             {
                 conditionConfig: {
-                    type: ConditionType.StringLength
+                    conditionType: ConditionType.StringLength
                 }
             },
             {
                 conditionConfig: {
-                    type: ConditionType.All
+                    conditionType: ConditionType.All
                 }
             },
         ];
@@ -894,7 +894,7 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 }
             }
         ];
@@ -905,7 +905,7 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             }
         ];
@@ -918,7 +918,7 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: IsUndeterminedConditionType
+                    conditionType: IsUndeterminedConditionType
                 }
             }
         ];
@@ -929,13 +929,13 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 },
                 errorMessage: '1'
             },
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 },
                 errorMessage: '2'
             }
@@ -947,12 +947,12 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: IsUndeterminedConditionType
+                    conditionType: IsUndeterminedConditionType
                 }
             },
             {
                 conditionConfig: {
-                    type: IsUndeterminedConditionType
+                    conditionType: IsUndeterminedConditionType
                 }
             }
         ];
@@ -963,13 +963,13 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
                 severity: ValidationSeverity.Severe
             },
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
                 errorMessage: '2'
             }
@@ -984,13 +984,13 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 },
                 severity: ValidationSeverity.Severe
             },
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             }
         ];
@@ -1005,13 +1005,13 @@ describe('InputValueHost.validate', () => {
             {
                 conditionConfig:
                 {
-                    type: IsUndeterminedConditionType
+                    conditionType: IsUndeterminedConditionType
                 },
                 severity: ValidationSeverity.Severe
             },
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             }
         ];
@@ -1025,14 +1025,14 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
                 severity: ValidationSeverity.Warning,
                 errorMessage: '1'
             },
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
                 errorMessage: '2'
             }
@@ -1048,13 +1048,13 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: IsUndeterminedConditionType
+                    conditionType: IsUndeterminedConditionType
                 },
                 severity: ValidationSeverity.Warning
             },
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             }
         ];
@@ -1068,13 +1068,13 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 },
                 severity: ValidationSeverity.Warning
             },
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             }
         ];
@@ -1088,13 +1088,13 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
                 severity: ValidationSeverity.Warning
             },
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 }
             }
         ];
@@ -1108,7 +1108,7 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
                 severity: ValidationSeverity.Warning
             }
@@ -1123,7 +1123,7 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
                 enabled: false
             }
@@ -1136,7 +1136,7 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
             }
         ];
@@ -1175,7 +1175,7 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
             }
         ];
@@ -1201,7 +1201,7 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 }
             }
         ];
@@ -1219,7 +1219,7 @@ describe('InputValueHost.validate', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             }
         ];
@@ -1263,7 +1263,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 }
             }
         ];
@@ -1292,7 +1292,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.DataTypeCheck
+                    conditionType: ConditionType.DataTypeCheck
                 }
             }
         ];
@@ -1322,7 +1322,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: <RegExpConditionConfig>{
-                    type: ConditionType.RegExp,
+                    conditionType: ConditionType.RegExp,
                     expressionAsString: '^A$', // will match only "A" and we will supply "ABC"
                     category: ConditionCategory.DataTypeCheck
                 },
@@ -1361,7 +1361,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
             }
             createCondition(valueHost: IInputValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): ICondition | null {
                 return new RegExpCondition({
-                    type: phoneNumberConditionType,
+                    conditionType: phoneNumberConditionType,
                     expression: /^\d\d\d \d\d\d\-\d{4}$/, // ### ###-####
                     valueHostName: null
                 });
@@ -1423,7 +1423,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 }
             }
         ];
@@ -1437,7 +1437,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             }
         ];
@@ -1471,7 +1471,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             }
         ];
@@ -1490,7 +1490,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 }
             }
         ];
@@ -1509,7 +1509,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 }
             }
         ];
@@ -1528,17 +1528,17 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             },
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType2
+                    conditionType: NeverMatchesConditionType2
                 }
             },
             {
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 }
             }
         ];
@@ -1555,17 +1555,17 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             },
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType2
+                    conditionType: NeverMatchesConditionType2
                 }
             },
             {
                 conditionConfig: {
-                    type: ConditionType.DataTypeCheck
+                    conditionType: ConditionType.DataTypeCheck
                 }
             }
         ];
@@ -1582,21 +1582,21 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             },
             {
                 conditionConfig: {
-                    type: ConditionType.DataTypeCheck
+                    conditionType: ConditionType.DataTypeCheck
                 }
             }, {
                 conditionConfig: {
-                    type: NeverMatchesConditionType2
+                    conditionType: NeverMatchesConditionType2
                 }
             },
             {
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 }
             }
         ];
@@ -1628,7 +1628,7 @@ describe('validate handles exception from custom Validator class', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 }
             }
         ];
@@ -1849,7 +1849,7 @@ describe('validate with async Conditions', () => {
                 done,
                 <ValidatorConfig>{
                     conditionConfig: {
-                        type: AlwaysMatchesConditionType
+                        conditionType: AlwaysMatchesConditionType
                     },
                     errorMessage: 'Always',
                 }, null,
@@ -1872,7 +1872,7 @@ describe('validate with async Conditions', () => {
                 null,
                 <ValidatorConfig>{
                     conditionConfig: {
-                        type: AlwaysMatchesConditionType
+                        conditionType: AlwaysMatchesConditionType
                     },
                     errorMessage: 'Always',
                 },
@@ -1904,7 +1904,7 @@ describe('validate with async Conditions', () => {
                 done,
                 <ValidatorConfig>{
                     conditionConfig: {
-                        type: NeverMatchesConditionType
+                        conditionType: NeverMatchesConditionType
                     },
                     errorMessage: 'Never',
                 },
@@ -1946,7 +1946,7 @@ describe('validate with async Conditions', () => {
                 done,
                 <ValidatorConfig>{
                     conditionConfig: {
-                        type: NeverMatchesConditionType
+                        conditionType: NeverMatchesConditionType
                     },
                     errorMessage: 'Never',
                     summaryMessage: 'Never Summary'
@@ -1989,7 +1989,7 @@ describe('validate with async Conditions', () => {
                 null, // before not assigned
                 <ValidatorConfig>{
                     conditionConfig: {
-                        type: NeverMatchesConditionType
+                        conditionType: NeverMatchesConditionType
                     },
                     errorMessage: 'Never',
                     summaryMessage: 'Never Summary'
@@ -2077,7 +2077,7 @@ describe('validate with async Conditions', () => {
 describe('InputValueHost.clearValidation', () => {
     test('After validate, Ensure no exceptions and the state is NotAttempted with IssuesFound = null', () => {
         let ivConfig: ValidatorConfig = {
-            conditionConfig: { type: IsUndeterminedConditionType },
+            conditionConfig: { conditionType: IsUndeterminedConditionType },
             errorMessage: ''
         };
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -2115,7 +2115,7 @@ describe('InputValueHost.clearValidation', () => {
     });
     test('Without calling validate, Ensure no exceptions and the state is NotAttempted with IssuesFound = null', () => {
         let ivConfig: ValidatorConfig = {
-            conditionConfig: { type: IsUndeterminedConditionType },
+            conditionConfig: { conditionType: IsUndeterminedConditionType },
             errorMessage: ''
         };
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -2134,7 +2134,7 @@ describe('InputValueHost.clearValidation', () => {
     });
     test('With prior state reflecting a validation issue, Ensure no exceptions and the state is NotAttempted with IssuesFound = null', () => {
         let ivConfig: ValidatorConfig = {
-            conditionConfig: { type: NeverMatchesConditionType },
+            conditionConfig: { conditionType: NeverMatchesConditionType },
             errorMessage: ''
         };
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -2196,7 +2196,7 @@ describe('InputValueHost.clearValidation', () => {
 describe('InputValueHost.doNotSaveNativeValue', () => {
     function trydoNotSaveNativeValue(initialValidationResult: ValidationResult, hasPendings: boolean, expectedResult: boolean): void {
         let ivConfig: ValidatorConfig = {
-            conditionConfig: { type: NeverMatchesConditionType },
+            conditionConfig: { conditionType: NeverMatchesConditionType },
             errorMessage: ''
         };
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -2339,7 +2339,7 @@ describe('InputValueHost.getIssueFound', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: AlwaysMatchesConditionType
+                    conditionType: AlwaysMatchesConditionType
                 }
             }
         ];
@@ -2353,7 +2353,7 @@ describe('InputValueHost.getIssueFound', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             }
         ];
@@ -2382,7 +2382,7 @@ describe('InputValueHost.getIssuesFound', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
                 errorMessage: '1',
                 summaryMessage: 'Summary1',
@@ -2390,7 +2390,7 @@ describe('InputValueHost.getIssuesFound', () => {
             },
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType2
+                    conditionType: NeverMatchesConditionType2
                 },
                 errorMessage: '2',
                 summaryMessage: 'Summary2'
@@ -2490,7 +2490,7 @@ describe('InputValueHost.getIssuesFound', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 },
                 errorMessage: 'Condition Error',
                 summaryMessage: 'Summary Condition Error',
@@ -2543,7 +2543,7 @@ describe('addValidator function', () => {
         let vh = vm.getValueHost('Field1') as InputValueHost;
         vh.addValidator({
             conditionConfig: {
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             },
             errorMessage: 'Error'
         });
@@ -2567,7 +2567,7 @@ describe('addValidator function', () => {
                     validatorConfigs: [
                         {
                             conditionConfig: <RegExpConditionConfig>{
-                                type: ConditionType.RegExp,
+                                conditionType: ConditionType.RegExp,
                                 expressionAsString: '^\\d\\d$',   // 2 digits
                                 valueHostName: 'Field1'
                             }
@@ -2579,7 +2579,7 @@ describe('addValidator function', () => {
         let vh = vm.getValueHost('Field1') as InputValueHost;
         vh.addValidator({
             conditionConfig: <RegExpConditionConfig>{
-                type: ConditionType.RegExp,
+                conditionType: ConditionType.RegExp,
                 expressionAsString: '^\\d\\d\\d$', // 3 digits
                 valueHostName: 'Field1'
             },
@@ -2608,7 +2608,7 @@ describe('addValidator function', () => {
                     validatorConfigs: [
                         {
                             conditionConfig: <RegExpConditionConfig>{
-                                type: ConditionType.RegExp,
+                                conditionType: ConditionType.RegExp,
                                 expressionAsString: '^\\d\\d$',   // 2 digits
                                 valueHostName: 'Field1'
                             },
@@ -2621,7 +2621,7 @@ describe('addValidator function', () => {
         let vh = vm.getValueHost('Field1') as InputValueHost;
         vh.addValidator({
             conditionConfig: {
-                type: ConditionType.RequireText
+                conditionType: ConditionType.RequireText
             },
             errorMessage: 'Required'
         });
@@ -2881,7 +2881,7 @@ describe('InputValueHostGenerator members', () => {
             validatorConfigs: [
                 {
                     conditionConfig: <RequireTextConditionConfig>{
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                         valueHostName: null
                     },
                     errorMessage: ''
@@ -2907,7 +2907,7 @@ describe('InputValueHostGenerator members', () => {
             label: '',
             validatorConfigs: [
                 {
-                    conditionCreator: (requestor) => new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: 'Field1' }),
+                    conditionCreator: (requestor) => new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: 'Field1' }),
                     conditionConfig: null,
                     errorMessage: ''
                 }
@@ -2940,7 +2940,7 @@ describe('InputValueHostGenerator members', () => {
             validatorConfigs: [
                 {
                     conditionConfig: <RequireTextConditionConfig>{
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                         valueHostName: 'Field1'
                     },
                     errorMessage: ''
@@ -2973,7 +2973,7 @@ describe('InputValueHostGenerator members', () => {
             label: '',
             validatorConfigs: [
                 {
-                    conditionCreator: (requestor) => new RequireTextCondition({ type: ConditionType.RequireText, valueHostName: 'Field1' }),
+                    conditionCreator: (requestor) => new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: 'Field1' }),
                     conditionConfig: null,
                     errorMessage: ''
                 }
@@ -3006,7 +3006,7 @@ describe('InputValueHostGenerator members', () => {
             validatorConfigs: [
                 {
                     conditionConfig: <RangeConditionConfig>{
-                        type: ConditionType.Range,   // different type from in State
+                        conditionType: ConditionType.Range,   // different type from in State
                         valueHostName: 'Field1'
                     },
                     errorMessage: ''
@@ -3041,7 +3041,7 @@ describe('InputValueHostGenerator members', () => {
             label: '',
             validatorConfigs: [
                 {
-                    conditionCreator: (requestor) => new NeverMatchesCondition({ type: NeverMatchesConditionType }),
+                    conditionCreator: (requestor) => new NeverMatchesCondition({ conditionType: NeverMatchesConditionType }),
                     conditionConfig: null,
                     errorMessage: ''
                 }
@@ -3077,7 +3077,7 @@ describe('InputValueHostGenerator members', () => {
             validatorConfigs: [
                 {
                     conditionConfig: <RangeConditionConfig>{
-                        type: ConditionType.Range,   // different type from in State
+                        conditionType: ConditionType.Range,   // different type from in State
                         valueHostName: 'Field1'
                     },
                     errorMessage: ''
@@ -3121,7 +3121,7 @@ describe('InputValueHostGenerator members', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: NeverMatchesConditionType
+                        conditionType: NeverMatchesConditionType
                     },
                     errorMessage: ''
                 }
@@ -3172,13 +3172,13 @@ describe('InputValueHostGenerator members', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: NeverMatchesConditionType
+                        conditionType: NeverMatchesConditionType
                     },
                     errorMessage: ''
                 },
                 {
                     conditionConfig: <RangeConditionConfig>{
-                        type: ConditionType.Range,
+                        conditionType: ConditionType.Range,
                         valueHostName: null
                     },
                     errorMessage: ''
@@ -3230,13 +3230,13 @@ describe('InputValueHostGenerator members', () => {
             validatorConfigs: [
                 {
                     conditionConfig: {
-                        type: NeverMatchesConditionType
+                        conditionType: NeverMatchesConditionType
                     },
                     errorMessage: ''
                 },
                 {
                     conditionConfig: <RangeConditionConfig>{
-                        type: ConditionType.Range,
+                        conditionType: ConditionType.Range,
                         valueHostName: null
                     },
                     errorMessage: ''
@@ -3261,7 +3261,7 @@ describe('InputValueHostGenerator members', () => {
             validatorConfigs: [
                 {
                     conditionConfig: <RequireTextConditionConfig>{
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                         valueHostName: 'Field1'
                     },
                     errorMessage: '',
@@ -3284,7 +3284,7 @@ describe('InputValueHost.requiresInput', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 }
             }
         ];
@@ -3297,7 +3297,7 @@ describe('InputValueHost.requiresInput', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: ConditionType.DataTypeCheck
+                    conditionType: ConditionType.DataTypeCheck
                 }
             }
         ];
@@ -3310,17 +3310,17 @@ describe('InputValueHost.requiresInput', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
-                    type: NeverMatchesConditionType
+                    conditionType: NeverMatchesConditionType
                 }
             },
             {
                 conditionConfig: {
-                    type: ConditionType.DataTypeCheck
+                    conditionType: ConditionType.DataTypeCheck
                 }
             },
             {
                 conditionConfig: {
-                    type: ConditionType.RequireText
+                    conditionType: ConditionType.RequireText
                 }
             }
         ];
@@ -3335,13 +3335,13 @@ describe('InputValueHost.gatherValueHostNames', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: <DataTypeCheckConditionConfig>{
-                    type: ConditionType.DataTypeCheck,
+                    conditionType: ConditionType.DataTypeCheck,
                     valueHostName: 'Property1'
                 }
             },
             {
                 conditionConfig: <RequireTextConditionConfig>{
-                    type: ConditionType.RequireText,
+                    conditionType: ConditionType.RequireText,
                     valueHostName: 'Property2'
                 }
             }
@@ -3373,7 +3373,7 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
                 label: 'Label1',
                 validatorConfigs: [{
                     conditionConfig: <EqualToConditionConfig>{
-                        type: ConditionType.EqualTo,
+                        conditionType: ConditionType.EqualTo,
                         secondValueHostName: 'Field2',
                         valueHostName: null
                     },
@@ -3386,7 +3386,7 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
                 label: 'Label2',
                 validatorConfigs: [{
                     conditionConfig: <RequireTextConditionConfig>{
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                         valueHostName: null
                     },
                     errorMessage: 'Field2 Error'
@@ -3398,7 +3398,7 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
                 label: 'Label3',
                 validatorConfigs: [{
                     conditionConfig: <RequireTextConditionConfig>{
-                        type: ConditionType.RequireText,
+                        conditionType: ConditionType.RequireText,
                         valueHostName: null
                     },
                     errorMessage: 'Field3 Error'

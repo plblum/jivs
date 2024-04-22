@@ -22,7 +22,7 @@ import { InvalidTypeError } from '../Utilities/ErrorHandling';
 /**
  * Just the function for a DataTypeComparer that handles numbers and strings. 
  * Supports Equals, LessThan, and Greater using the native Javascript operators
- * of ===, <, >. If the two values are the same type, it can use LessThan/GreaterThan.
+ * of ===, <, >. If the two values are the same data type, it can use LessThan/GreaterThan.
  * Otherwise, it returns NotEquals.
  * By the time this is called, dataTypeComparerService.compare() has handled out all other datatypes.
  * @param value1 
