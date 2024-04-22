@@ -3,7 +3,7 @@
  * @module Validation/Types
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { InputValidateResult } from './InputValidator';
+import { ValidatorValidateResult } from './Validator';
 
 /**
  * Parameter for the validate() function on InputValueHost and ValidationManager.
@@ -53,7 +53,7 @@ export interface ValidateOptions
 /**
  * Result of the validate() function that will be saved in InputValueHostState
  */
-export interface StatefulValidateResult {
+export interface StatefulValueHostValidateResult {
     /**
      * The state of validation for this ValueHost.
      */
@@ -67,15 +67,15 @@ export interface StatefulValidateResult {
 /**
  * Result of the validate() function.
  */
-export interface ValidateResult extends StatefulValidateResult {
+export interface ValueHostValidateResult extends StatefulValueHostValidateResult {
     /**
-     * Any promises returned by InputValidator.validate()
+     * Any promises returned by Validator.validate()
      * These still need to finish before supplying their evaluation results.
      * When either null or undefined, nothing is pending.
      * There should never be an empty array as the presence of an array
      * will make the system think there are promises pending.
      */
-    pending?: Array<Promise<InputValidateResult>> | null;
+    pending?: Array<Promise<ValidatorValidateResult>> | null;
 }
 
 
@@ -95,7 +95,7 @@ export enum ValidationResult {
      */
     ValueChangedButUnvalidated,
     /**
-     * Validation was not run, including when the InputValidator.severity is Off.
+     * Validation was not run, including when the Validator.severity is Off.
      */
     Undetermined,
 
@@ -155,7 +155,7 @@ export interface IssueFound {
      */
     valueHostName: ValueHostName;
     /**
-     * Error code is either what was supplied on InputValidatorConfig.errorCode
+     * Error code is either what was supplied on ValidatorConfig.errorCode
      * or Condition.ConditionType.
      */
     errorCode: string;
@@ -215,7 +215,7 @@ export interface BusinessLogicError {
      * Optional information about the error to pass along to the ValidationSummary.
      * It should be a short error code as a string. It will be used in the IssueFound instance
      * returned from validate() and getIssuesFound().
-     * Same as ConditionType unless you set the InputValidatorConfig.errorCode property.
+     * Same as ConditionType unless you set the ValidatorConfig.errorCode property.
      * If not supplied, the IssueFound.ConditionType will be assigned a generated value.
      */
     errorCode?: string;

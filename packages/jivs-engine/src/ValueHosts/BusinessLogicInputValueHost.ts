@@ -5,7 +5,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
-import { ValidateOptions, ValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
+import { ValidateOptions, ValueHostValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
@@ -26,8 +26,8 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
      * @param options 
      * @returns 
      */
-    public validate(options?: ValidateOptions): ValidateResult {
-        let result: ValidateResult = {
+    public validate(options?: ValidateOptions): ValueHostValidateResult {
+        let result: ValueHostValidateResult = {
             issuesFound: null,
             validationResult: ValidationResult.Valid
         };

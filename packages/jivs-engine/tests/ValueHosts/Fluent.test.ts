@@ -3,11 +3,11 @@ import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { EvaluateChildConditionResultsConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
-import { InputValidatorConfig } from '../../src/Interfaces/InputValidator';
+import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import {
-    FluentInputValidatorConfig, FluentValidatorCollector, FluentFactory, IFluentValidatorCollector, FluentConditionCollector, IFluentConditionCollector,
+    FluentValidatorConfig, FluentValidatorCollector, FluentFactory, IFluentValidatorCollector, FluentConditionCollector, IFluentConditionCollector,
     finishFluentValidatorCollector, finishFluentConditionCollector,
     fluent
 } from './../../src/ValueHosts/Fluent';
@@ -62,10 +62,10 @@ describe('FluentValidatorCollector', () => {
             validatorConfigs: []
         }
         let testItem = new FluentValidatorCollector(vhConfig);
-        let inputValidatorConfig: FluentInputValidatorConfig = {
+        let validatorConfig: FluentValidatorConfig = {
             summaryMessage: 'Summary'
         };
-        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', inputValidatorConfig)).not.toThrow();
+        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', validatorConfig)).not.toThrow();
         expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
         expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
             conditionConfig: {
@@ -87,10 +87,10 @@ describe('FluentValidatorCollector', () => {
         let conditionConfig: ConditionConfig = {
             type: ConditionType.RequireText
         };
-        let inputValidatorConfig: FluentInputValidatorConfig = {
+        let validatorConfig: FluentValidatorConfig = {
             summaryMessage: 'Summary'
         };
-        expect(() => testItem.add(null, conditionConfig, 'Error', inputValidatorConfig)).not.toThrow();
+        expect(() => testItem.add(null, conditionConfig, 'Error', validatorConfig)).not.toThrow();
         expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
         expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
             conditionConfig: {
@@ -109,11 +109,11 @@ describe('FluentValidatorCollector', () => {
             validatorConfigs: []
         }
         let testItem = new FluentValidatorCollector(vhConfig);
-        let inputValidatorConfig: FluentInputValidatorConfig = {
+        let validatorConfig: FluentValidatorConfig = {
             errorMessage: 'Error',
             summaryMessage: 'Summary'
         };
-        expect(() => testItem.add(ConditionType.RequireText, {}, null, inputValidatorConfig)).not.toThrow();
+        expect(() => testItem.add(ConditionType.RequireText, {}, null, validatorConfig)).not.toThrow();
         expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
         expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
             conditionConfig: {
@@ -392,7 +392,7 @@ describe('FluentFactory', () => {
             }
             parentConfig: InputValueHostConfig;
             add(conditionType: string, conditionConfig: ConditionConfig | null,
-                errorMessage: string | null, inputValidatorConfig: InputValidatorConfig): void {
+                errorMessage: string | null, validatorConfig: ValidatorConfig): void {
                 throw new Error('Method not implemented.');
             }
         }

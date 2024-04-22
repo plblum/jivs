@@ -11,7 +11,7 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import {
-    FluentValidatorCollector, FluentConditionCollector, FluentInputValidatorConfig,
+    FluentValidatorCollector, FluentConditionCollector, FluentValidatorConfig,
     finishFluentValidatorCollector, finishFluentConditionCollector, customRule
 } from "../../src/ValueHosts/Fluent";
 import { ValueHostsBuilder, build } from "../../src/ValueHosts/ValueHostsBuilder";
@@ -322,9 +322,9 @@ describe('build(vmConfig).calc', () => {
 // Test cases for creating fluent functions...
 function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorConfig
+    validatorParameters?: FluentValidatorConfig
 ): FluentValidatorCollector {
-    return finishFluentValidatorCollector(this, ConditionType.RequireText, conditionConfig, errorMessage, inputValidatorParameters);
+    return finishFluentValidatorCollector(this, ConditionType.RequireText, conditionConfig, errorMessage, validatorParameters);
 }
 function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>
 ): FluentConditionCollector {
@@ -334,11 +334,11 @@ function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionCon
 
 function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'type' | 'valueHostName'>,
     errorMessage?: string | null,
-    inputValidatorParameters?: FluentInputValidatorConfig
+    validatorParameters?: FluentValidatorConfig
 ): FluentValidatorCollector {
 
     return finishFluentValidatorCollector(this, ConditionType.RegExp, conditionConfig,
-        errorMessage, inputValidatorParameters);
+        errorMessage, validatorParameters);
 }
 function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'type' | 'valueHostName'>): FluentConditionCollector {
 
@@ -350,11 +350,11 @@ declare module './../../src/ValueHosts/Fluent'
     export interface FluentValidatorCollector {
         testChainRequireText(conditionConfig: Omit<RequireTextConditionConfig, 'type' | 'valueHostName'>,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorConfig
+            validatorParameters?: FluentValidatorConfig
         ): FluentValidatorCollector;
         testChainRegExp(conditionConfig: Omit<RegExpConditionConfig, 'type' | 'valueHostName'>,
             errorMessage?: string | null,
-            inputValidatorParameters?: FluentInputValidatorConfig
+            validatorParameters?: FluentValidatorConfig
         ): FluentValidatorCollector;
     }
     export interface FluentConditionCollector {
@@ -400,7 +400,7 @@ describe('Fluent chaining on build(vmConfig).input', () => {
     });
 });
 describe('customRule', () => {
-    test('Provide a valid function and get back a FluentValidatorCollector with inputValidatorConfig.conditionCreator setup, and  conditionConfig null', () => {
+    test('Provide a valid function and get back a FluentValidatorCollector with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1').customRule((requester) => {
@@ -418,7 +418,7 @@ describe('customRule', () => {
         expect(parentConfig.validatorConfigs![0].errorMessage).toBe('Error');
         expect(parentConfig.validatorConfigs![0].summaryMessage).toBe('Summary');
     });
-    test('Provide a valid function without errorMessage or inputValidatorParameters and get back a FluentValidatorCollector with inputValidatorConfig.conditionCreator setup, and conditionConfig null', () => {
+    test('Provide a valid function without errorMessage or validatorParameters and get back a FluentValidatorCollector with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1').customRule((requester) => {
@@ -596,7 +596,7 @@ describe('updateNonInput', () => {
 });
 
 describe('updateValidator', () => {
-    test('With existing InputValidator, all values supplied are updated', () => {
+    test('With existing Validator, all values supplied are updated', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1')
@@ -624,7 +624,7 @@ describe('updateValidator', () => {
             }]
         }]);
     });
-    test('With existing InputValidator, supply unwanted properties. They are not applied, but valid ones are.', () => {
+    test('With existing Validator, supply unwanted properties. They are not applied, but valid ones are.', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1').requireText(null, 'OriginalError');
@@ -722,7 +722,7 @@ describe('addValidatorsTo', () => {
         let testItem = build(vmConfig).input('Field1').requireText();
         expect(() => build(vmConfig).addValidatorsTo('Field1').requireText()).toThrow(/already defined/);
     });
-    test('With matching errorCode on InputValidator.errorCode, throws', () => {
+    test('With matching errorCode on Validator.errorCode, throws', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1').requireText({}, null, { errorCode: 'ERRORCODE' });

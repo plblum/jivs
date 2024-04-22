@@ -6,7 +6,7 @@ import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/In
 import { BusinessLogicInputValueHost, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostState } from '../../src/Interfaces/InputValueHost';
-import { ValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
+import { ValueHostValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import {
     IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerState,
@@ -212,9 +212,9 @@ describe('constructor and initial property values', () => {
             services: new MockValidationServices(false, false),
             valueHostConfigs: [],
             onStateChanged: (validationManager: IValidationManager, state: ValidationManagerState) => { },
-            onValidated: (validationManager: IValidationManager, validateResults: Array<ValidateResult>) => { },
+            onValidated: (validationManager: IValidationManager, validateResults: Array<ValueHostValidateResult>) => { },
             onValueHostStateChanged: (valueHost: IValueHost, state: ValueHostState) => { },
-            onValueHostValidated: (valueHost: IValidatableValueHostBase, validateResult: ValidateResult) => { },
+            onValueHostValidated: (valueHost: IValidatableValueHostBase, validateResult: ValueHostValidateResult) => { },
             onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
             onInputValueChanged: (valueHost: IValidatableValueHostBase, oldValue: any) => { }
         };
@@ -965,7 +965,7 @@ function testIssueFound(actual: IssueFound, expected: Partial<IssueFound>): void
         return true;
     });
 }
-function testIssueFoundFromValidateResults(validateResults: Array<ValidateResult>,
+function testIssueFoundFromValidateResults(validateResults: Array<ValueHostValidateResult>,
     indexIntoResults: number,
     expectedValidationResult: ValidationResult,
     expectedIssuesFound: Array<Partial<IssueFound>> | null): void {
@@ -1014,7 +1014,7 @@ function setupInputValueHostConfig(fieldIndex: number,
     return config;
 }
 
-// validate(group?: string): Array<ValidateResult>
+// validate(group?: string): Array<ValueHostValidateResult>
 // get isValid(): boolean
 // doNotSaveNativeValue(): boolean
 // getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound>
@@ -1035,11 +1035,11 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([]);
         expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
-    test('With 1 inputValueHost that is ValidationResult.Valid, returns 1 ValidateResult', () => {
+    test('With 1 inputValueHost that is ValidationResult.Valid, returns 1 ValueHostValidateResult', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
         expect(validateResults.length).toBe(1);
 
@@ -1049,12 +1049,12 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([]);
         expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
-    test('With 1 inputValueHost that is ValidationResult.Invalid, returns 1 ValidateResult', () => {
+    test('With 1 inputValueHost that is ValidationResult.Invalid, returns 1 ValueHostValidateResult', () => {
 
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
         expect(validateResults.length).toBe(1);
 
@@ -1090,7 +1090,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType, NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
         expect(validateResults.length).toBe(1);
 
@@ -1130,7 +1130,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let setup = setupValidationManager([config1, config2]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
         expect(validateResults.length).toBe(2);
 
@@ -1143,14 +1143,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config2.name)).toEqual([]);
         expect(setup.validationManager.getIssuesFound()).toEqual([]);
     });
-    test('With 2 inputValueHost where only one has validators, it should return only one ValidateResult, for the one with validators', () => {
+    test('With 2 inputValueHost where only one has validators, it should return only one ValueHostValidateResult, for the one with validators', () => {
 
         let config1 = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let config2 = fluent().input('Field2');
 
         let setup = setupValidationManager([config1, config2.parentConfig]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
         expect(validateResults.length).toBe(1);
 
@@ -1169,7 +1169,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let setup = setupValidationManager([config1, config2]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
         expect(validateResults.length).toBe(0);
 
@@ -1186,7 +1186,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let setup = setupValidationManager([config1, config2]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [
@@ -1356,7 +1356,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             result: ConditionEvaluateResult.NoMatch
             }));
         
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
         expect(() => validateResults = setup.validationManager.validate({ preliminary: true })).not.toThrow();
 
@@ -1378,7 +1378,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             result: ConditionEvaluateResult.NoMatch
         }));
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
         expect(() => validateResults = setup.validationManager.validate({ preliminary: false })).not.toThrow();
 
@@ -1413,7 +1413,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
 
@@ -1425,7 +1425,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         setup.validationManager.getInputValueHost('Field1')?.setInputValue(''); // requires text for duringEdit
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
 
@@ -1437,7 +1437,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
         setup.validationManager.getInputValueHost(config.name)?.setInputValue('Text');
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
 
         testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
@@ -1446,7 +1446,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
         setup.validationManager.getInputValueHost(config.name)?.setInputValue(undefined);
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
 
         expect(validateResults.length).toBe(0);
@@ -1455,7 +1455,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
 
@@ -1468,7 +1468,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         (config.validatorConfigs![0].conditionConfig as UserSuppliedResultConditionConfig).result = ConditionEvaluateResult.Match;
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         let vh = (setup.validationManager.getValueHost('Field1')! as IInputValueHost);
         vh.setInputValue('');
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
@@ -1479,7 +1479,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
         expect(() => validateResults = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
 
@@ -1489,7 +1489,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
     });
     test('OnValidated callback test', () => {
         let changeMe = false;
-        let callback = (vm: IValidationManager, validateResults: Array<ValidateResult>) => {
+        let callback = (vm: IValidationManager, validateResults: Array<ValueHostValidateResult>) => {
             changeMe = true;
         };
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
@@ -1497,7 +1497,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             onValidated: callback
         });
 
-        let validateResults: Array<ValidateResult> = [];
+        let validateResults: Array<ValueHostValidateResult> = [];
         expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
 
         expect(changeMe).toBe(true);
@@ -1708,7 +1708,7 @@ describe('toIValidationManagerCallbacks function', () => {
             onValueChanged: (vh: IValueHost, old: any) => {},
             onValueHostStateChanged: (vh: IValueHost, state: ValueHostState) => {},
             onInputValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
-            onValueHostValidated: (vh: IValidatableValueHostBase, validationResult: ValidateResult) => { },
+            onValueHostValidated: (vh: IValidatableValueHostBase, validationResult: ValueHostValidateResult) => { },
             onStateChanged: (vm, state) => { },
             onValidated: (vm, results) => { }
         };

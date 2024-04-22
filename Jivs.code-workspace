@@ -51,7 +51,7 @@
 			"package-lock.json": false,
 			"typedoc_output": false,
 			"node_modules": false,
-			".vscode": false
+			".vscode": false,
 		},
 		"explorerExclude.showPicker": false,
 		"explorer.excludeGitIgnore": false,
@@ -64,7 +64,17 @@
 		],
 		"search.exclude": {
 			"**/build": true,
-			"**/coverage": true
+			"**/coverage": true,
+			"**/.git": true,
+			"docs": true,
+			"CHANGELOG.md": true
+		},
+		"notebook.find.scope": {
+
+			"markupSource": true,
+			"markupPreview": true,
+			"codeSource": true,
+			"codeOutput": true
 		}
 	}
 }

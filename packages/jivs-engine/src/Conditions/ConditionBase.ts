@@ -67,10 +67,10 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
 
     /**
      * Helps identify the purpose of the Condition. Impacts:
-     * * Sort order of the list of Conditions evaluated by an InputValidator,
+     * * Sort order of the list of Conditions evaluated by an Validator,
      *   placing Required first and DataTypeCheck second.
      * * Sets InputValueHostConfig.required.
-     * * Sets InputValidatorConfig.severity when undefined, where Required
+     * * Sets ValidatorConfig.severity when undefined, where Required
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
      * override it with ConditionConfig.category.

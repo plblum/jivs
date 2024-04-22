@@ -26,7 +26,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostsManager } from './ValueHostResolver';
-import { ValidateOptions, ValidateResult, BusinessLogicError, IssueFound } from './Validation';
+import { ValidateOptions, ValueHostValidateResult, BusinessLogicError, IssueFound } from './Validation';
 import { IValidationServices } from './ValidationServices';
 import { ValueHostConfig, ValueHostState } from './ValueHost';
 import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './ValidatableValueHostBase';
@@ -43,9 +43,9 @@ export interface IValidationManager extends IValueHostsManager {
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      * Important to set options.BeforeSubmit to true if invoking validate() prior to submitting.
-     * @returns Array of ValidateResult with empty array if all are valid
+     * @returns Array of ValueHostValidateResult with empty array if all are valid
      */
-    validate(options?: ValidateOptions): Array<ValidateResult>;
+    validate(options?: ValidateOptions): Array<ValueHostValidateResult>;
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
@@ -177,7 +177,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
 }
 
 export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;
-export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<ValidateResult>) => void;
+export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<ValueHostValidateResult>) => void;
 
 
 /**

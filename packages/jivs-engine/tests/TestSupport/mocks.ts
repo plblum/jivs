@@ -7,12 +7,12 @@ import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, Va
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueHostConfig, InputValueHostState } from "../../src/Interfaces/InputValueHost";
-import { ValidateOptions, ValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
+import { ValidateOptions, ValueHostValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
-import { IInputValidator, IInputValidatorFactory, InputValidatorConfig } from "../../src/Interfaces/InputValidator";
+import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
-import { InputValidatorFactory } from "../../src/ValueHosts/InputValidator";
+import { ValidatorFactory } from "../../src/ValueHosts/Validator";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { IDataTypeFormatterService } from "../../src/Interfaces/DataTypeFormatterService";
@@ -142,7 +142,7 @@ export class MockInputValueHost extends MockValueHost
         else
             this._conversionErrorMessage = undefined;
     }
-    validate(options?: ValidateOptions): ValidateResult {
+    validate(options?: ValidateOptions): ValueHostValidateResult {
         throw new Error("Method not implemented.");
     }
     clearValidation(): void {
@@ -184,10 +184,10 @@ export class MockInputValueHost extends MockValueHost
         // do nothing
     }
     
-    getValidator(conditionType: string): IInputValidator | null {
+    getValidator(conditionType: string): IValidator | null {
         throw new Error("Method not implemented.");
     }
-    addValidator(config: InputValidatorConfig): void
+    addValidator(config: ValidatorConfig): void
     {
         throw new Error("Method not implemented.");
     }
@@ -213,7 +213,7 @@ export class MockValidationServices implements IValidationServices
         let factory = new ValueHostFactory();
         registerStandardValueHostGenerators(factory);
         this._valueHostFactory = factory;
-        this._inputValidatorFactory = new InputValidatorFactory();
+        this._validatorFactory = new ValidatorFactory();
 
         this.activeCultureId = 'en';
         this._conditionFactory = new ConditionFactory();
@@ -359,15 +359,15 @@ export class MockValidationServices implements IValidationServices
         this._valueHostFactory = factory;
     }
     private _valueHostFactory: IValueHostFactory;
-    public get inputValidatorFactory(): IInputValidatorFactory
+    public get validatorFactory(): IValidatorFactory
     {
-        return this._inputValidatorFactory;
+        return this._validatorFactory;
     }
-    public set inputValidatorFactory(factory: IInputValidatorFactory)
+    public set validatorFactory(factory: IValidatorFactory)
     {
-        this._inputValidatorFactory = factory;
+        this._validatorFactory = factory;
     }
-    private _inputValidatorFactory: IInputValidatorFactory;
+    private _validatorFactory: IValidatorFactory;
 }
 
 /**
@@ -435,7 +435,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         return this._hostStateChanges;
     }    
 
-    validate(options?: ValidateOptions): Array<ValidateResult> {
+    validate(options?: ValidateOptions): Array<ValueHostValidateResult> {
         throw new Error("Method not implemented.");
     }
     clearValidation(): void {

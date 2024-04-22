@@ -128,7 +128,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     are `Conditions` included in this library, you are often going to need
     to build your own.
 
--   <a href="#inputvalidators">`InputValidator class`</a> – Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
+-   <a href="#validators">`Validator class`</a> – Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
 
 - <a href="#validationservices">`ValidationServices class` </a> – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by ValidationServices which empower Jivs.
 	- `IDataTypeFormatter` – Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
@@ -266,7 +266,7 @@ interface EqualToConditionConfig {
     category?: ConditionCategory;
 }
 ```
->Where's the error message? A `Condition` is just part of a Validator. The `InputValidator class` connects your Condition to its error message.
+>Where's the error message? A `Condition` is just part of a Validator. The `Validator class` connects your Condition to its error message.
 
 Your new code should look like this, where `ValueHostName` is your identifier for a field on the Model that you call “SignedOnDate”. (More on <a href="#naming">`ValueHost Names`</a> later.)
 ```ts
@@ -336,7 +336,7 @@ interface IInputValueHost extends IValueHost
     setInputValue(value, options?): void;	// value from the UI's editor
     setValues(nativeValue, inputValue, options?): void;	// both values
     
-    validate(options): ValidateResult;
+    validate(options): ValueHostValidateResult;
     isValid: boolean;
     getIssueFound(errorCode): IssueFound | null;
     getIssuesFound(group?): IssueFound[];	
@@ -392,7 +392,7 @@ interface ValueHostConfig
 interface InputValueHostConfig extends ValueHostConfig 
 {
   type: 'Input',	// shown here for documentation purposes
-  validatorConfigs: InputValidatorConfig[] | null;
+  validatorConfigs: ValidatorConfig[] | null;
   group?: string | Array<string> | null;
 }
 interface NonInputValueHostConfig extends ValueHostConfig 
@@ -413,14 +413,14 @@ Here’s how your configuration actually looks:
     name: 'FirstName',
     dataType: 'String',
     label: 'First name', // localized, of course!
-    validatorConfigs: [ InputValidatorConfigs ]
+    validatorConfigs: [ ValidatorConfigs ]
   },
   {
     type: 'Input',
     name: 'LastName',
     dataType: 'String',
     label: 'Last name',
-    validatorConfigs: [ InputValidatorConfigs ]
+    validatorConfigs: [ ValidatorConfigs ]
   }
 ]
 ```
@@ -449,15 +449,15 @@ The `ValueHost` names are also used to help a `Condition` retrieve a value from 
 ### Using CalcValueHost
 See a practical example here: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts)
 
-<a name="inputvalidators"></a>
-## InputValidators: Connecting Conditions to Error Messages
+<a name="validators"></a>
+## Validators: Connecting Conditions to Error Messages
 
 Validation is really just a process that evaluates some rule and returns a result. If there was an error, the result involves an error message. 
 
-The `InputValidator class` handles this work. Once again, we use a Config to configure it. 
-> Like all Configs in Jivs, InputValidatorConfig only has properties, many of which are optional. It is not a class either. You just create a plain old JavaScript object strongly typed with this interface.
+The `Validator class` handles this work. Once again, we use a Config to configure it. 
+> Like all Configs in Jivs, ValidatorConfig only has properties, many of which are optional. It is not a class either. You just create a plain old JavaScript object strongly typed with this interface.
 ```ts
-interface InputValidatorConfig {
+interface ValidatorConfig {
     conditionConfig: null | ConditionConfig;
     conditionCreator?: ((requester) => null | ICondition);
     errorMessage: string | ((host) => string);
@@ -480,10 +480,10 @@ Because this is so full of goodness, let’s go through each property.
 	-	`Error` – Error but continue evaluating the remaining validation rules. The default when `severity` is omitted.
 	-	`Severe` – Error and do not evaluate any more validation rules for this ValueHost.
 	-	`Warning` – Want to give the user some direction, but not prevent saving the data.
--	`enabled` – A way to quickly disable the InputValidator.
--	`enablerConfig` and `enablerCreator` – The *Enabler* uses a `Condition` to determine if the `InputValidator` is enabled. Often validation rules depend on other information for that. For example, you have a checkbox associated with a text box. Any validation rule on the text box isn’t used unless the checkbox is marked. You would assign a `Condition` to evaluate the value of the checkbox to the Enabler.
+-	`enabled` – A way to quickly disable the Validator.
+-	`enablerConfig` and `enablerCreator` – The *Enabler* uses a `Condition` to determine if the `Validator` is enabled. Often validation rules depend on other information for that. For example, you have a checkbox associated with a text box. Any validation rule on the text box isn’t used unless the checkbox is marked. You would assign a `Condition` to evaluate the value of the checkbox to the Enabler.
 
-Now let’s place an `InputValidatorConfig` into our previous example using a Model with FirstName and LastName.
+Now let’s place an `ValidatorConfig` into our previous example using a Model with FirstName and LastName.
 ```ts
 [{
   type: 'Input',
@@ -529,7 +529,7 @@ Now let’s place an `InputValidatorConfig` into our previous example using a Mo
 
 With Jivs, the UI uses the `ValidationManager class` to manage the `ValueHosts`, run validation, and get any issues found. All of your UI widgets should have access to the `ValidationManager`, so they can take actions resulting from validation.
 
-`ValidationManager` needs to be configured first. Much of that work was described in the previous sections that built `ValueHostConfigs`, `InputValidatorConfigs`, and `ConditionConfigs`. The configuration is contained in the `ValidationManagerConfig type`.
+`ValidationManager` needs to be configured first. Much of that work was described in the previous sections that built `ValueHostConfigs`, `ValidatorConfigs`, and `ConditionConfigs`. The configuration is contained in the `ValidationManagerConfig type`.
 
 Here’s pseudocode for creating the `ValidationManager`.
 ```ts
@@ -754,7 +754,7 @@ let firstNameConfig = <ValueHostConfig>{
   type: 'Input',
   name: 'FirstName',
   dataType: 'String',
-  validatorConfigs: [ InputValidatorConfigs ]
+  validatorConfigs: [ ValidatorConfigs ]
   ... other properties omitted ...
 };
 
@@ -863,7 +863,7 @@ Any text displayed to the user and any input supplied from them is subject to lo
 ### Localizing strings
 Here are a few places you provide user-facing strings into Jivs:
 - ValueHostConfig.label
-- InputValidatorConfig.errorMessage and summaryMessage
+- ValidatorConfig.errorMessage and summaryMessage
 
 Each of those properties have a companion that ends in "l10n" (industry term for localization), such as labell10n. Use the l10n properties to supply a Localization Key that will be sent to Jivs `TextLocalizationService`. If that service has the appropriate data, it will be used instead of the usual property.
 
