@@ -1,5 +1,5 @@
 /**
- * Base implementation for developing Conditions that use the value from ValueHost.getInputValue().
+ * Base for Conditions that use the value from ValueHost.getInputValue().
  * Most classes use ValueHost.getValue() (the native value).
  * @module Conditions/AbstractClasses/InputValueConditionBase
  */
@@ -9,16 +9,23 @@ import { IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { OneValueConditionConfig, OneValueConditionBase } from './OneValueConditionBase';
+import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+
+/**
+ * ConditionConfig to use with InputValueConditionBase
+ */
+export interface InputValueConditionBaseConfig extends OneValueConditionBaseConfig {
+
+}
 
 
 /**
  * Abstract class for developing Conditions that use the value from ValueHost.getInputValue().
  * Most classes use ValueHost.getValue() (the native value).
  */
-export abstract class InputValueConditionBase<TConfig extends OneValueConditionConfig>
+export abstract class InputValueConditionBase<TConfig extends InputValueConditionBaseConfig>
     extends OneValueConditionBase<TConfig>
 {
     /**

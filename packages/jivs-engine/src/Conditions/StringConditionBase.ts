@@ -1,5 +1,5 @@
 /**
- * Base implementation of a Condition that evaluates a string as the native value.
+ * Base Condition to evaluating the native value only a string.
  * @module Conditions/AbstractClasses/StringConditionBase
  */
 
@@ -8,12 +8,37 @@ import { ConditionEvaluateResult, IEvaluateConditionDuringEdits } from '../Inter
 import { IValidationServices } from '../Interfaces/ValidationServices';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { OneValueConditionConfig, OneValueConditionBase } from './OneValueConditionBase';
+import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 
 /**
- * Base implementation of a Condition that evaluates a string as the native value.
+ * ConditionConfig for any implementation of StringConditionBase.
  */
-export abstract class StringConditionBase<TConditionConfig extends StringConditionConfig>
+export interface StringConditionBaseConfig extends OneValueConditionBaseConfig {
+
+    /**
+     * When true or undefined, this evaluates when ValidateOption.DuringEdit is true.
+     * Usually that means as the user is typing. Its not appropriate when
+     * the regular expression will not match until the input is finished,
+     * such as parsing a date. Its best for checking for valid or invalid (when Not=true)
+     * characters as the user types.
+     */
+    supportsDuringEdit?: boolean;
+    
+    /**
+     * Removes leading and trailing whitespace before evaluating the string.
+     * Only used with ValidateOption.DuringEdit = true as the string
+     * comes from the Input value, which is actively being edited.
+     * Your parser that moves data from Input to Native values is expected
+     * to do its own trimming, leaving the DuringEdit = false no need to trim.
+     */
+    trim?: boolean;    
+
+}
+
+/**
+ * Base Condition to evaluating the native value only a string.
+ */
+export abstract class StringConditionBase<TConditionConfig extends StringConditionBaseConfig>
     extends OneValueConditionBase<TConditionConfig> implements IEvaluateConditionDuringEdits
 {
     /**
@@ -73,26 +98,4 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
             return undefined;
         return value;
     }
-}
-
-export interface StringConditionConfig extends OneValueConditionConfig {
-
-    /**
-     * When true or undefined, this evaluates when ValidateOption.DuringEdit is true.
-     * Usually that means as the user is typing. Its not appropriate when
-     * the regular expression will not match until the input is finished,
-     * such as parsing a date. Its best for checking for valid or invalid (when Not=true)
-     * characters as the user types.
-     */
-    supportsDuringEdit?: boolean;
-    
-    /**
-     * Removes leading and trailing whitespace before evaluating the string.
-     * Only used with ValidateOption.DuringEdit = true as the string
-     * comes from the Input value, which is actively being edited.
-     * Your parser that moves data from Input to Native values is expected
-     * to do its own trimming, leaving the DuringEdit = false no need to trim.
-     */
-    trim?: boolean;    
-
 }

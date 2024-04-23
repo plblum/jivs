@@ -1,5 +1,5 @@
 /**
- * @module Services/Types/MessageTokenResolverService
+ * @module Services/Types/IMessageTokenResolverService
  */
 
 import { IInputValueHost } from "./InputValueHost";

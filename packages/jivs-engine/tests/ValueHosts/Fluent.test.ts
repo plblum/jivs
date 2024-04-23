@@ -1,6 +1,6 @@
 import { MockValidationServices } from './../TestSupport/mocks';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
-import { EvaluateChildConditionResultsConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
+import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
@@ -127,7 +127,7 @@ describe('FluentValidatorCollector', () => {
 
 describe('FluentConditionCollector', () => {
     test('constructor with vhConfig sets up vhConfig property', () => {
-        let vhConfig: EvaluateChildConditionResultsConfig = {
+        let vhConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
@@ -143,7 +143,7 @@ describe('FluentConditionCollector', () => {
     });    
 
     test('constructor with vhConfig that has conditionConfigs=null sets up vhConfig property with empty conditionConfigs array', () => {
-        let vhConfig: EvaluateChildConditionResultsConfig = {
+        let vhConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
@@ -153,7 +153,7 @@ describe('FluentConditionCollector', () => {
         expect(testItem.parentConfig.conditionConfigs).toEqual([]);
     });
     test('add() with all parameters correctly defined', () => {
-        let vhConfig: EvaluateChildConditionResultsConfig = {
+        let vhConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
@@ -166,7 +166,7 @@ describe('FluentConditionCollector', () => {
         });
     });
     test('add() with null for conditionType, and other parameters correctly defined', () => {
-        let vhConfig: EvaluateChildConditionResultsConfig = {
+        let vhConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
@@ -298,7 +298,7 @@ describe('fluent(vmConfig).conditions', () => {
         });
     });    
     test('Supplied parameter creates a FluentConditionCollector with the same vhConfig', () => {
-        let parentConfig: EvaluateChildConditionResultsConfig = {
+        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
@@ -310,7 +310,7 @@ describe('fluent(vmConfig).conditions', () => {
         });
     });    
     test('Supplied parameter with conditionConfig=null creates a FluentValidatorCollector with the same vhConfig and conditionConfig=[]', () => {
-        let parentConfig: EvaluateChildConditionResultsConfig = {
+        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
@@ -411,7 +411,7 @@ describe('FluentFactory', () => {
     });
     test('Constructor followed by create will return an instance of FluentConditionCollector with correct vhConfig', () => {
         let testItem = new FluentFactory();
-        let vhConfig: EvaluateChildConditionResultsConfig = {
+        let vhConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
@@ -422,10 +422,10 @@ describe('FluentFactory', () => {
     });
     test('Register followed by create returns an instance of the test class with correct vhConfig', () => {
         class TestFluentConditionCollector implements IFluentConditionCollector {
-            constructor(vhConfig: EvaluateChildConditionResultsConfig) {
+            constructor(vhConfig: EvaluateChildConditionResultsBaseConfig) {
                 this.parentConfig = { ...vhConfig, conditionType: 'Test' };
             }
-            parentConfig: EvaluateChildConditionResultsConfig;
+            parentConfig: EvaluateChildConditionResultsBaseConfig;
 
             add(conditionType: string, conditionConfig: Partial<ConditionConfig> | null): void {
                 throw new Error('Method not implemented.');
@@ -434,7 +434,7 @@ describe('FluentFactory', () => {
         let testItem = new FluentFactory();
         testItem.registerConditionCollector((vhConfig) => new TestFluentConditionCollector(vhConfig));
 
-        let vhConfig: EvaluateChildConditionResultsConfig = {
+        let vhConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }

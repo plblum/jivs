@@ -1,6 +1,6 @@
 /**
  * Provides a dependency injection approach to this library.
- * @module Services/Types/ValidationServices
+ * @module Services/Types/IValidationServices
  */
 
 import { IConditionFactory } from './Conditions';

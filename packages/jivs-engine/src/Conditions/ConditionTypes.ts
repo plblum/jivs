@@ -1,7 +1,5 @@
 /** 
- * Identifies values for the ConditionConfig.conditionType property and anywhere with
- * the name "ConditionType".
- * @module Conditions/Types/ConditionType
+ * @module Conditions/Types
  */
 
 /**
