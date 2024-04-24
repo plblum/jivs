@@ -274,7 +274,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         }, this);
         if (changed)
             if (!options || !options?.omitCallback)
-                this.invokeOnValueHostValided();
+                this.invokeOnValueHostValidated();
         return changed;
     }
 
@@ -354,7 +354,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 return stateToUpdate;
             }, this);
             if (changed) {
-                this.invokeOnValueHostValided();
+                this.invokeOnValueHostValidated();
                 return true;
             }
         }
@@ -373,7 +373,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 return stateToUpdate;
             }, this);
             if (changed) {
-                this.invokeOnValueHostValided();
+                this.invokeOnValueHostValidated();
                 return true;
             }
         }
@@ -384,7 +384,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Helper to call onValueHostValidated due to a change in the state associated
      * with Validate itself or BusinessLogicErrors.
      */
-    protected invokeOnValueHostValided(): void
+    protected invokeOnValueHostValidated(): void
     {
         toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
             {

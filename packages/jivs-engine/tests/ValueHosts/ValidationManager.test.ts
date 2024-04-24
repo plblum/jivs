@@ -957,15 +957,6 @@ function setupValidationManager(configs?: Array<InputValueHostConfig> | null,
     };
 }
 
-function testIssueFound(actual: IssueFound, expected: Partial<IssueFound>): void {
-    let untypedActual = actual as any;
-    let untypedExpected = expected as any;
-    Object.keys(untypedExpected).every((key) => {
-        expect(untypedActual[key]).toBe(untypedExpected[key]);
-        return true;
-    });
-}
-
 function setupInputValueHostConfig(fieldIndex: number,
     conditionTypes: Array<string> | null): InputValueHostConfig {
     let labelNumber = fieldIndex + 1;
