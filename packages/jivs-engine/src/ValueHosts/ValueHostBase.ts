@@ -261,8 +261,8 @@ export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
 
     /**
      * Looking for changes to the ValidationConfigs to impact IssuesFound.
-     * If IssuesFound did change, fix ValidationResult for when Invalid to 
-     * review IssuesFound in case it is only a Warning, which makes ValidationResult Valid.
+     * If IssuesFound did change, fix ValidationStatusCode for when Invalid to 
+     * review IssuesFound in case it is only a Warning, which makes ValidationStatusCode Valid.
      * @param state 
      * @param config 
      */

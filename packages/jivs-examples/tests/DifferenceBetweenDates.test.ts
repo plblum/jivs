@@ -1,6 +1,6 @@
 // Tests run the same cases demonstrated in the example source, ../src/DifferenceBetweenDates
 
-import { ValueHostValidateResult, ValidationResult, ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
+import { ValueHostValidateResult, ValidationStatusCode, ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
 import { configureVMForDifferentBetweenDate } from "../src/DifferenceBetweenDates";
 import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
 import { MockCapturingLogger } from "@plblum/jivs-engine/tests/TestSupport/mocks";

@@ -9,7 +9,7 @@ import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseState } from '../Interfaces/ValidatableValueHostBase';
-import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationResult, ValidationSeverity } from '../Interfaces/Validation';
+import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatusCode, ValidationSeverity } from '../Interfaces/Validation';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 
 
@@ -52,7 +52,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let changed = !deepEquals(value, oldValue);
         this.updateState((stateToUpdate) => {
             if (changed) {
-                stateToUpdate.validationResult = ValidationResult.ValueChangedButUnvalidated;
+                stateToUpdate.statusCode = ValidationStatusCode.ValueChangedButUnvalidated;
                 stateToUpdate.value = value;
             }
             this.updateChangeCounterInState(stateToUpdate, changed, options!);
@@ -93,7 +93,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let changed = !deepEquals(value, oldValue);
         this.updateState((stateToUpdate) => {
             if (changed) {
-                stateToUpdate.validationResult = ValidationResult.ValueChangedButUnvalidated;
+                stateToUpdate.statusCode = ValidationStatusCode.ValueChangedButUnvalidated;
                 stateToUpdate.inputValue = value;
             }
             this.updateChangeCounterInState(stateToUpdate, changed, options!);
@@ -132,7 +132,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         this.updateState((stateToUpdate) => {
             if (changed) {
                 // effectively clear past validation
-                stateToUpdate.validationResult = ValidationResult.ValueChangedButUnvalidated;
+                stateToUpdate.statusCode = ValidationStatusCode.ValueChangedButUnvalidated;
                 stateToUpdate.issuesFound = null;
 
                 stateToUpdate.value = nativeValue;
@@ -159,7 +159,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     protected processValidationOptions(options: SetValueOptions): void {
         if (options.validate) {
-            if (this.state.validationResult === ValidationResult.ValueChangedButUnvalidated)
+            if (this.state.statusCode === ValidationStatusCode.ValueChangedButUnvalidated)
                 this.validate(); // Result isn't ignored. Its automatically updates state and notifies parent
         }
         else if (options.reset)
@@ -180,10 +180,10 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     public otherValueHostChangedNotification(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void {
         if (valueHostIdThatChanged === this.getName())
             return; // mostly to call out this case isn't desirable.
-        if (this.validationResult === ValidationResult.NotAttempted)
+        if (this.validationStatusCode === ValidationStatusCode.NotAttempted)
             return; // validation didn't previously run, so no change now
-        if (!revalidate && (this.validationResult === ValidationResult.ValueChangedButUnvalidated))
-            return; // validation didn't previously run and the rest only sets the same ValidationResult
+        if (!revalidate && (this.validationStatusCode === ValidationStatusCode.ValueChangedButUnvalidated))
+            return; // validation didn't previously run and the rest only sets the same ValidationStatusCode
 
         // Looks like validation previously ran...
         // check if we use a Condition that specifies valueHostIdThatChanged.
@@ -196,14 +196,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         }
 
         if (this._associatedValueHosts.has(valueHostIdThatChanged)) {
-            // change the ValidationResult to ValueChangedButUnvalidated when revalidate is false
+            // change the ValidationStatusCode to ValueChangedButUnvalidated when revalidate is false
             // call validate() when revalidate is true
             if (revalidate)
                 this.validate();
             else {
                 this.updateState((stateToUpdate) => {
                     this.clearValidationDataFromState(stateToUpdate);
-                    stateToUpdate.validationResult = ValidationResult.ValueChangedButUnvalidated;
+                    stateToUpdate.statusCode = ValidationStatusCode.ValueChangedButUnvalidated;
                     return stateToUpdate;
                 }, this);
             }
@@ -234,27 +234,35 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     /**
      * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false when State.ValidationResult is Invalid. Any other ValidationResult
+     * Returns false when State.statusCode is Invalid. Any other ValidationStatusCode
      * return true.
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using ValidationResult property for more clarity.
+     * Recommend using validationStatusCode property for more clarity.
      */
     public get isValid(): boolean {
-        return this.validationResult !== ValidationResult.Invalid;
+        return this.validationStatusCode !== ValidationStatusCode.Invalid;
     }
     /**
-     * Validation result. Prior to calling validate() (or setValue()'s validate option),
-     * it is Undetermined.
+     * Result from the latest validation, or an indication
+     * that validation has yet to occur.
+     * 
+     * It is changed internally and can influence how
+     * validation behaves the next time.
+     * 
+     * Prior to calling validate() (or setValue()'s validate option),
+     * it is NotAttempted.
+     * After setValue it is ValueChangedButUnvalidated.
+     * After validate, it may be Valid, Invalid or Undetermined.
      */
-    public get validationResult(): ValidationResult {
-        // any business logic errors that aren't warnings override ValidationResult with Invalid.
+    public get validationStatusCode(): ValidationStatusCode {
+        // any business logic errors that aren't warnings override ValidationStatusCode with Invalid.
         if (this.businessLogicErrors)
             for (let error of this.businessLogicErrors)
                 if (error.severity !== ValidationSeverity.Warning)
-                    return ValidationResult.Invalid;
-        return this.state.validationResult;
+                    return ValidationStatusCode.Invalid;
+        return this.state.statusCode;
     }
 
     /**
@@ -298,7 +306,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
 
     protected clearValidationDataFromState(stateToUpdate: TState): void {
-        stateToUpdate.validationResult = ValidationResult.NotAttempted;
+        stateToUpdate.statusCode = ValidationStatusCode.NotAttempted;
         stateToUpdate.issuesFound = null;
         delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
         delete stateToUpdate.conversionErrorTokenValue;
@@ -306,12 +314,12 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
-     * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated.
+     * True when ValidationStatusCode is Invalid or ValueChangedButUnvalidated.
      */
     public doNotSaveNativeValue(): boolean {
-        switch (this.validationResult) {
-            case ValidationResult.Invalid:
-            case ValidationResult.ValueChangedButUnvalidated:
+        switch (this.validationStatusCode) {
+            case ValidationStatusCode.Invalid:
+            case ValidationStatusCode.ValueChangedButUnvalidated:
                 return true;
             default:
                 if (this.state.asyncProcessing) // async running so long as not null
@@ -392,7 +400,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
                 {
                     issuesFound: this.getIssuesFound(),
-                    validationResult: this.validationResult
+                    statusCode: this.validationStatusCode
                 });
     }
     /**
@@ -508,8 +516,8 @@ export abstract class ValidatableValueHostBaseGenerator implements IValueHostGen
 
     /**
      * Looking for changes to the ValidationConfigs to impact IssuesFound.
-     * If IssuesFound did change, fix ValidationResult for when Invalid to 
-     * review IssuesFound in case it is only a Warning, which makes ValidationResult Valid.
+     * If IssuesFound did change, fix ValidationStatusCode for when Invalid to 
+     * review IssuesFound in case it is only a Warning, which makes ValidationStatusCode Valid.
      * @param state 
      * @param config 
      */
@@ -518,7 +526,7 @@ export abstract class ValidatableValueHostBaseGenerator implements IValueHostGen
         return {
             name: config.name,
             value: config.initialValue,
-            validationResult: ValidationResult.NotAttempted,
+            statusCode: ValidationStatusCode.NotAttempted,
             inputValue: undefined,
             issuesFound: null
         };

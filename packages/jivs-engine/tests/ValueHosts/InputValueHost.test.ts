@@ -17,7 +17,7 @@ import { ValidationServices } from '../../src/Services/ValidationServices';
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { InputValueHostConfig, InputValueHostState, IInputValueHost } from "../../src/Interfaces/InputValueHost";
 import {
-    ValidationResult, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions,
+    ValidationStatusCode, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions,
     BusinessLogicError
 } from "../../src/Interfaces/Validation";
 import { ValidatorValidateResult, IValidator, ValidatorConfig, IValidatorFactory } from "../../src/Interfaces/Validator";
@@ -126,7 +126,7 @@ function createInputValueHostState(fieldNumber: number = 1): InputValueHostState
         value: undefined,
         inputValue: undefined,
         issuesFound: null,
-        validationResult: ValidationResult.NotAttempted
+        statusCode: ValidationStatusCode.NotAttempted
     };
 }
 function finishPartialInputValueHostState(partialState: Partial<InputValueHostState> | null): InputValueHostState {
@@ -155,7 +155,7 @@ function finishPartialInputValueHostState(partialState: Partial<InputValueHostSt
  * Value: undefined
  * InputValue: undefined
  * IssuesFound: null,
- * ValidationResult: NotAttempted
+ * ValidationStatusCode: NotAttempted
  * @returns An object with all of the parts that were setup including 
  * ValidationManager, Services, ValueHosts, the complete Config,
  * and the state.
@@ -241,7 +241,7 @@ describe('InputValueHost.getValue', () => {
         let setup = setupInputValueHost(null, {
             value: undefined
         });
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         let value: any = null;
         expect(() => value = setup.valueHost.getValue()).not.toThrow();
         expect(value).toBeUndefined();
@@ -250,7 +250,7 @@ describe('InputValueHost.getValue', () => {
         let setup = setupInputValueHost(null, {
             value: null
         });
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         let value: any = null;
         expect(() => value = setup.valueHost.getValue()).not.toThrow();
         expect(value).toBeNull();
@@ -259,7 +259,7 @@ describe('InputValueHost.getValue', () => {
         let setup = setupInputValueHost(null, {
             value: 0
         });
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         let value: any = null;
         expect(() => value = setup.valueHost.getValue()).not.toThrow();
         expect(value).toBe(0);
@@ -271,9 +271,9 @@ describe('InputValueHost.setValue with getValue to check result and IsChanged pr
     test('Value of 10, options is undefined. Sets value to 10 and does not validate', () => {
         let setup = setupInputValueHost();
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(() => setup.valueHost.setValue(10)).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(true);
@@ -281,9 +281,9 @@ describe('InputValueHost.setValue with getValue to check result and IsChanged pr
     test('Value of 10, options is empty object. Sets value to 10 and does not validate', () => {
         let setup = setupInputValueHost();
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(() => setup.valueHost.setValue(10, {})).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(true);
@@ -291,9 +291,9 @@ describe('InputValueHost.setValue with getValue to check result and IsChanged pr
     test('Value of 10, options is null. Sets value to 10 and does not validate', () => {
         let setup = setupInputValueHost();
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(() => setup.valueHost.setValue(10, null!)).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(true);
@@ -301,9 +301,9 @@ describe('InputValueHost.setValue with getValue to check result and IsChanged pr
     test('Value of 10, options is { validate: false }. Sets value to 10 and does not validate', () => {
         let setup = setupInputValueHost();
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(() => setup.valueHost.setValue(10, { validate: false })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(true);
@@ -311,61 +311,61 @@ describe('InputValueHost.setValue with getValue to check result and IsChanged pr
     test('Value of 10, options is { validate: true }. Sets value to 10 and validate (no Validators to cause Invalid, so result is Undetermined)', () => {
         let setup = setupInputValueHost();
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(() => setup.valueHost.setValue(10, { validate: true })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(true);
     });
-    test('Before calling, validate for ValidationResult=Undetermined. Set value to 10 with options { ClearValidate: true }. Expect value to be 20,. IsChanged = false, and ValidationResult to NotAttempted', () => {
+    test('Before calling, validate for ValidationStatusCode=Undetermined. Set value to 10 with options { ClearValidate: true }. Expect value to be 20,. IsChanged = false, and ValidationStatusCode to NotAttempted', () => {
         let setup = setupInputValueHost();
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         setup.valueHost.validate();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
         expect(() => setup.valueHost.setValue(10, { reset: true })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(setup.valueHost.isChanged).toBe(false);
     });
-    test('Set Value to 10, with options is { validate: true } then sets value to 20 with no options. Expect ValidationResult to ValueChangedButUnvalidated', () => {
+    test('Set Value to 10, with options is { validate: true } then sets value to 20 with no options. Expect ValidationStatusCode to ValueChangedButUnvalidated', () => {
         let setup = setupInputValueHost();
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(() => setup.valueHost.setValue(10, { validate: true })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
         expect(() => setup.valueHost.setValue(20)).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.isChanged).toBe(true);
     });
-    test('State has Value=10 before calling setValue with 10. No changes. ValidationResult stays NotAttempted, IsChanged stays false', () => {
+    test('State has Value=10 before calling setValue with 10. No changes. ValidationStatusCode stays NotAttempted, IsChanged stays false', () => {
         let setup = setupInputValueHost(null, {
             value: 10
         });
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(() => setup.valueHost.setValue(10)).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.isChanged).toBe(false);
     });
-    test('State has Value=10 before calling setValue with 10 and with Validation option set. No changes, not validation occurs, IsChanged stays false. ValidationResult stays NotAttempted', () => {
+    test('State has Value=10 before calling setValue with 10 and with Validation option set. No changes, not validation occurs, IsChanged stays false. ValidationStatusCode stays NotAttempted', () => {
         let setup = setupInputValueHost(null, {
             value: 10
         });
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(() => setup.valueHost.setValue(10, { validate: true })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(setup.valueHost.isChanged).toBe(false);
         expect(setup.valueHost.getValue()).toBe(10);
     });
     test('Value of 10, options is { validate: true }. Sets value to 10 and validate (no Validators to cause Invalid, so result is Undetermined)', () => {
         let setup = setupInputValueHost();
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(() => setup.valueHost.setValue(10, { validate: true })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
     });
@@ -530,7 +530,7 @@ describe('InputValueHost.getInputValue', () => {
         let setup = setupInputValueHost(null, {
             inputValue: undefined
         });
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         let value: any = null;
         expect(() => value = setup.valueHost.getInputValue()).not.toThrow();
         expect(value).toBeUndefined();
@@ -539,7 +539,7 @@ describe('InputValueHost.getInputValue', () => {
         let setup = setupInputValueHost(null, {
             inputValue: null
         });
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         let value: any = null;
         expect(() => value = setup.valueHost.getInputValue()).not.toThrow();
         expect(value).toBeNull();
@@ -548,7 +548,7 @@ describe('InputValueHost.getInputValue', () => {
         let setup = setupInputValueHost(null, {
             inputValue: 'abc'
         });
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         let value: any = null;
         expect(() => value = setup.valueHost.getInputValue()).not.toThrow();
         expect(value).toBe('abc');
@@ -561,7 +561,7 @@ describe('InputValueHost.setInputValue with getInputValue to check result', () =
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC")).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -573,7 +573,7 @@ describe('InputValueHost.setInputValue with getInputValue to check result', () =
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", {})).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -585,7 +585,7 @@ describe('InputValueHost.setInputValue with getInputValue to check result', () =
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", null!)).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -597,7 +597,7 @@ describe('InputValueHost.setInputValue with getInputValue to check result', () =
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", { validate: false })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -609,25 +609,25 @@ describe('InputValueHost.setInputValue with getInputValue to check result', () =
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", { validate: true })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
-        expect(changes.length).toBe(2); // first changes the value; second changes ValidationResult
+        expect(changes.length).toBe(2); // first changes the value; second changes ValidationStatusCode
         let valueChange = <InputValueHostState>changes[0];
         expect(valueChange.inputValue).toBe("ABC");
         let vrChange = <InputValueHostState>changes[1];
-        expect(vrChange.validationResult).toBe(ValidationResult.Undetermined);
+        expect(vrChange.statusCode).toBe(ValidationStatusCode.Undetermined);
         expect(vrChange.changeCounter).toBe(1);
     });
-    test('Before calling, validate for ValidationResult=Undetermined. Set value to 10 with options { Reset: true }. Expect value to be 20, IsChanged = false, and ValidationResult to NotAttempted', () => {
+    test('Before calling, validate for ValidationStatusCode=Undetermined. Set value to 10 with options { Reset: true }. Expect value to be 20, IsChanged = false, and ValidationStatusCode to NotAttempted', () => {
         let setup = setupInputValueHost();
 
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         setup.valueHost.validate();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
         expect(() => setup.valueHost.setInputValue('ABC', { reset: true })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(setup.valueHost.getIssuesFound()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(false);
     });
@@ -652,7 +652,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10")).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -667,7 +667,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", {})).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -681,7 +681,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", null!)).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -695,7 +695,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", { validate: false })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -709,17 +709,17 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", { validate: true })).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
         let changes = setup.validationManager.getHostStateChanges();
-        expect(changes.length).toBe(2); // first changes the value; second changes ValidationResult
+        expect(changes.length).toBe(2); // first changes the value; second changes ValidationStatusCode
         let valueChange = <InputValueHostState>changes[0];
         expect(valueChange.value).toBe(10);
         expect(valueChange.inputValue).toBe("10");
         let vrChange = <InputValueHostState>changes[1];
-        expect(vrChange.validationResult).toBe(ValidationResult.Undetermined);
+        expect(vrChange.statusCode).toBe(ValidationStatusCode.Undetermined);
         expect(vrChange.changeCounter).toBe(1);
     });
 
@@ -845,12 +845,12 @@ describe('InputValueHost.getValidator', () => {
  * If null, no validators are made available to validate
  * @param inputValueState - Use to supply initial InputValue and Value properties. Any property
  * not supplied will be provided.
- * @param expectedValidationResult 
+ * @param expectedValidationStatusCode 
  * @param expectedIssuesFound - This will be matched by Jest's isEqual.
  */
 function testValidateFunctionHasResult(validatorConfigs: Array<Partial<ValidatorConfig>> | null,
     inputValueState: Partial<InputValueHostState> | null,
-    expectedValidationResult: ValidationResult,
+    expectedValidationStatusCode: ValidationStatusCode,
     expectedIssuesFound: Array<IssueFound> | null,
     validationGroupForValueHost?: string | undefined,
     validationGroupForValidateFn?: string | undefined,
@@ -861,7 +861,7 @@ function testValidateFunctionHasResult(validatorConfigs: Array<Partial<Validator
     expect(() => vrDetails = setup.valueHost.validate({ group: validationGroupForValidateFn })).not.toThrow();
 
     expect(vrDetails).not.toBeNull();
-    expect(vrDetails!.validationResult).toBe(expectedValidationResult);
+    expect(vrDetails!.statusCode).toBe(expectedValidationStatusCode);
     expect(vrDetails!.issuesFound).toEqual(expectedIssuesFound);
     expect(vrDetails!.pending).toBeUndefined();
 
@@ -877,7 +877,7 @@ function testValidateFunctionHasResult(validatorConfigs: Array<Partial<Validator
  * If null, no validators are made available to validate
  * @param inputValueState - Use to supply initial InputValue and Value properties. Any property
  * not supplied will be provided.
- * @param expectedValidationResult 
+ * @param expectedValidationStatusCode 
  * @param expectedIssuesFound - This will be matched by Jest's isEqual.
  */
 function testValidateFunctionIsNull(validatorConfigs: Array<Partial<ValidatorConfig>> | null,
@@ -912,7 +912,7 @@ function createIssueFound(errorCode: string,
 }
 describe('InputValueHost.validate', () => {
     //NOTE: Validator tests already handle testing Validator property of Enabled, Enabler,
-    // and validate's Group parameter. When those skip the condition, we expect a ConditionEvaluationResult of Undetermined
+    // and validate's Group parameter. When those skip the condition, we expect a ConditionEvaluateResult of Undetermined
     // which is evaluated in these tests.
     test('Without Validators is null', () => {
         testValidateFunctionIsNull(null, null);
@@ -926,7 +926,7 @@ describe('InputValueHost.validate', () => {
             }
         ];
         let state: Partial<InputValueHostState> = {};
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, null);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Valid, null);
     });
     test('With 1 Condition evaluating as NoMatch is ValidatorResult.Invalid, IssuesFound = 1', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -939,7 +939,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Invalid, issuesFound);
     });
     test('With 1 Condition evaluating as Undetermined returns null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -968,7 +968,7 @@ describe('InputValueHost.validate', () => {
             }
         ];
         let state: Partial<InputValueHostState> = {};
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, null);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Valid, null);
     });
     test('With 2 Conditions (Required, RangeCondition) evaluating as Undetermined returns null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -1004,7 +1004,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Severe));
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Invalid, issuesFound);
 
     });
     test('With Validator of Severe evaluating as Match, second Condition is evaluated and is NoMatch, IssuesFound = 1 with second condition', () => {
@@ -1024,7 +1024,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Invalid, issuesFound);
 
     });
     test('With Validator of Severe evaluating as Undetermined, second Condition is evaluated and is NoMatch, IssuesFound = 1 with second condition', () => {
@@ -1045,7 +1045,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Invalid, issuesFound);
 
     });
     test('With Validator of Warning evaluating as NoMatch, second Condition is evaluated and is NoMatch, IssuesFound = 2 with both conditions', () => {
@@ -1068,7 +1068,7 @@ describe('InputValueHost.validate', () => {
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning, "1"));
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Error, "2"));
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Invalid, issuesFound);
 
     });
     test('With Validator of Warning evaluating as Undetermined, second Condition is evaluated and is NoMatch, IssuesFound = 1 with second condition', () => {
@@ -1088,7 +1088,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Invalid, issuesFound);
 
     });
     test('With Validator of Warning evaluating as Match, second Condition is evaluated and is NoMatch, IssuesFound = 1 with second condition', () => {
@@ -1108,10 +1108,10 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Invalid, issuesFound);
 
     });
-    test('With Validator of Warning evaluating as NoMatch, second Condition is evaluated and is Match, IssuesFound = 1 with first condition. ValidationResult is Valid', () => {
+    test('With Validator of Warning evaluating as NoMatch, second Condition is evaluated and is Match, IssuesFound = 1 with first condition. ValidationStatusCode is Valid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1128,10 +1128,10 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning));
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Valid, issuesFound);
 
     });
-    test('With Validator of Warning evaluating as NoMatch and no second condition, ValidationResult = Valid, IssuesFound = 1', () => {
+    test('With Validator of Warning evaluating as NoMatch and no second condition, ValidationStatusCode = Valid, IssuesFound = 1', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1143,7 +1143,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning));
-        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Valid, issuesFound);
 
     });
     test('With only 1 Validator, and its set to Enabled=false, acts like there are no validators. Returns null', () => {
@@ -1159,7 +1159,7 @@ describe('InputValueHost.validate', () => {
         testValidateFunctionIsNull(ivConfigs, state);
 
     });
-    function testGroups(valueHostGroup: string, validateGroup: string, expectedResult: ValidationResult | null, expectedStateChanges: number = 1): void {
+    function testGroups(valueHostGroup: string, validateGroup: string, expectedResult: ValidationStatusCode | null, expectedStateChanges: number = 1): void {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1169,7 +1169,7 @@ describe('InputValueHost.validate', () => {
         ];
         let state: Partial<InputValueHostState> = {};
         let issueFound: IssueFound | null = null;
-        if (expectedResult === ValidationResult.Invalid)
+        if (expectedResult === ValidationStatusCode.Invalid)
             issueFound = {
                 errorCode: NeverMatchesConditionType,
                 errorMessage: 'Local',
@@ -1184,24 +1184,24 @@ describe('InputValueHost.validate', () => {
     }
 
     test('Group test. InputValueHost has Group name but validate has empty string for group name. Validation occurs and returns an issue', () => {
-        testGroups('GROUPA', '', ValidationResult.Invalid);
+        testGroups('GROUPA', '', ValidationStatusCode.Invalid);
     });
     test('Group test. InputValueHost has Group name but validate has * for group name. Validation occurs and returns an issue', () => {
-        testGroups('GROUPA', '*', ValidationResult.Invalid);
+        testGroups('GROUPA', '*', ValidationStatusCode.Invalid);
     });
     test('Group test. InputValueHost has Group name and validate has same group name. Validation occurs and returns an issue', () => {
-        testGroups('GROUPA', 'GROUPA', ValidationResult.Invalid);
+        testGroups('GROUPA', 'GROUPA', ValidationStatusCode.Invalid);
     });
 
     test('Group test. InputValueHost has Group name and validate has same group name but case mismatch. Validation occurs and returns an issue', () => {
-        testGroups('GROUPA', 'groupa', ValidationResult.Invalid);
+        testGroups('GROUPA', 'groupa', ValidationStatusCode.Invalid);
     });
     test('Group test. InputValueHost has Group name but validate has a different group name. Validation skipped and result is Valid', () => {
         testGroups('GROUPA', 'GROUPB', null, 0);
     });
 
     function TestGroupUsingOverride(valueHostGroup: string, overriddenGroup: string,
-        validateGroup: string, expectedResult: ValidationResult | null): void {
+        validateGroup: string, expectedResult: ValidationStatusCode | null): void {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1218,15 +1218,15 @@ describe('InputValueHost.validate', () => {
         if (expectedResult === null)
             expect(result).toBeNull();
         else
-            expect(result!.validationResult).toBe(expectedResult);
+            expect(result!.statusCode).toBe(expectedResult);
     }
     test('Group test where setGroup overrides and is a match to the supplied group and original group. InputValueHost has Group name but validate has a different group name. Validation occurs', () => {
-        TestGroupUsingOverride('GROUPA', 'GROUPA', 'GROUPA', ValidationResult.Invalid)
+        TestGroupUsingOverride('GROUPA', 'GROUPA', 'GROUPA', ValidationStatusCode.Invalid)
     });
     test('Group test where setGroup overrides and is a match to the supplied group but not the original. InputValueHost has Group name but validate has a different group name. Validation occurs', () => {
-        TestGroupUsingOverride('GROUPB', 'GROUPA', 'GROUPA', ValidationResult.Invalid)
+        TestGroupUsingOverride('GROUPB', 'GROUPA', 'GROUPA', ValidationStatusCode.Invalid)
     });
-    test('Group test where setGroup overrides and is not a match to the supplied group. InputValueHost has Group name but validate has a different group name. ValidationResult = undetermined', () => {
+    test('Group test where setGroup overrides and is not a match to the supplied group. InputValueHost has Group name but validate has a different group name. ValidationStatusCode = undetermined', () => {
         TestGroupUsingOverride('GROUPA', 'GROUPB', 'GROUPA', null)
     });
     test('validate one ValueHost with validators that results in Valid. OnValueHostValidated called.', () => {
@@ -1245,7 +1245,7 @@ describe('InputValueHost.validate', () => {
         };
         setup.valueHost.validate();
         expect(results.length).toBe(1);
-        expect(results[0].validationResult).toBe(ValidationResult.Valid);
+        expect(results[0].statusCode).toBe(ValidationStatusCode.Valid);
     });
     test('validate one ValueHost with validators that results in Invalid. OnValueHostValidated called.', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -1263,7 +1263,7 @@ describe('InputValueHost.validate', () => {
         };
         setup.valueHost.validate();
         expect(results.length).toBe(1);
-        expect(results[0].validationResult).toBe(ValidationResult.Invalid);
+        expect(results[0].statusCode).toBe(ValidationStatusCode.Invalid);
     });
 });
 describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', () => {
@@ -1286,7 +1286,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         setup.valueHost.setValues(undefined, 'ABC');   // will violate DataTypeCheckCondition
         setup.valueHost.validate();
         expect(results.length).toBe(1);
-        expect(results[0].validationResult).toBe(ValidationResult.Invalid);
+        expect(results[0].statusCode).toBe(ValidationStatusCode.Invalid);
         expect(results[0].issuesFound![0].errorCode).toBe(ConditionType.DataTypeCheck);
 
         expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).not.toBeNull();
@@ -1315,7 +1315,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         setup.valueHost.setValues(undefined, 'ABC');   // will violate DataTypeCheckCondition
         setup.valueHost.validate();
         expect(results.length).toBe(1);
-        expect(results[0].validationResult).toBe(ValidationResult.Invalid);
+        expect(results[0].statusCode).toBe(ValidationStatusCode.Invalid);
         expect(results[0].issuesFound![0].errorCode).toBe(ConditionType.DataTypeCheck);
 
         expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).not.toBeNull();
@@ -1344,7 +1344,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         setup.valueHost.setValues(undefined, 'ABC');   // will violate DataTypeCheckCondition
         setup.valueHost.validate();
         expect(results.length).toBe(1);
-        expect(results[0].validationResult).toBe(ValidationResult.Invalid);
+        expect(results[0].statusCode).toBe(ValidationStatusCode.Invalid);
         expect(results[0].issuesFound![0].errorCode).toBe(ConditionType.DataTypeCheck);
 
         expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).toBeNull(); // proves not auto generated
@@ -1379,7 +1379,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         setup.valueHost.setValues('ABC', 'ABC');   // will violate the regexp
         setup.valueHost.validate();
         expect(results.length).toBe(1);
-        expect(results[0].validationResult).toBe(ValidationResult.Invalid);
+        expect(results[0].statusCode).toBe(ValidationStatusCode.Invalid);
         expect(results[0].issuesFound![0].errorCode).toBe(ConditionType.RegExp);
 
         expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).toBeNull(); // proves not auto generated
@@ -1435,7 +1435,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         vh.setValues('ABC', 'ABC');   // will violate the regexp
         vh.validate();
         expect(results.length).toBe(1);
-        expect(results[0].validationResult).toBe(ValidationResult.Invalid);
+        expect(results[0].statusCode).toBe(ValidationStatusCode.Invalid);
         expect(results[0].issuesFound![0].errorCode).toBe(phoneNumberConditionType);
 
         expect(logger.findMessage('PhoneNumber Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).not.toBeNull();
@@ -1443,15 +1443,15 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
 
 });
 
-describe('InputValueHost.isValid and ValidationResult', () => {
+describe('InputValueHost.isValid and ValidationStatusCode', () => {
 
-    test('Without Validators IsValid=true, ValidationResult = Undetermined', () => {
+    test('Without Validators IsValid=true, ValidationStatusCode = Undetermined', () => {
         let setup = setupInputValueHostForValidate(null, null);
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(true);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
     });
-    test('With 1 Condition evaluating as Match. isValid is true, ValidationResult=Valid', () => {
+    test('With 1 Condition evaluating as Match. isValid is true, ValidationStatusCode=Valid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1463,9 +1463,9 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(true);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Valid);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Valid);
     });
-    test('With 1 Condition evaluating as NoMatch. isValid is false. ValidationResult=Invalid', () => {
+    test('With 1 Condition evaluating as NoMatch. isValid is false. ValidationStatusCode=Invalid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1478,9 +1478,9 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(false);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Invalid);
     });
-    test('Without Validators but have a BusinessLogicError (Error), isValid=false, ValidationResult = Invalid', () => {
+    test('Without Validators but have a BusinessLogicError (Error), isValid=false, ValidationStatusCode = Invalid', () => {
         let setup = setupInputValueHostForValidate(null, null);
         let result = setup.valueHost.setBusinessLogicError({
             errorMessage: 'ERROR',
@@ -1488,9 +1488,9 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         expect(result).toBe(true);
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(false);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Invalid);
     });
-    test('Without Validators but have a BusinessLogicError (Warning), isValid=true, ValidationResult = Undetermined because warning does not change anything and no validators means Undetermined', () => {
+    test('Without Validators but have a BusinessLogicError (Warning), isValid=true, ValidationStatusCode = Undetermined because warning does not change anything and no validators means Undetermined', () => {
         let setup = setupInputValueHostForValidate(null, null);
         let result = setup.valueHost.setBusinessLogicError({
             errorMessage: 'WARNING',
@@ -1499,7 +1499,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         expect(result).toBe(true);
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(true);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
     });
     test('setBusinessLogicError with same data back-to-back with different error codes returns true on both calls. Expect two IssuesFound', () => {
         let setup = setupInputValueHostForValidate(null, null);
@@ -1533,7 +1533,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         expect(issuesFound).not.toBeNull();
         expect(issuesFound!.length).toBe(1);
     });    
-    test('With 1 Condition evaluating as NoMatch and have a BusinessLogicError (Warning). isValid is false due to NoMatch. ValidationResult=Invalid', () => {
+    test('With 1 Condition evaluating as NoMatch and have a BusinessLogicError (Warning). isValid is false due to NoMatch. ValidationStatusCode=Invalid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1550,9 +1550,9 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         });
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(false);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Invalid);
     });
-    test('With 1 Condition evaluating as Match and have a BusinessLogicError (Error). isValid is false due to BusinessLogicError. ValidationResult=Invalid', () => {
+    test('With 1 Condition evaluating as Match and have a BusinessLogicError (Error). isValid is false due to BusinessLogicError. ValidationStatusCode=Invalid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1569,9 +1569,9 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         });
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(false);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Invalid);
     });
-    test('With 1 Condition evaluating as Match and have a BusinessLogicError (Warning). isValid is true. ValidationResult=Valid', () => {
+    test('With 1 Condition evaluating as Match and have a BusinessLogicError (Warning). isValid is true. ValidationStatusCode=Valid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1588,9 +1588,9 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         });
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(true);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Valid);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Valid);
     });
-    test('Confirm the OnValueHostValidate event is called and captures the correct ValidationResult', () => {
+    test('Confirm the OnValueHostValidate event is called and captures the correct ValidationStatusCode', () => {
         let onValidateResult: ValueHostValidateResult | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -1625,7 +1625,7 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         });
         expect(result).toBe(true);
         expect(onValidateResult).toEqual(<ValueHostValidateResult>{
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             issuesFound: [expectedIssueFound]
         });
     });    
@@ -1775,7 +1775,7 @@ describe('validate handles exception from custom Validator class', () => {
         let logger = setup.services.loggerService as MockCapturingLogger;
         logger.minLevel = LoggingLevel.Info;
         expect(() => setup.valueHost.validate()).not.toThrow();
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Undetermined);
         // 2 log entries: Error level exception and Info Level validation result
         expect(logger.entryCount()).toBe(2);
         expect(logger.captured[0].level).toBe(LoggingLevel.Error);
@@ -1871,7 +1871,7 @@ function validateWithAsyncConditions(
         (valueHost: IValidatableValueHostBase, validateResult: ValueHostValidateResult) => {
             let vm = (valueHost as InputValueHost).valueHostsManager as IValidationManager;
             let evr = expectedValidateResults[handlerCount];
-            expect(validateResult.validationResult).toBe(evr.validationResult);
+            expect(validateResult.statusCode).toBe(evr.statusCode);
             expect(validateResult.issuesFound).toEqual(evr.issuesFound);
             if (evr.pending) {
                 expect(validateResult.pending!.length).toBe(evr.pending.length);
@@ -1880,7 +1880,7 @@ function validateWithAsyncConditions(
                 expect(validateResult.pending).toBeUndefined();
             handlerCount++;
             if (doneTime) {
-                expect(vm.doNotSaveNativeValues()).toBe(evr.validationResult === ValidationResult.Invalid);
+                expect(vm.doNotSaveNativeValues()).toBe(evr.statusCode === ValidationStatusCode.Invalid);
                 done();
             }
             else
@@ -1902,7 +1902,7 @@ function validateWithAsyncConditions(
     // we are awaiting a callback to OnValueHostValidated to finish,
     // but only if the expected result is Invalid
     doneTime = true;
-    expect(setup.vm.doNotSaveNativeValues()).toBe(true); // because of Async, regardless of ValidationResult
+    expect(setup.vm.doNotSaveNativeValues()).toBe(true); // because of Async, regardless of ValidationStatusCode
 }
 describe('validate with async Conditions', () => {
     test('With 1 Condition that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
@@ -1914,12 +1914,12 @@ describe('validate with async Conditions', () => {
                 }],
                 [
                     { // onValueHostValidate prior to promise
-                        validationResult: ValidationResult.Undetermined,
+                        statusCode: ValidationStatusCode.Undetermined,
                         issuesFound: null,
                         pending: [<any>{}]
                     },
                     {   // after promise
-                        validationResult: ValidationResult.Valid,
+                        statusCode: ValidationStatusCode.Valid,
                         issuesFound: null,
 
                     }
@@ -1944,12 +1944,12 @@ describe('validate with async Conditions', () => {
                     issueFound: issueFound
                 }],
                 [{  // onValueHostValidate prior to promise
-                    validationResult: ValidationResult.Undetermined,
+                    statusCode: ValidationStatusCode.Undetermined,
                     issuesFound: null,
                     pending: [<any>{}]
                 },
                 {   // after promise
-                    validationResult: ValidationResult.Invalid,
+                    statusCode: ValidationStatusCode.Invalid,
                     issuesFound: [issueFound]
                 }],
                 done);
@@ -1963,7 +1963,7 @@ describe('validate with async Conditions', () => {
                     issueFound: null
                 }],
                 [{
-                    validationResult: ValidationResult.Undetermined,
+                    statusCode: ValidationStatusCode.Undetermined,
                     issuesFound: null,
                     pending: [<any>{}]
                 }],
@@ -1979,7 +1979,7 @@ describe('validate with async Conditions', () => {
                     issueFound: null
                 }],
                 [{
-                    validationResult: ValidationResult.Valid,
+                    statusCode: ValidationStatusCode.Valid,
                     issuesFound: null,
                     pending: [<any>{}]
                 }],
@@ -2001,7 +2001,7 @@ describe('validate with async Conditions', () => {
                     issueFound: null
                 }],
                 [{
-                    validationResult: ValidationResult.Valid,
+                    statusCode: ValidationStatusCode.Valid,
                     issuesFound: null,
                     pending: [<any>{}]
                 }],
@@ -2034,7 +2034,7 @@ describe('validate with async Conditions', () => {
                     // Despite the async returning, it doesn't change the result
                     // so there is only one call to OnValueHostValidate
                     {
-                        validationResult: ValidationResult.Invalid,
+                        statusCode: ValidationStatusCode.Invalid,
                         issuesFound: [issueFound],
                         pending: [<any>{}]
                     }],
@@ -2072,12 +2072,12 @@ describe('validate with async Conditions', () => {
                 }],
                 [
                     {
-                        validationResult: ValidationResult.Invalid,
+                        statusCode: ValidationStatusCode.Invalid,
                         issuesFound: [issueFoundFromNever],
                         pending: [<any>{}]
                     },
                     {
-                        validationResult: ValidationResult.Invalid,
+                        statusCode: ValidationStatusCode.Invalid,
                         issuesFound: [issueFoundFromNever, issueFoundFromPromise],
                     }],
                 done,
@@ -2114,12 +2114,12 @@ describe('validate with async Conditions', () => {
                 }],
                 [
                     {
-                        validationResult: ValidationResult.Invalid,
+                        statusCode: ValidationStatusCode.Invalid,
                         issuesFound: [issueFoundFromNever],
                         pending: [<any>{}]
                     },
                     {
-                        validationResult: ValidationResult.Invalid,
+                        statusCode: ValidationStatusCode.Invalid,
                         issuesFound: [issueFoundFromNever, issueFoundFromPromise],
                     }],
                 done,
@@ -2145,7 +2145,7 @@ describe('validate with async Conditions', () => {
                     issueFound: null
                 }],
                 [{
-                    validationResult: ValidationResult.Undetermined,
+                    statusCode: ValidationStatusCode.Undetermined,
                     issuesFound: null,
                     pending: [<any>{}, <any>{}]
                 }],
@@ -2185,9 +2185,9 @@ describe('validate with async Conditions', () => {
                 errorMessage: 'Error'
             };
             // expect the sync process does nothing and thus doesn't call onValidate,
-            // but it does update the state for AsyncProcessing=true
+            // but it does update the state for asyncProcessing=true
             // Then when the promise completes, it also doesn't call onValidate
-            // but it does update the state for AsyncProcessing=false
+            // but it does update the state for asyncProcessing=false
             let onValidateHandler: ValueHostValidatedHandler =
                 (vh, vr) => {
                     //         fail();
@@ -2227,7 +2227,7 @@ describe('InputValueHost.clearValidation', () => {
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
         expect(result).toBe(true);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
 
         let stateChanges = setup.validationManager.getHostStateChanges();
@@ -2236,14 +2236,14 @@ describe('InputValueHost.clearValidation', () => {
         let expectedChanges: Array<InputValueHostState> = [
             {
                 name: 'Field1',
-                validationResult: ValidationResult.Undetermined,
+                statusCode: ValidationStatusCode.Undetermined,
                 issuesFound: null,
                 value: undefined,
                 inputValue: ''
             },
             {
                 name: 'Field1',
-                validationResult: ValidationResult.NotAttempted,
+                statusCode: ValidationStatusCode.NotAttempted,
                 issuesFound: null,
                 value: undefined,
                 inputValue: ''
@@ -2266,7 +2266,7 @@ describe('InputValueHost.clearValidation', () => {
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
         expect(result).toBe(false);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
         let stateChanges = setup.validationManager.getHostStateChanges();
         expect(stateChanges).not.toBeNull();
@@ -2283,7 +2283,7 @@ describe('InputValueHost.clearValidation', () => {
         ];
         let state: Partial<InputValueHostState> = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             issuesFound: []
         };
         state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
@@ -2293,7 +2293,7 @@ describe('InputValueHost.clearValidation', () => {
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
         expect(result).toBe(true);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).toBeNull();
 
     });
@@ -2307,7 +2307,7 @@ describe('InputValueHost.clearValidation', () => {
         ];
         let state: Partial<InputValueHostState> = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             issuesFound: []
         };
         state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
@@ -2318,7 +2318,7 @@ describe('InputValueHost.clearValidation', () => {
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearValidation({ group: 'GROUPA'})).not.toThrow();
         expect(result).toBe(true);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).toBeNull();
 
     });
@@ -2332,7 +2332,7 @@ describe('InputValueHost.clearValidation', () => {
         ];
         let state: Partial<InputValueHostState> = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             issuesFound: []
         };
         state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
@@ -2343,7 +2343,7 @@ describe('InputValueHost.clearValidation', () => {
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearValidation({ group: 'GROUPB'})).not.toThrow();
         expect(result).toBe(false);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.Invalid);
         expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).not.toBeNull();
 
     });    
@@ -2357,14 +2357,14 @@ describe('InputValueHost.clearValidation', () => {
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
         expect(result).toBe(true);
-        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
         let stateChanges = setup.validationManager.getHostStateChanges();
         expect(stateChanges).not.toBeNull();
         expect(stateChanges.length).toBe(2);
         let expectedChanges: Array<InputValueHostState> = [
             {
                 name: 'Field1',
-                validationResult: ValidationResult.NotAttempted,
+                statusCode: ValidationStatusCode.NotAttempted,
                 issuesFound: null,
                 value: undefined,
                 inputValue: '',
@@ -2377,7 +2377,7 @@ describe('InputValueHost.clearValidation', () => {
             },
             {
                 name: 'Field1',
-                validationResult: ValidationResult.NotAttempted,
+                statusCode: ValidationStatusCode.NotAttempted,
                 issuesFound: null,
                 value: undefined,
                 inputValue: ''
@@ -2428,7 +2428,7 @@ describe('InputValueHost.clearValidation', () => {
         expect(() => result = vh.clearValidation()).not.toThrow();
 
         expect(onValidateResult).toEqual(<ValueHostValidateResult>{
-            validationResult: ValidationResult.NotAttempted,
+            statusCode: ValidationStatusCode.NotAttempted,
             issuesFound: null
         });
     });        
@@ -2480,7 +2480,7 @@ describe('InputValueHost.clearValidation', () => {
 });
 // doNotSaveNativeValue(): boolean
 describe('InputValueHost.doNotSaveNativeValue', () => {
-    function trydoNotSaveNativeValue(initialValidationResult: ValidationResult, hasPendings: boolean, expectedResult: boolean): void {
+    function trydoNotSaveNativeValue(initialValidationStatusCode: ValidationStatusCode, hasPendings: boolean, expectedResult: boolean): void {
         let ivConfig: ValidatorConfig = {
             conditionConfig: { conditionType: NeverMatchesConditionType },
             errorMessage: ''
@@ -2490,7 +2490,7 @@ describe('InputValueHost.doNotSaveNativeValue', () => {
         ];
         let state: Partial<InputValueHostState> = {
             name: 'Field1',
-            validationResult: initialValidationResult,
+            statusCode: initialValidationStatusCode,
             issuesFound: [],
             asyncProcessing: hasPendings
         };
@@ -2499,20 +2499,20 @@ describe('InputValueHost.doNotSaveNativeValue', () => {
 
         expect(setup.valueHost.doNotSaveNativeValue()).toBe(expectedResult);
     }
-    test('ValidationResult = Valid, doNotSaveNativeValue=false', () => {
-        trydoNotSaveNativeValue(ValidationResult.Valid, false, false);
+    test('ValidationStatusCode = Valid, doNotSaveNativeValue=false', () => {
+        trydoNotSaveNativeValue(ValidationStatusCode.Valid, false, false);
     });
-    test('ValidationResult = Undetermined, doNotSaveNativeValue=false', () => {
-        trydoNotSaveNativeValue(ValidationResult.Undetermined, false, false);
+    test('ValidationStatusCode = Undetermined, doNotSaveNativeValue=false', () => {
+        trydoNotSaveNativeValue(ValidationStatusCode.Undetermined, false, false);
     });
-    test('ValidationResult = Invalid, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationResult.Invalid, false, true);
+    test('ValidationStatusCode = Invalid, doNotSaveNativeValue=true', () => {
+        trydoNotSaveNativeValue(ValidationStatusCode.Invalid, false, true);
     });
-    test('ValidationResult = Valid but with async pending, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationResult.Valid, true, true);
+    test('ValidationStatusCode = Valid but with async pending, doNotSaveNativeValue=true', () => {
+        trydoNotSaveNativeValue(ValidationStatusCode.Valid, true, true);
     });
-    test('ValidationResult = ValueChangedButUnvalidated, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationResult.ValueChangedButUnvalidated, false, true);
+    test('ValidationStatusCode = ValueChangedButUnvalidated, doNotSaveNativeValue=true', () => {
+        trydoNotSaveNativeValue(ValidationStatusCode.ValueChangedButUnvalidated, false, true);
     });
 
 });
@@ -2527,7 +2527,7 @@ describe('InputValueHost.setBusinessLogicError', () => {
         })).not.toThrow();
 
         let changes = setup.validationManager.getHostStateChanges();
-        expect(changes.length).toBe(1); // first changes the value; second changes ValidationResult
+        expect(changes.length).toBe(1); // first changes the value; second changes ValidationStatusCode
         let valueChange = <ValidatableValueHostBaseState>changes[0];
         expect(valueChange.businessLogicErrors).toBeDefined();
         expect(valueChange.businessLogicErrors![0]).toEqual(
@@ -2603,7 +2603,7 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
         expect(result).toBe(true);
 
         let changes = setup.validationManager.getHostStateChanges();
-        expect(changes.length).toBe(2); // first changes the value; second changes ValidationResult
+        expect(changes.length).toBe(2); // first changes the value; second changes ValidationStatusCode
         let valueChange1 = <ValidatableValueHostBaseState>changes[0];
         expect(valueChange1.businessLogicErrors).toBeDefined();
         expect(valueChange1.businessLogicErrors![0]).toEqual(
@@ -2663,7 +2663,7 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
         expect(() => result = vh.clearBusinessLogicErrors()).not.toThrow();
         expect(result).toBe(true);
         expect(onValidateResult).toEqual(<ValueHostValidateResult>{
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             issuesFound: [neverMatchIssueFound]
         });
     });    
@@ -2736,7 +2736,7 @@ describe('InputValueHost.getIssueFound', () => {
             }
         ];
         let state: Partial<InputValueHostState> = {};
-        let setup = testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, null);
+        let setup = testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Valid, null);
         let issueFound: IssueFound | null = null;
         expect(() => issueFound = setup.valueHost.getIssueFound(AlwaysMatchesConditionType)).not.toThrow();
         expect(issueFound).toBeNull();
@@ -2752,7 +2752,7 @@ describe('InputValueHost.getIssueFound', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        let setup = testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        let setup = testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Invalid, issuesFound);
         let issueFound: IssueFound | null = null;
         expect(() => issueFound = setup.valueHost.getIssueFound(NeverMatchesConditionType)).not.toThrow();
         expect(issueFound).not.toBeNull();
@@ -2791,7 +2791,7 @@ describe('InputValueHost.getIssuesFound', () => {
         let expectedIssuesFound: Array<IssueFound> = [];
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning, '1', 'Summary1'));
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType2, ValidationSeverity.Error, '2', 'Summary2'));
-        let setup = testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, expectedIssuesFound);
+        let setup = testValidateFunctionHasResult(ivConfigs, state, ValidationStatusCode.Invalid, expectedIssuesFound);
         let issuesToReport: Array<IssueFound> | null = null;
         expect(() => issuesToReport = setup.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesToReport).not.toBeNull();
@@ -3093,7 +3093,7 @@ describe('toIInputValueHost', () => {
             name: 'Field1',
             issuesFound: null,
             value: null,
-            validationResult: ValidationResult.Undetermined
+            statusCode: ValidationStatusCode.Undetermined
         });
         expect(toIInputValueHost(testItem)).toBe(testItem);
     });
@@ -3119,7 +3119,7 @@ describe('toIInputValueHost', () => {
                 throw new Error('Function not implemented.');
             },
             isValid: false,
-            validationResult: ValidationResult.NotAttempted,
+            validationStatusCode: ValidationStatusCode.NotAttempted,
             setBusinessLogicError: function (error: BusinessLogicError): boolean {
                 throw new Error('Function not implemented.');
             },
@@ -3262,7 +3262,7 @@ describe('InputValueHostGenerator members', () => {
         let state: InputValueHostState = {
             name: 'Field1',
             issuesFound: null,
-            validationResult: ValidationResult.NotAttempted,
+            statusCode: ValidationStatusCode.NotAttempted,
             value: undefined,
             inputValue: 'TEST'
         };
@@ -3278,7 +3278,7 @@ describe('InputValueHostGenerator members', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
             issuesFound: null,
-            validationResult: ValidationResult.Valid,
+            statusCode: ValidationStatusCode.Valid,
             inputValue: 'ABC',
             value: 10
         };
@@ -3297,7 +3297,7 @@ describe('InputValueHostGenerator members', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
             issuesFound: null,
-            validationResult: ValidationResult.Valid,
+            statusCode: ValidationStatusCode.Valid,
             inputValue: 'ABC',
             value: 10
         };
@@ -3324,7 +3324,7 @@ describe('InputValueHostGenerator members', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
             issuesFound: null,
-            validationResult: ValidationResult.Valid,
+            statusCode: ValidationStatusCode.Valid,
             inputValue: 'ABC',
             value: 10
         };
@@ -3345,10 +3345,10 @@ describe('InputValueHostGenerator members', () => {
         expect(() => testItem.cleanupState(state, config)).not.toThrow();
         expect(state).toEqual(originalState);
     });
-    test('Using ConditionConfig, cleanupState existing state with ValidationResult.Error has an IssuesFound and there is a ValidatorConfig. State.IssuesFound unchanged', () => {
+    test('Using ConditionConfig, cleanupState existing state with ValidationStatusCode.Error has an IssuesFound and there is a ValidatorConfig. State.IssuesFound unchanged', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             inputValue: 'ABC',
             value: 10,
             issuesFound: [],
@@ -3379,10 +3379,10 @@ describe('InputValueHostGenerator members', () => {
         expect(() => testItem.cleanupState(state, config)).not.toThrow();
         expect(state).toEqual(originalState);
     });
-    test('Using ConditionCreator, cleanupState existing state with ValidationResult.Error has an IssuesFound and there is a ValidatorConfig. State.IssuesFound unchanged', () => {
+    test('Using ConditionCreator, cleanupState existing state with ValidationStatusCode.Error has an IssuesFound and there is a ValidatorConfig. State.IssuesFound unchanged', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             inputValue: 'ABC',
             value: 10,
             issuesFound: [],
@@ -3414,7 +3414,7 @@ describe('InputValueHostGenerator members', () => {
     test('Using ConditionConfig, cleanupState existing state has an IssuesFound but no associated ValidationConfig. State.IssuesFound is null', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Valid,
+            statusCode: ValidationStatusCode.Valid,
             inputValue: 'ABC',
             value: 10,
             issuesFound: [],
@@ -3450,7 +3450,7 @@ describe('InputValueHostGenerator members', () => {
     test('Using ConditionCreator, cleanupState existing state has an IssuesFound but no associated ValidationConfig. State.IssuesFound is null', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Valid,
+            statusCode: ValidationStatusCode.Valid,
             inputValue: 'ABC',
             value: 10,
             issuesFound: [],
@@ -3482,10 +3482,10 @@ describe('InputValueHostGenerator members', () => {
         expect(state).toEqual(expectedState);
     });
 
-    test('cleanupState existing state with ValidationResult=Invalid has an IssuesFound but no associated ValidationConfig. State.IssuesFound is null and ValidationResult is ValueChangedButUnvalidated', () => {
+    test('cleanupState existing state with ValidationStatusCode=Invalid has an IssuesFound but no associated ValidationConfig. State.IssuesFound is null and ValidationStatusCode is ValueChangedButUnvalidated', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             inputValue: 'ABC',
             value: 10,
             issuesFound: [],
@@ -3516,13 +3516,13 @@ describe('InputValueHostGenerator members', () => {
         expect(() => testItem.cleanupState(state, config)).not.toThrow();
         let expectedState = { ...originalState };
         expectedState.issuesFound = null;
-        expectedState.validationResult = ValidationResult.ValueChangedButUnvalidated;
+        expectedState.statusCode = ValidationStatusCode.ValueChangedButUnvalidated;
         expect(state).toEqual(expectedState);
     });
-    test('cleanupState existing state with ValidationResult=Invalid, 2 IssuesFound where one is Warning and the other is removed. State.IssuesFound is the warning and ValidationResult is Valid', () => {
+    test('cleanupState existing state with ValidationStatusCode=Invalid, 2 IssuesFound where one is Warning and the other is removed. State.IssuesFound is the warning and ValidationStatusCode is Valid', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             inputValue: 'ABC',
             value: 10,
             issuesFound: [],
@@ -3560,13 +3560,13 @@ describe('InputValueHostGenerator members', () => {
         expect(() => testItem.cleanupState(state, config)).not.toThrow();
         let expectedState = { ...originalState };
         expectedState.issuesFound!.splice(0, 1);
-        expectedState.validationResult = ValidationResult.Valid;
+        expectedState.statusCode = ValidationStatusCode.Valid;
         expect(state).toEqual(expectedState);
     });
-    test('cleanupState existing state with ValidationResult=Invalid, 3 IssuesFound (Error, Warning, Error) and one Error is removed. State.IssuesFound is the warning and the remaining error and ValidationResult is Invalid', () => {
+    test('cleanupState existing state with ValidationStatusCode=Invalid, 3 IssuesFound (Error, Warning, Error) and one Error is removed. State.IssuesFound is the warning and the remaining error and ValidationStatusCode is Invalid', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             inputValue: 'ABC',
             value: 10,
             issuesFound: [],
@@ -3618,13 +3618,13 @@ describe('InputValueHostGenerator members', () => {
         expect(() => testItem.cleanupState(state, config)).not.toThrow();
         let expectedState = { ...originalState };
         expectedState.issuesFound!.splice(0, 1);
-        expectedState.validationResult = ValidationResult.Invalid;
+        expectedState.statusCode = ValidationStatusCode.Invalid;
         expect(state).toEqual(expectedState);
     });
-    test('cleanupState existing state with ValidationResult=Invalid, 3 IssuesFound (Error, Warning, Severe) where Error is removed. State.IssuesFound is Warning, Severe and ValidationResult is Invalid', () => {
+    test('cleanupState existing state with ValidationStatusCode=Invalid, 3 IssuesFound (Error, Warning, Severe) where Error is removed. State.IssuesFound is Warning, Severe and ValidationStatusCode is Invalid', () => {
         let originalState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             inputValue: 'ABC',
             value: 10,
             issuesFound: [],
@@ -3676,7 +3676,7 @@ describe('InputValueHostGenerator members', () => {
         expect(() => testItem.cleanupState(state, config)).not.toThrow();
         let expectedState = { ...originalState };
         expectedState.issuesFound!.splice(0, 1);
-        expectedState.validationResult = ValidationResult.Invalid;
+        expectedState.statusCode = ValidationStatusCode.Invalid;
         expect(state).toEqual(expectedState);
     });
     test('createState returns instance with name and InitialValue from Config', () => {
@@ -3700,7 +3700,7 @@ describe('InputValueHostGenerator members', () => {
         expect(() => state = testItem.createState(config)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.name).toBe(config.name);
-        expect(state!.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(state!.statusCode).toBe(ValidationStatusCode.NotAttempted);
         expect(state!.inputValue).toBeUndefined();
         expect(state!.group).toBeUndefined();
         expect(state!.value).toBe(config.initialValue);
@@ -3848,61 +3848,61 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
             field3: vm.getValueHost('Field3') as IInputValueHost
         };
     }
-    test('Property1 never validated. Property2 changed, revalidate = false. ValidationResult should not change.', () => {
+    test('Property1 never validated. Property2 changed, revalidate = false. ValidationStatusCode should not change.', () => {
         let setup = setupWithThreeValueHosts();
-        expect(setup.field1.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
 
         expect(() => setup.field1.otherValueHostChangedNotification(
             setup.field2.getName(), false)).not.toThrow();
-        expect(setup.field1.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.NotAttempted);
 
     });
-    test('Property1 previously validated and is Invalid. Property2 changed, revalidate = false. ValidationResult => ValueChangedButUnvalidated.', () => {
+    test('Property1 previously validated and is Invalid. Property2 changed, revalidate = false. ValidationStatusCode => ValueChangedButUnvalidated.', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setInputValue('ABC');
         setup.field1.setValue('ABC');
         setup.field2.setInputValue('BCD');
         setup.field2.setValue('BCD');
 
-        expect(setup.field1.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         setup.field1.validate();
-        expect(setup.field1.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Invalid);
 
         expect(() => setup.field1.otherValueHostChangedNotification(
             setup.field2.getName(), false)).not.toThrow();
-        expect(setup.field1.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
     });
-    test('Property1 previously validated and is Invalid. Property2 changed via setValue with validate=false. ValidationResult => ValueChangedButUnvalidated.', () => {
+    test('Property1 previously validated and is Invalid. Property2 changed via setValue with validate=false. ValidationStatusCode => ValueChangedButUnvalidated.', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setInputValue('ABC');
         setup.field1.setValue('ABC');
         setup.field2.setInputValue('BCD');
         setup.field2.setValue('BCD');
 
-        expect(setup.field1.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         setup.field1.validate();
-        expect(setup.field1.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Invalid);
 
         // expect(() => setup.field1.otherValueHostChangedNotification(
         //     setup.field2.GetId(), false)).not.toThrow();
         setup.field2.setValues('ABC', 'ABC');  // will trigger OtherValueHostCHangedNotification with revalidate=false
-        expect(setup.field1.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
     });
-    test('Property1 previously validated and is Invalid. Property2 changed via setValue with validate=true. ValidationResult => Valid because fields are now equal.', () => {
+    test('Property1 previously validated and is Invalid. Property2 changed via setValue with validate=true. ValidationStatusCode => Valid because fields are now equal.', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setInputValue('ABC');
         setup.field1.setValue('ABC');
         setup.field2.setInputValue('BCD');
         setup.field2.setValue('BCD');
 
-        expect(setup.field1.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         setup.field1.validate();
-        expect(setup.field1.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Invalid);
 
         // expect(() => setup.field1.otherValueHostChangedNotification(
         //     setup.field2.GetId(), false)).not.toThrow();
         setup.field2.setValues('ABC', 'ABC', { validate: true });  // will trigger OtherValueHostCHangedNotification with revalidate=false
-        expect(setup.field1.validationResult).toBe(ValidationResult.Valid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Valid);
     });
     test('Property1 previously validated. Change Property3 with revalidate=false. No change to Property1.', () => {
         let setup = setupWithThreeValueHosts();
@@ -3911,13 +3911,13 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
         setup.field2.setInputValue('BCD');
         setup.field2.setValue('BCD');
 
-        expect(setup.field1.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
         setup.field1.validate();
-        expect(setup.field1.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Invalid);
 
         expect(() => setup.field1.otherValueHostChangedNotification(
             setup.field3.getName(), false)).not.toThrow();
-        expect(setup.field1.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Invalid);
     });
     test('Property1 previously validated. Use setValues to change Property3 with validate=false. No change to Property1.', () => {
         let setup = setupWithThreeValueHosts();
@@ -3927,22 +3927,22 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
         setup.field2.setValue('BCD');
         setup.field3.setValues('', '');
 
-        expect(setup.field1.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
-        expect(setup.field2.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
-        expect(setup.field3.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
+        expect(setup.field2.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
+        expect(setup.field3.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
 
         setup.field1.validate();
-        expect(setup.field1.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Invalid);
         setup.field2.validate();
-        expect(setup.field2.validationResult).toBe(ValidationResult.Valid);
+        expect(setup.field2.validationStatusCode).toBe(ValidationStatusCode.Valid);
         setup.field3.validate();
-        expect(setup.field3.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.field3.validationStatusCode).toBe(ValidationStatusCode.Invalid);
         // expect(() => setup.field1.otherValueHostChangedNotification(
         //     setup.field3.GetId(), false)).not.toThrow();
         setup.field3.setValues('X', 'X');  // will trigger OtherValueHostCHangedNotification with revalidate=false
-        expect(setup.field1.validationResult).toBe(ValidationResult.Invalid);  // no change
-        expect(setup.field2.validationResult).toBe(ValidationResult.Valid);
-        expect(setup.field3.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Invalid);  // no change
+        expect(setup.field2.validationStatusCode).toBe(ValidationStatusCode.Valid);
+        expect(setup.field3.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
     });
 
     test('Property1 previously validated. Use setValues to change Property3 with validate=true. No change to Property1.', () => {
@@ -3953,37 +3953,37 @@ describe('InputValueHost.otherValueHostChangedNotification and setValues trigger
         setup.field2.setValue('BCD');
         setup.field3.setValues('', '');
 
-        expect(setup.field1.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
-        expect(setup.field2.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
-        expect(setup.field3.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
+        expect(setup.field2.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
+        expect(setup.field3.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
 
         setup.field1.validate();
-        expect(setup.field1.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Invalid);
         setup.field2.validate();
-        expect(setup.field2.validationResult).toBe(ValidationResult.Valid);
+        expect(setup.field2.validationStatusCode).toBe(ValidationStatusCode.Valid);
         setup.field3.validate();
-        expect(setup.field3.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.field3.validationStatusCode).toBe(ValidationStatusCode.Invalid);
         // expect(() => setup.field1.otherValueHostChangedNotification(
         //     setup.field3.GetId(), false)).not.toThrow();
         setup.field3.setValues('X', 'X', { validate: true });  // will trigger OtherValueHostCHangedNotification with revalidate=false
-        expect(setup.field1.validationResult).toBe(ValidationResult.Invalid);  // no change
-        expect(setup.field2.validationResult).toBe(ValidationResult.Valid);
-        expect(setup.field3.validationResult).toBe(ValidationResult.Valid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Invalid);  // no change
+        expect(setup.field2.validationStatusCode).toBe(ValidationStatusCode.Valid);
+        expect(setup.field3.validationStatusCode).toBe(ValidationStatusCode.Valid);
     });
-    test('Property1 never validated but had been setValue. Use setValue to change Property2 with validate=true. Expect Property1 ValidationResult=Valid because it was ValidationResult=ValueChanged.', () => {
+    test('Property1 never validated but had been setValue. Use setValue to change Property2 with validate=true. Expect Property1 ValidationStatusCode=Valid because it was ValidationStatusCode=ValueChanged.', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setInputValue('ABC');
         setup.field1.setValue('ABC');
         setup.field2.setInputValue('BCD');
         setup.field2.setValue('BCD');
-        expect(setup.field1.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
-        expect(setup.field2.validationResult).toBe(ValidationResult.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
+        expect(setup.field2.validationStatusCode).toBe(ValidationStatusCode.ValueChangedButUnvalidated);
 
 
         expect(() => setup.field1.otherValueHostChangedNotification(
             setup.field2.getName(), true)).not.toThrow();
         setup.field2.setValues('ABC', 'ABC', { validate: true });
-        expect(setup.field1.validationResult).toBe(ValidationResult.Valid);
+        expect(setup.field1.validationStatusCode).toBe(ValidationStatusCode.Valid);
 
     });
 });
@@ -3999,7 +3999,7 @@ describe('toIInputValueHost function', () => {
                 name: 'Field1',
                 value: undefined,
                 issuesFound: null,
-                validationResult: ValidationResult.NotAttempted,
+                statusCode: ValidationStatusCode.NotAttempted,
                 inputValue: undefined
             });
         expect(toIInputValueHost(testItem)).toBe(testItem);
@@ -4025,7 +4025,7 @@ describe('toIInputValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         isValid: boolean = true;
-        validationResult: ValidationResult = ValidationResult.NotAttempted;
+        validationStatusCode: ValidationStatusCode = ValidationStatusCode.NotAttempted;
         setBusinessLogicError(error: BusinessLogicError): boolean {
             throw new Error("Method not implemented.");
         }
@@ -4113,7 +4113,7 @@ describe('toIValidatableValueHostBase function', () => {
                 name: 'Field1',
                 value: undefined,
                 issuesFound: null,
-                validationResult: ValidationResult.NotAttempted,
+                statusCode: ValidationStatusCode.NotAttempted,
                 inputValue: undefined
             });
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
@@ -4139,7 +4139,7 @@ describe('toIValidatableValueHostBase function', () => {
             throw new Error("Method not implemented.");
         }
         isValid: boolean = false;
-        validationResult: ValidationResult = ValidationResult.Undetermined;
+        validationStatusCode: ValidationStatusCode = ValidationStatusCode.Undetermined;
         setBusinessLogicError(error: BusinessLogicError): boolean {
             throw new Error("Method not implemented.");
         }
@@ -4218,7 +4218,7 @@ describe('toIInputValueHostCallbacks function', () => {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostStateChanged(vh: IValueHost, state: ValueHostState) { }
         onInputValueChanged(vh: IValidatableValueHostBase, old: any) { }
-        onValueHostValidated(vh: IValidatableValueHostBase, validationResult: ValueHostValidateResult) { }
+        onValueHostValidated(vh: IValidatableValueHostBase, validateResult: ValueHostValidateResult) { }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIInputValueHostCallbacksImplementation();

@@ -1,6 +1,6 @@
 /**
  * Represents all aspects of a single validation rule.
- * - Has the Validation function, which returns the ValidationResult, error messages, and severity.
+ * - Has the Validation function, which returns the ConditionEvaluateResult, error messages, and severity.
  * - Condition - the actual validation rule
  * - Error Message - what to tell the user when there is an error
  * - Summary Error Message - In the ValidationSummary UI element, what to tell the user 
@@ -32,7 +32,7 @@ import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
  * for the value of an InputValueHost.
  * It is stateless.
  * Basically you want to call validate() to get all of the results
- * of a validation, including ValidationResult, error messages,
+ * of a validation, including ConditionEvaluateResult, error messages,
  * severity, and more.
  * That data ends up in the ValidationManager as part of its state,
  * allowing the system consumer to know how to deal with the data
@@ -252,7 +252,7 @@ export class Validator implements IValidator {
 
     /**
      * Perform validation activity and provide the results including
-     * whether there is an error (ValidationResult), fully formatted
+     * whether there is an error (ConditionEvaluateResult), fully formatted
      * error messages, severity, and Condition type.
      * @param options - Provides guidance on which validators to include.
      * @returns Identifies the ConditionEvaluateResult.
@@ -310,7 +310,7 @@ export class Validator implements IValidator {
             if (pendingCER instanceof Promise) {
                 // Support Async evaluation by letting evaluate() return a promise
                 // When an async process returns, it must take NO action
-                // if the value of State.ValidationResult is not still AsyncProcessing.
+                // if the state.asyncProcessing is no longer true.
                 return processPromise(pendingCER);
             }
             else
@@ -343,7 +343,7 @@ export class Validator implements IValidator {
             resultState.conditionEvaluateResult = cer;
             switch (cer) {
                 case ConditionEvaluateResult.NoMatch:
-                    let issueFound = createIssueFound(self.valueHost, self);   // setup for ValidationResult.Undetermined
+                    let issueFound = createIssueFound(self.valueHost, self);   // set up for ConditionEvaluateResult.Undetermined
                     issueFound.severity = self.severity;
                     self.updateStateForNoMatch(issueFound, self.valueHost);
                     resultState.issueFound = issueFound;
@@ -408,7 +408,7 @@ export class Validator implements IValidator {
 
     /**
      * validate() found NoMatch. Update the ValidatorState's properties to show
-     * the current ValidationResult and error messages.
+     * the current ConditionEvaluateResult and error messages.
      * @param stateToUpdate - this is a COPY of the State, as supplied by updateState().
      * Do not modify the actual instance as it is immutable.
      * @param value 

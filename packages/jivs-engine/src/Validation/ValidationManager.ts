@@ -10,7 +10,7 @@ import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type ValidateOptions, type ValueHostValidateResult, type BusinessLogicError, type IssueFound, ValidationResult } from '../Interfaces/Validation';
+import { type ValidateOptions, type ValueHostValidateResult, type BusinessLogicError, type IssueFound, ValidationStatusCode } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler, ValidationSnapshot } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
@@ -84,8 +84,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      *   savedValueHostStates: null, // or an array of the state objects previously returned with OnValueHostStateChanged
      *   onStateChanged: (validationManager, state)=> { },
      *   onValueHostStateChanged: (valueHost, state) => { },
-     *   onValidated: (validationManager, validationResults)=> { },
-     *   onValueHostValidated: (valueHost, validationResult) => { },
+     *   onValidated: (validationManager, validationSnapshot)=> { },
+     *   onValueHostValidated: (valueHost, valueHostValidateResult) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
      *   onInputValueChanged: (valueHost, oldValue) => { }
      * }
@@ -424,8 +424,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
-     * True when at least one ValueHost's ValidationResult is 
-     * Invalid, AsyncProcessing, or ValueChangedButUnvalidated
+     * True when at least one ValueHost's ValidationStatusCode is 
+     * Invalid or ValueChangedButUnvalidated
      */
     public doNotSaveNativeValues(): boolean {
         for (let vh of this.inputValueHost()) {

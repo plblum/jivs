@@ -5,7 +5,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
-import { ValidateOptions, ValueHostValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
+import { ValidateOptions, ValueHostValidateResult, ValidationStatusCode, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
@@ -20,16 +20,16 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
 {
     /**
      * Result is based on the presence of Business Logic Errors that are not warnings.
-     * If none, ValidationResult = Valid.
-     * If only warnings, ValidationResult = Valid and IssuesFound are generated for each.
-     * Otherwise, ValidationResult = Invalid and IssuesFound are generated from each error.
+     * If none, ValidationStatusCode = Valid.
+     * If only warnings, ValidationStatusCode = Valid and IssuesFound are generated for each.
+     * Otherwise, ValidationStatusCode = Invalid and IssuesFound are generated from each error.
      * @param options 
      * @returns 
      */
     public validate(options?: ValidateOptions): ValueHostValidateResult | null {
         let result: ValueHostValidateResult = {
             issuesFound: null,
-            validationResult: ValidationResult.Valid
+            statusCode: ValidationStatusCode.Valid
         };
         if (this.businessLogicErrors)
         {
@@ -53,13 +53,13 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
             if (issueCount)
             {
                 result.issuesFound = iif;
-                result.validationResult = errorFound ? ValidationResult.Invalid : ValidationResult.Valid;
+                result.statusCode = errorFound ? ValidationStatusCode.Invalid : ValidationStatusCode.Valid;
             }
         }
         if (!options || !options.omitCallback)
             toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
         // when the result hasn't changed from the start, report null as there were no issues found
-        return result.validationResult !== ValidationResult.Undetermined || result.issuesFound !== null || result.pending ?
+        return result.statusCode !== ValidationStatusCode.Undetermined || result.issuesFound !== null || result.pending ?
             result : null;
     }
     public get requiresInput(): boolean

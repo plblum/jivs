@@ -4,7 +4,7 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
-    type ValidateOptions, type ValueHostValidateResult, ValidationResult,
+    type ValidateOptions, type ValueHostValidateResult, ValidationStatusCode,
     type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult
 } from './Validation';
 import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostState } from './ValueHost';
@@ -68,7 +68,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      * with all of the NoMatches in issuesFound.
      * If all were Matched, it returns ValueHostValidateResult.Value and issuesFound=null.
      * If there are no validators, or all validators were skipped (disabled),
-     * it returns ValidationResult.Undetermined.
+     * it returns ValidationStatusCode.Undetermined.
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on behavior.
      * @returns Non-null when there is something to report. null if there was nothing to evaluate
@@ -86,20 +86,26 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false when State.ValidationResult is Invalid. Any other ValidationResult
+     * Returns false when State.statusCode is Invalid. Any other State.statusCode
      * return true.
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using ValidationResult property for more clarity.
+     * Recommend using validationStatusCode property for more clarity.
      */
     isValid: boolean;
 
     /**
-     * ValidationResult from latest validation, or an indication
+     * StatusCode from the latest validation, or an indication
      * that validation has yet to occur.
+     * It is changed internally and can influence how
+     * validation behaves the next time.
+     * Prior to calling validate() (or setValue()'s validate option),
+     * it is NotAttempted.
+     * After setValue it is ValueChangedButUnvalidated.
+     * After validate, it may be Valid, Invalid or Undetermined.
      */
-    validationResult: ValidationResult;
+    validationStatusCode: ValidationStatusCode;
 
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
@@ -124,7 +130,7 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
-     * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated.
+     * True when ValidationStatusCode is Invalid or ValueChangedButUnvalidated.
      */
     doNotSaveNativeValue(): boolean;
 

@@ -57,7 +57,7 @@ export interface StatefulValueHostValidateResult {
     /**
      * The state of validation for this ValueHost.
      */
-    validationResult: ValidationResult;
+    statusCode: ValidationStatusCode;
 
     /**
      * The issues that were found.
@@ -81,9 +81,12 @@ export interface ValueHostValidateResult extends StatefulValueHostValidateResult
 
 
 /**
- * The state of validation for this ValueHost.
+ * The state of validation for this ValidatableValueHost.
+ * It combines what has happened to the ValueHost's values
+ * with the result from validation and influences the behavior
+ * of the next attempt to validate.
  */
-export enum ValidationResult {
+export enum ValidationStatusCode { // ValueHostValidationStatus, ValueHostStatusCode
     /**
      * Indicates that validate() has yet to be attempted
      * Once attempted, it will always be one of the other results
@@ -108,11 +111,10 @@ export enum ValidationResult {
      */
     Invalid
 }
-export const ValidationResultString = [
+export const ValidationStatusCodeString = [
     'NotAttempted',
     'ValueChangedButUnvalidated',
     'Undetermined',
-    'AsyncProcessing',
     'Valid',
     'Invalid'
 ];
@@ -136,7 +138,7 @@ export enum ValidationSeverity {
     Error,
     /**
      * The result will block saving.
-     * Validation process will stop, leaving remaining validators set to 'ValidationResult.Undetermined'.
+     * Validation process will stop, leaving remaining validators set to 'ValidationStatusCode.Undetermined'.
      * Its best to put these early in the list of InputValueHost.Validators.
      * Consider this for RequiredConditions and DataTypeCondition.
      * RequiredCondition - If you don't have any data to evaluate, none of the remaining validators serve a purpose.

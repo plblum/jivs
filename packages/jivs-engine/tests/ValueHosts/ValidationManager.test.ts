@@ -6,7 +6,7 @@ import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/In
 import { BusinessLogicInputValueHost, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostState } from '../../src/Interfaces/InputValueHost';
-import { ValueHostValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
+import { ValueHostValidateResult, ValidationStatusCode, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import {
     IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerState,
@@ -402,13 +402,13 @@ describe('ValidationManager.addValueHost', () => {
             value: 'ABC'
         });
     });    
-    test('State with ValidationResult=Valid already exists for the ValueHostConfig being added. That state is used', () => {
+    test('State with ValidationStatusCode=Valid already exists for the ValueHostConfig being added. That state is used', () => {
 
         let savedState: ValidationManagerState = {};
 
         let savedValueHostState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Valid, // something we can return
+            statusCode: ValidationStatusCode.Valid, // something we can return
             value: 10,   // something we can return,
             issuesFound: null
         };
@@ -434,13 +434,13 @@ describe('ValidationManager.addValueHost', () => {
 
         testValueHostState(testItem, 'Field1', savedValueHostState);        
     });
-    test('State with ValidationResult=Invalid already exists for the ValueHostConfig being added.', () => {
+    test('State with ValidationStatusCode=Invalid already exists for the ValueHostConfig being added.', () => {
 
         let savedState: ValidationManagerState = {};
 
         let savedValueHostState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Invalid, // something we can return
+            statusCode: ValidationStatusCode.Invalid, // something we can return
             value: 10,   // something we can return,
             issuesFound: [{
                 errorMessage: 'msg',
@@ -490,7 +490,7 @@ describe('ValidationManager.addValueHost', () => {
         let savedValueHostStates: Array<ValueHostState> = [];
         savedValueHostStates.push(<InputValueHostState>{
             name: 'Field1',
-            validationResult: ValidationResult.Valid, // something we can return
+            statusCode: ValidationStatusCode.Valid, // something we can return
             value: 10   // something we can return
         });
         let testItem = new PublicifiedValidationManager({
@@ -500,7 +500,7 @@ describe('ValidationManager.addValueHost', () => {
         let addState: InputValueHostState = {
             name: 'Field1',
             value: 20,
-            validationResult: ValidationResult.Invalid,
+            statusCode: ValidationStatusCode.Invalid,
             issuesFound: [{
                 errorMessage: 'msg',
                 valueHostName: 'Field1',
@@ -518,7 +518,7 @@ describe('ValidationManager.addValueHost', () => {
 
         let savedValueHostState: InputValueHostState = {
             name: 'Field1',
-            validationResult: ValidationResult.Valid, // something we can return
+            statusCode: ValidationStatusCode.Valid, // something we can return
             value: 10,   // something we can return,
             issuesFound: null
         };
@@ -616,7 +616,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         testValueHostState(testItem, 'Field1', null);
     });
 
-    test('Replace the config with existing ValueHostState.ValidationResult of Invalid retains state when replacement is the same type', () => {
+    test('Replace the config with existing ValueHostState.ValidationStatusCode of Invalid retains state when replacement is the same type', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
             name: 'Field1',
@@ -663,7 +663,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         // ensure ValueHost is InputValueHost and has an initial state
         testValueHostState(testItem, 'Field1', null);
     });
-    test('Using fluent syntax, replace the config with existing ValueHostState.ValidationResult of Invalid retains state when replacement is the same type', () => {
+    test('Using fluent syntax, replace the config with existing ValueHostState.ValidationStatusCode of Invalid retains state when replacement is the same type', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let ivConfig = fluent().input('Field1', null, { label: 'Field 1'});
         let initialValueHost = testItem.addValueHost(ivConfig, null);
@@ -719,7 +719,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
             name: 'Field1',
             value: 40,
             issuesFound: null,
-            validationResult: ValidationResult.NotAttempted
+            statusCode: ValidationStatusCode.NotAttempted
         };
         let replacementValueHost: IValueHost | null = null;
         expect(() => replacementValueHost = testItem.updateValueHost(config, updateState)).not.toThrow();
@@ -753,7 +753,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
             name: 'Field1',
             value: 40,
             issuesFound: null,
-            validationResult: ValidationResult.NotAttempted
+            statusCode: ValidationStatusCode.NotAttempted
         };
         testItem.updateValueHost(config, updateState);
 
@@ -1003,7 +1003,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
-    test('With 1 inputValueHost that is ValidationResult.Valid, returns {isValid:true, doNotSave: false, issuesFound: null}', () => {
+    test('With 1 inputValueHost that is ValidationStatusCode.Valid, returns {isValid:true, doNotSave: false, issuesFound: null}', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
@@ -1020,7 +1020,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
-    test('With 1 inputValueHost that is ValidationResult.Invalid, returns {isValid:false, doNotSave: true, issuesFound: [1 found] }', () => {
+    test('With 1 inputValueHost that is ValidationStatusCode.Invalid, returns {isValid:false, doNotSave: true, issuesFound: [1 found] }', () => {
 
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
@@ -1353,7 +1353,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(callbackValue).toBeNull();
 
     });    
-    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationResult.Undetermined because Required should be skipped, leaving NO validators', () => {
+    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationStatusCode.Undetermined because Required should be skipped, leaving NO validators', () => {
         const conditionType = 'TEST';
         let config = setupInputValueHostConfig(0, [conditionType]);
         let setup = setupValidationManager([config]);
@@ -1379,7 +1379,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
-    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=false, expect ValidationResult.Invalid because Preliminary is off', () => {
+    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=false, expect ValidationStatusCode.Invalid because Preliminary is off', () => {
         const conditionType = 'TEST';
         let config = setupInputValueHostConfig(0, [conditionType]);
         let setup = setupValidationManager([config]);
@@ -1815,7 +1815,7 @@ describe('toIValidationManagerCallbacks function', () => {
             onValueChanged: (vh: IValueHost, old: any) => {},
             onValueHostStateChanged: (vh: IValueHost, state: ValueHostState) => {},
             onInputValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
-            onValueHostValidated: (vh: IValidatableValueHostBase, validationResult: ValueHostValidateResult) => { },
+            onValueHostValidated: (vh: IValidatableValueHostBase, validateResult: ValueHostValidateResult) => { },
             onStateChanged: (vm, state) => { },
             onValidated: (vm, results) => { }
         };

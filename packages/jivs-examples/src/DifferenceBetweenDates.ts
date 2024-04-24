@@ -125,7 +125,7 @@ function demoSeveralCases(): void {
     /* 
     result = {
         issuesFound: null,
-        validationResult: ValidationResult.Valid,
+        statusCode: ValidationStatusCode.Valid,
     }
     */
     vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 10))); 
@@ -135,7 +135,7 @@ function demoSeveralCases(): void {
     /* 
     result = {
         issuesFound: null,
-        validationResult: ValidationResult.Valid,
+        statusCode: ValidationStatusCode.Valid,
     }
     */
     vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 11))); 
@@ -147,7 +147,7 @@ function demoSeveralCases(): void {
         issuesFound: [{
             errorMessage: 'The two dates must be less than 10 days apart.'
          }],
-        validationResult: ValidationResult.Invalid,
+        statusCode: ValidationStatusCode.Invalid,
     }
     */    
 
@@ -160,7 +160,7 @@ function demoSeveralCases(): void {
         issuesFound: [{
             errorMessage: 'Start date must be less than or equal to End date.'
         }],
-        validationResult: ValidationResult.Invalid,
+        statusCode: ValidationStatusCode.Invalid,
     }
     */    
 }

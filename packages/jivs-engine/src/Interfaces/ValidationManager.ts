@@ -67,8 +67,8 @@ export interface IValidationManager extends IValueHostsManager {
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
-     * True when at least one ValueHost's ValidationResult is 
-     * Invalid, AsyncProcessing, or ValueChangedButUnvalidated
+     * True when at least one ValueHost's ValidationStatusCode is 
+     * Invalid or ValueChangedButUnvalidated
      */
     doNotSaveNativeValues(): boolean;
 
@@ -136,7 +136,7 @@ export interface ValidationSnapshot
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
-     * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated
+     * True when ValidationStatusCode is Invalid or ValueChangedButUnvalidated
      * on individual validators.
      */
     doNotSaveNativeValues: boolean;

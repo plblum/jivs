@@ -7,7 +7,7 @@ import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, Va
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueHostConfig, InputValueHostState } from "../../src/Interfaces/InputValueHost";
-import { ValidateOptions, ValueHostValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
+import { ValidateOptions, ValueHostValidateResult, ValidationStatusCode, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler, ValidationSnapshot } from "../../src/Interfaces/ValidationManager";
@@ -155,7 +155,7 @@ export class MockInputValueHost extends MockValueHost
         throw new Error("Method not implemented.");
     }
 
-    validationResult: ValidationResult = ValidationResult.NotAttempted;
+    validationStatusCode: ValidationStatusCode = ValidationStatusCode.NotAttempted;
     
     setBusinessLogicError(error: BusinessLogicError): boolean {
         throw new Error("Method not implemented.");
