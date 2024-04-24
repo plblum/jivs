@@ -202,7 +202,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 this.validate();
             else {
                 this.updateState((stateToUpdate) => {
-                    this.clearValidationStateChanges(stateToUpdate);
+                    this.clearValidationDataFromState(stateToUpdate);
                     stateToUpdate.validationResult = ValidationResult.ValueChangedButUnvalidated;
                     return stateToUpdate;
                 }, this);
@@ -270,7 +270,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             if (!this.groupsMatch(options.group, true))
                 return false;
         changed = this.updateState((stateToUpdate) => {
-            this.clearValidationStateChanges(stateToUpdate);
+            this.clearValidationDataFromState(stateToUpdate);
             return stateToUpdate;
         }, this);
         if (changed)
@@ -297,7 +297,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         return groupsMatch(requestedGroup, expectedGroup);
     }
 
-    protected clearValidationStateChanges(stateToUpdate: TState): void {
+    protected clearValidationDataFromState(stateToUpdate: TState): void {
         stateToUpdate.validationResult = ValidationResult.NotAttempted;
         stateToUpdate.issuesFound = null;
         delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
