@@ -1590,6 +1590,74 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         expect(setup.valueHost.isValid).toBe(true);
         expect(setup.valueHost.validationResult).toBe(ValidationResult.Valid);
     });
+    test('Confirm the OnValueHostValidate event is called and captures the correct ValidationResult', () => {
+        let onValidateResult: ValueHostValidateResult | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidated: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<InputValueHostConfig>{
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: AlwaysMatchesConditionType
+                    }
+                }
+            ]
+        }, null) as InputValueHost;
+        let expectedIssueFound: IssueFound = {
+            errorMessage: 'BL_ERROR',
+            severity: ValidationSeverity.Error,
+            valueHostName: 'Field1',
+            summaryMessage: 'BL_ERROR',
+            errorCode: 'GENERATED_0'
+        };
+
+        let result = vh.setBusinessLogicError({
+            errorMessage: 'BL_ERROR',
+        });
+        expect(result).toBe(true);
+        expect(onValidateResult).toEqual(<ValueHostValidateResult>{
+            validationResult: ValidationResult.Invalid,
+            issuesFound: [expectedIssueFound]
+        });
+    });    
+    test('Confirm the OnValueHostValidate event is setup but not called due to option.omitCallback', () => {
+        let onValidateResult: ValueHostValidateResult | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidated: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<InputValueHostConfig>{
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: AlwaysMatchesConditionType
+                    }
+                }
+            ]
+        }, null) as InputValueHost;
+
+        let result = vh.setBusinessLogicError({
+            errorMessage: 'BL_ERROR',
+        }, { omitCallback: true});
+        expect(result).toBe(true);
+        expect(onValidateResult).toBeNull();
+    });        
     test('Ensure Required sorts first amongst several Conditions, placing Required last. Demonstrated by stopping when RequireTextCondition is NoMatch while others return an error', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
@@ -2317,6 +2385,98 @@ describe('InputValueHost.clearValidation', () => {
         ];
         expect(stateChanges).toEqual(expectedChanges);
     });
+    test('OnValueHostValidated called', () => {
+        let onValidateResult: ValueHostValidateResult | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidated: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<InputValueHostConfig>{
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    },
+                    errorMessage: 'Error'
+                }
+            ]
+        }, null) as InputValueHost;
+
+        let neverMatchIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            errorMessage: 'Error',
+            summaryMessage: 'Error',
+            valueHostName: 'Field1',
+            severity: ValidationSeverity.Error
+        };
+
+        let snapshot = vm.validate({ omitCallback: true }); // ensure we have an invalid state without business logic
+        expect(snapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [neverMatchIssueFound]
+        });
+
+        let result: boolean | null = null;
+        expect(() => result = vh.clearValidation()).not.toThrow();
+
+        expect(onValidateResult).toEqual(<ValueHostValidateResult>{
+            validationResult: ValidationResult.NotAttempted,
+            issuesFound: null
+        });
+    });        
+
+    test('OnValueHostValidated not called when options.omitCallback = true', () => {
+        let onValidateResult: ValueHostValidateResult | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidated: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<InputValueHostConfig>{
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    },
+                    errorMessage: 'Error'
+                }
+            ]
+        }, null) as InputValueHost;
+
+        let neverMatchIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            errorMessage: 'Error',
+            summaryMessage: 'Error',
+            valueHostName: 'Field1',
+            severity: ValidationSeverity.Error
+        };
+
+        let snapshot = vm.validate({ omitCallback: true }); // ensure we have an invalid state without business logic
+        expect(snapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [neverMatchIssueFound]
+        });
+
+        let result: boolean | null = null;
+        expect(() => result = vh.clearValidation({ omitCallback: true })).not.toThrow();
+
+        expect(onValidateResult).toBeNull();
+    });        
 });
 // doNotSaveNativeValue(): boolean
 describe('InputValueHost.doNotSaveNativeValue', () => {
@@ -2454,6 +2614,109 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
         let valueChange2 = <ValidatableValueHostBaseState>changes[1];
         expect(valueChange2.businessLogicErrors).toBeUndefined();
     });
+    test('OnValueHostValidated called', () => {
+        let onValidateResult: ValueHostValidateResult | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidated: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<InputValueHostConfig>{
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    },
+                    errorMessage: 'Error'
+                }
+            ]
+        }, null) as InputValueHost;
+
+        let neverMatchIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            errorMessage: 'Error',
+            summaryMessage: 'Error',
+            valueHostName: 'Field1',
+            severity: ValidationSeverity.Error
+        };
+
+        let snapshot = vm.validate({ omitCallback: true }); // ensure we have an invalid state without business logic
+        expect(snapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [neverMatchIssueFound]
+        });
+
+        expect(() => vh.setBusinessLogicError({
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error
+        }, { omitCallback: true })).not.toThrow();
+        expect(onValidateResult).toBeNull();  // because of omitCallback
+
+        let result: boolean | null = null;
+        expect(() => result = vh.clearBusinessLogicErrors()).not.toThrow();
+        expect(result).toBe(true);
+        expect(onValidateResult).toEqual(<ValueHostValidateResult>{
+            validationResult: ValidationResult.Invalid,
+            issuesFound: [neverMatchIssueFound]
+        });
+    });    
+    test('OnValueHostValidated not called from clearBusinessLogic because options.omitCallback=true', () => {
+        let onValidateResult: ValueHostValidateResult | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidated: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<InputValueHostConfig>{
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    },
+                    errorMessage: 'Error'
+                }
+            ]
+        }, null) as InputValueHost;
+
+        let neverMatchIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            errorMessage: 'Error',
+            summaryMessage: 'Error',
+            valueHostName: 'Field1',
+            severity: ValidationSeverity.Error
+        };
+
+        let snapshot = vm.validate({ omitCallback: true }); // ensure we have an invalid state without business logic
+        expect(snapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [neverMatchIssueFound]
+        });
+
+        expect(() => vh.setBusinessLogicError({
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error
+        }, { omitCallback: true })).not.toThrow();
+        expect(onValidateResult).toBeNull();  // because of omitCallback
+
+        let result: boolean | null = null;
+        expect(() => result = vh.clearBusinessLogicErrors({ omitCallback: true})).not.toThrow();
+        expect(result).toBe(true);
+        expect(onValidateResult).toBeNull();
+    });        
 });
 
 // getIssueFound(validatorConfig: ValidatorConfig): IssueFound | null

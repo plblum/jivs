@@ -464,7 +464,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
                     }, null);
                 }
                 if (vh instanceof ValidatableValueHostBase)
-                    if (vh.setBusinessLogicError(error))
+                    if (vh.setBusinessLogicError(error, options))
                         changed = true;
             }
         if (changed)

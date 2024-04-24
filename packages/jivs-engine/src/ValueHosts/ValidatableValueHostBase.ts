@@ -261,6 +261,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      * It calls onValueHostValidated if there was a changed to the state.
+     * @param options - Only supports the omitCallback and Group options.
      * @returns true when there was something cleared
      */
     public clearValidation(options?: ValidateOptions): boolean {
@@ -274,7 +275,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         }, this);
         if (changed)
             if (!options || !options?.omitCallback)
-                this.invokeOnValueHostValidated();
+                this.invokeOnValueHostValidated(options);
         return changed;
     }
 
@@ -331,7 +332,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * errorCode is already recorded here, the new entry replaces the old one.
      * @returns true when a change was made to the known validation state.
      */
-    public setBusinessLogicError(error: BusinessLogicError): boolean {
+    public setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean {
         if (error) {
             // check for existing with the same errorcode and replace
             let replacementIndex = -1;
@@ -354,7 +355,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 return stateToUpdate;
             }, this);
             if (changed) {
-                this.invokeOnValueHostValidated();
+                this.invokeOnValueHostValidated(options);
                 return true;
             }
         }
@@ -364,16 +365,17 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
      * It calls onValueHostValidated if there was a changed to the state.
+     * @param options - Only considers the omitCallback option.
      * @returns true when a change was made to the known validation state.
      */
-    public clearBusinessLogicErrors(): boolean {
+    public clearBusinessLogicErrors(options?: ValidateOptions): boolean {
         if (this.businessLogicErrors) {
             let changed = this.updateState((stateToUpdate) => {
                 delete stateToUpdate.businessLogicErrors;
                 return stateToUpdate;
             }, this);
             if (changed) {
-                this.invokeOnValueHostValidated();
+                this.invokeOnValueHostValidated(options);
                 return true;
             }
         }
@@ -384,13 +386,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Helper to call onValueHostValidated due to a change in the state associated
      * with Validate itself or BusinessLogicErrors.
      */
-    protected invokeOnValueHostValidated(): void
+    protected invokeOnValueHostValidated(options: ValidateOptions | undefined): void
     {
-        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
-            {
-                issuesFound: this.getIssuesFound(),
-                validationResult: this.validationResult
-            });
+        if (!options || !options.omitCallback)
+            toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
+                {
+                    issuesFound: this.getIssuesFound(),
+                    validationResult: this.validationResult
+                });
     }
     /**
      * exposes the Business Logic Errors list. If none, it is null.

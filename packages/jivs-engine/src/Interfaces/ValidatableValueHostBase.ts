@@ -80,7 +80,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      * @returns true when there was something cleared
-     * @param options - Provides guidance on behavior
+     * @param options - Only supports the omitCallback and Group options.
      */
     clearValidation(options?: ValidateOptions): boolean;
 
@@ -109,16 +109,18 @@ export interface IValidatableValueHostBase extends IValueHost {
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
      * @param error - A business logic error to show. If it has an errorCode assigned and the same
      * errorCode is already recorded here, the new entry replaces the old one.
+     * @param options - Only supports the omitCallback option.
      * @returns true when a change was made to the known validation state.
      */
-    setBusinessLogicError(error: BusinessLogicError): boolean;
+    setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean;
 
     /**
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
+     * @param options - Only supports the omitCallback option.
      * @returns true when a change was made to the known validation state.
      */
-    clearBusinessLogicErrors(): boolean;
+    clearBusinessLogicErrors(options?: ValidateOptions): boolean;
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.

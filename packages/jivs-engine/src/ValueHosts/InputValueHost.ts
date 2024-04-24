@@ -135,7 +135,8 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                 result.validationResult = ValidationResult.Undetermined;
             }                  
             if (updateStateWithResult(result))
-                toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
+                if (!options || !options.omitCallback)
+                    toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
         // when the result hasn't changed from the start, report null as there were no issues found
             return result.validationResult !== ValidationResult.Undetermined || result.issuesFound !== null || result.pending ?
                 result : null;
@@ -204,7 +205,8 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                                 result.issuesFound = [];
                             result.issuesFound.push(ivr.issueFound!);
                             if (updateStateWithResult(result))
-                                toIValidationManagerCallbacks(self.valueHostsManager)?.onValueHostValidated?.(self, result);
+                                if (!options || !options.omitCallback)
+                                    toIValidationManagerCallbacks(self.valueHostsManager)?.onValueHostValidated?.(self, result);
                         }
                         else
                             deleteAsyncProcessFlag();

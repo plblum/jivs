@@ -26,7 +26,7 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
      * @param options 
      * @returns 
      */
-    public validate(options?: ValidateOptions): ValueHostValidateResult {
+    public validate(options?: ValidateOptions): ValueHostValidateResult | null {
         let result: ValueHostValidateResult = {
             issuesFound: null,
             validationResult: ValidationResult.Valid
@@ -56,8 +56,11 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
                 result.validationResult = errorFound ? ValidationResult.Invalid : ValidationResult.Valid;
             }
         }
-        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
-        return result;
+        if (!options || !options.omitCallback)
+            toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
+        // when the result hasn't changed from the start, report null as there were no issues found
+        return result.validationResult !== ValidationResult.Undetermined || result.issuesFound !== null || result.pending ?
+            result : null;
     }
     public get requiresInput(): boolean
     {
