@@ -10,7 +10,7 @@ import { ValueHostValidateResult, ValidationResult, IssueFound, ValidationSeveri
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import {
     IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerState,
-    ValidationManagerStateChangedHandler, toIValidationManagerCallbacks
+    ValidationManagerStateChangedHandler, ValidationSnapshot, toIValidationManagerCallbacks
 } from '../../src/Interfaces/ValidationManager';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { deepClone } from '../../src/Utilities/Utilities';
@@ -212,7 +212,7 @@ describe('constructor and initial property values', () => {
             services: new MockValidationServices(false, false),
             valueHostConfigs: [],
             onStateChanged: (validationManager: IValidationManager, state: ValidationManagerState) => { },
-            onValidated: (validationManager: IValidationManager, validateResults: Array<ValueHostValidateResult>) => { },
+            onValidated: (validationManager: IValidationManager, validationSnapshot : ValidationSnapshot) => { },
             onValueHostStateChanged: (valueHost: IValueHost, state: ValueHostState) => { },
             onValueHostValidated: (valueHost: IValidatableValueHostBase, validateResult: ValueHostValidateResult) => { },
             onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
@@ -965,30 +965,7 @@ function testIssueFound(actual: IssueFound, expected: Partial<IssueFound>): void
         return true;
     });
 }
-function testIssueFoundFromValidateResults(validateResults: Array<ValueHostValidateResult>,
-    indexIntoResults: number,
-    expectedValidationResult: ValidationResult,
-    expectedIssuesFound: Array<Partial<IssueFound>> | null): void {
-    expect(validateResults).not.toBeNull();
-    expect(validateResults.length).toBeGreaterThan(indexIntoResults);
-    expect(validateResults[indexIntoResults].validationResult).toBe(expectedValidationResult);
-    let issuesFound = validateResults[indexIntoResults].issuesFound;
-    if (issuesFound) {
-        if (expectedIssuesFound) {
-            for (let eif of expectedIssuesFound) {
-                if (!eif.errorCode)
-                    throw new Error('Forgot to set ConditionType property on IssueFound');
-                expect(issuesFound).not.toBeNull();
-                let type = eif.errorCode!;
-                let issueFound = issuesFound.find((value) => value.errorCode === type);
-                expect(issueFound).toBeDefined();
-                testIssueFound(issueFound!, eif);
-            }
-        }
-    }
-    else
-        expect(issuesFound).toBeNull();
-}
+
 function setupInputValueHostConfig(fieldIndex: number,
     conditionTypes: Array<string> | null): InputValueHostConfig {
     let labelNumber = fieldIndex + 1;
@@ -1023,234 +1000,203 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
     test('Before calling validate with 0 inputValueHosts, isValid=true, doNotSaveNativeValue=false, getIssuesForInput=[], getIssuesFound=[]', () => {
         let setup = setupValidationManager();
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.getIssuesForInput('Anything')).toEqual([]);
-        expect(setup.validationManager.getIssuesFound()).toEqual([]);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.getIssuesForInput('Anything')).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
     test('isValid is true and doNotSaveNativeValue is false before calling validate with 1 inputValueHosts', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesFound()).toEqual([]);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
-    test('With 1 inputValueHost that is ValidationResult.Valid, returns 1 ValueHostValidateResult', () => {
+    test('With 1 inputValueHost that is ValidationResult.Valid, returns {isValid:true, doNotSave: false, issuesFound: null}', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
-        expect(validateResults.length).toBe(1);
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesFound()).toEqual([]);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
-    test('With 1 inputValueHost that is ValidationResult.Invalid, returns 1 ValueHostValidateResult', () => {
+    test('With 1 inputValueHost that is ValidationResult.Invalid, returns {isValid:false, doNotSave: true, issuesFound: [1 found] }', () => {
 
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
-        expect(validateResults.length).toBe(1);
-
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid,
-            [{
-                errorCode: NeverMatchesConditionType,
-                valueHostName: 'Field1',
-                errorMessage: 'Error 1: ' + NeverMatchesConditionType,
-                summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-                severity: ValidationSeverity.Error
-            }]);
-
-        expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
-        let inputSnapshot: IssueFound = {
-            valueHostName: config.name,
+        let expectedIssueFound: IssueFound = {
             errorCode: NeverMatchesConditionType,
-            severity: ValidationSeverity.Error,
-            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
-            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,        };
-        expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([inputSnapshot]);
-        let summarySnapshot: IssueFound = {
-            valueHostName: config.name,
-            errorCode: NeverMatchesConditionType,
-            severity: ValidationSeverity.Error,
+            valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + NeverMatchesConditionType,
             summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
+            severity: ValidationSeverity.Error
         };
-        expect(setup.validationManager.getIssuesFound()).toEqual([summarySnapshot]);
-    });
-    test('With 1 inputValueHost that has 2 validators with Match and NoMatch, returns 2 ValidateResults and is Invalid', () => {
 
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
+
+
+        expect(setup.validationManager.isValid).toBe(false);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
+
+        expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([expectedIssueFound]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([expectedIssueFound]);
+    });
+
+    test('With 1 inputValueHost with 2 validators, one Match the other NoMatch, returns {isValid:false, doNotSave: true, issuesFound: [1 found] }', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType, NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
-        expect(validateResults.length).toBe(1);
+        let expectedIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            valueHostName: 'Field1',
+            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
+            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
+            severity: ValidationSeverity.Error
+        };
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid,
-            [{
-                errorCode: NeverMatchesConditionType,
-                valueHostName: 'Field1',
-                errorMessage: 'Error 1: ' + NeverMatchesConditionType,
-                summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-                severity: ValidationSeverity.Error
-            }
-            ]);
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
+
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
 
-        let inputSnapshot: IssueFound = {
-            valueHostName: config.name,
-            errorCode: NeverMatchesConditionType,
-            severity: ValidationSeverity.Error,
-            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
-            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-        };
-        expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([inputSnapshot]);
-        let summarySnapshot: IssueFound = {
-            valueHostName: config.name,
-            errorCode: NeverMatchesConditionType,
-            severity: ValidationSeverity.Error,
-            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
-            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-        };
-        expect(setup.validationManager.getIssuesFound()).toEqual([summarySnapshot]);
-    });
-    test('With 2 inputValueHost that are both valid, returns 2 ValidateResults without issues found', () => {
+        expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([expectedIssueFound]);
+        expect(setup.validationManager.getIssuesFound()).toEqual([expectedIssueFound]);
+    });    
+
+    test('With 2 inputValueHost that are both valid, returns {isValid:true, doNotSave: false, issuesFound: null}', () => {
 
         let config1 = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let config2 = setupInputValueHostConfig(1, [AlwaysMatchesConditionType]);
 
         let setup = setupValidationManager([config1, config2]);
 
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
-        expect(validateResults.length).toBe(2);
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
-        testIssueFoundFromValidateResults(validateResults, 1, ValidationResult.Valid, null);
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
 
-        expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesForInput(config2.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesFound()).toEqual([]);
+        expect(setup.validationManager.getIssuesForInput(config1.name)).toBeNull();
+        expect(setup.validationManager.getIssuesForInput(config2.name)).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
-    test('With 2 inputValueHost where only one has validators, it should return only one ValueHostValidateResult, for the one with validators', () => {
+    test('With 2 inputValueHost where only one has validators, it should return {isValid:true, doNotSave: false, issuesFound: null}', () => {
 
         let config1 = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let config2 = fluent().input('Field2');
 
         let setup = setupValidationManager([config1, config2.parentConfig]);
 
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
-        expect(validateResults.length).toBe(1);
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
 
-        expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesForInput(config2.parentConfig.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesFound()).toEqual([]);
+        expect(setup.validationManager.getIssuesForInput(config1.name)).toBeNull();
+        expect(setup.validationManager.getIssuesForInput(config2.parentConfig.name)).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
     });    
-    test('With 2 inputValueHost that are both undetermined, returns an empty array of ValidateResults as we strip out undetermineds. isValid=true. DoNotSave=false', () => {
+    test('With 2 inputValueHost that are both undetermined, returns {isValid:true, doNotSave: false, issuesFound: null}', () => {
 
         let config1 = setupInputValueHostConfig(0, [IsUndeterminedConditionType]);
         let config2 = setupInputValueHostConfig(1, [IsUndeterminedConditionType]);
 
         let setup = setupValidationManager([config1, config2]);
 
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
-        expect(validateResults.length).toBe(0);
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
 
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesForInput(config2.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesFound()).toEqual([]);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.getIssuesForInput(config1.name)).toBeNull();
+        expect(setup.validationManager.getIssuesForInput(config2.name)).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
-    test('With 2 inputValueHost that are both Invalid, returns 2 ValidateResults each with 1 issue found. isValid=false. DoNotSave=true', () => {
+    test('With 2 inputValueHost that are both Invalid, returns {isValid:false, doNotSave: true, issuesFound: [2 entries]}', () => {
 
         let config1 = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let config2 = setupInputValueHostConfig(1, [NeverMatchesConditionType]);
 
         let setup = setupValidationManager([config1, config2]);
+        let expectedIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            valueHostName: 'Field1',
+            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
+            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
+            severity: ValidationSeverity.Error
+        };
+        let expectedIssueFound2: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            valueHostName: 'Field2',
+            errorMessage: 'Error 2: ' + NeverMatchesConditionType,
+            summaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
+            severity: ValidationSeverity.Error
+        };
 
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound, expectedIssueFound2]
+        });
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [
-            {
-                errorCode: NeverMatchesConditionType,
-                valueHostName: 'Field1',
-                errorMessage: 'Error 1: ' + NeverMatchesConditionType,
-                summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-                severity: ValidationSeverity.Error
-            }
-        ]);
-        testIssueFoundFromValidateResults(validateResults, 1, ValidationResult.Invalid, [
-            {
-                errorCode: NeverMatchesConditionType,
-                valueHostName: 'Field2',
-                errorMessage: 'Error 2: ' + NeverMatchesConditionType,
-                summaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
-                severity: ValidationSeverity.Error
-            }
-        ]);
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
 
-        let inputSnapshot1: IssueFound = {
-            valueHostName: config1.name,
-            errorCode: NeverMatchesConditionType,
-            severity: ValidationSeverity.Error,
-            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
-            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-        };
-        expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([inputSnapshot1]);
-        let inputSnapshot2: IssueFound = {
-            valueHostName: config2.name,
-            errorCode: NeverMatchesConditionType,
-            severity: ValidationSeverity.Error,
-            errorMessage: 'Error 2: ' + NeverMatchesConditionType,
-            summaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
-        };
-        expect(setup.validationManager.getIssuesForInput(config2.name)).toEqual([inputSnapshot2]);
-        let summarySnapshot1: IssueFound = {
-            valueHostName: config1.name,
-            errorCode: NeverMatchesConditionType,
-            severity: ValidationSeverity.Error,
-            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
-            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
-        };
-        let summarySnapshot2: IssueFound = {
-            valueHostName: config2.name,
-            errorCode: NeverMatchesConditionType,
-            severity: ValidationSeverity.Error,
-            errorMessage: 'Error 2: ' + NeverMatchesConditionType,
-            summaryMessage: 'Summary 2: ' + NeverMatchesConditionType,
-        };
-        expect(setup.validationManager.getIssuesFound()).toEqual([summarySnapshot1, summarySnapshot2]);
+        expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([expectedIssueFound]);
+        expect(setup.validationManager.getIssuesForInput(config2.name)).toEqual([expectedIssueFound2]);
+
+        expect(setup.validationManager.getIssuesFound()).toEqual([expectedIssueFound, expectedIssueFound2]);
     });
     test('With 1 BusinessLogicError not associated with any ValueHost, isValid=false, DoNotSave=true, getIssuesFound has the businesslogicerror, and there is a new ValueHost for the BusinessLogic', () => {
         let setup = setupValidationManager();
-        setup.validationManager.setBusinessLogicErrors([
+        let result = setup.validationManager.setBusinessLogicErrors([
             {
                 errorMessage: 'BL_ERROR'
             }
         ]);
+        expect(result).toBe(true);
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
         expect(setup.validationManager.getIssuesFound()).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
@@ -1272,14 +1218,15 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let config = setupInputValueHostConfig(0, []);
         let setup = setupValidationManager([config]);
-        setup.validationManager.setBusinessLogicErrors([
+        let result = setup.validationManager.setBusinessLogicErrors([
             {
                 errorMessage: 'BL_ERROR',
                 associatedValueHostName: config.name
             }
         ]);
+        expect(result).toBe(true);
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
         expect(setup.validationManager.getIssuesFound()).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
@@ -1296,7 +1243,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         }]);
 
         expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeNull();
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toEqual([]);
+        expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toBeNull();
     });
     test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 BusinessLogicError not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors businesslogicerror, BLValueHost has the BLError, InputValueHost has its own error', () => {
 
@@ -1304,14 +1251,15 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         config.validatorConfigs![0].errorMessage = 'CONDITION ERROR';
         config.validatorConfigs![0].summaryMessage = 'SUMMARY CONDITION ERROR';
         let setup = setupValidationManager([config]);
-        setup.validationManager.setBusinessLogicErrors([
+        let result = setup.validationManager.setBusinessLogicErrors([
             {
                 errorMessage: 'BL_ERROR',
             }
         ]);
+        expect(result).toBe(true);
         setup.validationManager.validate();
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
         expect(setup.validationManager.getIssuesFound()).toEqual([
             <IssueFound>{
                 errorMessage: 'CONDITION ERROR',
@@ -1345,6 +1293,75 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
                 summaryMessage: 'BL_ERROR'
             }]);
     });
+    test('setBusinessLogicErrors has not supplied any errors and returns false', () => {
+        let setup = setupValidationManager();
+        let result = setup.validationManager.setBusinessLogicErrors([]);
+        expect(result).toBe(false);
+    });    
+    test('setBusinessLogicErrors called twice. First time has changes. Second not, but both return true because the second changes by clearing the first', () => {
+        let setup = setupValidationManager();
+        let result =  setup.validationManager.setBusinessLogicErrors([
+            {
+                errorMessage: 'BL_ERROR',
+            }
+        ]);
+        expect(result).toBe(true);
+        result = setup.validationManager.setBusinessLogicErrors([]);
+        expect(result).toBe(true);
+    });        
+    test('OnValidated callback test invokes callback with expected ValidationSnapshot', () => {
+        let callbackValue: ValidationSnapshot | null = null;
+        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
+            callbackValue = validationSnapshot
+        };
+        let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        let setup = setupValidationManager([config], null, {
+            onValidated: callback
+        });
+        let expectedIssueFound: IssueFound = {
+            errorCode: 'GENERATED_0',
+            errorMessage: 'BL_ERROR',
+            summaryMessage: 'BL_ERROR',
+            severity: ValidationSeverity.Error,
+            valueHostName: BusinessLogicValueHostName
+        };
+
+        setup.validationManager.setBusinessLogicErrors([
+            {
+                errorMessage: 'BL_ERROR'
+            }
+        ]);
+        expect(callbackValue).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
+
+    });    
+    test('OnValidated callback test with option.OmitCallback=true does not invoke callback', () => {
+        let callbackValue: ValidationSnapshot | null = null;
+        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
+            callbackValue = validationSnapshot
+        };
+        let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        let setup = setupValidationManager([config], null, {
+            onValidated: callback
+        });
+        let expectedIssueFound: IssueFound = {
+            errorCode: 'GENERATED_0',
+            errorMessage: 'BL_ERROR',
+            severity: ValidationSeverity.Error,
+            valueHostName: BusinessLogicValueHostName
+        };
+
+        setup.validationManager.setBusinessLogicErrors([
+            {
+                errorMessage: 'BL_ERROR'
+            }
+        ], { omitCallback: true});
+        expect(callbackValue).toBeNull();
+
+    });    
     test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationResult.Undetermined because Required should be skipped, leaving NO validators', () => {
         const conditionType = 'TEST';
         let config = setupInputValueHostConfig(0, [conditionType]);
@@ -1355,17 +1372,21 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
                 category: ConditionCategory.Required,
             result: ConditionEvaluateResult.NoMatch
             }));
-        
-        let validateResults: Array<ValueHostValidateResult> = [];
+    
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
-        expect(() => validateResults = setup.validationManager.validate({ preliminary: true })).not.toThrow();
+        
+        let validationSnapshot: ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate({ preliminary: true })).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
 
-        expect(validateResults.length).toBe(0);
-//        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesFound()).toEqual([]);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
     test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=false, expect ValidationResult.Invalid because Preliminary is off', () => {
         const conditionType = 'TEST';
@@ -1377,130 +1398,188 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
                 category: ConditionCategory.Required,
             result: ConditionEvaluateResult.NoMatch
         }));
-
-        let validateResults: Array<ValueHostValidateResult> = [];
-        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
-        expect(() => validateResults = setup.validationManager.validate({ preliminary: false })).not.toThrow();
-
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
+        let expectedIssueFound: IssueFound = {
             errorCode: conditionType,
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + conditionType,
             summaryMessage: 'Summary 1: ' + conditionType,
             severity: ValidationSeverity.Severe // only because Required conditions default to Severe
-        }
-        ]);
+        };
+
+        (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate({ preliminary: false })).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
+
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(true);
-        let inputSnapshot: IssueFound = {
-            valueHostName: config.name,
-            severity: ValidationSeverity.Severe, // only because Required conditions default to Severe
-            errorMessage: 'Error 1: ' + conditionType,
-            errorCode: conditionType,
-            summaryMessage: 'Summary 1: ' + conditionType
-        };
-        expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([inputSnapshot]);
-        let summarySnapshot: IssueFound = {
-            valueHostName: config.name,
-            severity: ValidationSeverity.Severe, // only because Required conditions default to Severe
-            errorCode: conditionType,
-            errorMessage: 'Error 1: ' + conditionType,
-            summaryMessage: 'Summary 1: ' + conditionType,
-        };
-        expect(setup.validationManager.getIssuesFound()).toEqual([summarySnapshot]);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
+
+        expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([expectedIssueFound]);
+
+        expect(setup.validationManager.getIssuesFound()).toEqual([expectedIssueFound]);
     });
     test('With 1 inputValueHost and a condition that will evaluate as NoMatch during Edit, use option DuringEdit=true, expect Invalid', () => {
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
+        let expectedIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            valueHostName: 'Field1',
+            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
+            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
+            severity: ValidationSeverity.Error
+        };
 
-        let validateResults: Array<ValueHostValidateResult> = [];
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
-        expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            errorCode: NeverMatchesConditionType
-        }]);
     });
     test('With 1 inputValueHost and a condition that will evaluate as NoMatch during edit, use option DuringEdit=true, expect Invalid', () => {
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
+        let expectedIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            valueHostName: 'Field1',
+            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
+            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
+            severity: ValidationSeverity.Error
+        };
 
-        let validateResults: Array<ValueHostValidateResult> = [];
         setup.validationManager.getInputValueHost('Field1')?.setInputValue(''); // requires text for duringEdit
-        expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
-
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            errorCode: NeverMatchesConditionType
-        }]);
+        let validationSnapshot: ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
     });    
     test('With 1 inputValueHost that has a string value and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Valid', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
         setup.validationManager.getInputValueHost(config.name)?.setInputValue('Text');
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
-
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Valid, null);
+        let validationSnapshot: ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
     });        
     test('With 1 inputValueHost that has an undefined value and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Undetermined because DuringEdit requires a string value', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
-        setup.validationManager.getInputValueHost(config.name)?.setInputValue(undefined);
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
 
-        expect(validateResults.length).toBe(0);
+        setup.validationManager.getInputValueHost(config.name)?.setInputValue(undefined);
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
+
     });          
     test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit has no impact on Required validators', () => {
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
+        let expectedIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            valueHostName: 'Field1',
+            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
+            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
+            severity: ValidationSeverity.Error
+        };
 
-        let validateResults: Array<ValueHostValidateResult> = [];
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
-        expect(() => validateResults = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            errorCode: NeverMatchesConditionType
-        }]);
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
+
     });
     test('With 1 inputValueHost and a condition that does not implement IEvaluateConditionDuringEdits, use option DuringEdit=true, expect condition to be skipped and array of ValidateResults = []', () => {
         let config = setupInputValueHostConfig(0, [UserSuppliedResultConditionType]);
         (config.validatorConfigs![0].conditionConfig as UserSuppliedResultConditionConfig).result = ConditionEvaluateResult.Match;
         let setup = setupValidationManager([config]);
 
-        let validateResults: Array<ValueHostValidateResult> = [];
         let vh = (setup.validationManager.getValueHost('Field1')! as IInputValueHost);
         vh.setInputValue('');
-        expect(() => validateResults = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
-        expect(validateResults.length).toBe(0);
-//        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Undetermined, null);
+        
+        let validationSnapshot: ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
+
     });
     test('With 1 inputValueHost and a NeverMatch condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit=false has no impact on including validators', () => {
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
+        let expectedIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            valueHostName: 'Field1',
+            errorMessage: 'Error 1: ' + NeverMatchesConditionType,
+            summaryMessage: 'Summary 1: ' + NeverMatchesConditionType,
+            severity: ValidationSeverity.Error
+        };
 
-        let validateResults: Array<ValueHostValidateResult> = [];
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
-        expect(() => validateResults = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
 
-        testIssueFoundFromValidateResults(validateResults, 0, ValidationResult.Invalid, [{
-            errorCode: NeverMatchesConditionType
-        }]);
+        let validationSnapshot : ValidationSnapshot | null = null;
+        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
     });
     test('OnValidated callback test', () => {
-        let changeMe = false;
-        let callback = (vm: IValidationManager, validateResults: Array<ValueHostValidateResult>) => {
-            changeMe = true;
+        let callbackValue: ValidationSnapshot | null = null;
+        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
+            callbackValue = validationSnapshot
         };
-        let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
             onValidated: callback
         });
 
-        let validateResults: Array<ValueHostValidateResult> = [];
-        expect(() => validateResults = setup.validationManager.validate()).not.toThrow();
+        let validationSnapshot = setup.validationManager.validate();
 
-        expect(changeMe).toBe(true);
+        expect(callbackValue).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
+    });
+    test('OnValidated callback test with omitCallback does not callback', () => {
+        let callbackValue: ValidationSnapshot | null = null;
+        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
+            callbackValue = validationSnapshot
+        };
+        let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
+        let setup = setupValidationManager([config], null, {
+            onValidated: callback
+        });
+
+        let validationSnapshot = setup.validationManager.validate({ omitCallback: true});
+
+        expect(callbackValue).toBeNull();
     });
 });
 describe('ValidationManager.clearValidation', () => {
@@ -1514,10 +1593,47 @@ describe('ValidationManager.clearValidation', () => {
         setup.validationManager.validate();
         expect(() => setup.validationManager.clearValidation()).not.toThrow();
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValue()).toBe(false);
-        expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesForInput(config2.name)).toEqual([]);
-        expect(setup.validationManager.getIssuesFound()).toEqual([]);
+        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.getIssuesForInput(config1.name)).toBeNull();
+        expect(setup.validationManager.getIssuesForInput(config2.name)).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
+    });
+    test('OnValidated callback test invokes callback', () => {
+
+        let callbackValue: ValidationSnapshot | null = null;
+        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
+            callbackValue = validationSnapshot
+        };
+        let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        let setup = setupValidationManager([config], null, {
+            onValidated: callback
+        });
+
+        let validationSnapshot = setup.validationManager.validate({ omitCallback: true });
+        expect(callbackValue).toBeNull();
+
+        setup.validationManager.clearValidation();
+        expect(callbackValue).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });        
+    });    
+    test('OnValidated callback test with option.OmitCallback=true does not invoke callback', () => {
+        let callbackValue: ValidationSnapshot | null = null;
+        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
+            callbackValue = validationSnapshot
+        };
+        let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        let setup = setupValidationManager([config], null, {
+            onValidated: callback
+        });
+
+        let validationSnapshot = setup.validationManager.validate({ omitCallback: true });
+        expect(callbackValue).toBeNull();
+
+        setup.validationManager.clearValidation({ omitCallback: true});
+        expect(callbackValue).toBeNull();
     });
 });
 // updateState(updater: (stateToUpdate: TState) => TState): TState

@@ -10,6 +10,7 @@ import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseState } from '../Interfaces/ValidatableValueHostBase';
 import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationResult, ValidationSeverity } from '../Interfaces/Validation';
+import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 
 
 /**
@@ -226,9 +227,10 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     * validation isn't blocking saving the data.
     * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-    * @returns IValidationResultDetails if at least one is invalid or null if all valid.
+     * @returns Non-null when there is something to report. null if there was nothing to evaluate
+     * which includes all existing validators reporting "Undetermined"
     */
-    public abstract validate(options?: ValidateOptions): ValueHostValidateResult;
+    public abstract validate(options?: ValidateOptions): ValueHostValidateResult | null;
 
     /**
      * Value is setup by calling validate(). It does not run validate() itself.
@@ -258,12 +260,40 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
+     * It calls onValueHostValidated if there was a changed to the state.
+     * @returns true when there was something cleared
      */
-    public clearValidation(): void {
-        this.updateState((stateToUpdate) => {
+    public clearValidation(options?: ValidateOptions): boolean {
+        let changed = false;
+        if (options)
+            if (!this.groupsMatch(options.group, true))
+                return false;
+        changed = this.updateState((stateToUpdate) => {
             this.clearValidationStateChanges(stateToUpdate);
             return stateToUpdate;
         }, this);
+        if (changed)
+            if (!options || !options?.omitCallback)
+                this.invokeOnValueHostValided();
+        return changed;
+    }
+
+    /**
+     * Determines if the group supplied is a match for the group setup on this ValueHost.
+     * @param requestedGroup 
+     * @param fromLastValidation Source of this instance's group is either the original configuration
+     * or the value of the last validation. WHen true, from the last validation.
+     * @returns 
+     */
+    protected groupsMatch(requestedGroup: string | null | undefined, fromLastValidation: boolean): boolean
+    {
+        let expectedGroup: string[] | string | null | undefined = undefined;
+        if (fromLastValidation)
+            expectedGroup = this.state.group;
+        if (expectedGroup === undefined)
+            expectedGroup = (this.getFromState('_group') as string | null) ?? this.config.group;    // may still be undefined
+
+        return groupsMatch(requestedGroup, expectedGroup);
     }
 
     protected clearValidationStateChanges(stateToUpdate: TState): void {
@@ -296,30 +326,71 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in AssociatedValueHostName.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
-     * @param error - A business logic error to show.
+     * It calls onValueHostValidated if there was a changed to the state.
+     * @param error - A business logic error to show. If it has an errorCode assigned and the same
+     * errorCode is already recorded here, the new entry replaces the old one.
+     * @returns true when a change was made to the known validation state.
      */
-    public setBusinessLogicError(error: BusinessLogicError): void {
+    public setBusinessLogicError(error: BusinessLogicError): boolean {
         if (error) {
-            this.updateState((stateToUpdate) => {
+            // check for existing with the same errorcode and replace
+            let replacementIndex = -1;
+            if (error.errorCode && this.state.businessLogicErrors) 
+                for (let i = 0; i < this.state.businessLogicErrors.length; i++)
+                {
+                    if (this.state.businessLogicErrors[i].errorCode === error.errorCode)
+                    {
+                        replacementIndex = i;
+                        break;
+                    }
+                }
+            let changed = this.updateState((stateToUpdate) => {
                 if (!stateToUpdate.businessLogicErrors)
                     stateToUpdate.businessLogicErrors = [];
-                stateToUpdate.businessLogicErrors.push(error);
+                if (replacementIndex === -1)
+                    stateToUpdate.businessLogicErrors.push(error);
+                else
+                    stateToUpdate.businessLogicErrors[replacementIndex] = error;
                 return stateToUpdate;
             }, this);
+            if (changed) {
+                this.invokeOnValueHostValided();
+                return true;
+            }
         }
-
-
+        return false;
     }
     /**
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
+     * It calls onValueHostValidated if there was a changed to the state.
+     * @returns true when a change was made to the known validation state.
      */
-    public clearBusinessLogicErrors(): void {
-        if (this.businessLogicErrors)
-            this.updateState((stateToUpdate) => {
+    public clearBusinessLogicErrors(): boolean {
+        if (this.businessLogicErrors) {
+            let changed = this.updateState((stateToUpdate) => {
                 delete stateToUpdate.businessLogicErrors;
                 return stateToUpdate;
             }, this);
+            if (changed) {
+                this.invokeOnValueHostValided();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Helper to call onValueHostValidated due to a change in the state associated
+     * with Validate itself or BusinessLogicErrors.
+     */
+    protected invokeOnValueHostValided(): void
+    {
+        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
+            {
+                issuesFound: this.getIssuesFound(),
+                validationResult: this.validationResult
+            });
     }
     /**
      * exposes the Business Logic Errors list. If none, it is null.
@@ -350,8 +421,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     /**
      * Lists all issues found (error messages and supporting info) for a single InputValueHost
      * so the input field/element can show error messages and adjust its appearance.
-     * @returns An array of 0 or more details of issues found. 
-     * When 0, there are no issues and the data is valid. If there are issues, when all
+     * @returns An array of issues found. 
+     * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
@@ -361,17 +432,17 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesFound(group?: string): Array<IssueFound> {
+    public getIssuesFound(group?: string): Array<IssueFound> | null {
         let list: Array<IssueFound> = [];
 
-        if (this.state.issuesFound && groupsMatch(group, this.state.group)) {
+        if (this.state.issuesFound && this.groupsMatch(group, true)) {
             for (let issue of this.state.issuesFound) {
                 list.push(issue);
             }
         }
         this.addBusinessLogicErrorsToSnapshotList(list);
 
-        return list;
+        return list.length ? list : null;
     }
     private addBusinessLogicErrorsToSnapshotList(list: Array<IssueFound>): void {
         if (this.businessLogicErrors) {

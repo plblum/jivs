@@ -21,7 +21,7 @@ import {
     BusinessLogicError
 } from "../../src/Interfaces/Validation";
 import { ValidatorValidateResult, IValidator, ValidatorConfig, IValidatorFactory } from "../../src/Interfaces/Validator";
-import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
+import { IValidationManager, ValidationManagerConfig, ValidationSnapshot } from "../../src/Interfaces/ValidationManager";
 import { SetValueOptions, IValueHost, ValueHostState, ValueHostStateChangedHandler, ValidTypesForStateStorage, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { ConditionWithPromiseTester } from "./Validator.test";
@@ -628,7 +628,7 @@ describe('InputValueHost.setInputValue with getInputValue to check result', () =
         expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
         expect(() => setup.valueHost.setInputValue('ABC', { reset: true })).not.toThrow();
         expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
-        expect(setup.valueHost.getIssuesFound()).toEqual([]);
+        expect(setup.valueHost.getIssuesFound()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(false);
     });
     test('ConversionErrorTokenValue supplied and is ignored because we are not setting native value here', () => {
@@ -848,7 +848,7 @@ describe('InputValueHost.getValidator', () => {
  * @param expectedValidationResult 
  * @param expectedIssuesFound - This will be matched by Jest's isEqual.
  */
-function testValidateFunction(validatorConfigs: Array<Partial<ValidatorConfig>> | null,
+function testValidateFunctionHasResult(validatorConfigs: Array<Partial<ValidatorConfig>> | null,
     inputValueState: Partial<InputValueHostState> | null,
     expectedValidationResult: ValidationResult,
     expectedIssuesFound: Array<IssueFound> | null,
@@ -859,6 +859,7 @@ function testValidateFunction(validatorConfigs: Array<Partial<ValidatorConfig>> 
     let setup = setupInputValueHostForValidate(validatorConfigs, inputValueState, validationGroupForValueHost);
     let vrDetails: ValueHostValidateResult | null = null;
     expect(() => vrDetails = setup.valueHost.validate({ group: validationGroupForValidateFn })).not.toThrow();
+
     expect(vrDetails).not.toBeNull();
     expect(vrDetails!.validationResult).toBe(expectedValidationResult);
     expect(vrDetails!.issuesFound).toEqual(expectedIssuesFound);
@@ -870,6 +871,32 @@ function testValidateFunction(validatorConfigs: Array<Partial<ValidatorConfig>> 
 
     return setup;
 }
+/**
+ * For testing InputValueHost.validate (but not the logic of an individual Validator.validate).
+ * @param validatorConfigs - Always provide a list of the validatorConfigs in the desired order.
+ * If null, no validators are made available to validate
+ * @param inputValueState - Use to supply initial InputValue and Value properties. Any property
+ * not supplied will be provided.
+ * @param expectedValidationResult 
+ * @param expectedIssuesFound - This will be matched by Jest's isEqual.
+ */
+function testValidateFunctionIsNull(validatorConfigs: Array<Partial<ValidatorConfig>> | null,
+    inputValueState: Partial<InputValueHostState> | null,
+    validationGroupForValueHost?: string | undefined,
+    validationGroupForValidateFn?: string | undefined,
+    expectedStateChanges: number = 1): ITestSetupConfig {
+
+    let setup = setupInputValueHostForValidate(validatorConfigs, inputValueState, validationGroupForValueHost);
+    let vrDetails: ValueHostValidateResult | null = null;
+    expect(() => vrDetails = setup.valueHost.validate({ group: validationGroupForValidateFn })).not.toThrow();
+    expect(vrDetails).toBeNull();
+    let stateChanges = setup.validationManager.getHostStateChanges();
+    expect(stateChanges).not.toBeNull();
+    expect(stateChanges.length).toBe(expectedStateChanges);
+
+    return setup;
+}
+
 
 function createIssueFound(errorCode: string,
     severity: ValidationSeverity = ValidationSeverity.Error,
@@ -887,8 +914,8 @@ describe('InputValueHost.validate', () => {
     //NOTE: Validator tests already handle testing Validator property of Enabled, Enabler,
     // and validate's Group parameter. When those skip the condition, we expect a ConditionEvaluationResult of Undetermined
     // which is evaluated in these tests.
-    test('Without Validators is ValidationResult.Undetermined', () => {
-        testValidateFunction(null, null, ValidationResult.Undetermined, null);
+    test('Without Validators is null', () => {
+        testValidateFunctionIsNull(null, null);
     });
     test('With 1 Condition evaluating as Match is ValidatorResult.Valid, IssuesFound = null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -899,7 +926,7 @@ describe('InputValueHost.validate', () => {
             }
         ];
         let state: Partial<InputValueHostState> = {};
-        testValidateFunction(ivConfigs, state, ValidationResult.Valid, null);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, null);
     });
     test('With 1 Condition evaluating as NoMatch is ValidatorResult.Invalid, IssuesFound = 1', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -912,9 +939,9 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunction(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
     });
-    test('With 1 Condition evaluating as Undetermined is ValidatorResult.Undetermined, IssuesFound = null', () => {
+    test('With 1 Condition evaluating as Undetermined returns null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -923,7 +950,7 @@ describe('InputValueHost.validate', () => {
             }
         ];
         let state: Partial<InputValueHostState> = {};
-        testValidateFunction(ivConfigs, state, ValidationResult.Undetermined, null);
+        testValidateFunctionIsNull(ivConfigs, state);
     });
     test('With 2 Conditions evaluating as Match is ValidatorResult.Valid, IssuesFound = null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -941,9 +968,9 @@ describe('InputValueHost.validate', () => {
             }
         ];
         let state: Partial<InputValueHostState> = {};
-        testValidateFunction(ivConfigs, state, ValidationResult.Valid, null);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, null);
     });
-    test('With 2 Conditions (Required, RangeCondition) evaluating as Undetermined is ValidatorResult.Undetermined, IssuesFound = null', () => {
+    test('With 2 Conditions (Required, RangeCondition) evaluating as Undetermined returns null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -957,7 +984,7 @@ describe('InputValueHost.validate', () => {
             }
         ];
         let state: Partial<InputValueHostState> = {};
-        testValidateFunction(ivConfigs, state, ValidationResult.Undetermined, null);
+        testValidateFunctionIsNull(ivConfigs, state);
     });
     test('With Validator of Severe evaluating as NoMatch, second Condition is skipped even though it would be NoMatch, IssuesFound = 1', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -977,7 +1004,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Severe));
-        testValidateFunction(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
 
     });
     test('With Validator of Severe evaluating as Match, second Condition is evaluated and is NoMatch, IssuesFound = 1 with second condition', () => {
@@ -997,7 +1024,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunction(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
 
     });
     test('With Validator of Severe evaluating as Undetermined, second Condition is evaluated and is NoMatch, IssuesFound = 1 with second condition', () => {
@@ -1018,7 +1045,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunction(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
 
     });
     test('With Validator of Warning evaluating as NoMatch, second Condition is evaluated and is NoMatch, IssuesFound = 2 with both conditions', () => {
@@ -1041,7 +1068,7 @@ describe('InputValueHost.validate', () => {
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning, "1"));
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Error, "2"));
-        testValidateFunction(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
 
     });
     test('With Validator of Warning evaluating as Undetermined, second Condition is evaluated and is NoMatch, IssuesFound = 1 with second condition', () => {
@@ -1061,7 +1088,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunction(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
 
     });
     test('With Validator of Warning evaluating as Match, second Condition is evaluated and is NoMatch, IssuesFound = 1 with second condition', () => {
@@ -1081,7 +1108,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        testValidateFunction(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
 
     });
     test('With Validator of Warning evaluating as NoMatch, second Condition is evaluated and is Match, IssuesFound = 1 with first condition. ValidationResult is Valid', () => {
@@ -1101,7 +1128,7 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning));
-        testValidateFunction(ivConfigs, state, ValidationResult.Valid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, issuesFound);
 
     });
     test('With Validator of Warning evaluating as NoMatch and no second condition, ValidationResult = Valid, IssuesFound = 1', () => {
@@ -1116,10 +1143,10 @@ describe('InputValueHost.validate', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning));
-        testValidateFunction(ivConfigs, state, ValidationResult.Valid, issuesFound);
+        testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, issuesFound);
 
     });
-    test('With only 1 Validator, and its set to Enabled=false, acts like there are no validators. ValidationResult is Undetermined', () => {
+    test('With only 1 Validator, and its set to Enabled=false, acts like there are no validators. Returns null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1129,10 +1156,10 @@ describe('InputValueHost.validate', () => {
             }
         ];
         let state: Partial<InputValueHostState> = {};
-        testValidateFunction(ivConfigs, state, ValidationResult.Undetermined, null);
+        testValidateFunctionIsNull(ivConfigs, state);
 
     });
-    function testGroups(valueHostGroup: string, validateGroup: string, expectedResult: ValidationResult, expectedStateChanges: number = 1): void {
+    function testGroups(valueHostGroup: string, validateGroup: string, expectedResult: ValidationResult | null, expectedStateChanges: number = 1): void {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1150,7 +1177,10 @@ describe('InputValueHost.validate', () => {
                 severity: ValidationSeverity.Error,
                 valueHostName: 'Field1'
             };
-        testValidateFunction(ivConfigs, state, expectedResult, issueFound ? [issueFound] : null, valueHostGroup, validateGroup, expectedStateChanges);
+        if (expectedResult)
+            testValidateFunctionHasResult(ivConfigs, state, expectedResult, issueFound ? [issueFound] : null, valueHostGroup, validateGroup, expectedStateChanges);
+        else
+            testValidateFunctionIsNull(ivConfigs, state, valueHostGroup, validateGroup, expectedStateChanges);
     }
 
     test('Group test. InputValueHost has Group name but validate has empty string for group name. Validation occurs and returns an issue', () => {
@@ -1167,11 +1197,11 @@ describe('InputValueHost.validate', () => {
         testGroups('GROUPA', 'groupa', ValidationResult.Invalid);
     });
     test('Group test. InputValueHost has Group name but validate has a different group name. Validation skipped and result is Valid', () => {
-        testGroups('GROUPA', 'GROUPB', ValidationResult.Undetermined, 0);
+        testGroups('GROUPA', 'GROUPB', null, 0);
     });
 
     function TestGroupUsingOverride(valueHostGroup: string, overriddenGroup: string,
-        validateGroup: string, expectedResult: ValidationResult): void {
+        validateGroup: string, expectedResult: ValidationResult | null): void {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1185,17 +1215,19 @@ describe('InputValueHost.validate', () => {
 
         setup.valueHost.setGroup(overriddenGroup);
         let result = setup.valueHost.validate({ group: validateGroup });
-        expect(result.validationResult).toBe(expectedResult);
-
+        if (expectedResult === null)
+            expect(result).toBeNull();
+        else
+            expect(result!.validationResult).toBe(expectedResult);
     }
     test('Group test where setGroup overrides and is a match to the supplied group and original group. InputValueHost has Group name but validate has a different group name. Validation occurs', () => {
-        TestGroupUsingOverride('GROUPA', 'GROUPA', 'GROUPA', ValidationResult.Invalid,)
+        TestGroupUsingOverride('GROUPA', 'GROUPA', 'GROUPA', ValidationResult.Invalid)
     });
     test('Group test where setGroup overrides and is a match to the supplied group but not the original. InputValueHost has Group name but validate has a different group name. Validation occurs', () => {
-        TestGroupUsingOverride('GROUPB', 'GROUPA', 'GROUPA', ValidationResult.Invalid,)
+        TestGroupUsingOverride('GROUPB', 'GROUPA', 'GROUPA', ValidationResult.Invalid)
     });
     test('Group test where setGroup overrides and is not a match to the supplied group. InputValueHost has Group name but validate has a different group name. ValidationResult = undetermined', () => {
-        TestGroupUsingOverride('GROUPA', 'GROUPB', 'GROUPA', ValidationResult.Undetermined,)
+        TestGroupUsingOverride('GROUPA', 'GROUPB', 'GROUPA', null)
     });
     test('validate one ValueHost with validators that results in Valid. OnValueHostValidated called.', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -1450,23 +1482,57 @@ describe('InputValueHost.isValid and ValidationResult', () => {
     });
     test('Without Validators but have a BusinessLogicError (Error), isValid=false, ValidationResult = Invalid', () => {
         let setup = setupInputValueHostForValidate(null, null);
-        setup.valueHost.setBusinessLogicError({
+        let result = setup.valueHost.setBusinessLogicError({
             errorMessage: 'ERROR',
         });
+        expect(result).toBe(true);
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(false);
         expect(setup.valueHost.validationResult).toBe(ValidationResult.Invalid);
     });
     test('Without Validators but have a BusinessLogicError (Warning), isValid=true, ValidationResult = Undetermined because warning does not change anything and no validators means Undetermined', () => {
         let setup = setupInputValueHostForValidate(null, null);
-        setup.valueHost.setBusinessLogicError({
+        let result = setup.valueHost.setBusinessLogicError({
             errorMessage: 'WARNING',
             severity: ValidationSeverity.Warning
         });
+        expect(result).toBe(true);
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(true);
         expect(setup.valueHost.validationResult).toBe(ValidationResult.Undetermined);
     });
+    test('setBusinessLogicError with same data back-to-back with different error codes returns true on both calls. Expect two IssuesFound', () => {
+        let setup = setupInputValueHostForValidate(null, null);
+        let result = setup.valueHost.setBusinessLogicError({
+            errorCode: 'TEST1',
+            errorMessage: 'ERROR',
+        });
+        expect(result).toBe(true);
+        result = setup.valueHost.setBusinessLogicError({
+            errorCode: 'TEST2',
+            errorMessage: 'ERROR',
+        });
+        expect(result).toBe(true);
+        let issuesFound = setup.valueHost.getIssuesFound();
+        expect(issuesFound).not.toBeNull();
+        expect(issuesFound!.length).toBe(2);
+    });    
+    test('setBusinessLogicError with same data back-to-back with the same error codes returns true on first and false on second due to no real change. Only one IssueFound', () => {
+        let setup = setupInputValueHostForValidate(null, null);
+        let result = setup.valueHost.setBusinessLogicError({
+            errorCode: 'TEST',
+            errorMessage: 'ERROR',
+        });
+        expect(result).toBe(true);
+        result = setup.valueHost.setBusinessLogicError({
+            errorCode: 'TEST',
+            errorMessage: 'ERROR',
+        });
+        expect(result).toBe(false);
+        let issuesFound = setup.valueHost.getIssuesFound();
+        expect(issuesFound).not.toBeNull();
+        expect(issuesFound!.length).toBe(1);
+    });    
     test('With 1 Condition evaluating as NoMatch and have a BusinessLogicError (Warning). isValid is false due to NoMatch. ValidationResult=Invalid', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
@@ -1547,9 +1613,10 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         setup.valueHost.setValue('');
         let vr = setup.valueHost.validate();
+        expect(vr).toBeDefined();
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(ConditionType.RequireText, ValidationSeverity.Severe));
-        expect(vr.issuesFound).toEqual(issuesFound);
+        expect(vr!.issuesFound).toEqual(issuesFound);
     });
     test('Ensure DataTypeCheck sorts first amongst several Conditions, placing DataTypeCheck last. Demonstrated by stopping when DataTypeCheckCondition is NoMatch while others return an error', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -1574,9 +1641,10 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         setup.valueHost.setInputValue('');
         let vr = setup.valueHost.validate();
+        expect(vr).toBeDefined();
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(ConditionType.DataTypeCheck, ValidationSeverity.Severe));
-        expect(vr.issuesFound).toEqual(issuesFound);
+        expect(vr!.issuesFound).toEqual(issuesFound);
     });
     test('Ensure Required sorts first, DataTypeCheck sorts second amongst several Conditions, placing Required last. Demonstrated by stopping when DataTypeCheckCondition is NoMatch while others return an error', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -1606,9 +1674,10 @@ describe('InputValueHost.isValid and ValidationResult', () => {
         setup.valueHost.setInputValue('abc');
         setup.valueHost.setValueToUndefined();
         let vr = setup.valueHost.validate();
+        expect(vr).toBeDefined();
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(ConditionType.DataTypeCheck, ValidationSeverity.Severe));
-        expect(vr.issuesFound).toEqual(issuesFound);
+        expect(vr!.issuesFound).toEqual(issuesFound);
     });
 });
 
@@ -1743,11 +1812,11 @@ function validateWithAsyncConditions(
                 expect(validateResult.pending).toBeUndefined();
             handlerCount++;
             if (doneTime) {
-                expect(vm.doNotSaveNativeValue()).toBe(evr.validationResult === ValidationResult.Invalid);
+                expect(vm.doNotSaveNativeValues()).toBe(evr.validationResult === ValidationResult.Invalid);
                 done();
             }
             else
-                expect(vm.doNotSaveNativeValue()).toBe(true);
+                expect(vm.doNotSaveNativeValues()).toBe(true);
         };
     let stateChangeCounter = 0;
     let onStateChangedHandler: ValueHostStateChangedHandler =
@@ -1765,7 +1834,7 @@ function validateWithAsyncConditions(
     // we are awaiting a callback to OnValueHostValidated to finish,
     // but only if the expected result is Invalid
     doneTime = true;
-    expect(setup.vm.doNotSaveNativeValue()).toBe(true); // because of Async, regardless of ValidationResult
+    expect(setup.vm.doNotSaveNativeValues()).toBe(true); // because of Async, regardless of ValidationResult
 }
 describe('validate with async Conditions', () => {
     test('With 1 Condition that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
@@ -2087,7 +2156,9 @@ describe('InputValueHost.clearValidation', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
 
         setup.valueHost.validate();
-        expect(() => setup.valueHost.clearValidation()).not.toThrow();
+        let result: boolean | null = null;
+        expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
+        expect(result).toBe(true);
         expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
 
@@ -2124,7 +2195,9 @@ describe('InputValueHost.clearValidation', () => {
         let state: Partial<InputValueHostState> = {};
         let setup = setupInputValueHostForValidate(ivConfigs, state);
 
-        expect(() => setup.valueHost.clearValidation()).not.toThrow();
+        let result: boolean | null = null;
+        expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
+        expect(result).toBe(false);
         expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
         let stateChanges = setup.validationManager.getHostStateChanges();
@@ -2149,12 +2222,63 @@ describe('InputValueHost.clearValidation', () => {
 
         let setup = setupInputValueHostForValidate(ivConfigs, state);
 
-        expect(() => setup.valueHost.clearValidation()).not.toThrow();
+        let result: boolean | null = null;
+        expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
+        expect(result).toBe(true);
         expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
         expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).toBeNull();
 
     });
+    test('Option.group matches clears', () => {
+        let ivConfig: ValidatorConfig = {
+            conditionConfig: { conditionType: NeverMatchesConditionType },
+            errorMessage: ''
+        };
+        let ivConfigs: Array<Partial<ValidatorConfig>> = [
+            ivConfig
+        ];
+        let state: Partial<InputValueHostState> = {
+            name: 'Field1',
+            validationResult: ValidationResult.Invalid,
+            issuesFound: []
+        };
+        state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
 
+        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        setup.valueHost.setGroup('GROUPA');
+
+        let result: boolean | null = null;
+        expect(() => result = setup.valueHost.clearValidation({ group: 'GROUPA'})).not.toThrow();
+        expect(result).toBe(true);
+        expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
+        expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).toBeNull();
+
+    });
+    test('Option.group does not match, nothing cleared', () => {
+        let ivConfig: ValidatorConfig = {
+            conditionConfig: { conditionType: NeverMatchesConditionType },
+            errorMessage: ''
+        };
+        let ivConfigs: Array<Partial<ValidatorConfig>> = [
+            ivConfig
+        ];
+        let state: Partial<InputValueHostState> = {
+            name: 'Field1',
+            validationResult: ValidationResult.Invalid,
+            issuesFound: []
+        };
+        state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
+
+        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        setup.valueHost.setGroup('GROUPA');
+
+        let result: boolean | null = null;
+        expect(() => result = setup.valueHost.clearValidation({ group: 'GROUPB'})).not.toThrow();
+        expect(result).toBe(false);
+        expect(setup.valueHost.validationResult).toBe(ValidationResult.Invalid);
+        expect(setup.valueHost.getIssueFound(NeverMatchesConditionType)).not.toBeNull();
+
+    });    
     test('Without calling validate but with BusinessLogicError (Error), Ensure the state discards BusinessLogicError after clear', () => {
         let setup = setupInputValueHostForValidate([], {});
         setup.valueHost.setBusinessLogicError({
@@ -2162,7 +2286,9 @@ describe('InputValueHost.clearValidation', () => {
             severity: ValidationSeverity.Error
         });
 
-        expect(() => setup.valueHost.clearValidation()).not.toThrow();
+        let result: boolean | null = null;
+        expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
+        expect(result).toBe(true);
         expect(setup.valueHost.validationResult).toBe(ValidationResult.NotAttempted);
         let stateChanges = setup.validationManager.getHostStateChanges();
         expect(stateChanges).not.toBeNull();
@@ -2298,8 +2424,9 @@ describe('InputValueHost.setBusinessLogicError', () => {
 describe('InputValueHost.clearBusinessLogicErrors', () => {
     test('Call while no existing makes not changes to the state', () => {
         let setup = setupInputValueHost();
-
-        expect(() => setup.valueHost.clearBusinessLogicErrors()).not.toThrow();
+        let result: boolean | null = null;
+        expect(() => result = setup.valueHost.clearBusinessLogicErrors()).not.toThrow();
+        expect(result).toBe(false);
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(0);
@@ -2311,7 +2438,9 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
         })).not.toThrow();
-        expect(() => setup.valueHost.clearBusinessLogicErrors()).not.toThrow();
+        let result: boolean | null = null;
+        expect(() => result = setup.valueHost.clearBusinessLogicErrors()).not.toThrow();
+        expect(result).toBe(true);
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2); // first changes the value; second changes ValidationResult
@@ -2330,7 +2459,7 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
 // getIssueFound(validatorConfig: ValidatorConfig): IssueFound | null
 describe('InputValueHost.getIssueFound', () => {
     test('Without Validators is null', () => {
-        let setup = testValidateFunction(null, null, ValidationResult.Undetermined, null);
+        let setup = testValidateFunctionIsNull(null, null);
         let issueFound: IssueFound | null = null;
         expect(() => issueFound = setup.valueHost.getIssueFound(null!)).not.toThrow();
         expect(issueFound).toBeNull();
@@ -2344,7 +2473,7 @@ describe('InputValueHost.getIssueFound', () => {
             }
         ];
         let state: Partial<InputValueHostState> = {};
-        let setup = testValidateFunction(ivConfigs, state, ValidationResult.Valid, null);
+        let setup = testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Valid, null);
         let issueFound: IssueFound | null = null;
         expect(() => issueFound = setup.valueHost.getIssueFound(AlwaysMatchesConditionType)).not.toThrow();
         expect(issueFound).toBeNull();
@@ -2360,7 +2489,7 @@ describe('InputValueHost.getIssueFound', () => {
         let state: Partial<InputValueHostState> = {};
         let issuesFound: Array<IssueFound> = [];
         issuesFound.push(createIssueFound(NeverMatchesConditionType));
-        let setup = testValidateFunction(ivConfigs, state, ValidationResult.Invalid, issuesFound);
+        let setup = testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, issuesFound);
         let issueFound: IssueFound | null = null;
         expect(() => issueFound = setup.valueHost.getIssueFound(NeverMatchesConditionType)).not.toThrow();
         expect(issueFound).not.toBeNull();
@@ -2371,12 +2500,11 @@ describe('InputValueHost.getIssueFound', () => {
 
 // getIssuesFound(): Array<IssueFound>
 describe('InputValueHost.getIssuesFound', () => {
-    test('Nothing to report returns empty array', () => {
-        let setup = testValidateFunction(null, null, ValidationResult.Undetermined, null);
+    test('Nothing to report returns null', () => {
+        let setup = testValidateFunctionIsNull(null, null);
         let issuesFound: Array<IssueFound> | null = null;
         expect(() => issuesFound = setup.valueHost.getIssuesFound()).not.toThrow();
-        expect(issuesFound).not.toBeNull();
-        expect(issuesFound!.length).toBe(0);
+        expect(issuesFound).toBeNull();
     });
     test('2 issues exist. Both are returned in the order of the ValidationConfigs array.', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -2400,7 +2528,7 @@ describe('InputValueHost.getIssuesFound', () => {
         let expectedIssuesFound: Array<IssueFound> = [];
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType, ValidationSeverity.Warning, '1', 'Summary1'));
         expectedIssuesFound.push(createIssueFound(NeverMatchesConditionType2, ValidationSeverity.Error, '2', 'Summary2'));
-        let setup = testValidateFunction(ivConfigs, state, ValidationResult.Invalid, expectedIssuesFound);
+        let setup = testValidateFunctionHasResult(ivConfigs, state, ValidationResult.Invalid, expectedIssuesFound);
         let issuesToReport: Array<IssueFound> | null = null;
         expect(() => issuesToReport = setup.valueHost.getIssuesFound()).not.toThrow();
         expect(issuesToReport).not.toBeNull();
@@ -2548,10 +2676,21 @@ describe('addValidator function', () => {
             errorMessage: 'Error'
         });
         vh.setValue('');
-        let result = vm.validate();
-        expect(result).not.toBeNull();
-        expect(result.length).toBe(1);
-        expect(result[0].validationResult).toBe(ValidationResult.Invalid);
+        let expectedIssueFound: IssueFound = {
+            errorCode: ConditionType.RequireText,
+            valueHostName: 'Field1',
+            errorMessage: 'Error',
+            summaryMessage: 'Error',
+            severity: ValidationSeverity.Severe // due to RequiredText
+        };
+
+        let validationSnapshot = vm.validate();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
+
     });
     test('Confirm add with previously added condition type gets used during validate, and the other is abandoned', () => {
         let services = createValidationServicesForTesting();
@@ -2586,10 +2725,21 @@ describe('addValidator function', () => {
             errorMessage: 'Error'
         });
         vh.setValue('11');  // this should be valid based on the first expression, but not the second
-        let result = vm.validate();
-        expect(result).not.toBeNull();
-        expect(result.length).toBe(1);
-        expect(result[0].validationResult).toBe(ValidationResult.Invalid);
+
+        let expectedIssueFound: IssueFound = {
+            errorCode: ConditionType.RegExp,
+            valueHostName: 'Field1',
+            errorMessage: 'Error',
+            summaryMessage: 'Error',
+            severity: ValidationSeverity.Severe // defaul to RegExp
+        };
+
+        let validationSnapshot = vm.validate();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
     });
     test('Confirm add with previously added condition whose type differs, both validators are used', () => {
         let services = createValidationServicesForTesting();
@@ -2626,10 +2776,14 @@ describe('addValidator function', () => {
             errorMessage: 'Required'
         });
         vh.setValue('11');  // this should be valid for both conditions
-        let result = vm.validate();
-        expect(result).not.toBeNull();
-        expect(result.length).toBe(1);
-        expect(result[0].validationResult).toBe(ValidationResult.Valid);
+
+        let validationSnapshot = vm.validate();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: true,
+            doNotSaveNativeValues: false,
+            issuesFound: null
+        });
+                    
     });
 });
 describe('configValidators function', () => {
@@ -2649,10 +2803,21 @@ describe('configValidators function', () => {
         vh.configValidators().requireText(null, 'Error');
 
         vh.setValue('');
-        let result = vm.validate();
-        expect(result).not.toBeNull();
-        expect(result.length).toBe(1);
-        expect(result[0].validationResult).toBe(ValidationResult.Invalid);
+
+        let expectedIssueFound: IssueFound = {
+            errorCode: ConditionType.RequireText,
+            valueHostName: 'Field1',
+            errorMessage: 'Error',
+            summaryMessage: 'Error',
+            severity: ValidationSeverity.Severe // the default for RequiredText
+        };
+
+        let validationSnapshot = vm.validate();
+        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+            isValid: false,
+            doNotSaveNativeValues: true,
+            issuesFound: [expectedIssueFound]
+        });
     });
 });
 describe('toIInputValueHost', () => {
@@ -2687,15 +2852,15 @@ describe('toIInputValueHost', () => {
             validate: function (options?: ValidateOptions | undefined): ValueHostValidateResult {
                 throw new Error('Function not implemented.');
             },
-            clearValidation: function (): void {
+            clearValidation: function (): boolean {
                 throw new Error('Function not implemented.');
             },
             isValid: false,
             validationResult: ValidationResult.NotAttempted,
-            setBusinessLogicError: function (error: BusinessLogicError): void {
+            setBusinessLogicError: function (error: BusinessLogicError): boolean {
                 throw new Error('Function not implemented.');
             },
-            clearBusinessLogicErrors: function (): void {
+            clearBusinessLogicErrors: function (): boolean {
                 throw new Error('Function not implemented.');
             },
             doNotSaveNativeValue: function (): boolean {
@@ -3593,15 +3758,15 @@ describe('toIInputValueHost function', () => {
         validate(options?: ValidateOptions | undefined): ValueHostValidateResult {
             throw new Error("Method not implemented.");
         }
-        clearValidation(): void {
+        clearValidation(): boolean {
             throw new Error("Method not implemented.");
         }
         isValid: boolean = true;
         validationResult: ValidationResult = ValidationResult.NotAttempted;
-        setBusinessLogicError(error: BusinessLogicError): void {
+        setBusinessLogicError(error: BusinessLogicError): boolean {
             throw new Error("Method not implemented.");
         }
-        clearBusinessLogicErrors(): void {
+        clearBusinessLogicErrors(): boolean {
             throw new Error("Method not implemented.");
         }
         doNotSaveNativeValue(): boolean {
@@ -3707,15 +3872,15 @@ describe('toIValidatableValueHostBase function', () => {
         validate(options?: ValidateOptions | undefined): ValueHostValidateResult {
             throw new Error("Method not implemented.");
         }
-        clearValidation(): void {
+        clearValidation(): boolean {
             throw new Error("Method not implemented.");
         }
         isValid: boolean = false;
         validationResult: ValidationResult = ValidationResult.Undetermined;
-        setBusinessLogicError(error: BusinessLogicError): void {
+        setBusinessLogicError(error: BusinessLogicError): boolean {
             throw new Error("Method not implemented.");
         }
-        clearBusinessLogicErrors(): void {
+        clearBusinessLogicErrors(): boolean {
             throw new Error("Method not implemented.");
         }
         doNotSaveNativeValue(): boolean {

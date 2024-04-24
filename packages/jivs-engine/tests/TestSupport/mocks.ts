@@ -10,7 +10,7 @@ import { IInputValueHost, InputValueHostConfig, InputValueHostState } from "../.
 import { ValidateOptions, ValueHostValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
-import { IValidationManager, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
+import { IValidationManager, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler, ValidationSnapshot } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
@@ -145,7 +145,7 @@ export class MockInputValueHost extends MockValueHost
     validate(options?: ValidateOptions): ValueHostValidateResult {
         throw new Error("Method not implemented.");
     }
-    clearValidation(): void {
+    clearValidation(): boolean {
         throw new Error("Method not implemented.");
     }
     isValid: boolean = false;
@@ -157,10 +157,10 @@ export class MockInputValueHost extends MockValueHost
 
     validationResult: ValidationResult = ValidationResult.NotAttempted;
     
-    setBusinessLogicError(error: BusinessLogicError): void {
+    setBusinessLogicError(error: BusinessLogicError): boolean {
         throw new Error("Method not implemented.");
     }
-    clearBusinessLogicErrors(): void {
+    clearBusinessLogicErrors(): boolean {
         throw new Error("Method not implemented.");
     }
 
@@ -435,16 +435,16 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         return this._hostStateChanges;
     }    
 
-    validate(options?: ValidateOptions): Array<ValueHostValidateResult> {
+    validate(options?: ValidateOptions): ValidationSnapshot {
         throw new Error("Method not implemented.");
     }
-    clearValidation(): void {
+    clearValidation(options?: ValidateOptions): boolean {
         throw new Error("Method not implemented.");
     }
 
     isValid: boolean = true;        
 
-    doNotSaveNativeValue(): boolean {
+    doNotSaveNativeValues(): boolean {
         throw new Error("Method not implemented.");
     }
     notifyOtherValueHostsOfValueChange(valueHostNameThatChanged: string, revalidate: boolean): void {
@@ -453,7 +453,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
                 vh.otherValueHostChangedNotification(valueHostNameThatChanged, revalidate);
         });
     }    
-    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void
+    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): boolean
     {
         throw new Error("Method not implemented.");        
     }        

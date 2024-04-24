@@ -37,38 +37,40 @@ import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './Validata
 export interface IValidationManager extends IValueHostsManager {
 
     /**
-     * Runs validation against some of all validators.
-     * All InputValueHosts will return their current state,
-     * even if they are considered Valid.
+     * Runs validation against all validatable ValueHosts, except those that do not
+     * match the validation group supplied in options.
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      * Important to set options.BeforeSubmit to true if invoking validate() prior to submitting.
-     * @returns Array of ValueHostValidateResult with empty array if all are valid
+     * @returns The ValidationSnapshot object, which packages several key
+     * pieces of information: isValid, doNotSaveNativeValues, and issues found.
      */
-    validate(options?: ValidateOptions): Array<ValueHostValidateResult>;
+    validate(options?: ValidateOptions): ValidationSnapshot;
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
+     * @returns true when there was something cleared
      */
-    clearValidation(): void;
+    clearValidation(options?: ValidateOptions): boolean;
 
     /**
-     * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false only when any InputValueHost has a ValidationResult of Invalid. 
-     * This follows an old style validation rule of everything is valid when not explicitly
-     * marked invalid. That means when it hasn't be run through validation or was undetermined
-     * as a result of validation.
-     * Recommend using doNotSaveNativeValue for more clarity.
+     * When true, the current state of validation does not know of any errors. 
+     * However, there are other factors to consider: 
+     * there may be warning issues found (in IssuesFound),
+     * an async validator is still running,
+     * validator evaluated as Undetermined.
+     * So check doNotSaveValueHosts as the ultimate guide to saving.
+     * When false, there is at least one validation error.
      */
     isValid: boolean;
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
-     * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated
-     * on individual validators.
+     * True when at least one ValueHost's ValidationResult is 
+     * Invalid, AsyncProcessing, or ValueChangedButUnvalidated
      */
-    doNotSaveNativeValue(): boolean;
+    doNotSaveNativeValues(): boolean;
 
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
@@ -77,14 +79,16 @@ export interface IValidationManager extends IValueHostsManager {
      * by specifying that valueHostName in AssociatedValueHostName.
      * Each time its called, all previous business logic errors are abandoned.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
+     * @param options - Only considers the omitCallback option.
+     * @returns when true, the validation snapshot has changed.
      */
-    setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void;
+    setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean;
 
     /**
      * Lists all issues found (error messages and supporting info) for a single InputValueHost
      * so the input field/element can show error messages and adjust its appearance.
-     * @returns An array of 0 or more details of issues found. 
-     * When 0, there are no issues and the data is valid. If there are issues, when all
+     * @returns An array of issues found. 
+     * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
@@ -94,15 +98,15 @@ export interface IValidationManager extends IValueHostsManager {
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound>;
+    getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> | null;
 
     /**
      * A list of all issues from all InputValueHosts optionally for a given group.
      * Use with a Validation Summary widget and when validating the Model itself.
      * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
      * the same group (case insensitive match).
-     * @returns An array of 0 or more details of issues found. 
-     * When 0, there are no issues and the data is valid. If there are issues, when all
+     * @returns An array of details of issues found. 
+     * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
@@ -112,8 +116,40 @@ export interface IValidationManager extends IValueHostsManager {
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    getIssuesFound(group?: string): Array<IssueFound>;
+    getIssuesFound(group?: string): Array<IssueFound> | null;
 }
+
+/**
+ * Packages key values of the state of validation to be returned
+ * by validate() and in the ValidationManagerValidatedHandler.
+ * While here, the same values are available directly on ValidationManager.
+ */
+export interface ValidationSnapshot
+{
+    /**
+     * When true, there is nothing known to block validation. However, there are other factors
+     * to consider: there may be warning issues found or an async validator is still running. 
+     * So check doNotSaveValueHosts as the ultimate guide to saving.
+     * When false, there is at least one validation error.
+     */
+    isValid: boolean;
+    /**
+     * Determines if a validator doesn't consider the ValueHost's value ready to save
+     * based on the latest call to validate(). (It does not run validate().)
+     * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated
+     * on individual validators.
+     */
+    doNotSaveNativeValues: boolean;
+
+    /**
+     * All issues current found (except ValueHosts not matching the validation group which are excluded.)
+     * Includes issues found by setBusinessLogicErrors too.
+     * If none, it is null
+     */
+    issuesFound: Array<IssueFound> | null;
+
+}
+
 
 /**
  * State of all ValueHostStates, including the validators of InputValueHosts.
@@ -177,7 +213,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
 }
 
 export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;
-export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validateResults: Array<ValueHostValidateResult>) => void;
+export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validationSnapshot: ValidationSnapshot) => void;
 
 
 /**

@@ -46,7 +46,7 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
                     errorCode: errorCode,
                     errorMessage: error.errorMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
-                    valueHostName: '*'
+                    valueHostName: BusinessLogicValueHostName
                 });
                 issueCount++;
             }

@@ -12,7 +12,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type ValidateOptions, type ValueHostValidateResult, type BusinessLogicError, type IssueFound, ValidationResult } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
-import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
+import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler, ValidationSnapshot } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
@@ -352,47 +352,68 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     }
 
     /**
-     * Runs validation against some of all validators.
-     * All InputValueHosts will return their current state,
-     * even if they are considered Valid.
+     * Runs validation against all validatable ValueHosts, except those that do not
+     * match the validation group supplied in options.
      * Updates this ValueHost's State and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-     * @returns Array of ValueHostValidateResult with empty array if all are valid
+     * @returns The ValidationSnapshot object, which packages several key
+     * pieces of information: isValid, doNotSaveNativeValues, and issues found.
      */
-    public validate(options?: ValidateOptions): Array<ValueHostValidateResult> 
+    public validate(options?: ValidateOptions): ValidationSnapshot
     {
         if (!options)
             options = {};
-        let list: Array<ValueHostValidateResult> = [];
 
         for (let vh of this.inputValueHost()) {
-            let valResult = vh.validate(options);
-            if (valResult.validationResult !== ValidationResult.Undetermined ||
-                valResult.issuesFound !== null)
-                list.push(valResult);
+            vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationSnapshot
         }
-        if (!options || !options.omitCallback)
-            this.onValidated?.(this, list);
-        return list;
+        let snapshot = this.createValidationSnapshot(options);
+        this.invokeOnValidated(options, snapshot);
+        return snapshot;
     }
 
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      */
-    public clearValidation(): void {
+    public clearValidation(options?: ValidateOptions): boolean {
+        let changed = false;
         for (let vh of this.inputValueHost()) {
-            vh.clearValidation();
+            if (vh.clearValidation(options))
+                changed = true;
         }
+        if (changed)
+            this.invokeOnValidated(options);
+        return changed;
     }
 
+    protected createValidationSnapshot(options?: ValidateOptions): ValidationSnapshot
+    {
+        return {
+            isValid: this.isValid,
+            doNotSaveNativeValues: this.doNotSaveNativeValues(),
+            issuesFound: this.getIssuesFound(options ? options.group : undefined)
+        };
+    }
     /**
-     * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false only when any InputValueHost has a ValidationResult of Invalid. 
-     * This follows an old style validation rule of everything is valid when not explicitly
-     * marked invalid. That means when it hasn't be run through validation or was undetermined
-     * as a result of validation.
-     * Recommend using @link doNotSaveNativeValue|doNotSaveNativeValue() for more clarity.
+     * Helper to call onValueHostValidated due to a change in the state of any validators
+     * or BusinessLogicErrors.
+     */
+    protected invokeOnValidated(options?: ValidateOptions, validationSnapshot? : ValidationSnapshot): void
+    {
+        if (!options || !options.omitCallback)
+            this.onValidated?.(this, validationSnapshot ?? this.createValidationSnapshot(options));
+    }
+
+
+    /**
+     * When true, the current state of validation does not know of any errors. 
+     * However, there are other factors to consider: 
+     * there may be warning issues found (in IssuesFound),
+     * an async validator is still running,
+     * validator evaluated as Undetermined.
+     * So check @link doNotSaveNativeValues|doNotSaveNativeValues()  as the ultimate guide to saving.
+     * When false, there is at least one validation error.
      */
     public get isValid(): boolean {
         for (let vh of this.inputValueHost())
@@ -403,10 +424,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
-     * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated
-     * on individual validators.
+     * True when at least one ValueHost's ValidationResult is 
+     * Invalid, AsyncProcessing, or ValueChangedButUnvalidated
      */
-    public doNotSaveNativeValue(): boolean {
+    public doNotSaveNativeValues(): boolean {
         for (let vh of this.inputValueHost()) {
             if (vh.doNotSaveNativeValue())
                 return true;
@@ -423,11 +444,14 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Internally, a BusinessLogicInputValueHost is added to the list of ValueHosts to hold any
      * error that lacks an associatedValueHostName.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
+     * @param options - Only considers the omitCallback option.
+     * @returns When true, the validation snapshot has changed.
      */
-    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void {
-
+    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean {
+        let changed = false;
         for (let vh of this.inputValueHost()) {
-            vh.clearBusinessLogicErrors();
+            if (vh.clearBusinessLogicErrors())
+                changed = true;
         }
         if (errors)
             for (let error of errors) {
@@ -440,8 +464,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
                     }, null);
                 }
                 if (vh instanceof ValidatableValueHostBase)
-                    vh.setBusinessLogicError(error);
+                    if (vh.setBusinessLogicError(error))
+                        changed = true;
             }
+        if (changed)
+            this.invokeOnValidated(options);
+        return changed;
     }
     /**
      * Lists all issues found (error messages and supporting info) for a single InputValueHost
@@ -457,19 +485,19 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> {
+    public getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> | null {
         let vh = this.getValueHost(valueHostName);
         if (vh && vh instanceof ValidatableValueHostBase)
             return vh.getIssuesFound();
-        return [];
+        return null;
     }
     /**
      * A list of all issues from all InputValueHosts optionally for a given group.
      * Use with a Validation Summary widget and when validating the Model itself.
      * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
      * the same group (case insensitive match).
-     * @returns An array of 0 or more details of issues found. 
-     * When 0, there are no issues and the data is valid. If there are issues, when all
+     * @returns An array of issues found. 
+     * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
@@ -479,12 +507,14 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesFound(group?: string): Array<IssueFound> {
+    public getIssuesFound(group?: string): Array<IssueFound> | null {
         let list: Array<IssueFound> = [];
         for (let vh of this.inputValueHost()) {
-            list = list.concat(vh.getIssuesFound(group));
+            let vhIssues = vh.getIssuesFound(group);
+            if (vhIssues)
+                list = list.concat(vhIssues);
         }
-        return list;
+        return list.length ? list : null;
     }
     
     //#region IValidationManagerCallbacks
@@ -517,6 +547,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     }
     /**
      * Called when ValueHost's validate() function has returned.
+     * Also when validation is cleared or BusinessLogicErrors are added or removed.
      * Supplies the result to the callback.
      * Examples: Use to notify the validation related aspects of the component to refresh, 
      * such as showing error messages and changing style sheets.
