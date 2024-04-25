@@ -29,7 +29,7 @@ import { IValueHostsManager } from './ValueHostResolver';
 import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState } from './Validation';
 import { IValidationServices } from './ValidationServices';
 import { ValueHostConfig, ValueHostInstanceState } from './ValueHost';
-import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './ValidatableValueHostBase';
+import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './InputValueHost';
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -83,7 +83,7 @@ export interface IValidationManager extends IValueHostsManager {
      * by specifying that valueHostName in AssociatedValueHostName.
      * Each time its called, all previous business logic errors are abandoned.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
-     * @param options - Only considers the omitCallback option.
+     * @param options - Only considers the skipCallback option.
      * @returns when true, the validation snapshot has changed.
      */
     setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean;

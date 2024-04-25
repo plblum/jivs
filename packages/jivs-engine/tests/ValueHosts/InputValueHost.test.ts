@@ -15,7 +15,7 @@ import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { MockCapturingLogger, MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ValidationServices } from '../../src/Services/ValidationServices';
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
-import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost } from "../../src/Interfaces/InputValueHost";
+import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, IInputValueHostCallbacks, toIInputValueHostCallbacks } from "../../src/Interfaces/InputValueHost";
 import {
     ValidationStatus, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions,
     BusinessLogicError,
@@ -44,7 +44,7 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { BusinessLogicInputValueHost } from "../../src/ValueHosts/BusinessLogicInputValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
-import { ValueHostValidatedHandler, IValidatableValueHostBase, ValidatableValueHostBaseInstanceState, toIInputValueHostCallbacks, IInputValueHostCallbacks, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
+import { ValueHostValidatedHandler, IValidatableValueHostBase, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, registerTestingOnlyConditions, NeverMatchesCondition } from "../TestSupport/conditionsForTesting";
 
 interface ITestSetupConfig {
@@ -370,7 +370,7 @@ describe('InputValueHost.setValue with getValue to check result and IsChanged pr
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
     });
-    test('ConversionErrorTokenValue supplied and is saved because value is undefined.', () => {
+    test('ConversionErrorTokenValue supplied and is ignored by setValue.', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValue(undefined, { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
@@ -632,19 +632,25 @@ describe('InputValueHost.setInputValue with getInputValue to check result', () =
         expect(setup.valueHost.getIssuesFound()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(false);
     });
-    test('ConversionErrorTokenValue supplied and is ignored because we are not setting native value here', () => {
+    test('ConversionErrorTokenValue supplied and is applied because native value is undefined', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
-        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
     });
-    test('ConversionErrorTokenValue supplied in previous setValue, but is abandoned by SetWidetValue because we are not setting native value here', () => {
+    test('ConversionErrorTokenValue supplied and is ignored because native value is defined', () => {
+        let setup = setupInputValueHost();
+        setup.valueHost.setValue('ABC');
+        expect(() => setup.valueHost.setInputValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
+        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+    });    
+    test('ConversionErrorTokenValue supplied in previous setValueToUndefined, and retained by SetInputValue despite not setting native value here', () => {
         let setup = setupInputValueHost();
 
         setup.valueHost.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
 
         expect(() => setup.valueHost.setInputValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
-        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
     });
 });
 
@@ -1719,7 +1725,7 @@ describe('InputValueHost.isValid and ValidationStatus', () => {
             status: ValidationStatus.Invalid
         });
     });    
-    test('Confirm the OnValueHostValidate event is setup but not called due to option.omitCallback', () => {
+    test('Confirm the OnValueHostValidate event is setup but not called due to option.skipCallback', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -1744,7 +1750,7 @@ describe('InputValueHost.isValid and ValidationStatus', () => {
 
         let result = vh.setBusinessLogicError({
             errorMessage: 'BL_ERROR',
-        }, { omitCallback: true});
+        }, { skipCallback: true});
         expect(result).toBe(true);
         expect(onValidateResult).toBeNull();
     });        
@@ -2512,7 +2518,7 @@ describe('InputValueHost.clearValidation', () => {
             severity: ValidationSeverity.Error
         };
 
-        let snapshot = vm.validate({ omitCallback: true }); // ensure we have an invalid state without business logic
+        let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
@@ -2532,7 +2538,7 @@ describe('InputValueHost.clearValidation', () => {
         });
     });        
 
-    test('OnValueHostValidated not called when options.omitCallback = true', () => {
+    test('OnValueHostValidated not called when options.skipCallback = true', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -2564,7 +2570,7 @@ describe('InputValueHost.clearValidation', () => {
             severity: ValidationSeverity.Error
         };
 
-        let snapshot = vm.validate({ omitCallback: true }); // ensure we have an invalid state without business logic
+        let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
@@ -2573,7 +2579,7 @@ describe('InputValueHost.clearValidation', () => {
         });
 
         let result: boolean | null = null;
-        expect(() => result = vh.clearValidation({ omitCallback: true })).not.toThrow();
+        expect(() => result = vh.clearValidation({ skipCallback: true })).not.toThrow();
 
         expect(onValidateResult).toBeNull();
     });        
@@ -2746,7 +2752,7 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
             severity: ValidationSeverity.Error
         };
 
-        let snapshot = vm.validate({ omitCallback: true }); // ensure we have an invalid state without business logic
+        let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
@@ -2757,8 +2763,8 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
         expect(() => vh.setBusinessLogicError({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        }, { omitCallback: true })).not.toThrow();
-        expect(onValidateResult).toBeNull();  // because of omitCallback
+        }, { skipCallback: true })).not.toThrow();
+        expect(onValidateResult).toBeNull();  // because of skipCallback
 
         let result: boolean | null = null;
         expect(() => result = vh.clearBusinessLogicErrors()).not.toThrow();
@@ -2771,7 +2777,7 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
             status: ValidationStatus.Invalid
         });
     });    
-    test('OnValueHostValidated not called from clearBusinessLogic because options.omitCallback=true', () => {
+    test('OnValueHostValidated not called from clearBusinessLogic because options.skipCallback=true', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -2803,7 +2809,7 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
             severity: ValidationSeverity.Error
         };
 
-        let snapshot = vm.validate({ omitCallback: true }); // ensure we have an invalid state without business logic
+        let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
@@ -2814,11 +2820,11 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
         expect(() => vh.setBusinessLogicError({
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error
-        }, { omitCallback: true })).not.toThrow();
-        expect(onValidateResult).toBeNull();  // because of omitCallback
+        }, { skipCallback: true })).not.toThrow();
+        expect(onValidateResult).toBeNull();  // because of skipCallback
 
         let result: boolean | null = null;
-        expect(() => result = vh.clearBusinessLogicErrors({ omitCallback: true})).not.toThrow();
+        expect(() => result = vh.clearBusinessLogicErrors({ skipCallback: true})).not.toThrow();
         expect(result).toBe(true);
         expect(onValidateResult).toBeNull();
     });       
@@ -4362,8 +4368,7 @@ describe('toIValidatableValueHostBase function', () => {
                 name: 'Field1',
                 value: undefined,
                 issuesFound: null,
-                status: ValidationStatus.NotAttempted,
-                inputValue: undefined
+                status: ValidationStatus.NotAttempted
             });
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });

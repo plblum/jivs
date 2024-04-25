@@ -1357,7 +1357,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             {
                 errorMessage: 'BL_ERROR'
             }
-        ], { omitCallback: true});
+        ], { skipCallback: true});
         expect(callbackValue).toBeNull();
 
     });    
@@ -1576,7 +1576,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             asyncProcessing: false
         });
     });
-    test('OnValidated callback test with omitCallback does not callback', () => {
+    test('OnValidated callback test with skipCallback does not callback', () => {
         let callbackValue: ValidationState | null = null;
         let callback = (vm: IValidationManager, validationState : ValidationState) => {
             callbackValue = validationState
@@ -1586,7 +1586,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             onValidated: callback
         });
 
-        let validationState = setup.validationManager.validate({ omitCallback: true});
+        let validationState = setup.validationManager.validate({ skipCallback: true});
 
         expect(callbackValue).toBeNull();
     });
@@ -1618,7 +1618,7 @@ describe('ValidationManager.clearValidation', () => {
             onValidated: callback
         });
 
-        let validationState = setup.validationManager.validate({ omitCallback: true });
+        let validationState = setup.validationManager.validate({ skipCallback: true });
         expect(callbackValue).toBeNull();
 
         setup.validationManager.clearValidation();
@@ -1639,10 +1639,10 @@ describe('ValidationManager.clearValidation', () => {
             onValidated: callback
         });
 
-        let validationState = setup.validationManager.validate({ omitCallback: true });
+        let validationState = setup.validationManager.validate({ skipCallback: true });
         expect(callbackValue).toBeNull();
 
-        setup.validationManager.clearValidation({ omitCallback: true});
+        setup.validationManager.clearValidation({ skipCallback: true});
         expect(callbackValue).toBeNull();
     });
 });

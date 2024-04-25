@@ -9,12 +9,12 @@ import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
+import type { IValidatableValueHostBase, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerInstanceState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerInstanceStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IInputValueHost, InputValueChangedHandler } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { FluentValidatorCollector } from '../ValueHosts/Fluent';
 
@@ -403,7 +403,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> im
      */
     protected invokeOnValidated(options?: ValidateOptions, validationState? : ValidationState): void
     {
-        if (!options || !options.omitCallback)
+        if (!options || !options.skipCallback)
             this.onValidated?.(this, validationState ?? this.createValidationState(options));
     }
 
@@ -456,7 +456,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> im
      * Internally, a BusinessLogicInputValueHost is added to the list of ValueHosts to hold any
      * error that lacks an associatedValueHostName.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
-     * @param options - Only considers the omitCallback option.
+     * @param options - Only considers the skipCallback option.
      * @returns When true, the validation snapshot has changed.
      */
     public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean {

@@ -6,7 +6,7 @@ import { toIServicesAccessor, type IValidationServices } from "../../src/Interfa
 import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
-import { IInputValueHost, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
+import { IInputValueHost, InputValueChangedHandler, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
@@ -28,7 +28,7 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
 import { registerAllConditions, registerDataTypeCheckGenerators, registerDataTypeComparers, registerDataTypeConverters, registerDataTypeFormatters, registerDataTypeIdentifiers } from "./createValidationServices";
-import { ValueHostValidatedHandler, InputValueChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
+import { ValueHostValidatedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";

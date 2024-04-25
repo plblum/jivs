@@ -6,20 +6,20 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValidatorValidateResult } from './Validator';
 
 /**
- * Parameter for the validate() function on InputValueHost and ValidationManager.
+ * Parameter for the validate() function on Validatable ValueHosts and ValidationManager.
  * It provides additional guidance on how to get the validators involved.
  */
 export interface ValidateOptions
 {
     /**
-     * Group validation name, a tool to group InputValueHosts with a specific submit command when validating.
-     * Use when there is more than one group of InputValueHosts to be validated together.
+     * Group validation name, a tool to group Validatable ValueHosts with a specific submit command when validating.
+     * Use when there is more than one group of Validatable ValueHosts to be validated together.
      * For example, the ValidationManager handles two forms at once. Give
-     * the InputValueHostConfig.group a name for each form. Then make their submit command
+     * the ValidatableValueHostConfig.group a name for each form. Then make their submit command
      * pass in the same group name.
-     * When Group is undefined or "*", validate() does not check group names. All InputValueHosts 
+     * When Group is undefined or "*", validate() does not check group names. All Validatable ValueHosts 
      * within the ValidationManager are validated.
-     * When assigned, only InputValueHosts with a matching group name (case insensitive) will be involved.
+     * When assigned, only Validatable ValueHosts with a matching group name (case insensitive) will be involved.
      */
     group?: string;
 
@@ -43,15 +43,15 @@ export interface ValidateOptions
      */
     duringEdit?: boolean;
     /**
-     * If you have setup a callback, whether on the ValidationManager or ValueHost,
+     * If you have setup a OnValidated or OnValueHostValidated callback,
      * you may not want it to fire when you expressly call validate().
      * In that case, set this to true.
      */
-    omitCallback?: boolean;
+    skipCallback?: boolean;
 }
 
 /**
- * Result of the validate() function that will be saved in InputValueHostInstanceState
+ * Result of the validate() function that will be saved in ValidatableValueHostInstanceState
  */
 export interface StatefulValueHostValidateResult {
     /**
@@ -133,13 +133,13 @@ export enum ValidationSeverity {
     /**
      * The result will block saving.
      * Validation process will continue to the next validator
-     * in the InputValueHost.Validators list.
+     * in the ValidatableValueHost.Validators list.
      */
     Error,
     /**
      * The result will block saving.
      * Validation process will stop, leaving remaining validators set to 'ValidationStatus.Undetermined'.
-     * Its best to put these early in the list of InputValueHost.Validators.
+     * Its best to put these early in the list of ValidatableValueHost.Validators.
      * Consider this for RequiredConditions and DataTypeCondition.
      * RequiredCondition - If you don't have any data to evaluate, none of the remaining validators serve a purpose.
      * CanConvertToNativeDataTypeCondition - If you cannot convert a string to the native data type,

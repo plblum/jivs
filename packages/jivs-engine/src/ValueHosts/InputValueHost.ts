@@ -10,7 +10,7 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { objectKeysCount, cleanString } from '../Utilities/Utilities';
+import { objectKeysCount, cleanString, deepEquals } from '../Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidationStatusString, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
@@ -22,6 +22,7 @@ import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './V
 import { FluentValidatorCollector } from './Fluent';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
 import { ConditionType } from '../Conditions/ConditionTypes';
+import { SetValueOptions } from '../Interfaces/ValueHost';
 
 
 /**
@@ -45,6 +46,101 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
     constructor(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostInstanceState) {
         super(valueHostsManager, config, state);
     }
+
+//#region IInputValueHost
+    /**
+     * Exposes the latest value retrieved from the input field/element
+     * exactly as supplied by that input. For example,
+     * an <input type="date"> returns a string, not a date.
+     * Strings are not cleaned up, no trimming applied.
+     */
+    public getInputValue(): any {
+        return this.instanceState.inputValue;
+    }
+
+    /**
+    * Consuming system assigns the same value it assigns to the input field/element.
+    * Its used with RequiredCondition and DataTypeCondition.
+    * @param value
+    * @param options - 
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
+    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
+    * converting. Provide a string here that is a UI friendly error message. It will
+    * appear in the Required validator within the {ConversionError} token.
+    */
+    public setInputValue(value: any, options?: SetValueOptions): void {
+        if (!options)
+            options = {};        
+        let oldValue: any = this.instanceState.inputValue;
+        let changed = !deepEquals(value, oldValue);
+        this.updateInstanceState((stateToUpdate) => {
+            if (changed) {
+                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.inputValue = value;
+            }
+            this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
+            return stateToUpdate;
+        }, this);
+        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateInstanceState()
+        this.notifyOthersOfChange(options);
+        this.useOnValueChanged(changed, oldValue, options);
+    }
+
+    /**
+     * Sets both (native data type) Value and input field/element Value at the same time
+     * and optionally invokes validation.
+     * Use when the consuming system resolves both input and native values
+     * at the same time so there is one state change and attempt to validate.
+     * @param nativeValue - Can be undefined to indicate the value could not be resolved
+     * from the input field/element's value, such as inability to convert a string to a date.
+     * All other values, including null and the empty string, are considered real data.
+     * @param inputValue - Can be undefined to indicate there is no value.
+     * All other values, including null and the empty string, are considered real data.
+    * @param options - 
+    * validate - Invoke validation after setting the value.
+    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
+    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
+    * converting. Provide a string here that is a UI friendly error message. It will
+    * appear in the Required validator within the {ConversionError} token.
+     */
+    public setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {
+        options = options ?? {};
+        let oldNative: any = this.instanceState.value;
+        let nativeChanged = !deepEquals(nativeValue, oldNative);
+        let oldInput: any = this.instanceState.inputValue;
+        let inputChanged = !deepEquals(inputValue, oldInput);
+        let changed = nativeChanged || inputChanged;
+        this.updateInstanceState((stateToUpdate) => {
+            if (changed) {
+                // effectively clear past validation
+                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.issuesFound = null;
+
+                stateToUpdate.value = nativeValue;
+                stateToUpdate.inputValue = inputValue;
+            }
+            this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
+
+            return stateToUpdate;
+        }, this);
+
+        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateInstanceState()
+        this.notifyOthersOfChange(options);
+        this.useOnValueChanged(nativeChanged, oldNative, options);
+        this.useOnValueChanged(inputChanged, oldInput, options);
+    }
+
+    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: InputValueHostInstanceState, valueChanged: boolean, options: SetValueOptions): void
+    {
+        super.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged, options);      
+        if (options && (stateToUpdate.value === undefined) && options.conversionErrorTokenValue)
+            stateToUpdate.conversionErrorTokenValue = options.conversionErrorTokenValue;
+        else
+            delete stateToUpdate.conversionErrorTokenValue;
+    }
+
+//#endregion IInputValueHost
 
     /**
      * Runs validation against some of all validators.
@@ -352,6 +448,11 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         return super.setBusinessLogicError(error, options);
     }    
 
+    protected clearValidationDataFromInstanceState(stateToUpdate: InputValueHostInstanceState): void {
+        super.clearValidationDataFromInstanceState(stateToUpdate);
+        delete stateToUpdate.conversionErrorTokenValue;        
+    }
+
     protected tryAutoGenerateDataTypeCheckCondition(validators: Array<IValidator>): boolean
     {
         let created = false;
@@ -388,6 +489,15 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         return validators != null && validators.length > 0 &&
             (validators[0].condition.category === ConditionCategory.Required);
     }
+
+    /**
+     * Returns the ConversionErrorTokenValue supplied by the latest call
+     * to setValue() or setValues(). Its null when not supplied or has been cleared.
+     * Associated with the {ConversionError} token of the DataTypeCheckCondition.
+     */
+    public getConversionErrorMessage(): string | null {
+        return this.instanceState.conversionErrorTokenValue ?? null;
+    }    
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Config.
@@ -576,5 +686,13 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
             state.status = vr;
         }
     }
-
+    public createInstanceState(config: InputValueHostConfig): InputValueHostInstanceState {
+        return {
+            name: config.name,
+            value: config.initialValue,
+            status: ValidationStatus.NotAttempted,
+            inputValue: undefined,
+            issuesFound: null
+        };
+    }
 }

@@ -31,7 +31,6 @@ function setupInputValueHost(
     let defaultState: ValidatableValueHostBaseInstanceState = {
         name: 'Field1',
         value: undefined,
-        inputValue: undefined,
         issuesFound: null,
         status: ValidationStatus.NotAttempted
     };
@@ -238,7 +237,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             label: '',
         })).toBe(false);
     });
-    test('create returns instance of InputValueHost with VM, Config and InstanceState established', () => {
+    test('create returns instance of BusinessLogicInputValueHost with VM, Config and InstanceState established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValidatableValueHostBaseConfig = {
@@ -251,7 +250,6 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             issuesFound: null,
             status: ValidationStatus.NotAttempted,
             value: undefined,
-            inputValue: 'TEST'
         };
         let testItem = new BusinessLogicInputValueHostGenerator();
         let vh: IValidatableValueHostBase | null = null;
@@ -259,14 +257,12 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(BusinessLogicInputValueHost);
         expect(vh!.getName()).toBe(config.name);    // check Config value
-        expect(vh!.getInputValue()).toBe('TEST');  // check State value
     });
     test('cleanupInstanceState existing state has no IssuesFound. Returns the same data', () => {
         let originalState: ValidatableValueHostBaseInstanceState = {
             name: 'Field1',
             issuesFound: null,
             status: ValidationStatus.Valid,
-            inputValue: 'ABC',
             value: 10
         };
         let state = { ...originalState };
@@ -293,7 +289,6 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(state).not.toBeNull();
         expect(state!.name).toBe(config.name);
         expect(state!.status).toBe(ValidationStatus.NotAttempted);
-        expect(state!.inputValue).toBeUndefined();
         expect(state!.group).toBeUndefined();
         expect(state!.value).toBe(config.initialValue);
         expect(state!.issuesFound).toBeNull();
