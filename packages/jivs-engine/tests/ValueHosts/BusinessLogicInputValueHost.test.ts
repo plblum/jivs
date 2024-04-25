@@ -3,21 +3,21 @@ import { BusinessLogicInputValueHost, BusinessLogicInputValueHostType } from "..
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { objectKeysCount } from '../../src/Utilities/Utilities';
 import { ValidationStatusCode, ValueHostValidateResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
-import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseState, IValidatableValueHostBase } from '../../src/Interfaces/ValidatableValueHostBase';
+import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHostBase } from '../../src/Interfaces/ValidatableValueHostBase';
 
 
 interface ITestSetupConfig {
     services: MockValidationServices,
     validationManager: MockValidationManager,
     config: ValidatableValueHostBaseConfig,
-    state: ValidatableValueHostBaseState,
+    state: ValidatableValueHostBaseInstanceState,
     valueHost: BusinessLogicInputValueHost
 };
 
 
 function setupInputValueHost(
     config?: Partial<ValidatableValueHostBaseConfig> | null,
-    state?: Partial<ValidatableValueHostBaseState> | null): ITestSetupConfig {
+    state?: Partial<ValidatableValueHostBaseInstanceState> | null): ITestSetupConfig {
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
     let defaultConfig: ValidatableValueHostBaseConfig = {
@@ -28,14 +28,14 @@ function setupInputValueHost(
     let updatedConfig: ValidatableValueHostBaseConfig = (!config) ?
         defaultConfig :
         { ...defaultConfig, ...config };
-    let defaultState: ValidatableValueHostBaseState = {
+    let defaultState: ValidatableValueHostBaseInstanceState = {
         name: 'Field1',
         value: undefined,
         inputValue: undefined,
         issuesFound: null,
         statusCode: ValidationStatusCode.NotAttempted
     };
-    let updatedState: ValidatableValueHostBaseState = (!state) ?
+    let updatedState: ValidatableValueHostBaseInstanceState = (!state) ?
         defaultState :
         { ...defaultState, ...state };
     let vh = new BusinessLogicInputValueHost(vm,
@@ -238,7 +238,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             label: '',
         })).toBe(false);
     });
-    test('create returns instance of InputValueHost with VM, Config and State established', () => {
+    test('create returns instance of InputValueHost with VM, Config and InstanceState established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let config: ValidatableValueHostBaseConfig = {
@@ -246,7 +246,7 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             valueHostType: BusinessLogicInputValueHostType,
             label: '',
         };
-        let state: ValidatableValueHostBaseState = {
+        let state: ValidatableValueHostBaseInstanceState = {
             name: 'Field1',
             issuesFound: null,
             statusCode: ValidationStatusCode.NotAttempted,
@@ -261,8 +261,8 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
         expect(vh!.getName()).toBe(config.name);    // check Config value
         expect(vh!.getInputValue()).toBe('TEST');  // check State value
     });
-    test('cleanupState existing state has no IssuesFound. Returns the same data', () => {
-        let originalState: ValidatableValueHostBaseState = {
+    test('cleanupInstanceState existing state has no IssuesFound. Returns the same data', () => {
+        let originalState: ValidatableValueHostBaseInstanceState = {
             name: 'Field1',
             issuesFound: null,
             statusCode: ValidationStatusCode.Valid,
@@ -276,11 +276,11 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             label: '',
         };
         let testItem = new BusinessLogicInputValueHostGenerator();
-        expect(() => testItem.cleanupState(state, config)).not.toThrow();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
         expect(state).toEqual(originalState);
     });
 
-    test('createState returns instance with name and InitialValue from Config', () => {
+    test('createInstanceState returns instance with name and InitialValue from Config', () => {
         let testItem = new BusinessLogicInputValueHostGenerator();
         let config: ValidatableValueHostBaseConfig = {
             name: 'Field1',
@@ -288,8 +288,8 @@ describe('BusinessLogicInputValueHostGenerator members', () => {
             label: '',
             initialValue: 'TEST',
         };
-        let state: ValidatableValueHostBaseState | null = null;
-        expect(() => state = testItem.createState(config)).not.toThrow();
+        let state: ValidatableValueHostBaseInstanceState | null = null;
+        expect(() => state = testItem.createInstanceState(config)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.name).toBe(config.name);
         expect(state!.statusCode).toBe(ValidationStatusCode.NotAttempted);

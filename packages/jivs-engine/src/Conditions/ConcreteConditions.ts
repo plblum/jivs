@@ -670,7 +670,7 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
     }
     private evaluateLength(len: number, valueHost: IValueHost): ConditionEvaluateResult
     {
-        valueHost.saveIntoState('Len', len);
+        valueHost.saveIntoInstanceState('Len', len);
         if (this.config.minimum != null)    // null/undefined
             if (len < this.config.minimum)
                 return ConditionEvaluateResult.NoMatch;
@@ -687,7 +687,7 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
 
         list.push({
             tokenLabel: 'Length',
-            associatedValue: valueHost.getFromState('Len') ?? 0,
+            associatedValue: valueHost.getFromInstanceState('Len') ?? 0,
             purpose: 'parameter'
         });
         list.push({

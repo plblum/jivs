@@ -9,11 +9,11 @@
  * ValidationManager's job is:
  * - Create and retain all ValueHosts.
  * - Provide access to all ValueHosts with its getValueHost() function.
- * - Retain State objects that reflects the states of all ValueHost instances.
+ * - Retain InstanceState objects that reflects the states of all ValueHost instances.
  *   This system can operate in a stateless way, so long as you keep
  *   these objects and pass them back via the Configuration object.
- *   Its OnStateChanged and OnValueHostStateChanged properties are callbacks
- *   provide the latest State objects to you.
+ *   Its OnInstanceStateChanged and OnValueHostInstanceStateChanged properties are callbacks
+ *   provide the latest InstanceState objects to you.
  * - Execute validation on demand to the consuming system, going
  *   through all eligible InputValueHosts.
  * - Report a list of Issues Found for an individual UI element.
@@ -26,9 +26,9 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostsManager } from './ValueHostResolver';
-import { ValidateOptions, ValueHostValidateResult, BusinessLogicError, IssueFound } from './Validation';
+import { ValidateOptions, BusinessLogicError, IssueFound, ValidationSnapshot } from './Validation';
 import { IValidationServices } from './ValidationServices';
-import { ValueHostConfig, ValueHostState } from './ValueHost';
+import { ValueHostConfig, ValueHostInstanceState } from './ValueHost';
 import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './ValidatableValueHostBase';
 
 /**
@@ -39,7 +39,7 @@ export interface IValidationManager extends IValueHostsManager {
     /**
      * Runs validation against all validatable ValueHosts, except those that do not
      * match the validation group supplied in options.
-     * Updates this ValueHost's State and notifies parent if changes were made.
+     * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      * Important to set options.BeforeSubmit to true if invoking validate() prior to submitting.
      * @returns The ValidationSnapshot object, which packages several key
@@ -124,51 +124,15 @@ export interface IValidationManager extends IValueHostsManager {
 }
 
 /**
- * Packages key values of the state of validation to be returned
- * by validate() and in the ValidationManagerValidatedHandler.
- * While here, the same values are available directly on ValidationManager.
- */
-export interface ValidationSnapshot
-{
-    /**
-     * When true, there is nothing known to block validation. However, there are other factors
-     * to consider: there may be warning issues found or an async validator is still running. 
-     * So check doNotSaveValueHosts as the ultimate guide to saving.
-     * When false, there is at least one validation error.
-     */
-    isValid: boolean;
-    /**
-     * Determines if a validator doesn't consider the ValueHost's value ready to save
-     * based on the latest call to validate(). (It does not run validate().)
-     * True when ValidationStatusCode is Invalid or ValueChangedButUnvalidated
-     * on individual validators.
-     */
-    doNotSaveNativeValues: boolean;
-
-    /**
-     * All issues current found (except ValueHosts not matching the validation group which are excluded.)
-     * Includes issues found by setBusinessLogicErrors too.
-     * If none, it is null
-     */
-    issuesFound: Array<IssueFound> | null;
-
-    /**
-     * When true, an async Validator is running
-     */
-    asyncProcessing: boolean;    
-}
-
-
-/**
- * State of all ValueHostStates, including the validators of InputValueHosts.
+ * Stateful values from the instance of ValidationManager.
  * This is expected to be retained by the creator of ValidationManager
  * so the hosting HTML can be regenerated and a new ValidationManager
  * is created with the retained state.
  * In a SPA, it may not be necessary to handle states like that.
  * The SPA may keep an instance of ValidationManager for the duration needed.
- * Each entry in ValueHostStates must have a companion in ValueHosts and ValueHostConfigs.
+ * Each entry in ValueHostInstanceStates must have a companion in ValueHosts and ValueHostConfigs.
  */
-export interface ValidationManagerState {
+export interface ValidationManagerInstanceState {
     /**
      * Mostly here to provide a way to detect a change in the state quickly.
      * This value starts at 0 and is incremented each time ValidationManager
@@ -196,31 +160,31 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
      */
     valueHostConfigs: Array<ValueHostConfig>;
     /**
-     * The state for the ValidationManager itself.
+     * The InstanceState for the ValidationManager itself.
      * Its up to you to retain stateful information so that the service works statelessly.
-     * It will supply you with the changes to states through the OnStateChanged property.
+     * It will supply you with the changes to states through the OnInstanceStateChanged property.
      * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
      * the correct state.
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */
-    savedState?: ValidationManagerState | null;
+    savedInstanceState?: ValidationManagerInstanceState | null;
     /**
      * The state for each ValueHost. The array may not have the same states for all the ValueHostConfigs
      * you are supplying. It will create defaults for those missing and discard those no longer in use.
      * 
      * Its up to you to retain stateful information so that the service works statelessly.
-     * It will supply you with the changes to states through the OnValueHostStateChanged property.
+     * It will supply you with the changes to states through the OnValueHostInstanceStateChanged property.
      * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
      * the correct state. You can also supply the state of an individual ValueHost when using
      * the addValueHost or updateValueHost methods.
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */
-    savedValueHostStates?: Array<ValueHostState> | null;
+    savedValueHostInstanceStates?: Array<ValueHostInstanceState> | null;
 }
 
-export type ValidationManagerStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerState) => void;
+export type ValidationManagerInstanceStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState) => void;
 export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validationSnapshot: ValidationSnapshot) => void;
 
 
@@ -230,11 +194,11 @@ export type ValidationManagerValidatedHandler = (validationManager: IValidationM
  */
 export interface IValidationManagerCallbacks extends IInputValueHostCallbacks {
     /**
-     * Called when the ValidationManager's state has changed.
+     * Called when the ValidationManager's InstanceState has changed.
      * React example: React component useState feature retains this value
      * and needs to know when to call the setState function with the stateToRetain
      */
-    onStateChanged?: ValidationManagerStateChangedHandler | null;
+    onInstanceStateChanged?: ValidationManagerInstanceStateChangedHandler | null;
     /**
      * Called when ValidationManager's validate() function has returned.
      * Supplies the result to the callback.
@@ -254,7 +218,7 @@ export function toIValidationManagerCallbacks(source: any): IValidationManagerCa
     if (toIInputValueHostCallbacks(source))
     {
         let test = source as IValidationManagerCallbacks;     
-        if (test.onStateChanged !== undefined &&
+        if (test.onInstanceStateChanged !== undefined &&
             test.onValidated !== undefined)
             return test;
     }

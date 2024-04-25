@@ -1,16 +1,16 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ValidationServices } from "../../src/Services/ValidationServices";
-import { IValueHost, ValueHostConfig, ValueHostState } from "../../src/Interfaces/ValueHost";
+import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
 import { BusinessLogicInputValueHost, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
-import { IInputValueHost, InputValueHostConfig, InputValueHostState } from '../../src/Interfaces/InputValueHost';
-import { ValueHostValidateResult, ValidationStatusCode, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
+import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
+import { ValidationStatusCode, IssueFound, ValidationSeverity, ValidationSnapshot } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import {
-    IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerState,
-    ValidationManagerStateChangedHandler, ValidationSnapshot, toIValidationManagerCallbacks
+    IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState,
+    ValidationManagerInstanceStateChangedHandler, toIValidationManagerCallbacks
 } from '../../src/Interfaces/ValidationManager';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { deepClone } from '../../src/Utilities/Utilities';
@@ -29,7 +29,7 @@ import {
 import { fluent } from "../../src/ValueHosts/Fluent";
 
 // Subclass of what we want to test to expose internals to tests
-class PublicifiedValidationManager extends ValidationManager<ValidationManagerState> {
+class PublicifiedValidationManager extends ValidationManager<ValidationManagerInstanceState> {
     constructor(setup: ValidationManagerConfig) {
         super(setup);
     }
@@ -40,8 +40,8 @@ class PublicifiedValidationManager extends ValidationManager<ValidationManagerSt
     public get exposedValueHostConfigs(): { [name: string]: ValueHostConfig } {
         return this.valueHostConfigs;
     }
-    public get exposedState(): ValidationManagerState {
-        return this.state;
+    public get exposedState(): ValidationManagerInstanceState {
+        return this.instanceState;
     }
 
 }
@@ -59,9 +59,9 @@ describe('constructor and initial property values', () => {
         expect(Object.keys(testItem!.exposedValueHostConfigs).length).toBe(0);
         expect(testItem!.exposedState).not.toBeNull();
         expect(testItem!.exposedState.stateChangeCounter).toBe(0);
-        expect(testItem!.onStateChanged).toBeNull();
+        expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValidated).toBeNull();
-        expect(testItem!.onValueHostStateChanged).toBeNull();
+        expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostValidated).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
         expect(testItem!.onInputValueChanged).toBeNull();
@@ -89,9 +89,9 @@ describe('constructor and initial property values', () => {
         expect(Object.keys(testItem!.exposedValueHostConfigs).length).toBe(1);
         expect(testItem!.exposedState).not.toBeNull();
         expect(testItem!.exposedState.stateChangeCounter).toBe(0);
-        expect(testItem!.onStateChanged).toBeNull();
+        expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValidated).toBeNull();
-        expect(testItem!.onValueHostStateChanged).toBeNull();
+        expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostValidated).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
         expect(testItem!.onInputValueChanged).toBeNull();
@@ -145,11 +145,11 @@ describe('constructor and initial property values', () => {
         });
     });    
     test('Empty State object. Other parameters are null', () => {
-        let state: ValidationManagerState = {};
+        let state: ValidationManagerInstanceState = {};
         let testItem: PublicifiedValidationManager | null = null;
         let services = new MockValidationServices(false, false);
         expect(() => testItem = new PublicifiedValidationManager(
-            { services: services, valueHostConfigs: [], savedState: state })).not.toThrow();
+            { services: services, valueHostConfigs: [], savedInstanceState: state })).not.toThrow();
         expect(testItem!.exposedValueHosts).not.toBeNull();
         expect(Object.keys(testItem!.exposedValueHosts).length).toBe(0);
         expect(testItem!.exposedValueHostConfigs).not.toBeNull();
@@ -157,22 +157,22 @@ describe('constructor and initial property values', () => {
         expect(testItem!.exposedState).not.toBeNull();
         expect(testItem!.exposedState.stateChangeCounter).toBe(0);
 
-        expect(testItem!.onStateChanged).toBeNull();
+        expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValidated).toBeNull();
-        expect(testItem!.onValueHostStateChanged).toBeNull();
+        expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostValidated).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
         expect(testItem!.onInputValueChanged).toBeNull();
     });
-    test('Config and ValueHostState for 1 ValueHost supplied. Other parameters are null', () => {
+    test('Config and ValueHostInstanceState for 1 ValueHost supplied. Other parameters are null', () => {
         let configs: Array<ValueHostConfig> = [{
             name: 'Field1',
             valueHostType: ValueHostType.Input,
             label: 'Field 1'
         }];
-        let savedState: ValidationManagerState = {};
-        let savedValueHostStates: Array<ValueHostState> = [];
-        savedValueHostStates.push({
+        let savedState: ValidationManagerInstanceState = {};
+        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [];
+        savedValueHostInstanceStates.push({
             name: 'Field1',
             value: 10   // something we can return
         });
@@ -180,7 +180,7 @@ describe('constructor and initial property values', () => {
         let services = new MockValidationServices(false, false);
         expect(() => testItem = new PublicifiedValidationManager({
             services: services, valueHostConfigs: configs,
-            savedState: savedState, savedValueHostStates: savedValueHostStates
+            savedInstanceState: savedState, savedValueHostInstanceStates: savedValueHostInstanceStates
         })).not.toThrow();
         expect(testItem!.services).toBe(services);
 
@@ -191,9 +191,9 @@ describe('constructor and initial property values', () => {
         expect(testItem!.exposedState).not.toBeNull();
         expect(testItem!.exposedState.stateChangeCounter).toBe(0);
 
-        expect(testItem!.onStateChanged).toBeNull();
+        expect(testItem!.onInstanceStateChanged).toBeNull();
         expect(testItem!.onValidated).toBeNull();
-        expect(testItem!.onValueHostStateChanged).toBeNull();
+        expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
         expect(testItem!.onValueHostValidated).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
         expect(testItem!.onInputValueChanged).toBeNull();
@@ -211,9 +211,9 @@ describe('constructor and initial property values', () => {
         let setup: ValidationManagerConfig = {
             services: new MockValidationServices(false, false),
             valueHostConfigs: [],
-            onStateChanged: (validationManager: IValidationManager, state: ValidationManagerState) => { },
+            onInstanceStateChanged: (validationManager: IValidationManager, state: ValidationManagerInstanceState) => { },
             onValidated: (validationManager: IValidationManager, validationSnapshot : ValidationSnapshot) => { },
-            onValueHostStateChanged: (valueHost: IValueHost, state: ValueHostState) => { },
+            onValueHostInstanceStateChanged: (valueHost: IValueHost, state: ValueHostInstanceState) => { },
             onValueHostValidated: (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationSnapshot) => { },
             onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
             onInputValueChanged: (valueHost: IValidatableValueHostBase, oldValue: any) => { }
@@ -223,34 +223,34 @@ describe('constructor and initial property values', () => {
         expect(() => testItem = new PublicifiedValidationManager(setup)).not.toThrow();
 
         // other tests will confirm that the function correctly runs
-        expect(testItem!.onStateChanged).not.toBeNull();
+        expect(testItem!.onInstanceStateChanged).not.toBeNull();
         expect(testItem!.onValidated).not.toBeNull();
-        expect(testItem!.onValueHostStateChanged).not.toBeNull();
+        expect(testItem!.onValueHostInstanceStateChanged).not.toBeNull();
         expect(testItem!.onValueHostValidated).not.toBeNull();
         expect(testItem!.onValueChanged).not.toBeNull();
         expect(testItem!.onInputValueChanged).not.toBeNull();
     });
 
 });
-function testValueHostState(testItem: PublicifiedValidationManager, valueHostName: ValueHostName,
-    valueHostState: Partial<InputValueHostState> | null): void
+function testValueHostInstanceState(testItem: PublicifiedValidationManager, valueHostName: ValueHostName,
+    instanceState: Partial<InputValueHostInstanceState> | null): void
 {
     let valueHost = testItem.exposedValueHosts[valueHostName] as InputValueHost;
     expect(valueHost).toBeDefined();
     expect(valueHost).toBeInstanceOf(InputValueHost);
 
-    if (!valueHostState)
-        valueHostState = {};
-    // fill in missing properties from factory createState defaults
+    if (!instanceState)
+        instanceState = {};
+    // fill in missing properties from factory createInstanceState defaults
     let factory = new ValueHostFactory();
     factory.register(new InputValueHostGenerator());
     let config = testItem.exposedValueHostConfigs[valueHostName] as InputValueHostConfig;
-    let defaultState = factory.createState(config) as InputValueHostState;    
+    let defaultState = factory.createInstanceState(config) as InputValueHostInstanceState;    
 
-    let stateToCompare: InputValueHostState = { ...defaultState, ...valueHostState, };
+    let stateToCompare: InputValueHostInstanceState = { ...defaultState, ...instanceState, };
 
     // ensure ValueHost has an initial state. Use updateState() because it is the only time we can see the real state
-    valueHost.updateState((stateToUpdate) => {
+    valueHost.updateInstanceState((stateToUpdate) => {
         expect(stateToUpdate).toEqual(stateToCompare);
         return stateToUpdate;
     }, valueHost);        
@@ -279,7 +279,7 @@ describe('ValidationManager.addValueHost', () => {
         expect(testItem.exposedValueHostConfigs['Field1']).toBe(config);
 
         // Check the valueHosts type and initial state
-        testValueHostState(testItem, 'Field1', null);
+        testValueHostInstanceState(testItem, 'Field1', null);
     });
     test('Second ValueHost with same name throws', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
@@ -325,9 +325,9 @@ describe('ValidationManager.addValueHost', () => {
         expect(testItem.exposedState.stateChangeCounter).toBe(0);
         
         // Check the valueHosts type and initial state
-        testValueHostState(testItem, 'Field1', null);
+        testValueHostInstanceState(testItem, 'Field1', null);
         // Check the valueHosts type and initial state
-        testValueHostState(testItem, 'Field2', null);
+        testValueHostInstanceState(testItem, 'Field2', null);
     });
     test('Add InputValueHostConfig with required ConditionConfig', () => {
         let testItem = new PublicifiedValidationManager({
@@ -381,7 +381,7 @@ describe('ValidationManager.addValueHost', () => {
             valueHostType: ValueHostType.Input,
             label: 'Field 1'
         };
-        let state: ValueHostState = {
+        let state: ValueHostInstanceState = {
             name: 'Field1',
             value: 'ABC'
         };
@@ -398,24 +398,24 @@ describe('ValidationManager.addValueHost', () => {
         expect(testItem.exposedValueHostConfigs['Field1']).toBe(config);
 
         // Check the valueHosts type and initial state
-        testValueHostState(testItem, 'Field1', {
+        testValueHostInstanceState(testItem, 'Field1', {
             value: 'ABC'
         });
     });    
-    test('State with ValidationStatusCode=Valid already exists for the ValueHostConfig being added. That state is used', () => {
+    test('InstanceState with ValidationStatusCode=Valid already exists for the ValueHostConfig being added. That state is used', () => {
 
-        let savedState: ValidationManagerState = {};
+        let savedState: ValidationManagerInstanceState = {};
 
-        let savedValueHostState: InputValueHostState = {
+        let savedValueHostInstanceState: InputValueHostInstanceState = {
             name: 'Field1',
             statusCode: ValidationStatusCode.Valid, // something we can return
             value: 10,   // something we can return,
             issuesFound: null
         };
-        let savedValueHostStates: Array<ValueHostState> = [savedValueHostState];
+        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [savedValueHostInstanceState];
         let testItem = new PublicifiedValidationManager({
             services: new MockValidationServices(false, false), valueHostConfigs: [],
-            savedState: savedState, savedValueHostStates: savedValueHostStates
+            savedInstanceState: savedState, savedValueHostInstanceStates: savedValueHostInstanceStates
         });
         let config: InputValueHostConfig = {
             name: 'Field1',
@@ -432,13 +432,13 @@ describe('ValidationManager.addValueHost', () => {
         };
         testItem.addValueHost(config, null);
 
-        testValueHostState(testItem, 'Field1', savedValueHostState);        
+        testValueHostInstanceState(testItem, 'Field1', savedValueHostInstanceState);        
     });
-    test('State with ValidationStatusCode=Invalid already exists for the ValueHostConfig being added.', () => {
+    test('InstanceState with ValidationStatusCode=Invalid already exists for the ValueHostConfig being added.', () => {
 
-        let savedState: ValidationManagerState = {};
+        let savedState: ValidationManagerInstanceState = {};
 
-        let savedValueHostState: InputValueHostState = {
+        let savedValueHostInstanceState: InputValueHostInstanceState = {
             name: 'Field1',
             statusCode: ValidationStatusCode.Invalid, // something we can return
             value: 10,   // something we can return,
@@ -449,10 +449,10 @@ describe('ValidationManager.addValueHost', () => {
                 severity: ValidationSeverity.Error
             }]
         };
-        let savedValueHostStates: Array<ValueHostState> = [savedValueHostState];      
+        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [savedValueHostInstanceState];      
         let testItem = new PublicifiedValidationManager({
             services: new MockValidationServices(false, false), valueHostConfigs: [],
-            savedState: savedState, savedValueHostStates: savedValueHostStates
+            savedInstanceState: savedState, savedValueHostInstanceStates: savedValueHostInstanceStates
         });
         let config: InputValueHostConfig = {
             name: 'Field1',
@@ -469,10 +469,10 @@ describe('ValidationManager.addValueHost', () => {
         };
         testItem.addValueHost(config, null);
 
-        testValueHostState(testItem, 'Field1', savedValueHostState);        
+        testValueHostInstanceState(testItem, 'Field1', savedValueHostInstanceState);        
     });    
     
-    test('State already exists in two places: lastValueHostState and as parameter for addValueHost. State is sourced from addValueHost.', () => {
+    test('InstanceState already exists in two places: lastValueHostInstanceState and as parameter for addValueHost. State is sourced from addValueHost.', () => {
         let config: InputValueHostConfig = {
             name: 'Field1',
             valueHostType: ValueHostType.Input,
@@ -486,18 +486,18 @@ describe('ValidationManager.addValueHost', () => {
                 }
             ]
         };
-        let savedState: ValidationManagerState = {};
-        let savedValueHostStates: Array<ValueHostState> = [];
-        savedValueHostStates.push(<InputValueHostState>{
+        let savedState: ValidationManagerInstanceState = {};
+        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [];
+        savedValueHostInstanceStates.push(<InputValueHostInstanceState>{
             name: 'Field1',
             statusCode: ValidationStatusCode.Valid, // something we can return
             value: 10   // something we can return
         });
         let testItem = new PublicifiedValidationManager({
             services: new MockValidationServices(false, false), valueHostConfigs: [],
-            savedState: savedState, savedValueHostStates: savedValueHostStates
+            savedInstanceState: savedState, savedValueHostInstanceStates: savedValueHostInstanceStates
         });
-        let addState: InputValueHostState = {
+        let addState: InputValueHostInstanceState = {
             name: 'Field1',
             value: 20,
             statusCode: ValidationStatusCode.Invalid,
@@ -510,22 +510,22 @@ describe('ValidationManager.addValueHost', () => {
         };
         testItem.addValueHost(config, addState);
 
-        testValueHostState(testItem, 'Field1', addState);        
+        testValueHostInstanceState(testItem, 'Field1', addState);        
     });    
-    test('State instance is changed after passing in has no impact on stored state', () => {
+    test('InstanceState instance is changed after passing in has no impact on stored state', () => {
 
-        let lastState: ValidationManagerState = {};
+        let lastState: ValidationManagerInstanceState = {};
 
-        let savedValueHostState: InputValueHostState = {
+        let savedValueHostInstanceState: InputValueHostInstanceState = {
             name: 'Field1',
             statusCode: ValidationStatusCode.Valid, // something we can return
             value: 10,   // something we can return,
             issuesFound: null
         };
-        let savedValueHostStates: Array<ValueHostState> = [savedValueHostState];
+        let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [savedValueHostInstanceState];
         let testItem = new PublicifiedValidationManager({
             services: new MockValidationServices(false, false), valueHostConfigs: [],
-            savedState: lastState, savedValueHostStates: savedValueHostStates
+            savedInstanceState: lastState, savedValueHostInstanceStates: savedValueHostInstanceStates
         });
         let config: InputValueHostConfig = {
             name: 'Field1',
@@ -541,10 +541,10 @@ describe('ValidationManager.addValueHost', () => {
             ]
         };
         testItem.addValueHost(config, null);
-        let copiedLastState = deepClone(savedValueHostState) as InputValueHostState;
-        savedValueHostState.value = 20;
+        let copiedLastState = deepClone(savedValueHostInstanceState) as InputValueHostInstanceState;
+        savedValueHostInstanceState.value = 20;
 
-        testValueHostState(testItem, 'Field1', copiedLastState);        
+        testValueHostInstanceState(testItem, 'Field1', copiedLastState);        
     });    
 });
 
@@ -592,7 +592,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         expect(replacementConfig.validatorConfigs[0]).toBe(replacementValidatorConfig);  // no side effects
 
         // ensure ValueHost is InputValueHost and has an initial state
-        testValueHostState(testItem, 'Field1', null);
+        testValueHostInstanceState(testItem, 'Field1', null);
     });
     test('updateValueHost works like addValueHost with unknown ValueHostConfig', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
@@ -613,10 +613,10 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         expect(testItem.exposedValueHostConfigs['Field1']).toBe(config);
 
         // ensure ValueHost is InputValueHost and has an initial state
-        testValueHostState(testItem, 'Field1', null);
+        testValueHostInstanceState(testItem, 'Field1', null);
     });
 
-    test('Replace the config with existing ValueHostState.ValidationStatusCode of Invalid retains state when replacement is the same type', () => {
+    test('Replace the config with existing ValueHostInstanceState.ValidationStatusCode of Invalid retains state when replacement is the same type', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
             name: 'Field1',
@@ -661,9 +661,9 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         expect(replacementConfig.validatorConfigs[0]).toBe(replacementValidatorConfig);  // no side effects
 
         // ensure ValueHost is InputValueHost and has an initial state
-        testValueHostState(testItem, 'Field1', null);
+        testValueHostInstanceState(testItem, 'Field1', null);
     });
-    test('Using fluent syntax, replace the config with existing ValueHostState.ValidationStatusCode of Invalid retains state when replacement is the same type', () => {
+    test('Using fluent syntax, replace the config with existing ValueHostInstanceState.ValidationStatusCode of Invalid retains state when replacement is the same type', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let ivConfig = fluent().input('Field1', null, { label: 'Field 1'});
         let initialValueHost = testItem.addValueHost(ivConfig, null);
@@ -695,7 +695,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         expect(testItem.exposedValueHosts['Field1']).toBeInstanceOf(InputValueHost);
 
         // ensure ValueHost is InputValueHost and has an initial state
-        testValueHostState(testItem, 'Field1', null);
+        testValueHostInstanceState(testItem, 'Field1', null);
     });
 
     test('Replace the state, keeping the same config. Confirm the state and config', () => {
@@ -715,7 +715,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         };
         let initialValueHost = testItem.addValueHost(config, null);
 
-        let updateState: InputValueHostState = {
+        let updateState: InputValueHostInstanceState = {
             name: 'Field1',
             value: 40,
             issuesFound: null,
@@ -730,7 +730,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         expect(testItem.exposedValueHostConfigs['Field1']).toBe(config);
      
         // ensure ValueHost is InputValueHost and has an initial state
-        testValueHostState(testItem, 'Field1', updateState);
+        testValueHostInstanceState(testItem, 'Field1', updateState);
     });    
     test('Edit state instance after updateValueHost has no impact on state in ValueHost', () => {
         let testItem = new PublicifiedValidationManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
@@ -749,7 +749,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         };
         let initialValueHost = testItem.addValueHost(config, null);
 
-        let updateState: InputValueHostState = {
+        let updateState: InputValueHostInstanceState = {
             name: 'Field1',
             value: 40,
             issuesFound: null,
@@ -761,7 +761,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
         updateState.value = 100;
      
         // ensure ValueHost is InputValueHost and has an initial state
-        testValueHostState(testItem, 'Field1', savedState);
+        testValueHostInstanceState(testItem, 'Field1', savedState);
     });        
 });
 describe('ValidationManager.discardValueHost completely removes ValueHost, its state and config', () => {
@@ -775,7 +775,7 @@ describe('ValidationManager.discardValueHost completely removes ValueHost, its s
         let setup: ValidationManagerConfig = {
             services: new MockValidationServices(false, false),
             valueHostConfigs: [config],
-            savedValueHostStates: [{
+            savedValueHostInstanceStates: [{
                 name: config.name,
                 value: 10
             }]
@@ -933,7 +933,7 @@ describe('ValidationManager.getValueHost and getInputValue', () => {
 });
 
 function setupValidationManager(configs?: Array<InputValueHostConfig> | null,
-    savedState?: ValidationManagerState | null,
+    savedState?: ValidationManagerInstanceState | null,
     callbacks?: IValidationManagerCallbacks): {
         services: IValidationServices,
         validationManager: IValidationManager
@@ -944,8 +944,8 @@ function setupValidationManager(configs?: Array<InputValueHostConfig> | null,
     let setup: ValidationManagerConfig = {
         services: services,
         valueHostConfigs: configs!,
-        savedState: savedState!,
-        savedValueHostStates: []
+        savedInstanceState: savedState!,
+        savedValueHostInstanceStates: []
     };
     if (callbacks)
         setup = { ...callbacks, ...setup } as ValidationManagerConfig;
@@ -1648,17 +1648,17 @@ describe('ValidationManager.clearValidation', () => {
 });
 // updateState(updater: (stateToUpdate: TState) => TState): TState
 describe('ValidationManager.updateState', () => {
-    interface ITestExtendedState extends ValidationManagerState {
+    interface ITestExtendedState extends ValidationManagerInstanceState {
         Value: number;
     }
-    function testUpdateState(initialValue: number, testCallback: (stateToUpdate: ITestExtendedState) => ITestExtendedState, callback: ValidationManagerStateChangedHandler | null): Array<ITestExtendedState> {
+    function testUpdateState(initialValue: number, testCallback: (stateToUpdate: ITestExtendedState) => ITestExtendedState, callback: ValidationManagerInstanceStateChangedHandler | null): Array<ITestExtendedState> {
 
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let state: ITestExtendedState = {
             Value: initialValue
         };
         let setup = setupValidationManager([config], state, {
-            onStateChanged: callback
+            onInstanceStateChanged: callback
         });
         let testItem = setup.validationManager as ValidationManager<ITestExtendedState>;
         let changes: Array<ITestExtendedState> = [];
@@ -1672,7 +1672,7 @@ describe('ValidationManager.updateState', () => {
 
         // try several times
         for (let i = 1; i <= 3; i++) {
-            expect(() => testItem.updateState(fn)).not.toThrow();
+            expect(() => testItem.updateInstanceState(fn)).not.toThrow();
         }
         return changes;
     }
@@ -1735,7 +1735,7 @@ describe('ValidationManager.updateState', () => {
         () => {
             let setup = setupValidationManager();
             let testItem = setup.validationManager as ValidationManager<ITestExtendedState>;
-            expect(() => testItem.updateState(null!)).toThrow(/updater/);
+            expect(() => testItem.updateInstanceState(null!)).toThrow(/updater/);
         });
 });
 describe('toIValueHostResolver function', () => {
@@ -1832,10 +1832,10 @@ describe('toIValidationManagerCallbacks function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValidationManagerCallbacks = {
             onValueChanged: (vh: IValueHost, old: any) => {},
-            onValueHostStateChanged: (vh: IValueHost, state: ValueHostState) => {},
+            onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => {},
             onInputValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
             onValueHostValidated: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationSnapshot) => { },
-            onStateChanged: (vm, state) => { },
+            onInstanceStateChanged: (vm, state) => { },
             onValidated: (vm, results) => { }
         };
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);

@@ -6,14 +6,14 @@ import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
-import { type IValueHost, type SetValueOptions, type ValueHostState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForStateStorage } from '../Interfaces/ValueHost';
+import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import type { IValueHostsManager, IValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 
 /**
  * Standard implementation of IValueHost
  */
-export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState extends ValueHostState>
+export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState extends ValueHostInstanceState>
     implements IValueHost, IValueHostsManagerAccessor {
     constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
         assertNotNull(valueHostsManager, 'valueHostsManager');
@@ -21,7 +21,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         assertNotNull(state, 'state');
         this._valueHostsManager = valueHostsManager;
         this._config = config;
-        this._state = state;
+        this._instanceState = state;
     }
 //#region IValueHostsManagerAccessor
     public get valueHostsManager(): IValueHostsManager {
@@ -63,8 +63,8 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * Use setLabel to override the ValueHostConfig value.
      */
     public getLabel(): string {
-        let label = (this.getFromState('_label') ?? (this.config.label ?? '')) as string;
-        let labell10n: string | null = (this.getFromState('_labell10n') ?? this.config.labell10n ?? null) as string | null;
+        let label = (this.getFromInstanceState('_label') ?? (this.config.label ?? '')) as string;
+        let labell10n: string | null = (this.getFromInstanceState('_labell10n') ?? this.config.labell10n ?? null) as string | null;
         if (labell10n)
             return this.services.textLocalizerService.localize(this.services.activeCultureId, labell10n, label) ?? '';
         return label;
@@ -82,9 +82,9 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     public setLabel(label: string | null | undefined, labell10n?: string | null | undefined): void
     {
         if (label !== null)
-            this.saveIntoState('_label', label);
+            this.saveIntoInstanceState('_label', label);
         if (labell10n !== null)
-            this.saveIntoState('_labell10n', labell10n);
+            this.saveIntoInstanceState('_labell10n', labell10n);
     }
 
     /**
@@ -93,7 +93,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * from the input field/element.
      */
     public getValue(): any {
-        return this.state.value;
+        return this.instanceState.value;
     }
 
     /**
@@ -115,13 +115,13 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     public setValue(value: any, options?: SetValueOptions): void {
         if (!options)
             options = {};
-        let oldValue: any = this.state.value;   // even undefined is supported
+        let oldValue: any = this.instanceState.value;   // even undefined is supported
         let changed = !deepEquals(value, oldValue);
-        this.updateState((stateToUpdate) => {
+        this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 stateToUpdate.value = value;
             }
-            this.updateChangeCounterInState(stateToUpdate, changed, options!);
+            this.updateChangeCounterInInstanceState(stateToUpdate, changed, options!);
             return stateToUpdate;
         }, this);
         this.useOnValueChanged(changed, oldValue, options);
@@ -145,7 +145,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         this.setValue(undefined, options);
     }
 
-    protected updateChangeCounterInState(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void
+    protected updateChangeCounterInInstanceState(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void
     {
         if (options.reset)
             stateToUpdate.changeCounter = 0;
@@ -179,7 +179,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      */
     public get isChanged(): boolean
     {
-        return (this.state.changeCounter ?? 0) > 0;
+        return (this.instanceState.changeCounter ?? 0) > 0;
     }
     
     //#endregion IValueHost
@@ -189,34 +189,34 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * Current state for the associated ValueHost.
      * Only ValidationManager owns the state. This instance is a reference
      * to the value in ValidationManager.
-     * State is considered immutable. If it needs to change,
+     * InstanceState is considered immutable. If it needs to change,
      * the ValidationManager must discard the current ValueHost instance
-     * and create a new one. The State contained in the validationManager
+     * and create a new one. The InstanceState contained in the ValidationManager
      * must be supplied to the new ValueHost instance to restore the state.
     */
-    protected get state(): TState {
-        return this._state;
+    protected get instanceState(): TState {
+        return this._instanceState;
     }
-    private _state: TState;
+    private _instanceState: TState;
 
     /**
-     * Use to change anything in ValueHostState without impacting the immutability 
+     * Use to change anything in ValueHostInstanceState without impacting the immutability 
      * of the current instance.
      * Your callback will be passed a cloned instance. Change any desired properties
      * and return that instance. It will become the new immutable value of
-     * the State property.
-     * If changes were made, the OnValueHostStateChanged event is fire.
+     * the InstanceState property.
+     * If changes were made, the OnValueHostInstanceStateChanged event is fire.
      * @param updater 
      * @returns true when the state did change. false when it did not.
      */
-    public updateState(updater: (stateToUpdate: TState) => TState,
+    public updateInstanceState(updater: (stateToUpdate: TState) => TState,
         source: IValueHost): boolean {
         assertNotNull(updater, 'updater');
-        let toUpdate = deepClone(this.state);
+        let toUpdate = deepClone(this.instanceState);
         let updated = updater(toUpdate);
-        if (!deepEquals(this.state, updated)) {
-            this._state = updated;
-            toIValueHostCallbacks(this.valueHostsManager)?.onValueHostStateChanged?.(source, updated);
+        if (!deepEquals(this.instanceState, updated)) {
+            this._instanceState = updated;
+            toIValueHostCallbacks(this.valueHostsManager)?.onValueHostInstanceStateChanged?.(source, updated);
             return true;
         }
         return false;
@@ -228,9 +228,9 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
  * @param key 
  * @param value - when undefined, it removes the value from the state
  */    
-    public saveIntoState(key: string, value: ValidTypesForStateStorage | undefined): void
+    public saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void
     {
-        this.updateState((stateToUpdate) => {
+        this.updateInstanceState((stateToUpdate) => {
             if (!stateToUpdate.items)
                 stateToUpdate.items = {};
             if (value !== undefined)
@@ -243,13 +243,13 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     }
 /**
  * Use to retrieve a value from the state that was stored
- * with SaveIntoState().
+ * with saveIntoInstanceState().
  * @param key 
  * @returns the stored value or undefined if nothing is stored.
  */
-    public getFromState(key: string): ValidTypesForStateStorage | undefined
+    public getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined
     {
-        return this.state.items ? this.state.items[key] : undefined;
+        return this.instanceState.items ? this.instanceState.items[key] : undefined;
     }
 }
 
@@ -257,7 +257,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
 export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
     public abstract canCreate(config: ValueHostConfig): boolean;
 
-    public abstract create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostState): IValueHost;
+    public abstract create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
 
     /**
      * Looking for changes to the ValidationConfigs to impact IssuesFound.
@@ -266,8 +266,8 @@ export abstract class ValueHostBaseGenerator implements IValueHostGenerator {
      * @param state 
      * @param config 
      */
-    public abstract cleanupState(state: ValueHostState, config: ValueHostConfig): void;
-    public createState(config: ValueHostConfig): ValueHostState {
+    public abstract cleanupInstanceState(state: ValueHostInstanceState, config: ValueHostConfig): void;
+    public createInstanceState(config: ValueHostConfig): ValueHostInstanceState {
         return {
             name: config.name,
             value: config.initialValue

@@ -5,10 +5,11 @@
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
     type ValidateOptions, type ValueHostValidateResult, ValidationStatusCode,
-    type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult
+    type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult,
+    ValidationSnapshot
 } from './Validation';
-import { ValidationSnapshot } from './ValidationManager';
-import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostState } from './ValueHost';
+
+import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
 
 /**
 * Manages a value that may use input validation.
@@ -70,7 +71,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      * If all were Matched, it returns ValueHostValidateResult.Value and issuesFound=null.
      * If there are no validators, or all validators were skipped (disabled),
      * it returns ValidationStatusCode.Undetermined.
-     * Updates this ValueHost's State and notifies parent if changes were made.
+     * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on behavior.
      * @returns Non-null when there is something to report. null if there was nothing to evaluate
      * which includes all existing validators reporting "Undetermined"
@@ -87,7 +88,7 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false when State.statusCode is Invalid. Any other State.statusCode
+     * Returns false when instanceState.statusCode is Invalid. Any other instanceState.statusCode
      * return true.
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
@@ -222,7 +223,7 @@ export interface ValidatableValueHostBaseConfig extends ValueHostConfig {
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface ValidatableValueHostBaseState extends ValueHostState, StatefulValueHostValidateResult {
+export interface ValidatableValueHostBaseInstanceState extends ValueHostInstanceState, StatefulValueHostValidateResult {
 
     /**
      * The value from the input field/element, even if invalid.

@@ -110,18 +110,18 @@ export interface IValueHost {
     getDataType(): string | null;
 
     /**
-     * Adds a custom entry into the ValueHost's state
+     * Adds a custom entry into the ValueHost's InstanceState
      * or removes it when value = undefined.
      * @param key 
      * @param value - When undefined, it removes this entry in the state.
      */
-    saveIntoState(key: string, value: ValidTypesForStateStorage | undefined): void;
+    saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void;
     /**
      * Use to retrieve a value from the state that was stored
-     * with SaveIntoState().
+     * with SaveIntoInstanceState().
      * @param key 
      */
-    getFromState(key: string): ValidTypesForStateStorage | undefined;
+    getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined;
 
     /**
      * Determines how the validation system sees the Value in terms of editing.
@@ -137,9 +137,9 @@ export interface IValueHost {
 }
 
 /**
- * Limits the values that can be stored in ValueHostState.Items
+ * Limits the values that can be stored in ValueHostInstanceState.Items
  */
-export type ValidTypesForStateStorage = null | number | boolean | string;
+export type ValidTypesForInstanceStateStorage = null | number | boolean | string;
 
 /**
  * Optional options for IValueHost Set functions.
@@ -159,7 +159,7 @@ export interface SetValueOptions {
 
     /**
      * When converting the input field/element value to native and there is an error
-     * it should be supplied here. Only meaningful when State.Value is undefined.
+     * it should be supplied here. Only meaningful when instanceState.Value is undefined.
      * It can be displayed as part of the DataTypeCheckCondition's
      * error message token {ConversionError}.
      * Cleared when setting the value without an error.
@@ -178,11 +178,11 @@ export interface SetValueOptions {
 /**
  * Elements of ValueHost that are stateful based on user interaction
  */
-export interface ValueHostState {
+export interface ValueHostInstanceState {
 
     /**
      * The ValueHostName for the associated ValueHost.
-     * Despite being in State, this property is not allowed to be changed.
+     * Despite being in instanceState, this property is not allowed to be changed.
      */
     name: ValueHostName;
 
@@ -204,7 +204,7 @@ export interface ValueHostState {
     changeCounter?: number;
 
     /**
-     * Storage associated with ValueHost.SaveIntoState/GetFromState
+     * Storage associated with ValueHost.saveIntoInstanceState/getFromInstanceState
      */
     items?: CustomItems;
 }
@@ -213,7 +213,7 @@ export interface ValueHostState {
  * @internal
  */
 interface CustomItems {
-    [key: string]: ValidTypesForStateStorage;
+    [key: string]: ValidTypesForInstanceStateStorage;
 }
 
 /**
@@ -282,7 +282,7 @@ export interface ValueHostConfig {
     /**
      * A name of a data type used to lookup supporting services specific to the data type.
      * See {@link DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear".
-     * If null, the current value's type (ValueHostState.Value) is used and must be string, number, boolean, or date.
+     * If null, the current value's type (ValueHostInstanceState.Value) is used and must be string, number, boolean, or date.
      */
     dataType?: string;
 
@@ -325,19 +325,19 @@ export function toIGatherValueHostNames(source: any): IGatherValueHostNames | nu
 }
 
 export type ValueChangedHandler = (valueHost: IValueHost, oldValue: any) => void;
-export type ValueHostStateChangedHandler = (valueHost: IValueHost, stateToRetain: ValueHostState) => void;
+export type ValueHostInstanceStateChangedHandler = (valueHost: IValueHost, stateToRetain: ValueHostInstanceState) => void;
 /**
  * Provides callback hooks for the consuming system to get feedback from ValueHosts.
  */
 export interface IValueHostCallbacks {
     /**
-     * Called when any ValueHost had its ValueHostState changed.
+     * Called when any ValueHost had its ValueHostInstanceState changed.
      * React example: React component useState feature retains this value
-     * and needs to know when to call the setValueHostState() with the stateToRetain.
+     * and needs to know when to call the setValueHostInstanceState() with the stateToRetain.
      * You can setup the same callback on individual ValueHosts.
      * Here, it aggregates all ValueHost notifications.
      */
-    onValueHostStateChanged?: ValueHostStateChangedHandler | null;
+    onValueHostInstanceStateChanged?: ValueHostInstanceStateChangedHandler | null;
 
     /**
      * Called when the ValueHost's Value property has changed.
@@ -358,7 +358,7 @@ export function toIValueHostCallbacks(source: any): IValueHostCallbacks | null
     if (source && typeof source === 'object')
     {
         let test = source as IValueHostCallbacks;     
-        if (test.onValueHostStateChanged !== undefined && 
+        if (test.onValueHostInstanceStateChanged !== undefined && 
             test.onValueChanged !== undefined)
             return test;
     }
@@ -376,9 +376,9 @@ export interface IValueHostFactory {
      * Creates the instance.
      * @param valueHostsManager 
      * @param config - determines the class. All classes supported here must ValueHostConfig to get their setup.
-     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.createState() to create an initial value.
+     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.createInstanceState() to create an initial value.
      */
-    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostState): IValueHost;
+    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
     /**
      * Adjusts the state from a previous time to conform to the Config.
      * For example, if the Config had a rule change, some data in the state may
@@ -386,10 +386,10 @@ export interface IValueHostFactory {
      * @param state 
      * @param config 
      */
-    cleanupState(state: ValueHostState, config: ValueHostConfig): void;
+    cleanupInstanceState(state: ValueHostInstanceState, config: ValueHostConfig): void;
     /**
-     * Creates an initialized State object
+     * Creates an initialized InstanceState object
      * @param config 
      */
-    createState(config: ValueHostConfig): ValueHostState;
+    createInstanceState(config: ValueHostConfig): ValueHostInstanceState;
 }

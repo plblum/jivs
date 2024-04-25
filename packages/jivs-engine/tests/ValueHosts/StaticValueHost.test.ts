@@ -1,4 +1,4 @@
-import { StaticValueHostConfig, StaticValueHostState, IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
+import { StaticValueHostConfig, StaticValueHostInstanceState, IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
 import { IGatherValueHostNames, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { StaticValueHost, StaticValueHostGenerator } from "../../src/ValueHosts/StaticValueHost";
@@ -86,7 +86,7 @@ describe('StaticValueHostGenerator members', () => {
             valueHostType: ValueHostType.Static,
             label: ''
         };
-        let state: StaticValueHostState = {
+        let state: StaticValueHostInstanceState = {
             name: 'Field1',
             value: "ABC"
         };
@@ -98,8 +98,8 @@ describe('StaticValueHostGenerator members', () => {
         expect(vh!.getName()).toBe(config.name);    // check Config values
         expect(vh!.getValue()).toBe("ABC");
     });
-    test('cleanupState existing state takes no action. Returns the same data', () => {
-        let originalState: StaticValueHostState = {
+    test('cleanupInstanceState existing state takes no action. Returns the same data', () => {
+        let originalState: StaticValueHostInstanceState = {
             name: 'Field1',
             value: 10
         };
@@ -110,11 +110,11 @@ describe('StaticValueHostGenerator members', () => {
             label: ''
         };
         let testItem = new StaticValueHostGenerator();
-        expect(() => testItem.cleanupState(state, config)).not.toThrow();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
         expect(state).toEqual(originalState);
     });
  
-    test('createState returns instance with name and InitialValue from Config', () => {
+    test('createInstanceState returns instance with name and InitialValue from Config', () => {
         let testItem = new StaticValueHostGenerator();
         let config: StaticValueHostConfig = {
             name: 'Field1',
@@ -122,8 +122,8 @@ describe('StaticValueHostGenerator members', () => {
             label: '',
             initialValue: 'TEST'
         };
-        let state: StaticValueHostState | null = null;
-        expect(() => state = testItem.createState(config)).not.toThrow();
+        let state: StaticValueHostInstanceState | null = null;
+        expect(() => state = testItem.createInstanceState(config)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.name).toBe(config.name);
         expect(state!.value).toBe(config.initialValue);

@@ -14,7 +14,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
-import { toIGatherValueHostNames, type IValueHost, ValidTypesForStateStorage } from '../Interfaces/ValueHost';
+import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { type ValidateOptions, ValidationSeverity, type IssueFound, BusinessLogicError } from '../Interfaces/Validation';
@@ -44,7 +44,7 @@ import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
  * - ValidatorConfig - The business logic supplies these rules
  *   to implement validation including Condition, Enabler, and error messages
  * If the caller changes any of these, discard the instance
- * and create a new one. The IValidatorState will restore the state.
+ * and create a new one. The parent ValueHost will restore the state.
  */
 export class Validator implements IValidator {
     // As a rule, InputValueHost discards Validator when anything contained in these objects
@@ -165,7 +165,7 @@ export class Validator implements IValidator {
      * Does not use the Enabler.
      */
     public get enabled(): boolean {
-        let value = this.getFromState('enabled') ??
+        let value = this.getFromInstanceState('enabled') ??
             this.config.enabled;
         if (typeof value == 'function')
             value = value(this);
@@ -178,7 +178,7 @@ export class Validator implements IValidator {
      * Determined from Config.severity.
      */
     protected get severity(): ValidationSeverity {
-        let value = this.getFromState('severity') ?? this.config.severity;
+        let value = this.getFromInstanceState('severity') ?? this.config.severity;
         if (typeof value == 'function')
             value = value(this);
         if (value == null)  // null/undefined
@@ -203,12 +203,12 @@ export class Validator implements IValidator {
      * if ErrorMessagel10n is setup.
      */
     protected getErrorMessageTemplate(): string {
-        let direct = this.getFromState('errorMessage') ??
+        let direct = this.getFromInstanceState('errorMessage') ??
                     this.config.errorMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        let l10n = (this.getFromState('errorMessagel10n') ??
+        let l10n = (this.getFromInstanceState('errorMessagel10n') ??
                     this.config.errorMessagel10n) as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
@@ -230,12 +230,12 @@ export class Validator implements IValidator {
      * if SummaryMessagel10n is setup.
      */
     protected getSummaryMessageTemplate(): string {
-        let direct = this.getFromState('summaryMessage') ??
+        let direct = this.getFromInstanceState('summaryMessage') ??
                     this.config.summaryMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        let l10n = (this.getFromState('summaryMessagel10n') ??
+        let l10n = (this.getFromInstanceState('summaryMessagel10n') ??
                     this.config.summaryMessagel10n) as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
@@ -407,9 +407,9 @@ export class Validator implements IValidator {
     private _supportsDuringEdit: boolean | null = null;
 
     /**
-     * validate() found NoMatch. Update the ValidatorState's properties to show
+     * validate() found NoMatch. Update the IssueFound to show
      * the current ConditionEvaluateResult and error messages.
-     * @param issueFound - this is a COPY of the State, as supplied by updateState().
+     * @param issueFound - this is a COPY of the IssueFound.
      * Do not modify the actual instance as it is immutable.
      * @param value 
      */
@@ -455,36 +455,36 @@ export class Validator implements IValidator {
     //#region state management
 
     /**
-     * State is stored in ValueHost's State using its saveInToStore/getFromStore.
+     * InstanceState is stored in ValueHost's InstanceState using its saveIntoInstanceStare/getFromInstanceState.
      * Each entry needs to be associated with the errorCode of this Validator
      * and have its own identifier for the value.
      * This function creates a name to use with saveToStore and getFromStore.
      * @param identifier 
      */
-    protected nameForState(identifier: string): string {
+    protected nameForInstanceState(identifier: string): string {
         return `_IV[${this.errorCode}].${identifier}`;
     }
 
     /**
-     * Saves an entry into the ValueHostState.
-     * @param identifier - used together with the errorCode to form a key in the State.
+     * Saves an entry into the ValueHostInstanceState.
+     * @param identifier - used together with the errorCode to form a key in the instanceState.
      * @param value - value to store. Use undefined to remove existing value.
      */
-    protected saveIntoState(identifier: string, value: ValidTypesForStateStorage | undefined): void {
-        this.valueHost.saveIntoState(this.nameForState(identifier), value);
+    protected saveIntoInstanceState(identifier: string, value: ValidTypesForInstanceStateStorage | undefined): void {
+        this.valueHost.saveIntoInstanceState(this.nameForInstanceState(identifier), value);
     }
 
     /**
-     * Returns an entry from the ValueHostState.
+     * Returns an entry from the ValueHostInstanceState.
      * 
      * Often used to store values that override an entry in the ValidatorConfig.
      * In that case, typical implementation is:
-     * let value = this.getFromState('identifier') ?? this.config.identifier;
-     * @param identifier - used together with the errorCode to form a key in the State.
+     * let value = this.getFromInstanceState('identifier') ?? this.config.identifier;
+     * @param identifier - used together with the errorCode to form a key in the instanceState.
      * @returns The value or undefined if the key is not stored in state.
      */
-    protected getFromState(identifier: string): ValidTypesForStateStorage | undefined {
-        return this.valueHost.getFromState(this.nameForState(identifier));
+    protected getFromInstanceState(identifier: string): ValidTypesForInstanceStateStorage | undefined {
+        return this.valueHost.getFromInstanceState(this.nameForInstanceState(identifier));
     }
     //#endregion state management
 
@@ -500,7 +500,7 @@ export class Validator implements IValidator {
      * @param enabled 
      */
     public setEnabled(enabled: boolean): void {
-        this.saveIntoState('enabled', enabled);
+        this.saveIntoInstanceState('enabled', enabled);
     }
 
     /**
@@ -514,9 +514,9 @@ export class Validator implements IValidator {
      */
     public setErrorMessage(errorMessage: string | undefined, errorMessagel10n?: string | undefined): void {
         if (errorMessage !== null)
-            this.saveIntoState('errorMessage', errorMessage);
+            this.saveIntoInstanceState('errorMessage', errorMessage);
         if (errorMessagel10n !== null)
-            this.saveIntoState('errorMessagel10n', errorMessagel10n);
+            this.saveIntoInstanceState('errorMessagel10n', errorMessagel10n);
     }
 
     /**
@@ -530,9 +530,9 @@ export class Validator implements IValidator {
      */
     public setSummaryMessage(summaryMessage: string | undefined, summaryMessagel10n?: string | undefined): void {
         if (summaryMessage !== null)
-            this.saveIntoState('summaryMessage', summaryMessage);
+            this.saveIntoInstanceState('summaryMessage', summaryMessage);
         if (summaryMessagel10n !== null)
-            this.saveIntoState('summaryMessagel10n', summaryMessagel10n);
+            this.saveIntoInstanceState('summaryMessagel10n', summaryMessagel10n);
     }
 
     /**
@@ -541,7 +541,7 @@ export class Validator implements IValidator {
      * @param severity 
      */
     public setSeverity(severity: ValidationSeverity): void {
-        this.saveIntoState('severity', severity);
+        this.saveIntoInstanceState('severity', severity);
     }
 
     //#endregion config overrides
@@ -561,7 +561,7 @@ export class Validator implements IValidator {
      * and the value in its native data type (such as Date, number, or string).
      * Supports these tokens:
      * {Label} - the Config.label property verbatim
-     * {Value} - the native value in State.Value. If null/undefined, the value in State.LastRawValue.
+     * {Value} - the native value in instanceState.Value. If null/undefined, the value in instanceState.LastRawValue.
      * Plus any from the Condition in use.     
      */
     public getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {

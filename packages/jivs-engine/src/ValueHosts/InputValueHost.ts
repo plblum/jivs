@@ -17,7 +17,7 @@ import { ValidateOptions, ValueHostValidateResult, ValidationStatusCode, Validat
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { InputValueHostConfig, InputValueHostState, IInputValueHost } from '../Interfaces/InputValueHost';
+import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { FluentValidatorCollector } from './Fluent';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
@@ -34,15 +34,15 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 * - InputValueHostConfig - The business logic supplies these rules
 *   to implement a ValueHost's name, label, data type, validation rules,
 *   and other business logic metadata.
-* - InputValueHostState - State used by this InputValueHost including
+* - InputValueHostInstanceState - InstanceState used by this InputValueHost including
     its validators.
 * If the caller changes any of these, discard the instance
 * and create a new one.
  */
-export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfig, InputValueHostState>
+export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfig, InputValueHostInstanceState>
     implements IInputValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostState) {
+    constructor(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostInstanceState) {
         super(valueHostsManager, config, state);
     }
 
@@ -53,7 +53,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
      * If all were Matched, it returns ValueHostValidateResult.Value and issuesFound=null.
      * If there are no validators, or all validators were skipped (disabled),
      * it returns ValidationStatusCode.Undetermined.
-     * Updates this ValueHost's State and notifies parent if changes were made.
+     * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      * @returns Non-null when there is something to report. null if there was nothing to evaluate
      * which includes all existing validators reporting "Undetermined"
@@ -133,7 +133,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                 // resume normal processing with Undetermined state
                 result.statusCode = ValidationStatusCode.Undetermined;
             }                  
-            if (updateStateWithResult(result))
+            if (updateInstanceStateWithResult(result))
                 self.invokeOnValueHostValidated(options);
         // when the result hasn't changed from the start, report null as there were no issues found
             return result.statusCode !== ValidationStatusCode.Undetermined || result.issuesFound !== null || result.pending ?
@@ -148,9 +148,9 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                 };
             });
         }
-        function updateStateWithResult(result: ValueHostValidateResult): boolean
+        function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean
         {
-            return self.updateState((stateToUpdate) => {
+            return self.updateInstanceState((stateToUpdate) => {
                 stateToUpdate.statusCode = result.statusCode;
                 stateToUpdate.issuesFound = result.issuesFound;
                 if (options!.group)
@@ -185,7 +185,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
             function deleteAsyncProcessFlag() : void
             {
                 if (!result.pending)
-                    self.updateState((stateToUpdate) => {
+                    self.updateInstanceState((stateToUpdate) => {
                         delete stateToUpdate.asyncProcessing;
                         return stateToUpdate;
                     }, self);
@@ -196,13 +196,13 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
             promise.then(
             (ivr) => {
                     completeThePromise(() => {
-                        // the only way we modify the issues, validation result, or State
+                        // the only way we modify the issues, validation result, or ValueHostInstanceState
                         if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
                             result.statusCode = ValidationStatusCode.Invalid;
                             if (!result.issuesFound)
                                 result.issuesFound = [];
                             result.issuesFound.push(ivr.issueFound!);
-                            if (updateStateWithResult(result))
+                            if (updateInstanceStateWithResult(result))
                                 self.invokeOnValueHostValidated(options);
 
                         }
@@ -318,7 +318,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                     {
                         if (error.severity)
                             valResult.issueFound!.severity = error.severity;
-                        let changed = this.updateState((stateToUpdate) => {
+                        let changed = this.updateInstanceState((stateToUpdate) => {
                             let replacementIndex = -1;
                             if (!stateToUpdate.issuesFound)
                                 stateToUpdate.issuesFound = [];
@@ -474,7 +474,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
      */
     public setGroup(group: string): void
     {
-        this.saveIntoState('_group', group);
+        this.saveIntoInstanceState('_group', group);
     }
 }
 
@@ -510,7 +510,7 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
             return false;
         return true;
     }
-    public create(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostState): IInputValueHost {
+    public create(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostInstanceState): IInputValueHost {
         return new InputValueHost(valueHostsManager, config, state);
     }
 /**
@@ -520,7 +520,7 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
  * @param state 
  * @param config 
  */    
-    public cleanupState(state: InputValueHostState, config: InputValueHostConfig): void {
+    public cleanupInstanceState(state: InputValueHostInstanceState, config: InputValueHostConfig): void {
         assertNotNull(state, 'state');
         assertNotNull(config, 'config');
         let configChanged = false;

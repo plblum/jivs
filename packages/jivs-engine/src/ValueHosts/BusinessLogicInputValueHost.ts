@@ -4,7 +4,7 @@
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
+import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatusCode, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
@@ -16,7 +16,7 @@ import { cleanString } from '../Utilities/Utilities';
 /**
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
  */
-export class BusinessLogicInputValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseState>
+export class BusinessLogicInputValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState>
 {
     /**
      * Result is based on the presence of Business Logic Errors that are not warnings.
@@ -82,10 +82,10 @@ export class BusinessLogicInputValueHostGenerator extends ValidatableValueHostBa
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {
         return config.valueHostType === BusinessLogicInputValueHostType;
     }
-    public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseState): IValidatableValueHostBase {
+    public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase {
         return new BusinessLogicInputValueHost(valueHostsManager, config, state);
     }
-    public cleanupState(state: ValidatableValueHostBaseState, config: ValidatableValueHostBaseConfig): void {
+    public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValidatableValueHostBaseConfig): void {
         // nothing to do
     }
 }

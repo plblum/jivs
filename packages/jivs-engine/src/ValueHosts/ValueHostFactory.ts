@@ -10,7 +10,7 @@
 import { BusinessLogicInputValueHostGenerator } from './BusinessLogicInputValueHost';
 import { InputValueHostGenerator } from './InputValueHost';
 import { assertNotNull } from '../Utilities/ErrorHandling';
-import type { ValueHostState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
+import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
 import type { IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { StaticValueHostGenerator } from './StaticValueHost';
 import type { IValueHostFactory, IValueHostGenerator } from '../Interfaces/ValueHostFactory';
@@ -26,7 +26,7 @@ export class ValueHostFactory implements IValueHostFactory {
      * @param config 
      * @param state 
      */
-    public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostState): IValueHost {
+    public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost {
         assertNotNull(valueHostsManager, 'valueHostsManager');
         assertNotNull(config, 'config');
         assertNotNull(state, 'state');
@@ -34,7 +34,7 @@ export class ValueHostFactory implements IValueHostFactory {
         // // we are going to modify the state without notifying the parent.
         // // This is intentional --- removed. Leave it to caller
         // if (!state && config.InitialValue !== undefined) {
-        //     state = generator.createState(config);
+        //     state = generator.createInstanceState(config);
         // }        
         return generator.create(valueHostsManager, config, state);
     }
@@ -60,17 +60,17 @@ export class ValueHostFactory implements IValueHostFactory {
      * @param state 
      * @param config 
      */
-    public cleanupState(state: ValueHostState, config: ValueHostConfig): void {
+    public cleanupInstanceState(state: ValueHostInstanceState, config: ValueHostConfig): void {
         assertNotNull(config, 'config');
-        this.resolveConfig(config).cleanupState(state, config);
+        this.resolveConfig(config).cleanupInstanceState(state, config);
     }
     /**
-     * Creates an initialized State object
+     * Creates an initialized InstanceState object
      * @param config 
      */
-    public createState(config: ValueHostConfig): ValueHostState {
+    public createInstanceState(config: ValueHostConfig): ValueHostInstanceState {
         assertNotNull(config, 'config');
-        return this.resolveConfig(config).createState(config);
+        return this.resolveConfig(config).createInstanceState(config);
     }
 
     private readonly _configResolvers: Array<IValueHostGenerator> = [];

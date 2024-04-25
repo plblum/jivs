@@ -206,7 +206,7 @@ export interface ValidatorConfig {
      * It should already be localized, except for the tokens.
      * It can contain HTML tags if the platform supports them. In that case,
      * be sure to use HTML encoded characters.
-     * The string shown to the actual user is stored in ValidatorState.errorMessage.
+     * The string shown to the actual user is stored in ValueHostInstanceState.errorMessage.
      * Values:
      * * String - The error message with tokens and optional HTML tags.
      * * function - Returns the error message, given the Validator,
