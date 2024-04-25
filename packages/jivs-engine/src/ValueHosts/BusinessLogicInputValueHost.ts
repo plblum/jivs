@@ -29,7 +29,7 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
     public validate(options?: ValidateOptions): ValueHostValidateResult | null {
         let result: ValueHostValidateResult = {
             issuesFound: null,
-            statusCode: ValidationStatus.Valid
+            status: ValidationStatus.Valid
         };
         if (this.businessLogicErrors)
         {
@@ -53,12 +53,12 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
             if (issueCount)
             {
                 result.issuesFound = iif;
-                result.statusCode = errorFound ? ValidationStatus.Invalid : ValidationStatus.Valid;
+                result.status = errorFound ? ValidationStatus.Invalid : ValidationStatus.Valid;
             }
         }
         this.invokeOnValueHostValidated(options);
         // when the result hasn't changed from the start, report null as there were no issues found
-        return result.statusCode !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
+        return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
             result : null;
     }
     public get requiresInput(): boolean

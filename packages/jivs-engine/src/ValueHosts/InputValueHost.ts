@@ -67,7 +67,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         // By being an object, any closure referring to result will still get those
         // property changes for all validators completed.
         let result: ValueHostValidateResult = {
-            statusCode: ValidationStatus.Undetermined,
+            status: ValidationStatus.Undetermined,
             issuesFound: null
         };
 
@@ -101,11 +101,11 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                         switch (inputValResult.issueFound.severity) {
                             case ValidationSeverity.Error:
                             case ValidationSeverity.Severe:
-                                result.statusCode = ValidationStatus.Invalid;
+                                result.status = ValidationStatus.Invalid;
                                 break;
                             case ValidationSeverity.Warning:
-                                if (result.statusCode === ValidationStatus.Undetermined)
-                                    result.statusCode = ValidationStatus.Valid;
+                                if (result.status === ValidationStatus.Undetermined)
+                                    result.status = ValidationStatus.Valid;
                                 break;
                         }
 
@@ -116,14 +116,14 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                         if (issueFound.severity === ValidationSeverity.Severe)
                             stop = true;
                     }
-                    else if (result.statusCode === ValidationStatus.Undetermined)
+                    else if (result.status === ValidationStatus.Undetermined)
                         if (inputValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)
-                            result.statusCode = ValidationStatus.Valid;    // may be overwritten by a later validator
+                            result.status = ValidationStatus.Valid;    // may be overwritten by a later validator
 
                 }
                 // unnecessary as this should always be the case at this point
                 // if (validatorsInUse === 0)
-                //     result.statusCode = ValidationStatus.Undetermined; 
+                //     result.status = ValidationStatus.Undetermined; 
 
             }
             catch (e)
@@ -131,19 +131,19 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                 if (e instanceof Error)
                     logError(e.message);
                 // resume normal processing with Undetermined state
-                result.statusCode = ValidationStatus.Undetermined;
+                result.status = ValidationStatus.Undetermined;
             }                  
             if (updateInstanceStateWithResult(result))
                 self.invokeOnValueHostValidated(options);
         // when the result hasn't changed from the start, report null as there were no issues found
-            return result.statusCode !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
+            return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
                 result : null;
         }
   
         finally {
             logInfo(() => {
                 return {
-                    message: `Input Validation result: ${ValidationStatusString[result.statusCode]} Issues found:` +
+                    message: `Input Validation result: ${ValidationStatusString[result.status]} Issues found:` +
                         (result.issuesFound ? JSON.stringify(result.issuesFound) : 'none')
                 };
             });
@@ -151,7 +151,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean
         {
             return self.updateInstanceState((stateToUpdate) => {
-                stateToUpdate.statusCode = result.statusCode;
+                stateToUpdate.status = result.status;
                 stateToUpdate.issuesFound = result.issuesFound;
                 if (options!.group)
                     stateToUpdate.group = options!.group;
@@ -198,7 +198,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                     completeThePromise(() => {
                         // the only way we modify the issues, validation result, or ValueHostInstanceState
                         if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
-                            result.statusCode = ValidationStatus.Invalid;
+                            result.status = ValidationStatus.Invalid;
                             if (!result.issuesFound)
                                 result.issuesFound = [];
                             result.issuesFound.push(ivr.issueFound!);
@@ -336,7 +336,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                                 stateToUpdate.issuesFound.push(valResult.issueFound!);
                             else
                                 stateToUpdate.issuesFound[replacementIndex] = valResult.issueFound!;
-                            stateToUpdate.statusCode = ValidationStatus.Invalid;
+                            stateToUpdate.status = ValidationStatus.Invalid;
     //NOTE: leave stateToUpdate.group and asyncProcessing alone
                             return stateToUpdate;
                         }, this);
@@ -558,7 +558,7 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
 
         state.issuesFound = issuesFound as (Array<IssueFound> | null);
         // fix validation result for when validation had occurred
-        if (state.statusCode === ValidationStatus.Invalid) {
+        if (state.status === ValidationStatus.Invalid) {
             let vr = ValidationStatus.ValueChangedButUnvalidated;
             let warningFound = false;
             if (issuesFound) {
@@ -573,7 +573,7 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
                 if (warningFound && vr === ValidationStatus.ValueChangedButUnvalidated)
                     vr = ValidationStatus.Valid;
             }
-            state.statusCode = vr;
+            state.status = vr;
         }
     }
 

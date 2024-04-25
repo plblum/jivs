@@ -52,7 +52,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let changed = !deepEquals(value, oldValue);
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
-                stateToUpdate.statusCode = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
                 stateToUpdate.value = value;
             }
             this.updateChangeCounterInInstanceState(stateToUpdate, changed, options!);
@@ -93,7 +93,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let changed = !deepEquals(value, oldValue);
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
-                stateToUpdate.statusCode = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
                 stateToUpdate.inputValue = value;
             }
             this.updateChangeCounterInInstanceState(stateToUpdate, changed, options!);
@@ -132,7 +132,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 // effectively clear past validation
-                stateToUpdate.statusCode = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
                 stateToUpdate.issuesFound = null;
 
                 stateToUpdate.value = nativeValue;
@@ -159,7 +159,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     protected processValidationOptions(options: SetValueOptions): void {
         if (options.validate) {
-            if (this.instanceState.statusCode === ValidationStatus.ValueChangedButUnvalidated)
+            if (this.instanceState.status === ValidationStatus.ValueChangedButUnvalidated)
                 this.validate(); // Result isn't ignored. Its automatically updates state and notifies parent
         }
         else if (options.reset)
@@ -203,7 +203,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             else {
                 this.updateInstanceState((stateToUpdate) => {
                     this.clearValidationDataFromInstanceState(stateToUpdate);
-                    stateToUpdate.statusCode = ValidationStatus.ValueChangedButUnvalidated;
+                    stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
                     return stateToUpdate;
                 }, this);
             }
@@ -234,7 +234,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     /**
      * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false when instanceState.statusCode is Invalid. Any other ValidationStatus
+     * Returns false when instanceState.status is Invalid. Any other ValidationStatus
      * return true.
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
@@ -262,7 +262,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             for (let error of this.businessLogicErrors)
                 if (error.severity !== ValidationSeverity.Warning)
                     return ValidationStatus.Invalid;
-        return this.instanceState.statusCode;
+        return this.instanceState.status;
     }
 
     /**
@@ -314,7 +314,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
 
     protected clearValidationDataFromInstanceState(stateToUpdate: TState): void {
-        stateToUpdate.statusCode = ValidationStatus.NotAttempted;
+        stateToUpdate.status = ValidationStatus.NotAttempted;
         stateToUpdate.issuesFound = null;
         delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
         delete stateToUpdate.conversionErrorTokenValue;
@@ -537,7 +537,7 @@ export abstract class ValidatableValueHostBaseGenerator implements IValueHostGen
         return {
             name: config.name,
             value: config.initialValue,
-            statusCode: ValidationStatus.NotAttempted,
+            status: ValidationStatus.NotAttempted,
             inputValue: undefined,
             issuesFound: null
         };

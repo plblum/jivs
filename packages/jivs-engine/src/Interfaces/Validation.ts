@@ -57,7 +57,7 @@ export interface StatefulValueHostValidateResult {
     /**
      * The state of validation for this ValueHost.
      */
-    statusCode: ValidationStatus;
+    status: ValidationStatus;
 
     /**
      * The issues that were found.

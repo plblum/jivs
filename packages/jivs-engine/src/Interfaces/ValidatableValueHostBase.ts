@@ -88,7 +88,7 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false when instanceState.statusCode is Invalid. Any other instanceState.statusCode
+     * Returns false when instanceState.status is Invalid. Any other instanceState.status
      * return true.
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined

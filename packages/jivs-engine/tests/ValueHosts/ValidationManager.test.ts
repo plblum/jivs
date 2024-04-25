@@ -408,7 +408,7 @@ describe('ValidationManager.addValueHost', () => {
 
         let savedValueHostInstanceState: InputValueHostInstanceState = {
             name: 'Field1',
-            statusCode: ValidationStatus.Valid, // something we can return
+            status: ValidationStatus.Valid, // something we can return
             value: 10,   // something we can return,
             issuesFound: null
         };
@@ -440,7 +440,7 @@ describe('ValidationManager.addValueHost', () => {
 
         let savedValueHostInstanceState: InputValueHostInstanceState = {
             name: 'Field1',
-            statusCode: ValidationStatus.Invalid, // something we can return
+            status: ValidationStatus.Invalid, // something we can return
             value: 10,   // something we can return,
             issuesFound: [{
                 errorMessage: 'msg',
@@ -490,7 +490,7 @@ describe('ValidationManager.addValueHost', () => {
         let savedValueHostInstanceStates: Array<ValueHostInstanceState> = [];
         savedValueHostInstanceStates.push(<InputValueHostInstanceState>{
             name: 'Field1',
-            statusCode: ValidationStatus.Valid, // something we can return
+            status: ValidationStatus.Valid, // something we can return
             value: 10   // something we can return
         });
         let testItem = new PublicifiedValidationManager({
@@ -500,7 +500,7 @@ describe('ValidationManager.addValueHost', () => {
         let addState: InputValueHostInstanceState = {
             name: 'Field1',
             value: 20,
-            statusCode: ValidationStatus.Invalid,
+            status: ValidationStatus.Invalid,
             issuesFound: [{
                 errorMessage: 'msg',
                 valueHostName: 'Field1',
@@ -518,7 +518,7 @@ describe('ValidationManager.addValueHost', () => {
 
         let savedValueHostInstanceState: InputValueHostInstanceState = {
             name: 'Field1',
-            statusCode: ValidationStatus.Valid, // something we can return
+            status: ValidationStatus.Valid, // something we can return
             value: 10,   // something we can return,
             issuesFound: null
         };
@@ -719,7 +719,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
             name: 'Field1',
             value: 40,
             issuesFound: null,
-            statusCode: ValidationStatus.NotAttempted
+            status: ValidationStatus.NotAttempted
         };
         let replacementValueHost: IValueHost | null = null;
         expect(() => replacementValueHost = testItem.updateValueHost(config, updateState)).not.toThrow();
@@ -753,7 +753,7 @@ describe('ValidationManager.updateValueHost completely replaces the ValueHost in
             name: 'Field1',
             value: 40,
             issuesFound: null,
-            statusCode: ValidationStatus.NotAttempted
+            status: ValidationStatus.NotAttempted
         };
         testItem.updateValueHost(config, updateState);
 
