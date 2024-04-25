@@ -271,7 +271,10 @@ export type InputValueChangedHandler = (valueHost: IValidatableValueHostBase, ol
  */
 export interface ValueHostValidationState extends ValidationState
 {
-
+/**
+ * Reports the current ValidationStatus
+ */    
+    status: ValidationStatus;
 }
 
 /**

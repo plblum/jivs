@@ -410,7 +410,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                     issuesFound: this.getIssuesFound(),
                     isValid: this.isValid,
                     doNotSaveNativeValues: this.doNotSaveNativeValue(),
-                    asyncProcessing : this.asyncProcessing
+                    asyncProcessing: this.asyncProcessing,
+                    status: this.validationStatus
                 });
     }
     
