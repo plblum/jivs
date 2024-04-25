@@ -5,7 +5,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
-import { ValidateOptions, ValueHostValidateResult, ValidationStatusCode, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
@@ -20,16 +20,16 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
 {
     /**
      * Result is based on the presence of Business Logic Errors that are not warnings.
-     * If none, ValidationStatusCode = Valid.
-     * If only warnings, ValidationStatusCode = Valid and IssuesFound are generated for each.
-     * Otherwise, ValidationStatusCode = Invalid and IssuesFound are generated from each error.
+     * If none, ValidationStatus = Valid.
+     * If only warnings, ValidationStatus = Valid and IssuesFound are generated for each.
+     * Otherwise, ValidationStatus = Invalid and IssuesFound are generated from each error.
      * @param options 
      * @returns 
      */
     public validate(options?: ValidateOptions): ValueHostValidateResult | null {
         let result: ValueHostValidateResult = {
             issuesFound: null,
-            statusCode: ValidationStatusCode.Valid
+            statusCode: ValidationStatus.Valid
         };
         if (this.businessLogicErrors)
         {
@@ -53,12 +53,12 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
             if (issueCount)
             {
                 result.issuesFound = iif;
-                result.statusCode = errorFound ? ValidationStatusCode.Invalid : ValidationStatusCode.Valid;
+                result.statusCode = errorFound ? ValidationStatus.Invalid : ValidationStatus.Valid;
             }
         }
         this.invokeOnValueHostValidated(options);
         // when the result hasn't changed from the start, report null as there were no issues found
-        return result.statusCode !== ValidationStatusCode.Undetermined || result.issuesFound !== null || result.pending ?
+        return result.statusCode !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
             result : null;
     }
     public get requiresInput(): boolean

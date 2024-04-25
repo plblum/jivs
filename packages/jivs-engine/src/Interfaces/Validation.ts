@@ -57,7 +57,7 @@ export interface StatefulValueHostValidateResult {
     /**
      * The state of validation for this ValueHost.
      */
-    statusCode: ValidationStatusCode;
+    statusCode: ValidationStatus;
 
     /**
      * The issues that were found.
@@ -86,7 +86,7 @@ export interface ValueHostValidateResult extends StatefulValueHostValidateResult
  * with the result from validation and influences the behavior
  * of the next attempt to validate.
  */
-export enum ValidationStatusCode { // ValueHostValidationStatus, ValueHostStatusCode
+export enum ValidationStatus { // ValueHostValidationStatus, ValueHostStatusCode
     /**
      * Indicates that validate() has yet to be attempted
      * Once attempted, it will always be one of the other results
@@ -111,7 +111,7 @@ export enum ValidationStatusCode { // ValueHostValidationStatus, ValueHostStatus
      */
     Invalid
 }
-export const ValidationStatusCodeString = [
+export const ValidationStatusString = [
     'NotAttempted',
     'ValueChangedButUnvalidated',
     'Undetermined',
@@ -138,7 +138,7 @@ export enum ValidationSeverity {
     Error,
     /**
      * The result will block saving.
-     * Validation process will stop, leaving remaining validators set to 'ValidationStatusCode.Undetermined'.
+     * Validation process will stop, leaving remaining validators set to 'ValidationStatus.Undetermined'.
      * Its best to put these early in the list of InputValueHost.Validators.
      * Consider this for RequiredConditions and DataTypeCondition.
      * RequiredCondition - If you don't have any data to evaluate, none of the remaining validators serve a purpose.
@@ -241,7 +241,7 @@ export interface ValidationSnapshot
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
-     * True when ValidationStatusCode is Invalid or ValueChangedButUnvalidated
+     * True when ValidationStatus is Invalid or ValueChangedButUnvalidated
      * on individual validators.
      */
     doNotSaveNativeValues: boolean;

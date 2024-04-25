@@ -4,7 +4,7 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
-    type ValidateOptions, type ValueHostValidateResult, ValidationStatusCode,
+    type ValidateOptions, type ValueHostValidateResult, ValidationStatus,
     type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult,
     ValidationSnapshot
 } from './Validation';
@@ -70,7 +70,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      * with all of the NoMatches in issuesFound.
      * If all were Matched, it returns ValueHostValidateResult.Value and issuesFound=null.
      * If there are no validators, or all validators were skipped (disabled),
-     * it returns ValidationStatusCode.Undetermined.
+     * it returns ValidationStatus.Undetermined.
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on behavior.
      * @returns Non-null when there is something to report. null if there was nothing to evaluate
@@ -93,12 +93,12 @@ export interface IValidatableValueHostBase extends IValueHost {
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using validationStatusCode property for more clarity.
+     * Recommend using doNotSaveNativeValue() for more clarity.
      */
     isValid: boolean;
 
     /**
-     * StatusCode from the latest validation, or an indication
+     * Status from the latest validation, or an indication
      * that validation has yet to occur.
      * It is changed internally and can influence how
      * validation behaves the next time.
@@ -107,7 +107,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      * After setValue it is ValueChangedButUnvalidated.
      * After validate, it may be Valid, Invalid or Undetermined.
      */
-    validationStatusCode: ValidationStatusCode;
+    validationStatus: ValidationStatus;
     
     /**
      * When true, an async Validator is running
@@ -137,7 +137,7 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
-     * True when ValidationStatusCode is Invalid or ValueChangedButUnvalidated.
+     * True when ValidationStatus is Invalid or ValueChangedButUnvalidated.
      */
     doNotSaveNativeValue(): boolean;
 
