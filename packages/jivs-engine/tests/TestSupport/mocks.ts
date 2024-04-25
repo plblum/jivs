@@ -149,7 +149,8 @@ export class MockInputValueHost extends MockValueHost
         throw new Error("Method not implemented.");
     }
     isValid: boolean = false;
-
+    asyncProcessing: boolean = false;
+    
     doNotSaveNativeValue(): boolean
     {
         throw new Error("Method not implemented.");

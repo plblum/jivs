@@ -10,14 +10,13 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { objectKeysCount, groupsMatch, cleanString } from '../Utilities/Utilities';
+import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatusCode, ValidationSeverity, ValidationStatusCodeString, IssueFound } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { InputValueHostConfig, InputValueHostState, IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { FluentValidatorCollector } from './Fluent';
@@ -135,8 +134,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                 result.statusCode = ValidationStatusCode.Undetermined;
             }                  
             if (updateStateWithResult(result))
-                if (!options || !options.omitCallback)
-                    toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
+                self.invokeOnValueHostValidated(options);
         // when the result hasn't changed from the start, report null as there were no issues found
             return result.statusCode !== ValidationStatusCode.Undetermined || result.issuesFound !== null || result.pending ?
                 result : null;
@@ -205,8 +203,8 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                                 result.issuesFound = [];
                             result.issuesFound.push(ivr.issueFound!);
                             if (updateStateWithResult(result))
-                                if (!options || !options.omitCallback)
-                                    toIValidationManagerCallbacks(self.valueHostsManager)?.onValueHostValidated?.(self, result);
+                                self.invokeOnValueHostValidated(options);
+
                         }
                         else
                             deleteAsyncProcessFlag();

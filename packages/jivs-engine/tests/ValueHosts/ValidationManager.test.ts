@@ -21,7 +21,7 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
+import { IValidatableValueHostBase, ValueHostValidationSnapshot } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig,
     UserSuppliedResultCondition, UserSuppliedResultConditionType
@@ -214,7 +214,7 @@ describe('constructor and initial property values', () => {
             onStateChanged: (validationManager: IValidationManager, state: ValidationManagerState) => { },
             onValidated: (validationManager: IValidationManager, validationSnapshot : ValidationSnapshot) => { },
             onValueHostStateChanged: (valueHost: IValueHost, state: ValueHostState) => { },
-            onValueHostValidated: (valueHost: IValidatableValueHostBase, validateResult: ValueHostValidateResult) => { },
+            onValueHostValidated: (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationSnapshot) => { },
             onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
             onInputValueChanged: (valueHost: IValidatableValueHostBase, oldValue: any) => { }
         };
@@ -1815,7 +1815,7 @@ describe('toIValidationManagerCallbacks function', () => {
             onValueChanged: (vh: IValueHost, old: any) => {},
             onValueHostStateChanged: (vh: IValueHost, state: ValueHostState) => {},
             onInputValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
-            onValueHostValidated: (vh: IValidatableValueHostBase, validateResult: ValueHostValidateResult) => { },
+            onValueHostValidated: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationSnapshot) => { },
             onStateChanged: (vm, state) => { },
             onValidated: (vm, results) => { }
         };

@@ -7,6 +7,7 @@ import {
     type ValidateOptions, type ValueHostValidateResult, ValidationStatusCode,
     type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult
 } from './Validation';
+import { ValidationSnapshot } from './ValidationManager';
 import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostState } from './ValueHost';
 
 /**
@@ -106,6 +107,11 @@ export interface IValidatableValueHostBase extends IValueHost {
      * After validate, it may be Valid, Invalid or Undetermined.
      */
     validationStatusCode: ValidationStatusCode;
+    
+    /**
+     * When true, an async Validator is running
+     */
+    asyncProcessing: boolean;
 
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
@@ -254,8 +260,18 @@ export interface ValidatableValueHostBaseState extends ValueHostState, StatefulV
 }
 
 
-export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validateResult: ValueHostValidateResult) => void;
+export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validationSnapshot: ValueHostValidationSnapshot) => void;
 export type InputValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
+
+/**
+ * The value returned by OnValueHostValidated.
+ * It includes all issuesfound and businesslogicerrors
+ * as compared to validate() which is limited to just the issuesfound.
+ */
+export interface ValueHostValidationSnapshot extends ValidationSnapshot
+{
+
+}
 
 /**
  * Provides callback hooks for the consuming system to supply to IInputValueHosts.

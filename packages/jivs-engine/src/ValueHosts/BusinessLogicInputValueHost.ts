@@ -56,8 +56,7 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
                 result.statusCode = errorFound ? ValidationStatusCode.Invalid : ValidationStatusCode.Valid;
             }
         }
-        if (!options || !options.omitCallback)
-            toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
+        this.invokeOnValueHostValidated(options);
         // when the result hasn't changed from the start, report null as there were no issues found
         return result.statusCode !== ValidationStatusCode.Undetermined || result.issuesFound !== null || result.pending ?
             result : null;

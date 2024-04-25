@@ -266,6 +266,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
 
     /**
+     * When true, an async Validator is running
+     */
+    public get asyncProcessing(): boolean
+    {
+        return this.state.asyncProcessing ?? false;
+    }
+
+    /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      * It calls onValueHostValidated if there was a changed to the state.
@@ -400,9 +408,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
                 {
                     issuesFound: this.getIssuesFound(),
-                    statusCode: this.validationStatusCode
+                    isValid: this.isValid,
+                    doNotSaveNativeValues: this.doNotSaveNativeValue()
                 });
     }
+    
     /**
      * exposes the Business Logic Errors list. If none, it is null.
      */

@@ -206,16 +206,16 @@ export class StartFluent
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
      */
-    static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig;
+    public static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig;
     /**
      * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
-    static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
+    public static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
     // overload resolution
-    static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
+    public static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
     {
         this.assertFirstParameterValid(arg1);
         if (typeof arg1 === 'object')
@@ -257,16 +257,16 @@ export class StartFluent
      * @param dataType - can be null. The value for ValueHost.dataType.
      * @param calcFn - required. Function callback.
      */
-    calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
+    public calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
     /**
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
-    calc(config: Omit<CalcValueHostConfig, 'conditionType'>): CalcValueHostConfig;
+    public calc(config: Omit<CalcValueHostConfig, 'conditionType'>): CalcValueHostConfig;
     // overload resolution
-    calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
+    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
     {
         this.assertFirstParameterValid(arg1);
         if (typeof arg1 === 'object')
