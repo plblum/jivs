@@ -51,13 +51,13 @@ export interface ValidateOptions
 }
 
 /**
- * Result of the validate() function that will be saved in InputValueHostState
+ * Result of the validate() function that will be saved in InputValueHostInstanceState
  */
 export interface StatefulValueHostValidateResult {
     /**
      * The state of validation for this ValueHost.
      */
-    validationResult: ValidationResult;
+    status: ValidationStatus;
 
     /**
      * The issues that were found.
@@ -81,9 +81,12 @@ export interface ValueHostValidateResult extends StatefulValueHostValidateResult
 
 
 /**
- * The state of validation for this ValueHost.
+ * The state of validation for this ValidatableValueHost.
+ * It combines what has happened to the ValueHost's values
+ * with the result from validation and influences the behavior
+ * of the next attempt to validate.
  */
-export enum ValidationResult {
+export enum ValidationStatus { // ValueHostValidationStatus, ValueHostStatusCode
     /**
      * Indicates that validate() has yet to be attempted
      * Once attempted, it will always be one of the other results
@@ -108,11 +111,10 @@ export enum ValidationResult {
      */
     Invalid
 }
-export const ValidationResultString = [
+export const ValidationStatusString = [
     'NotAttempted',
     'ValueChangedButUnvalidated',
     'Undetermined',
-    'AsyncProcessing',
     'Valid',
     'Invalid'
 ];
@@ -136,7 +138,7 @@ export enum ValidationSeverity {
     Error,
     /**
      * The result will block saving.
-     * Validation process will stop, leaving remaining validators set to 'ValidationResult.Undetermined'.
+     * Validation process will stop, leaving remaining validators set to 'ValidationStatus.Undetermined'.
      * Its best to put these early in the list of InputValueHost.Validators.
      * Consider this for RequiredConditions and DataTypeCondition.
      * RequiredCondition - If you don't have any data to evaluate, none of the remaining validators serve a purpose.
@@ -219,4 +221,40 @@ export interface BusinessLogicError {
      * If not supplied, the IssueFound.ConditionType will be assigned a generated value.
      */
     errorCode?: string;
+}
+
+
+/**
+ * Packages key values of the state of validation to be returned
+ * by validate() and in the ValidationManagerValidatedHandler.
+ * While here, the same values are available directly on ValidationManager.
+ */
+export interface ValidationState
+{
+    /**
+     * When true, there is nothing known to block validation. However, there are other factors
+     * to consider: there may be warning issues found or an async validator is still running. 
+     * So check doNotSaveValueHosts as the ultimate guide to saving.
+     * When false, there is at least one validation error.
+     */
+    isValid: boolean;
+    /**
+     * Determines if a validator doesn't consider the ValueHost's value ready to save
+     * based on the latest call to validate(). (It does not run validate().)
+     * True when ValidationStatus is Invalid or ValueChangedButUnvalidated
+     * on individual validators.
+     */
+    doNotSaveNativeValues: boolean;
+
+    /**
+     * All issues current found (except ValueHosts not matching the validation group which are excluded.)
+     * Includes issues found by setBusinessLogicErrors too.
+     * If none, it is null
+     */
+    issuesFound: Array<IssueFound> | null;
+
+    /**
+     * When true, an async Validator is running
+     */
+    asyncProcessing: boolean;    
 }

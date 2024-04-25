@@ -3,7 +3,7 @@
  * @module ValueHosts/ConcreteClasses/StaticValueHost
  */
 import { InputValueHostConfig } from '../Interfaces/InputValueHost';
-import { IStaticValueHost, StaticValueHostConfig, StaticValueHostState } from '../Interfaces/StaticValueHost';
+import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from '../Interfaces/StaticValueHost';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostResolver';
@@ -27,10 +27,10 @@ import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
  *   your input fields/elements to get their value from ValidationManager and upon change, provide
  *   the new values back.
  */
-export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, StaticValueHostState>
+export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, StaticValueHostInstanceState>
     implements IStaticValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostState)
+    constructor(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState)
     {
         super(valueHostsManager, config, state);
     }
@@ -51,11 +51,11 @@ export class StaticValueHostGenerator extends ValueHostBaseGenerator {
             return true;
         return false;
     }
-    public create(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostState): IStaticValueHost {
+    public create(valueHostsManager: IValueHostsManager, config: StaticValueHostConfig, state: StaticValueHostInstanceState): IStaticValueHost {
         return new StaticValueHost(valueHostsManager, config, state);
     }
 
-    public cleanupState(state: StaticValueHostState, config: StaticValueHostConfig): void {
+    public cleanupInstanceState(state: StaticValueHostInstanceState, config: StaticValueHostConfig): void {
         // nothing needed.
     }
 }

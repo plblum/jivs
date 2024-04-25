@@ -1,10 +1,14 @@
 /**
- * @module Validator/Types/MessageTokenSource
+ * @module Validation/Types
  */
 
 import { IInputValueHost } from "./InputValueHost";
 import { IValueHostResolver } from "./ValueHostResolver";
 
+/**
+ * Allows a class of the Validator & Condition classes to return tokens and associated
+ * values that can appear in an error message.
+ */
 export interface IMessageTokenSource {
     /**
      * Returns an array of 0 or more tokens supported by this MessageTokenSource.

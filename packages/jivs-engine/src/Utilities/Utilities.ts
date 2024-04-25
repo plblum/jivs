@@ -1,5 +1,5 @@
 /**
- * Various utilities
+ * Various classes, types and functions to support the overall tool.
  * @module Utilities
  */
 

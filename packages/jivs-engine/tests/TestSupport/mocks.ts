@@ -1,16 +1,16 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 
 import { type ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { MessageTokenResolverService  } from "../../src/Services/MessageTokenResolverService";
+import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { toIServicesAccessor, type IValidationServices } from "../../src/Interfaces/ValidationServices";
-import type { IValueHost, SetValueOptions, ValueHostState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostStateChangedHandler } from "../../src/Interfaces/ValueHost";
+import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
-import { IInputValueHost, InputValueHostConfig, InputValueHostState } from "../../src/Interfaces/InputValueHost";
-import { ValidateOptions, ValueHostValidateResult, ValidationResult, BusinessLogicError, IssueFound } from "../../src/Interfaces/Validation";
+import { IInputValueHost, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
-import { IValidationManager, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
+import { IValidationManager, IValidationManagerCallbacks, ValidationManagerInstanceStateChangedHandler, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
@@ -32,7 +32,6 @@ import { ValueHostValidatedHandler, InputValueChangedHandler } from "../../src/I
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
-import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -84,7 +83,7 @@ export class MockValueHost implements IValueHost
         return this._dataTypeLookupKey;
     }
 
-    saveIntoState(key: string, value: any): void
+    saveIntoInstanceState(key: string, value: any): void
     {
         if (value !== undefined)
             this._savedItems[key] = value;
@@ -92,7 +91,7 @@ export class MockValueHost implements IValueHost
             delete this._savedItems[key];
     }
 
-    getFromState(key: string): any | undefined
+    getFromInstanceState(key: string): any | undefined
     {
         return this._savedItems[key];
     }
@@ -105,9 +104,9 @@ export class MockValueHost implements IValueHost
     setLabel(label: string | null | undefined, labell10n?: string | null | undefined): void
     {
         if (label !== null)
-            this.saveIntoState('_label', label);
+            this.saveIntoInstanceState('_label', label);
         if (labell10n !== null)
-            this.saveIntoState('_labell10n', labell10n);
+            this.saveIntoInstanceState('_labell10n', labell10n);
     }
 }
 
@@ -145,22 +144,23 @@ export class MockInputValueHost extends MockValueHost
     validate(options?: ValidateOptions): ValueHostValidateResult {
         throw new Error("Method not implemented.");
     }
-    clearValidation(): void {
+    clearValidation(): boolean {
         throw new Error("Method not implemented.");
     }
     isValid: boolean = false;
-
+    asyncProcessing: boolean = false;
+    
     doNotSaveNativeValue(): boolean
     {
         throw new Error("Method not implemented.");
     }
 
-    validationResult: ValidationResult = ValidationResult.NotAttempted;
+    validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
     
-    setBusinessLogicError(error: BusinessLogicError): void {
+    setBusinessLogicError(error: BusinessLogicError): boolean {
         throw new Error("Method not implemented.");
     }
-    clearBusinessLogicErrors(): void {
+    clearBusinessLogicErrors(): boolean {
         throw new Error("Method not implemented.");
     }
 
@@ -379,7 +379,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     constructor(services: IValidationServices)
     {
         this._services = services;
-        this.onValueHostStateChanged = this.onValueHostStateChangeHandler;
+        this.onValueHostInstanceStateChanged = this.onValueHostInstanceStateChangeHandler;
     }
 
     public get services(): IValidationServices
@@ -389,7 +389,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     private _services: IValidationServices;
 /**
  * ValueHosts for all ValueHostConfigs.
- * Always replace a ValueHost when the associated Config or State are changed.
+ * Always replace a ValueHost when the associated Config or InstanceState are changed.
  */    
     private _valueHosts: Map<string, IValueHost> = new Map<string, IValueHost>();  
     
@@ -410,10 +410,10 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         return vh;
     }
     public addInputValueHostWithConfig(config: ValueHostConfig,
-        state: InputValueHostState | null): IInputValueHost
+        state: InputValueHostInstanceState | null): IInputValueHost
     {
         if (!state)
-            state = this.services.valueHostFactory.createState(config) as InputValueHostState;
+            state = this.services.valueHostFactory.createInstanceState(config) as InputValueHostInstanceState;
         let vh = this.services.valueHostFactory.create(this, config, state) as IInputValueHost;
         this._valueHosts.set(config.name, vh);    
   //      vh.SetValues(nativeValue, inputValue);
@@ -426,25 +426,25 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
         return toIInputValueHost(this.getValueHost(valueHostName));
     }    
-    private _hostStateChanges: Array<ValueHostState> = [];
-    public onValueHostStateChangeHandler: ValueHostStateChangedHandler = (valueHost, stateToRetain) => {
-        this._hostStateChanges.push(stateToRetain);  
+    private _hostInstanceStateChanges: Array<ValueHostInstanceState> = [];
+    public onValueHostInstanceStateChangeHandler: ValueHostInstanceStateChangedHandler = (valueHost, stateToRetain) => {
+        this._hostInstanceStateChanges.push(stateToRetain);  
     };
-    public getHostStateChanges(): Array<ValueHostState>
+    public getHostStateChanges(): Array<ValueHostInstanceState>
     {
-        return this._hostStateChanges;
+        return this._hostInstanceStateChanges;
     }    
 
-    validate(options?: ValidateOptions): Array<ValueHostValidateResult> {
+    validate(options?: ValidateOptions): ValidationState {
         throw new Error("Method not implemented.");
     }
-    clearValidation(): void {
+    clearValidation(options?: ValidateOptions): boolean {
         throw new Error("Method not implemented.");
     }
 
     isValid: boolean = true;        
 
-    doNotSaveNativeValue(): boolean {
+    doNotSaveNativeValues(): boolean {
         throw new Error("Method not implemented.");
     }
     notifyOtherValueHostsOfValueChange(valueHostNameThatChanged: string, revalidate: boolean): void {
@@ -453,7 +453,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
                 vh.otherValueHostChangedNotification(valueHostNameThatChanged, revalidate);
         });
     }    
-    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void
+    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): boolean
     {
         throw new Error("Method not implemented.");        
     }        
@@ -464,13 +464,13 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         throw new Error("Method not implemented.");
     }
 
-    public get onStateChanged(): ValidationManagerStateChangedHandler | null {
-        return this._onStateChanged;
+    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
+        return this._onInstanceStateChanged;
     }
-    public set onStateChanged(fn: ValidationManagerStateChangedHandler) {
-        this._onStateChanged = fn;
+    public set onInstanceStateChanged(fn: ValidationManagerInstanceStateChangedHandler) {
+        this._onInstanceStateChanged = fn;
     }
-    private _onStateChanged: ValidationManagerStateChangedHandler | null = null;
+    private _onInstanceStateChanged: ValidationManagerInstanceStateChangedHandler | null = null;
 
     public get onValidated(): ValidationManagerValidatedHandler | null {
         return this._onValidated;
@@ -480,13 +480,13 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     }
     private _onValidated: ValidationManagerValidatedHandler | null = null;
 
-    public get onValueHostStateChanged(): ValueHostStateChangedHandler | null {
-        return this._onValueHostStateChanged;
+    public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
+        return this._onValueHostInstanceStateChanged;
     }
-    public set onValueHostStateChanged(fn: ValueHostStateChangedHandler) {
-        this._onValueHostStateChanged = fn;
+    public set onValueHostInstanceStateChanged(fn: ValueHostInstanceStateChangedHandler) {
+        this._onValueHostInstanceStateChanged = fn;
     }
-    private _onValueHostStateChanged: ValueHostStateChangedHandler | null = null;
+    private _onValueHostInstanceStateChanged: ValueHostInstanceStateChangedHandler | null = null;
 
     public get onValueHostValidated(): ValueHostValidatedHandler | null {
         return this._onValueHostValidated;

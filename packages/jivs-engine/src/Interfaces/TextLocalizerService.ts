@@ -1,5 +1,6 @@
 /**
- * @module Services/Types
+ * @inheritDoc ITextLocalizerService
+ * @module Services/Types/ITextLocalizerService
  */
 
 import { IServiceWithFallback } from "./ValidationServices";

@@ -8,14 +8,14 @@ import {
     RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
 } from '../../src/Conditions/ConcreteConditions';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
-import { EvaluateChildConditionResultsConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
+import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
 
 function TestFluentConditionCollector(testItem: FluentConditionCollector,
     expectedCondConfig: ConditionConfig) {
 
     expect(testItem).toBeInstanceOf(FluentConditionCollector);
     let typedTextItem = testItem as FluentConditionCollector;
-    let parentConfig = typedTextItem.parentConfig as EvaluateChildConditionResultsConfig;
+    let parentConfig = typedTextItem.parentConfig as EvaluateChildConditionResultsBaseConfig;
     expect(parentConfig.conditionConfigs).not.toBeNull();
     expect(parentConfig.conditionConfigs!.length).toBe(1);
     let condConfig = parentConfig.conditionConfigs![0];

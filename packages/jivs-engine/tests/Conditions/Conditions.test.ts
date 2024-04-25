@@ -10,14 +10,12 @@ import {
     AllMatchCondition, DataTypeCheckConditionConfig, DataTypeCheckCondition,
     AnyMatchCondition, CountMatchesCondition,
     CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig, NotNullCondition, NotNullConditionConfig,
-    CompareToSecondValueHostConditionConfig,
     EqualToConditionConfig,
     NotEqualToConditionConfig,
     GreaterThanConditionConfig,
     GreaterThanOrEqualConditionConfig,
     LessThanConditionConfig,
     LessThanOrEqualConditionConfig,
-    CompareToValueConditionConfig,
     EqualToValueCondition,
     EqualToValueConditionConfig,
     GreaterThanOrEqualValueCondition,
@@ -43,6 +41,9 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { IntegerConverter } from "../../src/DataTypes/DataTypeConverters";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType } from "../TestSupport/conditionsForTesting";
+import { CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
+import { CompareToValueConditionBaseConfig } from "../../src/Conditions/CompareToValueConditionBase";
+
 
 
 describe('ConditionBase class additional cases', () => {
@@ -1152,7 +1153,7 @@ describe('CompareToConditionBase class additional cases', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost('Property2', LookupKey.Number, 'Second label');
 
-        let config: CompareToSecondValueHostConditionConfig = {
+        let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
@@ -1181,7 +1182,7 @@ describe('CompareToConditionBase class additional cases', () => {
             'Property1', LookupKey.String, 'Label');
         let logger = services.loggerService as MockCapturingLogger;
         vh.setValue('');
-        let config: CompareToSecondValueHostConditionConfig = {
+        let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
             secondValueHostName: 'PropertyNotRegistered',
             valueHostName: null
@@ -1199,7 +1200,7 @@ describe('CompareToConditionBase class additional cases', () => {
             'Property1', LookupKey.String, 'Label');
         let logger = services.loggerService as MockCapturingLogger;
         vh.setValue('');
-        let config: CompareToSecondValueHostConditionConfig = {
+        let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
             valueHostName: null,
             secondValueHostName: null
@@ -2452,7 +2453,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
             'Property1', LookupKey.Number, 'Label');
         let vh2 = vm.addInputValueHost('Property2', LookupKey.Number, 'Second label');
 
-        let config: CompareToValueConditionConfig= {
+        let config: CompareToValueConditionBaseConfig= {
             conditionType: ConditionType.Unknown,
             valueHostName: 'Property1',
         };
@@ -2475,7 +2476,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
             'Property1', LookupKey.String, 'Label');
         let logger = services.loggerService as MockCapturingLogger;
         vh.setValue('');
-        let config: CompareToValueConditionConfig= {
+        let config: CompareToValueConditionBaseConfig= {
             conditionType: ConditionType.EqualTo,
             valueHostName: null,
             secondValue: null

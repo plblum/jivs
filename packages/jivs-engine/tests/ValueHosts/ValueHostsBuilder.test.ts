@@ -1,6 +1,6 @@
 import { RequireTextConditionConfig, RegExpConditionConfig, RequireTextCondition } from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { EvaluateChildConditionResultsConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
+import { EvaluateChildConditionResultsBaseConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ICalcValueHost, CalculationHandlerResult } from "../../src/Interfaces/CalcValueHost";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
@@ -242,7 +242,7 @@ describe('build(vmConfig).conditions', () => {
     test('Supplied parameter creates a FluentConditionCollector with the same vhConfig', () => {
         let vmConfig = createVMConfig();
 
-        let parentConfig: EvaluateChildConditionResultsConfig = {
+        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
@@ -256,7 +256,7 @@ describe('build(vmConfig).conditions', () => {
     test('Supplied parameter with conditionConfig=null creates a FluentValidatorCollector with the same vhConfig and conditionConfig=[]', () => {
         let vmConfig = createVMConfig();
 
-        let parentConfig: EvaluateChildConditionResultsConfig = {
+        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
@@ -469,10 +469,10 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
         expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
-    test('build(vmConfig).conditions with EvaluateChildConditionResultsConfig parameter: Add RequiredTest condition to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).conditions with EvaluateChildConditionResultsBaseConfig parameter: Add RequiredTest condition to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
-        let eccrConfig: EvaluateChildConditionResultsConfig = {
+        let eccrConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: 'All',
             conditionConfigs: []
         };
@@ -484,10 +484,10 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
         expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
     });
-    test('build(vmConfig).conditions with EvaluateChildConditionResultsConfig parameter: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).conditions with EvaluateChildConditionResultsBaseConfig parameter: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
-        let eccrConfig: EvaluateChildConditionResultsConfig = {
+        let eccrConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: 'All',
             conditionConfigs: []
         };

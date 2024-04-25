@@ -5,7 +5,7 @@
  * @module ValueHosts/Types/ValueHostFactory
  */
 
-import { ValueHostConfig, ValueHostState, IValueHost } from './ValueHost';
+import { ValueHostConfig, ValueHostInstanceState, IValueHost } from './ValueHost';
 import { IValueHostsManager } from './ValueHostResolver';
 
 /**
@@ -16,9 +16,9 @@ export interface IValueHostFactory {
      * Creates the instance.
      * @param valueHostsManager 
      * @param config - determines the class. All classes supported here must ValueHostConfig to get their setup.
-     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.createState() to create an initial value.
+     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.createInstanceState() to create an initial value.
      */
-    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostState): IValueHost;
+    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
     /**
      * Adjusts the state from a previous time to conform to the Config.
      * For example, if the Config had a rule change, some data in the state may
@@ -26,12 +26,12 @@ export interface IValueHostFactory {
      * @param state 
      * @param config 
      */
-    cleanupState(state: ValueHostState, config: ValueHostConfig): void;
+    cleanupInstanceState(state: ValueHostInstanceState, config: ValueHostConfig): void;
     /**
-     * Creates an initialized State object
+     * Creates an initialized InstanceState object
      * @param config 
      */
-    createState(config: ValueHostConfig): ValueHostState;
+    createInstanceState(config: ValueHostConfig): ValueHostInstanceState;
 }
 
 /**
@@ -51,7 +51,7 @@ export interface IValueHostGenerator {
      * @param config 
      * @param state 
      */
-    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostState): IValueHost;
+    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
     /**
      * Adjusts the state from a previous time to conform to the Config.
      * For example, if the Config had a rule change, some data in the state may
@@ -59,12 +59,12 @@ export interface IValueHostGenerator {
      * @param state 
      * @param config 
      */
-    cleanupState(state: ValueHostState, config: ValueHostConfig): void;
+    cleanupInstanceState(state: ValueHostInstanceState, config: ValueHostConfig): void;
     /**
-     * Creates an initialized State object
+     * Creates an initialized InstanceState object
      * @param config 
      */
-    createState(config: ValueHostConfig): ValueHostState;
+    createInstanceState(config: ValueHostConfig): ValueHostInstanceState;
 }
 
 /**

@@ -1,21 +1,21 @@
 /**
- * Base implementation for Conditions that get a values from two ValueHostNames.
- * The Config introduces secondValueHostName.
+ * Base for Conditions that takes 2 values to evaluate properly, and the second 
+ * value comes from another ValueHost identified in TwoValueConditionBaseConfig.secondValueHostName.
+ * 
  * @module Conditions/AbstractClasses/TwoValueConditionBase
  */
 
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { IMessageTokenSource, TokenLabelAndValue } from "../Interfaces/MessageTokenSource";
+import { TokenLabelAndValue } from "../Interfaces/MessageTokenSource";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
-import { OneValueConditionConfig, OneValueConditionBase } from "./OneValueConditionBase";
+import { OneValueConditionBaseConfig, OneValueConditionBase } from "./OneValueConditionBase";
 
 /**
- * For conditions where it takes 2 values to evaluate properly, like
- * when comparing the values of two properties.
+ * ConditionConfig for TwoValueConditionBase
  */
-export interface TwoValueConditionConfig extends OneValueConditionConfig {
+export interface TwoValueConditionBaseConfig extends OneValueConditionBaseConfig {
     /**
      * ValueHostName to retrieve a ValueHost that will be the source
      * of another value for the evaluate() method.
@@ -24,12 +24,12 @@ export interface TwoValueConditionConfig extends OneValueConditionConfig {
 }
 
 /**
- * Base implementation of ICondition with TwoValueConditionConfig.
- * The Config introduces secondValueHostName.
- *  Supports tokens: {SecondLabel}, the label from the second value host.
+ * Base Condition which takes 2 values to evaluate properly, and the second 
+ * value comes from another ValueHost identified in TwoValueConditionBaseConfig.secondValueHostName.
+ * 
+ * Supports tokens: {SecondLabel}, the label from the second value host.
  */
-export abstract class TwoValueConditionBase<TConfig extends TwoValueConditionConfig> extends OneValueConditionBase<TConfig>
-    implements IMessageTokenSource
+export abstract class TwoValueConditionBase<TConfig extends TwoValueConditionBaseConfig> extends OneValueConditionBase<TConfig>
 {
     public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
         super.gatherValueHostNames(collection, valueHostResolver);

@@ -4,8 +4,8 @@
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
-import { ValidateOptions, ValueHostValidateResult, ValidationResult, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
+import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
@@ -16,20 +16,20 @@ import { cleanString } from '../Utilities/Utilities';
 /**
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
  */
-export class BusinessLogicInputValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseState>
+export class BusinessLogicInputValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState>
 {
     /**
      * Result is based on the presence of Business Logic Errors that are not warnings.
-     * If none, ValidationResult = Valid.
-     * If only warnings, ValidationResult = Valid and IssuesFound are generated for each.
-     * Otherwise, ValidationResult = Invalid and IssuesFound are generated from each error.
+     * If none, ValidationStatus = Valid.
+     * If only warnings, ValidationStatus = Valid and IssuesFound are generated for each.
+     * Otherwise, ValidationStatus = Invalid and IssuesFound are generated from each error.
      * @param options 
      * @returns 
      */
-    public validate(options?: ValidateOptions): ValueHostValidateResult {
+    public validate(options?: ValidateOptions): ValueHostValidateResult | null {
         let result: ValueHostValidateResult = {
             issuesFound: null,
-            validationResult: ValidationResult.Valid
+            status: ValidationStatus.Valid
         };
         if (this.businessLogicErrors)
         {
@@ -46,18 +46,20 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
                     errorCode: errorCode,
                     errorMessage: error.errorMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
-                    valueHostName: '*'
+                    valueHostName: BusinessLogicValueHostName
                 });
                 issueCount++;
             }
             if (issueCount)
             {
                 result.issuesFound = iif;
-                result.validationResult = errorFound ? ValidationResult.Invalid : ValidationResult.Valid;
+                result.status = errorFound ? ValidationStatus.Invalid : ValidationStatus.Valid;
             }
         }
-        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
-        return result;
+        this.invokeOnValueHostValidated(options);
+        // when the result hasn't changed from the start, report null as there were no issues found
+        return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
+            result : null;
     }
     public get requiresInput(): boolean
     {
@@ -80,10 +82,10 @@ export class BusinessLogicInputValueHostGenerator extends ValidatableValueHostBa
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {
         return config.valueHostType === BusinessLogicInputValueHostType;
     }
-    public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseState): IValidatableValueHostBase {
+    public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase {
         return new BusinessLogicInputValueHost(valueHostsManager, config, state);
     }
-    public cleanupState(state: ValidatableValueHostBaseState, config: ValidatableValueHostBaseConfig): void {
+    public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValidatableValueHostBaseConfig): void {
         // nothing to do
     }
 }

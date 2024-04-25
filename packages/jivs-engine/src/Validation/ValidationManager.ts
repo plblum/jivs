@@ -7,12 +7,12 @@
 import { BusinessLogicInputValueHostType, BusinessLogicValueHostName } from '../ValueHosts/BusinessLogicInputValueHost';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
-import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostState, ValueHostStateChangedHandler } from '../Interfaces/ValueHost';
+import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type ValidateOptions, type ValueHostValidateResult, type BusinessLogicError, type IssueFound, ValidationResult } from '../Interfaces/Validation';
+import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
-import type { ValidationManagerState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
+import type { ValidationManagerInstanceState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerInstanceStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
@@ -50,11 +50,11 @@ import { FluentValidatorCollector } from '../ValueHosts/Fluent';
  * ValidationManager's job is:
  * - Create and retain all ValueHosts.
  * - Provide access to all ValueHosts with its getValueHost() function.
- * - Retain State objects that reflects the states of all ValueHost instances.
+ * - Retain InstanceState objects that reflects the states of all ValueHost instances.
  *   This system can operate in a stateless way, so long as you keep
  *   these objects and pass them back via the Configuration object.
- *   Its OnStateChanged and OnValueHostStateChanged properties are callbacks
- *   provide the latest State objects to you.
+ *   Its OnInstanceStateChanged and OnValueHostInstanceStateChanged properties are callbacks
+ *   provide the latest InstanceState objects to you.
  * - Execute validation on demand to the consuming system, going
  *   through all eligible InputValueHosts.
  * - Report a list of Issues Found for an individual UI element.
@@ -66,7 +66,7 @@ import { FluentValidatorCollector } from '../ValueHosts/Fluent';
  * the UI and the ValueHosts. Auxillary Jivs libraries may handle this.
  */
 
-export class ValidationManager<TState extends ValidationManagerState> implements IValidationManager, IValidationManagerCallbacks {
+export class ValidationManager<TState extends ValidationManagerInstanceState> implements IValidationManager, IValidationManagerCallbacks {
     /**
      * Constructor
      * @param config - Provides ValidationManager with numerous configuration settings.
@@ -80,12 +80,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      *     // Just know that you need one object for each value that you want to connect
      *     // to the Validation Manager
      *      ],
-     *   savedState: null, // or the state object previously returned with OnStateChanged
-     *   savedValueHostStates: null, // or an array of the state objects previously returned with OnValueHostStateChanged
-     *   onStateChanged: (validationManager, state)=> { },
-     *   onValueHostStateChanged: (valueHost, state) => { },
-     *   onValidated: (validationManager, validationResults)=> { },
-     *   onValueHostValidated: (valueHost, validationResult) => { },
+     *   savedInstanceState: null, // or the state object previously returned with OnInstanceStateChanged
+     *   savedValueHostInstanceStates: null, // or an array of the state objects previously returned with OnValueHostInstanceStateChanged
+     *   onInstanceStateChanged: (validationManager, state)=> { },
+     *   onValueHostInstanceStateChanged: (valueHost, state) => { },
+     *   onValidated: (validationManager, validationState)=> { },
+     *   onValueHostValidated: (valueHost, valueHostValidationState) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
      *   onInputValueChanged: (valueHost, oldValue) => { }
      * }
@@ -104,10 +104,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         this._config = internalConfig;
         this._valueHostConfigs = {};
         this._valueHosts = {};
-        this._state = internalConfig.savedState ?? {};
-        if (typeof this._state.stateChangeCounter !== 'number')
-            this._state.stateChangeCounter = 0;
-        this._lastValueHostStates = internalConfig.savedValueHostStates ?? [];
+        this._instanceState = internalConfig.savedInstanceState ?? {};
+        if (typeof this._instanceState.stateChangeCounter !== 'number')
+            this._instanceState.stateChangeCounter = 0;
+        this._lastValueHostInstanceStates = internalConfig.savedValueHostInstanceStates ?? [];
         let configs = internalConfig.valueHostConfigs ?? [];
         for (let item of configs) {
             this.addValueHost(item as ValueHostConfig, null);
@@ -133,7 +133,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
 
     /**
      * ValueHosts for all ValueHostConfigs.
-     * Always replace a ValueHost when the associated Config or State are changed.
+     * Always replace a ValueHost when the associated Config or InstanceState are changed.
      */
     protected get valueHosts(): IValueHostsMap {
         return this._valueHosts;
@@ -150,38 +150,38 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     private readonly _valueHostConfigs: IValueHostConfigsMap = {};
 
     /**
-     * ValueHostStates and more.
+     * ValueHostInstanceStates and more.
      * A copy of this is expected to be retained (redux/localstorage/etc)
      * by the caller to support recreating the ValidationManager in a stateless situation.
      */
-    protected get state(): ValidationManagerState {
-        return this._state;
+    protected get instanceState(): ValidationManagerInstanceState {
+        return this._instanceState;
     }
-    private _state: ValidationManagerState;
+    private _instanceState: ValidationManagerInstanceState;
 
     /**
      * Value retained from the constructor to share with calls to addValueHost,
      * giving new ValueHost instances their last state.
      */
-    private readonly _lastValueHostStates: Array<ValueHostState>;
+    private readonly _lastValueHostInstanceStates: Array<ValueHostInstanceState>;
 
     /**
-     * Use to change anything in ValidationManagerState without impacting the immutability 
+     * Use to change anything in ValidationManagerInstanceState without impacting the immutability 
      * of the current instance.
      * Your callback will be passed a cloned instance. Change any desired properties
      * and return that instance. It will become the new immutable value of
-     * the State property.
+     * the instanceState property.
      * @param updater - Your function to change and return a state instance.
      * @returns true when the state did change. false when it did not.
      */
-    public updateState(updater: (stateToUpdate: TState) => TState): boolean {
+    public updateInstanceState(updater: (stateToUpdate: TState) => TState): boolean {
         assertNotNull(updater, 'updater');
-        let toUpdate = deepClone(this.state);
+        let toUpdate = deepClone(this.instanceState);
         let updated = updater(toUpdate);
-        if (!deepEquals(this.state, updated)) {
+        if (!deepEquals(this.instanceState, updated)) {
             updated.stateChangeCounter = typeof updated.stateChangeCounter === 'number' ? updated.stateChangeCounter + 1 : 0;
-            this._state = updated;
-            this.onStateChanged?.(this, updated);
+            this._instanceState = updated;
+            this.onInstanceStateChanged?.(this, updated);
             return true;
         }
         return false;
@@ -195,12 +195,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Can use fluent().static() or any ValueConfigHost.
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
-     * It will be run through ValueHostFactory.cleanupState() first.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
      * When null, the state supplied in the ValidationManager constructor will be used if available.
      * When neither state was supplied, a default state is created.
      */
     public addValueHost(config: ValueHostConfig,
-        initialState: ValueHostState | null): IValueHost;
+        initialState: ValueHostInstanceState | null): IValueHost;
     /**
      * Adds a ValueHostConfig for an InputValueHost not previously added. 
      * Expects fluent syntax where the first parameter starts with
@@ -212,14 +212,14 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param initialState
      * When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
-     * It will be run through ValueHostFactory.cleanupState() first.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
      * When null, the state supplied in the ValidationManager constructor will be used if available.
      * When neither state was supplied, a default state is created.
      */
     public addValueHost(fluentCollector: FluentValidatorCollector,
-        initialState: ValueHostState | null): IValueHost;
+        initialState: ValueHostInstanceState | null): IValueHost;
     public addValueHost(arg1: ValueHostConfig | FluentValidatorCollector,
-        initialState: ValueHostState | null): IValueHost {
+        initialState: ValueHostInstanceState | null): IValueHost {
         assertNotNull(arg1, 'arg1');
         let config: ValueHostConfig = arg1 instanceof FluentValidatorCollector ?
             arg1.parentConfig : arg1;
@@ -235,9 +235,9 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param config 
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
-     * It will be run through ValueHostFactory.cleanupState() first.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
      */
-    public updateValueHost(config: ValueHostConfig, initialState: ValueHostState | null): IValueHost;
+    public updateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;
     /**
      * Replaces a ValueHostConfig for an already added ValueHost. 
      * Does not trigger any notifications.
@@ -247,10 +247,10 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * @param collector 
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
-     * It will be run through ValueHostFactory.cleanupState() first.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
      */
-    public updateValueHost(collector: FluentValidatorCollector, initialState: ValueHostState | null): IValueHost;
-    public updateValueHost(arg1: ValueHostConfig | FluentValidatorCollector, initialState: ValueHostState | null): IValueHost {
+    public updateValueHost(collector: FluentValidatorCollector, initialState: ValueHostInstanceState | null): IValueHost;
+    public updateValueHost(arg1: ValueHostConfig | FluentValidatorCollector, initialState: ValueHostInstanceState | null): IValueHost {
         assertNotNull(arg1, 'arg');
         let config: ValueHostConfig = arg1 instanceof FluentValidatorCollector ?
             arg1.parentConfig : arg1;
@@ -270,38 +270,38 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         if (this._valueHostConfigs[valueHostName]) {
             delete this._valueHosts[valueHostName];
             delete this._valueHostConfigs[valueHostName];
-            if (this._lastValueHostStates)
+            if (this._lastValueHostInstanceStates)
             {
-                let pos = this._lastValueHostStates.findIndex((state) => state.name === valueHostName);
+                let pos = this._lastValueHostInstanceStates.findIndex((state) => state.name === valueHostName);
                 if (pos > -1)
-                    this._lastValueHostStates.splice(pos, 1);
+                    this._lastValueHostInstanceStates.splice(pos, 1);
             }
         }
     }
     /**
      * Creates the IValueHost based on the config and ensures
      * ValidationManager has correct and corresponding instances of ValueHost,
-     * ValueHostConfig and ValueHostState.
+     * ValueHostConfig and ValueHostInstanceState.
      * @param config 
      * @param initialState - When not null, this ValueHost state object is used instead of an initial state.
      * It overrides any state supplied by the ValidationManager constructor.
-     * It will be run through ValueHostFactory.cleanupState() first.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
      * @returns 
      */
-    protected applyConfig(config: ValueHostConfig, initialState: ValueHostState | null): IValueHost {
+    protected applyConfig(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
         let factory = this.services.valueHostFactory; // functions in here throw exceptions if config is unsupported
-        let state: ValueHostState | undefined = undefined;
+        let state: ValueHostInstanceState | undefined = undefined;
         let existingState = initialState;
-        let defaultState = factory.createState(config);
+        let defaultState = factory.createInstanceState(config);
 
-        if (!existingState && this._lastValueHostStates)
-            existingState = this._lastValueHostStates.find((state) => state.name === config.name) ?? null;
+        if (!existingState && this._lastValueHostInstanceStates)
+            existingState = this._lastValueHostInstanceStates.find((state) => state.name === config.name) ?? null;
         if (existingState) {
-            let cleanedState = deepClone(existingState) as ValueHostState;  // clone to allow changes during Cleanup
-            factory.cleanupState(cleanedState, config);
+            let cleanedState = deepClone(existingState) as ValueHostInstanceState;  // clone to allow changes during Cleanup
+            factory.cleanupInstanceState(cleanedState, config);
             // User may have supplied the state without
             // all of the properties we normally use.
-            // Ensure all properties defined by createState() exist, even if their value is undefined
+            // Ensure all properties defined by createInstanceState() exist, even if their value is undefined
             // so that we have consistency. 
             state = { ...defaultState, ...cleanedState };
         }
@@ -352,47 +352,70 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     }
 
     /**
-     * Runs validation against some of all validators.
-     * All InputValueHosts will return their current state,
-     * even if they are considered Valid.
-     * Updates this ValueHost's State and notifies parent if changes were made.
+     * Runs validation against all validatable ValueHosts, except those that do not
+     * match the validation group supplied in options.
+     * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-     * @returns Array of ValueHostValidateResult with empty array if all are valid
+     * @returns The ValidationState object, which packages several key
+     * pieces of information: isValid, doNotSaveNativeValues, and issues found.
+     * The same object is provided through the OnValidated function
      */
-    public validate(options?: ValidateOptions): Array<ValueHostValidateResult> 
+    public validate(options?: ValidateOptions): ValidationState
     {
         if (!options)
             options = {};
-        let list: Array<ValueHostValidateResult> = [];
 
         for (let vh of this.inputValueHost()) {
-            let valResult = vh.validate(options);
-            if (valResult.validationResult !== ValidationResult.Undetermined ||
-                valResult.issuesFound !== null)
-                list.push(valResult);
+            vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationState
         }
-        if (!options || !options.omitCallback)
-            this.onValidated?.(this, list);
-        return list;
+        let snapshot = this.createValidationState(options);
+        this.invokeOnValidated(options, snapshot);
+        return snapshot;
     }
 
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      */
-    public clearValidation(): void {
+    public clearValidation(options?: ValidateOptions): boolean {
+        let changed = false;
         for (let vh of this.inputValueHost()) {
-            vh.clearValidation();
+            if (vh.clearValidation(options))
+                changed = true;
         }
+        if (changed)
+            this.invokeOnValidated(options);
+        return changed;
     }
 
+    protected createValidationState(options?: ValidateOptions): ValidationState
+    {
+        return {
+            isValid: this.isValid,
+            doNotSaveNativeValues: this.doNotSaveNativeValues(),
+            issuesFound: this.getIssuesFound(options ? options.group : undefined),
+            asyncProcessing: this.asyncProcessing
+        };
+    }
     /**
-     * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false only when any InputValueHost has a ValidationResult of Invalid. 
-     * This follows an old style validation rule of everything is valid when not explicitly
-     * marked invalid. That means when it hasn't be run through validation or was undetermined
-     * as a result of validation.
-     * Recommend using @link doNotSaveNativeValue|doNotSaveNativeValue() for more clarity.
+     * Helper to call onValueHostValidated due to a change in the state of any validators
+     * or BusinessLogicErrors.
+     */
+    protected invokeOnValidated(options?: ValidateOptions, validationState? : ValidationState): void
+    {
+        if (!options || !options.omitCallback)
+            this.onValidated?.(this, validationState ?? this.createValidationState(options));
+    }
+
+
+    /**
+     * When true, the current state of validation does not know of any errors. 
+     * However, there are other factors to consider: 
+     * there may be warning issues found (in IssuesFound),
+     * an async validator is still running,
+     * validator evaluated as Undetermined.
+     * So check @link doNotSaveNativeValues|doNotSaveNativeValues()  as the ultimate guide to saving.
+     * When false, there is at least one validation error.
      */
     public get isValid(): boolean {
         for (let vh of this.inputValueHost())
@@ -403,17 +426,27 @@ export class ValidationManager<TState extends ValidationManagerState> implements
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
-     * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated
-     * on individual validators.
+     * True when at least one ValueHost's ValidationStatus is 
+     * Invalid or ValueChangedButUnvalidated
      */
-    public doNotSaveNativeValue(): boolean {
+    public doNotSaveNativeValues(): boolean {
         for (let vh of this.inputValueHost()) {
             if (vh.doNotSaveNativeValue())
                 return true;
         }
         return false;
     }
-
+    /**
+     * When true, an async Validator is running in any ValueHost
+     */
+    public get asyncProcessing(): boolean
+    {
+        for (let vh of this.inputValueHost()) {
+            if (vh.asyncProcessing)
+                return true;
+        }
+        return false;        
+    }
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
@@ -423,11 +456,14 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * Internally, a BusinessLogicInputValueHost is added to the list of ValueHosts to hold any
      * error that lacks an associatedValueHostName.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
+     * @param options - Only considers the omitCallback option.
+     * @returns When true, the validation snapshot has changed.
      */
-    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null): void {
-
+    public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean {
+        let changed = false;
         for (let vh of this.inputValueHost()) {
-            vh.clearBusinessLogicErrors();
+            if (vh.clearBusinessLogicErrors())
+                changed = true;
         }
         if (errors)
             for (let error of errors) {
@@ -440,8 +476,12 @@ export class ValidationManager<TState extends ValidationManagerState> implements
                     }, null);
                 }
                 if (vh instanceof ValidatableValueHostBase)
-                    vh.setBusinessLogicError(error);
+                    if (vh.setBusinessLogicError(error, options))
+                        changed = true;
             }
+        if (changed)
+            this.invokeOnValidated(options);
+        return changed;
     }
     /**
      * Lists all issues found (error messages and supporting info) for a single InputValueHost
@@ -457,19 +497,19 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> {
+    public getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> | null {
         let vh = this.getValueHost(valueHostName);
         if (vh && vh instanceof ValidatableValueHostBase)
             return vh.getIssuesFound();
-        return [];
+        return null;
     }
     /**
      * A list of all issues from all InputValueHosts optionally for a given group.
      * Use with a Validation Summary widget and when validating the Model itself.
      * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
      * the same group (case insensitive match).
-     * @returns An array of 0 or more details of issues found. 
-     * When 0, there are no issues and the data is valid. If there are issues, when all
+     * @returns An array of issues found. 
+     * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
@@ -479,12 +519,14 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * - errorMessage - Fully prepared, tokens replaced and formatting rules applied. 
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
-    public getIssuesFound(group?: string): Array<IssueFound> {
+    public getIssuesFound(group?: string): Array<IssueFound> | null {
         let list: Array<IssueFound> = [];
         for (let vh of this.inputValueHost()) {
-            list = list.concat(vh.getIssuesFound(group));
+            let vhIssues = vh.getIssuesFound(group);
+            if (vhIssues)
+                list = list.concat(vhIssues);
         }
-        return list;
+        return list.length ? list : null;
     }
     
     //#region IValidationManagerCallbacks
@@ -493,8 +535,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
      * React example: React component useState feature retains this value
      * and needs to know when to call its setState function with the stateToRetain
      */
-    public get onStateChanged(): ValidationManagerStateChangedHandler | null {
-        return this.config.onStateChanged ?? null;
+    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
+        return this.config.onInstanceStateChanged ?? null;
     }
     /**
      * Called when ValidationManager's validate() function has returned.
@@ -506,17 +548,18 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         return this.config.onValidated ?? null;
     }
     /**
-     * Called when any ValueHost had its ValueHostState changed.
+     * Called when any ValueHost had its ValueHostInstanceState changed.
      * React example: React component useState feature retains this value
-     * and needs to know when to call the setValueHostState() with the stateToRetain.
+     * and needs to know when to call the setValueHostInstanceState() with the stateToRetain.
      * You can setup the same callback on individual ValueHosts.
      * Here, it aggregates all ValueHost notifications.
      */
-    public get onValueHostStateChanged(): ValueHostStateChangedHandler | null {
-        return this.config.onValueHostStateChanged ?? null;
+    public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
+        return this.config.onValueHostInstanceStateChanged ?? null;
     }
     /**
      * Called when ValueHost's validate() function has returned.
+     * Also when validation is cleared or BusinessLogicErrors are added or removed.
      * Supplies the result to the callback.
      * Examples: Use to notify the validation related aspects of the component to refresh, 
      * such as showing error messages and changing style sheets.
@@ -554,7 +597,7 @@ export class ValidationManager<TState extends ValidationManagerState> implements
  * All ValueHostConfigs for this ValidationManager.
  * Caller may pass this in via the ValidationManager constructor
  * or build it out via ValidationManager.addValueHost.
- * Each entry must have a companion in ValueHost and ValueHostState in
+ * Each entry must have a companion in ValueHost and ValueHostInstanceState in
  * this ValidationManager.
  */
 interface IValueHostConfigsMap {
@@ -563,7 +606,7 @@ interface IValueHostConfigsMap {
 
 /**
  * All InputValueHosts for the Model.
- * Each entry must have a companion in InputValueConfigs and ValueHostState
+ * Each entry must have a companion in InputValueConfigs and ValueHostInstanceState
  * in this ValidationManager.
  */
 interface IValueHostsMap {

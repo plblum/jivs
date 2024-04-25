@@ -2,7 +2,7 @@
  * {@inheritDoc ValueHosts/Types/CalcValueHost}
  * @module ValueHosts/ConcreteClasses/CalcValueHost
  */
-import { ICalcValueHost, CalcValueHostConfig, CalcValueHostState, CalculationHandlerResult } from '../Interfaces/CalcValueHost';
+import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState, CalculationHandlerResult } from '../Interfaces/CalcValueHost';
 import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostResolver';
@@ -14,10 +14,10 @@ import { CodingError } from '../Utilities/ErrorHandling';
 /**
  * {@inheritDoc ValueHosts/Types/CalcValueHost} 
  */
-export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueHostState>
+export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueHostInstanceState>
     implements ICalcValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostState)
+    constructor(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState)
     {
         super(valueHostsManager, config, state);
     }
@@ -92,11 +92,11 @@ export class CalcValueHostGenerator extends ValueHostBaseGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === ValueHostType.Calc;
     }
-    public create(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostState): ICalcValueHost {
+    public create(valueHostsManager: IValueHostsManager, config: CalcValueHostConfig, state: CalcValueHostInstanceState): ICalcValueHost {
         return new CalcValueHost(valueHostsManager, config, state);
     }
 
-    public cleanupState(state: CalcValueHostState, config: CalcValueHostConfig): void {
+    public cleanupInstanceState(state: CalcValueHostInstanceState, config: CalcValueHostConfig): void {
         // nothing needed.
     }
 }

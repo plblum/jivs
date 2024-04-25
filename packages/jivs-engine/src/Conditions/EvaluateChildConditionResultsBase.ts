@@ -1,8 +1,9 @@
 /**
- * Framework for evaluating the results from a list of conditions, where a rule determines what to
- * do with their results. In this case, the value of the current input field/element passed into 
- * Evaluate(vh) is ignored. All child conditions must specify their ValueHost sources explicitly.
- * @module Conditions/AbstractClasses/EvaluateChildConditionResultsBase
+ * Base Condition for evaluating the results from a list of Conditions, where a rule determines what to
+ * do with their results. 
+ * 
+ * In this Condition, the value of the current input field/element passed into 
+ * evaluate(vh) is passed along to child Conditions that do not specify a ValueHost.
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -13,9 +14,9 @@ import { CodingError } from '../Utilities/ErrorHandling';
 import { ConditionBase } from './ConditionBase';
 
 /**
- * Config for all implementations of EvaluateChildConditionResultsBase.
+ * ConditionConfig for EvaluateChildConditionResultsBase.
  */
-export interface EvaluateChildConditionResultsConfig extends ConditionConfig {
+export interface EvaluateChildConditionResultsBaseConfig extends ConditionConfig {
     /**
      * Conditions for this condition to evaluate and apply its rules based on those results.
      * When left empty, the condition evaluates as Undetermined.
@@ -30,11 +31,13 @@ export interface EvaluateChildConditionResultsConfig extends ConditionConfig {
 }
 
 /**
- * Framework for evaluating the results from a list of conditions, where a rule determines what to
- * do with their results. In this case, the value of the current input field/element passed into 
- * Evaluate(vh) is ignored. All child conditions must specify their ValueHost sources explicitly.
+ * Base Condition for evaluating the results from a list of Conditions, where a rule determines what to
+ * do with their results. 
+ * 
+ * In this Condition, the value of the current input passed into 
+ * evaluate(vh) is passed along to child Conditions that do not specify a ValueHost.
  */
-export abstract class EvaluateChildConditionResultsBase<TConfig extends EvaluateChildConditionResultsConfig>
+export abstract class EvaluateChildConditionResultsBase<TConfig extends EvaluateChildConditionResultsBaseConfig>
     extends ConditionBase<TConfig>
 {
     /**

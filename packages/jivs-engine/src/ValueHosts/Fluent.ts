@@ -127,9 +127,9 @@ import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
-import { EvaluateChildConditionResultsConfig } from '../Conditions/EvaluateChildConditionResultsBase';
+import { EvaluateChildConditionResultsBaseConfig } from '../Conditions/EvaluateChildConditionResultsBase';
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { OneValueConditionConfig } from '../Conditions/OneValueConditionBase';
+import { OneValueConditionBaseConfig } from '../Conditions/OneValueConditionBase';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
 import { CalculationHandler, CalcValueHostConfig } from '../Interfaces/CalcValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
@@ -206,16 +206,16 @@ export class StartFluent
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
      */
-    static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig;
+    public static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig;
     /**
      * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
-    static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
+    public static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
     // overload resolution
-    static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
+    public static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
     {
         this.assertFirstParameterValid(arg1);
         if (typeof arg1 === 'object')
@@ -244,7 +244,7 @@ export class StartFluent
     * When assigned, that instance gets conditionConfigs populated and 
     * there is no need to get a value from configs property.
     */
-    public conditions(config?: EvaluateChildConditionResultsConfig): FluentConditionCollector
+    public conditions(config?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
     {
         let collector = new FluentConditionCollector(config ?? null);
         return collector;
@@ -257,16 +257,16 @@ export class StartFluent
      * @param dataType - can be null. The value for ValueHost.dataType.
      * @param calcFn - required. Function callback.
      */
-    calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
+    public calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
     /**
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
-    calc(config: Omit<CalcValueHostConfig, 'conditionType'>): CalcValueHostConfig;
+    public calc(config: Omit<CalcValueHostConfig, 'conditionType'>): CalcValueHostConfig;
     // overload resolution
-    calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
+    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
     {
         this.assertFirstParameterValid(arg1);
         if (typeof arg1 === 'object')
@@ -467,7 +467,7 @@ export interface IFluentConditionCollector
     /**
      * The config that will collect the conditions.
      */
-    parentConfig: EvaluateChildConditionResultsConfig;
+    parentConfig: EvaluateChildConditionResultsBaseConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentConditionCollector.
@@ -501,7 +501,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
      * When assigned, that instance gets conditionConfigs populated and 
      * there is no need to get a value from configs property.
      */
-    constructor(parentConfig: EvaluateChildConditionResultsConfig | null)
+    constructor(parentConfig: EvaluateChildConditionResultsBaseConfig | null)
     {
         super();
         if (!parentConfig)
@@ -513,11 +513,11 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
     /**
      * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
      */
-    public get parentConfig(): EvaluateChildConditionResultsConfig
+    public get parentConfig(): EvaluateChildConditionResultsBaseConfig
     {
         return this._parentConfig;
     }
-    private readonly _parentConfig: EvaluateChildConditionResultsConfig;
+    private readonly _parentConfig: EvaluateChildConditionResultsBaseConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentConditionCollector.
@@ -586,7 +586,7 @@ export function finishFluentConditionCollector(thisFromCaller: any,
 {
     if (thisFromCaller instanceof FluentConditionCollector) {
         if (valueHostName)
-            (conditionConfig as OneValueConditionConfig).valueHostName = valueHostName;
+            (conditionConfig as OneValueConditionBaseConfig).valueHostName = valueHostName;
 
         thisFromCaller.add(conditionType, conditionConfig);
         return thisFromCaller;
@@ -606,7 +606,7 @@ export class FluentFactory
         this._validatorCollectorCreator =
             (vhConfig: InputValueHostConfig) => new FluentValidatorCollector(vhConfig);
         this._conditionCollectorCreator =
-            (vhConfig: EvaluateChildConditionResultsConfig) => new FluentConditionCollector(vhConfig);
+            (vhConfig: EvaluateChildConditionResultsBaseConfig) => new FluentConditionCollector(vhConfig);
     }
     public createValidatorCollector(vhConfig: InputValueHostConfig): IFluentValidatorCollector
     {
@@ -620,17 +620,17 @@ export class FluentFactory
     }
     private _validatorCollectorCreator: (vhConfig: InputValueHostConfig) => IFluentValidatorCollector;
 
-    public createConditionCollector(vhConfig: EvaluateChildConditionResultsConfig): IFluentConditionCollector
+    public createConditionCollector(vhConfig: EvaluateChildConditionResultsBaseConfig): IFluentConditionCollector
     {
         return this._conditionCollectorCreator(vhConfig);
     }
 
-    public registerConditionCollector(creator: (vhConfig: EvaluateChildConditionResultsConfig) => IFluentConditionCollector): void
+    public registerConditionCollector(creator: (vhConfig: EvaluateChildConditionResultsBaseConfig) => IFluentConditionCollector): void
     {
         assertNotNull(creator, 'creator');
         this._conditionCollectorCreator = creator;
     }
-    private _conditionCollectorCreator: (vhConfig: EvaluateChildConditionResultsConfig) => IFluentConditionCollector;    
+    private _conditionCollectorCreator: (vhConfig: EvaluateChildConditionResultsBaseConfig) => IFluentConditionCollector;    
 
     /**
      * Unlike other factories, which are on ValidationServices. We wanted to avoid

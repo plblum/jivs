@@ -3,16 +3,17 @@
  * to see if the value(s) conform.
  * Conditions exist for each business rule pattern, such as 
  * required, string matches the data type, compare value to another.
- * Instances should be registered in the ConditionFactory.
+ * 
+ * Classes should be registered in the ConditionFactory.
+ * 
  * Conditions can get data from any ValueHost registered in the ValueHostsManager.
  * They can also be implemented specific to the consuming system, such as 
  * calling an API function, and using the result to determine how evaluation went.
  * 
  * Key interfaces:
  * - {@link ICondition} - Provides the evaluate() function for implementations.
- * - {@link ConditionConfig} - A description of the rules for evaluation, such
- *   as ValueHostName="TextBox1", Type (of Condition to use)="Range",
- *   Minimum=3, and Maximum=5.
+ * - {@link ConditionConfig} - Used to configure a condition's rules, without the user
+ *   having to know about the actual class involved. 
  * - {@link IConditionCore } - Blending the ICondition with 
  *   the ConditionConfig, for implementing conditions that are configured
  *   through the Config. Most Condition classes supplied in this library

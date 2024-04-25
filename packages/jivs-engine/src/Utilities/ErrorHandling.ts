@@ -1,6 +1,6 @@
 /**
- * Various classes that support error handling.
- * @module Utilities/ErrorHandling
+ * Various classes, types and functions to support the overall tool.
+ * @module Utilities
  */
 
 

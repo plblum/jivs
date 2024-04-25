@@ -1,6 +1,6 @@
 /**
  * Represents all aspects of a single validation rule.
- * - Has the Validation function, which returns the ValidationResult, error messages, and severity.
+ * - Has the Validation function, which returns the ConditionEvaluateResult, error messages, and severity.
  * - Condition - the actual validation rule
  * - Error Message - what to tell the user when there is an error
  * - Summary Error Message - In the ValidationSummary UI element, what to tell the user 
@@ -14,10 +14,10 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
-import { toIGatherValueHostNames, type IValueHost, ValidTypesForStateStorage } from '../Interfaces/ValueHost';
+import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
+import { type ValidateOptions, ValidationSeverity, type IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
@@ -32,7 +32,7 @@ import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
  * for the value of an InputValueHost.
  * It is stateless.
  * Basically you want to call validate() to get all of the results
- * of a validation, including ValidationResult, error messages,
+ * of a validation, including ConditionEvaluateResult, error messages,
  * severity, and more.
  * That data ends up in the ValidationManager as part of its state,
  * allowing the system consumer to know how to deal with the data
@@ -44,7 +44,7 @@ import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
  * - ValidatorConfig - The business logic supplies these rules
  *   to implement validation including Condition, Enabler, and error messages
  * If the caller changes any of these, discard the instance
- * and create a new one. The IValidatorState will restore the state.
+ * and create a new one. The parent ValueHost will restore the state.
  */
 export class Validator implements IValidator {
     // As a rule, InputValueHost discards Validator when anything contained in these objects
@@ -165,7 +165,7 @@ export class Validator implements IValidator {
      * Does not use the Enabler.
      */
     public get enabled(): boolean {
-        let value = this.getFromState('enabled') ??
+        let value = this.getFromInstanceState('enabled') ??
             this.config.enabled;
         if (typeof value == 'function')
             value = value(this);
@@ -178,7 +178,7 @@ export class Validator implements IValidator {
      * Determined from Config.severity.
      */
     protected get severity(): ValidationSeverity {
-        let value = this.getFromState('severity') ?? this.config.severity;
+        let value = this.getFromInstanceState('severity') ?? this.config.severity;
         if (typeof value == 'function')
             value = value(this);
         if (value == null)  // null/undefined
@@ -203,12 +203,12 @@ export class Validator implements IValidator {
      * if ErrorMessagel10n is setup.
      */
     protected getErrorMessageTemplate(): string {
-        let direct = this.getFromState('errorMessage') ??
+        let direct = this.getFromInstanceState('errorMessage') ??
                     this.config.errorMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        let l10n = (this.getFromState('errorMessagel10n') ??
+        let l10n = (this.getFromInstanceState('errorMessagel10n') ??
                     this.config.errorMessagel10n) as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
@@ -230,12 +230,12 @@ export class Validator implements IValidator {
      * if SummaryMessagel10n is setup.
      */
     protected getSummaryMessageTemplate(): string {
-        let direct = this.getFromState('summaryMessage') ??
+        let direct = this.getFromInstanceState('summaryMessage') ??
                     this.config.summaryMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        let l10n = (this.getFromState('summaryMessagel10n') ??
+        let l10n = (this.getFromInstanceState('summaryMessagel10n') ??
                     this.config.summaryMessagel10n) as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
@@ -252,7 +252,7 @@ export class Validator implements IValidator {
 
     /**
      * Perform validation activity and provide the results including
-     * whether there is an error (ValidationResult), fully formatted
+     * whether there is an error (ConditionEvaluateResult), fully formatted
      * error messages, severity, and Condition type.
      * @param options - Provides guidance on which validators to include.
      * @returns Identifies the ConditionEvaluateResult.
@@ -310,7 +310,7 @@ export class Validator implements IValidator {
             if (pendingCER instanceof Promise) {
                 // Support Async evaluation by letting evaluate() return a promise
                 // When an async process returns, it must take NO action
-                // if the value of State.ValidationResult is not still AsyncProcessing.
+                // if the state.asyncProcessing is no longer true.
                 return processPromise(pendingCER);
             }
             else
@@ -343,9 +343,9 @@ export class Validator implements IValidator {
             resultState.conditionEvaluateResult = cer;
             switch (cer) {
                 case ConditionEvaluateResult.NoMatch:
-                    let issueFound = createIssueFound(self.valueHost, self);   // setup for ValidationResult.Undetermined
+                    let issueFound = createIssueFound(self.valueHost, self);   // set up for ConditionEvaluateResult.Undetermined
                     issueFound.severity = self.severity;
-                    self.updateStateForNoMatch(issueFound, self.valueHost);
+                    self.updateIssueFoundWhenNoMatch(issueFound, self.valueHost);
                     resultState.issueFound = issueFound;
                     break;
             }
@@ -407,57 +407,84 @@ export class Validator implements IValidator {
     private _supportsDuringEdit: boolean | null = null;
 
     /**
-     * validate() found NoMatch. Update the ValidatorState's properties to show
-     * the current ValidationResult and error messages.
-     * @param stateToUpdate - this is a COPY of the State, as supplied by updateState().
+     * validate() found NoMatch. Update the IssueFound to show
+     * the current ConditionEvaluateResult and error messages.
+     * @param issueFound - this is a COPY of the IssueFound.
      * Do not modify the actual instance as it is immutable.
      * @param value 
      */
-    protected updateStateForNoMatch(stateToUpdate: IssueFound,
-        value: IValueHost): void {
+    protected updateIssueFoundWhenNoMatch(issueFound: IssueFound,
+        valueHost: IValueHost): void {
         let services = this.services;
-        stateToUpdate.severity = this.severity;
+        issueFound.severity = this.severity;
         let errorMessage = this.getErrorMessageTemplate();
-        stateToUpdate.errorMessage = services.messageTokenResolverService.resolveTokens(
+        issueFound.errorMessage = services.messageTokenResolverService.resolveTokens(
             errorMessage, this.valueHost, this.valueHostsManager, this);
         let summaryMessage = this.getSummaryMessageTemplate();
-        stateToUpdate.summaryMessage = summaryMessage ?
+        issueFound.summaryMessage = summaryMessage ?
             services.messageTokenResolverService.resolveTokens(summaryMessage, this._valueHost, this.valueHostsManager, this) :
             undefined;
+    }
+
+    /**
+     * When ValueHost.setBusinessLogicError is called, it provides each entry to the existing
+     * list of Validators through this. This function determines if the businessLogicError is
+     * actually for the same error code as itself, and returns a ValidatorValidateResult, just
+     * like calling validate() itself.
+     * The idea is to use the UI's representation of the validator, including its error messages
+     * with its own tokens, instead of those supplied by the business logic.
+     * @param businessLogicError 
+     * @returns if null, it did not handle the BusinessLogicError. If a ValidatorValidateResult,
+     * it should be used in the ValueHost's state of validation.
+     */
+    public tryValidatorSwap(businessLogicError: BusinessLogicError): ValidatorValidateResult | null
+    {
+        if (businessLogicError.errorCode === this.errorCode)
+        {
+            let issueFound = createIssueFound(this.valueHost, this);   // set up as if ConditionEvaluateResult.Undetermined
+            issueFound.severity = this.severity;
+            this.updateIssueFoundWhenNoMatch(issueFound, this.valueHost);            
+            let resultState: ValidatorValidateResult = {
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                issueFound: issueFound
+            };
+            return resultState;
+        }
+        return null
     }
     //#region state management
 
     /**
-     * State is stored in ValueHost's State using its saveInToStore/getFromStore.
+     * InstanceState is stored in ValueHost's InstanceState using its saveIntoInstanceStare/getFromInstanceState.
      * Each entry needs to be associated with the errorCode of this Validator
      * and have its own identifier for the value.
      * This function creates a name to use with saveToStore and getFromStore.
      * @param identifier 
      */
-    protected nameForState(identifier: string): string {
+    protected nameForInstanceState(identifier: string): string {
         return `_IV[${this.errorCode}].${identifier}`;
     }
 
     /**
-     * Saves an entry into the ValueHostState.
-     * @param identifier - used together with the errorCode to form a key in the State.
+     * Saves an entry into the ValueHostInstanceState.
+     * @param identifier - used together with the errorCode to form a key in the instanceState.
      * @param value - value to store. Use undefined to remove existing value.
      */
-    protected saveIntoState(identifier: string, value: ValidTypesForStateStorage | undefined): void {
-        this.valueHost.saveIntoState(this.nameForState(identifier), value);
+    protected saveIntoInstanceState(identifier: string, value: ValidTypesForInstanceStateStorage | undefined): void {
+        this.valueHost.saveIntoInstanceState(this.nameForInstanceState(identifier), value);
     }
 
     /**
-     * Returns an entry from the ValueHostState.
+     * Returns an entry from the ValueHostInstanceState.
      * 
      * Often used to store values that override an entry in the ValidatorConfig.
      * In that case, typical implementation is:
-     * let value = this.getFromState('identifier') ?? this.config.identifier;
-     * @param identifier - used together with the errorCode to form a key in the State.
+     * let value = this.getFromInstanceState('identifier') ?? this.config.identifier;
+     * @param identifier - used together with the errorCode to form a key in the instanceState.
      * @returns The value or undefined if the key is not stored in state.
      */
-    protected getFromState(identifier: string): ValidTypesForStateStorage | undefined {
-        return this.valueHost.getFromState(this.nameForState(identifier));
+    protected getFromInstanceState(identifier: string): ValidTypesForInstanceStateStorage | undefined {
+        return this.valueHost.getFromInstanceState(this.nameForInstanceState(identifier));
     }
     //#endregion state management
 
@@ -473,7 +500,7 @@ export class Validator implements IValidator {
      * @param enabled 
      */
     public setEnabled(enabled: boolean): void {
-        this.saveIntoState('enabled', enabled);
+        this.saveIntoInstanceState('enabled', enabled);
     }
 
     /**
@@ -487,9 +514,9 @@ export class Validator implements IValidator {
      */
     public setErrorMessage(errorMessage: string | undefined, errorMessagel10n?: string | undefined): void {
         if (errorMessage !== null)
-            this.saveIntoState('errorMessage', errorMessage);
+            this.saveIntoInstanceState('errorMessage', errorMessage);
         if (errorMessagel10n !== null)
-            this.saveIntoState('errorMessagel10n', errorMessagel10n);
+            this.saveIntoInstanceState('errorMessagel10n', errorMessagel10n);
     }
 
     /**
@@ -503,9 +530,9 @@ export class Validator implements IValidator {
      */
     public setSummaryMessage(summaryMessage: string | undefined, summaryMessagel10n?: string | undefined): void {
         if (summaryMessage !== null)
-            this.saveIntoState('summaryMessage', summaryMessage);
+            this.saveIntoInstanceState('summaryMessage', summaryMessage);
         if (summaryMessagel10n !== null)
-            this.saveIntoState('summaryMessagel10n', summaryMessagel10n);
+            this.saveIntoInstanceState('summaryMessagel10n', summaryMessagel10n);
     }
 
     /**
@@ -514,7 +541,7 @@ export class Validator implements IValidator {
      * @param severity 
      */
     public setSeverity(severity: ValidationSeverity): void {
-        this.saveIntoState('severity', severity);
+        this.saveIntoInstanceState('severity', severity);
     }
 
     //#endregion config overrides
@@ -534,7 +561,7 @@ export class Validator implements IValidator {
      * and the value in its native data type (such as Date, number, or string).
      * Supports these tokens:
      * {Label} - the Config.label property verbatim
-     * {Value} - the native value in State.Value. If null/undefined, the value in State.LastRawValue.
+     * {Value} - the native value in instanceState.Value. If null/undefined, the value in instanceState.LastRawValue.
      * Plus any from the Condition in use.     
      */
     public getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
