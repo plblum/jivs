@@ -1,5 +1,5 @@
 /**
- * {@inheritDoc Services/Types/MessageTokenResolverService!IMessageTokenResolverService}
+ * {@inheritDoc Services/Types/IMessageTokenResolverService!IMessageTokenResolverService}
  * @module Services/ConcreteClasses/MessageTokenResolverService
  */
 import type { DataTypeResolution } from '../Interfaces/DataTypes';
@@ -12,7 +12,7 @@ import { IInputValueHost } from '../Interfaces/InputValueHost';
 
 
 /**
- * {@inheritDoc Services/Types/MessageTokenResolverService!IMessageTokenResolverService}
+ * {@inheritDoc Services/Types/IMessageTokenResolverService!IMessageTokenResolverService}
  */
 export class MessageTokenResolverService implements IMessageTokenResolverService
 {

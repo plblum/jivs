@@ -4,10 +4,12 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
-    type ValidateOptions, type ValueHostValidateResult, ValidationResult,
-    type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult
+    type ValidateOptions, type ValueHostValidateResult, ValidationStatus,
+    type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult,
+    ValidationState
 } from './Validation';
-import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostState } from './ValueHost';
+
+import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
 
 /**
 * Manages a value that may use input validation.
@@ -68,34 +70,49 @@ export interface IValidatableValueHostBase extends IValueHost {
      * with all of the NoMatches in issuesFound.
      * If all were Matched, it returns ValueHostValidateResult.Value and issuesFound=null.
      * If there are no validators, or all validators were skipped (disabled),
-     * it returns ValidationResult.Undetermined.
-     * Updates this ValueHost's State and notifies parent if changes were made.
-     * @param options - Provides guidance on which validators to include.
+     * it returns ValidationStatus.Undetermined.
+     * Updates this ValueHost's InstanceState and notifies parent if changes were made.
+     * @param options - Provides guidance on behavior.
+     * @returns Non-null when there is something to report. null if there was nothing to evaluate
+     * which includes all existing validators reporting "Undetermined"
      */
-    validate(options?: ValidateOptions): ValueHostValidateResult;
+    validate(options?: ValidateOptions): ValueHostValidateResult | null;
 
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
+     * @returns true when there was something cleared
+     * @param options - Only supports the omitCallback and Group options.
      */
-    clearValidation(): void;
+    clearValidation(options?: ValidateOptions): boolean;
 
     /**
      * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false when State.ValidationResult is Invalid. Any other ValidationResult
+     * Returns false when instanceState.status is Invalid. Any other instanceState.status
      * return true.
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using ValidationResult property for more clarity.
+     * Recommend using doNotSaveNativeValue() for more clarity.
      */
     isValid: boolean;
 
     /**
-     * ValidationResult from latest validation, or an indication
+     * Status from the latest validation, or an indication
      * that validation has yet to occur.
+     * It is changed internally and can influence how
+     * validation behaves the next time.
+     * Prior to calling validate() (or setValue()'s validate option),
+     * it is NotAttempted.
+     * After setValue it is ValueChangedButUnvalidated.
+     * After validate, it may be Valid, Invalid or Undetermined.
      */
-    validationResult: ValidationResult;
+    validationStatus: ValidationStatus;
+    
+    /**
+     * When true, an async Validator is running
+     */
+    asyncProcessing: boolean;
 
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
@@ -103,19 +120,24 @@ export interface IValidatableValueHostBase extends IValueHost {
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in AssociatedValueHostName.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
-     * @param error - An error to show.
+     * @param error - A business logic error to show. If it has an errorCode assigned and the same
+     * errorCode is already recorded here, the new entry replaces the old one.
+     * @param options - Only supports the omitCallback option.
+     * @returns true when a change was made to the known validation state.
      */
-    setBusinessLogicError(error: BusinessLogicError): void;
+    setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean;
 
     /**
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
+     * @param options - Only supports the omitCallback option.
+     * @returns true when a change was made to the known validation state.
      */
-    clearBusinessLogicErrors(): void;
+    clearBusinessLogicErrors(options?: ValidateOptions): boolean;
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
-     * True when ValidationResult is Invalid, AsyncProcessing, or ValueChangedButUnvalidated.
+     * True when ValidationStatus is Invalid or ValueChangedButUnvalidated.
      */
     doNotSaveNativeValue(): boolean;
 
@@ -130,8 +152,8 @@ export interface IValidatableValueHostBase extends IValueHost {
      * A list of all issues found.
      * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
      * the same group (case insensitive match).
-     * @returns An array of 0 or more details of issues found. 
-     * When 0, there are no issues and the data is valid. If there are issues, when all
+     * @returns An array of issues found. 
+     * When null, there are no issues and the data is valid. If there are issues, when all
      * have severity = warning, the data is also valid. Anything else means invalid data.
      * Each contains:
      * - name - The name for the ValueHost that contains this error. Use to hook up a click in the summary
@@ -142,7 +164,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      *   One is for Summary only. If that one wasn't supplied, the other (for local displaying message)
      *   is returned.
      */
-    getIssuesFound(group?: string): Array<IssueFound>;
+    getIssuesFound(group?: string): Array<IssueFound> | null;
 
     /**
      * Returns the ConversionErrorTokenValue supplied by the latest call
@@ -201,7 +223,7 @@ export interface ValidatableValueHostBaseConfig extends ValueHostConfig {
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface ValidatableValueHostBaseState extends ValueHostState, StatefulValueHostValidateResult {
+export interface ValidatableValueHostBaseInstanceState extends ValueHostInstanceState, StatefulValueHostValidateResult {
 
     /**
      * The value from the input field/element, even if invalid.
@@ -239,8 +261,21 @@ export interface ValidatableValueHostBaseState extends ValueHostState, StatefulV
 }
 
 
-export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validateResult: ValueHostValidateResult) => void;
+export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState) => void;
 export type InputValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
+
+/**
+ * The value returned by OnValueHostValidated.
+ * It includes all issuesfound and businesslogicerrors
+ * as compared to validate() which is limited to just the issuesfound.
+ */
+export interface ValueHostValidationState extends ValidationState
+{
+/**
+ * Reports the current ValidationStatus
+ */    
+    status: ValidationStatus;
+}
 
 /**
  * Provides callback hooks for the consuming system to supply to IInputValueHosts.
@@ -249,7 +284,8 @@ export interface IInputValueHostCallbacks extends IValueHostCallbacks {
     /**
      * Called when ValueHost's validate() function has finished, and made
      * changes to the state. (No point in notifying code intended to update the UI
-     * if nothing changed.)
+     * if nothing changed.) 
+     * Also when validation is cleared or BusinessLogicErrors are added or removed.
      * Supplies the result to the callback.
      * Examples: Use to notify the validation related aspects of the component to refresh, 
      * such as showing error messages and changing style sheets.

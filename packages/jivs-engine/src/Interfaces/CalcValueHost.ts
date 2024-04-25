@@ -61,11 +61,11 @@
  * // fluent().input('StartDate', 'Date', { label: 'Start date' })
  * //                .lessThan(10, { valueHostName: 'DiffDays' });
  * ```
- * Your function can also save stateful information with the valueHost.saveIntoState.
+ * Your function can also save stateful information with the valueHost.saveIntoInstanceState.
 * @module ValueHosts/Types/CalcValueHost
  */
 
-import { IValueHost, ValueHostConfig, ValueHostState } from "./ValueHost";
+import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManager } from "./ValueHostResolver";
 
 /**
@@ -115,9 +115,9 @@ export interface CalcValueHostConfig extends ValueHostConfig
 }
 
 /**
- * State for CalcValueHost
+ * InstanceState for CalcValueHost
  */
-export interface CalcValueHostState extends ValueHostState
+export interface CalcValueHostInstanceState extends ValueHostInstanceState
 {
     
 }

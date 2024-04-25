@@ -16,6 +16,8 @@
 - **Breaking API change** - Comparison conditions (EqualTo, NotEqualTo, etc) covered two sources
   of values, from a second ValueHost and from the ConditionConfig.secondValue property.
   Now there are seperate conditions. EqualTo and EqualToValue; NotEqualTo and NotEqualToValue; etc.
+- **Breaking API change** - ValidationManager.validate() function has a different result type.
+- ValidationManager's onValidate callback called from setBusinessLogicError and clearValidation.
 ## 0.12.0
 - **Major feature**. CalcValueHost is used for calculating values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
 - **Breaking API change.** Renamed "Descriptor" to "Config" throughout. I felt that the descriptor objects

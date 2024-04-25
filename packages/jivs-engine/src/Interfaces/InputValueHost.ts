@@ -2,7 +2,7 @@
  * @module ValueHosts/Types/InputValueHost
  */
 import { IValidator, ValidatorConfig } from "./Validator";
-import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseState } from "./ValidatableValueHostBase";
+import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from "./ValidatableValueHostBase";
 
 /**
 * Manages a value that uses Validators for its input validation.
@@ -74,6 +74,6 @@ export interface InputValueHostConfig extends ValidatableValueHostBaseConfig {
 /**
  * Elements of InputValueHost that are stateful based on user interaction
  */
-export interface InputValueHostState extends ValidatableValueHostBaseState {
+export interface InputValueHostInstanceState extends ValidatableValueHostBaseInstanceState {
 
 }

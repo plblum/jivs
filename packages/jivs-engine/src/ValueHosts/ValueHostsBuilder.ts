@@ -13,7 +13,7 @@ import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { CalcValueHostConfig, CalculationHandler } from "../Interfaces/CalcValueHost";
-import { EvaluateChildConditionResultsConfig } from "../Conditions/EvaluateChildConditionResultsBase";
+import { EvaluateChildConditionResultsBaseConfig } from "../Conditions/EvaluateChildConditionResultsBase";
 import { resolveErrorCode } from "../Validation/Validator";
 
 
@@ -171,7 +171,7 @@ export class ValueHostsBuilder
     * there is no need to get a value from configs property.
      * @returns a FluentConditionCollector for chaining conditions.
     */
-    public conditions(parentConfig?: EvaluateChildConditionResultsConfig): FluentConditionCollector
+    public conditions(parentConfig?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
     {
         let fluent = new StartFluent(this.vmConfig);
         return fluent.conditions(parentConfig);

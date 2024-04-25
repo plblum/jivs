@@ -8,15 +8,15 @@
  * @module ValueHosts/Types/StaticValueHost
  */
 
-import { IValueHost, ValueHostConfig, ValueHostState } from './ValueHost';
+import { IValueHost, ValueHostConfig, ValueHostInstanceState } from './ValueHost';
 
 export interface IStaticValueHost extends IValueHost {
 }
 
 /**
- * State for StaticValueHost
+ * InstanceState for StaticValueHost
  */
-export interface StaticValueHostState extends ValueHostState {
+export interface StaticValueHostInstanceState extends ValueHostInstanceState {
 }
 
 /**

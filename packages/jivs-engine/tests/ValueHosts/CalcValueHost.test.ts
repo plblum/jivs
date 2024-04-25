@@ -1,5 +1,5 @@
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { CalcValueHostConfig, CalcValueHostState, CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { CalcValueHostConfig, CalcValueHostInstanceState, CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { CalcValueHost, CalcValueHostGenerator } from "../../src/ValueHosts/CalcValueHost";
@@ -33,7 +33,7 @@ function TestCalcFunctionUsingConvertToPrimitive(calcValueHost: ICalcValueHost, 
 
 
 describe('CalcValueHost constructor', () => {
-    test('constructor with valid parameters created and sets up Services, Config, and State', () => {
+    test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let testItem: CalcValueHost | null = null;
@@ -83,7 +83,7 @@ describe('CalcValueHostGenerator members', () => {
         })).toBe(false);
     });
 
-    test('create returns instance of CalcValueHost with VM, Config and State established', () => {
+    test('create returns instance of CalcValueHost with VM, Config and InstanceState established', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
         let config: CalcValueHostConfig = {
@@ -92,7 +92,7 @@ describe('CalcValueHostGenerator members', () => {
             label: '',
             calcFn: TestCalcFunctionReturnsOne
         };
-        let state: CalcValueHostState = {
+        let state: CalcValueHostInstanceState = {
             name: 'Field1',
             value: undefined,
             items: {
@@ -106,10 +106,10 @@ describe('CalcValueHostGenerator members', () => {
         expect(vh).toBeInstanceOf(CalcValueHost);
         expect(vh!.getName()).toBe(config.name);    // check Config values
         expect(vh!.getValue()).toBe(1); // from calculation
-        expect(vh!.getFromState('letters')).toBe('ABC');
+        expect(vh!.getFromInstanceState('letters')).toBe('ABC');
     });
-    test('cleanupState existing state takes no action. Returns the same data', () => {
-        let originalState: CalcValueHostState = {
+    test('cleanupInstanceState existing state takes no action. Returns the same data', () => {
+        let originalState: CalcValueHostInstanceState = {
             name: 'Field1',
             value: undefined,
             items: {
@@ -124,11 +124,11 @@ describe('CalcValueHostGenerator members', () => {
             calcFn: TestCalcFunctionReturnsOne
         };
         let testItem = new CalcValueHostGenerator();
-        expect(() => testItem.cleanupState(state, config)).not.toThrow();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
         expect(state).toEqual(originalState);
     });
 
-    test('createState returns instance with name and InitialValue from Config', () => {
+    test('createInstanceState returns instance with name and InitialValue from Config', () => {
         let testItem = new CalcValueHostGenerator();
         let config: CalcValueHostConfig = {
             name: 'Field1',
@@ -137,8 +137,8 @@ describe('CalcValueHostGenerator members', () => {
             initialValue: 'TEST',
             calcFn: TestCalcFunctionReturnsOne
         };
-        let state: CalcValueHostState | null = null;
-        expect(() => state = testItem.createState(config)).not.toThrow();
+        let state: CalcValueHostInstanceState | null = null;
+        expect(() => state = testItem.createInstanceState(config)).not.toThrow();
         expect(state).not.toBeNull();
         expect(state!.name).toBe(config.name);
         expect(state!.value).toBe(config.initialValue);

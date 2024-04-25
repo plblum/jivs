@@ -3,7 +3,7 @@
  * It provides one such logger class, ConsoleLoggerService, which works with the JavaScript console object.
  * Use your own logger by implementating the ILogger interface.
  * Assign your class to {@link Services/ConcreteClasses/ValidationServices!ValidationServices | ValidationServices }
- * @module Services/Types/LoggerService
+ * @module Services/Types/ILoggerService
  */
 
 /**

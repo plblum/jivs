@@ -1,9 +1,6 @@
 /**
- * Map container that lets you register entries where
- * the key is a lookup string and the value is a function.
- * It has a fallback behavior where the user can register
- * one lookup string to use another's function.
- * @module Utilities/NameToFunctionMapper
+ * Various classes, types and functions to support the overall tool.
+ * @module Utilities
  */
 
 

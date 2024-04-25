@@ -327,8 +327,8 @@ interface IValueHost {
     setValueToUndefined(options?): void;
     
     isChanged: boolean;
-    saveIntoState(key, value): void;
-    getFromState(key): undefined | ValidTypesForStateStorage;
+    saveIntoInstanceState(key, value): void;
+    getFromInstanceState(key): undefined | ValidTypesForInstanceStateStorage;
 }
 interface IInputValueHost extends IValueHost
 {
@@ -546,13 +546,13 @@ Here’s `IValidationManagerConfig type`:
 interface ValidationManagerConfig {
     services: IValidationServices;
     valueHostConfigs: ValueHostConfig[];
-    savedState?: null | ValidationManagerState;
-    savedValueHostStates?: null | ValueHostState[];
+    savedInstanceState?: null | ValidationManagerInstanceState;
+    savedValueHostInstanceStates?: null | ValueHostInstanceState[];
     onInputValueChanged?: null | InputValueChangedHandler;
-    onStateChanged?: null | ValidationManagerStateChangedHandler;
+    onInstanceStateChanged?: null | ValidationManagerInstanceStateChangedHandler;
     onValidated?: null | ValidationManagerValidatedHandler;
     onValueChanged?: null | ValueChangedHandler;
-    onValueHostStateChanged?: null | ValueHostStateChangedHandler;
+    onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
     onValueHostValidated?: null | ValueHostValidatedHandler;
 }
 ```
@@ -560,8 +560,8 @@ Let’s go through this type.
 
 -	`services` – Always takes a <a href="#validationservices">`ValidationServices object`</a>, which is rich with services for dependency injection and factories. You will need to do a bunch to configure this, but don’t worry, we have a code snippet to inject into your app to assist. (Described below.)
 -	<a href="#configuringvaluehosts">`valueHostConfigs`</a> – Configures each ValueHost. This is where a majority of the setup work goes.
--	`savedState` and `savedValueHostStates` – `ValidationManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onStateChanged` and `onValueHostStateChanged` events, and pass the values back into these two Config properties when you recreate it.
--	`onStateChanged` and `onValueHostStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
+-	`savedInstanceState` and `savedValueHostInstanceStates` – `ValidationManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onInstanceStateChanged` and `onValueHostInstanceStateChanged` events, and pass the values back into these two Config properties when you recreate it.
+-	`onInstanceStateChanged` and `onValueHostInstanceStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 -	`onValueChanged` notifies you when a `ValueHost` had its value changed.
 -	`onInputValueChanged` notifies you when an `InputValueHost` had its Input Value changed.
 -	`onValidated` and `onValueHostValidated` notifies you after a `validate function` completes, providing the results.

@@ -3,7 +3,7 @@
  * @module Validator/Types
  */
 import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditions';
-import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
+import { BusinessLogicError, IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
 import { IGatherValueHostNames } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
 import { IInputValueHost } from './InputValueHost';
@@ -12,7 +12,7 @@ import { IInputValueHost } from './InputValueHost';
  * Represents a single validator for the value of an InputValueHost.
  * It is stateless.
  * Basically you want to call validate() to get all of the results
- * of a validation, including ValidationResult, error messages,
+ * of a validation, including ConditionEvaluateResult, error messages,
  * severity, and more.
  * That data ends up in the ValidationManager as part of its state,
  * allowing the system consumer to know how to deal with the data
@@ -21,10 +21,10 @@ import { IInputValueHost } from './InputValueHost';
 export interface IValidator extends IMessageTokenSource, IGatherValueHostNames {
     /**
      * Perform validation activity and provide the results including
-     * whether there is an error (ValidationResult), fully formatted
+     * whether there is an error (ConditionEvaluateResult), fully formatted
      * error messages, severity, and Condition type.
      * @param options - Provides guidance on which validators to include.
-     * @returns Identifies the ConditionEvaluationResult.
+     * @returns Identifies the ConditionEvaluateResult.
      * If there were any NoMatch cases, they are in the IssuesFound array.
      */
     validate(options: ValidateOptions): ValidatorValidateResult | Promise<ValidatorValidateResult>;
@@ -85,6 +85,19 @@ export interface IValidator extends IMessageTokenSource, IGatherValueHostNames {
      * @param severity 
      */
     setSeverity(severity: ValidationSeverity): void;    
+
+    /**
+     * When ValueHost.setBusinessLogicError is called, it provides each entry to the existing
+     * list of Validators through this. This function determines if the businessLogicError is
+     * actually for the same error code as itself, and returns a ValidatorValidateResult, just
+     * like calling validate() itself.
+     * The idea is to use the UI's representation of the validator, including its error messages
+     * with its own tokens, instead of those supplied by the business logic.
+     * @param businessLogicError 
+     * @returns if null, it did not handle the BusinessLogicError. If a ValidatorValidateResult,
+     * it should be used in the ValueHost's state of validation.
+     */
+    tryValidatorSwap(businessLogicError: BusinessLogicError): ValidatorValidateResult | null;
 
 }
 
@@ -193,7 +206,7 @@ export interface ValidatorConfig {
      * It should already be localized, except for the tokens.
      * It can contain HTML tags if the platform supports them. In that case,
      * be sure to use HTML encoded characters.
-     * The string shown to the actual user is stored in ValidatorState.errorMessage.
+     * The string shown to the actual user is stored in ValueHostInstanceState.errorMessage.
      * Values:
      * * String - The error message with tokens and optional HTML tags.
      * * function - Returns the error message, given the Validator,

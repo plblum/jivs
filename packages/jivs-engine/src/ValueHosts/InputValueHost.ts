@@ -10,15 +10,14 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { objectKeysCount, groupsMatch, cleanString } from '../Utilities/Utilities';
+import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
-import { ValidateOptions, ValueHostValidateResult, ValidationResult, ValidationSeverity, ValidationResultString, IssueFound } from '../Interfaces/Validation';
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidationStatusString, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
-import { InputValueHostConfig, InputValueHostState, IInputValueHost } from '../Interfaces/InputValueHost';
+import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { FluentValidatorCollector } from './Fluent';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
@@ -35,15 +34,15 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 * - InputValueHostConfig - The business logic supplies these rules
 *   to implement a ValueHost's name, label, data type, validation rules,
 *   and other business logic metadata.
-* - InputValueHostState - State used by this InputValueHost including
+* - InputValueHostInstanceState - InstanceState used by this InputValueHost including
     its validators.
 * If the caller changes any of these, discard the instance
 * and create a new one.
  */
-export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfig, InputValueHostState>
+export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfig, InputValueHostInstanceState>
     implements IInputValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostState) {
+    constructor(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostInstanceState) {
         super(valueHostsManager, config, state);
     }
 
@@ -53,11 +52,13 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
      * with all of the NoMatches in issuesFound.
      * If all were Matched, it returns ValueHostValidateResult.Value and issuesFound=null.
      * If there are no validators, or all validators were skipped (disabled),
-     * it returns ValidationResult.Undetermined.
-     * Updates this ValueHost's State and notifies parent if changes were made.
+     * it returns ValidationStatus.Undetermined.
+     * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
+     * @returns Non-null when there is something to report. null if there was nothing to evaluate
+     * which includes all existing validators reporting "Undetermined"
      */
-    public validate(options?: ValidateOptions): ValueHostValidateResult {
+    public validate(options?: ValidateOptions): ValueHostValidateResult | null {
         let self = this;
         if (!options)
             options = {};
@@ -66,12 +67,11 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         // By being an object, any closure referring to result will still get those
         // property changes for all validators completed.
         let result: ValueHostValidateResult = {
-            validationResult: ValidationResult.Undetermined,
+            status: ValidationStatus.Undetermined,
             issuesFound: null
         };
 
-        if (!groupsMatch(options.group,
-            (this.getFromState('_group') ?? this.config.group) as string | null))
+        if (!this.groupsMatch(options.group, false))
             return bailout(`Group names do not match "${options.group}" vs "${this.config.group?.toString()}"`);      
         
         try {
@@ -101,11 +101,11 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                         switch (inputValResult.issueFound.severity) {
                             case ValidationSeverity.Error:
                             case ValidationSeverity.Severe:
-                                result.validationResult = ValidationResult.Invalid;
+                                result.status = ValidationStatus.Invalid;
                                 break;
                             case ValidationSeverity.Warning:
-                                if (result.validationResult === ValidationResult.Undetermined)
-                                    result.validationResult = ValidationResult.Valid;
+                                if (result.status === ValidationStatus.Undetermined)
+                                    result.status = ValidationStatus.Valid;
                                 break;
                         }
 
@@ -116,14 +116,14 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                         if (issueFound.severity === ValidationSeverity.Severe)
                             stop = true;
                     }
-                    else if (result.validationResult === ValidationResult.Undetermined)
+                    else if (result.status === ValidationStatus.Undetermined)
                         if (inputValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)
-                            result.validationResult = ValidationResult.Valid;    // may be overwritten by a later validator
+                            result.status = ValidationStatus.Valid;    // may be overwritten by a later validator
 
                 }
                 // unnecessary as this should always be the case at this point
                 // if (validatorsInUse === 0)
-                //     result.validationResult = ValidationResult.Undetermined; 
+                //     result.status = ValidationStatus.Undetermined; 
 
             }
             catch (e)
@@ -131,28 +131,32 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                 if (e instanceof Error)
                     logError(e.message);
                 // resume normal processing with Undetermined state
-                result.validationResult = ValidationResult.Undetermined;
+                result.status = ValidationStatus.Undetermined;
             }                  
-            if (updateStateWithResult(result))
-                toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this, result);
-            return result;
+            if (updateInstanceStateWithResult(result))
+                self.invokeOnValueHostValidated(options);
+        // when the result hasn't changed from the start, report null as there were no issues found
+            return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
+                result : null;
         }
   
         finally {
             logInfo(() => {
                 return {
-                    message: `Input Validation result: ${ValidationResultString[result.validationResult]} Issues found:` +
+                    message: `Input Validation result: ${ValidationStatusString[result.status]} Issues found:` +
                         (result.issuesFound ? JSON.stringify(result.issuesFound) : 'none')
                 };
             });
         }
-        function updateStateWithResult(result: ValueHostValidateResult): boolean
+        function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean
         {
-            return self.updateState((stateToUpdate) => {
-                stateToUpdate.validationResult = result.validationResult;
+            return self.updateInstanceState((stateToUpdate) => {
+                stateToUpdate.status = result.status;
                 stateToUpdate.issuesFound = result.issuesFound;
                 if (options!.group)
                     stateToUpdate.group = options!.group;
+                else
+                    delete stateToUpdate.group;
                 if (result.pending)
                     stateToUpdate.asyncProcessing = true;
                 else
@@ -181,7 +185,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
             function deleteAsyncProcessFlag() : void
             {
                 if (!result.pending)
-                    self.updateState((stateToUpdate) => {
+                    self.updateInstanceState((stateToUpdate) => {
                         delete stateToUpdate.asyncProcessing;
                         return stateToUpdate;
                     }, self);
@@ -192,14 +196,15 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
             promise.then(
             (ivr) => {
                     completeThePromise(() => {
-                        // the only way we modify the issues, validation result, or State
+                        // the only way we modify the issues, validation result, or ValueHostInstanceState
                         if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
-                            result.validationResult = ValidationResult.Invalid;
+                            result.status = ValidationStatus.Invalid;
                             if (!result.issuesFound)
                                 result.issuesFound = [];
                             result.issuesFound.push(ivr.issueFound!);
-                            if (updateStateWithResult(result))
-                                toIValidationManagerCallbacks(self.valueHostsManager)?.onValueHostValidated?.(self, result);
+                            if (updateInstanceStateWithResult(result))
+                                self.invokeOnValueHostValidated(options);
+
                         }
                         else
                             deleteAsyncProcessFlag();
@@ -212,21 +217,17 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
                 });
             }
         );
-        // no change to the ValidationResult here            
+        // no change to the ValidationStatus here            
         }
 
-        function bailout(errorMessage: string): ValueHostValidateResult
+        function bailout(errorMessage: string): null
         {
-            let resultState: ValueHostValidateResult = {
-                validationResult: ValidationResult.Undetermined,
-                issuesFound: null
-            };
             logInfo(() => {
                 return {
                     message: errorMessage
                 };
             });
-            return resultState;                    
+            return null;                    
         }        
         function logInfo(
             fn: () => { message: string; source?: string }): void
@@ -287,6 +288,70 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
         else
             return unordered.sort(fn);
     }
+
+    /**
+     * When Business Logic gathers data from the UI, it runs its own final validation.
+     * If its own business rule has been violated, it should be passed here where it becomes exposed to 
+     * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
+     * by specifying that valueHostName in AssociatedValueHostName.
+     * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
+     * It calls onValueHostValidated if there was a changed to the state.
+     * 
+     * In this class, we first see if the errorcode in the error matches an existing validator.
+     * If so, we use that validator, and add an IssueFound from that validator.
+     * 
+     * @param error - A business logic error to show. If it has an errorCode assigned and the same
+     * errorCode is already recorded here, the new entry replaces the old one.
+     * @returns true when a change was made to the known validation state.
+     */
+    public setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean {
+        if (error) {
+
+            // see if the error code matches an existing validator.
+            // If so, use that validator's ValidatorValidateResult instead.
+            if (error.errorCode) 
+                for (let i = 0; i < this.validators().length; i++)
+                {
+                    let validator = this.validators()[i];
+                    let valResult = validator.tryValidatorSwap(error);
+                    if (valResult)
+                    {
+                        if (error.severity)
+                            valResult.issueFound!.severity = error.severity;
+                        let changed = this.updateInstanceState((stateToUpdate) => {
+                            let replacementIndex = -1;
+                            if (!stateToUpdate.issuesFound)
+                                stateToUpdate.issuesFound = [];
+                        // replace if the same issuefound exists
+                            for (let issueIndex = 0; issueIndex < stateToUpdate.issuesFound.length; issueIndex++)
+                            {
+                                if (stateToUpdate.issuesFound[issueIndex].errorCode === error.errorCode)
+                                {
+                                    replacementIndex = issueIndex;
+                                    break;
+                                }
+                            }
+
+                            if (replacementIndex === -1)
+                                stateToUpdate.issuesFound.push(valResult.issueFound!);
+                            else
+                                stateToUpdate.issuesFound[replacementIndex] = valResult.issueFound!;
+                            stateToUpdate.status = ValidationStatus.Invalid;
+    //NOTE: leave stateToUpdate.group and asyncProcessing alone
+                            return stateToUpdate;
+                        }, this);
+                        if (changed) {
+                            this.invokeOnValueHostValidated(options);
+                            return true;
+                        }
+                    }
+
+                }
+
+        }
+        return super.setBusinessLogicError(error, options);
+    }    
+
     protected tryAutoGenerateDataTypeCheckCondition(validators: Array<IValidator>): boolean
     {
         let created = false;
@@ -409,7 +474,7 @@ export class InputValueHost extends ValidatableValueHostBase<InputValueHostConfi
      */
     public setGroup(group: string): void
     {
-        this.saveIntoState('_group', group);
+        this.saveIntoInstanceState('_group', group);
     }
 }
 
@@ -445,17 +510,17 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
             return false;
         return true;
     }
-    public create(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostState): IInputValueHost {
+    public create(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostInstanceState): IInputValueHost {
         return new InputValueHost(valueHostsManager, config, state);
     }
 /**
  * Looking for changes to the ValidationConfigs to impact IssuesFound.
- * If IssuesFound did change, fix ValidationResult for when Invalid to 
- * review IssuesFound in case it is only a Warning, which makes ValidationResult Valid.
+ * If IssuesFound did change, fix ValidationStatus for when Invalid to 
+ * review IssuesFound in case it is only a Warning, which makes ValidationStatus Valid.
  * @param state 
  * @param config 
  */    
-    public cleanupState(state: InputValueHostState, config: InputValueHostConfig): void {
+    public cleanupInstanceState(state: InputValueHostInstanceState, config: InputValueHostConfig): void {
         assertNotNull(state, 'state');
         assertNotNull(config, 'config');
         let configChanged = false;
@@ -493,22 +558,22 @@ export class InputValueHostGenerator extends ValidatableValueHostBaseGenerator {
 
         state.issuesFound = issuesFound as (Array<IssueFound> | null);
         // fix validation result for when validation had occurred
-        if (state.validationResult === ValidationResult.Invalid) {
-            let vr = ValidationResult.ValueChangedButUnvalidated;
+        if (state.status === ValidationStatus.Invalid) {
+            let vr = ValidationStatus.ValueChangedButUnvalidated;
             let warningFound = false;
             if (issuesFound) {
                 for (let issueFound of state.issuesFound!) {
                     if (issueFound.severity !== ValidationSeverity.Warning) {
-                        vr = ValidationResult.Invalid;
+                        vr = ValidationStatus.Invalid;
                         break;
                     }
                     else
                         warningFound = true;
                 }
-                if (warningFound && vr === ValidationResult.ValueChangedButUnvalidated)
-                    vr = ValidationResult.Valid;
+                if (warningFound && vr === ValidationStatus.ValueChangedButUnvalidated)
+                    vr = ValidationStatus.Valid;
             }
-            state.validationResult = vr;
+            state.status = vr;
         }
     }
 

@@ -1,9 +1,9 @@
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import {
-    type ValueHostState, type IValueHost, ValueHostConfig, IValueHostCallbacks, toIValueHostCallbacks
+    type ValueHostInstanceState, type IValueHost, ValueHostConfig, IValueHostCallbacks, toIValueHostCallbacks
 } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
-import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
+import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
@@ -11,7 +11,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 
 
-interface IPublicifiedValueHostState extends ValueHostState
+interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
 {
     Counter: number;    // incremented each time the state is cleaned    
 }
@@ -19,9 +19,9 @@ interface IPublicifiedValueHostState extends ValueHostState
  * Subclass of ValueHostBase to focus testing on ValueHostBase members
  * including exposing protected members
  */
-class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifiedValueHostState>
+class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifiedValueHostInstanceState>
 {
-    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostState) {
+    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
         super(valueHostsManager, config, state);
     }
     public ExposeServices(): IValidationServices {
@@ -32,8 +32,8 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
         return this.config;
     }
 
-    public ExposeState(): IPublicifiedValueHostState {
-        return this.state;
+    public ExposeState(): IPublicifiedValueHostInstanceState {
+        return this.instanceState;
     }
 }
 /**
@@ -43,14 +43,14 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === 'PublicifyValueHostBase';
     }
-    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostState): IValueHost {
+    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost {
         return new PublicifiedValueHostBase(valueHostsManager, config, state);
     }
-    public cleanupState(state: IPublicifiedValueHostState, config: ValueHostConfig): void {
+    public cleanupInstanceState(state: IPublicifiedValueHostInstanceState, config: ValueHostConfig): void {
         state.Counter = 0;
     }
-    public createState(config: ValueHostConfig): IPublicifiedValueHostState {
-        let state: IPublicifiedValueHostState = {
+    public createInstanceState(config: ValueHostConfig): IPublicifiedValueHostInstanceState {
+        let state: IPublicifiedValueHostInstanceState = {
             name: config.name,
             value: config.initialValue,
             Counter: 0
@@ -77,7 +77,7 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
     services: MockValidationServices,
     validationManager: MockValidationManager,
     config: ValueHostConfig,
-    state: ValueHostState,
+    state: ValueHostInstanceState,
     valueHost: PublicifiedValueHostBase
 } {
     let services = new MockValidationServices(false, false);
@@ -96,7 +96,7 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
     let updatedConfig: ValueHostConfig = (!config) ?
         defaultConfig :
         { ...defaultConfig, ...config };
-    let state: IPublicifiedValueHostState = {
+    let state: IPublicifiedValueHostInstanceState = {
         name: 'Field1',
         value: initialValue,
         Counter: 0
@@ -149,7 +149,7 @@ describe('constructor and resulting property values', () => {
             dataType: LookupKey.String,
             initialValue: 'DATA'
         };
-        let state: IPublicifiedValueHostState = {
+        let state: IPublicifiedValueHostInstanceState = {
             name: 'Field1',
             value: undefined,
             Counter: 0
@@ -171,14 +171,14 @@ describe('updateState', () => {
             let setup = setupValueHost({}, initialValue);
             let testItem = setup.valueHost;
             expect(testItem.getValue()).toBe(initialValue);
-            let fn = (stateToUpdate: IPublicifiedValueHostState): IPublicifiedValueHostState => {
+            let fn = (stateToUpdate: IPublicifiedValueHostInstanceState): IPublicifiedValueHostInstanceState => {
                 stateToUpdate.value = stateToUpdate.value + 1;
                 return stateToUpdate;
             };
             // try several times
             for (let i = 1; i <= 3; i++) {
                 let originalState = testItem.ExposeState();
-                expect(() => testItem.updateState(fn, testItem)).not.toThrow();
+                expect(() => testItem.updateInstanceState(fn, testItem)).not.toThrow();
                 expect(testItem.getValue()).toBe(initialValue + i);
                 expect(testItem.ExposeState()).not.toBe(originalState);   // different instances
             }
@@ -197,14 +197,14 @@ describe('updateState', () => {
             let setup = setupValueHost({}, initialValue);
             let testItem = setup.valueHost;
             expect(testItem.getValue()).toBe(initialValue);
-            let fn = (stateToUpdate: IPublicifiedValueHostState): IPublicifiedValueHostState => {
+            let fn = (stateToUpdate: IPublicifiedValueHostInstanceState): IPublicifiedValueHostInstanceState => {
                 stateToUpdate.value = stateToUpdate.value + 0;  // not actually changing anything
                 return stateToUpdate;
             };
             // try several times
             for (let i = 1; i <= 3; i++) {
                 let originalState = testItem.ExposeState();
-                expect(() => testItem.updateState(fn, testItem)).not.toThrow();
+                expect(() => testItem.updateInstanceState(fn, testItem)).not.toThrow();
                 expect(testItem.getValue()).toBe(initialValue);
                 expect(testItem.ExposeState()).toBe(originalState);   // same instance
             }
@@ -217,7 +217,7 @@ describe('updateState', () => {
         () => {
             let setup = setupValueHost({});
             let testItem = setup.valueHost;
-            expect(() => testItem.updateState(null!, testItem)).toThrow(/updater/);
+            expect(() => testItem.updateInstanceState(null!, testItem)).toThrow(/updater/);
         });    
 });
 
@@ -353,14 +353,14 @@ describe('setValue', () => {
         expect(changedValues[1].oldValue).toBe(secondValue);        
     });
 
-    test('Value was changed. OnValueHostStateChanged called.', () => {
+    test('Value was changed. OnValueHostInstanceStateChanged called.', () => {
         const initialValue = 100;
         const secondValue = 150;
         const finalValue = 200;
 
         let setup = setupValueHost({}, initialValue);
-        let changedState: Array<ValueHostState> = [];
-        setup.validationManager.onValueHostStateChanged = (valueHost, stateToRetain) => {
+        let changedState: Array<ValueHostInstanceState> = [];
+        setup.validationManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };
 
@@ -373,12 +373,12 @@ describe('setValue', () => {
         expect(changedState[1].value).toBe(finalValue);     
     });    
 
-    test('Value was not changed. OnValueHostStateChanged is not called.', () => {
+    test('Value was not changed. OnValueHostInstanceStateChanged is not called.', () => {
         const initialValue = 100;
 
         let setup = setupValueHost({}, initialValue);
-        let changedState: Array<ValueHostState> = [];
-        setup.validationManager.onValueHostStateChanged = (valueHost, stateToRetain) => {
+        let changedState: Array<ValueHostInstanceState> = [];
+        setup.validationManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
             changedState.push(stateToRetain);
         };
 
@@ -464,28 +464,28 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
-        expect(() => testItem.saveIntoState('KEY', 10)).not.toThrow();
+        expect(() => testItem.saveIntoInstanceState('KEY', 10)).not.toThrow();
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
         expect(changes[0].name).toBe('Field1');
         expect(changes[0].items).not.toBeNull();
         expect(changes[0].items!['KEY']).toBe(10);
-        expect(testItem.getFromState('KEY')).toBe(10);        
+        expect(testItem.getFromInstanceState('KEY')).toBe(10);        
     });
     test('Get without prior Store returns undefined.', () => {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
 
-        expect(testItem.getFromState('KEY')).toBeUndefined();       
+        expect(testItem.getFromInstanceState('KEY')).toBeUndefined();       
     });
     test('Save 10 and save undefined to remove it.', () => {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
-        expect(() => testItem.saveIntoState('KEY', 10)).not.toThrow();
-        expect(() => testItem.saveIntoState('KEY', undefined)).not.toThrow();
+        expect(() => testItem.saveIntoInstanceState('KEY', 10)).not.toThrow();
+        expect(() => testItem.saveIntoInstanceState('KEY', undefined)).not.toThrow();
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2);
@@ -495,14 +495,14 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
         expect(changes[1].name).toBe('Field1');
         expect(changes[1].items).not.toBeNull();
         expect(changes[1].items!['KEY']).toBeUndefined();        
-        expect(testItem.getFromState('KEY')).toBeUndefined;        
+        expect(testItem.getFromInstanceState('KEY')).toBeUndefined;        
     });
     test('Save two different keys and retrieve both.', () => {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
-        expect(() => testItem.saveIntoState('KEY1', 10)).not.toThrow();
-        expect(() => testItem.saveIntoState('KEY2', 20)).not.toThrow();
+        expect(() => testItem.saveIntoInstanceState('KEY1', 10)).not.toThrow();
+        expect(() => testItem.saveIntoInstanceState('KEY2', 20)).not.toThrow();
 
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(2);
@@ -512,16 +512,16 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
         expect(changes[1].name).toBe('Field1');
         expect(changes[1].items).not.toBeNull();
         expect(changes[1].items!['KEY2']).toBe(20);  
-        expect(testItem.getFromState('KEY1')).toBe(10);        
-        expect(testItem.getFromState('KEY2')).toBe(20);
+        expect(testItem.getFromInstanceState('KEY1')).toBe(10);        
+        expect(testItem.getFromInstanceState('KEY2')).toBe(20);
     });    
     test('Save two different keys, delete the second, and retrieve both.', () => {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
-        expect(() => testItem.saveIntoState('KEY1', 10)).not.toThrow();
-        expect(() => testItem.saveIntoState('KEY2', 20)).not.toThrow();
-        expect(() => testItem.saveIntoState('KEY2', undefined)).not.toThrow();
+        expect(() => testItem.saveIntoInstanceState('KEY1', 10)).not.toThrow();
+        expect(() => testItem.saveIntoInstanceState('KEY2', 20)).not.toThrow();
+        expect(() => testItem.saveIntoInstanceState('KEY2', undefined)).not.toThrow();
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(3);
         expect(changes[0].name).toBe('Field1');
@@ -533,8 +533,8 @@ describe('ValueHostBase.saveIntoStore and getFromStore', () => {
         expect(changes[2].name).toBe('Field1');
         expect(changes[2].items).not.toBeNull();
         expect(changes[2].items!['KEY2']).toBeUndefined();
-        expect(testItem.getFromState('KEY1')).toBe(10);        
-        expect(testItem.getFromState('KEY2')).toBeUndefined();
+        expect(testItem.getFromInstanceState('KEY1')).toBe(10);        
+        expect(testItem.getFromInstanceState('KEY2')).toBeUndefined();
     });        
 });
 
@@ -542,7 +542,7 @@ describe('toIValueHostCallbacks function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostCallbacks = {
             onValueChanged: null,
-            onValueHostStateChanged: null
+            onValueHostInstanceStateChanged: null
         };
         expect(toIValueHostCallbacks(testItem)).toBe(testItem);
     });
