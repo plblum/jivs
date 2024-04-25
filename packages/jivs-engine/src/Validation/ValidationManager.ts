@@ -392,7 +392,8 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         return {
             isValid: this.isValid,
             doNotSaveNativeValues: this.doNotSaveNativeValues(),
-            issuesFound: this.getIssuesFound(options ? options.group : undefined)
+            issuesFound: this.getIssuesFound(options ? options.group : undefined),
+            asyncProcessing: this.asyncProcessing
         };
     }
     /**
@@ -434,7 +435,17 @@ export class ValidationManager<TState extends ValidationManagerState> implements
         }
         return false;
     }
-
+    /**
+     * When true, an async Validator is running in any ValueHost
+     */
+    public get asyncProcessing(): boolean
+    {
+        for (let vh of this.inputValueHost()) {
+            if (vh.asyncProcessing)
+                return true;
+        }
+        return false;        
+    }
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 

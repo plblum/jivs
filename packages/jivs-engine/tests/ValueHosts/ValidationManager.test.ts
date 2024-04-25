@@ -1012,7 +1012,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
@@ -1038,7 +1039,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: false,
             doNotSaveNativeValues: true,
-            issuesFound: [expectedIssueFound]
+            issuesFound: [expectedIssueFound],
+            asyncProcessing: false
         });
 
 
@@ -1066,7 +1068,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: false,
             doNotSaveNativeValues: true,
-            issuesFound: [expectedIssueFound]
+            issuesFound: [expectedIssueFound],
+            asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(false);
@@ -1088,7 +1091,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
@@ -1110,7 +1114,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
@@ -1132,7 +1137,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
@@ -1167,7 +1173,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: false,
             doNotSaveNativeValues: true,
-            issuesFound: [expectedIssueFound, expectedIssueFound2]
+            issuesFound: [expectedIssueFound, expectedIssueFound2],
+            asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(false);
@@ -1325,7 +1332,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(callbackValue).toEqual(<ValidationSnapshot>{
             isValid: false,
             doNotSaveNativeValues: true,
-            issuesFound: [expectedIssueFound]
+            issuesFound: [expectedIssueFound],
+            asyncProcessing: false
         });
 
     });    
@@ -1371,7 +1379,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
@@ -1403,7 +1412,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: false,
             doNotSaveNativeValues: true,
-            issuesFound: [expectedIssueFound]
+            issuesFound: [expectedIssueFound],
+            asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(false);
@@ -1430,7 +1440,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: false,
             doNotSaveNativeValues: true,
-            issuesFound: [expectedIssueFound]
+            issuesFound: [expectedIssueFound],
+            asyncProcessing: false
         });
 
     });
@@ -1451,7 +1462,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: false,
             doNotSaveNativeValues: true,
-            issuesFound: [expectedIssueFound]
+            issuesFound: [expectedIssueFound],
+            asyncProcessing: false
         });
     });    
     test('With 1 inputValueHost that has a string value and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Valid', () => {
@@ -1463,7 +1475,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });
     });        
     test('With 1 inputValueHost that has an undefined value and a condition that will evaluate as Match during edit, use option DuringEdit=true, expect Undetermined because DuringEdit requires a string value', () => {
@@ -1476,7 +1489,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });
 
     });          
@@ -1498,7 +1512,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: false,
             doNotSaveNativeValues: true,
-            issuesFound: [expectedIssueFound]
+            issuesFound: [expectedIssueFound],
+            asyncProcessing: false
         });
 
     });
@@ -1515,7 +1530,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });
 
     });
@@ -1537,7 +1553,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(validationSnapshot).toEqual(<ValidationSnapshot>{
             isValid: false,
             doNotSaveNativeValues: true,
-            issuesFound: [expectedIssueFound]
+            issuesFound: [expectedIssueFound],
+            asyncProcessing: false
         });
     });
     test('OnValidated callback test', () => {
@@ -1555,7 +1572,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(callbackValue).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });
     });
     test('OnValidated callback test with omitCallback does not callback', () => {
@@ -1607,7 +1625,8 @@ describe('ValidationManager.clearValidation', () => {
         expect(callbackValue).toEqual(<ValidationSnapshot>{
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         });        
     });    
     test('OnValidated callback test with option.OmitCallback=true does not invoke callback', () => {

@@ -20,7 +20,8 @@ describe('Difference between dates is less than 10', () => {
         let expected: ValidationSnapshot = {
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         };
         expect(result).toEqual(expected);
     });
@@ -34,7 +35,8 @@ describe('Difference between dates is less than 10', () => {
         let expected: ValidationSnapshot = {
             isValid: true,
             doNotSaveNativeValues: false,
-            issuesFound: null
+            issuesFound: null,
+            asyncProcessing: false
         };
         expect(result).toEqual(expected);
     });    
@@ -58,6 +60,7 @@ describe('Difference between dates is less than 10', () => {
                 severity: ValidationSeverity.Error,
                 valueHostName: 'StartDate'
             }],
+            asyncProcessing: false
         };        
         expect(result).toEqual(expected);
     });    
@@ -80,6 +83,7 @@ describe('Difference between dates is less than 10', () => {
                 severity: ValidationSeverity.Severe,
                 valueHostName: 'StartDate'
                 }],
+            asyncProcessing: false
         };
         expect(result).toEqual(expected);
     });        

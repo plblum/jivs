@@ -71,7 +71,11 @@ export interface IValidationManager extends IValueHostsManager {
      * Invalid or ValueChangedButUnvalidated
      */
     doNotSaveNativeValues(): boolean;
-
+    
+    /**
+     * When true, an async Validator is running
+     */
+    asyncProcessing?: boolean;
     /**
      * When Business Logic gathers data from the UI, it runs its own final validation.
      * If its own business rule has been violated, it should be passed here where it becomes exposed to 
@@ -148,6 +152,10 @@ export interface ValidationSnapshot
      */
     issuesFound: Array<IssueFound> | null;
 
+    /**
+     * When true, an async Validator is running
+     */
+    asyncProcessing: boolean;    
 }
 
 
