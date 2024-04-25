@@ -6,7 +6,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
     type ValidateOptions, type ValueHostValidateResult, ValidationStatus,
     type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult,
-    ValidationSnapshot
+    ValidationState
 } from './Validation';
 
 import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
@@ -261,7 +261,7 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
 }
 
 
-export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validationSnapshot: ValueHostValidationSnapshot) => void;
+export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState) => void;
 export type InputValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
 
 /**
@@ -269,7 +269,7 @@ export type InputValueChangedHandler = (valueHost: IValidatableValueHostBase, ol
  * It includes all issuesfound and businesslogicerrors
  * as compared to validate() which is limited to just the issuesfound.
  */
-export interface ValueHostValidationSnapshot extends ValidationSnapshot
+export interface ValueHostValidationState extends ValidationState
 {
 
 }

@@ -6,7 +6,7 @@ import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/In
 import { BusinessLogicInputValueHost, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicInputValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
-import { ValidationStatus, IssueFound, ValidationSeverity, ValidationSnapshot } from '../../src/Interfaces/Validation';
+import { ValidationStatus, IssueFound, ValidationSeverity, ValidationState } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import {
     IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState,
@@ -21,7 +21,7 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { IValidatableValueHostBase, ValueHostValidationSnapshot } from "../../src/Interfaces/ValidatableValueHostBase";
+import { IValidatableValueHostBase, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig,
     UserSuppliedResultCondition, UserSuppliedResultConditionType
@@ -212,9 +212,9 @@ describe('constructor and initial property values', () => {
             services: new MockValidationServices(false, false),
             valueHostConfigs: [],
             onInstanceStateChanged: (validationManager: IValidationManager, state: ValidationManagerInstanceState) => { },
-            onValidated: (validationManager: IValidationManager, validationSnapshot : ValidationSnapshot) => { },
+            onValidated: (validationManager: IValidationManager, validationState : ValidationState) => { },
             onValueHostInstanceStateChanged: (valueHost: IValueHost, state: ValueHostInstanceState) => { },
-            onValueHostValidated: (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationSnapshot) => { },
+            onValueHostValidated: (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
             onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
             onInputValueChanged: (valueHost: IValidatableValueHostBase, oldValue: any) => { }
         };
@@ -1007,9 +1007,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
 
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate()).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1034,9 +1034,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             severity: ValidationSeverity.Error
         };
 
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate()).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
             issuesFound: [expectedIssueFound],
@@ -1063,9 +1063,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             severity: ValidationSeverity.Error
         };
 
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate()).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
             issuesFound: [expectedIssueFound],
@@ -1086,9 +1086,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let setup = setupValidationManager([config1, config2]);
 
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate()).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1109,9 +1109,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let setup = setupValidationManager([config1, config2.parentConfig]);
 
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate()).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1132,9 +1132,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         let setup = setupValidationManager([config1, config2]);
 
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate()).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1168,9 +1168,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             severity: ValidationSeverity.Error
         };
 
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate()).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate()).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
             issuesFound: [expectedIssueFound, expectedIssueFound2],
@@ -1307,10 +1307,10 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         result = setup.validationManager.setBusinessLogicErrors([]);
         expect(result).toBe(true);
     });        
-    test('OnValidated callback test invokes callback with expected ValidationSnapshot', () => {
-        let callbackValue: ValidationSnapshot | null = null;
-        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
-            callbackValue = validationSnapshot
+    test('OnValidated callback test invokes callback with expected ValidationState', () => {
+        let callbackValue: ValidationState | null = null;
+        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+            callbackValue = validationState
         };
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
@@ -1329,7 +1329,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
                 errorMessage: 'BL_ERROR'
             }
         ]);
-        expect(callbackValue).toEqual(<ValidationSnapshot>{
+        expect(callbackValue).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
             issuesFound: [expectedIssueFound],
@@ -1338,9 +1338,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
     });    
     test('OnValidated callback test with option.OmitCallback=true does not invoke callback', () => {
-        let callbackValue: ValidationSnapshot | null = null;
-        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
-            callbackValue = validationSnapshot
+        let callbackValue: ValidationState | null = null;
+        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+            callbackValue = validationState
         };
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
@@ -1374,9 +1374,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
     
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
         
-        let validationSnapshot: ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate({ preliminary: true })).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState: ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate({ preliminary: true })).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1407,9 +1407,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         };
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate({ preliminary: false })).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate({ preliminary: false })).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
             issuesFound: [expectedIssueFound],
@@ -1435,9 +1435,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         };
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setInputValue('');
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
             issuesFound: [expectedIssueFound],
@@ -1457,9 +1457,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         };
 
         setup.validationManager.getInputValueHost('Field1')?.setInputValue(''); // requires text for duringEdit
-        let validationSnapshot: ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState: ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
             issuesFound: [expectedIssueFound],
@@ -1470,9 +1470,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
         setup.validationManager.getInputValueHost(config.name)?.setInputValue('Text');
-        let validationSnapshot: ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState: ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1484,9 +1484,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let setup = setupValidationManager([config]);
 
         setup.validationManager.getInputValueHost(config.name)?.setInputValue(undefined);
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1507,9 +1507,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
 
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
             issuesFound: [expectedIssueFound],
@@ -1525,9 +1525,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         let vh = (setup.validationManager.getValueHost('Field1')! as IInputValueHost);
         vh.setInputValue('');
         
-        let validationSnapshot: ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState: ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1548,9 +1548,9 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
 
-        let validationSnapshot : ValidationSnapshot | null = null;
-        expect(() => validationSnapshot = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
-        expect(validationSnapshot).toEqual(<ValidationSnapshot>{
+        let validationState : ValidationState | null = null;
+        expect(() => validationState = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
+        expect(validationState).toEqual(<ValidationState>{
             isValid: false,
             doNotSaveNativeValues: true,
             issuesFound: [expectedIssueFound],
@@ -1558,18 +1558,18 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         });
     });
     test('OnValidated callback test', () => {
-        let callbackValue: ValidationSnapshot | null = null;
-        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
-            callbackValue = validationSnapshot
+        let callbackValue: ValidationState | null = null;
+        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+            callbackValue = validationState
         };
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
             onValidated: callback
         });
 
-        let validationSnapshot = setup.validationManager.validate();
+        let validationState = setup.validationManager.validate();
 
-        expect(callbackValue).toEqual(<ValidationSnapshot>{
+        expect(callbackValue).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1577,16 +1577,16 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         });
     });
     test('OnValidated callback test with omitCallback does not callback', () => {
-        let callbackValue: ValidationSnapshot | null = null;
-        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
-            callbackValue = validationSnapshot
+        let callbackValue: ValidationState | null = null;
+        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+            callbackValue = validationState
         };
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
             onValidated: callback
         });
 
-        let validationSnapshot = setup.validationManager.validate({ omitCallback: true});
+        let validationState = setup.validationManager.validate({ omitCallback: true});
 
         expect(callbackValue).toBeNull();
     });
@@ -1609,20 +1609,20 @@ describe('ValidationManager.clearValidation', () => {
     });
     test('OnValidated callback test invokes callback', () => {
 
-        let callbackValue: ValidationSnapshot | null = null;
-        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
-            callbackValue = validationSnapshot
+        let callbackValue: ValidationState | null = null;
+        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+            callbackValue = validationState
         };
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
             onValidated: callback
         });
 
-        let validationSnapshot = setup.validationManager.validate({ omitCallback: true });
+        let validationState = setup.validationManager.validate({ omitCallback: true });
         expect(callbackValue).toBeNull();
 
         setup.validationManager.clearValidation();
-        expect(callbackValue).toEqual(<ValidationSnapshot>{
+        expect(callbackValue).toEqual(<ValidationState>{
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -1630,16 +1630,16 @@ describe('ValidationManager.clearValidation', () => {
         });        
     });    
     test('OnValidated callback test with option.OmitCallback=true does not invoke callback', () => {
-        let callbackValue: ValidationSnapshot | null = null;
-        let callback = (vm: IValidationManager, validationSnapshot : ValidationSnapshot) => {
-            callbackValue = validationSnapshot
+        let callbackValue: ValidationState | null = null;
+        let callback = (vm: IValidationManager, validationState : ValidationState) => {
+            callbackValue = validationState
         };
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
             onValidated: callback
         });
 
-        let validationSnapshot = setup.validationManager.validate({ omitCallback: true });
+        let validationState = setup.validationManager.validate({ omitCallback: true });
         expect(callbackValue).toBeNull();
 
         setup.validationManager.clearValidation({ omitCallback: true});
@@ -1834,7 +1834,7 @@ describe('toIValidationManagerCallbacks function', () => {
             onValueChanged: (vh: IValueHost, old: any) => {},
             onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => {},
             onInputValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
-            onValueHostValidated: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationSnapshot) => { },
+            onValueHostValidated: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
             onInstanceStateChanged: (vm, state) => { },
             onValidated: (vm, results) => { }
         };

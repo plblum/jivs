@@ -10,7 +10,7 @@ import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase, InputValueChangedHandler, ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationSnapshot } from '../Interfaces/Validation';
+import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState } from '../Interfaces/Validation';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValidationManagerInstanceState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerInstanceStateChangedHandler, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
@@ -84,8 +84,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> im
      *   savedValueHostInstanceStates: null, // or an array of the state objects previously returned with OnValueHostInstanceStateChanged
      *   onInstanceStateChanged: (validationManager, state)=> { },
      *   onValueHostInstanceStateChanged: (valueHost, state) => { },
-     *   onValidated: (validationManager, validationSnapshot)=> { },
-     *   onValueHostValidated: (valueHost, valueHostValidationSnapshot) => { },
+     *   onValidated: (validationManager, validationState)=> { },
+     *   onValueHostValidated: (valueHost, valueHostValidationState) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
      *   onInputValueChanged: (valueHost, oldValue) => { }
      * }
@@ -356,18 +356,19 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> im
      * match the validation group supplied in options.
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-     * @returns The ValidationSnapshot object, which packages several key
+     * @returns The ValidationState object, which packages several key
      * pieces of information: isValid, doNotSaveNativeValues, and issues found.
+     * The same object is provided through the OnValidated function
      */
-    public validate(options?: ValidateOptions): ValidationSnapshot
+    public validate(options?: ValidateOptions): ValidationState
     {
         if (!options)
             options = {};
 
         for (let vh of this.inputValueHost()) {
-            vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationSnapshot
+            vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationState
         }
-        let snapshot = this.createValidationSnapshot(options);
+        let snapshot = this.createValidationState(options);
         this.invokeOnValidated(options, snapshot);
         return snapshot;
     }
@@ -387,7 +388,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> im
         return changed;
     }
 
-    protected createValidationSnapshot(options?: ValidateOptions): ValidationSnapshot
+    protected createValidationState(options?: ValidateOptions): ValidationState
     {
         return {
             isValid: this.isValid,
@@ -400,10 +401,10 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> im
      * Helper to call onValueHostValidated due to a change in the state of any validators
      * or BusinessLogicErrors.
      */
-    protected invokeOnValidated(options?: ValidateOptions, validationSnapshot? : ValidationSnapshot): void
+    protected invokeOnValidated(options?: ValidateOptions, validationState? : ValidationState): void
     {
         if (!options || !options.omitCallback)
-            this.onValidated?.(this, validationSnapshot ?? this.createValidationSnapshot(options));
+            this.onValidated?.(this, validationState ?? this.createValidationState(options));
     }
 
 

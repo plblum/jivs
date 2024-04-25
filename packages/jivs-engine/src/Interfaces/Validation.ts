@@ -229,7 +229,7 @@ export interface BusinessLogicError {
  * by validate() and in the ValidationManagerValidatedHandler.
  * While here, the same values are available directly on ValidationManager.
  */
-export interface ValidationSnapshot
+export interface ValidationState
 {
     /**
      * When true, there is nothing known to block validation. However, there are other factors

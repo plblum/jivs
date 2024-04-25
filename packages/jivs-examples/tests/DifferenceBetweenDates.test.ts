@@ -5,7 +5,7 @@ import { configureVMForDifferentBetweenDate } from "../src/DifferenceBetweenDate
 import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
 import { MockCapturingLogger } from "@plblum/jivs-engine/tests/TestSupport/mocks";
 import { LoggingLevel } from "@plblum/jivs-engine/src/Interfaces/LoggerService";
-import { ValidationSnapshot } from "@plblum/jivs-engine/src/Interfaces/Validation";
+import { ValidationState } from "@plblum/jivs-engine/src/Interfaces/Validation";
 
 describe('Difference between dates is less than 10', () => {
     test('StartDate = EndDate. No errors', () => {
@@ -17,7 +17,7 @@ describe('Difference between dates is less than 10', () => {
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
         expect(diffDays).toBe(0);
         let result = vm.validate();
-        let expected: ValidationSnapshot = {
+        let expected: ValidationState = {
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -32,7 +32,7 @@ describe('Difference between dates is less than 10', () => {
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
         expect(diffDays).toBe(9);
         let result = vm.validate();
-        let expected: ValidationSnapshot = {
+        let expected: ValidationState = {
             isValid: true,
             doNotSaveNativeValues: false,
             issuesFound: null,
@@ -48,7 +48,7 @@ describe('Difference between dates is less than 10', () => {
         expect(diffDays).toBe(10);
         let result = vm.validate();
 
-        let expected: ValidationSnapshot =
+        let expected: ValidationState =
         {
             isValid: false,
             doNotSaveNativeValues: true,
@@ -71,7 +71,7 @@ describe('Difference between dates is less than 10', () => {
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
         expect(diffDays).toBe(1);
         let result = vm.validate();
-        let expected: ValidationSnapshot =
+        let expected: ValidationState =
         {
             isValid: false,
             doNotSaveNativeValues: true,

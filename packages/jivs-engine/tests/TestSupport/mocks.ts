@@ -7,7 +7,7 @@ import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFac
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationSnapshot } from "../../src/Interfaces/Validation";
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationManagerInstanceStateChangedHandler, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
@@ -435,7 +435,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         return this._hostInstanceStateChanges;
     }    
 
-    validate(options?: ValidateOptions): ValidationSnapshot {
+    validate(options?: ValidateOptions): ValidationState {
         throw new Error("Method not implemented.");
     }
     clearValidation(options?: ValidateOptions): boolean {

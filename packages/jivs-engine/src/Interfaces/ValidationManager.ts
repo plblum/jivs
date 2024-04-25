@@ -26,7 +26,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostsManager } from './ValueHostResolver';
-import { ValidateOptions, BusinessLogicError, IssueFound, ValidationSnapshot } from './Validation';
+import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState } from './Validation';
 import { IValidationServices } from './ValidationServices';
 import { ValueHostConfig, ValueHostInstanceState } from './ValueHost';
 import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './ValidatableValueHostBase';
@@ -42,10 +42,10 @@ export interface IValidationManager extends IValueHostsManager {
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      * Important to set options.BeforeSubmit to true if invoking validate() prior to submitting.
-     * @returns The ValidationSnapshot object, which packages several key
+     * @returns The ValidationState object, which packages several key
      * pieces of information: isValid, doNotSaveNativeValues, and issues found.
      */
-    validate(options?: ValidateOptions): ValidationSnapshot;
+    validate(options?: ValidateOptions): ValidationState;
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
@@ -185,7 +185,7 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
 }
 
 export type ValidationManagerInstanceStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState) => void;
-export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validationSnapshot: ValidationSnapshot) => void;
+export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validationState: ValidationState) => void;
 
 
 /**
