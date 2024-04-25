@@ -3,7 +3,7 @@
  * @module Validator/Types
  */
 import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditions';
-import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
+import { BusinessLogicError, IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
 import { IGatherValueHostNames } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
 import { IInputValueHost } from './InputValueHost';
@@ -85,6 +85,19 @@ export interface IValidator extends IMessageTokenSource, IGatherValueHostNames {
      * @param severity 
      */
     setSeverity(severity: ValidationSeverity): void;    
+
+    /**
+     * When ValueHost.setBusinessLogicError is called, it provides each entry to the existing
+     * list of Validators through this. This function determines if the businessLogicError is
+     * actually for the same error code as itself, and returns a ValidatorValidateResult, just
+     * like calling validate() itself.
+     * The idea is to use the UI's representation of the validator, including its error messages
+     * with its own tokens, instead of those supplied by the business logic.
+     * @param businessLogicError 
+     * @returns if null, it did not handle the BusinessLogicError. If a ValidatorValidateResult,
+     * it should be used in the ValueHost's state of validation.
+     */
+    tryValidatorSwap(businessLogicError: BusinessLogicError): ValidatorValidateResult | null;
 
 }
 

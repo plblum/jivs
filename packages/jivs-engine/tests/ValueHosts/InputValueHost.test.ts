@@ -2810,7 +2810,143 @@ describe('InputValueHost.clearBusinessLogicErrors', () => {
         expect(() => result = vh.clearBusinessLogicErrors({ omitCallback: true})).not.toThrow();
         expect(result).toBe(true);
         expect(onValidateResult).toBeNull();
+    });       
+    
+    test('With existing validator using the same errorcode as businesslogicerror and the validator was previously valid, add an issueFound and not a businesslogicerror', () => {
+        let onValidateResult: ValueHostValidationSnapshot | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidated: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<InputValueHostConfig>{
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: ConditionType.RequireText
+                    },
+                    errorMessage: 'Required Error message'
+                },
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType,
+                    },
+                    errorMessage: 'Never match',
+                    errorCode: 'WILLNOTBEREPLACED'
+                }
+            ]
+        }, null) as InputValueHost;
+
+        let reqTextIssueFound: IssueFound = {
+            errorCode: ConditionType.RequireText,
+            errorMessage: 'Required Error message',
+            summaryMessage: 'Required Error message',
+            valueHostName: 'Field1',
+            severity: ValidationSeverity.Severe
+        };
+        let neverMatchIssueFound: IssueFound = {
+            errorCode: 'WILLNOTBEREPLACED',
+            errorMessage: 'Never match',
+            summaryMessage: 'Never match',
+            valueHostName: 'Field1',
+            severity: ValidationSeverity.Error
+        };        
+        vh.setValues('A', 'A'); // will match the validator
+        vm.validate(); 
+        expect(vh.getIssuesFound()).toEqual([neverMatchIssueFound]);        
+
+        let result = vh.setBusinessLogicError({
+            errorCode: ConditionType.RequireText,
+            errorMessage: 'Business Logic error message',
+//            severity: ValidationSeverity.Error will use Severe for RequiredText
+        });
+        expect(result).toBe(true);
+        expect(vh.getIssuesFound()).toEqual([neverMatchIssueFound, reqTextIssueFound]);        
+        expect(onValidateResult).toEqual(<ValueHostValidationSnapshot>{
+            isValid: false,
+            issuesFound: [neverMatchIssueFound, reqTextIssueFound],
+            doNotSaveNativeValues: true,
+            asyncProcessing: false
+        });
+
+    });    
+    test('With existing validator using the same errorcode as businesslogicerror and the validator was previously invalid, replace that validators IssueFound and do not add the businesslogicerror', () => {
+        let onValidateResult: ValueHostValidationSnapshot | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidated: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        let cf = vmConfig.services.conditionFactory as ConditionFactory;
+        cf.register<StringLengthConditionConfig>(
+            ConditionType.StringLength, (config) => new StringLengthCondition(config));
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<InputValueHostConfig>{
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: ConditionType.StringLength,
+                        minimum: 2,
+                    },
+                    errorMessage: 'StringLength Error message',
+                    severity: ValidationSeverity.Warning    // helps notice the issue was replaced when we later change the severity
+                },
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType,
+                    },
+                    errorMessage: 'Never match',
+                    errorCode: 'WILLNOTBEREPLACED'
+                }
+            ]
+        }, null) as InputValueHost;
+
+        let strLenIssueFound: IssueFound = {
+            errorCode: ConditionType.StringLength,
+            errorMessage: 'StringLength Error message',
+            summaryMessage: 'StringLength Error message',
+            valueHostName: 'Field1',
+            severity: ValidationSeverity.Warning
+        };
+        let neverMatchIssueFound: IssueFound = {
+            errorCode: 'WILLNOTBEREPLACED',
+            errorMessage: 'Never match',
+            summaryMessage: 'Never match',
+            valueHostName: 'Field1',
+            severity: ValidationSeverity.Error
+        };        
+        vh.setValues('A', 'A'); // validator will find this invalid
+        vm.validate(); 
+        expect(vh.getIssuesFound()).toEqual([strLenIssueFound, neverMatchIssueFound]);        
+
+        let result = vh.setBusinessLogicError({
+            errorCode: ConditionType.StringLength,
+            errorMessage: 'Business Logic error message',
+            severity: ValidationSeverity.Error // by declaring, it overrides the original and is useful here to see the issuefound changed
+        });
+        expect(result).toBe(true);
+        strLenIssueFound.severity = ValidationSeverity.Error;
+        expect(vh.getIssuesFound()).toEqual([strLenIssueFound, neverMatchIssueFound]);        
+        expect(onValidateResult).toEqual(<ValueHostValidationSnapshot>{
+            isValid: false,
+            issuesFound: [strLenIssueFound, neverMatchIssueFound],
+            doNotSaveNativeValues: true,
+            asyncProcessing: false
+        });
+
     });        
+
 });
 
 // getIssueFound(validatorConfig: ValidatorConfig): IssueFound | null

@@ -17,7 +17,7 @@ import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIGatherValueHostNames, type IValueHost, ValidTypesForStateStorage } from '../Interfaces/ValueHost';
 import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { type ValidateOptions, ValidationSeverity, type IssueFound } from '../Interfaces/Validation';
+import { type ValidateOptions, ValidationSeverity, type IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
@@ -345,7 +345,7 @@ export class Validator implements IValidator {
                 case ConditionEvaluateResult.NoMatch:
                     let issueFound = createIssueFound(self.valueHost, self);   // set up for ConditionEvaluateResult.Undetermined
                     issueFound.severity = self.severity;
-                    self.updateStateForNoMatch(issueFound, self.valueHost);
+                    self.updateIssueFoundWhenNoMatch(issueFound, self.valueHost);
                     resultState.issueFound = issueFound;
                     break;
             }
@@ -409,21 +409,48 @@ export class Validator implements IValidator {
     /**
      * validate() found NoMatch. Update the ValidatorState's properties to show
      * the current ConditionEvaluateResult and error messages.
-     * @param stateToUpdate - this is a COPY of the State, as supplied by updateState().
+     * @param issueFound - this is a COPY of the State, as supplied by updateState().
      * Do not modify the actual instance as it is immutable.
      * @param value 
      */
-    protected updateStateForNoMatch(stateToUpdate: IssueFound,
-        value: IValueHost): void {
+    protected updateIssueFoundWhenNoMatch(issueFound: IssueFound,
+        valueHost: IValueHost): void {
         let services = this.services;
-        stateToUpdate.severity = this.severity;
+        issueFound.severity = this.severity;
         let errorMessage = this.getErrorMessageTemplate();
-        stateToUpdate.errorMessage = services.messageTokenResolverService.resolveTokens(
+        issueFound.errorMessage = services.messageTokenResolverService.resolveTokens(
             errorMessage, this.valueHost, this.valueHostsManager, this);
         let summaryMessage = this.getSummaryMessageTemplate();
-        stateToUpdate.summaryMessage = summaryMessage ?
+        issueFound.summaryMessage = summaryMessage ?
             services.messageTokenResolverService.resolveTokens(summaryMessage, this._valueHost, this.valueHostsManager, this) :
             undefined;
+    }
+
+    /**
+     * When ValueHost.setBusinessLogicError is called, it provides each entry to the existing
+     * list of Validators through this. This function determines if the businessLogicError is
+     * actually for the same error code as itself, and returns a ValidatorValidateResult, just
+     * like calling validate() itself.
+     * The idea is to use the UI's representation of the validator, including its error messages
+     * with its own tokens, instead of those supplied by the business logic.
+     * @param businessLogicError 
+     * @returns if null, it did not handle the BusinessLogicError. If a ValidatorValidateResult,
+     * it should be used in the ValueHost's state of validation.
+     */
+    public tryValidatorSwap(businessLogicError: BusinessLogicError): ValidatorValidateResult | null
+    {
+        if (businessLogicError.errorCode === this.errorCode)
+        {
+            let issueFound = createIssueFound(this.valueHost, this);   // set up as if ConditionEvaluateResult.Undetermined
+            issueFound.severity = this.severity;
+            this.updateIssueFoundWhenNoMatch(issueFound, this.valueHost);            
+            let resultState: ValidatorValidateResult = {
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                issueFound: issueFound
+            };
+            return resultState;
+        }
+        return null
     }
     //#region state management
 
