@@ -4,9 +4,9 @@ import { type ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerSe
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { toIServicesAccessor, type IValidationServices } from "../../src/Interfaces/ValidationServices";
 import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
+import { IValueHostResolver, IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
-import { IInputValueHost, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
+import { IInputValueHost, InputValueChangedHandler, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
@@ -28,10 +28,11 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
 import { registerAllConditions, registerDataTypeCheckGenerators, registerDataTypeComparers, registerDataTypeConverters, registerDataTypeFormatters, registerDataTypeIdentifiers } from "./createValidationServices";
-import { ValueHostValidatedHandler, InputValueChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
+import { ValueHostValidatedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
+import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -191,6 +192,10 @@ export class MockInputValueHost extends MockValueHost
     {
         throw new Error("Method not implemented.");
     }
+    configValidators(): FluentValidatorCollector {
+        throw new Error("Method not implemented.");
+    }
+
     setGroup(group: string): void
     {
         throw new Error("Method not implemented.");
@@ -199,6 +204,10 @@ export class MockInputValueHost extends MockValueHost
     {
         throw new Error("Method not implemented.");
     }    
+    gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
+        throw new Error("Method not implemented.");
+    }
+
 }
 
 /**

@@ -9,25 +9,8 @@
  * - StaticValueHosts - reflects values that are needed by validation
  *   but are not editable by the user. Often these are properties from the same
  *   Model being edited.
- * 
- * There are two types of values associated with an input:
- * - input - the value supplied by the input field/element.
- *   It is often a string representation of the native data
- *   and may contain errors preventing its conversion into that native data.
- *   Only a few conditions evaluate the input value, but they are important:
- *   RequiredCondition and ValidNativeCondition.
- * - native - the value that will be stored in the Model.
- *   Date object, number, boolean, and your own object are examples.
- *   When the native type is a string, it is often similar in both input and native values.
- *   The string in the native value may be cleaned up, trimmed, reformatted, etc.
- *   Most Conditions evaluate the native value.
- * Its up to the system consumer to manage both.
- * - When an input has its value set or changed, also assign it here with setInputValue().
- * - RequiredConditions and DataTypeCondition look at the InputValue via getInputValue().
- * - The initial native value is assigned with SetNativeValue.
- *   The consumer handles converting the input field/element value into its native value
- *   and supplies it with SetNativeValue or NativeValueUndetermined.
- * - Most Conditions look at the NativeValue via GetNativeValue.
+ * - CalcValueHosts - Its value is calculated when its getValue() method is called. 
+ *   You supply a function callback in its CalcValueHostConfig to set it up.
  * @module ValueHosts/Types/ValueHost
  */
 
@@ -126,9 +109,9 @@ export interface IValueHost {
     /**
      * Determines how the validation system sees the Value in terms of editing.
      * When true, it was changed. When false, it was not.
-     * The setValue()/setInputValue()/setValues() functions are the only ones to change this flag.
+     * The setValue() and related functions are the only ones to change this flag.
      * They all set it to true automatically except set it to false when the option.Reset is true.
-     * The ValueHost.validate() function may skip validation of an InputValueHost when IsChanged is false,
+     * The ValidatableValueHost.validate() function may skip validation of a ValueHost when isChanged is false,
      * depending on the options for validate(). For example, calling validate immediately after loading
      * up the form, you want to avoid showing Required validators. Those should appear only
      * if the user edits, or when the user attempts to submit.
@@ -153,7 +136,7 @@ export interface SetValueOptions {
     validate?: boolean;
     /**
      * Reset the field's changed and validation states as if the field has never been edited.
-     * It effectively sets ValueHost.IsChanged to false and calls InputValueHost.clearValidation().
+     * It effectively sets ValueHost.IsChanged to false and calls ValidatableValueHost.clearValidation().
      */
     reset?: boolean;
 
@@ -197,7 +180,7 @@ export interface ValueHostInstanceState {
     value: any;
 
     /**
-     * Counts the number of changes made to the Value thru setValue()/setValues()/setInputValue().
+     * Counts the number of changes made to the Value thru setValue() and related functions.
      * Increments with each call or sets it back to 0 when their option.Reset is true.
      * When 0 or undefined, it means no changes have been made. 
      */
@@ -229,14 +212,15 @@ interface CustomItems {
 export interface ValueHostConfig {
     /**
      * Identifies the type of ValueHost that will be created to 
-     * support the Config.
+     * support the Config. Can use the enumeration ValueHostType to get these strings.
      * InputValueHost - 'Input'
-     * StaticValueHost - 'static'
-     * HTMLElementValueHost - 'HTMLElement'
+     * StaticValueHost - 'Static'
+     * CalcValueHost - 'Calc'
      * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
      * by checking for inclusion of the InputValueHostConfig.validationConfigs property.
      */
     valueHostType?: string;
+    
     /**
      * Provides a unique name for this ValueHost, within the scope of one
      * ValueHostsManager instance.

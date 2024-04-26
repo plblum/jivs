@@ -1,6 +1,6 @@
 /**
  * CalcValueHost is a specialized ValueHost whose value is calculated
- * when its getValue method is called. You supply a function handle
+ * when its getValue method is called. You supply a function callback
  * in its CalcValueHostConfig to set it up.
  * 
  * Calculations allow you to expand what is available to Conditions
