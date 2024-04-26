@@ -1,6 +1,7 @@
 /**
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
- * @module ValueHosts/ConcreteClasses/BusinessLogicInputValueHost
+ * Those errors do not specify a ValueHostName associated with any ValueHost registered.
+ * @module ValueHosts/ConcreteClasses/BusinessLogicErrorsValueHost
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -8,15 +9,15 @@ import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, 
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
 import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
-import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { cleanString } from '../Utilities/Utilities';
 
 
 /**
  * Special ValueHost used internally to hold business logic errors that are only available to the ValidationSummary.
+ * Those errors do not specify a ValueHostName associated with any ValueHost registered.
  */
-export class BusinessLogicInputValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState>
+export class BusinessLogicErrorsValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState>
 {
     /**
      * Result is based on the presence of Business Logic Errors that are not warnings.
@@ -61,10 +62,7 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
         return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
             result : null;
     }
-    public get requiresInput(): boolean
-    {
-        return false;
-    }
+
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Config.
@@ -76,14 +74,14 @@ export class BusinessLogicInputValueHost extends ValidatableValueHostBase<Valida
 }
 export const BusinessLogicValueHostName = '*';   
 
-export const BusinessLogicInputValueHostType = 'BusinessLogic';
-export class BusinessLogicInputValueHostGenerator extends ValidatableValueHostBaseGenerator {
+export const BusinessLogicErrorsValueHostType = 'BusinessLogic';
+export class BusinessLogicErrorsValueHostGenerator extends ValidatableValueHostBaseGenerator {
 
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {
-        return config.valueHostType === BusinessLogicInputValueHostType;
+        return config.valueHostType === BusinessLogicErrorsValueHostType;
     }
     public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase {
-        return new BusinessLogicInputValueHost(valueHostsManager, config, state);
+        return new BusinessLogicErrorsValueHost(valueHostsManager, config, state);
     }
     public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValidatableValueHostBaseConfig): void {
         // nothing to do

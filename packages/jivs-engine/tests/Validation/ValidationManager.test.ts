@@ -3,7 +3,7 @@ import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
-import { BusinessLogicInputValueHost, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
+import { BusinessLogicErrorsValueHost, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
 import { ValidationStatus, IssueFound, ValidationSeverity, ValidationState } from '../../src/Interfaces/Validation';
@@ -1202,7 +1202,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
-        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeInstanceOf(BusinessLogicInputValueHost);
+        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
 
         expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
@@ -1281,7 +1281,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             summaryMessage: 'SUMMARY CONDITION ERROR'
         }]);
 
-        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeInstanceOf(BusinessLogicInputValueHost);
+        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
         expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toEqual(
             [<IssueFound>{
                 errorMessage: 'BL_ERROR',

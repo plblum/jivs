@@ -42,7 +42,7 @@ import { DataTypeConverterService } from "../../src/Services/DataTypeConverterSe
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-import { BusinessLogicInputValueHost } from "../../src/ValueHosts/BusinessLogicErrorsValueHost";
+import { BusinessLogicErrorsValueHost } from "../../src/ValueHosts/BusinessLogicErrorsValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { ValueHostValidatedHandler, IValidatableValueHostBase, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, registerTestingOnlyConditions, NeverMatchesCondition } from "../TestSupport/conditionsForTesting";
@@ -2625,7 +2625,7 @@ describe('InputValueHost.doNotSaveNativeValue', () => {
 });
 
 describe('InputValueHost.setBusinessLogicError', () => {
-    test('One call with error adds to the list for the BusinessLogicInputValueHost', () => {
+    test('One call with error adds to the list for the BusinessLogicErrorsValueHost', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setBusinessLogicError({
@@ -2645,7 +2645,7 @@ describe('InputValueHost.setBusinessLogicError', () => {
             });
     });
 
-    test('Two calls with errors (ERROR, WARNING) adds to the list for the BusinessLogicInputValueHost', () => {
+    test('Two calls with errors (ERROR, WARNING) adds to the list for the BusinessLogicErrorsValueHost', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setBusinessLogicError({
@@ -4364,9 +4364,9 @@ describe('toIInputValueHost function', () => {
     });
 });
 describe('toIValidatableValueHostBase function', () => {
-    test('Passing actual BusinessLogicInputValueHost matches interface returns same object.', () => {
+    test('Passing actual BusinessLogicErrorsValueHost matches interface returns same object.', () => {
         let vm = new MockValidationManager(new MockValidationServices(false, false));
-        let testItem = new BusinessLogicInputValueHost(vm, {
+        let testItem = new BusinessLogicErrorsValueHost(vm, {
             name: 'Field1',
             label: 'Label1',
         },

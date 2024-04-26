@@ -4,7 +4,7 @@
  * Its methods provide validation and the results of validation.
  * @module ValidationManager/ConcreteClasses
  */
-import { BusinessLogicInputValueHostType, BusinessLogicValueHostName } from '../ValueHosts/BusinessLogicErrorsValueHost';
+import { BusinessLogicErrorsValueHostType, BusinessLogicValueHostName } from '../ValueHosts/BusinessLogicErrorsValueHost';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
@@ -453,7 +453,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> im
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in associatedValueHostName.
      * Each time its called, all previous business logic errors are abandoned.
-     * Internally, a BusinessLogicInputValueHost is added to the list of ValueHosts to hold any
+     * Internally, a BusinessLogicErrorsValueHost is added to the list of ValueHosts to hold any
      * error that lacks an associatedValueHostName.
      * @param errors - A list of business logic errors to show or null to indicate no errors.
      * @param options - Only considers the skipCallback option.
@@ -470,7 +470,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> im
                 let vh = this.getValueHost(error.associatedValueHostName ?? BusinessLogicValueHostName);
                 if (!vh && !error.associatedValueHostName) {
                     vh = this.addValueHost({
-                        valueHostType: BusinessLogicInputValueHostType,
+                        valueHostType: BusinessLogicErrorsValueHostType,
                         label: '*',
                         name: BusinessLogicValueHostName
                     }, null);

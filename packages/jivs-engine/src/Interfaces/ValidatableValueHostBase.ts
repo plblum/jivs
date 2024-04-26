@@ -9,12 +9,12 @@ import {
     ValidationState
 } from './Validation';
 
-import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
+import { IGatherValueHostNames, IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
 
 /**
 * Manages a value that may use input validation.
 */
-export interface IValidatableValueHostBase extends IValueHost {
+export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostNames {
 
     /**
      * When the value changes,

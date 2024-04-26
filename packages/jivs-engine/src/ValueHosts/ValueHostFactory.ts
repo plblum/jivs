@@ -7,7 +7,7 @@
  * @module ValueHosts/ConcreteClasses/ValueHostFactory
  */
 
-import { BusinessLogicInputValueHostGenerator } from './BusinessLogicErrorsValueHost';
+import { BusinessLogicErrorsValueHostGenerator } from './BusinessLogicErrorsValueHost';
 import { InputValueHostGenerator } from './InputValueHost';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
@@ -103,5 +103,5 @@ export function registerStandardValueHostGenerators(factory: ValueHostFactory): 
     factory.register(new InputValueHostGenerator());
     factory.register(new StaticValueHostGenerator());
     factory.register(new CalcValueHostGenerator());
-    factory.register(new BusinessLogicInputValueHostGenerator());    
+    factory.register(new BusinessLogicErrorsValueHostGenerator());    
 }
