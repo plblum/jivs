@@ -3,7 +3,7 @@ import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
-import { BusinessLogicInputValueHost, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicInputValueHost';
+import { BusinessLogicErrorsValueHost, BusinessLogicErrorsValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
 import { ValidationStatus, IssueFound, ValidationSeverity, ValidationState } from '../../src/Interfaces/Validation';
@@ -1198,16 +1198,16 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesFound()).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName,
+            valueHostName: BusinessLogicErrorsValueHostName,
             errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
-        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeInstanceOf(BusinessLogicInputValueHost);
+        expect(setup.validationManager.getValueHost(BusinessLogicErrorsValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
 
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toEqual([<IssueFound>{
+        expect(setup.validationManager.getIssuesForInput(BusinessLogicErrorsValueHostName)).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName,
+            valueHostName: BusinessLogicErrorsValueHostName,
             errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
@@ -1240,8 +1240,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             summaryMessage: 'BL_ERROR'
         }]);
 
-        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeNull();
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toBeNull();
+        expect(setup.validationManager.getValueHost(BusinessLogicErrorsValueHostName)).toBeNull();
+        expect(setup.validationManager.getIssuesForInput(BusinessLogicErrorsValueHostName)).toBeNull();
     });
     test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 BusinessLogicError not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors businesslogicerror, BLValueHost has the BLError, InputValueHost has its own error', () => {
 
@@ -1269,7 +1269,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             <IssueFound>{
                 errorMessage: 'BL_ERROR',
                 severity: ValidationSeverity.Error,
-                valueHostName: BusinessLogicValueHostName,
+                valueHostName: BusinessLogicErrorsValueHostName,
                 errorCode: 'GENERATED_0',
                 summaryMessage: 'BL_ERROR'
             }]);
@@ -1281,12 +1281,12 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             summaryMessage: 'SUMMARY CONDITION ERROR'
         }]);
 
-        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeInstanceOf(BusinessLogicInputValueHost);
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toEqual(
+        expect(setup.validationManager.getValueHost(BusinessLogicErrorsValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
+        expect(setup.validationManager.getIssuesForInput(BusinessLogicErrorsValueHostName)).toEqual(
             [<IssueFound>{
                 errorMessage: 'BL_ERROR',
                 severity: ValidationSeverity.Error,
-                valueHostName: BusinessLogicValueHostName,
+                valueHostName: BusinessLogicErrorsValueHostName,
                 errorCode: 'GENERATED_0',
                 summaryMessage: 'BL_ERROR'
             }]);
@@ -1321,7 +1321,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorMessage: 'BL_ERROR',
             summaryMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         };
 
         setup.validationManager.setBusinessLogicErrors([
@@ -1350,14 +1350,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorCode: 'GENERATED_0',
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         };
 
         setup.validationManager.setBusinessLogicErrors([
             {
                 errorMessage: 'BL_ERROR'
             }
-        ], { omitCallback: true});
+        ], { skipCallback: true});
         expect(callbackValue).toBeNull();
 
     });    
@@ -1576,7 +1576,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             asyncProcessing: false
         });
     });
-    test('OnValidated callback test with omitCallback does not callback', () => {
+    test('OnValidated callback test with skipCallback does not callback', () => {
         let callbackValue: ValidationState | null = null;
         let callback = (vm: IValidationManager, validationState : ValidationState) => {
             callbackValue = validationState
@@ -1586,7 +1586,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             onValidated: callback
         });
 
-        let validationState = setup.validationManager.validate({ omitCallback: true});
+        let validationState = setup.validationManager.validate({ skipCallback: true});
 
         expect(callbackValue).toBeNull();
     });
@@ -1618,7 +1618,7 @@ describe('ValidationManager.clearValidation', () => {
             onValidated: callback
         });
 
-        let validationState = setup.validationManager.validate({ omitCallback: true });
+        let validationState = setup.validationManager.validate({ skipCallback: true });
         expect(callbackValue).toBeNull();
 
         setup.validationManager.clearValidation();
@@ -1639,10 +1639,10 @@ describe('ValidationManager.clearValidation', () => {
             onValidated: callback
         });
 
-        let validationState = setup.validationManager.validate({ omitCallback: true });
+        let validationState = setup.validationManager.validate({ skipCallback: true });
         expect(callbackValue).toBeNull();
 
-        setup.validationManager.clearValidation({ omitCallback: true});
+        setup.validationManager.clearValidation({ skipCallback: true});
         expect(callbackValue).toBeNull();
     });
 });
@@ -1840,13 +1840,39 @@ describe('toIValidationManagerCallbacks function', () => {
         };
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
     });
-    test('ValidationManager matches and returns itself.', () => {
+    test('ValidationManager without callbacks defined returns itself.', () => {
         let testItem = new ValidationManager({
             services: new ValidationServices(),
             valueHostConfigs: []
         });
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
     });    
+    test('ValidationManager with callbacks defined returns itself.', () => {
+        let testItem = new ValidationManager({
+            services: new ValidationServices(),
+            valueHostConfigs: [],
+            onValueChanged: (vh: IValueHost, old: any) => {},
+            onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => {},
+            onInputValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
+            onValueHostValidated: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
+            onInstanceStateChanged: (vm, state) => { },
+            onValidated: (vm, results) => { }            
+        });
+        expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
+    });        
+    test('ValidationManager with callbacks=null defined returns itself.', () => {
+        let testItem = new ValidationManager({
+            services: new ValidationServices(),
+            valueHostConfigs: [],
+            onValueChanged: null,
+            onValueHostInstanceStateChanged: null,
+            onInputValueChanged: null,
+            onValueHostValidated: null,
+            onInstanceStateChanged: null,
+            onValidated: null            
+        });
+        expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
+    });            
     test('Non-matching interface returns null.', () => {
         let testItem = {};
         expect(toIValidationManagerCallbacks(testItem)).toBeNull();

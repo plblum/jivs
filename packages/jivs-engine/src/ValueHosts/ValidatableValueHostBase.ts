@@ -25,7 +25,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
  * @param config - The business logic supplies these rules
  *   to implement a ValueHost's name, label, data type, validation rules,
  *   and other business logic metadata. Treat as immutable.
- * @param state - InstanceState used by this InputValueHost including its validators.
+ * @param state - InstanceState used by this ValidatableValueHost including its validators.
  * If the caller changes any of these, discard the instance. Treat as immutable.
  */    
     constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
@@ -33,7 +33,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
 
 
-    //#region IInputValueHost
+    //#region IValidatableValueHostBase
     /**
       * System consumer assigns the native value to make it available
       * to most Conditions during validation.
@@ -55,106 +55,13 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
                 stateToUpdate.value = value;
             }
-            this.updateChangeCounterInInstanceState(stateToUpdate, changed, options!);
-            this.updateConversionErrorMessage(stateToUpdate, value, options!);
+            this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
 
             return stateToUpdate;
         }, this);
         this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(changed, oldValue, options);
-    }
-
-    /**
-     * Exposes the latest value retrieved from the input field/element
-     * exactly as supplied by that input. For example,
-     * an <input type="date"> returns a string, not a date.
-     * Strings are not cleaned up, no trimming applied.
-     */
-    public getInputValue(): any {
-        return this.instanceState.inputValue;
-    }
-
-    /**
-    * Consuming system assigns the same value it assigns to the input field/element.
-    * Its used with RequiredCondition and DataTypeCondition.
-    * @param value
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
-    */
-    public setInputValue(value: any, options?: SetValueOptions): void {
-        if (!options)
-            options = {};        
-        let oldValue: any = this.instanceState.inputValue;
-        let changed = !deepEquals(value, oldValue);
-        this.updateInstanceState((stateToUpdate) => {
-            if (changed) {
-                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
-                stateToUpdate.inputValue = value;
-            }
-            this.updateChangeCounterInInstanceState(stateToUpdate, changed, options!);
-            this.updateConversionErrorMessage(stateToUpdate, undefined, {});
-            return stateToUpdate;
-        }, this);
-        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateInstanceState()
-        this.notifyOthersOfChange(options);
-        this.useOnValueChanged(changed, oldValue, options);
-    }
-
-    /**
-     * Sets both (native data type) Value and input field/element Value at the same time
-     * and optionally invokes validation.
-     * Use when the consuming system resolves both input and native values
-     * at the same time so there is one state change and attempt to validate.
-     * @param nativeValue - Can be undefined to indicate the value could not be resolved
-     * from the input field/element's value, such as inability to convert a string to a date.
-     * All other values, including null and the empty string, are considered real data.
-     * @param inputValue - Can be undefined to indicate there is no value.
-     * All other values, including null and the empty string, are considered real data.
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
-     */
-    public setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {
-        options = options ?? {};
-        let oldNative: any = this.instanceState.value;
-        let nativeChanged = !deepEquals(nativeValue, oldNative);
-        let oldInput: any = this.instanceState.inputValue;
-        let inputChanged = !deepEquals(inputValue, oldInput);
-        let changed = nativeChanged || inputChanged;
-        this.updateInstanceState((stateToUpdate) => {
-            if (changed) {
-                // effectively clear past validation
-                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
-                stateToUpdate.issuesFound = null;
-
-                stateToUpdate.value = nativeValue;
-                stateToUpdate.inputValue = inputValue;
-            }
-            this.updateChangeCounterInInstanceState(stateToUpdate, changed, options!);
-            this.updateConversionErrorMessage(stateToUpdate, nativeValue, options!);
-            return stateToUpdate;
-        }, this);
-
-        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateInstanceState()
-        this.notifyOthersOfChange(options);
-        this.useOnValueChanged(nativeChanged, oldNative, options);
-        this.useOnValueChanged(inputChanged, oldInput, options);
-    }
-
-    protected updateConversionErrorMessage(stateToUpdate: ValidatableValueHostBaseInstanceState,
-        nativeValue: any, options: SetValueOptions): void {
-        if ((nativeValue === undefined) && options.conversionErrorTokenValue)
-            stateToUpdate.conversionErrorTokenValue = options.conversionErrorTokenValue;
-        else
-            delete stateToUpdate.conversionErrorTokenValue;
     }
 
     protected processValidationOptions(options: SetValueOptions): void {
@@ -171,8 +78,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             this.getName(), options.validate === true);
     }
     /**
-     * When setValue(), setValues(), setInputValue(), or SetToUndefined occurs,
-     * all other InputValueHosts get notified here so they can rerun validation
+     * When any value changes,
+     * all other ValidatableValueHosts get notified here so they can rerun validation
      * when any of their Conditions specify the valueHostName that changed.
      * @param valueHostIdThatChanged 
      * @param revalidate 
@@ -216,7 +123,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      */
     public abstract gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void;
 
-    //#endregion IInputValueHost
+    //#endregion IValidatableValueHostBase
 
     //#region validation
     /**
@@ -277,7 +184,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      * It calls onValueHostValidated if there was a changed to the state.
-     * @param options - Only supports the omitCallback and Group options.
+     * @param options - Only supports the skipCallback and Group options.
      * @returns true when there was something cleared
      */
     public clearValidation(options?: ValidateOptions): boolean {
@@ -290,7 +197,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             return stateToUpdate;
         }, this);
         if (changed)
-            if (!options || !options?.omitCallback)
+            if (!options || !options?.skipCallback)
                 this.invokeOnValueHostValidated(options);
         return changed;
     }
@@ -317,7 +224,6 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         stateToUpdate.status = ValidationStatus.NotAttempted;
         stateToUpdate.issuesFound = null;
         delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
-        delete stateToUpdate.conversionErrorTokenValue;
         delete stateToUpdate.businessLogicErrors;
     }
     /**
@@ -381,7 +287,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
      * It calls onValueHostValidated if there was a changed to the state.
-     * @param options - Only considers the omitCallback option.
+     * @param options - Only considers the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
     public clearBusinessLogicErrors(options?: ValidateOptions): boolean {
@@ -404,7 +310,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      */
     protected invokeOnValueHostValidated(options: ValidateOptions | undefined): void
     {
-        if (!options || !options.omitCallback)
+        if (!options || !options.skipCallback)
             toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
                 {
                     issuesFound: this.getIssuesFound(),
@@ -442,7 +348,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
 
     /**
-     * Lists all issues found (error messages and supporting info) for a single InputValueHost
+     * Lists all issues found (error messages and supporting info) for a single Validatable ValueHost
      * so the input field/element can show error messages and adjust its appearance.
      * @returns An array of issues found. 
      * When null, there are no issues and the data is valid. If there are issues, when all
@@ -483,26 +389,13 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         }
     }
     //#endregion validation results
-    /**
-     * Returns the ConversionErrorTokenValue supplied by the latest call
-     * to setValue() or setValues(). Its null when not supplied or has been cleared.
-     * Associated with the {ConversionError} token of the DataTypeCheckCondition.
-     */
-    public getConversionErrorMessage(): string | null {
-        return this.instanceState.conversionErrorTokenValue ?? null;
-    }
-    /**
-     *Returns true if a Required condition is setup. UI can use it to 
-     * display a "requires a value" indicator.
-     */
-    public abstract get requiresInput(): boolean;
 
 }
 
 /**
- * Determines if the object implements IInputValueHost.
+ * Determines if the object implements IValidatableValueHostBase.
  * @param source 
- * @returns source typecasted to IInputValueHost if appropriate or null if not.
+ * @returns source typecasted to IValidatableValueHostBase if appropriate or null if not.
  */
 export function toIValidatableValueHostBase(source: any): IValidatableValueHostBase | null
 {
@@ -512,9 +405,7 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
     {
         let test = source as IValidatableValueHostBase;    
         // some select members of IValidatableValueHostBase
-        if (test.getInputValue !== undefined && 
-            test.setInputValue !== undefined &&
-            test.validate !== undefined &&
+        if (test.validate !== undefined &&
             test.getIssuesFound !== undefined)
             return test;
     }
@@ -539,7 +430,6 @@ export abstract class ValidatableValueHostBaseGenerator implements IValueHostGen
             name: config.name,
             value: config.initialValue,
             status: ValidationStatus.NotAttempted,
-            inputValue: undefined,
             issuesFound: null
         };
     }

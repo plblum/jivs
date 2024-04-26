@@ -9,55 +9,16 @@ import {
     ValidationState
 } from './Validation';
 
-import { IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
+import { IGatherValueHostNames, IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
 
 /**
 * Manages a value that may use input validation.
-* This level is associated with the input field/element itself.
 */
-export interface IValidatableValueHostBase extends IValueHost {
-    /**
-     * Exposes the latest value retrieved from the input field/element
-     * exactly as supplied by the input. For example,
-     * an <input type="date"> returns a string, not a date.
-     * Strings are not cleaned up, no trimming applied.
-     */
-    getInputValue(): any;
+export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostNames {
 
     /**
-     * System consumer assigns the value it also assigns to the input field/element.
-     * Its used with RequiredCondition and DataTypeCondition.
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
-     */
-    setInputValue(value: any, options?: SetValueOptions): void;
-
-    /**
-     * Sets both (native data type) Value and Input Value at the same time
-     * and optionally invokes validation.
-     * Use when the consuming system resolves both input field/element and native values
-     * at the same time so there is one state change and attempt to validate.
-     * @param nativeValue - Can be undefined to indicate the value could not be resolved
-     * from the inputs's value, such as inability to convert a string to a date.
-     * All other values, including null and the empty string, are considered real data.
-     * @param inputValue - Can be undefined to indicate there is no value.
-     * All other values, including null and the empty string, are considered real data.
-    * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
-     */
-    setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
-
-    /**
-     * When setValue(), setValues(), setInputValue(), or SetToUndefined occurs,
-     * all other InputValueHosts get notified here so they can rerun validation
+     * When the value changes,
+     * all other Validatable ValueHosts get notified here so they can rerun validation
      * when any of their Conditions specify the valueHostName that changed.
      * @param valueHostIdThatChanged 
      * @param revalidate 
@@ -82,7 +43,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      * @returns true when there was something cleared
-     * @param options - Only supports the omitCallback and Group options.
+     * @param options - Only supports the skipCallback and Group options.
      */
     clearValidation(options?: ValidateOptions): boolean;
 
@@ -122,7 +83,7 @@ export interface IValidatableValueHostBase extends IValueHost {
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
      * @param error - A business logic error to show. If it has an errorCode assigned and the same
      * errorCode is already recorded here, the new entry replaces the old one.
-     * @param options - Only supports the omitCallback option.
+     * @param options - Only supports the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
     setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean;
@@ -130,7 +91,7 @@ export interface IValidatableValueHostBase extends IValueHost {
     /**
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
-     * @param options - Only supports the omitCallback option.
+     * @param options - Only supports the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
     clearBusinessLogicErrors(options?: ValidateOptions): boolean;
@@ -150,7 +111,7 @@ export interface IValidatableValueHostBase extends IValueHost {
 
     /**
      * A list of all issues found.
-     * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
+     * @param group - Omit or null to ignore groups. Otherwise this will match to Validatable ValueHosts with 
      * the same group (case insensitive match).
      * @returns An array of issues found. 
      * When null, there are no issues and the data is valid. If there are issues, when all
@@ -166,26 +127,13 @@ export interface IValidatableValueHostBase extends IValueHost {
      */
     getIssuesFound(group?: string): Array<IssueFound> | null;
 
-    /**
-     * Returns the ConversionErrorTokenValue supplied by the latest call
-     * to setValue() or setValues(). Its null when not supplied or has been cleared.
-     * Associated with the {ConversionError} token of the DataTypeCheckCondition.
-     */
-    getConversionErrorMessage(): string | null;
-
-    /**
-     *Returns true if a Required condition is setup. UI can use it to 
-     * display a "requires a value" indicator.
-     */
-    requiresInput: boolean;
-
 }
 
 /**
  * Just the data that is used to describe this input value.
  * It should not contain any supporting functions or services.
- * It should be generatable from JSON, and simply gets typed to InputValueHostConfig.
- * This provides the backing data for each InputValueHost.
+ * It should be generatable from JSON, and simply gets typed to ValidatableValueHostConfig.
+ * This provides the backing data for each ValidatableValueHost.
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
@@ -197,14 +145,14 @@ export interface IValidatableValueHostBase extends IValueHost {
 export interface ValidatableValueHostBaseConfig extends ValueHostConfig {
 
     /**
-     * InputValueHosts can be part of one or more named groups.
+     * Validatable ValueHosts can be part of one or more named groups.
      * Groups are part of validating the complete Model.
-     * All InputValueHosts on the page may be asked to validate.
+     * All Validatable ValueHosts on the page may be asked to validate.
      * Often fields are used for different aspects of the page, like 
      * a login or search field in the header is a different feature
      * from the form where data is being gathered.
      * Submit buttons usually call validate() and supply their group name.
-     * When they do, InputValueHosts associated with that button must have the same
+     * When they do, Validatable ValueHosts associated with that button must have the same
      * group name.
      * Values:
      * * undefined, null or '*' all mean the group feature is ignored.
@@ -213,7 +161,7 @@ export interface ValidatableValueHostBaseConfig extends ValueHostConfig {
      *   Case insensitive matching.
      * * string[] - a list of group names. If none match the requested group
      *   in the validate() function, the validator is treated as disabled.
-     * This value can be overriden via InputValueHost.setGroup, so the UI can assign
+     * This value can be overriden via Validatable ValueHost.setGroup, so the UI can assign
      * a better group.
      */
     group?: undefined | null | string | Array<string>;
@@ -221,33 +169,15 @@ export interface ValidatableValueHostBaseConfig extends ValueHostConfig {
 
 
 /**
- * Elements of InputValueHost that are stateful based on user interaction
+ * Elements of ValidatableValueHost that are stateful based on user interaction
  */
 export interface ValidatableValueHostBaseInstanceState extends ValueHostInstanceState, StatefulValueHostValidateResult {
-
-    /**
-     * The value from the input field/element, even if invalid.
-     * The value may not be the native data type.
-     * For example, it could be a string from an <input>
-     * whose dataType=Date, meaning the Value property must be a Date object.
-     * Will be 'undefined' if the value has not been retrieved.
-     */
-    inputValue?: any;
 
     /**
      * Group used when validate() was last called. It is associated
      * with the current IssuesFound.
      */
     group?: string;
-
-    /**
-     * When converting the input field/element value to native and there is an error
-     * it should be saved here. It can be displayed as part of the DataTypeCheckCondition's
-     * error message token {ConversionError}.
-     * Cleared when setting the value without an error.
-     */
-    conversionErrorTokenValue?: string;
-
     /**
      * If there are any business logic errors, they are kept here.
      * If not, this is undefined.
@@ -262,7 +192,7 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
 
 
 export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState) => void;
-export type InputValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
+
 
 /**
  * The value returned by OnValueHostValidated.
@@ -278,9 +208,9 @@ export interface ValueHostValidationState extends ValidationState
 }
 
 /**
- * Provides callback hooks for the consuming system to supply to IInputValueHosts.
+ * Provides callback hooks for the consuming system to supply to IValidatableValueHostCallbacks.
  */
-export interface IInputValueHostCallbacks extends IValueHostCallbacks {
+export interface IValidatableValueHostCallbacks extends IValueHostCallbacks {
     /**
      * Called when ValueHost's validate() function has finished, and made
      * changes to the state. (No point in notifying code intended to update the UI
@@ -294,27 +224,18 @@ export interface IInputValueHostCallbacks extends IValueHostCallbacks {
      * Here, it aggregates all ValueHost notifications.
      */
     onValueHostValidated?: ValueHostValidatedHandler | null;
-    /**
-     * Called when the InputValueHost's InputValue property has changed.
-     * If setup, you can prevent it from being fired with the options parameter of setValue()
-     * to avoid round trips where you already know the details.
-     * You can setup the same callback on individual InputValueHosts.
-     * Here, it aggregates all InputValueHost notifications.
-     */
-    onInputValueChanged?: InputValueChangedHandler | null;
 }
 /**
- * Determines if the object implements IInputValueHostCallbacks.
+ * Determines if the object implements IValidatableValueHostCallbacks.
  * @param source 
- * @returns source typecasted to IInputValueHostCallbacks if appropriate or null if not.
+ * @returns source typecasted to IValidatableValueHostCallbacks if appropriate or null if not.
  */
-export function toIInputValueHostCallbacks(source: any): IInputValueHostCallbacks | null
+export function toIValidatableValueHostCallbacks(source: any): IValidatableValueHostCallbacks | null
 {
     if (toIValueHostCallbacks(source))
     {
-        let test = source as IInputValueHostCallbacks;
-        if (test.onInputValueChanged !== undefined &&
-            test.onValueHostValidated !== undefined)
+        let test = source as IValidatableValueHostCallbacks;
+        if (test.onValueHostValidated !== undefined)
             return test;
     }
     return null;

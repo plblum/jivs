@@ -7,6 +7,7 @@ import { BusinessLogicError, IssueFound, ValidateOptions, ValidationSeverity } f
 import { IGatherValueHostNames } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
 import { IInputValueHost } from './InputValueHost';
+import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
 
 /**
  * Represents a single validator for the value of an InputValueHost.
@@ -295,6 +296,6 @@ export interface ValidatorValidateResult {
  * This interface targets unit testing with mocks.
  */
 export interface IValidatorFactory {
-    create(valueHost: IInputValueHost, config: ValidatorConfig): IValidator;
+    create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator;
 }
 

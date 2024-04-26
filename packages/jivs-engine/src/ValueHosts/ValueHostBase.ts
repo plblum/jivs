@@ -121,7 +121,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
             if (changed) {
                 stateToUpdate.value = value;
             }
-            this.updateChangeCounterInInstanceState(stateToUpdate, changed, options!);
+            this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
             return stateToUpdate;
         }, this);
         this.useOnValueChanged(changed, oldValue, options);
@@ -145,7 +145,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         this.setValue(undefined, options);
     }
 
-    protected updateChangeCounterInInstanceState(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void
+    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void
     {
         if (options.reset)
             stateToUpdate.changeCounter = 0;
