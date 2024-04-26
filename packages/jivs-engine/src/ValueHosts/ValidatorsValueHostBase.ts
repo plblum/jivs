@@ -5,8 +5,9 @@
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
-import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
-import { ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidationStatusString, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { assertNotNull } from '../Utilities/ErrorHandling';

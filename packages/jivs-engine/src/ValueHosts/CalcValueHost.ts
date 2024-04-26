@@ -5,7 +5,7 @@
 import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState, CalculationHandlerResult } from '../Interfaces/CalcValueHost';
 import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { IValueHostsManager } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';

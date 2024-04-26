@@ -15,7 +15,7 @@
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
-import { type IValueHostResolver, type IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
+import { type IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { type ValidateOptions, ValidationSeverity, type IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
@@ -26,6 +26,7 @@ import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
+import { IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
 
 /**
  * An IValidator implementation that represents a single validator 
@@ -411,7 +412,7 @@ export class Validator implements IValidator {
      * the current ConditionEvaluateResult and error messages.
      * @param issueFound - this is a COPY of the IssueFound.
      * Do not modify the actual instance as it is immutable.
-     * @param value 
+     * @param valueHost 
      */
     protected updateIssueFoundWhenNoMatch(issueFound: IssueFound,
         valueHost: IValueHost): void {

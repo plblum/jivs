@@ -11,7 +11,7 @@ import { BusinessLogicErrorsValueHostGenerator } from './BusinessLogicErrorsValu
 import { InputValueHostGenerator } from './InputValueHost';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
-import type { IValueHostsManager } from '../Interfaces/ValueHostResolver';
+import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { StaticValueHostGenerator } from './StaticValueHost';
 import type { IValueHostFactory, IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { CalcValueHostGenerator } from './CalcValueHost';

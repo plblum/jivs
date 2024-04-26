@@ -6,7 +6,7 @@
  */
 
 import { ValueHostConfig, ValueHostInstanceState, IValueHost } from './ValueHost';
-import { IValueHostsManager } from './ValueHostResolver';
+import { IValueHostsManager } from './ValueHostsManager';
 
 /**
  * Interface for creating ValueHostFactory classes.

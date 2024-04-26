@@ -130,11 +130,8 @@ export interface InputValueHostInstanceState extends ValidatorsValueHostBaseInst
 
 export type InputValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
 
-/**
- * Provides callback hooks for the consuming system to supply to IInputValueHosts.
- */
-export interface IInputValueHostCallbacks extends IValidatorsValueHostBaseCallbacks {
-
+export interface IInputValueHostChangedCallback
+{
     /**
      * Called when the InputValueHost's InputValue property has changed.
      * If setup, you can prevent it from being fired with the options parameter of setValue()
@@ -142,7 +139,13 @@ export interface IInputValueHostCallbacks extends IValidatorsValueHostBaseCallba
      * You can setup the same callback on individual InputValueHosts.
      * Here, it aggregates all InputValueHost notifications.
      */
-    onInputValueChanged?: InputValueChangedHandler | null;
+    onInputValueChanged?: InputValueChangedHandler | null;    
+}
+/**
+ * Provides callback hooks for the consuming system to supply to IInputValueHosts.
+ */
+export interface IInputValueHostCallbacks extends IInputValueHostChangedCallback, IValidatorsValueHostBaseCallbacks {
+
 }
 /**
  * Determines if the object implements IInputValueHostCallbacks.

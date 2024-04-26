@@ -8,7 +8,8 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
-import { IValueHostResolver, IValueHostsManager } from '../Interfaces/ValueHostResolver';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { cleanString } from '../Utilities/Utilities';
 
