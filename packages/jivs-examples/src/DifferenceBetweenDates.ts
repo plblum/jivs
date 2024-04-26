@@ -8,7 +8,7 @@ import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes
 import { LookupKey } from "@plblum/jivs-engine/src/DataTypes/LookupKeys";
 import { ICalcValueHost, CalcValueHostConfig, CalculationHandlerResult } from "@plblum/jivs-engine/src/Interfaces/CalcValueHost";
 import { InputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/InputValueHost";
-import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostResolver";
+import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostsManager";
 import { createMinimalValidationServices } from "./support";
 import { ValidationManager } from '@plblum/jivs-engine/src/Validation/ValidationManager';
 import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
