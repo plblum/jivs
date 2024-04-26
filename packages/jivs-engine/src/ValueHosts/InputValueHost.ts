@@ -9,7 +9,7 @@
  * @module ValueHosts/ConcreteClasses/InputValueHost
  */
 import { deepEquals } from '../Utilities/Utilities';
-import { IValueHostsManager } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';

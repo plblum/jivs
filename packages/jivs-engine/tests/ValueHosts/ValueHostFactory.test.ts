@@ -2,7 +2,7 @@ import { InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
 import { ValueHostInstanceState, IValueHost, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";

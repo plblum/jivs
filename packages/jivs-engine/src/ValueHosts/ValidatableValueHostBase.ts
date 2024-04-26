@@ -7,10 +7,11 @@ import { cleanString, deepEquals, groupsMatch } from '../Utilities/Utilities';
 import { type SetValueOptions} from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
-import { IValueHostResolver, IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostResolver';
+import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from '../Interfaces/ValidatableValueHostBase';
 import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
+import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
 
 
 /**

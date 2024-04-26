@@ -16,8 +16,8 @@
 
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { IValueHostResolver, IValueHostsManager } from './ValueHostResolver';
-
+import { IValueHostResolver } from './ValueHostResolver';
+import { IValueHostsManager } from './ValueHostsManager';
 /**
  * Interface for creating ValueHosts.
  */
