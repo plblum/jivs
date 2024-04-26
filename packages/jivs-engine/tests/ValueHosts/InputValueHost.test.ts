@@ -46,6 +46,7 @@ import { BusinessLogicInputValueHost } from "../../src/ValueHosts/BusinessLogicI
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { ValueHostValidatedHandler, IValidatableValueHostBase, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, registerTestingOnlyConditions, NeverMatchesCondition } from "../TestSupport/conditionsForTesting";
+import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -3372,7 +3373,7 @@ describe('toIInputValueHost', () => {
             },
             isValid: false,
             validationStatus: ValidationStatus.NotAttempted,
-            asyncProcessing: false,            
+            asyncProcessing: false,
             setBusinessLogicError: function (error: BusinessLogicError): boolean {
                 throw new Error('Function not implemented.');
             },
@@ -3430,7 +3431,9 @@ describe('toIInputValueHost', () => {
             setGroup: function (group: string): void {
                 throw new Error('Function not implemented.');
             },
-
+            configValidators: function (): FluentValidatorCollector {
+                throw new Error("Function not implemented.");
+            }
         }
         expect(toIInputValueHost(testItem)).toBe(testItem);
     });
@@ -4259,6 +4262,9 @@ describe('toIInputValueHost function', () => {
         expect(toIInputValueHost(testItem)).toBe(testItem);
     });
     class TestIInputValueHostImplementation implements IInputValueHost {
+        configValidators(): FluentValidatorCollector {
+            throw new Error("Method not implemented.");
+        }
 
         getInputValue() {
             throw new Error("Method not implemented.");

@@ -1840,13 +1840,39 @@ describe('toIValidationManagerCallbacks function', () => {
         };
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
     });
-    test('ValidationManager matches and returns itself.', () => {
+    test('ValidationManager without callbacks defined returns itself.', () => {
         let testItem = new ValidationManager({
             services: new ValidationServices(),
             valueHostConfigs: []
         });
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
     });    
+    test('ValidationManager with callbacks defined returns itself.', () => {
+        let testItem = new ValidationManager({
+            services: new ValidationServices(),
+            valueHostConfigs: [],
+            onValueChanged: (vh: IValueHost, old: any) => {},
+            onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => {},
+            onInputValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
+            onValueHostValidated: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
+            onInstanceStateChanged: (vm, state) => { },
+            onValidated: (vm, results) => { }            
+        });
+        expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
+    });        
+    test('ValidationManager with callbacks=null defined returns itself.', () => {
+        let testItem = new ValidationManager({
+            services: new ValidationServices(),
+            valueHostConfigs: [],
+            onValueChanged: null,
+            onValueHostInstanceStateChanged: null,
+            onInputValueChanged: null,
+            onValueHostValidated: null,
+            onInstanceStateChanged: null,
+            onValidated: null            
+        });
+        expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
+    });            
     test('Non-matching interface returns null.', () => {
         let testItem = {};
         expect(toIValidationManagerCallbacks(testItem)).toBeNull();

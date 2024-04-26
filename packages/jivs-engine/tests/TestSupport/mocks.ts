@@ -32,6 +32,7 @@ import { ValueHostValidatedHandler } from "../../src/Interfaces/ValidatableValue
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
+import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -191,6 +192,10 @@ export class MockInputValueHost extends MockValueHost
     {
         throw new Error("Method not implemented.");
     }
+    configValidators(): FluentValidatorCollector {
+        throw new Error("Method not implemented.");
+    }
+
     setGroup(group: string): void
     {
         throw new Error("Method not implemented.");
