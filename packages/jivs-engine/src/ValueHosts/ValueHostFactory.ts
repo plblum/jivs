@@ -7,7 +7,7 @@
  * @module ValueHosts/ConcreteClasses/ValueHostFactory
  */
 
-import { BusinessLogicInputValueHostGenerator } from './BusinessLogicInputValueHost';
+import { BusinessLogicInputValueHostGenerator } from './BusinessLogicErrorsValueHost';
 import { InputValueHostGenerator } from './InputValueHost';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';

@@ -25,7 +25,7 @@ import { ValidatorValidateResult, IValidator, ValidatorConfig, IValidatorFactory
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { SetValueOptions, IValueHost, ValueHostInstanceState, ValueHostInstanceStateChangedHandler, ValidTypesForInstanceStateStorage, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
-import { ConditionWithPromiseTester } from "./Validator.test";
+import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { ConditionCategory, ConditionEvaluateResult, ICondition, ConditionConfig, IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
@@ -42,7 +42,7 @@ import { DataTypeConverterService } from "../../src/Services/DataTypeConverterSe
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-import { BusinessLogicInputValueHost } from "../../src/ValueHosts/BusinessLogicInputValueHost";
+import { BusinessLogicInputValueHost } from "../../src/ValueHosts/BusinessLogicErrorsValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { ValueHostValidatedHandler, IValidatableValueHostBase, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, registerTestingOnlyConditions, NeverMatchesCondition } from "../TestSupport/conditionsForTesting";
