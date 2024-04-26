@@ -12,6 +12,7 @@ import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableV
 import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
 import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 
 
 /**
@@ -48,7 +49,12 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     */
     public setValue(value: any, options?: SetValueOptions): void {
         if (!options)
-            options = {};        
+            options = {};
+        if (options.duringEdit)
+        {
+            options.duringEdit = false;
+            this.services.loggerService.log('setValue does not support duringEdit option', LoggingLevel.Warn, LoggingCategory.Validation, 'ValueHost');
+        }
         let oldValue: any = this.instanceState.value;
         let changed = !deepEquals(value, oldValue);
         this.updateInstanceState((stateToUpdate) => {
@@ -68,7 +74,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     protected processValidationOptions(options: SetValueOptions): void {
         if (options.validate) {
             if (this.instanceState.status === ValidationStatus.ValueChangedButUnvalidated)
-                this.validate(); // Result isn't ignored. Its automatically updates state and notifies parent
+                this.validate({ duringEdit: options.duringEdit }); // Result isn't ignored. Its automatically updates state and notifies parent
         }
         else if (options.reset)
             this.clearValidation();

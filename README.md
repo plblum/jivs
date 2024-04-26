@@ -86,23 +86,25 @@ libraries of many types, including other schema validation services and internat
 
 ## Quick terminology overview
 Here are a few terms used.
-- **Validator** – Combines a single rule that must be validated along with the error message(s) it may return when an issue is found.
-- **Input** - Refers to the editor, widget, component where the user edits the data. In HTML, \<input>, \<select>, and \<textarea> tags are examples.
-- **ValueHost** – References to a Jivs object that you setup for each Input, and for any other values you want to expose to the validators. Any ValueHosts associated with an Input may have Validators. Other ValueHosts hold data like global values and fields from the Model/Entity/Class/Record that won't be edited.
+- **Model** - Industry term for an object that represents a specific piece of data. It often has parallels to what you store in a database as a table. In terms of validation, your app will usually collect all of the data from the user and stick it into a Model. Then the Model is run against business logic to ensure its completely valid before it is stored. Related terms: Entity, Record, and Data Transfer Object (DTO).
+- **Property** - A named piece of data found on the Model. Validation is often applied to Properties.
+- **Form** – A group of Inputs that is gathering data from the user. It often has buttons to submit the work when completed (but first, it should use validation!). When using the HTML \<form>, your client side does not intend to gather that data into a Model; instead it posts the form contents to the server for Model formation and validation.
+- **Input** - Refers to the editor, widget, component where the user edits the data. In HTML, \<input>, \<select>, and \<textarea> tags are examples. Validation is often applied to Inputs.
+- **Business Logic** – The code dedicated to describing and maintaining your Model. It provides the validation rules for individual properties and to run before saving. It should be separate from the UI, and Jivs favors that approach.
+- **Validator** – Combines a single rule that must be validated along with the error message(s) it may return when an issue is found. Some Validators are specific to an Input or Property; those are the domain of Jivs. Business logic may have Validators that work with the entire Model.
+- **ValueHost** – A type of Jivs object that knows the name and value of some data available to the validation system. InputValueHost and PropertyValueHost represent two types that support validation of their values. However, not all values need actual validation. Some hold data like global values and fields from the Model that won't be edited.
 	> In fact, you can use Jivs and its ValueHost as your form's **Single Source of Truth** as you convert between the Model/Entity and the UI.
-- **Form** – A group of Inputs that is gathering data from the user. It often has buttons to submit the work when completed (but first, it should use validation!)
-- **Summary** – A UI-specific area that shows error messages found throughout your form.
-- **ValidationManager** – The main class you interact with in Jivs. It contains a complete configuration of your form's inputs through ValueHosts. You will use it to send data changes from your Inputs, to invoke validation before submitting the Form, to retrieve a list of issues for a single Input to display, and another list for a Summary to display.
-- **Input Value** – The raw data from the Input. Often this is a string representing the actual data, but needs to be cleaned up or converted before it can be stored.
-- **Native Value** – The actual data that you will store. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value.
-- **Service** – A class provides Jivs with dependency injection or a factory. Jivs has you create a master service object, ValidationServices, and connect individual services to it. 
-- **Business Logic** – The code dedicated to describing your Model/Entity. It provides the validation rules for individual fields and to run before saving. It should be separate from the UI, and Jivs is designed for that approach.
 
+- **Validation Summary** – A UI-specific area that shows error messages found throughout your form.
+- **ValidationManager** – A Jivs object; it is main class you interact with. You configure it to know about your form or Model, where ValueHosts are created for each value in the form or Model. 
+You will use it to supply data from your Inputs and Properties, to invoke validation, to retrieve a list of issues to display, and to report additional errors determined by your business logic.
+- **Input Value** – The raw data from the Input. Often this is a string representing the actual data, but needs to be cleaned up or converted before it can be stored.
+- **Native Value** – The actual data that you will store in the Model. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value. This error is what Jivs calls a "Data Type Check".
+- **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, ValidationServices, and connect individual services to it. 
 <a name="apioverview"></a>
 ## Quick API overview
 
 You will be working with classes and interfaces. Here are the primary pieces to orient you to its API.
-
 
 -   <a href="#valuehosts">`ValueHost classes`</a> – Identifies a single value to be validated
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
@@ -138,18 +140,145 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 	- There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
 	- `ConditionFactory` – Creates the Condition objects used by business rules.
 	
-### Configuring Overview
-Jivs takes this approach to populating the ValidationManager: Create simple objects that configure each of the pieces into the ValidationManagerConfig object. Then create the ValidationManager with it. Jivs creates all of the actual objects from those simple objects.
+## Where you want to use validation
+
+### As focus leaves an Input and changes occurred
+* Use the onchange event to tell the ValidationManager about the data change and run validation. 
+	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
+	* Use `validationManager.getInputValueHost('name').setValues(native, input, { validate: true});`
+* The ValidationManager will notify you about a validation state change through its `OnValueHostValidated callback`. Implement that callback to update your user interface.
+
+Suppose that you have this HTML:
+```ts
+<form>
+  <input type='text' name='FirstName' id='FirstName' />
+     <span class='errorHost' data-for='FirstName'></span>
+  <input type='text' name='LastName' id='LastName' />
+     <span class='errorHost' data-for='LastName'></span>  
+  <button>Submit</button>
+</form>
+```
+This code initializes a ValidationManager and sets up the `onValueHostValidated callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
+
+```ts
+let vmConfig: ValidationManagerConfig = {
+  services: createValidationServices(),
+  valueHostConfigs: ... your configuration for each Input ...
+  onValueHostValidated: fieldValidated
+};
+let vm = new ValidationManager(vmConfig);
+
+// Direct validation changes to the HTML elements
+// of a specific field, so they can update their appearance
+function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
+{
+  let fldId = valueHost.getName();
+  let editor = document.getElementById(fldId);
+  let errorHost = document.querySelector('.errorHost[data-for=' + fldId + ']');
+  if (validationState.isValid)
+  {
+    editor.classList.remove('invalid');
+    errorHost.classList.remove('invalid');      
+  }
+  else
+  {
+    editor.classList.add('invalid');
+    errorHost.classList.add('invalid');      
+  }
+// remove the current contents then if there are errors to shown, add them
+  errorHost.innerHtml = '';
+  if (validationState.issuesFound)
+  {
+    let ul = document.createElement('ul');
+    for (let i = 0; i < validationState.issuesFound.length; i++)
+    {
+      let li = document.createElement('li');
+      li.textContent = validationState.issuesFound[i].errorMessage;
+      ul.append(li);
+    }
+    errorHost.append(ul);
+  }
+}
+```
+This code sets up the onchange event.
+```ts
+let firstNameFld = document.getElementById('FirstName');
+firstNameFld.attachEventListener('onchange', (evt)=>{
+  let inputValue = evt.target.value;
+  let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
+  vm.getInputValueHost('FirstName').setValues(nativeValue, inputValue, { validate: true });
+});
+```
+
+### While the user types
+Show or hide the error state as the user types. This is limited to Validators that evaluate the raw string, like RequireText, RegExp, and StringLength. Always setup the onchange event (described above) to get all Validators involved.
+
+* Use the oninput event to tell the ValidationManager about the data change and run validation, with its "duringEdit" option set to true.
+* The ValidationManager will notify you about a validation state change through its `OnValueHostValidated callback`.
+
+All of the prior setup still applies. Here we add the oninput event handler:
+```ts
+let firstNameFld = document.getElementById('FirstName');
+firstNameFld.attachEventListener('oninput', (evt)=>{
+  vm.getInputValueHost('FirstName').setInputValue(evt.target.value, { validate: true, duringEdit: true });
+});
+```
+### When the user submits the data
+The ValidationManager should already have all changed values captured due to onchange events on your Inputs. 
+
+Run validation and proceed with submission if data is valid.
+```ts
+let status = vm.validate(); // it will notify elements in your UI of validation changes
+if (status.doNotSaveNativeValues())
+  // Prevent saving. User has to fix things
+else
+  // Submit the page's data
+```
+### Server side with data submitted from an HTML \<form>
+The HTML form data starts as strings. Ultimately, its values should populate a Model, but that requires converting the strings to data types expected by properties on the Model. 
+
+> If your server is Node.js, you can use Jivs to do most of the work.
+
+* Convert each form element into its native value. 
+	* Capture all conversion errors. They indicate validation failure, but go through all of the fields first.
+	* For any successful conversions, assign them to a Model that you are preparing to save.
+* Validate the Model with your business logic. Capture any errors it finds.
+* If there are no errors, save the Model.
+* With errors, do not save. Instead, supply the captured errors to the client-side to report to the user through Jivs.
+* Back on the client-side, gather the errors and create `BusinessLogicError objects` from them. Then call `ValidationManager.setBusinessLogicErrors()`.
+```ts
+let errors = myServerSideErrors();	// your code
+let blErrors: Array<BusinessLogicError> = [];
+for (let i = 0; i < errors.length; i++)
+{
+  let error = errors[i];
+  let blError: BusinessLogicError = {
+    errorMessage: error.myErrorMessage,
+    errorCode: myMapToErrorCode(error), // optional. Try to match up to a known client-side error code or Condition Type to get the UI's error messages
+    associatedValueHostName: myMapToValueHostName(error)  // optional. Jivs will update the actual field, not just the ValidationSummary
+  };
+  blErrors.push(blError);
+}
+
+vm.setBusinessLogicErrors(blErrors);	// will notify the UI's validation elements
+```
+### Server side with data submitted in a Model via API call
+Similar to the HTML \<form> except that your Model is already formed with native values, eliminating any of the conversion errors. However, all of the business logic validation rules must still be checked against the native values.
+
+Jump to the previous section and follow the instructions after the conversion steps.
+
+## Configuring the ValidationManager
+Jivs takes this approach to populating the ValidationManager: Create objects that configure each of the pieces into the ValidationManagerConfig object. Then create the ValidationManager with it. Jivs creates all of the actual objects from those simple objects.
 
 Whenever you see "Config" in a type name, it is one of these configuration objects.
 
 There are a couple of approaches to configuration, based on whether you want to let your business layer define the input and validator rules.
 
-#### When starting with Business Logic
+### When starting with Business Logic
 1. UI creates the ValidationManagerConfig object including the services
-2. Business logic populates vmConfig.valueHostConfig
+2. Business logic populates vmConfig.valueHostConfigs
 3. With the Builder, UI replaces error messages and labels. 
-4. With the Builder, UI adds additional ValueHosts and validators8. 
+4. With the Builder, UI adds additional ValueHosts and Validators. 
 5. Create the ValidationManager
 
 ```ts
@@ -159,7 +288,7 @@ let vmConfig: ValidationManagerConfig = {
 };
 
 ... run code that transcribes business logic rules into vmConfig.valueHostConfigs ...
-
+// Let the UI update vmConfig with its own textual values and validation rules
 let builder = build(vmConfig);
 builder.favorUIMessages();
 builder.updateInput('StartDate', { label: 'Start date'});
@@ -170,12 +299,10 @@ builder.updateValidator('StartDate', ConditionType.LessThan, {
 
 builder.addValidator('EndDate').requireText();
 let vm = new ValidationManager(vmConfig);
-
 ```
-
-#### When UI creates everything
+### When UI creates everything (not using Business Logic)
 1. UI creates the ValidationManagerConfig object including the services
-2. With the Builder, use <a href="#fluentsyntax">fluent syntax</a> to create all ValueHosts and their validators.  
+2. With the Builder object, use <a href="#fluentsyntax">fluent syntax</a> to create all ValueHosts and their validators.  
 3. Create the ValidationManager
 
 ```ts
@@ -196,6 +323,18 @@ builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).requireText();
 
 let vm = new ValidationManager(vmConfig);
 ```
+# Jivs Classes and supporting topics
+Topics:
+- <a href="#conditions">Conditions</a>
+- <a href="#valuehosts">ValueHosts</a>
+- <a href="#validators">Validators</a>
+- <a href="#validationmanager">ValidationManager</a>
+- <a href="#validationservices">ValidationServices</a>
+- <a href="#fluentsyntax">Fluent Syntax</a>
+- <a href="#createconditions">Creating your own Conditions</a>
+- <a href="#lookupkeys">Lookup Keys: DataTypes and Companion tools</a>
+- <a href="#localization">Localization</a>
+
 <a name="conditions"></a>
 ## Conditions - the validation rules
 You need to build a class that adapts your validation rules to Jivs own types and classes. Jivs uses the classes that implement the `ICondition interface` to package up a validation rule, and `ConditionConfig type` to inform the `Condition` class how to configure itself. The class is a bridge between business logic and your UI. This section provides the details.
@@ -276,7 +415,9 @@ Your new code should look like this, where `ValueHostName` is your identifier fo
     secondValue: ...date object representing Today...;
 }
 ```
-> A fluent syntax is also part of Jivs. It simplifies manual entry of building conditions and several other objects that will be [shown later](#Fluent-syntax). We'll look at it once you have the full picture using these Config objects.
+> A fluent syntax is also part of Jivs. It simplifies manual entry of building conditions and several other objects that will be <a href="#fluentsyntax">shown later</a>. We'll look at it once you have the full picture using these Config objects.
+
+**See also: <a href="#createconditions">Creating your own Conditions</a>**
 
 <a name="bridge"></a>
 ## Bridging business logic and UI validation
