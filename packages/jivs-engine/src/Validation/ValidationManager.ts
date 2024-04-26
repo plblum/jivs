@@ -4,7 +4,7 @@
  * Its methods provide validation and the results of validation.
  * @module ValidationManager/ConcreteClasses
  */
-import { BusinessLogicErrorsValueHostType, BusinessLogicValueHostName } from '../ValueHosts/BusinessLogicErrorsValueHost';
+import { BusinessLogicErrorsValueHostType, BusinessLogicErrorsValueHostName } from '../ValueHosts/BusinessLogicErrorsValueHost';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
@@ -467,12 +467,12 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> im
         }
         if (errors)
             for (let error of errors) {
-                let vh = this.getValueHost(error.associatedValueHostName ?? BusinessLogicValueHostName);
+                let vh = this.getValueHost(error.associatedValueHostName ?? BusinessLogicErrorsValueHostName);
                 if (!vh && !error.associatedValueHostName) {
                     vh = this.addValueHost({
                         valueHostType: BusinessLogicErrorsValueHostType,
                         label: '*',
-                        name: BusinessLogicValueHostName
+                        name: BusinessLogicErrorsValueHostName
                     }, null);
                 }
                 if (vh instanceof ValidatableValueHostBase)

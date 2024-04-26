@@ -3433,6 +3433,9 @@ describe('toIInputValueHost', () => {
             },
             configValidators: function (): FluentValidatorCollector {
                 throw new Error("Function not implemented.");
+            },
+            gatherValueHostNames: function (collection: Set<string>, valueHostResolver: IValueHostResolver): void {
+                throw new Error("Function not implemented.");
             }
         }
         expect(toIInputValueHost(testItem)).toBe(testItem);
@@ -4262,6 +4265,9 @@ describe('toIInputValueHost function', () => {
         expect(toIInputValueHost(testItem)).toBe(testItem);
     });
     class TestIInputValueHostImplementation implements IInputValueHost {
+        gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
+            throw new Error("Method not implemented.");
+        }
         configValidators(): FluentValidatorCollector {
             throw new Error("Method not implemented.");
         }
@@ -4380,6 +4386,7 @@ describe('toIValidatableValueHostBase function', () => {
     });
     class TestIValidatableValueHostBaseImplementation implements IValidatableValueHostBase {
 
+
         getInputValue() {
             throw new Error("Method not implemented.");
         }
@@ -4448,7 +4455,9 @@ describe('toIValidatableValueHostBase function', () => {
         saveIntoInstanceState(key: string, value: any): void {
             throw new Error("Method not implemented.");
         }
-
+        gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
+            throw new Error("Method not implemented.");
+        }
         isChanged: boolean = false;
 
     }

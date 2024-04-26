@@ -1,4 +1,4 @@
-import { BusinessLogicErrorsValueHostGenerator, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
+import { BusinessLogicErrorsValueHostGenerator, BusinessLogicErrorsValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
 import { BusinessLogicErrorsValueHost, BusinessLogicErrorsValueHostType } from "../../src/ValueHosts/BusinessLogicErrorsValueHost";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { objectKeysCount } from '../../src/Utilities/Utilities';
@@ -22,7 +22,7 @@ function setupInputValueHost(
     let vm = new MockValidationManager(services);
     let defaultConfig: ValidatableValueHostBaseConfig = {
         valueHostType: BusinessLogicErrorsValueHostType,
-        name: BusinessLogicValueHostName,
+        name: BusinessLogicErrorsValueHostName,
         label: '*',
     };
     let updatedConfig: ValidatableValueHostBaseConfig = (!config) ?
@@ -80,7 +80,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         });
     });    
     test('One BusinessLogicErrors with only ErrorMesage and severity=Error results in ValidationStatus.Invalid and one IssueFound', () => {
@@ -99,7 +99,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         });
     });        
     test('One BusinessLogicErrors with only ErrorMesage and severity=Severe results in ValidationStatus.Invalid and one IssueFound', () => {
@@ -118,7 +118,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Severe,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         });
     });            
     test('One BusinessLogicErrors with only ErrorMesage and severity=Warning results in ValidationStatus.Valid and one IssueFound', () => {
@@ -137,7 +137,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         });
     });            
     test('One BusinessLogicErrors with ErrorMesage, ErrorCode="EC1" and severity=Error results in ValidationStatus.Invalid and one IssueFound identified as "EC1"', () => {
@@ -157,7 +157,7 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "EC1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         });
     });          
     test('2 BusinessLogicErrors (Warning, Error) results in ValidationStatus.Invalid and two IssueFounds', () => {
@@ -180,13 +180,13 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
             errorCode: "GENERATED_1",
             errorMessage: "ERROR",
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         });        
     });            
     test('2 BusinessLogicErrors (Warning, Warning) results in ValidationStatus.Valid and two IssueFounds', () => {
@@ -209,13 +209,13 @@ describe('BusinessLogicErrorsValueHost.validate', () => {
             errorCode: "GENERATED_0",
             errorMessage: "WARNING",
             severity: ValidationSeverity.Warning,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         });
         expect(vr!.issuesFound![1]).toEqual(<IssueFound>{
             errorCode: "GENERATED_1",
             errorMessage: "WARNING2",
             severity: ValidationSeverity.Warning,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         });        
     });                
 });

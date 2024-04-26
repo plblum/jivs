@@ -47,7 +47,7 @@ export class BusinessLogicErrorsValueHost extends ValidatableValueHostBase<Valid
                     errorCode: errorCode,
                     errorMessage: error.errorMessage,
                     severity: error.severity ?? ValidationSeverity.Error,
-                    valueHostName: BusinessLogicValueHostName
+                    valueHostName: BusinessLogicErrorsValueHostName
                 });
                 issueCount++;
             }
@@ -72,9 +72,9 @@ export class BusinessLogicErrorsValueHost extends ValidatableValueHostBase<Valid
         // nothing to do
     }
 }
-export const BusinessLogicValueHostName = '*';   
+export const BusinessLogicErrorsValueHostName = '*';   
 
-export const BusinessLogicErrorsValueHostType = 'BusinessLogic';
+export const BusinessLogicErrorsValueHostType = 'BusinessLogicErrors';
 export class BusinessLogicErrorsValueHostGenerator extends ValidatableValueHostBaseGenerator {
 
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {

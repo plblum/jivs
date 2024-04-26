@@ -3,7 +3,7 @@ import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
-import { BusinessLogicErrorsValueHost, BusinessLogicValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
+import { BusinessLogicErrorsValueHost, BusinessLogicErrorsValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
 import { ValidationStatus, IssueFound, ValidationSeverity, ValidationState } from '../../src/Interfaces/Validation';
@@ -1198,16 +1198,16 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(setup.validationManager.getIssuesFound()).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName,
+            valueHostName: BusinessLogicErrorsValueHostName,
             errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
-        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
+        expect(setup.validationManager.getValueHost(BusinessLogicErrorsValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
 
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toEqual([<IssueFound>{
+        expect(setup.validationManager.getIssuesForInput(BusinessLogicErrorsValueHostName)).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName,
+            valueHostName: BusinessLogicErrorsValueHostName,
             errorCode: 'GENERATED_0',
             summaryMessage: 'BL_ERROR'
         }]);
@@ -1240,8 +1240,8 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             summaryMessage: 'BL_ERROR'
         }]);
 
-        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeNull();
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toBeNull();
+        expect(setup.validationManager.getValueHost(BusinessLogicErrorsValueHostName)).toBeNull();
+        expect(setup.validationManager.getIssuesForInput(BusinessLogicErrorsValueHostName)).toBeNull();
     });
     test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 BusinessLogicError not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors businesslogicerror, BLValueHost has the BLError, InputValueHost has its own error', () => {
 
@@ -1269,7 +1269,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             <IssueFound>{
                 errorMessage: 'BL_ERROR',
                 severity: ValidationSeverity.Error,
-                valueHostName: BusinessLogicValueHostName,
+                valueHostName: BusinessLogicErrorsValueHostName,
                 errorCode: 'GENERATED_0',
                 summaryMessage: 'BL_ERROR'
             }]);
@@ -1281,12 +1281,12 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             summaryMessage: 'SUMMARY CONDITION ERROR'
         }]);
 
-        expect(setup.validationManager.getValueHost(BusinessLogicValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
-        expect(setup.validationManager.getIssuesForInput(BusinessLogicValueHostName)).toEqual(
+        expect(setup.validationManager.getValueHost(BusinessLogicErrorsValueHostName)).toBeInstanceOf(BusinessLogicErrorsValueHost);
+        expect(setup.validationManager.getIssuesForInput(BusinessLogicErrorsValueHostName)).toEqual(
             [<IssueFound>{
                 errorMessage: 'BL_ERROR',
                 severity: ValidationSeverity.Error,
-                valueHostName: BusinessLogicValueHostName,
+                valueHostName: BusinessLogicErrorsValueHostName,
                 errorCode: 'GENERATED_0',
                 summaryMessage: 'BL_ERROR'
             }]);
@@ -1321,7 +1321,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorMessage: 'BL_ERROR',
             summaryMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         };
 
         setup.validationManager.setBusinessLogicErrors([
@@ -1350,7 +1350,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             errorCode: 'GENERATED_0',
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
-            valueHostName: BusinessLogicValueHostName
+            valueHostName: BusinessLogicErrorsValueHostName
         };
 
         setup.validationManager.setBusinessLogicErrors([

@@ -4,7 +4,7 @@ import { type ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerSe
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { toIServicesAccessor, type IValidationServices } from "../../src/Interfaces/ValidationServices";
 import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
+import { IValueHostResolver, IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
@@ -204,6 +204,10 @@ export class MockInputValueHost extends MockValueHost
     {
         throw new Error("Method not implemented.");
     }    
+    gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
+        throw new Error("Method not implemented.");
+    }
+
 }
 
 /**
