@@ -7,7 +7,7 @@ import { assertNotNull } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
-import type { IValueHostsManager, IValueHostsManagerAccessor } from '../Interfaces/ValueHostResolver';
+import type { IValueHostsManager, IValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 
 /**

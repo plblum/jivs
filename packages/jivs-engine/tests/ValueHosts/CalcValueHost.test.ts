@@ -1,7 +1,7 @@
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { CalcValueHostConfig, CalcValueHostInstanceState, CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost, CalcValueHostGenerator } from "../../src/ValueHosts/CalcValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { MockValidationServices, MockValidationManager, MockCapturingLogger } from "../TestSupport/mocks";

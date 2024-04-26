@@ -17,11 +17,10 @@ import { IValidationManager, ValidationManagerConfig } from "@plblum/jivs-engine
 import { InputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/InputValueHost";
 import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
 import { CalcValueHostConfig, CalculationHandlerResult, ICalcValueHost } from "@plblum/jivs-engine/src/Interfaces/CalcValueHost";
-import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostResolver";
+import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostsManager";
 import { ValueHostType } from "@plblum/jivs-engine/src/Interfaces/ValueHostFactory";
 import { StaticValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/StaticValueHost";
 import { ValidationManager } from "@plblum/jivs-engine/src/Validation/ValidationManager";
-import { fluent } from "@plblum/jivs-engine/src/ValueHosts/Fluent";
 import { build } from "@plblum/jivs-engine/src/ValueHosts/ValueHostsBuilder";
 
 export interface FilterDatesModel

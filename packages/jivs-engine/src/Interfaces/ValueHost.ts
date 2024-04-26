@@ -16,8 +16,8 @@
 
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { IValueHostResolver, IValueHostsManager } from './ValueHostResolver';
-
+import { IValueHostResolver } from './ValueHostResolver';
+import { IValueHostsManager } from './ValueHostsManager';
 /**
  * Interface for creating ValueHosts.
  */
@@ -134,6 +134,20 @@ export interface SetValueOptions {
      * That may result in a state change passed up.
      */
     validate?: boolean;
+
+    /**
+     * Only applies when validate option is true
+     * Set to true when handling an intermediate change activity, such as a keystroke
+     * changed a textbox but the user remains in the textbox. For example, on the 
+     * HTMLInputElement.oninput event.
+     * This will involve only validators that make sense during such an edit.
+     * Specifically their Condition implements IEvaluateConditionDuringEdits.
+     * The IEvaluateConditionDuringEdits.evaluateDuringEdit() function is used
+     * instead of ICondition.evaluate().
+     * When undefined, it is the same as false.
+     */
+    duringEdit?: boolean;    
+
     /**
      * Reset the field's changed and validation states as if the field has never been edited.
      * It effectively sets ValueHost.IsChanged to false and calls ValidatableValueHost.clearValidation().

@@ -4,13 +4,13 @@ import { type ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerSe
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { toIServicesAccessor, type IValidationServices } from "../../src/Interfaces/ValidationServices";
 import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
-import { IValueHostResolver, IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
+import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
-import { IValidationManager, IValidationManagerCallbacks, ValidationManagerInstanceStateChangedHandler, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
+import { IValidationManager, IValidationManagerCallbacks, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
@@ -33,6 +33,7 @@ import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
+import { IValueHostsManager, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -473,13 +474,13 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         throw new Error("Method not implemented.");
     }
 
-    public get onInstanceStateChanged(): ValidationManagerInstanceStateChangedHandler | null {
+    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
         return this._onInstanceStateChanged;
     }
-    public set onInstanceStateChanged(fn: ValidationManagerInstanceStateChangedHandler) {
+    public set onInstanceStateChanged(fn: ValueHostsManagerInstanceStateChangedHandler) {
         this._onInstanceStateChanged = fn;
     }
-    private _onInstanceStateChanged: ValidationManagerInstanceStateChangedHandler | null = null;
+    private _onInstanceStateChanged: ValueHostsManagerInstanceStateChangedHandler | null = null;
 
     public get onValidated(): ValidationManagerValidatedHandler | null {
         return this._onValidated;

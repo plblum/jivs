@@ -25,11 +25,12 @@
 
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { IValueHostsManager } from './ValueHostResolver';
+import { IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig } from './ValueHostsManager';
 import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState } from './Validation';
 import { IValidationServices } from './ValidationServices';
 import { ValueHostConfig, ValueHostInstanceState } from './ValueHost';
 import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './InputValueHost';
+import { ValueHostsManagerInstanceState } from './ValueHostsManager';
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -132,33 +133,16 @@ export interface IValidationManager extends IValueHostsManager {
  * The SPA may keep an instance of ValidationManager for the duration needed.
  * Each entry in ValueHostInstanceStates must have a companion in ValueHosts and ValueHostConfigs.
  */
-export interface ValidationManagerInstanceState {
-    /**
-     * Mostly here to provide a way to detect a change in the state quickly.
-     * This value starts at 0 and is incremented each time ValidationManager
-     * stores a changed state.
-     */
-    stateChangeCounter?: number;
-}
+export interface ValidationManagerInstanceState extends ValueHostsManagerInstanceState {
 
+}
 
 /**
  * Provides the configuration for the ValidationManager constructor
  */
-export interface ValidationManagerConfig extends IValidationManagerCallbacks
+export interface ValidationManagerConfig extends ValueHostsManagerConfig, IValidationManagerCallbacks
 {
-    /**
-     * Provides services into the system. Dependency Injection and factories.
-     */
-    services: IValidationServices;
-    /**
-     * Initial list of ValueHostConfigs. Here's where all of the action is!
-     * Each ValueHostConfig describes one ValueHost (which is info about one value in your app),
-     * plus its validation rules.
-     * If rules need to be changed later, either create a new instance of ValidationManager
-     * or use its addValueHost, updateValueHost, discardValueHost methods.
-     */
-    valueHostConfigs: Array<ValueHostConfig>;
+
     /**
      * The InstanceState for the ValidationManager itself.
      * Its up to you to retain stateful information so that the service works statelessly.
@@ -184,7 +168,6 @@ export interface ValidationManagerConfig extends IValidationManagerCallbacks
     savedValueHostInstanceStates?: Array<ValueHostInstanceState> | null;
 }
 
-export type ValidationManagerInstanceStateChangedHandler = (validationManager: IValidationManager, stateToRetain: ValidationManagerInstanceState) => void;
 export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validationState: ValidationState) => void;
 
 
@@ -192,13 +175,8 @@ export type ValidationManagerValidatedHandler = (validationManager: IValidationM
  * Provides callback hooks for the consuming system to supply to ValidationManager.
  * This instance is supplied in the constructor of ValidationManager.
  */
-export interface IValidationManagerCallbacks extends IInputValueHostCallbacks {
-    /**
-     * Called when the ValidationManager's InstanceState has changed.
-     * React example: React component useState feature retains this value
-     * and needs to know when to call the setState function with the stateToRetain
-     */
-    onInstanceStateChanged?: ValidationManagerInstanceStateChangedHandler | null;
+export interface IValidationManagerCallbacks extends IValueHostsManagerCallbacks, IInputValueHostCallbacks {
+
     /**
      * Called when ValidationManager's validate() function has returned.
      * Supplies the result to the callback.

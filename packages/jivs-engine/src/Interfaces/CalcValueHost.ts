@@ -66,7 +66,7 @@
  */
 
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
-import { IValueHostsManager } from "./ValueHostResolver";
+import { IValueHostsManager } from "./ValueHostsManager";
 
 /**
  * Function definition for calculation functions used by CalcValueHost

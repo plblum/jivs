@@ -13,7 +13,7 @@ import {
 } from './../../src/ValueHosts/Fluent';
 import { ValidationManagerConfig } from '../../src/Interfaces/ValidationManager';
 import { ICalcValueHost, CalculationHandlerResult } from '../../src/Interfaces/CalcValueHost';
-import { IValueHostsManager } from '../../src/Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 
 function createVMConfig(): ValidationManagerConfig
 {

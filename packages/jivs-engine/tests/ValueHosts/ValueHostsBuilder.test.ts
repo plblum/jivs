@@ -8,7 +8,7 @@ import { ValidationSeverity } from "../../src/Interfaces/Validation";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostResolver";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import {
     FluentValidatorCollector, FluentConditionCollector, FluentValidatorConfig,
