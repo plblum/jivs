@@ -262,11 +262,9 @@ export class Validator implements IValidator {
     public validate(options: ValidateOptions): ValidatorValidateResult | Promise<ValidatorValidateResult> {
         assertNotNull(options, 'options');
         let self = this;
-        logInfo(() => {
-            return {
-                message: `Validating for error code ${this.errorCode}`
-            }
-        });
+        lazyLog(() => {
+            return { message: `Validating for error code ${this.errorCode}` }
+        }, LoggingLevel.Debug);
 
         let resultState: ValidatorValidateResult = {
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
@@ -328,7 +326,7 @@ export class Validator implements IValidator {
         }
         finally {
             if (resultState.issueFound)
-                logInfo(() => {
+                lazyLog(() => {
                     let msg = `Validation error ${this.errorCode} found this issue: ${JSON.stringify(resultState.issueFound)}`;
                     return {
                         message: msg
@@ -336,7 +334,7 @@ export class Validator implements IValidator {
                 });
         }
         function resolveCER(cer: ConditionEvaluateResult): ValidatorValidateResult {
-            logInfo(() => {
+            lazyLog(() => {
                 return {
                     message: `Condition ${self.conditionType} evaluated as ${ConditionEvaluateResultStrings[cer]}`
                 };
@@ -370,7 +368,7 @@ export class Validator implements IValidator {
                 conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
                 issueFound: null
             };
-            logInfo(() => {
+            lazyLog(() => {
                 return {
                     message: errorMessage
                 };
@@ -378,11 +376,11 @@ export class Validator implements IValidator {
             resultState.skipped = true;
             return resultState;
         }
-        function logInfo(
-            fn: () => { message: string; source?: string }): void {
-            if (self.services.loggerService.minLevel >= LoggingLevel.Info) {
+        function lazyLog(
+            fn: () => { message: string; source?: string }, logLevel : LoggingLevel = LoggingLevel.Info): void {
+            if (self.services.loggerService.minLevel <= logLevel) {
                 let parms = fn();
-                self.services.loggerService.log(parms.message, LoggingLevel.Info,
+                self.services.loggerService.log(parms.message, logLevel,
                     LoggingCategory.Validation,
                     parms.source ?? `Validation with ${self.getLogSourceText()}`);
             }
