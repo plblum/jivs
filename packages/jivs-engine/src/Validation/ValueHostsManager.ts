@@ -73,6 +73,13 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
             this.addValueHost(item as ValueHostConfig, null);
         }
     }
+    /**
+     * If the user needs to abandon this instance, they should use this to 
+     * clean up active resources (like timers)
+     */
+    public dispose(): void
+    {
+    }    
     protected get config(): ValueHostsManagerConfig
     {
         return this._config;

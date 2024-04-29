@@ -23,6 +23,12 @@ import { IValueHostResolver, toIValueHostResolver } from './ValueHostResolver';
 export interface IValueHostsManager extends IValueHostResolver
 {
     /**
+     * If the user needs to abandon this instance, they should use this to 
+     * clean up active resources (like timers)
+     */
+    dispose(): void;    
+    
+    /**
      * Upon changing the value of a ValueHost, other ValueHosts need to know. 
      * They may have Conditions that take the changed ValueHost into account and
      * will want to revalidate or set up a state to force revalidation.

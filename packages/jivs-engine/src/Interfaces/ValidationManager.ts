@@ -25,10 +25,9 @@
 
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig } from './ValueHostsManager';
+import { IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig, toIValueHostsManager } from './ValueHostsManager';
 import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState } from './Validation';
-import { IValidationServices } from './ValidationServices';
-import { ValueHostConfig, ValueHostInstanceState } from './ValueHost';
+import { ValueHostInstanceState } from './ValueHost';
 import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './InputValueHost';
 import { ValueHostsManagerInstanceState } from './ValueHostsManager';
 
@@ -122,6 +121,18 @@ export interface IValidationManager extends IValueHostsManager {
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
     getIssuesFound(group?: string): Array<IssueFound> | null;
+
+    /**
+     * ValueHosts that validate should try to fire onValidated, even though they also 
+     * fire onValueHostValidated. This allows systems that observe validation changes 
+     * at the validationManager level to know.
+     * This function is optionally debounced with a delay in ms coming from
+     * ValidationManagerConfig.notifyValidationStateChangedDelay
+     * @param validationState
+     * @param options
+     * @param force - when true, override the debouncer and execute immediately.
+     */
+    notifyValidationStateChanged(validationState : ValidationState | null, options?: ValidateOptions, force?: boolean): void;   
 }
 
 /**
@@ -184,7 +195,45 @@ export interface IValidationManagerCallbacks extends IValueHostsManagerCallbacks
      * Use to change the disabled state of the submit button based on validity.
      */
     onValidated?: ValidationManagerValidatedHandler | null;
+
+
+    /**
+     * Provides a debounce delay for onValidated notifications. The delay is in milliseconds.
+     * 
+     * onValidated runs after each valueHost.validate() call, even though onValueHostValidated also runs.
+     * Some features need to know about the general change to the validation state, not just
+     * on the individual field. So they expect onValidated to run after valueHost.validate() runs.
+     * A call by ValidationManager.validate() will validate a list of valueHosts, and
+     * all of them will try to invoke onValidated. That's too many in a short period.
+     * This debounces them so ValidationManager.validated() generally has one call.
+     * 
+     * Leave undefined to use the default of defaultNotifyValidationStateChangedDelay.
+     * Set to 0 to disable the debounce.
+     */
+    notifyValidationStateChangedDelay?: number;        
 }
+
+export const defaultNotifyValidationStateChangedDelay = 100;
+/**
+ * Determines if the object implements IValidationManager.
+ * @param source 
+ * @returns source typecasted to IValidationManager if appropriate or null if not.
+ */
+export function toIValidationManager(source: any): IValidationManager | null
+{
+    if (toIValueHostsManager(source))
+    {
+        let test = source as IValidationManager;     
+        if (test.validate !== undefined &&
+            test.clearValidation !== undefined &&
+            test.isValid !== undefined &&
+            test.doNotSaveNativeValues !== undefined &&
+            test.getIssuesFound !== undefined)
+            return test;
+    }
+    return null;
+}
+
 
 /**
  * Determines if the object implements IValidationManagerCallbacks.

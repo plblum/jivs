@@ -1088,9 +1088,10 @@ describe('toIValueHostsManager function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostsManager = {
             getValueHost: (name) => { return <any>{}; },
-            getInputValueHost: (name) => { return <any>{}; },            
+            getInputValueHost: (name) => { return <any>{}; },
             services: new MockValidationServices(false, false),
-            notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
+            notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { },
+            dispose: () => void { }
         };
         expect(toIValueHostsManager(testItem)).toBe(testItem);
     });
@@ -1119,7 +1120,8 @@ describe('toIValueHostsManagerAccessor function', () => {
                 getValueHost: (name) => { return <any>{}; },
                 getInputValueHost: (name) => { return <any>{}; },                
                 services: new MockValidationServices(false, false),
-                notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
+                notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { },
+                dispose: () => void {}
             }
         };
         expect(toIValueHostsManagerAccessor(testItem)).toBe(testItem);

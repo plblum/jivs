@@ -393,6 +393,10 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         this.onValueHostInstanceStateChanged = this.onValueHostInstanceStateChangeHandler;
     }
 
+    public dispose(): void
+    {
+
+    }
     public get services(): IValidationServices
     {
         return this._services;
@@ -473,6 +477,11 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     }
     getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
+    }
+
+    notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void
+    {
+
     }
 
     public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {

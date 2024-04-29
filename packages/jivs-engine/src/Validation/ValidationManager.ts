@@ -8,9 +8,10 @@ import { BusinessLogicErrorsValueHostType, BusinessLogicErrorsValueHostName } fr
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState } from '../Interfaces/Validation';
-import type { ValidationManagerInstanceState, IValidationManager, ValidationManagerConfig, IValidationManagerCallbacks, ValidationManagerValidatedHandler } from '../Interfaces/ValidationManager';
+import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationManagerValidatedHandler, defaultNotifyValidationStateChangedDelay } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsManager } from './ValueHostsManager';
+import { Debouncer } from '../Utilities/Debounce';
 
 
 /**
@@ -89,7 +90,18 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
     constructor(config: ValidationManagerConfig) {
         super(config);
     }
-
+    /**
+     * If the user needs to abandon this instance, they should use this to 
+     * clean up active resources (like timers)
+     */
+    public dispose(): void
+    {
+        super.dispose();
+        if (this._debounceVHValidated)
+            this._debounceVHValidated.dispose();
+        this._debounceVHValidated = null;
+    }
+    
     protected get config(): ValidationManagerConfig // just strongly typing
     {
         return super.config;
@@ -113,7 +125,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
             vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationState
         }
         let snapshot = this.createValidationState(options);
-        this.invokeOnValidated(options, snapshot);
+        this.notifyValidationStateChanged(snapshot, options, true);
         return snapshot;
     }
 
@@ -128,7 +140,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
                 changed = true;
         }
         if (changed)
-            this.invokeOnValidated(options);
+            this.notifyValidationStateChanged(null, options);
         return changed;
     }
 
@@ -141,16 +153,40 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
             asyncProcessing: this.asyncProcessing
         };
     }
+
     /**
-     * Helper to call onValueHostValidated due to a change in the state of any validators
-     * or BusinessLogicErrors.
+     * ValueHosts that validate should try to fire onValidated, even though they also 
+     * fire onValueHostValidated. This allows systems that observe validation changes 
+     * at the validationManager level to know.
+     * This function is optionally debounced with a delay in ms coming from
+     * ValidationManagerConfig.notifyValidationStateChangedDelay
+     * @param validationState
+     * @param options
+     * @param force - when true, override the debouncer and execute immediately.
      */
-    protected invokeOnValidated(options?: ValidateOptions, validationState? : ValidationState): void
-    {
-        if (!options || !options.skipCallback)
-            this.onValidated?.(this, validationState ?? this.createValidationState(options));
+    public notifyValidationStateChanged(validationState : ValidationState | null, options?: ValidateOptions, force?: boolean): void {
+        if (options && options.skipCallback)
+            return;
+
+        if (!this._debounceVHValidated) {
+            let delay =  this.config.notifyValidationStateChangedDelay ?? defaultNotifyValidationStateChangedDelay;
+            if (delay && !force)
+                this._debounceVHValidated = new Debouncer<notifyValidationStateChangedWorkerHandler>(
+                    this.notifyValidationStateChangedWorker.bind(this),
+                    delay);
+            else {
+                this.notifyValidationStateChangedWorker(validationState, options);
+                return;
+            }
+        }
+        force ? this._debounceVHValidated!.forceRun(validationState, options) : this._debounceVHValidated!.run(validationState, options);
     }
 
+    protected notifyValidationStateChangedWorker(validationState : ValidationState | null, options?: ValidateOptions): void {
+        this.onValidated?.(this, validationState ?? this.createValidationState(options));        
+    }
+
+    private _debounceVHValidated: Debouncer<notifyValidationStateChangedWorkerHandler> | null = null;
 
     /**
      * When true, the current state of validation does not know of any errors. 
@@ -224,7 +260,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
                         changed = true;
             }
         if (changed)
-            this.invokeOnValidated(options);
+            this.notifyValidationStateChanged(null, options, true);
         return changed;
     }
     /**
@@ -301,3 +337,5 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
 
     //#endregion IValidationManagerCallbacks
 }
+
+type notifyValidationStateChangedWorkerHandler = (validationState : ValidationState | null, options?: ValidateOptions) => void;

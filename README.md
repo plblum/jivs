@@ -261,7 +261,7 @@ let vm = new ValidationManager(vmConfig);
 
 function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
 {
-  ... shown in earlier use case ...
+  ... shown earlier ...
 }
 function formValidated(validationManager: IValidationManager, validationState: ValidationState): void
 {
