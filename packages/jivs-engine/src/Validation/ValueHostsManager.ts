@@ -16,7 +16,7 @@ import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsMana
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { IInputValueHost, InputValueChangedHandler } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
-import { FluentValidatorCollector } from '../ValueHosts/Fluent';
+import { ValueHostsInstanceBuilder } from '../ValueHosts/ValueHostsInstanceBuilder';
 
 
 /**
@@ -73,6 +73,13 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
             this.addValueHost(item as ValueHostConfig, null);
         }
     }
+    /**
+     * If the user needs to abandon this instance, they should use this to 
+     * clean up active resources (like timers)
+     */
+    public dispose(): void
+    {
+    }    
     protected get config(): ValueHostsManagerConfig
     {
         return this._config;
@@ -160,29 +167,9 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * When neither state was supplied, a default state is created.
      */
     public addValueHost(config: ValueHostConfig,
-        initialState: ValueHostInstanceState | null): IValueHost;
-    /**
-     * Adds a ValueHostConfig for an InputValueHost not previously added. 
-     * Expects fluent syntax where the first parameter starts with
-     * fluent().input() followed by chained validation rules.
-     * Does not trigger any notifications.
-     * Exception when the same ValueHostConfig.name already exists.
-     * @param fluentCollector
-     * Pass in `fluent().input("valueHostName"[, parameters]).validator().validator()`. 
-     * @param initialState
-     * When not null, this state object is used instead of an initial state.
-     * It overrides any state supplied by the ValueHostsManager constructor.
-     * It will be run through ValueHostFactory.cleanupInstanceState() first.
-     * When null, the state supplied in the ValueHostsManager constructor will be used if available.
-     * When neither state was supplied, a default state is created.
-     */
-    public addValueHost(fluentCollector: FluentValidatorCollector,
-        initialState: ValueHostInstanceState | null): IValueHost;
-    public addValueHost(arg1: ValueHostConfig | FluentValidatorCollector,
         initialState: ValueHostInstanceState | null): IValueHost {
-        assertNotNull(arg1, 'arg1');
-        let config: ValueHostConfig = arg1 instanceof FluentValidatorCollector ?
-            arg1.parentConfig : arg1;
+        assertNotNull(config, 'config');
+
         if (!this._valueHostConfigs[config.name])
             return this.applyConfig(config, initialState);
 
@@ -197,23 +184,8 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
      */
-    public updateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;
-    /**
-     * Replaces a ValueHostConfig for an already added ValueHost. 
-     * Does not trigger any notifications.
-     * Expects fluent syntax where the first parameter starts with
-     * fluent().input() followed by chained validation rules.
-     * If the name isn't found, it will be added.
-     * @param collector 
-     * @param initialState - When not null, this state object is used instead of an initial state.
-     * It overrides any state supplied by the ValueHostsManager constructor.
-     * It will be run through ValueHostFactory.cleanupInstanceState() first.
-     */
-    public updateValueHost(collector: FluentValidatorCollector, initialState: ValueHostInstanceState | null): IValueHost;
-    public updateValueHost(arg1: ValueHostConfig | FluentValidatorCollector, initialState: ValueHostInstanceState | null): IValueHost {
-        assertNotNull(arg1, 'arg');
-        let config: ValueHostConfig = arg1 instanceof FluentValidatorCollector ?
-            arg1.parentConfig : arg1;
+    public updateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+        assertNotNull(config, 'config');
 
         if (this._valueHostConfigs[config.name])
             return this.applyConfig(config, initialState);
@@ -272,6 +244,15 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         this._valueHosts[config.name] = vh;
         this._valueHostConfigs[config.name] = config;
         return vh;
+    }
+
+    /**
+     * Provide fluent syntax to add or replace a ValueHost.
+     * Alternative to using addValueHost() and updateValueHost().
+     */
+    public build(): ValueHostsInstanceBuilder
+    {
+        return new ValueHostsInstanceBuilder(this);
     }
 
     /**

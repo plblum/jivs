@@ -261,7 +261,7 @@ let vm = new ValidationManager(vmConfig);
 
 function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
 {
-  ... shown in earlier use case ...
+  ... shown earlier ...
 }
 function formValidated(validationManager: IValidationManager, validationState: ValidationState): void
 {
@@ -345,6 +345,12 @@ builder.input('StartDate', LookupKey.Date, { label: 'Start date'} )
 builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).requireText();
 
 let vm = new ValidationManager(vmConfig);
+
+// if you want to modify the configuration after creation, there are plenty of tools
+// for example, add another validator:
+vm.getInputValueHost('EndDate').addValidator(fluent().conditions().greaterThanOrEqualValue(new Date()); // must be greater than today
+// add another input:
+vm.build().input('TimeZone', LookupKey.String).requireText();
 ```
 # Jivs Classes: the API
 <a name="apioverview"></a>
@@ -864,6 +870,16 @@ builder.input('Name').any(
      	.equalTo(true, { valueHostName: 'PersonVisible'})
         .equalTo(true, { valueHostName: 'PersonActive'}));
 builder.calc('DiffInDays', 'Integer', diffInDaysFunctionCallback);        
+```
+If you already have a validationManager instance, the builder is available on its build() method.
+```ts
+validationManager.build().static('PersonVisible', 'Boolean');
+validationManager.build().static('PersonActive', 'Boolean');
+validationManager.build().input('Name').any(
+     builder.conditions()
+     	.equalTo(true, { valueHostName: 'PersonVisible'})
+        .equalTo(true, { valueHostName: 'PersonActive'}));
+validationManager.build().calc('DiffInDays', 'Integer', diffInDaysFunctionCallback);         
 ```
 <a name="lookupkeys"></a>
 ## Lookup Keys: Data Types and Companion Tools

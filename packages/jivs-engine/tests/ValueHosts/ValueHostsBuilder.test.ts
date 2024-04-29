@@ -296,7 +296,12 @@ describe('build(vmConfig).calc', () => {
             calcFn: calcFnForTests
         }]);
     });
+    test('Null function throws', () => {
+        let vmConfig = createVMConfig();
 
+        expect(() => build(vmConfig).calc('Field1', 'Test', null!)).toThrow();
+
+    });
     test('Pass in a CalcValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
         let testItem = build(vmConfig).calc({ name: 'Field1', dataType: 'Test', label: 'Field 1', calcFn: calcFnForTests });
