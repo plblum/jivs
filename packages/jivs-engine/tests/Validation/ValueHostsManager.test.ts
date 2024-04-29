@@ -4,7 +4,7 @@ import { MockValidationManager, MockValidationServices } from "../TestSupport/mo
 import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
-import { ValidationStatus, ValidationSeverity } from '../../src/Interfaces/Validation';
+import { ValidationStatus, ValidationSeverity, ValueHostValidateResult } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
 import { deepClone } from '../../src/Utilities/Utilities';
@@ -17,9 +17,10 @@ import { IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValue
 import {
     AlwaysMatchesConditionType, NeverMatchesConditionType
 } from "../TestSupport/conditionsForTesting";
-import { fluent } from "../../src/ValueHosts/Fluent";
 import { IValueHostsManager, toIValueHostsManager, IValueHostsManagerAccessor, toIValueHostsManagerAccessor, ValueHostsManagerInstanceStateChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerConfig, IValueHostsManagerCallbacks, toIValueHostsManagerCallbacks } from "../../src/Interfaces/ValueHostsManager";
 import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
+import { CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValueHostsManager extends ValueHostsManager<ValueHostsManagerInstanceState> {
@@ -334,29 +335,6 @@ describe('ValueHostsManager.addValueHost', () => {
         expect(testItem.exposedValueHostConfigs['Field1']).toEqual(config);
     });    
 
-    test('Using fluent syntax, add InputValueHostConfig with required ConditionConfig', () => {
-        let vmConfig: ValueHostsManagerConfig = {
-            services: new MockValidationServices(true, false), valueHostConfigs: []
-        };
-        let testItem = new PublicifiedValueHostsManager(vmConfig);
-
-        testItem.addValueHost(fluent().input('Field1', null, { label: 'Field 1' }).requireText(null, 'msg'),
-            null);
-        expect(testItem.exposedValueHostConfigs['Field1']).toBeDefined();     
-        expect(testItem.exposedValueHostConfigs['Field1']).toEqual({
-            name: 'Field1',
-            valueHostType: ValueHostType.Input,
-            label: 'Field 1',
-            validatorConfigs: [
-                {
-                    conditionConfig: {
-                        conditionType: ConditionType.RequireText,
-                    },
-                    errorMessage: 'msg'
-                }
-            ]
-        });
-    });    
     test('New ValueHostConfig with provided state creates ValueHost, adds Config, and uses the provided state', () => {
         let testItem = new PublicifiedValueHostsManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: ValueHostConfig = {
@@ -646,41 +624,7 @@ describe('ValueHostsManager.updateValueHost completely replaces the ValueHost in
         // ensure ValueHost is InputValueHost and has an initial state
         testValueHostInstanceState(testItem, 'Field1', null);
     });
-    test('Using fluent syntax, replace the config with existing ValueHostInstanceState.ValidationStatus of Invalid retains state when replacement is the same type', () => {
-        let testItem = new PublicifiedValueHostsManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
-        let ivConfig = fluent().input('Field1', null, { label: 'Field 1'});
-        let initialValueHost = testItem.addValueHost(ivConfig, null);
-
-        let replacementConfig = fluent().input('Field1', null, { label: 'Field 1'}).requireText({}, 'Error');
-
-        let replacementValueHost: IValueHost | null = null;
-        expect(() => replacementValueHost = testItem.updateValueHost(replacementConfig, null)).not.toThrow();
-        expect(replacementValueHost).not.toBeNull();
-        expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
-
-        expect(testItem.exposedValueHosts).not.toBeNull();
-        expect(Object.keys(testItem.exposedValueHosts).length).toBe(1);
-        expect(testItem.exposedValueHosts['Field1']).toBe(replacementValueHost);
-        expect(testItem.exposedValueHostConfigs).not.toBeNull();
-        expect(Object.keys(testItem.exposedValueHostConfigs).length).toBe(1);
-        expect(testItem.exposedState).not.toBeNull();
-
-        // no side effects of the originals
-        let replacementValueHostConfig = testItem.exposedValueHostConfigs['Field1'];
-        expect(replacementValueHostConfig).not.toBe(ivConfig.parentConfig);
-        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs).toBeDefined();
-        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs!.length).toBe(1);
-        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].errorMessage).toBe('Error');        
-        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].conditionConfig).toBeDefined();
-        expect((replacementValueHostConfig as InputValueHostConfig).validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
-        
-        // ensure ValueHost is supporting the Config
-        expect(testItem.exposedValueHosts['Field1']).toBeInstanceOf(InputValueHost);
-
-        // ensure ValueHost is InputValueHost and has an initial state
-        testValueHostInstanceState(testItem, 'Field1', null);
-    });
-
+ 
     test('Replace the state, keeping the same config. Confirm the state and config', () => {
         let testItem = new PublicifiedValueHostsManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: InputValueHostConfig = {
@@ -1088,9 +1032,22 @@ describe('toIValueHostsManager function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostsManager = {
             getValueHost: (name) => { return <any>{}; },
-            getInputValueHost: (name) => { return <any>{}; },            
+            getInputValueHost: (name) => { return <any>{}; },
             services: new MockValidationServices(false, false),
-            notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
+            notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { },
+            dispose: () => void {},
+            addValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+                throw new Error("Function not implemented.");
+            },
+            updateValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+                throw new Error("Function not implemented.");
+            },
+            discardValueHost: function (valueHostName: string): void {
+                throw new Error("Function not implemented.");
+            },
+            build: function () {
+                throw new Error("Function not implemented.");
+            }
         };
         expect(toIValueHostsManager(testItem)).toBe(testItem);
     });
@@ -1117,9 +1074,22 @@ describe('toIValueHostsManagerAccessor function', () => {
         let testItem: IValueHostsManagerAccessor = {
             valueHostsManager :{
                 getValueHost: (name) => { return <any>{}; },
-                getInputValueHost: (name) => { return <any>{}; },                
+                getInputValueHost: (name) => { return <any>{}; },
                 services: new MockValidationServices(false, false),
-                notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { }
+                notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { },
+                dispose: () => void {},
+                addValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+                    throw new Error("Function not implemented.");
+                },
+                updateValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+                    throw new Error("Function not implemented.");
+                },
+                discardValueHost: function (valueHostName: string): void {
+                    throw new Error("Function not implemented.");
+                },
+                build: function () {
+                    throw new Error("Function not implemented.");
+                }
             }
         };
         expect(toIValueHostsManagerAccessor(testItem)).toBe(testItem);
@@ -1195,5 +1165,106 @@ describe('toIValueHostsManagerCallbacks function', () => {
     });        
     test('Non-object returns null.', () => {
         expect(toIValueHostsManagerCallbacks(100)).toBeNull();
+    });        
+});
+
+describe('build()', () => {
+    test('input().requireText() gets added correctly', () => {
+        let vmConfig: ValueHostsManagerConfig = {
+            services: new MockValidationServices(true, false), valueHostConfigs: []
+        };
+        let testItem = new PublicifiedValueHostsManager(vmConfig);
+
+        testItem.build().input('Field1', null, { label: 'Field 1' }).requireText(null, 'msg');
+
+        let vh1 = testItem.getValueHost('Field1');
+        expect(vh1).toBeInstanceOf(InputValueHost);
+        expect(vh1!.getName()).toBe('Field1');        
+        expect(vh1!.getLabel()).toBe('Field 1');
+        expect(vh1!.getDataType()).toBeNull();
+        let ivh1 = vh1 as InputValueHost;
+        expect(ivh1.getValidator(ConditionType.RequireText)).toBeDefined();
+
+        // prove the error message was used.
+
+        ivh1.setValues('', ''); // will be Invalid
+        let result = ivh1.validate();
+        expect(result).toEqual(<ValueHostValidateResult>{
+            status: ValidationStatus.Invalid,
+            issuesFound: [
+                {
+                    errorCode: ConditionType.RequireText,
+                    valueHostName: 'Field1',
+                    severity: ValidationSeverity.Severe,    // due to required
+                    errorMessage: 'msg', 
+                    summaryMessage: 'msg'
+                }
+            ]
+        });
+    });    
+    test('Add Input then replace it fully replaces.', () => {
+        let testItem = new PublicifiedValueHostsManager({ services: new MockValidationServices(true, true), valueHostConfigs: [] });
+        testItem.build().input('Field1', null, { label: 'Field 1'});
+        let vh1 = testItem.getValueHost('Field1');
+        expect(vh1).toBeInstanceOf(InputValueHost);
+        expect(vh1!.getName()).toBe('Field1');        
+        expect(vh1!.getLabel()).toBe('Field 1');
+        expect(vh1!.getDataType()).toBeNull();
+        expect((vh1 as InputValueHost).getValidator(ConditionType.RequireText)).toBeNull();
+
+        testItem.build().input('Field1', 'TEST', { label: 'Field 1'}).requireText({}, 'Error');
+        let vh2 = testItem.getValueHost('Field1');
+        expect(vh2).toBeInstanceOf(InputValueHost);
+        expect(vh2!.getName()).toBe('Field1');        
+        expect(vh2!.getLabel()).toBe('Field 1');
+        expect(vh2!.getDataType()).toBe('TEST');
+        let ivh2 = vh2 as InputValueHost;
+        let vh2Validator = ivh2.getValidator(ConditionType.RequireText);
+        expect(vh2Validator).toBeDefined();
+
+        // prove the error message was used.
+
+        ivh2.setValues('', ''); // will be Invalid
+        let result = ivh2.validate();
+        expect(result).toEqual(<ValueHostValidateResult>{
+            status: ValidationStatus.Invalid,
+            issuesFound: [
+                {
+                    errorCode: ConditionType.RequireText,
+                    valueHostName: 'Field1',
+                    severity: ValidationSeverity.Severe,    // due to required
+                    errorMessage: 'Error', 
+                    summaryMessage: 'Error'
+                }
+            ]
+        });
+    });
+    test('static() gets added correctly', () => {
+        let vmConfig: ValueHostsManagerConfig = {
+            services: new MockValidationServices(true, false), valueHostConfigs: []
+        };
+        let testItem = new PublicifiedValueHostsManager(vmConfig);
+        testItem.build().static('Field1', null, { label: 'Field 1' });
+
+        let vh1 = testItem.getValueHost('Field1');
+        expect(vh1).toBeInstanceOf(StaticValueHost);
+        expect(vh1!.getName()).toBe('Field1');        
+        expect(vh1!.getLabel()).toBe('Field 1');
+        expect(vh1!.getDataType()).toBeNull();
+    });    
+    test('calc() gets added correctly', () => {
+        function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): CalculationHandlerResult {
+            return 1;
+        }        
+        let vmConfig: ValueHostsManagerConfig = {
+            services: new MockValidationServices(true, false), valueHostConfigs: []
+        };
+        let testItem = new PublicifiedValueHostsManager(vmConfig);
+        testItem.build().calc('Field1', 'Test', calcFnForTests);
+
+        let vh1 = testItem.getValueHost('Field1');
+        expect(vh1).toBeInstanceOf(CalcValueHost);
+        expect(vh1!.getName()).toBe('Field1');        
+        expect(vh1!.getDataType()).toBe('Test');
     });        
 });

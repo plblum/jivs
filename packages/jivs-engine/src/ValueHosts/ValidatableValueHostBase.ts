@@ -10,7 +10,7 @@ import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from '../Interfaces/ValidatableValueHostBase';
 import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
-import { toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
+import { toIValidationManager, toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 
@@ -314,18 +314,27 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     /**
      * Helper to call onValueHostValidated due to a change in the state associated
      * with Validate itself or BusinessLogicErrors.
+     * It also asks ValidationManager to call onValidated so observers that only 
+     * watch for validation from a high level will be notified.
      */
     protected invokeOnValueHostValidated(options: ValidateOptions | undefined): void
     {
-        if (!options || !options.skipCallback)
-            toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
-                {
-                    issuesFound: this.getIssuesFound(),
-                    isValid: this.isValid,
-                    doNotSaveNativeValues: this.doNotSaveNativeValue(),
-                    asyncProcessing: this.asyncProcessing,
-                    status: this.validationStatus
-                });
+        if (options && options.skipCallback)
+            return;
+
+        // the order is intentional, but not ideal.
+        // To unit test the debounce feature of notifyValidationStateChanged, we need
+        // the call to notify to be queued inside of debounce by the time onValueHostValidated is invoked,
+        // so we can leverage the onValueHostValidated to advance the mock timer. (Ugh)
+        toIValidationManager(this.valueHostsManager)?.notifyValidationStateChanged(null, options);
+        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
+            {
+                issuesFound: this.getIssuesFound(),
+                isValid: this.isValid,
+                doNotSaveNativeValues: this.doNotSaveNativeValue(),
+                asyncProcessing: this.asyncProcessing,
+                status: this.validationStatus
+            });
     }
     
     /**
