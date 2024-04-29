@@ -33,7 +33,7 @@ import {
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 
 import {
-    MockValidationServices, MockValidationManager, MockCapturingLogger,
+    MockValidationServices, MockValidationManager,
 } from "../TestSupport/mocks";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -43,6 +43,7 @@ import { IntegerConverter } from "../../src/DataTypes/DataTypeConverters";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType } from "../TestSupport/conditionsForTesting";
 import { CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
 import { CompareToValueConditionBaseConfig } from "../../src/Conditions/CompareToValueConditionBase";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
 
 
@@ -50,7 +51,7 @@ describe('ConditionBase class additional cases', () => {
     test('Config.valueHostName with unknown name logs and throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
@@ -66,7 +67,7 @@ describe('ConditionBase class additional cases', () => {
     test('Config.valueHostName with null and evaluate value is null logs and throws', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
         let config: RequireTextConditionConfig = {
@@ -174,7 +175,7 @@ describe('class DataTypeCheckCondition', () => {
         };
         let testItem = new DataTypeCheckCondition(config);
         expect(() => testItem.evaluate(vh, vm)).toThrow(/Invalid ValueHost/);
-        let logger = vm.services.loggerService as MockCapturingLogger;
+        let logger = vm.services.loggerService as CapturingLogger;
         expect(logger.findMessage('Invalid ValueHost', LoggingLevel.Error, null, null)).toBeDefined();
 
     });    
@@ -987,7 +988,7 @@ describe('class RangeCondition', () => {
         let testItem = new RangeCondition(config);
         vh.setValue(100);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         expect(logger.entryCount()).toBe(1);
         expect(logger.getLatest()!.message).toMatch(/mismatch.*Minimum/);
         expect(logger.getLatest()!.level).toBe(LoggingLevel.Warn);
@@ -1006,7 +1007,7 @@ describe('class RangeCondition', () => {
         let testItem = new RangeCondition(config);
         vh.setValue(100);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         expect(logger.entryCount()).toBe(1);
         expect(logger.getLatest()!.message).toMatch(/mismatch.*Maximum/);
         expect(logger.getLatest()!.level).toBe(LoggingLevel.Warn);
@@ -1180,7 +1181,7 @@ describe('CompareToConditionBase class additional cases', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         vh.setValue('');
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
@@ -1198,7 +1199,7 @@ describe('CompareToConditionBase class additional cases', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         vh.setValue('');
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
@@ -2474,7 +2475,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
         let vm = new MockValidationManager(services);
         let vh = vm.addInputValueHost(
             'Property1', LookupKey.String, 'Label');
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         vh.setValue('');
         let config: CompareToValueConditionBaseConfig= {
             conditionType: ConditionType.EqualTo,
@@ -4517,7 +4518,7 @@ describe('class NotNullCondition', () => {
         let testItem = new NotNullCondition(config);
         vh.setValue('');
         expect(() => testItem.evaluate(null, vm)).toThrow(/Missing value/);
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         expect(logger.entryCount()).toBe(1);
         expect(logger.getLatest()!.category).toBe(LoggingCategory.Configuration);
         expect(logger.getLatest()!.level).toBe(LoggingLevel.Error);

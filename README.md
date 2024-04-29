@@ -101,48 +101,10 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 - **Input Value** – The raw data from the Input. Often this is a string representing the actual data, but needs to be cleaned up or converted before it can be stored.
 - **Native Value** – The actual data that you will store in the Model. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value. This error is what Jivs calls a "Data Type Check".
 - **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, ValidationServices, and connect individual services to it. 
-<a name="apioverview"></a>
-## Quick API overview
 
-You will be working with classes and interfaces. Here are the primary pieces to orient you to its API.
-
--   <a href="#valuehosts">`ValueHost classes`</a> – Identifies a single value to be validated
-    and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
-
-	+ `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
-	+ `StaticValueHost class` – For values that do not need validating, but support validation rules of InputValueHosts. 
-	
-	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
-	code your app is using, and let the validation internally select the right
-	expression by retrieving the country code first.
-	
-	> If you are using a Model, you might also use StaticValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
-		
-	+ `CalcValueHost class` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
-
--   <a href="#validationmanager">`ValidationManager class`</a> – The "face" of this API. Your validation-related UI elements will need access to it to do their work. It's where you
-    configure the `ValueHosts`, get access to a `ValueHost`, validate, and get the validation results.
-
--   <a href="#conditions">`Condition classes`</a> – Classes that evaluate value(s) against a rule
-    to see if those values conform. `Condition classes` exist for each
-    business rule pattern, such as *required* or *compare two values are
-    not identical*. While there are many standard rules for which there
-    are `Conditions` included in this library, you are often going to need
-    to build your own.
-
--   <a href="#validators">`Validator class`</a> – Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
-
-- <a href="#validationservices">`ValidationServices class` </a> – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by ValidationServices which empower Jivs.
-	- `IDataTypeFormatter` – Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
-	- `IDataTypeConverter` – For these use cases:
-		+ Changing an object value into something as simple as a string or number for Conditions that compare values. The JavaScript Date object is a good example, as you should use its getTime() function for comparisons.
-		+ Changing a value to something else. Take the Date object again. Instead of working with its complete date and time, you may be interested only in the date, the time, or even parts like Month or Hours.
-	- There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
-	- `ConditionFactory` – Creates the Condition objects used by business rules.
-	
 ## Where you want to use validation
 
-### As focus leaves an Input and changes occurred
+### As focus leaves an Input and its value changed
 * Use the onchange event to tell the ValidationManager about the data change and run validation. 
 	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
 	* Use `validationManager.getInputValueHost('name').setValues(native, input, { validate: true});`
@@ -267,16 +229,77 @@ Similar to the HTML \<form> except that your Model is already formed with native
 
 Jump to the previous section and follow the instructions after the conversion steps.
 
+### Showing all errors in a ValidationSummary
+The term "ValidationSummary" refers to a location in the UI that offers a consolidated view of all error messages. Aside from how its presented, it is very similar to showing errors specific to one field, except it shows all errors and updates upon any ValueHost's validation.
+
+You need these tools to setup your ValidationSummary:
+* An HTML element to host the ValidationSummary.
+* A function that responds to the `onValidated callback` on the ValidationManager. This function will gather the data and update the ValidationSummary.
+* Use the `getIssuesFound()` function on ValidationManager to retrieve those issues.
+
+We've modified the original example to provide a \<div> used for the ValidationSummary. It is shown outside of the \<form> but can be inside, and can be offered in multiple locations too:
+```ts
+<div class="validationsummary"></div>
+<form>
+  <input type='text' name='FirstName' id='FirstName' />
+     <span class='errorHost' data-for='FirstName'></span>
+  <input type='text' name='LastName' id='LastName' />
+     <span class='errorHost' data-for='LastName'></span>  
+  <button>Submit</button>
+</form>
+```
+This code initializes a ValidationManager and sets up the `onValidated callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
+
+```ts
+let vmConfig: ValidationManagerConfig = {
+  services: createValidationServices(),
+  valueHostConfigs: ... your configuration for each Input ...
+  onValueHostValidated: fieldValidated,
+  onValidated: formValidated
+};
+let vm = new ValidationManager(vmConfig);
+
+function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
+{
+  ... shown in earlier use case ...
+}
+function formValidated(validationManager: IValidationManager, validationState: ValidationState): void
+{
+  let valSummary = document.querySelector('.validationsummary');
+  if (validationState.isValid)
+  {
+    valSummary.classList.remove('invalid');      
+  }
+  else
+  {
+    valSummary.classList.add('invalid');      
+  }
+// remove the current contents then if there are errors to shown, add them
+  valSummary.innerHtml = '';
+  if (validationState.issuesFound)
+  {
+    let ul = document.createElement('ul');
+    for (let i = 0; i < validationState.issuesFound.length; i++)
+    {
+      let li = document.createElement('li');
+      li.textContent = validationState.issuesFound[i].errorMessage;
+      ul.append(li);
+    }
+    valSummary.append(ul);
+  }
+
+}
+```
 ## Configuring the ValidationManager
 Jivs takes this approach to populating the ValidationManager: Create objects that configure each of the pieces into the ValidationManagerConfig object. Then create the ValidationManager with it. Jivs creates all of the actual objects from those simple objects.
 
-Whenever you see "Config" in a type name, it is one of these configuration objects.
+Whenever you see "Config" in a type name, it is one of these configuration objects. (ValueHostConfig, ValidationConfig, ConditionConfig, etc.)
 
 There are a couple of approaches to configuration, based on whether you want to let your business layer define the input and validator rules.
 
-### When starting with Business Logic
+### When starting with business logic
 1. UI creates the ValidationManagerConfig object including the services
-2. Business logic populates vmConfig.valueHostConfigs
+2. Business logic populates vmConfig.valueHostConfigs. See <a href="#configuringvalidationmanager">"Configuring ValidationManager".</a>
 3. With the Builder, UI replaces error messages and labels. 
 4. With the Builder, UI adds additional ValueHosts and Validators. 
 5. Create the ValidationManager
@@ -287,7 +310,7 @@ let vmConfig: ValidationManagerConfig = {
   valueHostConfigs: []	
 };
 
-... run code that transcribes business logic rules into vmConfig.valueHostConfigs ...
+... business logic code that populates vmConfig.valueHostConfigs goes here ...
 // Let the UI update vmConfig with its own textual values and validation rules
 let builder = build(vmConfig);
 builder.favorUIMessages();
@@ -300,7 +323,7 @@ builder.updateValidator('StartDate', ConditionType.LessThan, {
 builder.addValidator('EndDate').requireText();
 let vm = new ValidationManager(vmConfig);
 ```
-### When UI creates everything (not using Business Logic)
+### When UI creates everything (not business logic driven)
 1. UI creates the ValidationManagerConfig object including the services
 2. With the Builder object, use <a href="#fluentsyntax">fluent syntax</a> to create all ValueHosts and their validators.  
 3. Create the ValidationManager
@@ -323,7 +346,47 @@ builder.input('EndDate', LookupKey.Date, { label: 'End date'} ).requireText();
 
 let vm = new ValidationManager(vmConfig);
 ```
-# Jivs Classes and supporting topics
+# Jivs Classes: the API
+<a name="apioverview"></a>
+## Quick API overview
+
+You will be working with classes and interfaces. Here are the primary pieces to orient you to its API.
+
+-   <a href="#valuehosts">`ValueHost classes`</a> – Identifies a single value to be validated
+    and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
+
+	+ `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
+	+ `StaticValueHost class` – For values that do not need validating, but support validation rules of InputValueHosts. 
+	
+	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
+	code your app is using, and let the validation internally select the right
+	expression by retrieving the country code first.
+	
+	> If you are using a Model, you might also use StaticValueHost for all remaining 	properties on that model. In this scenario, Jivs becomes a *Single Source of Truth* for the model's data while in the UI.
+		
+	+ `CalcValueHost class` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days.
+
+-   <a href="#validationmanager">`ValidationManager class`</a> – The "face" of this API. Your validation-related UI elements will need access to it to do their work. It's where you
+    configure the `ValueHosts`, get access to a `ValueHost`, validate, and get the validation results.
+
+-   <a href="#conditions">`Condition classes`</a> – Classes that evaluate value(s) against a rule
+    to see if those values conform. `Condition classes` exist for each
+    business rule pattern, such as *required* or *compare two values are
+    not identical*. While there are many standard rules for which there
+    are `Conditions` included in this library, you are often going to need
+    to build your own.
+
+-   <a href="#validators">`Validator class`</a> – Handle the validation process of a single rule and deliver a list of issues found to the ValidationManager, where your UI elements can consume it.
+
+- <a href="#validationservices">`ValidationServices class` </a> – Provides dependency injection and configuration through a variety of services and factories. This is where much of customization occurs. Here are several interfaces supported by ValidationServices which empower Jivs.
+	- `IDataTypeFormatter` – Provides localized strings for the tokens within error messages. For example, if validating a date against a range, your error message may look like this: "The value must be between {Minimum} and {Maximum}." With a Date-oriented DataTypeFormatter (supplied), those tokens will appear as localized date strings.
+	- `IDataTypeConverter` – For these use cases:
+		+ Changing an object value into something as simple as a string or number for Conditions that compare values. The JavaScript Date object is a good example, as you should use its getTime() function for comparisons.
+		+ Changing a value to something else. Take the Date object again. Instead of working with its complete date and time, you may be interested only in the date, the time, or even parts like Month or Hours.
+	- There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
+	- `ConditionFactory` – Creates the Condition objects used by business rules.
+
+
 Topics:
 - <a href="#conditions">Conditions</a>
 - <a href="#valuehosts">ValueHosts</a>
@@ -359,6 +422,7 @@ About all the UI developer should know is:
 Someone will code all of those validation rules in a way that Jivs can apply them. Whether it’s done by the UI developer or not, this new code will be separate from the UI code. (And unit tested.) This will likely be the most code you need to write to work with Jivs (or any validation system).
 </details>
 
+<a name="configuringconditions"></a>
 ### Configuring a validation rule in Jivs
 
 You build validation rules using the `Condition` concept. A `Condition` simply packages a function to evaluate data together with a few other properties. Here is its interface:
@@ -456,7 +520,7 @@ Every value that you expose to Jivs is kept in a ValueHost. There are several ty
 - StaticValueHost – The value that is not validated itself, but its value is used in an InputValueHost's validation rule or is a member of the Model that is retained when Jivs is the single-source of truth.
 - CalcValueHost – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
 
-These objects are added to the ValidationManager while configuring. Here is pseudocode representation of their interfaces (omitting many members).
+These objects are added to the ValidationManager while configuring. Here is pseudo-code representation of their interfaces (omitting many members).
 ```ts
 interface IValueHost {
     getName(): string;
@@ -503,7 +567,7 @@ In this example, our Model’s property names are used in the input tag’s name
 
 Jivs wants those same names for basically the same purpose of correlating with fields in the Model.
 <a name="configuringvaluehosts"></a>
-#### Configuring
+### Configuring ValueHosts
 When we configure the above Model for Jivs, you can imagine something like this object:
 ```ts
 [
@@ -517,7 +581,7 @@ When we configure the above Model for Jivs, you can imagine something like this 
   }
 ]
 ```
-In fact, that’s about right, only with more properties. Those objects use the `InputValueHostConfig type`. 
+In fact, that’s about right, only with more properties. Those objects are associated with InputValueHosts and the `InputValueHostConfig type` for configuration. 
 
 > Like all Configs in Jivs, ValueHostConfig only has properties, many of which are optional. It is not a class either. You just create a plain old JavaScript object strongly typed with this interface.
 ```ts
@@ -565,7 +629,7 @@ Here’s how your configuration actually looks:
   }
 ]
 ```
-> Use Jivs' <a href="#fluentsyntax">fluent syntax</a> to avoid typing in these configs.
+> Use Jivs' <a href="#fluentsyntax">fluent syntax</a> to avoid typing in these objects.
 
 The `ValueHost` names are also used to help a `Condition` retrieve a value from a `ValueHost`. Suppose that we use the `NotEqualToCondition` on FirstName to compare to LastName. You have to supply the `ValueHost Name` for the LastName field to the condition.
 ```ts
@@ -593,9 +657,22 @@ See a practical example here: [https://github.com/plblum/jivs/blob/main/packages
 <a name="validators"></a>
 ## Validators: Connecting Conditions to Error Messages
 
-Validation is really just a process that evaluates some rule and returns a result. If there was an error, the result involves an error message. 
-
-The `Validator class` handles this work. Once again, we use a Config to configure it. 
+Validation is really just a process that evaluates some rule and returns a result. If there was an error, the result includes an error message. The `Validator class` handles this work. Here is pseudo-code representation of its interface (omitting many members).
+```ts
+interface IValidator {
+  condition: ICondition;
+  errorCode: string;
+  conditionType: string;
+  validate(options): ValidatorValidateResult | Promise<ValidatorValidateResult>;
+  setEnabled(enabled): void;
+  setErrorMessage(errorMessage, errorMessagel10n?): void;
+  setSummaryMessage(summaryMessage, summaryMessagel10n?): void;
+  setSeverity(severity): void;
+}
+```
+<a name="configuringvalidators"></a>
+### Configuring Validators
+Once again, we use a Config to configure it. 
 > Like all Configs in Jivs, ValidatorConfig only has properties, many of which are optional. It is not a class either. You just create a plain old JavaScript object strongly typed with this interface.
 ```ts
 interface ValidatorConfig {
@@ -609,12 +686,14 @@ interface ValidatorConfig {
     enablerCreator?: ((requester) => null | ICondition);
 }
 ```
-> Use Jivs' <a href="#fluentsyntax">fluent syntax</a> to avoid typing in these configs.
+> Use Jivs' <a href="#fluentsyntax">fluent syntax</a> to avoid typing in these objects.
 
 Because this is so full of goodness, let’s go through each property.
 
--	`conditionConfig` – Already described above. It is not the only way to setup a Condition…
--	<a href="#customconditions">`conditionCreator`</a> – Alternative to creating a Condition by returning an implementation of ICondition. This choice gives you a lot of flexibility, especially when you have some complex logic that you feel you can code up in an evaluate method easier than using a bunch of Conditions.
+-	`conditionConfig` – Already described above. See <a href="#configuringconditions">"Configuring Conditions"</a>. 
+
+	It is not the only way to setup a Condition…
+-	<a href="#customconditions">`conditionCreator`</a> – Create a Condition by returning an implementation of ICondition. This choice gives you a lot of flexibility, especially when you have some complex logic that you feel you can code up in an evaluate method easier than using a bunch of Conditions.
 -	`errorMessage` – A template for the message reporting an issue. Its intended location is nearby the Input, such that you can omit including the field’s label. “This field requires a value”. As a template, it provides tokens which can be replaced by live data. (Discussed later).
 -	`summaryMessage` – Same idea as errorMessage except to be shown in a Validation Summary. It's normal to include the field label in this message, using the {Label} token: “{Label} requires a value”.
 -	`severity` – Controls some validation behaviors with these three values.
@@ -622,9 +701,9 @@ Because this is so full of goodness, let’s go through each property.
 	-	`Severe` – Error and do not evaluate any more validation rules for this ValueHost.
 	-	`Warning` – Want to give the user some direction, but not prevent saving the data.
 -	`enabled` – A way to quickly disable the Validator.
--	`enablerConfig` and `enablerCreator` – The *Enabler* uses a `Condition` to determine if the `Validator` is enabled. Often validation rules depend on other information for that. For example, you have a checkbox associated with a text box. Any validation rule on the text box isn’t used unless the checkbox is marked. You would assign a `Condition` to evaluate the value of the checkbox to the Enabler.
+-	`enablerConfig` and `enablerCreator` – The *Enabler* determines if the `Validator` is enabled, using a <a name="#conditions">`Condition`</a>.  Often validation rules depend on other information for that. For example, you have a checkbox associated with a text box. Any validation rule on the text box isn’t used unless the checkbox is marked. You would assign a `Condition` to evaluate the value of the checkbox to the Enabler.
 
-Now let’s place an `ValidatorConfig` into our previous example using a Model with FirstName and LastName.
+Now let’s place a `ValidatorConfig` into our previous example using a Model with FirstName and LastName.
 ```ts
 [{
   valueHostType: 'Input',
@@ -670,9 +749,30 @@ Now let’s place an `ValidatorConfig` into our previous example using a Model w
 
 With Jivs, the UI uses the `ValidationManager class` to manage the `ValueHosts`, run validation, and get any issues found. All of your UI widgets should have access to the `ValidationManager`, so they can take actions resulting from validation.
 
+Here is pseudo-code representation of its interface (omitting some members).
+```ts
+interface IValidationManager {
+    services: IValidationServices;
+    getValueHost(valueHostName): null | IValueHost;
+    getInputValueHost(valueHostName): null | IInputValueHost;
+
+    validate(options?): ValidationState;
+    clearValidation(options?): boolean;
+    doNotSaveNativeValues(): boolean;
+    setBusinessLogicErrors(errors, options?): boolean;
+        
+    isValid: boolean;
+    asyncProcessing?: boolean;
+    getIssuesForInput(valueHostName): null | IssueFound[];
+    getIssuesFound(group?): null | IssueFound[];
+}
+```
+
+<a name="configuringvalidationmanager"></a>
+### Configuring the ValidationManager
 `ValidationManager` needs to be configured first. Much of that work was described in the previous sections that built `ValueHostConfigs`, `ValidatorConfigs`, and `ConditionConfigs`. The configuration is contained in the `ValidationManagerConfig type`.
 
-Here’s pseudocode for creating the `ValidationManager`.
+Here’s pseudo-code for creating the `ValidationManager`.
 ```ts
 let valueHostConfigs = ... copied from previous example ...
 let config = <IValidationManagerConfig>{
@@ -700,7 +800,7 @@ interface ValidationManagerConfig {
 Let’s go through this type.
 
 -	`services` – Always takes a <a href="#validationservices">`ValidationServices object`</a>, which is rich with services for dependency injection and factories. You will need to do a bunch to configure this, but don’t worry, we have a code snippet to inject into your app to assist. (Described below.)
--	<a href="#configuringvaluehosts">`valueHostConfigs`</a> – Configures each ValueHost. This is where a majority of the setup work goes.
+-	`valueHostConfigs` – Configures each ValueHost. This is where a majority of the setup work goes. See <a href="#configuringvaluehosts">"Configuring ValueHosts"</a>.
 -	`savedInstanceState` and `savedValueHostInstanceStates` – `ValidationManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onInstanceStateChanged` and `onValueHostInstanceStateChanged` events, and pass the values back into these two Config properties when you recreate it.
 -	`onInstanceStateChanged` and `onValueHostInstanceStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 -	`onValueChanged` notifies you when a `ValueHost` had its value changed.
@@ -765,121 +865,6 @@ builder.input('Name').any(
         .equalTo(true, { valueHostName: 'PersonActive'}));
 builder.calc('DiffInDays', 'Integer', diffInDaysFunctionCallback);        
 ```
-<a name="createconditions"></a>
-## Creating your own Conditions
-Jivs provides many `Condition classes`, covering typical cases. All classes implement the `ICondition interface`.
-```ts
-interface ICondition {
-    evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
-    category: ConditionCategory;
-    conditionType: string;
-}
-```
-As you can see, all require that you supply a **conditionType** value. That’s a unique name for you to specify.
-
-There are several ways to add your conditions.
-### Reusable classes
-All Condition classes supplied within jivs-engine are registered with the ConditionFactory, which uses the ConditionConfig (describes rules specific to the condition) to know which class to create.
-
-Once created, go to the `registerConditions() function` that is [part of the startup code](#validationservices) and add it like this:
-```ts
-export function registerConditions(cf: ConditionFactory): void
-{
-   ... existing conditions...
-	cf.register<myConditionConfig>(
-   		'MyConditionType', (config) => new MyCondition(config));
-}
-
-```
-Here are two ways to start:
-- Subclass from an existing `Condition class`. Choose when you want to make a minor modification or want to preconfigure [the existing class](https://github.com/plblum/jivs/blob/main/packages/jivs-engine/src/Conditions/ConcreteConditions.ts).
-	```ts
-	export class MyCondition extends RegExpCondition 
-	{
-	   constructor(config: IRegExpConditionConfig)
-	   {
-	      super({ 
-	         ...config, 
-	         ...{ expressionAsString: '^\\d\\d\\d\\-\\d\\d\\d\\d$'} 
-	      });
-	   }
-	   public get conditionType(): string { return 'MyConditionType'; }
-	}
-	```
-- Subclass from an [abstract `Condition class`](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Conditions) designed for the type of `Condition` you need. The abstract classes provide some useful methods to take advantage of. They also require a `ConditionConfig interface`, which means you can get additional values from the user passed in.
-	```ts
-	export interface MyConditionConfig extends RegExConditionBaseConfig
-	{
-	   allowTwo?: boolean; // true means pattern is repeated with a comma separator
-	}
-	
-	export class MyCondition extends RegExpConditionBase<MyConditionConfig>
-	{
-	   protected getRegExp(valueHostResolver: IValueHostResolver): RegExp
-	   {
-	      let base = @'\d\d\d\-\d\d\d\d';
-	      if (this.config.allowTwo)
-	         return new RegExp('^' + base + '(\,\s?' + base + ')?$');
-	      return new RegExp('^' + base + '$');
-	   }
-	   public get conditionType(): string { return 'MyConditionType'; }
-	}
-	```
-<a name="customconditions"></a>
-### One-off conditions
-Choose one of the methodologies below. When establishing the InputValueHost with your condition, it goes here:
-```ts
-{
-  valueHostType: 'Input',
-  name: ...,
-  validatorConfigs: [{
-    conditionCreator: (requester) => ...create your object here...
-    errorMessage: ...,
-  }]
-}
-```
-The [fluent syntax](#fluentsyntax) for this is:
-```ts
-let fieldNameConfig = config().input('fieldname')
-	.customRule(
-		(requester)=> ...create your object here..., 
-		'optional error message', 
-		{ ...optional additional parameters });
-```
-- Create a plain JavaScript object that matches the `ICondition interface` contract. This is often used for one-off logic.
-	```ts
-	let myCondition = <ICondition>{
-	   evaluate: (valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> =>
-	   {
-	   // evaluate the value(s) and return a ConditionEvaluateResult
-	   },
-	   category: 'Content';
-	   conditionType: 'MyConditionType';
-	}
-	```
-- Implement directly from `ICondition` as a class
-	```ts
-	export class MyCondition implements ICondition 
-	{
-	   public evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>
-	   {
-	   // evaluate the value(s) and return a ConditionEvaluateResult
-	   },
-	   public get category(): string { return 'Content'; }
-	   public get conditionType(): string { return 'MyConditionType'; }
-	}
-	```	
-
-### Additional considerations
-- Look here for source code to the concrete conditions we’ve supplied:
-[https://github.com/plblum/jivs/blob/main/src/Conditions/ConcreteConditions.ts](https://github.com/plblum/jivs/blob/main/src/Conditions/ConcreteConditions.ts)
-- Look here for source code to abstract conditions and the factory:
-[https://github.com/plblum/jivs/tree/main/src/Conditions](https://github.com/plblum/jivs/tree/main/src/Conditions)
-- Return `Undetermined` when unsupported data is found. For example, if you are evaluating only against a string, test `typeof value === 'string'` and return `Undetermined` when false.
-- Always write unit tests.
-- `conditionType` should be meaningful. Try to limit it to characters that work within JSON and code, such as letters, digits, underscore, space, and dash. Also try to keep it short and memorable as users will select your Condition by specifying its value in the Configs passed into the `ValidationManager`.
-- `conditionType` values are case sensitive.
-- You may be building replacements for the Condition classes supplied in Jivs especially if you prefer a third party's validation schema code. In that case, implement the `IConditionFactory interface` to expose your replacements. Always attach your factory to the `ValidationServices class` in the `createValidationServices function`.
 <a name="lookupkeys"></a>
 ## Lookup Keys: Data Types and Companion Tools
 To really do the job well, Jivs wants to know specific data types associated with each Model property. You've seen the property "dataType" when configuring a ValueHost.
@@ -997,6 +982,129 @@ DataTypeCheck doesn't work when no conversion is required. Strings are a great e
 Take a look at [this example for Email Address](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts).
 
 [See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+<a name="createconditions"></a>
+## Creating your own Conditions
+Jivs provides many `Condition classes`, covering typical cases. All classes implement the `ICondition interface`.
+```ts
+interface ICondition {
+    evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    category: ConditionCategory;
+    conditionType: string;
+}
+```
+As you can see, all require that you supply a **conditionType** value. That’s a unique name for you to specify.
+
+There are several ways to add your conditions.
+### Reusable classes
+All Condition classes supplied within jivs-engine are registered with the ConditionFactory, which uses the ConditionConfig (describes rules specific to the condition) to know which class to create.
+
+Once created, go to the `registerConditions() function` that is [part of the startup code](#validationservices) and add it like this:
+```ts
+export function registerConditions(cf: ConditionFactory): void
+{
+   ... existing conditions...
+	cf.register<myConditionConfig>(
+   		'MyConditionType', (config) => new MyCondition(config));
+}
+
+```
+You can also extend the fluent syntax to support it.
+
+
+Here are two ways to start:
+- Subclass from an existing `Condition class`. Choose when you want to make a minor modification or want to preconfigure [the existing class](https://github.com/plblum/jivs/blob/main/packages/jivs-engine/src/Conditions/ConcreteConditions.ts).
+	```ts
+	export class MyCondition extends RegExpCondition 
+	{
+	   constructor(config: IRegExpConditionConfig)
+	   {
+	      super({ 
+	         ...config, 
+	         ...{ expressionAsString: '^\\d\\d\\d\\-\\d\\d\\d\\d$'} 
+	      });
+	   }
+	   public get conditionType(): string { return 'MyConditionType'; }
+	}
+	```
+See this sample code for more: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts)
+- Subclass from an [abstract `Condition class`](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Conditions) designed for the type of `Condition` you need. The abstract classes provide some useful methods to take advantage of. They also require a `ConditionConfig interface`, which means you can get additional values from the user passed in.
+	```ts
+	export interface MyConditionConfig extends RegExConditionBaseConfig
+	{
+	   allowTwo?: boolean; // true means pattern is repeated with a comma separator
+	}
+	
+	export class MyCondition extends RegExpConditionBase<MyConditionConfig>
+	{
+	   protected getRegExp(valueHostResolver: IValueHostResolver): RegExp
+	   {
+	      let base = @'\d\d\d\-\d\d\d\d';
+	      if (this.config.allowTwo)
+	         return new RegExp('^' + base + '(\,\s?' + base + ')?$');
+	      return new RegExp('^' + base + '$');
+	   }
+	   public get conditionType(): string { return 'MyConditionType'; }
+	}
+	```
+See this sample code for more: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts)
+<a name="customconditions"></a>
+### One-off conditions
+Choose one of the methodologies below. When establishing the InputValueHost with your condition, it goes here:
+```ts
+{
+  valueHostType: 'Input',
+  name: ...,
+  validatorConfigs: [{
+    conditionCreator: (requester) => ...create your object here...
+    errorMessage: ...,
+  }]
+}
+```
+The [fluent syntax](#fluentsyntax) for this is:
+```ts
+let fieldNameConfig = config().input('fieldname')
+	.customRule(
+		(requester)=> ...create your object here..., 
+		'optional error message', 
+		{ ...optional additional parameters });
+```
+- Create a plain JavaScript object that matches the `ICondition interface` contract. This is often used for one-off logic.
+	```ts
+	let myCondition = <ICondition>{
+	   evaluate: (valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> =>
+	   {
+	   // evaluate the value(s) and return a ConditionEvaluateResult
+	   },
+	   category: 'Content';
+	   conditionType: 'MyConditionType';
+	}
+	```
+- Implement directly from `ICondition` as a class
+	```ts
+	export class MyCondition implements ICondition 
+	{
+	   public evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>
+	   {
+	   // evaluate the value(s) and return a ConditionEvaluateResult
+	   },
+	   public get category(): string { return 'Content'; }
+	   public get conditionType(): string { return 'MyConditionType'; }
+	}
+	```	
+
+### Additional considerations
+- Look here for source code to the concrete conditions we’ve supplied:
+[https://github.com/plblum/jivs/blob/main/src/Conditions/ConcreteConditions.ts](https://github.com/plblum/jivs/blob/main/src/Conditions/ConcreteConditions.ts)
+- Look here for source code to abstract conditions and the factory:
+[https://github.com/plblum/jivs/tree/main/src/Conditions](https://github.com/plblum/jivs/tree/main/src/Conditions)
+- Return `Undetermined` when unsupported data is found. For example, if you are evaluating only against a string, test `typeof value === 'string'` and return `Undetermined` when false.
+- Always write unit tests.
+- `conditionType` should be meaningful. Try to limit it to characters that work within JSON and code, such as letters, digits, underscore, space, and dash. Also try to keep it short and memorable as users will select your Condition by specifying its value in the Configs passed into the `ValidationManager`.
+- `conditionType` values are case sensitive.
+- You may be building replacements for the Condition classes supplied in Jivs especially if you prefer a third party's validation schema code. In that case, implement the `IConditionFactory interface` to expose your replacements. Always attach your factory to the `ValidationServices class` in the `createValidationServices function`.
+
+### Adding your new Condition class to fluent syntax
+See this example: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts)
 
 ## Localization
 Any text displayed to the user and any input supplied from them is subject to localization. Jivs is localization-ready with several tools. There are third party tools that may do the job more to your liking, and they can be swapped in by implementing the correct interfaces.

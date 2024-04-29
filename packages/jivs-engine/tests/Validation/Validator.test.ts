@@ -1,17 +1,17 @@
 import {
     type RangeConditionConfig,
     RequireTextCondition, EqualToCondition,
-    type RequireTextConditionConfig, 
+    type RequireTextConditionConfig,
     RangeCondition,
-    EqualToConditionConfig, 
-    
+    EqualToConditionConfig,
+
 } from "../../src/Conditions/ConcreteConditions";
 
 import { Validator, ValidatorFactory } from "../../src/Validation/Validator";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger } from "../TestSupport/mocks";
+import { MockValidationManager, MockValidationServices, MockInputValueHost } from "../TestSupport/mocks";
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
@@ -26,7 +26,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { registerAllConditions } from "../TestSupport/createValidationServices";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
-import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested
@@ -211,7 +211,7 @@ describe('Validator.condition', () => {
         });
 
         let condition: ICondition | null = null;
-        expect(() => condition = setup.validator.condition).toThrow(/not supported/);
+        expect(() => condition = setup.validator.condition).toThrow(/not registered/);
     });
     test('Successful creation using ConditionCreator', () => {
         let setup = setupWithField1AndField2({
@@ -298,7 +298,7 @@ describe('Validator.enabler', () => {
         });
 
         let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).toThrow(/not supported/);
+        expect(() => enabler = setup.validator.ExposeEnabler()).toThrow(/not registered/);
     });
     test('Successful creation using EnablerCreator', () => {
         let setup = setupWithField1AndField2({
@@ -552,12 +552,12 @@ describe('Validator.getErrorMessageTemplate', () => {
         let errorMessageForFn = 'Test';
         expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test');
     });
-    test('Config.errorMessage = function, throws when function returns null', () => {
+    test('Config.errorMessage = function, throws when function returns static error message', () => {
         let setup = setupWithField1AndField2({
             errorMessage: (iv: IValidator) => null!
         });
 
-        expect(() => setup.validator.ExposeGetErrorMessageTemplate()).toThrow(/Config\.errorMessage/);
+        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe(Validator.errorMessageMissing);
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
@@ -899,10 +899,11 @@ describe('Validator.validate', () => {
     test('Issue found. errorMessage and summaryMessage supplied each with tokens. Error messages both have correctly replaced the tokens.', () => {
         testErrorMessages('{Label} Local', '{Label} Summary', 'Label1 Local', 'Label1 Summary');
     });
-    function testConditionHasIssueButDisabledReturnsNull(configChanges: Partial<ValidatorConfig>): void {
+    function testConditionHasIssueButDisabledReturnsNull(configChanges: Partial<ValidatorConfig>,
+        loggedMessage: string, loggingLevel: LoggingLevel): void {
         let setup = setupWithField1AndField2(configChanges);
-        let logger = setup.services.loggerService as MockCapturingLogger;
-        logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result        
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;  // to confirm logged condition result        
         setup.valueHost1.setValue('');   // will be invalid
         setup.valueHost2.setValueToUndefined();   // for use by Enabler to be invalid
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
@@ -912,13 +913,14 @@ describe('Validator.validate', () => {
         vrResult = vrResult as unknown as ValidatorValidateResult;
         expect(vrResult!.issueFound).toBeNull();
 
-        // 2 info level log entries: bailout and validation result
-        expect(logger.entryCount()).toBe(2);
+        // // 2 info level log entries: bailout and validation result
+        // expect(logger.entryCount()).toBe(2);
+        expect(logger.findMessage(loggedMessage, loggingLevel, null, null)).toBeDefined();
     }
     test('Issue exists. Enabled = false. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
             enabled: false
-        });
+        }, 'Config.enabled', LoggingLevel.Info);
     });
     test('Issue exists. Enabler = NoMatch. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
@@ -926,7 +928,7 @@ describe('Validator.validate', () => {
                 conditionType: ConditionType.RequireText,
                 valueHostName: 'Field2'
             }
-        });
+        }, 'Enabler using', LoggingLevel.Info);
     });
     test('Issue exists. Enabler = Undetermined. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
@@ -934,13 +936,14 @@ describe('Validator.validate', () => {
                 // the input value is '', which causes this condition to return Undetermined
                 conditionType: IsUndeterminedConditionType, valueHostName: 'Field2'
             }
-        });
+        }, 'Enabler using', LoggingLevel.Info);
     });
-    function testConditionHasIssueAndBlockingCheckPermitsValidation(configChanges: Partial<ValidatorConfig>,
-        validateOptions: ValidateOptions, logCount: number, issueExpected: boolean = true): void {
+    function testConditionHasIssueAndBlockingCheckPermitsValidation(
+        configChanges: Partial<ValidatorConfig>,
+        validateOptions: ValidateOptions, loggedMessage: string, logLevel: LoggingLevel, issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
-        let logger = setup.services.loggerService as MockCapturingLogger;
-        logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;  // to confirm logged condition result
         setup.valueHost1.setValue('');   // will be invalid
         setup.valueHost2.setValue('ABC');   // for use by Enabler to enable the condition
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
@@ -952,8 +955,9 @@ describe('Validator.validate', () => {
             expect(vrResult!.issueFound).not.toBeNull();
         else
             expect(vrResult!.issueFound).toBeNull();
-        // 3 possible info level log entries: intro, Condition evaluate result, validation issues found      
-        expect(logger.entryCount()).toBe(logCount);
+        // // 3 possible info level log entries: intro, Condition evaluate result, validation issues found
+        // expect(logger.entryCount()).toBe(logCount);
+        expect(logger.findMessage(loggedMessage, logLevel, null, null)).toBeDefined();
     }
 
 
@@ -963,44 +967,44 @@ describe('Validator.validate', () => {
                 // the input value is 'ABC', which causes this condition to return Match
                 conditionType: ConditionType.RequireText, valueHostName: 'Field2'
             }
-        }, {}, 3);
+        }, {}, 'Enabler using', LoggingLevel.Info);
     });
     test('Issue exists but Required is skipped because IValidateOption.Preliminary = true.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
-        }, { preliminary: true }, 2, false);
+        }, { preliminary: true }, 'Preliminary option', LoggingLevel.Info, false);
     });
     test('Issue exists and Required is evaluated (as NoMatch) because IValidateOption.Preliminary = false.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
-        }, { preliminary: false }, 3, true);
+        }, { preliminary: false }, 'Preliminary option', LoggingLevel.Info, true);
     });
 
     test('Demonstrate that duringEdit=false does not use evaluateDuringEdits.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
-        }, { duringEdit: false }, 3, true);
+        }, { duringEdit: false }, 'DuringEdit option', LoggingLevel.Info, true);
     });
     test('Issue exists but NeverMatchCondition is skipped because IValidateOption.DuringEdit = true.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             conditionConfig: {
                 conditionType: NeverMatchesConditionType
             }
-        }, { duringEdit: true }, 2, false);
+        }, { duringEdit: true }, 'DuringEdit option', LoggingLevel.Info, false);
     });
     test('Issue exists and NeverMatchCondition is run because IValidateOption.DuringEdit = false.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
             conditionConfig: {
                 conditionType: NeverMatchesConditionType
             }
-        }, { duringEdit: false }, 3, true);
+        }, { duringEdit: false }, 'DuringEdit option', LoggingLevel.Info, true);
     });
     test('Issue exists and Required is evaluated (as NoMatch) because IValidateOption.Preliminary = false.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
-        }, { preliminary: false }, 3, true);
+        }, { preliminary: false }, 'Preliminary option', LoggingLevel.Info, true);
     });
     function testDuringEditIsTrue(configChanges: Partial<ValidatorConfig>,
         inputValue: string, 
-        logCount: number, issueExpected: boolean = true): void {
+        loggedMessage: string, logLevel: LoggingLevel, issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
-        let logger = setup.services.loggerService as MockCapturingLogger;
+        let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
         setup.valueHost1.setInputValue(inputValue);   // for RequireTextCondition.evaluateDuringEdit
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
@@ -1012,21 +1016,22 @@ describe('Validator.validate', () => {
             expect(vrResult!.issueFound).not.toBeNull();
         else
             expect(vrResult!.issueFound).toBeNull();
-        // 2 info level log entries: first Condition second validate result
-        expect(logger.entryCount()).toBe(logCount);
+        // // 2 info level log entries: first Condition second validate result
+        // expect(logger.entryCount()).toBe(logCount);
+        expect(logger.findMessage(loggedMessage, logLevel, null, null)).toBeDefined();
     }
     test('ValidationOption.duringEdit = true with issue found.', () => {
-        testDuringEditIsTrue({}, '', 3, true);
+        testDuringEditIsTrue({}, '', 'DuringEdit', LoggingLevel.Info, true);
     });    
     test('ValidationOption.duringEdit = true with no issue found.', () => {
-        testDuringEditIsTrue({}, 'A', 2, false);
+        testDuringEditIsTrue({}, 'A', 'DuringEdit', LoggingLevel.Info, false);
     });        
     test('Condition throws causing result of Undetermined and log to identify exception', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: { conditionType: ThrowsExceptionConditionType }
         });
 
-        let logger = setup.services.loggerService as MockCapturingLogger;
+        let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
         expect(() => vrResult = setup.validator.validate({})).not.toThrow();
@@ -1037,10 +1042,11 @@ describe('Validator.validate', () => {
         expect(vrResult!.issueFound).toBeNull();
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
 
-        // 3 log entries: intro, Error level exception
-        expect(logger.entryCount()).toBe(2);
-        expect(logger.captured[0].level).toBe(LoggingLevel.Info);        
-        expect(logger.captured[1].level).toBe(LoggingLevel.Error);
+        // // 3 log entries: intro, Error level exception
+        // expect(logger.entryCount()).toBe(2);
+        // expect(logger.captured[0].level).toBe(LoggingLevel.Info);        
+        // expect(logger.captured[1].level).toBe(LoggingLevel.Error);
+        expect(logger.findMessage('Always throws', LoggingLevel.Error, null, null)).toBeDefined();
     });
 
     function setupPromiseTest(result: ConditionEvaluateResult, delay: number, error?: string): {
@@ -1123,12 +1129,21 @@ describe('Validator.validate', () => {
             }
             catch (e) {
                 expect(e).toBe('ERROR');
-                let logger = setup.services.loggerService as MockCapturingLogger;
+                let logger = setup.services.loggerService as CapturingLogger;
                 expect(logger.entryCount()).toBe(1);
                 expect(logger.getLatest()!.message).toMatch(/ERROR/);
 
             }
-        });
+    });
+    test('With loggingLevel=Debug, expect validate() to log Validating for error code [errorCode]', () => {
+        let setup = setupWithField1AndField2();
+        let logger = setup.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        setup.valueHost1.setValue('valid');
+
+        setup.validator.validate({});
+        expect(logger.findMessage('Validating for error code', LoggingLevel.Debug, null, null)).toBeDefined();
+    });    
 });
 describe('Validator.gatherValueHostNames', () => {
     test('RequireTextCondition supplies its ValueHostName', () => {

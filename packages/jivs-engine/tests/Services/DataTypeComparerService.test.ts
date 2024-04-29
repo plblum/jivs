@@ -10,7 +10,8 @@ import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerServic
 import { DataTypeComparerService } from "../../src/Services/DataTypeComparerService";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { MockCapturingLogger, MockValidationServices } from "../TestSupport/mocks";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { MockValidationServices } from "../TestSupport/mocks";
 
 describe('DataTypeComparerServices constructor and properties', () => {
 
@@ -348,7 +349,7 @@ describe('DataTypeComparerService.compare', () => {
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare({}, 'A', null, null)).not.toThrow();
         expect(result).toBe(ComparersResult.Undetermined);
-        let logger = testItem.services.loggerService as MockCapturingLogger;
+        let logger = testItem.services.loggerService as CapturingLogger;
         expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeComparerService')).not.toBeNull();        
 
     });    
@@ -358,7 +359,7 @@ describe('DataTypeComparerService.compare', () => {
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare(testItem /* some class */, 'A', null, null)).not.toThrow();
         expect(result).toBe(ComparersResult.Undetermined);
-        let logger = testItem.services.loggerService as MockCapturingLogger;
+        let logger = testItem.services.loggerService as CapturingLogger;
         expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeComparerService')).not.toBeNull();        
 
     });    

@@ -1,4 +1,4 @@
-import { MockCapturedLog, MockCapturingLogger } from './../TestSupport/mocks';
+import { CapturingLogger } from './../TestSupport/CapturingLogger';
 import { DataTypeIdentifierService } from './../../src/Services/DataTypeIdentifierService';
 import { UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import { IDataTypeConverter } from "../../src/Interfaces/DataTypeConverters";
@@ -157,7 +157,7 @@ describe('convert', ()=> {
     });
     test('Converter that throws is handled by returning undefined and adding to the log.', () => {
         let services = new ValidationServices();  
-        let logger = new MockCapturingLogger();
+        let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Debug;
         let testItem = new DataTypeConverterService();
         services.dataTypeConverterService = testItem;
@@ -218,7 +218,7 @@ describe('convertToPrimitive', ()=> {
     });        
     test('Within convertToPrimitive, Converter that throws is handled by returning undefined and adding to the log.', () => {
         let services = new ValidationServices();  
-        let logger = new MockCapturingLogger();
+        let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Debug;
         let testItem = new DataTypeConverterService();
         services.dataTypeConverterService = testItem;

@@ -32,9 +32,18 @@ describe('ConditionFactory.create', () => {
         expect(() => condition = factory.create(<ConditionConfig>{
             conditionType: 'UnknownType',
             ValueHostName: null
-        })).toThrow(/not supported/);
-
+        })).toThrow(/not registered/);
     });
+    test('create with conditionType = undefined throws', () => {
+        let factory = new ConditionFactory();
+        let condition: IConditionCore<ConditionConfig> | null = null;
+        expect(() => condition = factory.create(<any>{  })).toThrow(/not assigned/);
+    });    
+    test('create with conditionType = null throws', () => {
+        let factory = new ConditionFactory();
+        let condition: IConditionCore<ConditionConfig> | null = null;
+        expect(() => condition = factory.create(<any>{ conditionType: null  })).toThrow(/not assigned/);
+    });        
     test('isRegistered', () => {
         let factory = new ConditionFactory();
         expect(factory.isRegistered(ConditionType.RequireText)).toBe(false);
