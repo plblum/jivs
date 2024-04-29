@@ -104,7 +104,7 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 
 ## Where you want to use validation
 
-### As focus leaves an Input and changes occurred
+### As focus leaves an Input and its value changed
 * Use the onchange event to tell the ValidationManager about the data change and run validation. 
 	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
 	* Use `validationManager.getInputValueHost('name').setValues(native, input, { validate: true});`
@@ -229,6 +229,67 @@ Similar to the HTML \<form> except that your Model is already formed with native
 
 Jump to the previous section and follow the instructions after the conversion steps.
 
+### Showing all errors in a ValidationSummary
+The term "ValidationSummary" refers to a location in the UI that offers a consolidated view of all error messages. Aside from how its presented, it is very similar to showing errors specific to one field, except it shows all errors and updates upon any ValueHost's validation.
+
+You need these tools to setup your ValidationSummary:
+* An HTML element to host the ValidationSummary.
+* A function that responds to the `onValidated callback` on the ValidationManager. This function will gather the data and update the ValidationSummary.
+* Use the `getIssuesFound()` function on ValidationManager to retrieve those issues.
+
+We've modified the original example to provide a \<div> used for the ValidationSummary. It is shown outside of the \<form> but can be inside, and can be offered in multiple locations too:
+```ts
+<div class="validationsummary"></div>
+<form>
+  <input type='text' name='FirstName' id='FirstName' />
+     <span class='errorHost' data-for='FirstName'></span>
+  <input type='text' name='LastName' id='LastName' />
+     <span class='errorHost' data-for='LastName'></span>  
+  <button>Submit</button>
+</form>
+```
+This code initializes a ValidationManager and sets up the `onValidated callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
+
+```ts
+let vmConfig: ValidationManagerConfig = {
+  services: createValidationServices(),
+  valueHostConfigs: ... your configuration for each Input ...
+  onValueHostValidated: fieldValidated,
+  onValidated: formValidated
+};
+let vm = new ValidationManager(vmConfig);
+
+function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
+{
+  ... shown in earlier use case ...
+}
+function formValidated(validationManager: IValidationManager, validationState: ValidationState): void
+{
+  let valSummary = document.querySelector('.validationsummary');
+  if (validationState.isValid)
+  {
+    valSummary.classList.remove('invalid');      
+  }
+  else
+  {
+    valSummary.classList.add('invalid');      
+  }
+// remove the current contents then if there are errors to shown, add them
+  valSummary.innerHtml = '';
+  if (validationState.issuesFound)
+  {
+    let ul = document.createElement('ul');
+    for (let i = 0; i < validationState.issuesFound.length; i++)
+    {
+      let li = document.createElement('li');
+      li.textContent = validationState.issuesFound[i].errorMessage;
+      ul.append(li);
+    }
+    valSummary.append(ul);
+  }
+
+}
+```
 ## Configuring the ValidationManager
 Jivs takes this approach to populating the ValidationManager: Create objects that configure each of the pieces into the ValidationManagerConfig object. Then create the ValidationManager with it. Jivs creates all of the actual objects from those simple objects.
 
@@ -1043,7 +1104,7 @@ let fieldNameConfig = config().input('fieldname')
 - You may be building replacements for the Condition classes supplied in Jivs especially if you prefer a third party's validation schema code. In that case, implement the `IConditionFactory interface` to expose your replacements. Always attach your factory to the `ValidationServices class` in the `createValidationServices function`.
 
 ### Adding your new Condition class to fluent syntax
-See this example: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts)
+See this example: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts)
 
 ## Localization
 Any text displayed to the user and any input supplied from them is subject to localization. Jivs is localization-ready with several tools. There are third party tools that may do the job more to your liking, and they can be swapped in by implementing the correct interfaces.
