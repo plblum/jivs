@@ -9,7 +9,8 @@
   "private": true,
   "scripts": {
     "compile": "tsc",
-    "test": "jest",
+    "test": "jest --silent",    
+    "consoletest": "jest --no-console --noStackTrace",    
     "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'"
   },
   "eslintConfig": {
