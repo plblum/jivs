@@ -1,10 +1,11 @@
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
-import { createMockValidationManagerForMessageTokenResolver, MockCapturingLogger } from "../TestSupport/mocks";
+import { createMockValidationManagerForMessageTokenResolver } from "../TestSupport/mocks";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IInputValueHost } from "../../src/Interfaces/InputValueHost";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IMessageTokenSource, TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
 
 // resolveTokens(message: string, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string
@@ -159,7 +160,7 @@ describe('resolveTokens', () => {
     });       
     test('Message with {token:formatter} where formatter does not support value is not replaced and gets logged', () => {
         let vm = createMockValidationManagerForMessageTokenResolver(true);
-        let logger = vm.services.loggerService as MockCapturingLogger;
+        let logger = vm.services.loggerService as CapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -178,7 +179,7 @@ describe('resolveTokens', () => {
     });          
     test('Message with {token:formatter} where the value cannot be resolved and is not replaced and gets logged', () => {
         let vm = createMockValidationManagerForMessageTokenResolver(true);
-        let logger = vm.services.loggerService as MockCapturingLogger;
+        let logger = vm.services.loggerService as CapturingLogger;
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IInputValueHost, vm: IValueHostResolver): Array<TokenLabelAndValue>
             {

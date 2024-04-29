@@ -7,7 +7,8 @@ import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 
-import { MockCapturingLogger, MockValidationServices } from "../TestSupport/mocks";
+import { MockValidationServices } from "../TestSupport/mocks";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
 
 class TestFormatter implements IDataTypeFormatter {
@@ -127,7 +128,7 @@ describe('DataTypeFormatterService.format', () => {
         let services = new MockValidationServices(false, true);
         populateServicesWithManyCultures(services, 'en');
         let testItem = services.dataTypeFormatterService;
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format({})).not.toThrow();
         expect(result).not.toBeNull();
@@ -140,7 +141,7 @@ describe('DataTypeFormatterService.format', () => {
         populateServicesWithManyCultures(services, 'en');
         let testItem = services.dataTypeFormatterService;
 
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format(0, 'huh')).not.toThrow();
         expect(result).not.toBeNull();
@@ -234,7 +235,7 @@ describe('DataTypeFormatterService.format', () => {
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         testItem.register(new ErrorFormatter());
         expect(testItem.format(10, 'TEST').errorMessage).toBe('ERROR');
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         // LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService'
         expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService'));
     });
@@ -253,7 +254,7 @@ describe('DataTypeFormatterService.format', () => {
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         testItem.register(new ErrorFormatter());
         expect(testItem.format(10, 'TEST').errorMessage).toBe('Unspecified');
-        let logger = services.loggerService as MockCapturingLogger;
+        let logger = services.loggerService as CapturingLogger;
         // LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService'
         expect(logger.findMessage('Unspecified', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService'));
     });

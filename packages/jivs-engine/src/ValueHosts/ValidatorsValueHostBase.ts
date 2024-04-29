@@ -17,7 +17,6 @@ import { FluentValidatorCollector } from './Fluent';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
 import { ConditionType } from '../Conditions/ConditionTypes';
 
-
 /**
  * Standard implementation of IValidatorsValueHostBase. It owns a list of Validators
  * which support its validate() function.
@@ -34,16 +33,15 @@ import { ConditionType } from '../Conditions/ConditionTypes';
  */
 export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHostBaseConfig, TState extends ValidatorsValueHostBaseInstanceState>
     extends ValidatableValueHostBase<TConfig, TState>
-    implements IValidatorsValueHostBase
-{
+    implements IValidatorsValueHostBase {
     constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
         super(valueHostsManager, config, state);
     }
 
-//#region IValidatorsValueHostBase
+    //#region IValidatorsValueHostBase
 
 
-//#endregion IValidatorsValueHostBase
+    //#endregion IValidatorsValueHostBase
 
     /**
      * Runs validation against some of all validators.
@@ -61,6 +59,10 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         let self = this;
         if (!options)
             options = {};
+        lazyLog(() => {
+            return { message: `Validating ValueHostName ${this.getName()}` }
+        }, LoggingLevel.Debug);
+        
         // NOTE: This object instance is important for async validation.
         // Its properties collect all validator results, including those delayed by async.
         // By being an object, any closure referring to result will still get those
@@ -71,8 +73,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         };
 
         if (!this.groupsMatch(options.group, false))
-            return bailout(`Group names do not match "${options.group}" vs "${this.config.group?.toString()}"`);      
-        
+            return bailout(`Group names do not match "${options.group}" vs "${this.config.group?.toString()}"`);
+
         try {
             try {
                 let validators = this.validators();
@@ -86,12 +88,11 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     // All other validators in this loop will still finish
                     // by updating the state. The state is just missing the results
                     // from this validator. When this completes, it updates the state again.
-                    if (potentialIVR instanceof Promise)
-                    {
+                    if (potentialIVR instanceof Promise) {
                         processPromise(potentialIVR);
                         continue;
                     }
-                // synchronous (normal) processing
+                    // synchronous (normal) processing
                     let inputValResult = potentialIVR as ValidatorValidateResult;
                     if (inputValResult.skipped)
                         continue;
@@ -125,30 +126,28 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 //     result.status = ValidationStatus.Undetermined; 
 
             }
-            catch (e)
-            {
+            catch (e) {
                 if (e instanceof Error)
                     logError(e.message);
                 // resume normal processing with Undetermined state
                 result.status = ValidationStatus.Undetermined;
-            }                  
+            }
             if (updateInstanceStateWithResult(result))
                 self.invokeOnValueHostValidated(options);
-        // when the result hasn't changed from the start, report null as there were no issues found
+            // when the result hasn't changed from the start, report null as there were no issues found
             return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
                 result : null;
         }
-  
+
         finally {
-            logInfo(() => {
+            lazyLog(() => {
                 return {
                     message: `Input Validation result: ${ValidationStatusString[result.status]} Issues found:` +
                         (result.issuesFound ? JSON.stringify(result.issuesFound) : 'none')
                 };
             });
         }
-        function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean
-        {
+        function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean {
             return self.updateInstanceState((stateToUpdate) => {
                 stateToUpdate.status = result.status;
                 stateToUpdate.issuesFound = result.issuesFound;
@@ -163,15 +162,12 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 return stateToUpdate;
             }, self);
         }
-        function processPromise(promise: Promise<ValidatorValidateResult>): void
-        {
-            function completeThePromise(finish: () => void): void
-            {
+        function processPromise(promise: Promise<ValidatorValidateResult>): void {
+            function completeThePromise(finish: () => void): void {
                 // remove the promise from result.Pending.
                 // We use result.Pending == null to mean no async processes remain.
                 // If Pending is null already, an external action has abandoned the current validation run
-                if (result.pending && result.pending.includes(promise))
-                {
+                if (result.pending && result.pending.includes(promise)) {
                     let index = result.pending.indexOf(promise);
                     /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
                     result.pending.splice(index, 1);
@@ -181,8 +177,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     finish();
                 }
             }
-            function deleteAsyncProcessFlag() : void
-            {
+            function deleteAsyncProcessFlag(): void {
                 if (!result.pending)
                     self.updateInstanceState((stateToUpdate) => {
                         delete stateToUpdate.asyncProcessing;
@@ -193,7 +188,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 result.pending = [];
             result.pending.push(promise);
             promise.then(
-            (ivr) => {
+                (ivr) => {
                     completeThePromise(() => {
                         // the only way we modify the issues, validation result, or ValueHostInstanceState
                         if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
@@ -208,39 +203,35 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                         else
                             deleteAsyncProcessFlag();
                     });
-            },
-            (failureInfo) => {
-                completeThePromise(() => { 
-                    deleteAsyncProcessFlag();
-                    logError(failureInfo ? failureInfo.toString() : 'unspecified');
-                });
-            }
-        );
-        // no change to the ValidationStatus here            
+                },
+                (failureInfo) => {
+                    completeThePromise(() => {
+                        deleteAsyncProcessFlag();
+                        logError(failureInfo ? failureInfo.toString() : 'unspecified');
+                    });
+                }
+            );
+            // no change to the ValidationStatus here            
         }
 
-        function bailout(errorMessage: string): null
-        {
-            logInfo(() => {
+        function bailout(errorMessage: string): null {
+            lazyLog(() => {
                 return {
                     message: errorMessage
                 };
             });
-            return null;                    
-        }        
-        function logInfo(
-            fn: () => { message: string; source?: string }): void
-        {
-            if (self.services.loggerService.minLevel >= LoggingLevel.Info)
-            {
+            return null;
+        }
+        function lazyLog(
+            fn: () => { message: string; source?: string }, logLevel : LoggingLevel = LoggingLevel.Info): void {
+            if (self.services.loggerService.minLevel <= logLevel) {
                 let parms = fn();
-                self.services.loggerService.log(parms.message, LoggingLevel.Info,
+                self.services.loggerService.log(parms.message, logLevel,
                     LoggingCategory.Validation,
                     parms.source ?? `ValueHost name ${self.config.name}`);
             }
-        }        
-        function logError(message: string): void
-        {
+        }
+        function logError(message: string): void {
             self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
                 LoggingLevel.Error, LoggingCategory.Validation, self.config.name);
         }
@@ -274,15 +265,14 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         });
         return validators;
     }
-    
-/**
- * Validators are sorted so category=Required comes first and category=DataTypeCheck second.
- * @param unordered 
- * @returns 
- */
-    protected orderValidators(unordered: Array<IValidator>): Array<IValidator>
-    {
-        let fn = (a: IValidator, b: IValidator) : number => a.condition.category - b.condition.category;
+
+    /**
+     * Validators are sorted so category=Required comes first and category=DataTypeCheck second.
+     * @param unordered 
+     * @returns 
+     */
+    protected orderValidators(unordered: Array<IValidator>): Array<IValidator> {
+        let fn = (a: IValidator, b: IValidator): number => a.condition.category - b.condition.category;
         if (unordered.toSorted)    // recently introduced API, so provide fallback
             return unordered.toSorted(fn);
         else
@@ -309,24 +299,20 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
             // see if the error code matches an existing validator.
             // If so, use that validator's ValidatorValidateResult instead.
-            if (error.errorCode) 
-                for (let i = 0; i < this.validators().length; i++)
-                {
+            if (error.errorCode)
+                for (let i = 0; i < this.validators().length; i++) {
                     let validator = this.validators()[i];
                     let valResult = validator.tryValidatorSwap(error);
-                    if (valResult)
-                    {
+                    if (valResult) {
                         if (error.severity)
                             valResult.issueFound!.severity = error.severity;
                         let changed = this.updateInstanceState((stateToUpdate) => {
                             let replacementIndex = -1;
                             if (!stateToUpdate.issuesFound)
                                 stateToUpdate.issuesFound = [];
-                        // replace if the same issuefound exists
-                            for (let issueIndex = 0; issueIndex < stateToUpdate.issuesFound.length; issueIndex++)
-                            {
-                                if (stateToUpdate.issuesFound[issueIndex].errorCode === error.errorCode)
-                                {
+                            // replace if the same issuefound exists
+                            for (let issueIndex = 0; issueIndex < stateToUpdate.issuesFound.length; issueIndex++) {
+                                if (stateToUpdate.issuesFound[issueIndex].errorCode === error.errorCode) {
                                     replacementIndex = issueIndex;
                                     break;
                                 }
@@ -337,7 +323,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                             else
                                 stateToUpdate.issuesFound[replacementIndex] = valResult.issueFound!;
                             stateToUpdate.status = ValidationStatus.Invalid;
-    //NOTE: leave stateToUpdate.group and asyncProcessing alone
+                            //NOTE: leave stateToUpdate.group and asyncProcessing alone
                             return stateToUpdate;
                         }, this);
                         if (changed) {
@@ -350,14 +336,13 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
         }
         return super.setBusinessLogicError(error, options);
-    }    
+    }
 
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Config.
      */
-    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void
-    {
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
         let validators = this.validators();
         for (let validator of validators)
             validator.gatherValueHostNames(collection, valueHostResolver);
@@ -368,7 +353,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * @param errorCode - Same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @returns The Validator or null if the condition type does not match.
      */
-    public getValidator(errorCode: string): IValidator | null { 
+    public getValidator(errorCode: string): IValidator | null {
         let ec = cleanString(errorCode);
         if (ec)
             for (let iv of this.validators())
@@ -394,19 +379,17 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * to these conditions during setup in ValidationManager.
      * @param config 
      */
-    public addValidator(config: ValidatorConfig): void
-    {
+    public addValidator(config: ValidatorConfig): void {
         this._validators = null;    // force recreation
         if (!this.config.validatorConfigs)
             this.config.validatorConfigs = [];
         let knownConditionType: string | null =
             config.conditionConfig ? config.conditionConfig.conditionType : null;
-        if (knownConditionType)
-        {
+        if (knownConditionType) {
             let index = this.config.validatorConfigs.findIndex((ivd) =>
                 (ivd.conditionConfig ? ivd.conditionConfig.conditionType : '') ===
                 knownConditionType
-            );    
+            );
             if (index > -1) {
                 this.config.validatorConfigs[index] = config;
                 return;
@@ -419,15 +402,14 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * where you chain validation rules to this function like this:
      * `vh.configValidators().required().regExp(/\d/)`
      */
-    public configValidators(): FluentValidatorCollector
-    {
+    public configValidators(): FluentValidatorCollector {
         enableFluent();
         this._validators = null;    // force recreation   
         if (!this.config.validatorConfigs)
-            this.config.validatorConfigs = [];        
+            this.config.validatorConfigs = [];
         return new FluentValidatorCollector(this.config);
     }
-    
+
     /**
      * While you normally set the validation group name with ValidatorsValueHostBaseConfig.group,
      * ValidatorsValueHostBaseConfig is often setup from the perspective of the business logic,
@@ -436,8 +418,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * group name.
      * @param group - When undefined, it restores group to ValidatorsValueHostBaseConfig.group
      */
-    public setGroup(group: string): void
-    {
+    public setGroup(group: string): void {
         this.saveIntoInstanceState('_group', group);
     }
 }
@@ -445,13 +426,13 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
 export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueHostBaseGenerator {
 
-/**
- * Looking for changes to the ValidationConfigs to impact IssuesFound.
- * If IssuesFound did change, fix ValidationStatus for when Invalid to 
- * review IssuesFound in case it is only a Warning, which makes ValidationStatus Valid.
- * @param state 
- * @param config 
- */    
+    /**
+     * Looking for changes to the ValidationConfigs to impact IssuesFound.
+     * If IssuesFound did change, fix ValidationStatus for when Invalid to 
+     * review IssuesFound in case it is only a Warning, which makes ValidationStatus Valid.
+     * @param state 
+     * @param config 
+     */
     public cleanupInstanceState(state: ValidatorsValueHostBaseInstanceState, config: ValidatorsValueHostBaseConfig): void {
         assertNotNull(state, 'state');
         assertNotNull(config, 'config');
@@ -466,8 +447,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
                 let errorCode: string | null = cleanString(valConfig.errorCode);
                 if (!errorCode && valConfig.conditionConfig)
                     errorCode = valConfig.conditionConfig.conditionType;
-                else if (valConfig.conditionCreator)
-                {
+                else if (valConfig.conditionCreator) {
                     let cond = valConfig.conditionCreator(valConfig);   // return null is actually a configuration bug reported to the user in Validator.Condition
                     if (cond)
                         errorCode = cond.conditionType;

@@ -1,6 +1,6 @@
 import { ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
-import { MockCapturingLogger } from "../TestSupport/mocks";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
 
 
@@ -89,7 +89,7 @@ describe('ConsoleLoggerService.log without output when LoggingLevel is too low',
 
 describe('ConsoleLoggerService.log using MainLogger to also capture content', () => {
     test('Debug', () => {
-        let mainLogger = new MockCapturingLogger();
+        let mainLogger = new CapturingLogger();
         mainLogger.minLevel = LoggingLevel.Debug;
         let testItem = new ConsoleLoggerService(LoggingLevel.Debug, mainLogger);
         expect(() => testItem.log('Message', LoggingLevel.Debug)).not.toThrow();
@@ -97,7 +97,7 @@ describe('ConsoleLoggerService.log using MainLogger to also capture content', ()
         expect(mainLogger.getLatest()?.level).toBe(LoggingLevel.Debug);
     });
     test('Info', () => {
-        let mainLogger = new MockCapturingLogger();
+        let mainLogger = new CapturingLogger();
         mainLogger.minLevel = LoggingLevel.Debug;
         let testItem = new ConsoleLoggerService(LoggingLevel.Debug, mainLogger);
         expect(() => testItem.log('Message', LoggingLevel.Info)).not.toThrow();
@@ -105,7 +105,7 @@ describe('ConsoleLoggerService.log using MainLogger to also capture content', ()
         expect(mainLogger.getLatest()?.level).toBe(LoggingLevel.Info);
     });    
     test('Warn', () => {
-        let mainLogger = new MockCapturingLogger();
+        let mainLogger = new CapturingLogger();
         mainLogger.minLevel = LoggingLevel.Debug;
         let testItem = new ConsoleLoggerService(LoggingLevel.Debug, mainLogger);
         expect(() => testItem.log('Message', LoggingLevel.Warn)).not.toThrow();
@@ -113,7 +113,7 @@ describe('ConsoleLoggerService.log using MainLogger to also capture content', ()
         expect(mainLogger.getLatest()?.level).toBe(LoggingLevel.Warn);
     });    
     test('Error', () => {
-        let mainLogger = new MockCapturingLogger();
+        let mainLogger = new CapturingLogger();
         mainLogger.minLevel = LoggingLevel.Debug;
         let testItem = new ConsoleLoggerService(LoggingLevel.Debug, mainLogger);
         expect(() => testItem.log('Message', LoggingLevel.Error)).not.toThrow();

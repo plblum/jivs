@@ -4,9 +4,10 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost, CalcValueHostGenerator } from "../../src/ValueHosts/CalcValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
-import { MockValidationServices, MockValidationManager, MockCapturingLogger } from "../TestSupport/mocks";
+import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
 function TestCalcFunctionReturnsOne(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
     CalculationHandlerResult {
@@ -205,7 +206,7 @@ describe('getValue using the calcFn', () => {
     });     
     test('function is null returns undefined and logs', () => {
         let services = createValidationServicesForTesting();
-        let logger = new MockCapturingLogger();
+        let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Info;
         services.loggerService = logger;        
         let vm = new ValidationManager({
@@ -260,7 +261,7 @@ describe('getValue using the calcFn', () => {
 describe('setValue', () => {
     test('setValue only logs. Has no impact on calculation', () => {
         let services = createValidationServicesForTesting();
-        let logger = new MockCapturingLogger();
+        let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Info;
         services.loggerService = logger;
         let vm = new ValidationManager({

@@ -1,3 +1,5 @@
+## 0.14.0
+- **Breaking API changes** - Major refactoring and renaming.
 ## 0.13.0
 - **Major feature** - Rework how users configure the ValidationManagerConfig object by
   introducing ValueHostsBuilder. This "builder" class takes the Config object and
