@@ -15,7 +15,7 @@ import {
     finishFluentValidatorCollector, finishFluentConditionCollector, customRule
 } from "../../src/ValueHosts/Fluent";
 import { ValueHostsBuilder, build } from "../../src/ValueHosts/ValueHostsBuilder";
-import { MockValidationServices, MockCapturingLogger } from "../TestSupport/mocks";
+import { MockValidationServices } from "../TestSupport/mocks";
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {

@@ -11,7 +11,7 @@ import { Validator, ValidatorFactory } from "../../src/Validation/Validator";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { MockValidationManager, MockValidationServices, MockInputValueHost, MockCapturingLogger } from "../TestSupport/mocks";
+import { MockValidationManager, MockValidationServices, MockInputValueHost } from "../TestSupport/mocks";
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
@@ -26,6 +26,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { registerAllConditions } from "../TestSupport/createValidationServices";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested
@@ -551,12 +552,12 @@ describe('Validator.getErrorMessageTemplate', () => {
         let errorMessageForFn = 'Test';
         expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test');
     });
-    test('Config.errorMessage = function, throws when function returns null', () => {
+    test('Config.errorMessage = function, throws when function returns static error message', () => {
         let setup = setupWithField1AndField2({
             errorMessage: (iv: IValidator) => null!
         });
 
-        expect(() => setup.validator.ExposeGetErrorMessageTemplate()).toThrow(/Config\.errorMessage/);
+        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe(Validator.errorMessageMissing);
     });
 
     test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
@@ -901,7 +902,7 @@ describe('Validator.validate', () => {
     function testConditionHasIssueButDisabledReturnsNull(configChanges: Partial<ValidatorConfig>,
         loggedMessage: string, loggingLevel: LoggingLevel): void {
         let setup = setupWithField1AndField2(configChanges);
-        let logger = setup.services.loggerService as MockCapturingLogger;
+        let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;  // to confirm logged condition result        
         setup.valueHost1.setValue('');   // will be invalid
         setup.valueHost2.setValueToUndefined();   // for use by Enabler to be invalid
@@ -941,7 +942,7 @@ describe('Validator.validate', () => {
         configChanges: Partial<ValidatorConfig>,
         validateOptions: ValidateOptions, loggedMessage: string, logLevel: LoggingLevel, issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
-        let logger = setup.services.loggerService as MockCapturingLogger;
+        let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;  // to confirm logged condition result
         setup.valueHost1.setValue('');   // will be invalid
         setup.valueHost2.setValue('ABC');   // for use by Enabler to enable the condition
@@ -1003,7 +1004,7 @@ describe('Validator.validate', () => {
         inputValue: string, 
         loggedMessage: string, logLevel: LoggingLevel, issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
-        let logger = setup.services.loggerService as MockCapturingLogger;
+        let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
         setup.valueHost1.setInputValue(inputValue);   // for RequireTextCondition.evaluateDuringEdit
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
@@ -1030,7 +1031,7 @@ describe('Validator.validate', () => {
             conditionConfig: { conditionType: ThrowsExceptionConditionType }
         });
 
-        let logger = setup.services.loggerService as MockCapturingLogger;
+        let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
         expect(() => vrResult = setup.validator.validate({})).not.toThrow();
@@ -1128,7 +1129,7 @@ describe('Validator.validate', () => {
             }
             catch (e) {
                 expect(e).toBe('ERROR');
-                let logger = setup.services.loggerService as MockCapturingLogger;
+                let logger = setup.services.loggerService as CapturingLogger;
                 expect(logger.entryCount()).toBe(1);
                 expect(logger.getLatest()!.message).toMatch(/ERROR/);
 
@@ -1136,7 +1137,7 @@ describe('Validator.validate', () => {
     });
     test('With loggingLevel=Debug, expect validate() to log Validating for error code [errorCode]', () => {
         let setup = setupWithField1AndField2();
-        let logger = setup.services.loggerService as MockCapturingLogger;
+        let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         setup.valueHost1.setValue('valid');
 

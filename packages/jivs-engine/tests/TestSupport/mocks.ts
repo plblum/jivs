@@ -34,6 +34,7 @@ import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { IValueHostsManager, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
+import { CapturingLogger } from "./CapturingLogger";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -212,7 +213,7 @@ export class MockInputValueHost extends MockValueHost
 }
 
 /**
- * Flexible Mock ValidationServices with MockCapturingLogger.
+ * Flexible Mock ValidationServices with CapturingLogger.
  * Optionally populated with standard Conditions and data types.
  */
 export class MockValidationServices implements IValidationServices
@@ -238,7 +239,7 @@ export class MockValidationServices implements IValidationServices
 
         this.textLocalizerService = new TextLocalizerService();
         this._messageTokenResolverService = new MessageTokenResolverService();
-        this._loggerService = new MockCapturingLogger();
+        this._loggerService = new CapturingLogger();
 
         if (registerStandardConditions) {
             registerAllConditions(this.conditionFactory as ConditionFactory);
@@ -521,61 +522,4 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         this._onInputValueChanged = fn;
     }    
     private _onInputValueChanged: InputValueChangedHandler | null = null;
-}
-
-export class MockCapturingLogger implements ILoggerService
-{
-    public minLevel: LoggingLevel = LoggingLevel.Warn;
-    
-    public captured: Array<MockCapturedLog> = [];
-    public log(message: string, level: LoggingLevel, category?: string | undefined, source?: string | undefined): void {
-        if (level >= this.minLevel)
-            this.captured.push({
-                message: message,
-                level: level,
-                category: category,
-                source : source
-            });
-    }
-    public entryCount(): Number
-    {
-        return this.captured.length;
-    }
-    public getLatest(): MockCapturedLog | null
-    {
-        if (this.captured.length)
-            return this.captured[this.captured.length - 1];
-        return null;
-    }
-
-    /**
-     * Looks through all captures in order found. If any contain all matching values, it is returned.
-     * messageSegment and sourceSegment allow a partial match (case insensitive).
-     * Null parameters are not used for searching.
-     * @param messageSegment 
-     */
-    public findMessage(messageSegment: string | null, logLevel : LoggingLevel | null, category: string | null, sourceSegment: string | null): MockCapturedLog | null
-    {
-        let messageRE: RegExp | null = messageSegment ? new RegExp(messageSegment, 'i') : null;
-        let sourceRE : RegExp | null = sourceSegment ? new RegExp(sourceSegment, 'i') : null;        
-        for (let capture of this.captured) {
-            if ((logLevel !== null) && (capture.level !== logLevel))
-                continue;
-            if ((category !== null) && (capture.category !== category))
-                continue;
-            if (messageRE && !messageRE.test(capture.message))
-                continue;
-            if (sourceRE && capture.source && !sourceRE.test(capture.source))
-                continue;
-            return capture;
-        }
-        return null;
-    }
-}
-export interface MockCapturedLog
-{
-    message: string,
-    level: LoggingLevel,
-    category: string | undefined,
-    source: string | undefined
 }

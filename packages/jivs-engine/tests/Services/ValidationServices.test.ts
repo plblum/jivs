@@ -1,6 +1,6 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ValidationServices, assertValidFallbacks } from "../../src/Services/ValidationServices";
-import { MockCapturingLogger, MockValidationServices } from "../TestSupport/mocks";
+import { MockValidationServices } from "../TestSupport/mocks";
 import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
@@ -12,6 +12,7 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { IServiceWithFallback, IServicesAccessor, toIServiceWithFallback, toIServicesAccessor } from "../../src/Interfaces/ValidationServices";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
     test('Has parameters', () => {
@@ -86,7 +87,7 @@ describe('Replace factories and services', () => {
         expect(testItem.messageTokenResolverService).toBe(replacement);
     });
     test('Replace loggerService', () => {
-        let replacement = new MockCapturingLogger();
+        let replacement = new CapturingLogger();
         let testItem = new ValidationServices();
         testItem.loggerService = replacement;
         expect(testItem.loggerService).toBe(replacement);

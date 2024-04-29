@@ -219,10 +219,15 @@ export class Validator implements IValidator {
             msg = this.services.textLocalizerService.getErrorMessage(this.services.activeCultureId,
                 this.errorCode, this.valueHost.getDataType());
         }
-        if (msg == null)
-            throw new Error('Must supply a value for Config.errorMessage');
+        if (msg == null) {
+            msg = Validator.errorMessageMissing;
+            this.services.loggerService.log(`Error message missing for Validator ${this.errorCode}`,
+                LoggingLevel.Error, LoggingCategory.Validation, 'Validator');
+        }
         return msg;
     }
+
+    public static readonly errorMessageMissing = '***ERROR MESSAGE MISSING***';
 
     /**
      * Resolves the summaryMessage as a template - before it has its tokens processed.
