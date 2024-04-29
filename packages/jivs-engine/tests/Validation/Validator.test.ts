@@ -79,8 +79,8 @@ function setupWithField1AndField2(config?: Partial<ValidatorConfig>): {
 } {
     let services = new MockValidationServices(true, true);
     let vm = new MockValidationManager(services);
-    let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Label1');
-    let vh2 = vm.addInputValueHost('Field2', LookupKey.String, 'Label2');
+    let vh = vm.addMockInputValueHost('Field1', LookupKey.String, 'Label1');
+    let vh2 = vm.addMockInputValueHost('Field2', LookupKey.String, 'Label2');
     const defaultConfig: ValidatorConfig = {
         conditionConfig: <RequireTextConditionConfig>
             { conditionType: ConditionType.RequireText, valueHostName: 'Field1' },
@@ -1057,7 +1057,7 @@ describe('Validator.validate', () => {
     } {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Field 1');
+        let vh = vm.addMockInputValueHost('Field1', LookupKey.String, 'Field 1');
 
         let config: ValidatorConfig = {
             conditionConfig: null,
@@ -1232,7 +1232,7 @@ describe('ValidatorFactory.create', () => {
     {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
-        let vh = vm.addInputValueHost('Field1', LookupKey.String, 'Label1');
+        let vh = vm.addMockInputValueHost('Field1', LookupKey.String, 'Label1');
         const config: ValidatorConfig = {
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,

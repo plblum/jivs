@@ -15,6 +15,7 @@ import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { CalcValueHostConfig, CalculationHandler } from "../Interfaces/CalcValueHost";
 import { EvaluateChildConditionResultsBaseConfig } from "../Conditions/EvaluateChildConditionResultsBase";
 import { resolveErrorCode } from "../Validation/Validator";
+import { ValueHostsBuilderBase } from "./ValueHostsBuilderBase";
 
 
 /**
@@ -63,7 +64,7 @@ export function build(vmConfig: ValidationManagerConfig): ValueHostsBuilder
  * 
  *      let vm = new ValidationManager(vmConfig);
  */
-export class ValueHostsBuilder
+export class ValueHostsBuilder extends ValueHostsBuilderBase
 {
 /**
  * If the business logic provides ValueHostConfigs, they should already
@@ -77,6 +78,7 @@ export class ValueHostsBuilder
  */
     constructor(vmConfig: ValidationManagerConfig)
     {
+        super();
         assertNotNull(vmConfig, 'vmConfig');
         assertNotNull(vmConfig.services, 'vmConfig.services');
         this._vmConfig = vmConfig;
@@ -89,76 +91,25 @@ export class ValueHostsBuilder
     {
         return this._vmConfig;
     }
-
-    //#region fluent for creating ValueHosts
-    /**
-     * Fluent format to create a InputValueHostConfig.
-     * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * @param valueHostName - the ValueHost name
-     * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
-     */
-    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
-    /**
-     * Fluent format to create a InputValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param config - Supply the entire InputValueHostConfig. This is a special use case.
-     * You can omit the valueHostType property.
-     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
-     */
-    public input(config: FluentInputValueConfig): FluentValidatorCollector;
-    // overload resolution
-    public input(arg1: ValueHostName | FluentInputValueConfig, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector
+/**
+ * The config is a complete representation of the ValueHost.
+ * Now just need to put it somewhere...
+ * @param config 
+ */    
+    protected applyConfig(config: ValueHostConfig): void
     {
-        let fluent = new StartFluent(this.vmConfig);
-      
-        if (typeof arg1 === 'object') {
-            let collector = fluent.input(arg1);
-            this.vmConfig.valueHostConfigs.push(collector.parentConfig);
-            return collector;
-        }
-        if (typeof arg1 === 'string') {
-            let collector = fluent.input(arg1, dataType, parameters);
-            this.vmConfig.valueHostConfigs.push(collector.parentConfig);
-            return collector;
-        }
-        throw new TypeError('Must pass valuehost name or InputValueHostConfig');
-    }    
-    /**
-     * Fluent format to create a StaticValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param valueHostName - the ValueHost name
-     * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
-     * @returns Same instance for chaining.
-     */
-    static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): ValueHostsBuilder;
-    /**
-     * Fluent format to create a StaticValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
-     * You can omit the valueHostType property.
-     * @returns Same instance for chaining.
-     */
-    static(config: Omit<StaticValueHostConfig, 'valueHostType'>): ValueHostsBuilder;
-    // overload resolution
-    static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): ValueHostsBuilder
-    {
-        let fluent = new StartFluent(this.vmConfig);
-      
-        if (typeof arg1 === 'object') {
-            let vhConfig = fluent.static(arg1);
-            this.vmConfig.valueHostConfigs.push(vhConfig);
-            return this;
-        }
-        if (typeof arg1 === 'string') {
-            let vhConfig = fluent.static(arg1, dataType, parameters);
-            this.vmConfig.valueHostConfigs.push(vhConfig);
-            return this;
-        }
-        throw new TypeError('Must pass valuehost name or InputValueHostConfig');        
+        this.vmConfig.valueHostConfigs.push(config);
     }
+
+/**
+ * Supplies the StartFluent object, already setup
+ */
+    protected createFluent(): StartFluent
+    {
+        return new StartFluent(this.vmConfig);
+    }
+
+
     /**
      * Start of a series to collect ConditionConfigs into any condition that
      * implements EvaluateChildConditionResultsConfig.
@@ -173,43 +124,8 @@ export class ValueHostsBuilder
     */
     public conditions(parentConfig?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
     {
-        let fluent = new StartFluent(this.vmConfig);
+        let fluent = this.createFluent();
         return fluent.conditions(parentConfig);
-    }    
-
-    /**
-     * Fluent format to create a CalcValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param valueHostName - the ValueHost name
-     * @param dataType - can be null. The value for ValueHost.dataType.
-     * @param calcFn - required. Function callback.
-     * @returns Same instance for chaining.
-     */
-    calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): ValueHostsBuilder;
-    /**
-     * Fluent format to create a CalcValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
-     * You can omit the valueHostType property.
-     * @returns Same instance for chaining.
-     */
-    calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): ValueHostsBuilder;
-    // overload resolution
-    calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): ValueHostsBuilder
-    {
-        let fluent = new StartFluent(this.vmConfig);
-      
-        if (typeof arg1 === 'object') {
-            let vhConfig = fluent.calc(arg1);
-            this.vmConfig.valueHostConfigs.push(vhConfig);
-            return this;
-        }
-        if (typeof arg1 === 'string') {
-            let vhConfig = fluent.calc(arg1, dataType ?? null, calcFn!);
-            this.vmConfig.valueHostConfigs.push(vhConfig);
-            return this;
-        }
-        throw new TypeError('Must pass valuehost name or InputValueHostConfig'); 
     }    
 
     //#endregion fluent for creating ValueHosts

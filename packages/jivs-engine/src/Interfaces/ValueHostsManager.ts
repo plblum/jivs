@@ -7,10 +7,11 @@
  * @module Validation/Types/ValueHostsManager
  */
 
+import { ValueHostsInstanceBuilder } from '../ValueHosts/ValueHostsInstanceBuilder';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IInputValueHostChangedCallback } from './InputValueHost';
 import { IValidationServices } from './ValidationServices';
-import { IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState, toIValueHostCallbacks } from './ValueHost';
+import { IValueHost, IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState, toIValueHostCallbacks } from './ValueHost';
 import { IValueHostResolver, toIValueHostResolver } from './ValueHostResolver';
 
 /**
@@ -27,6 +28,44 @@ export interface IValueHostsManager extends IValueHostResolver
      * clean up active resources (like timers)
      */
     dispose(): void;    
+
+    /**
+     * Adds a ValueHostConfig for a ValueHost not previously added. 
+     * Does not trigger any notifications.
+     * Exception when the same ValueHostConfig.name already exists.
+     * @param config 
+     * Can use fluent().static() or any ValueConfigHost.
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValueHostsManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     * When null, the state supplied in the ValueHostsManager constructor will be used if available.
+     * When neither state was supplied, a default state is created.
+     */
+    addValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;    
+    
+    /**
+     * Replaces a ValueHostConfig for an already added ValueHost. 
+     * Does not trigger any notifications.
+     * If the name isn't found, it will be added.
+     * @param config 
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValueHostsManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     */
+    updateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;
+
+    /**
+     * Discards a ValueHost. 
+     * Does not trigger any notifications.
+     * @param valueHostName 
+     */
+    discardValueHost(valueHostName: ValueHostName): void;    
+
+    /**
+     * Provide fluent syntax to add or replace a ValueHost.
+     * Alternative to using addValueHost() and updateValueHost().
+     */
+    build(): ValueHostsInstanceBuilder;
     
     /**
      * Upon changing the value of a ValueHost, other ValueHosts need to know. 
@@ -144,7 +183,11 @@ export function toIValueHostsManager(source: any): IValueHostsManager | null
 {
     if (toIValueHostResolver(source)) {
         let test = source as IValueHostsManager;    
-        if (test.notifyOtherValueHostsOfValueChange !== undefined)
+        if (test.notifyOtherValueHostsOfValueChange !== undefined &&
+            test.addValueHost !== undefined &&
+            test.updateValueHost !== undefined &&
+            test.discardValueHost !== undefined
+        )
             return test;
     }
     return null;

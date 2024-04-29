@@ -35,6 +35,7 @@ import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { IValueHostsManager, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { CapturingLogger } from "./CapturingLogger";
+import { ValueHostsInstanceBuilder } from "../../src/ValueHosts/ValueHostsInstanceBuilder";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -392,7 +393,30 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         this._services = services;
         this.onValueHostInstanceStateChanged = this.onValueHostInstanceStateChangeHandler;
     }
+    asyncProcessing?: boolean | undefined;
 
+    addValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+        if (!initialState)
+            initialState = this.services.valueHostFactory.createInstanceState(config) as InputValueHostInstanceState;
+        let vh = this.services.valueHostFactory.create(this, config, initialState);
+        this._valueHosts.set(config.name, vh);    
+        return vh;
+    }
+    updateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+        throw new Error("Method not implemented.");
+    }
+    discardValueHost(valueHostName: string): void {
+        throw new Error("Method not implemented.");
+    }
+    /**
+     * Provide fluent syntax to add or replace a ValueHost.
+     * Alternative to using addValueHost() and updateValueHost().
+     */
+    public build(): ValueHostsInstanceBuilder
+    {
+        throw new Error("Method not implemented.");
+
+    }
     public dispose(): void
     {
 
@@ -408,7 +432,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
  */    
     private _valueHosts: Map<string, IValueHost> = new Map<string, IValueHost>();  
     
-    public addValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
+    public addMockValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
     {
         let vh = new MockValueHost(this, name, dataTypeLookupKey, label);
         this._valueHosts.set(name, vh);
@@ -416,7 +440,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         return vh;
     }
 
-    public addInputValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, inputValue?: any, nativeValue?: any): MockInputValueHost
+    public addMockInputValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, inputValue?: any, nativeValue?: any): MockInputValueHost
     {
         let vh = new MockInputValueHost(this, name, dataTypeLookupKey, label);
         this._valueHosts.set(name, vh);
