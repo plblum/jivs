@@ -13,7 +13,7 @@ import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 
 interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
 {
-    Counter: number;    // incremented each time the state is cleaned    
+    counter: number;    // incremented each time the state is cleaned    
 }
 /**
  * Subclass of ValueHostBase to focus testing on ValueHostBase members
@@ -47,13 +47,13 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
         return new PublicifiedValueHostBase(valueHostsManager, config, state);
     }
     public cleanupInstanceState(state: IPublicifiedValueHostInstanceState, config: ValueHostConfig): void {
-        state.Counter = 0;
+        state.counter = 0;
     }
     public createInstanceState(config: ValueHostConfig): IPublicifiedValueHostInstanceState {
         let state: IPublicifiedValueHostInstanceState = {
             name: config.name,
             value: config.initialValue,
-            Counter: 0
+            counter: 0
         };
         return state;
     }
@@ -99,7 +99,7 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
     let state: IPublicifiedValueHostInstanceState = {
         name: 'Field1',
         value: initialValue,
-        Counter: 0
+        counter: 0
     };
     let vh = new PublicifiedValueHostBase(vm,
         updatedConfig, state);
@@ -116,18 +116,32 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
 describe('constructor and resulting property values', () => {
 
     test('constructor with valid parameters created and sets up Services, Config, and State', () => {
-        let setup = setupValueHost({});
-        let testItem = setup.valueHost;
-        expect(testItem.ExposeServices()).toBe(setup.services);
-        expect(testItem.ExposeConfig()).toBe(setup.config);
-        expect(testItem.ExposeState().name).toBe('Field1');
-        expect(testItem.valueHostsManager).toBe(setup.validationManager);
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vhConfig: ValueHostConfig = {
+            name: 'Field1',
+            valueHostType: 'TestValidatableValueHost',
+        };
+        let testItem: PublicifiedValueHostBase | null = null;
+        expect(()=> testItem = new PublicifiedValueHostBase(vm, vhConfig,
+            {
+                name: 'Field1',
+                counter: 0,
+                value: undefined
+            })).not.toThrow();
 
-        expect(testItem.getName()).toBe('Field1');
-        expect(testItem.getLabel()).toBe('Label1');
-        expect(testItem.getDataType()).toBe(LookupKey.String);
-        expect(testItem.getValue()).toBeUndefined();
-        expect(testItem.isChanged).toBe(false);
+        expect(testItem!.valueHostsManager).toBe(vm);
+
+        expect(testItem!.getName()).toBe('Field1');
+        expect(testItem!.getLabel()).toBe('');
+        expect(testItem!.getDataType()).toBeNull();
+        expect(testItem!.getValue()).toBeUndefined();
+        expect(testItem!.isChanged).toBe(false);
+
+        expect(testItem!.ExposeServices()).toBe(services);
+        expect(testItem!.ExposeConfig()).toBe(vhConfig);
+        expect(testItem!.ExposeState().name).toBe('Field1');
+        expect(testItem!.valueHostsManager).toBe(vm);
     });
 
     test('constructor with Config.dataType undefined results in getDataType = null', () => {
@@ -137,7 +151,19 @@ describe('constructor and resulting property values', () => {
         let testItem = setup.valueHost;
         expect(testItem.getDataType()).toBeNull();
     });
+    test('constructor with Config.labell10n setup. GetLabel results in localized lookup', () => {
+        let setup = setupValueHost({
+            labell10n: 'Label1-key'
+        });
+        let tls = setup.services.textLocalizerService as TextLocalizerService;
+        tls.register('Label1-key', {
+            '*': '*-Label1'
+        });
+        let testItem = setup.valueHost;
 
+        expect(testItem.getLabel()).toBe('*-Label1');
+
+    });
     test('constructor with null in each parameter throws', () => {
 
         let services = new MockValidationServices(false, false);
@@ -152,7 +178,7 @@ describe('constructor and resulting property values', () => {
         let state: IPublicifiedValueHostInstanceState = {
             name: 'Field1',
             value: undefined,
-            Counter: 0
+            counter: 0
         };
         let testItem: PublicifiedValueHostBase | null = null;
         expect(() => testItem = new PublicifiedValueHostBase(null!,
@@ -163,7 +189,27 @@ describe('constructor and resulting property values', () => {
             config, null!)).toThrow(/state/);
     });
 });
+describe('ValidatableValueHostBase.getValue', () => {
+    test('Set instanceState.Value to undefined; getValue is undefined', () => {
+        let setup = setupValueHost(undefined, undefined);
+        let value: any = null;
+        expect(() => value = setup.valueHost.getValue()).not.toThrow();
+        expect(value).toBeUndefined();
+    });
+    test('Set instanceState.Value to null; getValue is null', () => {
+        let setup = setupValueHost(undefined, null);
+        let value: any = null;
+        expect(() => value = setup.valueHost.getValue()).not.toThrow();
+        expect(value).toBeNull();
+    });
+    test('Set instanceState.Value to 10; getValue is 10', () => {
+        let setup = setupValueHost(undefined, 10);
+        let value: any = null;
+        expect(() => value = setup.valueHost.getValue()).not.toThrow();
+        expect(value).toBe(10);
+    });
 
+});
 describe('updateState', () => {
     test('Update value with +1 results in new instance of State and report to ValidationManager',
         () => {

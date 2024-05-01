@@ -2,7 +2,7 @@
  * @module ValueHosts/Types/ValidatorsValueHostBase
  */
 import { IValidator, ValidatorConfig } from "./Validator";
-import { IValidatableValueHostBase, IValidatableValueHostCallbacks, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from "./ValidatableValueHostBase";
+import { IValidatableValueHostBase, IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from "./ValidatableValueHostBase";
 import { FluentValidatorCollector } from "../ValueHosts/Fluent";
 
 /**
@@ -91,7 +91,7 @@ export interface ValidatorsValueHostBaseInstanceState extends ValidatableValueHo
 /**
  * Provides callback hooks for the consuming system to supply to IValidatorsValueHostBases.
  */
-export interface IValidatorsValueHostBaseCallbacks extends IValidatableValueHostCallbacks {
+export interface IValidatorsValueHostBaseCallbacks extends IValidatableValueHostBaseCallbacks {
 
 }
 

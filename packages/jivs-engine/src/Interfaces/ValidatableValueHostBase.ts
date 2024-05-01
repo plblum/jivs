@@ -208,9 +208,9 @@ export interface ValueHostValidationState extends ValidationState
 }
 
 /**
- * Provides callback hooks for the consuming system to supply to IValidatableValueHostCallbacks.
+ * Provides callback hooks for the consuming system to supply to IValidatableValueHostBaseCallbacks.
  */
-export interface IValidatableValueHostCallbacks extends IValueHostCallbacks {
+export interface IValidatableValueHostBaseCallbacks extends IValueHostCallbacks {
     /**
      * Called when ValueHost's validate() function has finished, and made
      * changes to the state. (No point in notifying code intended to update the UI
@@ -226,15 +226,15 @@ export interface IValidatableValueHostCallbacks extends IValueHostCallbacks {
     onValueHostValidated?: ValueHostValidatedHandler | null;
 }
 /**
- * Determines if the object implements IValidatableValueHostCallbacks.
+ * Determines if the object implements IValidatableValueHostBaseCallbacks.
  * @param source 
- * @returns source typecasted to IValidatableValueHostCallbacks if appropriate or null if not.
+ * @returns source typecasted to IValidatableValueHostBaseCallbacks if appropriate or null if not.
  */
-export function toIValidatableValueHostCallbacks(source: any): IValidatableValueHostCallbacks | null
+export function toIValidatableValueHostBaseCallbacks(source: any): IValidatableValueHostBaseCallbacks | null
 {
     if (toIValueHostCallbacks(source))
     {
-        let test = source as IValidatableValueHostCallbacks;
+        let test = source as IValidatableValueHostBaseCallbacks;
         if (test.onValueHostValidated !== undefined)
             return test;
     }

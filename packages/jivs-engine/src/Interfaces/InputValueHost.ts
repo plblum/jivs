@@ -1,7 +1,7 @@
 /**
  * @module ValueHosts/Types/InputValueHost
  */
-import { IValidatableValueHostBase, toIValidatableValueHostCallbacks } from "./ValidatableValueHostBase";
+import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from "./ValidatableValueHostBase";
 import { SetValueOptions } from "./ValueHost";
 import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "./ValidatorsValueHostBase";
 
@@ -154,7 +154,7 @@ export interface IInputValueHostCallbacks extends IInputValueHostChangedCallback
  */
 export function toIInputValueHostCallbacks(source: any): IInputValueHostCallbacks | null
 {
-    if (toIValidatableValueHostCallbacks(source))
+    if (toIValidatableValueHostBaseCallbacks(source))
     {
         let test = source as IInputValueHostCallbacks;
         if (test.onInputValueChanged !== undefined)

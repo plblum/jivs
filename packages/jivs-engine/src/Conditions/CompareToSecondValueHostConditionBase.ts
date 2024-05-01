@@ -75,12 +75,6 @@ export abstract class CompareToSecondValueHostConditionBase<TConfig extends Comp
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
-        super.gatherValueHostNames(collection, valueHostResolver);
-        if (this.config.secondValueHostName)
-            collection.add(this.config.secondValueHostName);
-    }
-
     public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
