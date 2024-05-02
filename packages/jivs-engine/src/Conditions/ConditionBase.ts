@@ -11,7 +11,7 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 
 /**
  * Base implementation of ICondition.
@@ -69,7 +69,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * Helps identify the purpose of the Condition. Impacts:
      * * Sort order of the list of Conditions evaluated by an Validator,
      *   placing Required first and DataTypeCheck second.
-     * * Sets InputValueHostConfig.required.
+     * * Sets InputValueHostConfig.requiresInput.
      * * Sets ValidatorConfig.severity when undefined, where Required
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
@@ -101,7 +101,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @returns An array. If an empty array if there are no token to offer.
      * This base class has no tokens to offer.
      */
-    public getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         return [];
     }
 

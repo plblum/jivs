@@ -31,6 +31,8 @@ import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from './CompareToSecondValueHostConditionBase';
 import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from './CompareToValueConditionBase';
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 
 
 /**
@@ -47,7 +49,7 @@ export interface DataTypeCheckConditionConfig extends InputValueConditionBaseCon
  * at both values. When InputValue is not undefined while Value is undefined, it reports an error
  * as the converter could not get a valid value to store in the Value.
  * Supports these tokens:
- * {ConversionError} - Uses the value from IInputValueHost.GetConversionErrorMessage()
+ * {ConversionError} - Uses the value from IInputValueHost.getConversionErrorMessage()
  */
 export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeCheckConditionConfig>
 {
@@ -59,16 +61,17 @@ export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeChec
         return valueHost.getValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
 
-    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
-
-        list.push({
-            tokenLabel: 'ConversionError',
-            associatedValue: valueHost.getConversionErrorMessage() ?? null,
-            purpose: 'message'
-        });
+        let ivh = toIInputValueHost(valueHost);
+        if (ivh)
+            list.push({
+                tokenLabel: 'ConversionError',
+                associatedValue: ivh.getConversionErrorMessage() ?? null,
+                purpose: 'message'
+            });
 
         return list;
     }
@@ -324,7 +327,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
 
         return ConditionEvaluateResult.NoMatch;
     }
-    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate
@@ -680,7 +683,7 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
         return ConditionEvaluateResult.Match;
     }
 
-    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate

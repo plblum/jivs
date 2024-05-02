@@ -2,7 +2,7 @@
  * @module Validation/Types
  */
 
-import { IInputValueHost } from "./InputValueHost";
+import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
 import { IValueHostResolver } from "./ValueHostResolver";
 
 /**
@@ -19,7 +19,7 @@ export interface IMessageTokenSource {
      * The TokenLabel doesn't provide {} because we may support additional
      * attributes within the token, like {Value:AbbrevDateFormat}
      */
-    getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver):
+    getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver):
         Array<TokenLabelAndValue>;
 }
 

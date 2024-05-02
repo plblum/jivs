@@ -3,7 +3,7 @@
  * It is where you describe the shape of your inputs and their validation
  * through the Config classes.
  * Once setup, it has a list of ValueHost objects, one for each
- * config that was supplied. Those that are InputValueHosts
+ * config that was supplied. Those that are ValidatorsValueHostBases
  * contain validators.
  * 
  * ValidationManager's job is:
@@ -15,7 +15,7 @@
  *   Its OnInstanceStateChanged and OnValueHostInstanceStateChanged properties are callbacks
  *   provide the latest InstanceState objects to you.
  * - Execute validation on demand to the consuming system, going
- *   through all eligible InputValueHosts.
+ *   through all eligible ValidatorsValueHostBases.
  * - Report a list of Issues Found for an individual UI element.
  * - Report a list of Issues Found for the entire system for a UI 
  *   element often known as "Validation Summary".
@@ -28,8 +28,8 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig, toIValueHostsManager } from './ValueHostsManager';
 import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState } from './Validation';
 import { ValueHostInstanceState } from './ValueHost';
-import { IInputValueHostCallbacks, toIInputValueHostCallbacks } from './InputValueHost';
 import { ValueHostsManagerInstanceState } from './ValueHostsManager';
+import { IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -89,7 +89,7 @@ export interface IValidationManager extends IValueHostsManager {
     setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean;
 
     /**
-     * Lists all issues found (error messages and supporting info) for a single InputValueHost
+     * Lists all issues found (error messages and supporting info) for a single ValidatorsValueHostBase
      * so the input field/element can show error messages and adjust its appearance.
      * @returns An array of issues found. 
      * When null, there are no issues and the data is valid. If there are issues, when all
@@ -105,9 +105,9 @@ export interface IValidationManager extends IValueHostsManager {
     getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound> | null;
 
     /**
-     * A list of all issues from all InputValueHosts optionally for a given group.
+     * A list of all issues from all ValidatorsValueHostBases optionally for a given group.
      * Use with a Validation Summary widget and when validating the Model itself.
-     * @param group - Omit or null to ignore groups. Otherwise this will match to InputValueHosts with 
+     * @param group - Omit or null to ignore groups. Otherwise this will match to ValidatorsValueHostBases with 
      * the same group (case insensitive match).
      * @returns An array of details of issues found. 
      * When null, there are no issues and the data is valid. If there are issues, when all
@@ -186,7 +186,7 @@ export type ValidationManagerValidatedHandler = (validationManager: IValidationM
  * Provides callback hooks for the consuming system to supply to ValidationManager.
  * This instance is supplied in the constructor of ValidationManager.
  */
-export interface IValidationManagerCallbacks extends IValueHostsManagerCallbacks, IInputValueHostCallbacks {
+export interface IValidationManagerCallbacks extends IValueHostsManagerCallbacks, IValidatorsValueHostBaseCallbacks {
 
     /**
      * Called when ValidationManager's validate() function has returned.
@@ -242,7 +242,7 @@ export function toIValidationManager(source: any): IValidationManager | null
  */
 export function toIValidationManagerCallbacks(source: any): IValidationManagerCallbacks | null
 {
-    if (toIInputValueHostCallbacks(source))
+    if (toIValidatorsValueHostBaseCallbacks(source))
     {
         let test = source as IValidationManagerCallbacks;     
         if (test.onInstanceStateChanged !== undefined &&

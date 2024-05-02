@@ -2,7 +2,7 @@
  * {@inheritDoc StaticValueHost}
  * @module ValueHosts/ConcreteClasses/StaticValueHost
  */
-import { InputValueHostConfig } from '../Interfaces/InputValueHost';
+import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from '../Interfaces/StaticValueHost';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
@@ -38,7 +38,7 @@ export class StaticValueHost extends ValueHostBase<StaticValueHostConfig, Static
 
 /**
  * Supports StaticValueHost class. Used when the Config.valueHostType = ValueHostType.Static
- * or when the Type property is null/undefined and there are no InputValueHost specific
+ * or when the Type property is null/undefined and there are no ValidatorsValueHostBase-specific
  * properties, like ValidationConfigs or InputValue.
  */
 export class StaticValueHostGenerator extends ValueHostBaseGenerator {
@@ -46,7 +46,7 @@ export class StaticValueHostGenerator extends ValueHostBaseGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         if (config.valueHostType != null)    // null/undefined
             return config.valueHostType === ValueHostType.Static;
-        let test = config as unknown as InputValueHostConfig;
+        let test = config as unknown as ValidatorsValueHostBaseConfig;
         if (test.validatorConfigs === undefined)
             return true;
         return false;

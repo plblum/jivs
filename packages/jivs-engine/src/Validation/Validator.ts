@@ -8,7 +8,7 @@
  * - Severity: Error, Severe, and Warning
  * - Rules to disable the validator: Enabler condition, Enabled property and several ValidateOptions.
  * - Resolves error message tokens
-  * Attached to InputValueHosts through their InputValueHostConfig.
+  * Attached to ValidatorsValueHostBases through their ValidatorsValueHostBaseConfig.
   * @module Validator/ConcreteClasses
  */
 
@@ -22,15 +22,16 @@ import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, ty
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import { IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
+import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 
 /**
  * An IValidator implementation that represents a single validator 
- * for the value of an InputValueHost.
+ * for the value of an ValidatorsValueHostBase.
  * It is stateless.
  * Basically you want to call validate() to get all of the results
  * of a validation, including ConditionEvaluateResult, error messages,
@@ -41,22 +42,22 @@ import { IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/
  * 
  * Each instance depends on a few things, all passed into the constructor
  * and treated as immutable.
- * - IInputValueHost - name, label, and values from the consuming system.
+ * - IValidatorsValueHostBase - name, label, and values from the consuming system.
  * - ValidatorConfig - The business logic supplies these rules
  *   to implement validation including Condition, Enabler, and error messages
  * If the caller changes any of these, discard the instance
  * and create a new one. The parent ValueHost will restore the state.
  */
 export class Validator implements IValidator {
-    // As a rule, InputValueHost discards Validator when anything contained in these objects
+    // As a rule, ValidatorsValueHostBase discards Validator when anything contained in these objects
     // has changed.
-    constructor(valueHost: IInputValueHost, config: ValidatorConfig) {
+    constructor(valueHost: IValidatorsValueHostBase, config: ValidatorConfig) {
         assertNotNull(valueHost, 'valueHost');
         assertNotNull(config, 'config');
         this._valueHost = valueHost;
         this._config = config;
     }
-    private readonly _valueHost: IInputValueHost;
+    private readonly _valueHost: IValidatorsValueHostBase;
     /**
     * The business rules behind this validator.
     */
@@ -68,7 +69,7 @@ export class Validator implements IValidator {
         return this.valueHostsManager.services;
     }
 
-    protected get valueHost(): IInputValueHost {
+    protected get valueHost(): IValidatorsValueHostBase {
         return this._valueHost;
     }
 
@@ -302,10 +303,13 @@ export class Validator implements IValidator {
             }
 
             if (options.duringEdit && this.supportsDuringEdit()) {
-                let text = this.valueHost.getInputValue();
-                if (typeof text === 'string')
-                    return resolveCER((this.condition as IEvaluateConditionDuringEdits).evaluateDuringEdits(
-                        text, this.valueHost, this.services));
+                let ivh = toIInputValueHost(this.valueHost);
+                if (ivh) {
+                    let text = ivh.getInputValue();
+                    if (typeof text === 'string')
+                        return resolveCER((this.condition as IEvaluateConditionDuringEdits).evaluateDuringEdits(
+                            text, ivh, this.services));
+                }
                 return bailout('Value intended for evaluateDuringEdits was not a string.');
             }
 
@@ -496,8 +500,8 @@ export class Validator implements IValidator {
 
     /**
      * Use to change the enabled flag. It overrides the value from ValidatorConfig.enabled.
-     * Use case: the list of validators on InputValueHost might change while the form is active.
-     * Add all possible cases to InputValueHost and change their enabled flag here when needed.
+     * Use case: the list of validators on ValidatorsValueHostBase might change while the form is active.
+     * Add all possible cases to ValidatorsValueHostBase and change their enabled flag here when needed.
      * Also remember that you can use the enabler property on 
      * ValidatorConfig to automatically determine if the validator
      * should run or not. Enabler may not be ideal in some cases though.
@@ -568,7 +572,7 @@ export class Validator implements IValidator {
      * {Value} - the native value in instanceState.Value. If null/undefined, the value in instanceState.LastRawValue.
      * Plus any from the Condition in use.     
      */
-    public getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let tlv: Array<TokenLabelAndValue> = [
             {
                 tokenLabel: 'Label',
@@ -577,10 +581,16 @@ export class Validator implements IValidator {
             },
             {
                 tokenLabel: 'Value',
-                associatedValue: valueHost.getValue() ?? this._valueHost.getInputValue(),
+                associatedValue: valueHost.getValue(),
                 purpose: 'value'
             }
         ];
+        if (tlv[1].associatedValue === undefined)   // fallback to input value if available
+        {
+            let ivh = toIInputValueHost(valueHost);
+            if (ivh)
+                tlv[1].associatedValue = ivh?.getInputValue();
+        }
         if (toIMessageTokenSource(this.condition))   // since we cannot test for the IMessageTokenSource interface at runtime
             tlv = tlv.concat((this.condition as unknown as IMessageTokenSource).getValuesForTokens(valueHost, valueHostResolver));
         return tlv;
@@ -610,7 +620,7 @@ export function createIssueFound(valueHost: IValueHost,
  * It supports the built-in Validator class when ValidatorConfig.validatorType=null/undefined.
  */
 export class ValidatorFactory implements IValidatorFactory {
-    public create(valueHost: IInputValueHost, config: ValidatorConfig): IValidator {
+    public create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator {
         if (config.validatorType == null)   // null or undefined
             return new Validator(valueHost, config);
         let fn = this._map.get(config.validatorType);

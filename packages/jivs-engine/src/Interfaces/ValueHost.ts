@@ -11,6 +11,12 @@
  *   Model being edited.
  * - CalcValueHosts - Its value is calculated when its getValue() method is called. 
  *   You supply a function callback in its CalcValueHostConfig to set it up.
+ * 
+ * Base class Validators:
+ * - ValidatableValueHostBase - introduces the framework for validation but does not
+ *   get the Validators objects involved.
+ * - ValidatorsValueHostBase - introduces Validators and completes the overall validation feature.
+ *   InputValueHosts inherit from this 
  * @module ValueHosts/Types/ValueHost
  */
 

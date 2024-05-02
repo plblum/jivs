@@ -66,7 +66,7 @@ export interface ICondition {
      * Helps identify the purpose of the Condition. Impacts:
      * * Sort order of the list of Conditions evaluated by an Validator,
      *   placing Required first and DataTypeCheck second.
-     * * Sets InputValueHostConfig.required.
+     * * Sets InputValueHostConfig.requiresInput.
      * * Sets ValidatorConfig.severity when undefined, where Required
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
@@ -155,7 +155,7 @@ export const ConditionEvaluateResultStrings = [
 /**
  * Each Category gets assigned a category. For the most part, these are merely info.
  * However, Required and DataTypeCheck have special meaning.
- * Required - the InputValueHostConfig.required property is set if this is found.
+ * Required - the InputValueHostConfig.requiresInput property is set if this is found.
  *   These conditions are always placed first in the evaluation order.
  *   When Required, ValidatorConfig.severity of Undefined is treated as Severe, not Error
  *   to stop further Condition evaluation.
@@ -166,13 +166,13 @@ export const ConditionEvaluateResultStrings = [
  *   to stop further Condition evaluation.
  *   Users may set RegExpCondition's Category to DataTypeCheck if the expression confirms 
  *   a string is the expected data type, like USPhoneNumber or EmailAddress.
- * In fact, these categories determine a sort order for the Conditions on one InputValueHost.
+ * In fact, these categories determine a sort order for the Conditions on one ValidatorsValueHostBase.
  * Thus, its imperitive we preserve the order of first two.
  */
 export enum ConditionCategory {
     /**
      * Use when the data is required: RequireTextCondition and RequiredIndexCondition.
-     * These will be evaluated first by the InputValueHost, and will stop further evaluation
+     * These will be evaluated first by the ValidatorsValueHostBase, and will stop further evaluation
      * if evaluation is NoMatch (unless user explicitly sets ValidatorConfig.severity to Error or Warning.)
      */
     Required,
@@ -236,7 +236,7 @@ export interface SupportsDataTypeConverter extends ConditionConfig
  * ICondition.evaluate() when validateOption.DuringEdit is true.
  * This is a specialized validator, and not part of model validation.
  * Instead, it takes a string that is provided by the UI Input (via
- * InputValueHost.SetInputValue()) and determines if the content is valid.
+ * InputValueHost.setInputValue()) and determines if the content is valid.
  * Most validation is based on the already converted native value, 
  * like comparing two values. This validation should be limitd to rules
  * that are limited to a string that is likely not in good enough shape
