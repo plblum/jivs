@@ -182,20 +182,21 @@ export interface ValidatorConfig {
     /**
      * When false, validation is never run. This supersedes the Enabler too.
      * Values:
-     * * true/false obviously.
-     * * undefined - tells the Validator to treat it as true. (Its value 
+     * - true/false obviously.
+     * - undefined - tells the Validator to treat it as true. (Its value 
      *   will not be updated as we want this to be immutable while the Config
      *   is assigned to the host.)
-     * * function - Provide a function that will return true or false, 
+     * - function - Provide a function that will return true or false, 
      *   given the Validator as a parameter.
      */
     enabled?: undefined | boolean | ((host: IValidator) => boolean);
     /**
      * Resolves the Severity for when the Condition evaluates as NoMatch.
      * Values:
-     * * ValidationSeverity itself. Recommended to set to Severe for Required and CanConvertToNativeDataTypeCondition.
-     * * Undefined - tells the Validator to treat it as Error.
-     * * function - Provide a function that will return the ValidationSeverity, 
+     * - ValidationSeverity enum. Set to Severe by default for conditions with
+     *   Category=Require and DataTypeCheck.
+     * - Undefined - tells the Validator to treat it as Error.
+     * - function - Provide a function that will return the ValidationSeverity, 
      *   given the Validator as a parameter.
      */
     severity?: undefined | ValidationSeverity | ((host: IValidator) => ValidationSeverity);
@@ -209,8 +210,8 @@ export interface ValidatorConfig {
      * be sure to use HTML encoded characters.
      * The string shown to the actual user is stored in ValueHostInstanceState.errorMessage.
      * Values:
-     * * String - The error message with tokens and optional HTML tags.
-     * * function - Returns the error message, given the Validator,
+     * - String - The error message with tokens and optional HTML tags.
+     * - function - Returns the error message, given the Validator,
      *   allowing you to replace or customize the message during validation.
      *   The function must return a string, although an empty string is valid.
      * When localization is setup in ErrorMessagel10n, the value can be set to ''
@@ -234,9 +235,9 @@ export interface ValidatorConfig {
      * As a result, it helps to shape the message differently, usually by including
      * the Label token. "{Label} is required."
      * Values:
-     * * undefined and null - use the errorMessage as the template.
-     * * String - The error message with tokens and optional HTML tags.
-     * * function - Returns the error message, given the Validator,
+     * - undefined and null - use the errorMessage as the template.
+     * - string - The error message with tokens and optional HTML tags.
+     * - function - Returns the error message, given the Validator,
      *   allowing you to replace or customize the message during validation.
      *   The function must return a string, although an empty string is valid.
      * When localization is setup in SummaryMessagel10n, the value can be set to ''

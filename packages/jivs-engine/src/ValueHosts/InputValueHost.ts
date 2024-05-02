@@ -54,14 +54,17 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
 
     /**
     * Consuming system assigns the same value it assigns to the input field/element.
-    * Its used with RequiredCondition and DataTypeCondition.
+    * Its used with any condition that supports the validationOption { duringEdit: true},
+    * including RequireTextCondition and RegExpCondition.
+    * It is also used by DataTypeCheckCondition which determines the input is invalid
+    * when InputValue is assigned and native Value is undefined.
     * @param value
     * @param options - 
-    * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
-    * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
+    * - validate - Invoke validation after setting the value.
+    * - reset - Clears validation (except when validate=true) and sets IsChanged to false.
+    * - conversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
     */
     public setInputValue(value: any, options?: SetValueOptions): void {
         if (!options)
@@ -70,7 +73,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         let changed = !deepEquals(value, oldValue);
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
-                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.status = ValidationStatus.NeedsValidation;
                 stateToUpdate.inputValue = value;
             }
             this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
@@ -96,7 +99,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
     * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
      */
     public setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {
         options = options ?? {};
@@ -108,7 +111,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 // effectively clear past validation
-                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.status = ValidationStatus.NeedsValidation;
                 stateToUpdate.issuesFound = null;
 
                 stateToUpdate.value = nativeValue;
@@ -183,14 +186,14 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
     }
     /**
      * Resolves from the generated Validators by checking the first for
-     * Condition.category = Required
+     * Condition.category = Require
      */
     public get requiresInput(): boolean {
-        // by design, Validators are sorted with Required first. So only check the first
+        // by design, Validators are sorted with Require first. So only check the first
         let validators = this.validators();
 
         return validators != null && validators.length > 0 &&
-            (validators[0].condition.category === ConditionCategory.Required);
+            (validators[0].condition.category === ConditionCategory.Require);
     }
 
     /**

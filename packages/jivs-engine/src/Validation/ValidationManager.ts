@@ -6,9 +6,9 @@
  */
 import { BusinessLogicErrorsValueHostType, BusinessLogicErrorsValueHostName } from '../ValueHosts/BusinessLogicErrorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import type { ValueHostValidatedHandler } from '../Interfaces/ValidatableValueHostBase';
+import type { ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState } from '../Interfaces/Validation';
-import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationManagerValidatedHandler, defaultNotifyValidationStateChangedDelay } from '../Interfaces/ValidationManager';
+import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, defaultNotifyValidationStateChangedDelay } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsManager } from './ValueHostsManager';
 import { Debouncer } from '../Utilities/Debounce';
@@ -80,8 +80,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      *   savedValueHostInstanceStates: null, // or an array of the state objects previously returned with OnValueHostInstanceStateChanged
      *   onInstanceStateChanged: (validationManager, state)=> { },
      *   onValueHostInstanceStateChanged: (valueHost, state) => { },
-     *   onValidated: (validationManager, validationState)=> { },
-     *   onValueHostValidated: (valueHost, valueHostValidationState) => { },
+     *   onValidationStateChanged: (validationManager, validationState)=> { },
+     *   onValueHostValidationStateChanged: (valueHost, valueHostValidationState) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
      *   onInputValueChanged: (valueHost, oldValue) => { }
      * }
@@ -113,7 +113,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      * @returns The ValidationState object, which packages several key
-     * pieces of information: isValid, doNotSaveNativeValues, and issues found.
+     * pieces of information: isValid, doNotSave, and issues found.
      * The same object is provided through the OnValidated function
      */
     public validate(options?: ValidateOptions): ValidationState
@@ -148,15 +148,15 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
     {
         return {
             isValid: this.isValid,
-            doNotSaveNativeValues: this.doNotSaveNativeValues(),
+            doNotSave: this.doNotSave,
             issuesFound: this.getIssuesFound(options ? options.group : undefined),
             asyncProcessing: this.asyncProcessing
         };
     }
 
     /**
-     * ValueHosts that validate should try to fire onValidated, even though they also 
-     * fire onValueHostValidated. This allows systems that observe validation changes 
+     * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 
+     * fire onValueHostValidationStateChanged. This allows systems that observe validation changes 
      * at the validationManager level to know.
      * This function is optionally debounced with a delay in ms coming from
      * ValidationManagerConfig.notifyValidationStateChangedDelay
@@ -183,7 +183,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
     }
 
     protected notifyValidationStateChangedWorker(validationState : ValidationState | null, options?: ValidateOptions): void {
-        this.onValidated?.(this, validationState ?? this.createValidationState(options));        
+        this.onValidationStateChanged?.(this, validationState ?? this.createValidationState(options));        
     }
 
     private _debounceVHValidated: Debouncer<notifyValidationStateChangedWorkerHandler> | null = null;
@@ -194,7 +194,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * there may be warning issues found (in IssuesFound),
      * an async validator is still running,
      * validator evaluated as Undetermined.
-     * So check @link doNotSaveNativeValues|doNotSaveNativeValues()  as the ultimate guide to saving.
+     * So check @link doNotSave|doNotSave  as the ultimate guide to saving.
      * When false, there is at least one validation error.
      */
     public get isValid(): boolean {
@@ -207,11 +207,11 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
      * True when at least one ValueHost's ValidationStatus is 
-     * Invalid or ValueChangedButUnvalidated
+     * Invalid or NeedsValidation
      */
-    public doNotSaveNativeValues(): boolean {
+    public get doNotSave(): boolean {
         for (let vh of this.inputValueHost()) {
-            if (vh.doNotSaveNativeValue())
+            if (vh.doNotSave)
                 return true;
         }
         return false;
@@ -317,8 +317,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
      * Use to change the disabled state of the submit button based on validity.
      */
-    public get onValidated(): ValidationManagerValidatedHandler | null {
-        return this.config.onValidated ?? null;
+    public get onValidationStateChanged(): ValidationStateChangedHandler | null {
+        return this.config.onValidationStateChanged ?? null;
     }
 
     /**
@@ -331,8 +331,8 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * You can setup the same callback on individual ValueHosts.
      * Here, it aggregates all ValueHost notifications.
      */
-    public get onValueHostValidated(): ValueHostValidatedHandler | null {
-        return this.config.onValueHostValidated ?? null;
+    public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
+        return this.config.onValueHostValidationStateChanged ?? null;
     }
 
     //#endregion IValidationManagerCallbacks

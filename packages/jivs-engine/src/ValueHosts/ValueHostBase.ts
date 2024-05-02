@@ -108,7 +108,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
     * SkipValueChangedCallback - Skips the automatic callback setup with the 
     * OnValueChanged property.
     */
@@ -139,7 +139,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
      */
     public setValueToUndefined(options?: SetValueOptions): void {
         this.setValue(undefined, options);
@@ -174,7 +174,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * They all set it to true automatically except set it to false when the option.Reset is true.
      * The ValueHost.validate() function may skip validation of an InputValueHost when IsChanged is false,
      * depending on the options for validate. For example, calling validate immediately after loading
-     * up the form, you want to avoid showing Required validators. Those should appear only
+     * up the form, you want to avoid showing Category=Require validators. Those should appear only
      * if the user edits, or when the user attempts to submit.
      */
     public get isChanged(): boolean

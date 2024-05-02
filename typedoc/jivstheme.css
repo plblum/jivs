@@ -1,5 +1,6 @@
  :root {
     --radius-code: 4px;
+    --typography-font-size: 16px;
 }
 @media (prefers-color-scheme: light) {
     :root {
@@ -38,12 +39,52 @@
     --color-code-background: #4b4b4b;
     }
 
+body{
+    overflow: hidden;
+}
+.col-content {
+    background-color: #e8edf6;
+    font-size: var(--typography-font-size);
+    max-height: calc(100vh - 2rem - 42px);
+    overflow-x: hidden;
+    overflow-y: visible;
+    padding-left: 1rem;
+    padding-right: 1rem;    
+    scrollbar-width: auto;
+    scrollbar-color: #1f70c2 #e7e8eb;
+}
+@media (min-width: 770px) {
+    .col-content {
+    padding: 0 1rem;
+    }
+}
+@media (min-width: 770px) and (max-width: 1399px) {
+    .site-menu {
+        margin-top: 0;
+    }
+}
+.container
+{
+    padding: 0 0 0 1rem;    /* page-menu needed to be flush right */
+}
+
+
+@media (min-width: 770px) {
+    .container-main {
+        margin: 0 auto;
+    }
+}
+.container-main {
+    margin: 0 auto;
+    min-height: calc(100vh - 41px - 56px - 4rem);
+}
+
 .tsd-page-title
 {
     position: sticky;
     z-index: 1;
     isolation: isolate;
-    background-color: rgb(228 232 255 / 80%); 
+    background-color: rgb(228 232 255 / 90%); 
     top: -1rem; /* breadcrumbs scroll off */
 }    
 
@@ -76,6 +117,10 @@
 {
     font-size: 11pt;
 }
+.tsd-typography
+{
+
+}
 
 /** list bullets **/
 .tsd-typography>ul
@@ -98,24 +143,15 @@
 {
     color: var(--color-tsd-typography-marker-l2);
 }
-.tsd-typography p :not(:is(pre))>code
+
+.tsd-typography :not(:is(pre))>code
 {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--color-code-background);
     border-radius: var(--radius-code);
+    font-size: var(--typography-font-size);
 }
-.tsd-typography li :not(:is(pre))>code
-{
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--color-code-background);
-    border-radius: var(--radius-code);
-}
-.tsd-typography summary :not(:is(pre))>code
-{
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--color-code-background);
-    border-radius: var(--radius-code);
-}
+
 .tsd-panel h2
 {
     border-block-start: 5px solid var(--color-h2-line);
@@ -167,4 +203,26 @@
 .tsd-hierarchy
 {
     list-style: disc;
+}
+
+.tsd-navigation.settings {
+    margin: 0 0 1rem 0;
+}
+ul#tsd-filter-options {
+    font-size: 10pt;
+}
+.page-menu h4 {
+    font-size: 13px;
+}
+.page-menu h3 {
+    font-size: 15px;
+}
+
+.tsd-generator {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+.tsd-signature
+{
+    white-space: nowrap;
 }

@@ -26,7 +26,7 @@ export interface ValidateOptions
     /**
      * Set to true when running a validation prior to a submit activity.
      * Typically set to true just after loading the form to report any errors already present.
-     * During this phase, the Required validator is not checked as the user doesn't need
+     * During this phase, the Category=Require validator is not checked as the user doesn't need
      * the noise complaining about missing input when they haven't had a chance to address it.
      * When undefined, it is the same as false.
      */
@@ -78,15 +78,13 @@ export interface ValueHostValidateResult extends StatefulValueHostValidateResult
     pending?: Array<Promise<ValidatorValidateResult>> | null;
 }
 
-
-
 /**
  * The state of validation for this ValidatableValueHost.
  * It combines what has happened to the ValueHost's values
  * with the result from validation and influences the behavior
  * of the next attempt to validate.
  */
-export enum ValidationStatus { // ValueHostValidationStatus, ValueHostStatusCode
+export enum ValidationStatus {
     /**
      * Indicates that validate() has yet to be attempted
      * Once attempted, it will always be one of the other results
@@ -96,7 +94,7 @@ export enum ValidationStatus { // ValueHostValidationStatus, ValueHostStatusCode
      * Indicates that either Value or InputValue was changed
      * but has yet to be validated.
      */
-    ValueChangedButUnvalidated,
+    NeedsValidation,
     /**
      * Validation was not run, including when the Validator.severity is Off.
      */
@@ -113,7 +111,7 @@ export enum ValidationStatus { // ValueHostValidationStatus, ValueHostStatusCode
 }
 export const ValidationStatusString = [
     'NotAttempted',
-    'ValueChangedButUnvalidated',
+    'NeedsValidation',
     'Undetermined',
     'Valid',
     'Invalid'
@@ -140,9 +138,10 @@ export enum ValidationSeverity {
      * The result will block saving.
      * Validation process will stop, leaving remaining validators set to 'ValidationStatus.Undetermined'.
      * Its best to put these early in the list of ValidatableValueHost.Validators.
-     * Consider this for RequiredConditions and DataTypeCondition.
-     * RequiredCondition - If you don't have any data to evaluate, none of the remaining validators serve a purpose.
-     * CanConvertToNativeDataTypeCondition - If you cannot convert a string to the native data type,
+     * It is the default for validators with Category = Require and DataTypeCheck 
+     * (RequireTextCondition and DataTypeCheckCondition).
+     * - RequireTextCondition - If you don't have any data to evaluate, none of the remaining validators serve a purpose.
+     * - DataTypeCheckCondition - If you cannot convert a string to the native data type,
      * none of the remaining validators have native data to evaluate.
      */
     Severe
@@ -226,8 +225,8 @@ export interface BusinessLogicError {
 
 /**
  * Packages key values of the state of validation to be returned
- * by validate() and in the ValidationManagerValidatedHandler.
- * While here, the same values are available directly on ValidationManager.
+ * by validate() and in the onValidationStateChanged callback.
+ * The same values are also available directly on ValidationManager.
  */
 export interface ValidationState
 {
@@ -241,10 +240,10 @@ export interface ValidationState
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
-     * True when ValidationStatus is Invalid or ValueChangedButUnvalidated
+     * True when ValidationStatus is Invalid or NeedsValidation
      * on individual validators.
      */
-    doNotSaveNativeValues: boolean;
+    doNotSave: boolean;
 
     /**
      * All issues current found (except ValueHosts not matching the validation group which are excluded.)

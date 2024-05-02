@@ -15,7 +15,7 @@ import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, Validators
 *   It is often a string representation of the native data
 *   and may contain errors preventing its conversion into that native data.
 *   Only a few conditions evaluate the input value, but they are important:
-*   RequiredCondition and ValidNativeCondition.
+*   RequireTextCondition, DataTypeCheckCondition and RegExpCondition.
 * - native value - the value that will be stored in the Model.
 *   Date object, number, boolean, and your own object are examples.
 *   When the native type is a string, it is often similar in both input and native values.
@@ -24,11 +24,11 @@ import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, Validators
 * 
 * Its up to the system consumer to manage both.
 * - When an input has its value set or changed, also assign it here with setInputValue().
-* - RequiredConditions and DataTypeCondition look at the InputValue via getInputValue().
+* - RequireTextCondition, DataTypeCheckCondition and RegExpCondition look at the InputValue via getInputValue().
 * - The initial native value is assigned with setValue.
 *   The consumer handles converting the input field/element value into its native value
-*   and supplies it with SetNativeValue or NativeValueUndetermined.
-* - Most Conditions look at the NativeValue via getValue.
+*   and supplies it with setValue or setValueUndetermined.
+* - Most Conditions look at the native value through getValue.
 */
 export interface IInputValueHost extends IValidatorsValueHostBase {
     /**
@@ -41,13 +41,13 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
 
     /**
      * System consumer assigns the value it also assigns to the input field/element.
-     * Its used with RequiredCondition and DataTypeCondition.
+     * Its used with RequireTextCondition, DataTypeCheckCondition and RegExpCondition.
     * @param options - 
     * validate - Invoke validation after setting the value.
-    * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
+    * Reset - Clears validation (except when validate=true) and sets isChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
      */
     setInputValue(value: any, options?: SetValueOptions): void;
 
@@ -66,13 +66,13 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
     * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
      */
     setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
 
 
     /**
-     *Returns true if a Required condition is setup. UI can use it to 
+     *Returns true for a condition with Category=Require. UI can use it to 
      * display a "requires a value" indicator.
      */
      requiresInput: boolean;

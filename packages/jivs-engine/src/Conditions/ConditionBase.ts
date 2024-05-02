@@ -27,7 +27,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         this._config = config;
     }
     /**
-     * A unique identifier for the specific implementation, like "Required" or "Range".
+     * A unique identifier for the specific implementation, like "RequireText" or "Range".
      * Its value appears in the IssueFound that comes from Validation, and in 
      * IssueFound that comes from retrieving a list of errors to display.
      * It allows the consumer of both to correlate those instances with the specific condition.
@@ -68,9 +68,9 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
     /**
      * Helps identify the purpose of the Condition. Impacts:
      * * Sort order of the list of Conditions evaluated by an Validator,
-     *   placing Required first and DataTypeCheck second.
+     *   placing Require first and DataTypeCheck second.
      * * Sets InputValueHostConfig.requiresInput.
-     * * Sets ValidatorConfig.severity when undefined, where Required
+     * * Sets ValidatorConfig.severity when undefined, where Require
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
      * override it with ConditionConfig.category.

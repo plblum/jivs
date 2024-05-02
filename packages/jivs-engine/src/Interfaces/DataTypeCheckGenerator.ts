@@ -8,7 +8,7 @@ import { IInputValueHost } from "./InputValueHost";
 
 /**
  * Used to automatically generate a Condition used for Data Type Check
- * based on the DataTypeLookupKey.
+ * based on the DataTypeLookupKey. Only supports IInputValueHost.
  * 
  * By default, automatic generation uses the DataTypeCheckCondition.
  * 
@@ -35,7 +35,7 @@ export interface IDataTypeCheckGenerator
  * Determines if the dataTypeLookupKey is supported.
  * Only call CreateCondition when this returns true.
  * @param dataTypeLookupKey
- * @returns when true, datatypeLookupKey is supported and CreateCondition can be used.
+ * @returns when true, datatypeLookupKey is supported and createCondition can be used.
  */
     supportsValue(dataTypeLookupKey: string): boolean;
 /**

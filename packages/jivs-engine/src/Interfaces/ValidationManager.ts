@@ -43,7 +43,7 @@ export interface IValidationManager extends IValueHostsManager {
      * @param options - Provides guidance on which validators to include.
      * Important to set options.BeforeSubmit to true if invoking validate() prior to submitting.
      * @returns The ValidationState object, which packages several key
-     * pieces of information: isValid, doNotSaveNativeValues, and issues found.
+     * pieces of information: isValid, doNotSave, and issues found.
      */
     validate(options?: ValidateOptions): ValidationState;
     /**
@@ -68,9 +68,9 @@ export interface IValidationManager extends IValueHostsManager {
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
      * True when at least one ValueHost's ValidationStatus is 
-     * Invalid or ValueChangedButUnvalidated
+     * Invalid or NeedsValidation
      */
-    doNotSaveNativeValues(): boolean;
+    doNotSave: boolean;
     
     /**
      * When true, an async Validator is running
@@ -123,8 +123,8 @@ export interface IValidationManager extends IValueHostsManager {
     getIssuesFound(group?: string): Array<IssueFound> | null;
 
     /**
-     * ValueHosts that validate should try to fire onValidated, even though they also 
-     * fire onValueHostValidated. This allows systems that observe validation changes 
+     * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 
+     * fire onValueHostValidationStateChanged. This allows systems that observe validation changes 
      * at the validationManager level to know.
      * This function is optionally debounced with a delay in ms coming from
      * ValidationManagerConfig.notifyValidationStateChangedDelay
@@ -179,7 +179,7 @@ export interface ValidationManagerConfig extends ValueHostsManagerConfig, IValid
     savedValueHostInstanceStates?: Array<ValueHostInstanceState> | null;
 }
 
-export type ValidationManagerValidatedHandler = (validationManager: IValidationManager, validationState: ValidationState) => void;
+export type ValidationStateChangedHandler = (validationManager: IValidationManager, validationState: ValidationState) => void;
 
 
 /**
@@ -189,22 +189,26 @@ export type ValidationManagerValidatedHandler = (validationManager: IValidationM
 export interface IValidationManagerCallbacks extends IValueHostsManagerCallbacks, IValidatorsValueHostBaseCallbacks {
 
     /**
-     * Called when ValidationManager's validate() function has returned.
-     * Supplies the result to the callback.
+     * Called when the state of validation has changed on a ValidatableValueHost.
+     * That includes validate(), clearValidation(), setBusinessLogicErrors(), 
+     * clearBusinessLogicErrors() and a few edge cases.
+     * Supplies the current ValidationState to the callback.
      * Examples: Use to notify the Validation Summary widget(s) to refresh.
      * Use to change the disabled state of the submit button based on validity.
+     * See also onValueHostValidationStateChanged for a similar callback from
+     * individual ValueHosts.
      */
-    onValidated?: ValidationManagerValidatedHandler | null;
+    onValidationStateChanged?: ValidationStateChangedHandler | null;
 
 
     /**
-     * Provides a debounce delay for onValidated notifications. The delay is in milliseconds.
+     * Provides a debounce delay for onValidationStateChanged notifications. The delay is in milliseconds.
      * 
-     * onValidated runs after each valueHost.validate() call, even though onValueHostValidated also runs.
+     * onValidationStateChanged runs after each valueHost.validate() call, even though onValueHostValidationStateChanged also runs.
      * Some features need to know about the general change to the validation state, not just
-     * on the individual field. So they expect onValidated to run after valueHost.validate() runs.
+     * on the individual field. So they expect onValidationStateChanged to run after valueHost.validate() runs.
      * A call by ValidationManager.validate() will validate a list of valueHosts, and
-     * all of them will try to invoke onValidated. That's too many in a short period.
+     * all of them will try to invoke onValidationStateChanged. That's too many in a short period.
      * This debounces them so ValidationManager.validated() generally has one call.
      * 
      * Leave undefined to use the default of defaultNotifyValidationStateChangedDelay.
@@ -227,7 +231,7 @@ export function toIValidationManager(source: any): IValidationManager | null
         if (test.validate !== undefined &&
             test.clearValidation !== undefined &&
             test.isValid !== undefined &&
-            test.doNotSaveNativeValues !== undefined &&
+            test.doNotSave !== undefined &&
             test.getIssuesFound !== undefined)
             return test;
     }
@@ -246,7 +250,7 @@ export function toIValidationManagerCallbacks(source: any): IValidationManagerCa
     {
         let test = source as IValidationManagerCallbacks;     
         if (test.onInstanceStateChanged !== undefined &&
-            test.onValidated !== undefined)
+            test.onValidationStateChanged !== undefined)
             return test;
     }
     return null;

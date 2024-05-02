@@ -185,7 +185,7 @@ export class Validator implements IValidator {
             value = value(this);
         if (value == null)  // null/undefined
             switch (this.condition.category) {
-                case ConditionCategory.Required:
+                case ConditionCategory.Require:
                 case ConditionCategory.DataTypeCheck:
                     return ValidationSeverity.Severe;
                 default:
@@ -278,8 +278,8 @@ export class Validator implements IValidator {
         };
         try {
             // options that may bail out
-            if (options.preliminary && this.condition.category === ConditionCategory.Required)
-                return bailout('Preliminary option skips Required conditions');
+            if (options.preliminary && this.condition.category === ConditionCategory.Require)
+                return bailout('Preliminary option skips Category=Require conditions');
 
             if (options.duringEdit && !this.supportsDuringEdit())
                 return bailout('DuringEdit option limited to conditions that implement IEvaluateConditionDuringEdits');

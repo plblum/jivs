@@ -65,9 +65,9 @@ describe('constructor and initial property values', () => {
         expect(testItem!.exposedState).not.toBeNull();
         expect(testItem!.exposedState.stateChangeCounter).toBe(0);
         expect(testItem!.onInstanceStateChanged).toBeNull();
-        expect(testItem!.onValidated).toBeNull();
+        expect(testItem!.onValidationStateChanged).toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).toBeNull();
-        expect(testItem!.onValueHostValidated).toBeNull();
+        expect(testItem!.onValueHostValidationStateChanged).toBeNull();
         expect(testItem!.onValueChanged).toBeNull();
         expect(testItem!.onInputValueChanged).toBeNull();
     });
@@ -77,9 +77,9 @@ describe('constructor and initial property values', () => {
             services: new MockValidationServices(false, false),
             valueHostConfigs: [],
             onInstanceStateChanged: (valueHostsManager: IValueHostsManager, state: ValidationManagerInstanceState) => { },
-            onValidated: (validationManager: IValidationManager, validationState : ValidationState) => { },
+            onValidationStateChanged: (validationManager: IValidationManager, validationState : ValidationState) => { },
             onValueHostInstanceStateChanged: (valueHost: IValueHost, state: ValueHostInstanceState) => { },
-            onValueHostValidated: (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
+            onValueHostValidationStateChanged: (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
             onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
             onInputValueChanged: (valueHost: IValidatableValueHostBase, oldValue: any) => { }
         };
@@ -89,9 +89,9 @@ describe('constructor and initial property values', () => {
 
         // other tests will confirm that the function correctly runs
         expect(testItem!.onInstanceStateChanged).not.toBeNull();
-        expect(testItem!.onValidated).not.toBeNull();
+        expect(testItem!.onValidationStateChanged).not.toBeNull();
         expect(testItem!.onValueHostInstanceStateChanged).not.toBeNull();
-        expect(testItem!.onValueHostValidated).not.toBeNull();
+        expect(testItem!.onValueHostValidationStateChanged).not.toBeNull();
         expect(testItem!.onValueChanged).not.toBeNull();
         expect(testItem!.onInputValueChanged).not.toBeNull();
     });
@@ -150,22 +150,22 @@ function setupInputValueHostConfig(fieldIndex: number,
 
 // validate(group?: string): Array<ValueHostValidateResult>
 // get isValid(): boolean
-// doNotSaveNativeValue(): boolean
+// doNotSave: boolean
 // getIssuesForInput(valueHostName: ValueHostName): Array<IssueFound>
 // getIssuesFound(group?: string): Array<IssueFound>
-describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssuesForInput, getIssuesFound based on the results', () => {
-    test('Before calling validate with 0 inputValueHosts, isValid=true, doNotSaveNativeValue=false, getIssuesForInput=[], getIssuesFound=[]', () => {
+describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput, getIssuesFound based on the results', () => {
+    test('Before calling validate with 0 inputValueHosts, isValid=true, doNotSave=false, getIssuesForInput=[], getIssuesFound=[]', () => {
         let setup = setupValidationManager();
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.doNotSave).toBe(false);
         expect(setup.validationManager.getIssuesForInput('Anything')).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
-    test('isValid is true and doNotSaveNativeValue is false before calling validate with 1 inputValueHosts', () => {
+    test('isValid is true and doNotSave is false before calling validate with 1 inputValueHosts', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config]);
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.doNotSave).toBe(false);
         expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
@@ -177,13 +177,13 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.doNotSave).toBe(false);
         expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
@@ -204,14 +204,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
 
 
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
+        expect(setup.validationManager.doNotSave).toBe(true);
 
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([expectedIssueFound]);
         expect(setup.validationManager.getIssuesFound()).toEqual([expectedIssueFound]);
@@ -233,13 +233,13 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
+        expect(setup.validationManager.doNotSave).toBe(true);
 
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([expectedIssueFound]);
         expect(setup.validationManager.getIssuesFound()).toEqual([expectedIssueFound]);
@@ -256,13 +256,13 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.doNotSave).toBe(false);
 
         expect(setup.validationManager.getIssuesForInput(config1.name)).toBeNull();
         expect(setup.validationManager.getIssuesForInput(config2.name)).toBeNull();
@@ -279,13 +279,13 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.doNotSave).toBe(false);
 
         expect(setup.validationManager.getIssuesForInput(config1.name)).toBeNull();
         expect(setup.validationManager.getIssuesForInput(config2.parentConfig.name)).toBeNull();
@@ -302,13 +302,13 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.doNotSave).toBe(false);
         expect(setup.validationManager.getIssuesForInput(config1.name)).toBeNull();
         expect(setup.validationManager.getIssuesForInput(config2.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
@@ -338,13 +338,13 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate()).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound, expectedIssueFound2],
             asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
+        expect(setup.validationManager.doNotSave).toBe(true);
 
         expect(setup.validationManager.getIssuesForInput(config1.name)).toEqual([expectedIssueFound]);
         expect(setup.validationManager.getIssuesForInput(config2.name)).toEqual([expectedIssueFound2]);
@@ -360,7 +360,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         ]);
         expect(result).toBe(true);
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
+        expect(setup.validationManager.doNotSave).toBe(true);
         expect(setup.validationManager.getIssuesFound()).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
@@ -390,7 +390,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         ]);
         expect(result).toBe(true);
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
+        expect(setup.validationManager.doNotSave).toBe(true);
         expect(setup.validationManager.getIssuesFound()).toEqual([<IssueFound>{
             errorMessage: 'BL_ERROR',
             severity: ValidationSeverity.Error,
@@ -423,7 +423,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(result).toBe(true);
         setup.validationManager.validate();
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
+        expect(setup.validationManager.doNotSave).toBe(true);
         expect(setup.validationManager.getIssuesFound()).toEqual([
             <IssueFound>{
                 errorMessage: 'CONDITION ERROR',
@@ -480,7 +480,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         };
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
-            onValidated: callback
+            onValidationStateChanged: callback
         });
         let expectedIssueFound: IssueFound = {
             errorCode: 'GENERATED_0',
@@ -497,7 +497,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         ]);
         expect(callbackValue).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -510,7 +510,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         };
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
-            onValidated: callback
+            onValidationStateChanged: callback
         });
         let expectedIssueFound: IssueFound = {
             errorCode: 'GENERATED_0',
@@ -527,14 +527,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(callbackValue).toBeNull();
 
     });    
-    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationStatus.Undetermined because Required should be skipped, leaving NO validators', () => {
+    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationStatus.Undetermined because Require should be skipped, leaving NO validators', () => {
         const conditionType = 'TEST';
         let config = setupInputValueHostConfig(0, [conditionType]);
         let setup = setupValidationManager([config]);
         (setup.services.conditionFactory as ConditionFactory).register<UserSuppliedResultConditionConfig>(
             conditionType, (config) => new UserSuppliedResultCondition({
                 conditionType: conditionType,
-                category: ConditionCategory.Required,
+                category: ConditionCategory.Require,
             result: ConditionEvaluateResult.NoMatch
             }));
     
@@ -544,13 +544,13 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate({ preliminary: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.doNotSave).toBe(false);
         expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
     });
@@ -561,7 +561,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         (setup.services.conditionFactory as ConditionFactory).register<UserSuppliedResultConditionConfig>(
             conditionType, (config) => new UserSuppliedResultCondition({
                 conditionType: conditionType,
-                category: ConditionCategory.Required,
+                category: ConditionCategory.Require,
             result: ConditionEvaluateResult.NoMatch
         }));
         let expectedIssueFound: IssueFound = {
@@ -569,7 +569,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + conditionType,
             summaryMessage: 'Summary 1: ' + conditionType,
-            severity: ValidationSeverity.Severe // only because Required conditions default to Severe
+            severity: ValidationSeverity.Severe // only because Require conditions default to Severe
         };
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
@@ -577,13 +577,13 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate({ preliminary: false })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
 
         expect(setup.validationManager.isValid).toBe(false);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(true);
+        expect(setup.validationManager.doNotSave).toBe(true);
 
         expect(setup.validationManager.getIssuesForInput(config.name)).toEqual([expectedIssueFound]);
 
@@ -605,7 +605,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -627,7 +627,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -640,7 +640,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
@@ -654,13 +654,13 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
 
     });          
-    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit has no impact on Required validators', () => {
+    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit has no impact on Category=Require validators', () => {
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
         let expectedIssueFound: IssueFound = {
@@ -677,7 +677,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -695,7 +695,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate({ duringEdit: true })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
@@ -718,7 +718,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(() => validationState = setup.validationManager.validate({ duringEdit: false })).not.toThrow();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -730,14 +730,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         };
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
-            onValidated: callback
+            onValidationStateChanged: callback
         });
 
         let validationState = setup.validationManager.validate();
 
         expect(callbackValue).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
@@ -749,7 +749,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         };
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
-            onValidated: callback
+            onValidationStateChanged: callback
         });
 
         let validationState = setup.validationManager.validate({ skipCallback: true});
@@ -768,7 +768,7 @@ describe('ValidationManager.clearValidation', () => {
         setup.validationManager.validate();
         expect(() => setup.validationManager.clearValidation()).not.toThrow();
         expect(setup.validationManager.isValid).toBe(true);
-        expect(setup.validationManager.doNotSaveNativeValues()).toBe(false);
+        expect(setup.validationManager.doNotSave).toBe(false);
         expect(setup.validationManager.getIssuesForInput(config1.name)).toBeNull();
         expect(setup.validationManager.getIssuesForInput(config2.name)).toBeNull();
         expect(setup.validationManager.getIssuesFound()).toBeNull();
@@ -796,8 +796,8 @@ describe('ValidationManager.clearValidation', () => {
         for (let i = 0; i < numberOfValueHosts; i++)
             ivConfigs.push(setupInputValueHostConfig(i, [NeverMatchesConditionType]));
         let setup = setupValidationManager(ivConfigs, null, {
-            onValidated: callbackValidated,
-            onValueHostValidated : useVHCallback ? callbackValueHostValidated : undefined,
+            onValidationStateChanged: callbackValidated,
+            onValueHostValidationStateChanged : useVHCallback ? callbackValueHostValidated : undefined,
             notifyValidationStateChangedDelay: delayConfig
         });
         setup.services.autoGenerateDataTypeCheckService.enabled = false;
@@ -844,7 +844,7 @@ describe('ValidationManager.clearValidation', () => {
         };
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config], null, {
-            onValidated: callback
+            onValidationStateChanged: callback
         });
 
         let validationState = setup.validationManager.validate({ skipCallback: true });
@@ -957,19 +957,19 @@ describe('dispose', () => {
         let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);     
         let countCalls = 0;
         let setup = setupValidationManager([config], null, {
-            onValidated: (vm, vs) => {
+            onValidationStateChanged: (vm, vs) => {
                 countCalls++;
             },
             notifyValidationStateChangedDelay: 100
         });
         setup.services.autoGenerateDataTypeCheckService.enabled = false;
         setup.validationManager.notifyValidationStateChanged(null);   // starts a debounce delay
-        jest.advanceTimersByTime(100);  // force onValidated to run
+        jest.advanceTimersByTime(100);  // force onValidationStateChanged to run
         expect(countCalls).toBe(1);
 
         setup.validationManager.notifyValidationStateChanged(null);   // repeat, starts a debounce delay
         setup.validationManager.dispose();
-        jest.advanceTimersByTime(100);  // force onValidated to run   
+        jest.advanceTimersByTime(100);  // force onValidationStateChanged to run   
         expect(countCalls).toBe(1);
     });    
 });
@@ -980,9 +980,9 @@ describe('toIValidationManagerCallbacks function', () => {
             onValueChanged: (vh: IValueHost, old: any) => {},
             onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => {},
             onInputValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
-            onValueHostValidated: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
+            onValueHostValidationStateChanged: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
             onInstanceStateChanged: (vm, state) => { },
-            onValidated: (vm, results) => { }
+            onValidationStateChanged: (vm, results) => { }
         };
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
     });
@@ -1000,9 +1000,9 @@ describe('toIValidationManagerCallbacks function', () => {
             onValueChanged: (vh: IValueHost, old: any) => {},
             onValueHostInstanceStateChanged: (vh: IValueHost, state: ValueHostInstanceState) => {},
             onInputValueChanged: (vh: IValidatableValueHostBase, old: any)  => {},
-            onValueHostValidated: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
+            onValueHostValidationStateChanged: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
             onInstanceStateChanged: (vm, state) => { },
-            onValidated: (vm, results) => { }            
+            onValidationStateChanged: (vm, results) => { }            
         });
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
     });        
@@ -1013,9 +1013,9 @@ describe('toIValidationManagerCallbacks function', () => {
             onValueChanged: null,
             onValueHostInstanceStateChanged: null,
             onInputValueChanged: null,
-            onValueHostValidated: null,
+            onValueHostValidationStateChanged: null,
             onInstanceStateChanged: null,
-            onValidated: null            
+            onValidationStateChanged: null            
         });
         expect(toIValidationManagerCallbacks(testItem)).toBe(testItem);
     });            
@@ -1040,9 +1040,7 @@ describe('toIValidationManager function', () => {
                 throw new Error("Function not implemented.");
             },
             isValid: false,
-            doNotSaveNativeValues: function (): boolean {
-                throw new Error("Function not implemented.");
-            },
+            doNotSave: true,
             setBusinessLogicErrors: function (errors: BusinessLogicError[] | null, options?: ValidateOptions | undefined): boolean {
                 throw new Error("Function not implemented.");
             },
