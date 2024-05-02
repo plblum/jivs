@@ -8,7 +8,6 @@ import { IDataTypeCheckGenerator } from "./DataTypeCheckGenerator";
 import { IDataTypeServiceBase } from "./DataTypes";
 import { IInputValueHost } from "./InputValueHost";
 import { IServicesAccessor } from "./ValidationServices";
-import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
 
 /**
  * Service that supports automatic generation of Conditions for the Data Type Check

@@ -9,6 +9,7 @@ import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 
 
 /**
@@ -26,7 +27,7 @@ export class MessageTokenResolverService implements IMessageTokenResolverService
      * @param hosts 
      * @returns the message with formatting resolved
      */
-    public resolveTokens(message: string, valueHost: IInputValueHost, valueHostResolver: IValueHostResolver, ...hosts: Array<IMessageTokenSource>): string
+    public resolveTokens(message: string, valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver, ...hosts: Array<IMessageTokenSource>): string
     {
         assertNotNull(message, 'message');
         assertNotNull(valueHostResolver, 'valueHostResolver');

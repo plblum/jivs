@@ -2,8 +2,8 @@
  * @module Services/Types/IMessageTokenResolverService
  */
 
-import { IInputValueHost } from "./InputValueHost";
 import { IMessageTokenSource } from "./MessageTokenSource";
+import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
 import { IValueHostResolver } from "./ValueHostResolver";
 
 /**
@@ -33,6 +33,6 @@ export interface IMessageTokenResolverService {
      * @param hosts 
      * @returns the message with formatting resolved
      */
-    resolveTokens(message: string, valueHost: IInputValueHost,
+    resolveTokens(message: string, valueHost: IValidatorsValueHostBase,
         valueHostResolver: IValueHostResolver, ...hosts: Array<IMessageTokenSource>): string;
 }

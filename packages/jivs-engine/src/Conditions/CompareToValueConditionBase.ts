@@ -8,11 +8,11 @@
 import { IValueHostResolver } from './../Interfaces/ValueHostResolver';
 import { ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter } from './../Interfaces/Conditions';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 
 /**
  * ConditionConfig for CompareToValueConditionBase.
@@ -71,7 +71,7 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         let secondValue = this.config.secondValue;
