@@ -37,7 +37,7 @@ class TestValidatableValueHost extends ValidatableValueHostBase<ValidatableValue
             this.validateWillReturn = {
                 status: validationStatus,
                 issuesFound: (validationStatus === ValidationStatus.Undetermined ||
-                    validationStatus === ValidationStatus.ValueChangedButUnvalidated ||
+                    validationStatus === ValidationStatus.NeedsValidation ||
                     validationStatus === ValidationStatus.Valid) ? null : [{
                         valueHostName: 'Field1',
                         errorCode: 'TEST',
@@ -263,28 +263,28 @@ describe('setValue', () => {
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(() => setup.valueHost.setValue(10)).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
     });
     test('setValueOptions is empty. ValidationStatus changes to ValueChanged', () => {
         let setup = setupValidatableValueHostBase();
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(() => setup.valueHost.setValue(10, {})).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
     });    
     test('setValueOptions is null. ValidationStatus changes to ValueChanged', () => {
         let setup = setupValidatableValueHostBase();
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(() => setup.valueHost.setValue(10, null!)).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
     });
     test('setValueOptions = { validate: false }. ValidationStatus changes to ValueChanged', () => {
         let setup = setupValidatableValueHostBase();
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(() => setup.valueHost.setValue(10, { validate: false })).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
     });
     test('setValueOptions = { validate: true }. ValidationStatus changes to result of Validate()', () => {
         let setup = setupValidatableValueHostBase(null, null, ValidationStatus.Undetermined);
@@ -304,14 +304,14 @@ describe('setValue', () => {
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.isChanged).toBe(false);
     });
-    test('Set Value using { validate: true } then set value with no options. Expect ValidationStatus to ValueChangedButUnvalidated', () => {
+    test('Set Value using { validate: true } then set value with no options. Expect ValidationStatus to NeedsValidation', () => {
         let setup = setupValidatableValueHostBase(null, null, ValidationStatus.Undetermined);
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(() => setup.valueHost.setValue(10, { validate: true })).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
         expect(() => setup.valueHost.setValue(20)).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
     });
     test('instanceState has Value=10, then set Value to the same value. No changes. ValidationStatus stays NotAttempted, IsChanged stays false', () => {
@@ -484,10 +484,10 @@ describe('ValidatableValueHostBase.clearValidation', () => {
         expect(stateChanges).toEqual(expectedChanges);
     });
 });
-// doNotSaveNativeValue(): boolean
-describe('ValidatableValueHostBase.doNotSaveNativeValue', () => {
+// doNotSave: boolean
+describe('ValidatableValueHostBase.doNotSave', () => {
 
-    function trydoNotSaveNativeValue(initialValidationStatusCode: ValidationStatus, hasPendings: boolean, expectedResult: boolean): void {
+    function trydoNotSave(initialValidationStatusCode: ValidationStatus, hasPendings: boolean, expectedResult: boolean): void {
         let vhConfig: ValidatableValueHostBaseConfig = {
             name: 'Field1',
             valueHostType: 'TestValidatableValueHost'
@@ -503,22 +503,22 @@ describe('ValidatableValueHostBase.doNotSaveNativeValue', () => {
     
             let setup = setupValidatableValueHostBase(vhConfig, state);
     
-            expect(setup.valueHost.doNotSaveNativeValue()).toBe(expectedResult);
+            expect(setup.valueHost.doNotSave).toBe(expectedResult);
         }    
-    test('ValidationStatus = Valid, doNotSaveNativeValue=false', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Valid, false, false);
+    test('ValidationStatus = Valid, doNotSave=false', () => {
+        trydoNotSave(ValidationStatus.Valid, false, false);
     });
-    test('ValidationStatus = Undetermined, doNotSaveNativeValue=false', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Undetermined, false, false);
+    test('ValidationStatus = Undetermined, doNotSave=false', () => {
+        trydoNotSave(ValidationStatus.Undetermined, false, false);
     });
-    test('ValidationStatus = Invalid, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Invalid, false, true);
+    test('ValidationStatus = Invalid, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.Invalid, false, true);
     });
-    test('ValidationStatus = Valid but with async pending, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Valid, true, true);
+    test('ValidationStatus = Valid but with async pending, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.Valid, true, true);
     });
-    test('ValidationStatus = ValueChangedButUnvalidated, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationStatus.ValueChangedButUnvalidated, true, true);
+    test('ValidationStatus = NeedsValidation, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.NeedsValidation, true, true);
     });
 
 });
@@ -626,7 +626,7 @@ describe('clearBusinessLogicErrors', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -658,7 +658,7 @@ describe('clearBusinessLogicErrors', () => {
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             isValid: true,
             issuesFound: null,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             asyncProcessing: false,
             status: ValidationStatus.NotAttempted
         });
@@ -669,7 +669,7 @@ describe('clearBusinessLogicErrors', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -853,9 +853,7 @@ describe('toIValidatableValueHostBase', () => {
             clearBusinessLogicErrors: function (): boolean {
                 throw new Error('Function not implemented.');
             },
-            doNotSaveNativeValue: function (): boolean {
-                throw new Error('Function not implemented.');
-            },
+            doNotSave: false,
 
             getIssueFound(errorCode: string): IssueFound | null {
                 throw new Error('Function not implemented.');
@@ -966,9 +964,7 @@ describe('toIValidatableValueHostBase function', () => {
         clearBusinessLogicErrors(): boolean {
             throw new Error("Method not implemented.");
         }
-        doNotSaveNativeValue(): boolean {
-            throw new Error("Method not implemented.");
-        }
+        doNotSave = false;
         getIssueFound(errorCode: string): IssueFound | null {
             throw new Error("Method not implemented.");
         }
@@ -1047,7 +1043,7 @@ describe('toIValidatableValueHostBaseCallbacks function', () => {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostInstanceStateChanged(vh: IValueHost, state: ValueHostInstanceState) { }
         onInputValueChanged(vh: IValidatableValueHostBase, old: any) { }
-        onValueHostValidated(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
+        onValueHostValidationStateChanged(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIValidatableValueHostBaseCallbacksImplementation();

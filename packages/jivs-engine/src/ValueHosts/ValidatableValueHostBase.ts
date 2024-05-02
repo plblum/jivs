@@ -45,7 +45,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
     */
     public setValue(value: any, options?: SetValueOptions): void {
         if (!options)
@@ -59,7 +59,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let changed = !deepEquals(value, oldValue);
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
-                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.status = ValidationStatus.NeedsValidation;
                 stateToUpdate.value = value;
             }
             this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
@@ -73,7 +73,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     protected processValidationOptions(options: SetValueOptions): void {
         if (options.validate) {
-            if (this.instanceState.status === ValidationStatus.ValueChangedButUnvalidated)
+            if (this.instanceState.status === ValidationStatus.NeedsValidation)
                 this.validate({ duringEdit: options.duringEdit }); // Result isn't ignored. Its automatically updates state and notifies parent
         }
         else if (options.reset)
@@ -96,7 +96,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             return; // mostly to call out this case isn't desirable.
         if (this.validationStatus === ValidationStatus.NotAttempted)
             return; // validation didn't previously run, so no change now
-        if (!revalidate && (this.validationStatus === ValidationStatus.ValueChangedButUnvalidated))
+        if (!revalidate && (this.validationStatus === ValidationStatus.NeedsValidation))
             return; // validation didn't previously run and the rest only sets the same ValidationStatus
 
         // Looks like validation previously ran...
@@ -110,14 +110,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         }
 
         if (this._associatedValueHosts.has(valueHostIdThatChanged)) {
-            // change the ValidationStatus to ValueChangedButUnvalidated when revalidate is false
+            // change the ValidationStatus to NeedsValidation when revalidate is false
             // call validate() when revalidate is true
             if (revalidate)
                 this.validate();
             else {
                 this.updateInstanceState((stateToUpdate) => {
                     this.clearValidationDataFromInstanceState(stateToUpdate);
-                    stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                    stateToUpdate.status = ValidationStatus.NeedsValidation;
                     return stateToUpdate;
                 }, this);
             }
@@ -153,7 +153,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using doNotSaveNativeValue() for more clarity.
+     * Recommend using doNotSave for more clarity.
      */
     public get isValid(): boolean {
         return this.validationStatus !== ValidationStatus.Invalid;
@@ -167,7 +167,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * 
      * Prior to calling validate() (or setValue()'s validate option),
      * it is NotAttempted.
-     * After setValue it is ValueChangedButUnvalidated.
+     * After setValue it is NeedsValidation.
      * After validate, it may be Valid, Invalid or Undetermined.
      */
     public get validationStatus(): ValidationStatus {
@@ -190,7 +190,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
-     * It calls onValueHostValidated if there was a changed to the state.
+     * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param options - Only supports the skipCallback and Group options.
      * @returns true when there was something cleared
      */
@@ -235,12 +235,12 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
-     * True when ValidationStatus is Invalid or ValueChangedButUnvalidated.
+     * True when ValidationStatus is Invalid or NeedsValidation.
      */
-    public doNotSaveNativeValue(): boolean {
+    public get doNotSave(): boolean {
         switch (this.validationStatus) {
             case ValidationStatus.Invalid:
-            case ValidationStatus.ValueChangedButUnvalidated:
+            case ValidationStatus.NeedsValidation:
                 return true;
             default:
                 if (this.instanceState.asyncProcessing) // async running so long as not null
@@ -256,7 +256,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in AssociatedValueHostName.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
-     * It calls onValueHostValidated if there was a changed to the state.
+     * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param error - A business logic error to show. If it has an errorCode assigned and the same
      * errorCode is already recorded here, the new entry replaces the old one.
      * @returns true when a change was made to the known validation state.
@@ -293,7 +293,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     /**
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
-     * It calls onValueHostValidated if there was a changed to the state.
+     * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param options - Only considers the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
@@ -312,9 +312,9 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
 
     /**
-     * Helper to call onValueHostValidated due to a change in the state associated
+     * Helper to call onValueHostValidationStateChanged due to a change in the state associated
      * with Validate itself or BusinessLogicErrors.
-     * It also asks ValidationManager to call onValidated so observers that only 
+     * It also asks ValidationManager to call onValidationStateChanged so observers that only 
      * watch for validation from a high level will be notified.
      */
     protected invokeOnValueHostValidated(options: ValidateOptions | undefined): void
@@ -324,14 +324,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
         // the order is intentional, but not ideal.
         // To unit test the debounce feature of notifyValidationStateChanged, we need
-        // the call to notify to be queued inside of debounce by the time onValueHostValidated is invoked,
-        // so we can leverage the onValueHostValidated to advance the mock timer. (Ugh)
+        // the call to notify to be queued inside of debounce by the time onValueHostValidationStateChanged is invoked,
+        // so we can leverage the onValueHostValidationStateChanged to advance the mock timer. (Ugh)
         toIValidationManager(this.valueHostsManager)?.notifyValidationStateChanged(null, options);
-        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
+        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidationStateChanged?.(this,
             {
                 issuesFound: this.getIssuesFound(),
                 isValid: this.isValid,
-                doNotSaveNativeValues: this.doNotSaveNativeValue(),
+                doNotSave: this.doNotSave,
                 asyncProcessing: this.asyncProcessing,
                 status: this.validationStatus
             });

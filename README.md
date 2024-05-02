@@ -59,7 +59,7 @@ libraries of many types, including other schema validation services and internat
 ### Features
 
 -	Fields are independently configurable, allowing UI widgets to remain unaware of validation rules and error messages. Jivs notifies UI widgets with validation outcomes.
--	Provides "Condition" objects for a standardized approach to validation, alongside support for custom validation rules, including asynchronous ones. Supplied conditions include: Required, Regular Expression, Range, Compare Two Values, String Length, and Not Null.
+-	Provides "Condition" objects for a standardized approach to validation, alongside support for custom validation rules, including asynchronous ones. Supplied conditions include: Require, Regular Expression, Range, Compare Two Values, String Length, and Not Null.
 -	Most validation rules come from business logic. The "Data Type Check" is different, a rule that comes from the decisions made about UI widgets. For example, a Date can be edited by a textbox or calendar. Jivs automatically applies an appropriate rule for these checks, keeping the UI code free from validation concerns.
 -	Jivs enables complex validations by providing the All Match and Any Match Conditions. They provide Boolean logic to a list of other Conditions.
 -	Business logic must also validate the Model before saving. Jivs incorporates business logic error messages alongside its own.
@@ -120,13 +120,13 @@ Suppose that you have this HTML:
   <button>Submit</button>
 </form>
 ```
-This code initializes a ValidationManager and sets up the `onValueHostValidated callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
+This code initializes a ValidationManager and sets up the `onValueHostValidationStateChanged callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
 
 ```ts
 let vmConfig: ValidationManagerConfig = {
   services: createValidationServices(),
   valueHostConfigs: ... your configuration for each Input ...
-  onValueHostValidated: fieldValidated
+  onValueHostValidationStateChanged: fieldValidated
 };
 let vm = new ValidationManager(vmConfig);
 
@@ -191,7 +191,7 @@ The ValidationManager should already have all changed values captured due to onc
 Run validation and proceed with submission if data is valid.
 ```ts
 let status = vm.validate(); // it will notify elements in your UI of validation changes
-if (status.doNotSaveNativeValues())
+if (status.doNotSave)
   // Prevent saving. User has to fix things
 else
   // Submit the page's data
@@ -234,7 +234,7 @@ The term "ValidationSummary" refers to a location in the UI that offers a consol
 
 You need these tools to setup your ValidationSummary:
 * An HTML element to host the ValidationSummary.
-* A function that responds to the `onValidated callback` on the ValidationManager. This function will gather the data and update the ValidationSummary.
+* A function that responds to the `onValidationStateChanged callback` on the ValidationManager. This function will gather the data and update the ValidationSummary.
 * Use the `getIssuesFound()` function on ValidationManager to retrieve those issues.
 
 We've modified the original example to provide a \<div> used for the ValidationSummary. It is shown outside of the \<form> but can be inside, and can be offered in multiple locations too:
@@ -248,14 +248,14 @@ We've modified the original example to provide a \<div> used for the ValidationS
   <button>Submit</button>
 </form>
 ```
-This code initializes a ValidationManager and sets up the `onValidated callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
+This code initializes a ValidationManager and sets up the `onValidationStateChanged callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
 
 ```ts
 let vmConfig: ValidationManagerConfig = {
   services: createValidationServices(),
   valueHostConfigs: ... your configuration for each Input ...
-  onValueHostValidated: fieldValidated,
-  onValidated: formValidated
+  onValueHostValidationStateChanged: fieldValidated,
+  onValidationStateChanged: formValidated
 };
 let vm = new ValidationManager(vmConfig);
 
@@ -403,6 +403,7 @@ Topics:
 - <a href="#createconditions">Creating your own Conditions</a>
 - <a href="#lookupkeys">Lookup Keys: DataTypes and Companion tools</a>
 - <a href="#localization">Localization</a>
+- <a href="#validationdeepdive">Validation Deep Dive</a>
 
 <a name="conditions"></a>
 ## Conditions - the validation rules
@@ -764,10 +765,10 @@ interface IValidationManager {
 
     validate(options?): ValidationState;
     clearValidation(options?): boolean;
-    doNotSaveNativeValues(): boolean;
     setBusinessLogicErrors(errors, options?): boolean;
         
     isValid: boolean;
+    doNotSave: boolean;
     asyncProcessing?: boolean;
     getIssuesForInput(valueHostName): null | IssueFound[];
     getIssuesFound(group?): null | IssueFound[];
@@ -797,10 +798,10 @@ interface ValidationManagerConfig {
     savedValueHostInstanceStates?: null | ValueHostInstanceState[];
     onInputValueChanged?: null | InputValueChangedHandler;
     onInstanceStateChanged?: null | ValidationManagerInstanceStateChangedHandler;
-    onValidated?: null | ValidationManagerValidatedHandler;
+    onValidationStateChanged?: null | ValidationStateChangedHandler;
     onValueChanged?: null | ValueChangedHandler;
     onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
-    onValueHostValidated?: null | ValueHostValidatedHandler;
+    onValueHostValidationStateChanged?: null | ValueHostValidationStateChangedHandler;
 }
 ```
 Let’s go through this type.
@@ -811,7 +812,7 @@ Let’s go through this type.
 -	`onInstanceStateChanged` and `onValueHostInstanceStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 -	`onValueChanged` notifies you when a `ValueHost` had its value changed.
 -	`onInputValueChanged` notifies you when an `InputValueHost` had its Input Value changed.
--	`onValidated` and `onValueHostValidated` notifies you after a `validate function` completes, providing the results.
+-	`onValidationStateChanged` and `onValueHostValidationStateChanged` notifies you after a `validate function` completes, providing the results.
 <a name="validationservices"></a>
 ## ValidationServices
 The `ValidationServices class` supports the operations of Validation with services and factories, which of course means you can heavily customize Jivs through the power of interfaces and dependency injection.
@@ -1232,3 +1233,294 @@ export function registerDataTypeFormatters(dtfs: DataTypeFormatterService): void
 ...
 }    
 ```
+<a name="validationdeepdive"></a>
+## Validation Deep Dive
+### What invokes validation
+Both the ValidationManager and validatable ValueHosts have a `validate()` function, as described in the next two sections.
+#### ValueHost.validate()
+When a ValueHosts' value changed, call its `validate()` function or pass the `{ validate: true }` option into the `setValue()` (and related) function.
+
+```ts
+let firstNameFld = document.getElementById('FirstName');
+firstNameFld.attachEventListener('onchanged', (evt)=>{
+  let inputValue = evt.target.value;
+  let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
+  let valueHost = getInputValueHost('FirstName');
+  valueHost.setValues(nativeValue, inputValue);
+  valueHost.validate();
+});	
+firstNameFld.attachEventListener('oninput', (evt)=>{
+  let valueHost = getInputValueHost('FirstName');
+  valueHost.setInputValue(evt.target.value);
+  valueHost.validate({ duringEdit: true });
+});
+```
+`validate()` takes an optional parameter called options which is this type:
+```ts
+interface ValidateOptions {
+  group?: string;
+  preliminary?: boolean;
+  duringEdit?: boolean;
+  skipCallback?: boolean;
+}
+```
+These properties are all related to ValueHost value changes:
+- duringEdit - Set to true when handling oninput events, or any other validation that needs to happen as the user types. Only a few validators will respond, including RequireTextCondition, RegExpCondition, and StringLengthCondition.
+- skipCallback - Set to true if you have a reason to skip the `onValueHostValidationStateChanged callback` normally invoked by `validate()`.
+
+The `setValue()`, `setValues()`, `setInputValue()`, and `setValueToUndefined()` functions all take an *options* parameter to include validation, saving a step:
+
+```ts
+let firstNameFld = document.getElementById('FirstName');
+firstNameFld.attachEventListener('onchanged', (evt)=>{
+  let inputValue = evt.target.value;
+  let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
+  let valueHost = getInputValueHost('FirstName');
+  valueHost.setValues(nativeValue, inputValue, { validate: true });
+});	
+firstNameFld.attachEventListener('oninput', (evt)=>{
+  let valueHost = getInputValueHost('FirstName');
+  valueHost.setInputValue(evt.target.value, { validate: true, duringEdit: true });
+});
+```
+Here is the type for the *options* parameter:
+```ts
+interface SetValueOptions {
+    validate?: boolean;
+    duringEdit?: boolean;
+    reset?: boolean;
+    conversionErrorTokenValue?: string;
+    skipValueChangedCallback?: boolean;
+}
+```
+These properties are all related to validation:
+- validate - When true, invoke validation but only if the value changed.
+- reset - When true, change the state of the ValueHost to unchanged and validation has not been attempted. 
+- conversionErrorTokenValue - Provide an error message related to parsing from the Input Value into native value. This message can be shown when using DataTypeCheckCondition, by using the {ConversionError} token in its error message:
+	```ts
+	let firstNameFld = document.getElementById('FirstName');
+	firstNameFld.attachEventListener('onchanged', (evt)=>{
+	  let inputValue = evt.target.value;
+	  let [nativeValue, errorMessage] = YourConvertToNativeCode(inputValue);  
+	  let valueHost = getInputValueHost('FirstName');
+	  valueHost.setValues(nativeValue, inputValue, { validate: true, conversionErrorTokenValue: errorMessage });
+	});	
+	
+	// set up the DataTypeCheckCondition's error message (local to this form)
+	let original = vm.services.textLocalizationService as TextLocalizationService;
+	let tls = new TextLocalizerService();
+    tls.fallbackService = original.textLocalizerService;
+    vm.services.textLocalizerService = tls;
+	
+	tls.service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
+      '*': 'Input error: {ConversionError}.' 
+    });
+    tls.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
+      '*': '{Label} has this error: {ConversionError}.'
+    });    
+	```
+
+#### ValidationManager.validate()
+Prior to submitting or any time you want to validate the entire form, use `validate()` on ValidationManager.
+```ts
+let status = vm.validate(); // it will notify elements in your UI of validation changes
+if (status.doNotSave)
+  // Prevent saving. User has to fix things
+else
+  // Submit the page's data
+```
+`validate()` takes an optional parameter called options which is this type:
+```ts
+interface ValidateOptions {
+  group?: string;
+  preliminary?: boolean;
+  duringEdit?: boolean;
+  skipCallback?: boolean;
+}
+```
+These properties are all related to ValidationManager validation:
+- group - Group validation is a tool to group validatable ValueHosts with a specific submit command when validating. If used, it needs a name assigned here and on ValueHosts that it targets. See their ValueHostConfig.group property. The name matching is case insensitive.
+
+	Use when there is more than one group of validatable ValueHosts to be validated together.
+	
+	For example, the ValidationManager handles two forms at once. Give the ValueHostConfig.group a name for each form. Then make their submit command
+	pass in the same group name.
+	
+- preliminary - Set to true when running a validation prior to a submit activity.
+Typically used just after loading the form to report any errors already present.
+When set, the RequireTextCondition is not checked as the user doesn't need
+the noise complaining about missing input when they haven't had a chance to address it.
+- skipCallback - Set to true if you have a reason to skip the `onValidationStateChanged callback` normally invoked by `validate()`.
+
+
+### Current validation state on valuehost
+Your user interface depends on knowing the state of validation. Has validation reported an error or not? Each validatable ValueHost has is own state that is found amongst several of its properties and functions.
+- `isValid`
+- `doNotSave`
+- `status`
+- `getIssuesFound()`
+- `asyncProcessing`
+
+*See the details of ValueHostValidationState below for more on these.*
+
+However, its usually better to setup the `onValueHostValidationStateChanged callback` (on ValidationManagerConfig) and let it pass you this informative object:
+```ts
+interface ValueHostValidationState {
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: null | IssueFound[];
+    asyncProcessing: boolean;
+    status: ValidationStatus;
+}
+```
+Here is an example of using `onValueHostValidationStateChanged callback`.
+```ts
+let vmConfig: ValidationManagerConfig = {
+  services: createValidationServices(),
+  valueHostConfigs: ... your configuration for each Input ...
+  onValueHostValidationStateChanged: fieldValidated
+};
+let vm = new ValidationManager(vmConfig);
+
+// Direct validation changes to the HTML elements
+// of a specific field, so they can update their appearance
+function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
+{
+  let fldId = valueHost.getName();
+  let editor = document.getElementById(fldId);
+  let errorHost = document.querySelector('.errorHost[data-for=' + fldId + ']');
+  if (validationState.isValid)
+  {
+    editor.classList.remove('invalid');
+    errorHost.classList.remove('invalid');      
+  }
+  else
+  {
+    editor.classList.add('invalid');
+    errorHost.classList.add('invalid');      
+  }
+// remove the current contents then if there are errors to shown, add them
+  errorHost.innerHtml = '';
+  if (validationState.issuesFound)
+  {
+    let ul = document.createElement('ul');
+    for (let i = 0; i < validationState.issuesFound.length; i++)
+    {
+      let li = document.createElement('li');
+      li.textContent = validationState.issuesFound[i].errorMessage;
+      ul.append(li);
+    }
+    errorHost.append(ul);
+  }
+}
+```
+
+Let's go through `ValueHostValidationState` properties:
+- status - Each ValueHost has status codes related to validation. Several reflect the state before validation is even attempted.
+	+ NotAttempted - So far, the value has not been changed and validation has not occurred.
+	+ NeedsValidation - The value has been changed and needs validation.
+	+ Undetermined - Validation occurred but the Condition could not make a determination of Match or NoMatch. 
+	
+	> Neither `isValid` nor `doNotSave` deal with a status of Undetermined. Undetermined indicates that the validators are incorrectly setup, such as you have a validator that expects a date, but are supplying a number. So this status should be addressed while in development.
+	+ Invalid - Validation occurred and the Condition reported NoMatch. Thus the value is invalid.
+	+ Valid - Validation occurred and the Condition reported Match. Thus the value is valid.
+- isValid - When true, the data appears to be valid. However, `isValid` is only false when there was an explicit `status` of *Invalid*. Statuses like *Undetermined* and *NotAttempted* are true as far as `isValid` is concerned. As a result, it's better to check `doNotSave` to know if you can submit the data.
+- doNotSave - Determines if a validator doesn't consider the ValueHost's value ready to save. It is true when `status` is *Invalid* or *NeedsValidation*. It is also true when `asyncProcessing` is true.
+- issuesFound - An array of all issues found or null when there are no issues found. See below for more on the `IssueFound type`.
+- asyncProcessing - When evaluating an asynchronous Condition, validation will return before it is done, with the results from the rest of the Conditions. `asyncProcessing` is true at this moment, and until all asynchronous Conditions are finished. Expect `onValueHostValidationStateChange callbacks` after the validation runs, and after each async Condition finishes, giving you the latest validation state.
+
+<a name="issuefound"></a>
+Here is the `IssueFound type`, which is supplied in the issuesFound array above:
+```ts
+interface IssueFound {
+    valueHostName: string;
+    errorCode: string;
+    severity: ValidationSeverity;
+    errorMessage: string;
+    summaryMessage?: string;
+}
+```
+Going through its properties:
+- valueHostName - The name of the ValueHost supplying this IssueFound.
+- errorCode - The error code from the Validator supplying this IssueFound. Error codes default to the ConditionType value used to select the Condition, but can be supplied as you configure the Validator in ValidatorConfig.errorCode.
+- severity - The severity: Severe, Error, or Warning. When Warning, the value is considered valid, but you wanted to show the user some message anyway.
+- errorMessage - The error message, fully localized and prepared to display.
+- summaryMessage - The error message that targets the ValidationSummary. 
+
+
+### Current validation state on ValidationManager
+The ValidationManager has similar functions to those on validatable ValueHosts, only it is a consolidated represention from the ValueHosts. The validation state is used prior to submitting the data and by the ValidationSummary as the state changes.
+
+ValidationManager's validation state is found amongst several of its properties and functions.
+- `isValid`
+- `doNotSave`
+- `asyncProcessing`
+- `getIssuesFound()`
+
+*See the details of ValidationState below for more on these.*
+
+When you need notifications as it changes, its setup the `onValidationStateChanged callback` (on ValidationManagerConfig) and let it pass you this informative object:
+```ts
+interface ValidationState {
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: null | IssueFound[];
+    asyncProcessing: boolean;
+}
+```
+Here is an example of using `onValidationStateChanged callback`.
+```ts
+let vmConfig: ValidationManagerConfig = {
+  services: createValidationServices(),
+  valueHostConfigs: ... your configuration for each Input ...
+  onValueHostValidationStateChanged: fieldValidated,
+  onValidationStateChanged: formValidated
+};
+let vm = new ValidationManager(vmConfig);
+
+function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
+{
+  ... shown earlier ...
+}
+function formValidated(validationManager: IValidationManager, validationState: ValidationState): void
+{
+  let valSummary = document.querySelector('.validationsummary');
+  if (validationState.isValid)
+  {
+    valSummary.classList.remove('invalid');      
+  }
+  else
+  {
+    valSummary.classList.add('invalid');      
+  }
+// remove the current contents then if there are errors to shown, add them
+  valSummary.innerHtml = '';
+  if (validationState.issuesFound)
+  {
+    let ul = document.createElement('ul');
+    for (let i = 0; i < validationState.issuesFound.length; i++)
+    {
+      let li = document.createElement('li');
+      li.textContent = validationState.issuesFound[i].errorMessage;
+      ul.append(li);
+    }
+    valSummary.append(ul);
+  }
+
+}
+```
+
+Let's go through ValidationState properties:
+- isValid - When true, the value appears to be valid. However, it's only false when there was an explicit `status` of *Invalid* within at least one ValueHost. It's better to check `doNotSave` to know if you can submit the data.
+- doNotSave - Determines if any ValueHost doesn't consider its value ready to save. It is true when the ValueHost validation `status` is *Invalid* or *NeedsValidation*. It is also true when `asyncProcessing` is true.
+- issuesFound - An array of all issues found or null when there are no issues found. See the <a href="issuefound">previous section</a> for details on the IssueFound type that populates this array.
+- asyncProcessing - When evaluating an asynchronous Condition, validation will return before it is done, with the results from the rest of the Conditions. `asyncProcessing` is true at this moment, and until all asynchronous Conditions are finished. Expect `onValueHostValidationStateChange callbacks` after the validation runs, and after each async Condition finishes, giving you the latest validation state.
+
+### Ways to change the validation state
+All of these actions can change the validation state whether on ValidationManager or a ValueHost. However, you will only be notified through onValidationStateChanged and onValueHostValidationStateChanged if the state actually changed.
+- `validate()`
+- `clearValidation()`
+- `setBusinessLogicError()`
+- `clearBusinessLogicErrors()`
+- using any of these with the { validate: true} option as a parameter: `setValue()`, `setValues()`, `setInputValue()`, `setValueToUndefined()`.
+- An asynchronous Condition just finished

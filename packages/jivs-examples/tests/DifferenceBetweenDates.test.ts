@@ -19,7 +19,7 @@ describe('Difference between dates is less than 10', () => {
         let result = vm.validate();
         let expected: ValidationState = {
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         };
@@ -34,7 +34,7 @@ describe('Difference between dates is less than 10', () => {
         let result = vm.validate();
         let expected: ValidationState = {
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         };
@@ -51,7 +51,7 @@ describe('Difference between dates is less than 10', () => {
         let expected: ValidationState =
         {
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
 
             issuesFound:  [{
                 errorMessage: 'The two dates must be less than 10 days apart.',
@@ -74,7 +74,7 @@ describe('Difference between dates is less than 10', () => {
         let expected: ValidationState =
         {
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
 
             issuesFound:  [{
                 errorMessage: 'Start date must be less than or equal to End date.',

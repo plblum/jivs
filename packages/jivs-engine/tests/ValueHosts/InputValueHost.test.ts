@@ -44,8 +44,8 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { BusinessLogicErrorsValueHost } from "../../src/ValueHosts/BusinessLogicErrorsValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
-import { ValueHostValidatedHandler, IValidatableValueHostBase, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
-import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, registerTestingOnlyConditions, NeverMatchesCondition } from "../TestSupport/conditionsForTesting";
+import { ValueHostValidationStateChangedHandler, IValidatableValueHostBase, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
+import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, registerTestingOnlyConditions, NeverMatchesCondition, UserSuppliedResultConditionType } from "../TestSupport/conditionsForTesting";
 import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
@@ -332,7 +332,7 @@ describe('setInputValue with getInputValue to check result', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC")).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -344,7 +344,7 @@ describe('setInputValue with getInputValue to check result', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", {})).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -356,7 +356,7 @@ describe('setInputValue with getInputValue to check result', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", null!)).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -368,7 +368,7 @@ describe('setInputValue with getInputValue to check result', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", { validate: false })).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -429,7 +429,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10")).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -444,7 +444,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", {})).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -458,7 +458,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", null!)).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -472,7 +472,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", { validate: false })).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -631,7 +631,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         });
 
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidated = (valueHost, validateResult) => {
+        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.setValues(undefined, 'ABC');   // will violate DataTypeCheckCondition
@@ -646,7 +646,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                     summaryMessage: 'Error Found'
                 }],
                 isValid: false,
-                doNotSaveNativeValues: true,
+                doNotSave: true,
                 asyncProcessing: false,
                 status: ValidationStatus.Invalid
             }
@@ -672,7 +672,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         });
 
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidated = (valueHost, validateResult) => {
+        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.setValues(undefined, 'ABC');   // will violate DataTypeCheckCondition
@@ -687,7 +687,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                     summaryMessage: 'Error Found'
                 }],
                 isValid: false,
-                doNotSaveNativeValues: true,
+                doNotSave: true,
                 asyncProcessing: false,
                 status: ValidationStatus.Invalid
             }
@@ -716,7 +716,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         });
 
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidated = (valueHost, validateResult) => {
+        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.setValues(undefined, 'ABC');   // will violate DataTypeCheckCondition
@@ -731,7 +731,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                     summaryMessage: 'Error Found'
                 }],
                 isValid: false,
-                doNotSaveNativeValues: true,
+                doNotSave: true,
                 asyncProcessing: false,
                 status: ValidationStatus.Invalid
             }
@@ -763,7 +763,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
             '*': 'Error Found'
         });
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidated = (valueHost, validateResult) => {
+        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.setValues('ABC', 'ABC');   // will violate the regexp
@@ -778,7 +778,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                     summaryMessage: 'Error Found'
                 }],
                 isValid: false,
-                doNotSaveNativeValues: true,
+                doNotSave: true,
                 asyncProcessing: false,
                 status: ValidationStatus.Invalid
             }
@@ -828,7 +828,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: configs,
-            onValueHostValidated: (valueHost, validateResult) => {
+            onValueHostValidationStateChanged: (valueHost, validateResult) => {
                 results.push(validateResult);
             }
         };
@@ -846,7 +846,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                     summaryMessage: 'Error Found'
                 }],
                 isValid: false,
-                doNotSaveNativeValues: true,
+                doNotSave: true,
                 asyncProcessing: false,
                 status: ValidationStatus.Invalid
             }
@@ -857,9 +857,9 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
 
 });
 
-// doNotSaveNativeValue(): boolean
-describe('InputValueHost.doNotSaveNativeValue', () => {
-    function trydoNotSaveNativeValue(initialValidationStatusCode: ValidationStatus, hasPendings: boolean, expectedResult: boolean): void {
+// doNotSave: boolean
+describe('InputValueHost.doNotSave', () => {
+    function trydoNotSave(initialValidationStatusCode: ValidationStatus, hasPendings: boolean, expectedResult: boolean): void {
         let ivConfig: ValidatorConfig = {
             conditionConfig: { conditionType: NeverMatchesConditionType },
             errorMessage: ''
@@ -876,22 +876,22 @@ describe('InputValueHost.doNotSaveNativeValue', () => {
 
         let setup = setupInputValueHostForValidate(ivConfigs, state);
 
-        expect(setup.valueHost.doNotSaveNativeValue()).toBe(expectedResult);
+        expect(setup.valueHost.doNotSave).toBe(expectedResult);
     }
-    test('ValidationStatus = Valid, doNotSaveNativeValue=false', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Valid, false, false);
+    test('ValidationStatus = Valid, doNotSave=false', () => {
+        trydoNotSave(ValidationStatus.Valid, false, false);
     });
-    test('ValidationStatus = Undetermined, doNotSaveNativeValue=false', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Undetermined, false, false);
+    test('ValidationStatus = Undetermined, doNotSave=false', () => {
+        trydoNotSave(ValidationStatus.Undetermined, false, false);
     });
-    test('ValidationStatus = Invalid, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Invalid, false, true);
+    test('ValidationStatus = Invalid, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.Invalid, false, true);
     });
-    test('ValidationStatus = Valid but with async pending, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Valid, true, true);
+    test('ValidationStatus = Valid but with async pending, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.Valid, true, true);
     });
-    test('ValidationStatus = ValueChangedButUnvalidated, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationStatus.ValueChangedButUnvalidated, false, true);
+    test('ValidationStatus = NeedsValidation, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.NeedsValidation, false, true);
     });
 
 });
@@ -939,7 +939,7 @@ describe('toIInputValueHost', () => {
             clearBusinessLogicErrors: function (): boolean {
                 throw new Error('Function not implemented.');
             },
-            doNotSaveNativeValue: function (): boolean {
+            get doNotSave(): boolean {
                 throw new Error('Function not implemented.');
             },
 
@@ -1301,7 +1301,7 @@ describe('InputValueHostGenerator members', () => {
         expect(state).toEqual(expectedState);
     });
 
-    test('cleanupInstanceState existing state with ValidationStatus=Invalid has an IssuesFound but no associated ValidationConfig. instanceState.IssuesFound is null and ValidationStatus is ValueChangedButUnvalidated', () => {
+    test('cleanupInstanceState existing state with ValidationStatus=Invalid has an IssuesFound but no associated ValidationConfig. instanceState.IssuesFound is null and ValidationStatus is NeedsValidation', () => {
         let originalState: InputValueHostInstanceState = {
             name: 'Field1',
             status: ValidationStatus.Invalid,
@@ -1335,7 +1335,7 @@ describe('InputValueHostGenerator members', () => {
         expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
         let expectedState = { ...originalState };
         expectedState.issuesFound = null;
-        expectedState.status = ValidationStatus.ValueChangedButUnvalidated;
+        expectedState.status = ValidationStatus.NeedsValidation;
         expect(state).toEqual(expectedState);
     });
     test('cleanupInstanceState existing state with ValidationStatus=Invalid, 2 IssuesFound where one is Warning and the other is removed. State.IssuesFound is the warning and ValidationStatus is Valid', () => {
@@ -1527,7 +1527,7 @@ describe('InputValueHostGenerator members', () => {
     });
 });
 describe('InputValueHost.requiresInput', () => {
-    test('Has a Required condition. requiresInput returns true', () => {
+    test('Has a RequireTextCondition. requiresInput returns true', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1540,7 +1540,21 @@ describe('InputValueHost.requiresInput', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(true);
     });
-    test('Lacks a Required condition. requiresInput returns false', () => {
+    test('Has a custom condition with Category=Require. requiresInput returns true', () => {
+        let ivConfigs: Array<Partial<ValidatorConfig>> = [
+            {
+                conditionConfig: {
+                    conditionType: UserSuppliedResultConditionType,
+                    category: ConditionCategory.Require
+                }
+            }
+        ];
+        let state: Partial<InputValueHostInstanceState> = {
+        };
+        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        expect(setup.valueHost.requiresInput).toBe(true);
+    });    
+    test('Lacks a condition with category=Require. requiresInput returns false', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1553,7 +1567,7 @@ describe('InputValueHost.requiresInput', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(false);
     });
-    test('Has a Required condition but its last amongst several. requiresInput returns true', () => {
+    test('Has a RequireTextCondition but its last amongst several. requiresInput returns true', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1576,6 +1590,30 @@ describe('InputValueHost.requiresInput', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(true);
     });
+    test('Has a custom condition with Category=Require but its last amongst several. requiresInput returns true', () => {
+        let ivConfigs: Array<Partial<ValidatorConfig>> = [
+            {
+                conditionConfig: {
+                    conditionType: NeverMatchesConditionType
+                }
+            },
+            {
+                conditionConfig: {
+                    conditionType: ConditionType.DataTypeCheck
+                }
+            },
+            {
+                conditionConfig: {
+                    conditionType: UserSuppliedResultConditionType,
+                    category: ConditionCategory.Require
+                }
+            }
+        ];
+        let state: Partial<InputValueHostInstanceState> = {
+        };
+        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        expect(setup.valueHost.requiresInput).toBe(true);
+    });    
 });
 
 describe('toIInputValueHost function', () => {
@@ -1630,7 +1668,7 @@ describe('toIInputValueHost function', () => {
         clearBusinessLogicErrors(): boolean {
             throw new Error("Method not implemented.");
         }
-        doNotSaveNativeValue(): boolean {
+        get doNotSave(): boolean {
             throw new Error("Method not implemented.");
         }
         getIssueFound(errorCode: string): IssueFound | null {
@@ -1711,7 +1749,7 @@ describe('toIInputValueHostCallbacks function', () => {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostInstanceStateChanged(vh: IValueHost, state: ValueHostInstanceState) { }
         onInputValueChanged(vh: IValidatableValueHostBase, old: any) { }
-        onValueHostValidated(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
+        onValueHostValidationStateChanged(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIInputValueHostCallbacksImplementation();

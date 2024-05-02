@@ -970,11 +970,11 @@ describe('Validator.validate', () => {
             }
         }, {}, 'Enabler using', LoggingLevel.Info);
     });
-    test('Issue exists but Required is skipped because IValidateOption.Preliminary = true.', () => {
+    test('Issue exists but Require is skipped because IValidateOption.Preliminary = true.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { preliminary: true }, 'Preliminary option', LoggingLevel.Info, false);
     });
-    test('Issue exists and Required is evaluated (as NoMatch) because IValidateOption.Preliminary = false.', () => {
+    test('Issue exists and Require is evaluated (as NoMatch) because IValidateOption.Preliminary = false.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { preliminary: false }, 'Preliminary option', LoggingLevel.Info, true);
     });
@@ -997,7 +997,7 @@ describe('Validator.validate', () => {
             }
         }, { duringEdit: false }, 'DuringEdit option', LoggingLevel.Info, true);
     });
-    test('Issue exists and Required is evaluated (as NoMatch) because IValidateOption.Preliminary = false.', () => {
+    test('Issue exists and Require is evaluated (as NoMatch) because IValidateOption.Preliminary = false.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
         }, { preliminary: false }, 'Preliminary option', LoggingLevel.Info, true);
     });

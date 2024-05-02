@@ -421,13 +421,13 @@ describe('class RequireTextCondition', () => {
         expect(testItem.evaluateDuringEdits(' A', vh, services)).toBe(ConditionEvaluateResult.Match);
     });
 
-    test('category is Required', () => {
+    test('category is Require', () => {
         let config: RequireTextConditionConfig = {
             conditionType: ConditionType.RequireText,
             valueHostName: 'Property1',
         };
         let testItem = new RequireTextCondition(config);
-        expect(testItem.category).toBe(ConditionCategory.Required);
+        expect(testItem.category).toBe(ConditionCategory.Require);
     });
     test('category is overridden', () => {
         let config: RequireTextConditionConfig = {
@@ -4523,13 +4523,13 @@ describe('class NotNullCondition', () => {
         expect(logger.getLatest()!.category).toBe(LoggingCategory.Configuration);
         expect(logger.getLatest()!.level).toBe(LoggingLevel.Error);
     });
-    test('category is Required', () => {
+    test('category is Require', () => {
         let config: NotNullConditionConfig = {
             conditionType: ConditionType.NotNull,
             valueHostName: 'Property1',
         };
         let testItem = new NotNullCondition(config);
-        expect(testItem.category).toBe(ConditionCategory.Required);
+        expect(testItem.category).toBe(ConditionCategory.Require);
     });
     test('category is overridden', () => {
         let config: NotNullConditionConfig = {

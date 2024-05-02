@@ -141,7 +141,7 @@ export class RequireTextCondition extends OneValueConditionBase<RequireTextCondi
         return ConditionEvaluateResult.Match;
     }    
     protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Required;
+        return ConditionCategory.Require;
     }    
 }
 
@@ -175,7 +175,7 @@ export class NotNullCondition extends OneValueConditionBase<NotNullConditionConf
     }
 
     protected get defaultCategory(): ConditionCategory {
-        return ConditionCategory.Required;
+        return ConditionCategory.Require;
     }
 }
 

@@ -378,7 +378,7 @@ FluentConditionCollector.prototype.testChainRequireText = testChainRequireText_C
 FluentConditionCollector.prototype.testChainRegExp = testChainRegExp_Cond;
 
 describe('Fluent chaining on build(vmConfig).input', () => {
-    test('build(vmConfig).input: Add RequiredTest condition to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).input: Add RequireTest condition to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1').testChainRequireText({}, 'Error', {});
@@ -388,7 +388,7 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
     });
-    test('build(vmConfig).input: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).input: Add RequireTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1')
@@ -449,7 +449,7 @@ describe('customRule', () => {
     });
 });
 describe('Fluent chaining on build(vmConfig).conditions', () => {
-    test('build(vmConfig).conditions: Add RequiredTest condition to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).conditions: Add RequireTest condition to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).conditions().testChainRequireText({});
@@ -459,7 +459,7 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
         expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
     });
-    test('build(vmConfig).conditions: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).conditions: Add RequireTest and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).conditions()
@@ -474,7 +474,7 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
         expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
-    test('build(vmConfig).conditions with EvaluateChildConditionResultsBaseConfig parameter: Add RequiredTest condition to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).conditions with EvaluateChildConditionResultsBaseConfig parameter: Add RequireText condition to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let eccrConfig: EvaluateChildConditionResultsBaseConfig = {
@@ -489,7 +489,7 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
         expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
     });
-    test('build(vmConfig).conditions with EvaluateChildConditionResultsBaseConfig parameter: Add RequiredTest and RegExp conditions to InputValueHostConfig via chaining', () => {
+    test('build(vmConfig).conditions with EvaluateChildConditionResultsBaseConfig parameter: Add RequireText and RegExp conditions to InputValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
 
         let eccrConfig: EvaluateChildConditionResultsBaseConfig = {
@@ -676,7 +676,7 @@ describe('addValidatorsTo', () => {
         let vmConfig = createVMConfig();
 
         let testItem = build(vmConfig).input('Field1');
-        build(vmConfig).addValidatorsTo('Field1').requireText(null, 'RequiredMessage');
+        build(vmConfig).addValidatorsTo('Field1').requireText(null, 'RequireMessage');
 
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Input,
@@ -685,7 +685,7 @@ describe('addValidatorsTo', () => {
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 },
-                errorMessage: 'RequiredMessage',
+                errorMessage: 'RequireMessage',
             }]
         }]);
     });
@@ -741,10 +741,10 @@ describe('favorUIMessages', () => {
         let tls = new TextLocalizerService();
         vmConfig.services.textLocalizerService = tls;   // start fresh
 
-        build(vmConfig).input('Field1').requireText(null, 'RequiredMessage',
+        build(vmConfig).input('Field1').requireText(null, 'RequireMessage',
             {
                 errorMessagel10n: 'eml10n',
-                summaryMessage: 'SummaryRequiredMessage',
+                summaryMessage: 'SummaryRequireMessage',
                 summaryMessagel10n: 'sml10n'
             }
         );
@@ -754,7 +754,7 @@ describe('favorUIMessages', () => {
                 summaryMessage: 'SummaryRegExpMessage',
                 summaryMessagel10n: 'sml10n'
             }
-        ).requireText(null, 'Field2Required');
+        ).requireText(null, 'Field2Require');
         build(vmConfig).favorUIMessages();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
@@ -764,9 +764,9 @@ describe('favorUIMessages', () => {
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 },
-                errorMessage: 'RequiredMessage',
+                errorMessage: 'RequireMessage',
                 errorMessagel10n: 'eml10n',
-                summaryMessage: 'SummaryRequiredMessage',
+                summaryMessage: 'SummaryRequireMessage',
                 summaryMessagel10n: 'sml10n'
             }]
         },
@@ -788,7 +788,7 @@ describe('favorUIMessages', () => {
                     conditionConfig: {
                         conditionType: ConditionType.RequireText
                     },
-                    errorMessage: 'Field2Required',
+                    errorMessage: 'Field2Require',
                 }]
         }
         ]);
@@ -804,10 +804,10 @@ describe('favorUIMessages', () => {
             '*': 'tls-regexp'
         });
 
-        build(vmConfig).input('Field1').requireText(null, 'RequiredMessage',
+        build(vmConfig).input('Field1').requireText(null, 'RequireMessage',
             {
                 errorMessagel10n: 'eml10n',
-                summaryMessage: 'SummaryRequiredMessage',
+                summaryMessage: 'SummaryRequireMessage',
                 summaryMessagel10n: 'sml10n'
             }
         );
@@ -816,7 +816,7 @@ describe('favorUIMessages', () => {
                 errorMessagel10n: 'eml10n',
                 summaryMessage: 'SummaryRegExpMessage',
                 summaryMessagel10n: 'sml10n'
-            }).requireText(null, 'Field2Required');
+            }).requireText(null, 'Field2Require');
         build(vmConfig).favorUIMessages();
 
         expect(vmConfig.valueHostConfigs).toEqual([{

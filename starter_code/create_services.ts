@@ -401,6 +401,15 @@ export function createTextLocalizerService(): ITextLocalizerService
     service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
         '*': '{Label} has an invalid value.'
     });    
+/* If you use the setValueOption.conversionErrorTokenValue in setValue, these are better than the last two    
+    service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
+        '*': 'Input error: {ConversionError}.' 
+    });
+    service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
+        '*': '{Label} has this error: {ConversionError}.'
+    });    
+*/
+
     service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
         '*': 'Invalid value. Enter a date.',
         'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',

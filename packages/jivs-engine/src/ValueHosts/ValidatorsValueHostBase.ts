@@ -253,7 +253,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
     /**
      * Generates an array of all Validators from ValueHostConfig.validatorConfigs.
-     * Sorts the by Category so Required is always first, DataTypeCheck is just after Required.
+     * Sorts the by Category so Require is always first, DataTypeCheck is just after Require.
      * @returns 
      */
     protected generateValidators(): Array<IValidator> {
@@ -267,7 +267,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     }
 
     /**
-     * Validators are sorted so category=Required comes first and category=DataTypeCheck second.
+     * Validators are sorted so category=Require comes first and category=DataTypeCheck second.
      * @param unordered 
      * @returns 
      */
@@ -285,7 +285,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in AssociatedValueHostName.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
-     * It calls onValueHostValidated if there was a changed to the state.
+     * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * 
      * In this class, we first see if the errorcode in the error matches an existing validator.
      * If so, we use that validator, and add an IssueFound from that validator.
@@ -471,7 +471,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
         state.issuesFound = issuesFound as (Array<IssueFound> | null);
         // fix validation result for when validation had occurred
         if (state.status === ValidationStatus.Invalid) {
-            let vr = ValidationStatus.ValueChangedButUnvalidated;
+            let vr = ValidationStatus.NeedsValidation;
             let warningFound = false;
             if (issuesFound) {
                 for (let issueFound of state.issuesFound!) {
@@ -482,7 +482,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
                     else
                         warningFound = true;
                 }
-                if (warningFound && vr === ValidationStatus.ValueChangedButUnvalidated)
+                if (warningFound && vr === ValidationStatus.NeedsValidation)
                     vr = ValidationStatus.Valid;
             }
             state.status = vr;

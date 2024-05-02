@@ -6,7 +6,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
 import { ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { IValidatableValueHostBase, ValueHostValidatedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
+import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState, BusinessLogicError } from "../../src/Interfaces/Validation";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
@@ -451,17 +451,19 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         testValidateFunctionHasResult(ivConfigs, state, ValidationStatus.Valid, null);
     });
-    test('With 2 Conditions (Required, RangeCondition) evaluating as Undetermined returns null', () => {
+    test('With 2 Conditions evaluating as Undetermined returns null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
                     conditionType: IsUndeterminedConditionType
-                }
+                },
+                errorCode: '1'
             },
             {
                 conditionConfig: {
                     conditionType: IsUndeterminedConditionType
-                }
+                },
+                errorCode: '2'
             }
         ];
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
@@ -721,7 +723,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidated = (valueHost, validateResult) => {
+        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.validate();
@@ -729,7 +731,7 @@ describe('ValidatorsValueHostBase.validate', () => {
             <ValueHostValidationState>{
                 issuesFound: null,
                 isValid: true,
-                doNotSaveNativeValues: false,
+                doNotSave: false,
                 asyncProcessing: false,
                 status: ValidationStatus.Valid
             }
@@ -748,7 +750,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidated = (valueHost, validateResult) => {
+        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.validate();
@@ -762,7 +764,7 @@ describe('ValidatorsValueHostBase.validate', () => {
                     summaryMessage: 'Error'
                 }],
                 isValid: false,
-                doNotSaveNativeValues: true,
+                doNotSave: true,
                 asyncProcessing: false,
                 status: ValidationStatus.Invalid
             }
@@ -939,7 +941,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -970,7 +972,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(result).toBe(true);
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             issuesFound: [expectedIssueFound],
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             isValid: false,
             asyncProcessing: false,
             status: ValidationStatus.Invalid
@@ -982,7 +984,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1006,7 +1008,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(result).toBe(true);
         expect(onValidateResult).toBeNull();
     });        
-    test('Ensure Required sorts first amongst several Conditions, placing Required last. Demonstrated by stopping when RequireTextCondition is NoMatch while others return an error', () => {
+    test('Ensure Require sorts first amongst several Conditions, placing Require last. Demonstrated by stopping when RequireTextCondition is NoMatch while others return an error', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1065,7 +1067,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         issuesFound.push(createIssueFound('DTC', ValidationSeverity.Severe));
         expect(vr!.issuesFound).toEqual(issuesFound);
     });
-    test('Ensure Category=Required sorts first, Category=DataTypeCheck sorts second amongst several Conditions, placing Required last. Demonstrated by stopping when DataTypeCheckCondition is NoMatch while others return an error', () => {
+    test('Ensure Category=Require sorts first, Category=DataTypeCheck sorts second amongst several Conditions, placing Require last. Demonstrated by stopping when DataTypeCheckCondition is NoMatch while others return an error', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1088,7 +1090,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
             { // emulate RequireText because the real condition needs Input Value
                 conditionConfig: <UserSuppliedResultConditionConfig>{
                     conditionType: UserSuppliedResultConditionType,
-                    category: ConditionCategory.Required,
+                    category: ConditionCategory.Require,
                     result: ConditionEvaluateResult.Match
                 },
                 errorCode: 'RT'
@@ -1148,7 +1150,7 @@ describe('validate handles exception from custom Validator class', () => {
 
 function testValidateFunctionWithPromise(
     validatorConfigs: Array<Partial<ValidatorConfig>> | null,
-    onValidated: ValueHostValidatedHandler,
+    onValidationStateChanged: ValueHostValidationStateChangedHandler,
     onValueHostInstanceStateChanged?: ValueHostInstanceStateChangedHandler,
     validationGroup?: string | undefined): {
         services: IValidationServices,
@@ -1178,13 +1180,13 @@ function testValidateFunctionWithPromise(
     let vm = new ValidationManager({
         services: services,
         valueHostConfigs: [],
-        onValueHostValidated: onValidated,
+        onValueHostValidationStateChanged: onValidationStateChanged,
         onValueHostInstanceStateChanged: onValueHostInstanceStateChanged
     });
     let vh = vm.addValueHost(vhd1, null) as TestValidatorsValueHost;
 
     // let setup = SetupValidatorsValueHostBaseForValidate(validatorConfigs, inputValueState);
-    // setup.validationManager.OnValueHostValidated = onValidated;
+    // setup.validationManager.OnValueHostValidated = onValidationStateChanged;
 
     let vrDetails: ValueHostValidateResult | null = null;
     expect(() => vrDetails = vh.validate({ group: validationGroup })).not.toThrow();
@@ -1231,7 +1233,7 @@ function validateWithAsyncConditions(
 
     let doneTime = false;
     let handlerCount = 0;
-    let onValidateHandler: ValueHostValidatedHandler =
+    let onValidateHandler: ValueHostValidationStateChangedHandler =
         (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => {
             let vm = (valueHost as TestValidatorsValueHost).valueHostsManager as IValidationManager;
             let evr = expectedValidateResults[handlerCount];
@@ -1249,11 +1251,11 @@ function validateWithAsyncConditions(
             }
             handlerCount++;
             if (doneTime) {
-                expect(vm.doNotSaveNativeValues()).toBe(evr.status === ValidationStatus.Invalid);
+                expect(vm.doNotSave).toBe(evr.status === ValidationStatus.Invalid);
                 done();
             }
             else
-                expect(vm.doNotSaveNativeValues()).toBe(true);
+                expect(vm.doNotSave).toBe(true);
         };
     let stateChangeCounter = 0;
     let onStateChangedHandler: ValueHostInstanceStateChangedHandler =
@@ -1271,7 +1273,7 @@ function validateWithAsyncConditions(
     // we are awaiting a callback to OnValueHostValidated to finish,
     // but only if the expected result is Invalid
     doneTime = true;
-    expect(setup.vm.doNotSaveNativeValues()).toBe(true); // because of Async, regardless of ValidationStatus
+    expect(setup.vm.doNotSave).toBe(true); // because of Async, regardless of ValidationStatus
 }
 describe('validate with async Conditions', () => {
     test('With 1 Condition that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
@@ -1557,7 +1559,7 @@ describe('validate with async Conditions', () => {
             // but it does update the state for asyncProcessing=true
             // Then when the promise completes, it also doesn't call onValidate
             // but it does update the state for asyncProcessing=false
-            let onValidateHandler: ValueHostValidatedHandler =
+            let onValidateHandler: ValueHostValidationStateChangedHandler =
                 (vh, vr) => {
                     //         fail();
                 };
@@ -1756,7 +1758,7 @@ describe('clearValidation', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1786,7 +1788,7 @@ describe('clearValidation', () => {
         let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [neverMatchIssueFound],
             asyncProcessing: false
         });
@@ -1797,7 +1799,7 @@ describe('clearValidation', () => {
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             issuesFound: null,
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             asyncProcessing: false,
             status: ValidationStatus.NotAttempted
         });
@@ -1809,7 +1811,7 @@ describe('clearValidation', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1839,7 +1841,7 @@ describe('clearValidation', () => {
         let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [neverMatchIssueFound],
             asyncProcessing: false
         });
@@ -1860,7 +1862,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1917,7 +1919,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             isValid: false,
             issuesFound: [neverMatchIssueFound, toBeReplacedIssueFound],
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             asyncProcessing: false,
             status: ValidationStatus.Invalid
         });
@@ -1929,7 +1931,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1987,7 +1989,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             isValid: false,
             issuesFound: [strLenIssueFound, neverMatchIssueFound],
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             asyncProcessing: false,
             status: ValidationStatus.Invalid
         });
@@ -2161,13 +2163,13 @@ describe('addValidator function', () => {
             valueHostName: 'Field1',
             errorMessage: 'Error',
             summaryMessage: 'Error',
-            severity: ValidationSeverity.Severe // due to RequiredText
+            severity: ValidationSeverity.Severe // due to RequireText
         };
 
         let validationState = vm.validate();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -2219,7 +2221,7 @@ describe('addValidator function', () => {
         let validationState = vm.validate();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -2257,14 +2259,14 @@ describe('addValidator function', () => {
             conditionConfig: {
                 conditionType: ConditionType.RequireText
             },
-            errorMessage: 'Required'
+            errorMessage: 'Require'
         });
         vh.setValue('11');  // this should be valid for both conditions
 
         let validationState = vm.validate();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
@@ -2297,13 +2299,13 @@ describe('configValidators function', () => {
             valueHostName: 'Field1',
             errorMessage: 'Error',
             summaryMessage: 'Error',
-            severity: ValidationSeverity.Severe // the default for RequiredText
+            severity: ValidationSeverity.Severe // the default for RequireText
         };
 
         let validationState = vm.validate();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -2373,7 +2375,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                     // emulate RequireText because the real condition needs Input Value
                     conditionConfig: <UserSuppliedResultConditionConfig>{
                         conditionType: UserSuppliedResultConditionType,
-                        category: ConditionCategory.Required,
+                        category: ConditionCategory.Require,
                         result: ConditionEvaluateResult.NoMatch,
                     },           
                     errorMessage: 'Field2 Error',
@@ -2389,7 +2391,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                     // emulate RequireText because the real condition needs Input Value
                     conditionConfig: <UserSuppliedResultConditionConfig>{
                         conditionType: UserSuppliedResultConditionType,
-                        category: ConditionCategory.Required,
+                        category: ConditionCategory.Require,
                         result: ConditionEvaluateResult.NoMatch,
 
                     },           
@@ -2431,7 +2433,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         expect(setup.field2.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
-    test('Field1 previously validated and is Invalid. Field2 changed, revalidate = false. Field1.ValidationStatus => ValueChangedButUnvalidated.', () => {
+    test('Field1 previously validated and is Invalid. Field2 changed, revalidate = false. Field1.ValidationStatus => NeedsValidation.', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setValue('ABC');   // Equal condition will fail
         setup.field2.setValue('BCD');  
@@ -2440,11 +2442,11 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
 
         expect(() => setup.field1.otherValueHostChangedNotification(
             setup.field2.getName(), false)).not.toThrow();
-        expect(setup.field1.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
-        expect(setup.field2.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.field2.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
-    test('Field1 previously validated and is Invalid. Field2 changed via setValue with validate=false. Field1.ValidationStatus => ValueChangedButUnvalidated.', () => {
+    test('Field1 previously validated and is Invalid. Field2 changed via setValue with validate=false. Field1.ValidationStatus => NeedsValidation.', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setValue('ABC');   // Equal condiiton will fail
         setup.field2.setValue('BCD');
@@ -2452,8 +2454,8 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         setup.field1.validate();        // field1 = invalid
 
         setup.field2.setValue('ABC');  // will trigger OtherValueHostChangedNotification with revalidate=false
-        expect(setup.field1.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
-        expect(setup.field2.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.field2.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
     test('Field1 previously validated and is Invalid. Field2 changed via setValue with validate=true. Field1.ValidationStatus => Valid because fields are now equal.', () => {
@@ -2461,7 +2463,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         setup.field1.setValue('ABC');
         setup.field2.setValue('BCD');
 
-        expect(setup.field1.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatus).toBe(ValidationStatus.NeedsValidation);
         setup.field1.validate();
         expect(setup.field1.validationStatus).toBe(ValidationStatus.Invalid);
 
@@ -2470,7 +2472,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         expect(setup.field2.validationStatus).toBe(ValidationStatus.Invalid);   // we validated and its always invalid
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
-    test('Field1 previously validated. Change Field3 with revalidate=false. No change to Field1. Field3.ValidationState=>NotAttempted because it was not ValueChangedButUnvalidated', () => {
+    test('Field1 previously validated. Change Field3 with revalidate=false. No change to Field1. Field3.ValidationState=>NotAttempted because it was not NeedsValidation', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setValue('ABC');
         setup.field2.setValue('BCD');
@@ -2480,7 +2482,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         expect(() => setup.field1.otherValueHostChangedNotification(
             setup.field3.getName(), false)).not.toThrow();
         expect(setup.field1.validationStatus).toBe(ValidationStatus.Invalid);
-        expect(setup.field2.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field2.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
     test('Field1 previously validated. Use setValues to change Field3 with validate=false. No change to Field1. Field3.ValidationState=>ValueChangedButInvalided', () => {
@@ -2496,7 +2498,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         setup.field3.setValue('X');  // will trigger OtherValueHostCHangedNotification with revalidate=false
         expect(setup.field1.validationStatus).toBe(ValidationStatus.Invalid);  // no change
         expect(setup.field2.validationStatus).toBe(ValidationStatus.Invalid);   // when validated, always invalid
-        expect(setup.field3.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field3.validationStatus).toBe(ValidationStatus.NeedsValidation);
     });
 
     test('Field1 previously validated. Use setValues to change Field3 with validate=true. No change to Field1.', () => {
@@ -2576,9 +2578,7 @@ describe('toIValidatorsValueHostBase function', () => {
         clearBusinessLogicErrors(): boolean {
             throw new Error("Method not implemented.");
         }
-        doNotSaveNativeValue(): boolean {
-            throw new Error("Method not implemented.");
-        }
+        doNotSave: boolean = false;
         getIssueFound(errorCode: string): IssueFound | null {
             throw new Error("Method not implemented.");
         }
