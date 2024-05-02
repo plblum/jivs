@@ -4,9 +4,8 @@
  * @module Conditions/AbstractClasses/CompareToSecondValueHostConditionBase
  */
 
-import { ValueHostName } from '../DataTypes/BasicTypes';
+import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
@@ -75,7 +74,7 @@ export abstract class CompareToSecondValueHostConditionBase<TConfig extends Comp
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public override getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         let secondValue: any = undefined;

@@ -6,8 +6,8 @@
  */
 
 
+import { IValidatorsValueHostBase } from "../Interfaces/ValidatorsValueHostBase";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { IInputValueHost } from "../Interfaces/InputValueHost";
 import { TokenLabelAndValue } from "../Interfaces/MessageTokenSource";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { OneValueConditionBaseConfig, OneValueConditionBase } from "./OneValueConditionBase";
@@ -37,7 +37,7 @@ export abstract class TwoValueConditionBase<TConfig extends TwoValueConditionBas
             collection.add(this.config.secondValueHostName);
     }
 
-    public getValuesForTokens(valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
         // same order of precidence as in Evaluate

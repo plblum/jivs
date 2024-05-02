@@ -2,7 +2,7 @@
  * @module ValueHosts/Types/ValidatorsValueHostBase
  */
 import { IValidator, ValidatorConfig } from "./Validator";
-import { IValidatableValueHostBase, IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from "./ValidatableValueHostBase";
+import { IValidatableValueHostBase, IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, toIValidatableValueHostBaseCallbacks } from "./ValidatableValueHostBase";
 import { FluentValidatorCollector } from "../ValueHosts/Fluent";
 
 /**
@@ -93,6 +93,19 @@ export interface ValidatorsValueHostBaseInstanceState extends ValidatableValueHo
  */
 export interface IValidatorsValueHostBaseCallbacks extends IValidatableValueHostBaseCallbacks {
 
+}
+/**
+ * Determines if the object implements IValidatorsValueHostBaseCallbacks.
+ * @param source 
+ * @returns source typecasted to IValidatorsValueHostBaseCallbacks if appropriate or null if not.
+ */
+export function toIValidatorsValueHostBaseCallbacks(source: any): IValidatorsValueHostBaseCallbacks | null
+{
+    if (toIValidatableValueHostBaseCallbacks(source))
+    {
+        return source as IValidatorsValueHostBaseCallbacks;
+    }
+    return null;
 }
 
 /**

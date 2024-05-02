@@ -4,15 +4,15 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
-import { ValidatorsValueHostBaseInstanceState } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IValidatableValueHostBase, ValueHostValidatedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
-import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
+import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState, BusinessLogicError } from "../../src/Interfaces/Validation";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig, IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
-import { IValueHost, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
+import { IValueHost, SetValueOptions, ValidTypesForInstanceStateStorage, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
@@ -32,6 +32,7 @@ import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedCo
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
+import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 
 
 /**
@@ -2523,3 +2524,125 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
     });
 });
 
+
+describe('toIValidatorsValueHostBase function', () => {
+    test('Passing actual ValidatorsValueHostBase matches interface returns same object.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new TestValidatorsValueHost(vm, {
+            name: 'Field1',
+            label: 'Label1',
+            validatorConfigs: []
+        },
+            {
+                name: 'Field1',
+                value: undefined,
+                issuesFound: null,
+                status: ValidationStatus.NotAttempted,
+            });
+        expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
+    });
+    class TestIValidatorsValueHostBaseImplementation implements IValidatorsValueHostBase {
+        gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
+            throw new Error("Method not implemented.");
+        }
+        configValidators(): FluentValidatorCollector {
+            throw new Error("Method not implemented.");
+        }
+
+        getInputValue() {
+            throw new Error("Method not implemented.");
+        }
+        setInputValue(value: any, options?: SetValueOptions | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        setValues(nativeValue: any, inputValue: any, options?: SetValueOptions | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        otherValueHostChangedNotification(valueHostIdThatChanged: string, revalidate: boolean): void {
+            throw new Error("Method not implemented.");
+        }
+        validate(options?: ValidateOptions | undefined): ValueHostValidateResult {
+            throw new Error("Method not implemented.");
+        }
+        clearValidation(): boolean {
+            throw new Error("Method not implemented.");
+        }
+        isValid: boolean = true;
+        validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
+        asyncProcessing: boolean = false;
+        setBusinessLogicError(error: BusinessLogicError): boolean {
+            throw new Error("Method not implemented.");
+        }
+        clearBusinessLogicErrors(): boolean {
+            throw new Error("Method not implemented.");
+        }
+        doNotSaveNativeValue(): boolean {
+            throw new Error("Method not implemented.");
+        }
+        getIssueFound(errorCode: string): IssueFound | null {
+            throw new Error("Method not implemented.");
+        }
+
+        getIssuesFound(group?: string | undefined): IssueFound[] {
+            throw new Error("Method not implemented.");
+        }
+        getConversionErrorMessage(): string | null {
+            throw new Error("Method not implemented.");
+        }
+        requiresInput: boolean = false;
+        getName(): string {
+            throw new Error("Method not implemented.");
+        }
+        getLabel(): string {
+            throw new Error("Method not implemented.");
+        }
+        setLabel(label: string, labell10n?: string | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        getValue() {
+            throw new Error("Method not implemented.");
+        }
+        setValue(value: any, options?: SetValueOptions | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        setValueToUndefined(options?: SetValueOptions | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        getDataType(): string | null {
+            throw new Error("Method not implemented.");
+        }
+
+        isChanged: boolean = false;
+        saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined {
+            throw new Error("Method not implemented.");
+        }
+        getValidator(errorCode: string): IValidator | null {
+            throw new Error("Method not implemented.");
+        }
+
+        addValidator(config: ValidatorConfig): void {
+            throw new Error("Method not implemented.");
+        }
+        setGroup(group: string): void {
+            throw new Error("Method not implemented.");
+        }
+    }
+    test('Passing object with interface match returns same object.', () => {
+        let testItem = new TestIValidatorsValueHostBaseImplementation();
+
+        expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
+    });
+    test('Non-matching interface returns null.', () => {
+        let testItem = {};
+        expect(toIValidatorsValueHostBase(testItem)).toBeNull();
+    });
+    test('null returns null.', () => {
+        expect(toIValidatorsValueHostBase(null)).toBeNull();
+    });
+    test('Non-object returns null.', () => {
+        expect(toIValidatorsValueHostBase(100)).toBeNull();
+    });
+});

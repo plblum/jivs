@@ -7,8 +7,7 @@ import { MockValidationServices, MockValidationManager } from "../TestSupport/mo
 import { ValidatableValueHostBaseConfig, IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     ValueHostValidateResult, ValidationSeverity, ValidateOptions,
-    BusinessLogicError,
-    ValidationState
+    BusinessLogicError
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -17,7 +16,7 @@ import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
+import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../TestSupport/conditionsForTesting";
