@@ -191,7 +191,7 @@ The ValidationManager should already have all changed values captured due to onc
 Run validation and proceed with submission if data is valid.
 ```ts
 let status = vm.validate(); // it will notify elements in your UI of validation changes
-if (status.doNotSaveNativeValues())
+if (status.doNotSave)
   // Prevent saving. User has to fix things
 else
   // Submit the page's data
@@ -764,10 +764,10 @@ interface IValidationManager {
 
     validate(options?): ValidationState;
     clearValidation(options?): boolean;
-    doNotSaveNativeValues(): boolean;
     setBusinessLogicErrors(errors, options?): boolean;
         
     isValid: boolean;
+    doNotSave: boolean;
     asyncProcessing?: boolean;
     getIssuesForInput(valueHostName): null | IssueFound[];
     getIssuesFound(group?): null | IssueFound[];

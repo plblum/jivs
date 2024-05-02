@@ -54,7 +54,7 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using doNotSaveNativeValue() for more clarity.
+     * Recommend using doNotSave for more clarity.
      */
     isValid: boolean;
 
@@ -100,7 +100,7 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
      * True when ValidationStatus is Invalid or ValueChangedButUnvalidated.
      */
-    doNotSaveNativeValue(): boolean;
+    doNotSave: boolean;
 
     /**
      * The results of validation specific to one condiiton Type.

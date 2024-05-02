@@ -113,7 +113,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
      * @returns The ValidationState object, which packages several key
-     * pieces of information: isValid, doNotSaveNativeValues, and issues found.
+     * pieces of information: isValid, doNotSave, and issues found.
      * The same object is provided through the OnValidated function
      */
     public validate(options?: ValidateOptions): ValidationState
@@ -148,7 +148,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
     {
         return {
             isValid: this.isValid,
-            doNotSaveNativeValues: this.doNotSaveNativeValues(),
+            doNotSave: this.doNotSave,
             issuesFound: this.getIssuesFound(options ? options.group : undefined),
             asyncProcessing: this.asyncProcessing
         };
@@ -194,7 +194,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * there may be warning issues found (in IssuesFound),
      * an async validator is still running,
      * validator evaluated as Undetermined.
-     * So check @link doNotSaveNativeValues|doNotSaveNativeValues()  as the ultimate guide to saving.
+     * So check @link doNotSave|doNotSave  as the ultimate guide to saving.
      * When false, there is at least one validation error.
      */
     public get isValid(): boolean {
@@ -209,9 +209,9 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * True when at least one ValueHost's ValidationStatus is 
      * Invalid or ValueChangedButUnvalidated
      */
-    public doNotSaveNativeValues(): boolean {
+    public get doNotSave(): boolean {
         for (let vh of this.inputValueHost()) {
-            if (vh.doNotSaveNativeValue())
+            if (vh.doNotSave)
                 return true;
         }
         return false;

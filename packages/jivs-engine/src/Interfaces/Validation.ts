@@ -245,7 +245,7 @@ export interface ValidationState
      * True when ValidationStatus is Invalid or ValueChangedButUnvalidated
      * on individual validators.
      */
-    doNotSaveNativeValues: boolean;
+    doNotSave: boolean;
 
     /**
      * All issues current found (except ValueHosts not matching the validation group which are excluded.)

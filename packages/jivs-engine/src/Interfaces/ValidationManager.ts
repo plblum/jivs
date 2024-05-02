@@ -43,7 +43,7 @@ export interface IValidationManager extends IValueHostsManager {
      * @param options - Provides guidance on which validators to include.
      * Important to set options.BeforeSubmit to true if invoking validate() prior to submitting.
      * @returns The ValidationState object, which packages several key
-     * pieces of information: isValid, doNotSaveNativeValues, and issues found.
+     * pieces of information: isValid, doNotSave, and issues found.
      */
     validate(options?: ValidateOptions): ValidationState;
     /**
@@ -70,7 +70,7 @@ export interface IValidationManager extends IValueHostsManager {
      * True when at least one ValueHost's ValidationStatus is 
      * Invalid or ValueChangedButUnvalidated
      */
-    doNotSaveNativeValues(): boolean;
+    doNotSave: boolean;
     
     /**
      * When true, an async Validator is running
@@ -227,7 +227,7 @@ export function toIValidationManager(source: any): IValidationManager | null
         if (test.validate !== undefined &&
             test.clearValidation !== undefined &&
             test.isValid !== undefined &&
-            test.doNotSaveNativeValues !== undefined &&
+            test.doNotSave !== undefined &&
             test.getIssuesFound !== undefined)
             return test;
     }

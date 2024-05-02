@@ -153,7 +153,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
      * as a result of validation.
-     * Recommend using doNotSaveNativeValue() for more clarity.
+     * Recommend using doNotSave for more clarity.
      */
     public get isValid(): boolean {
         return this.validationStatus !== ValidationStatus.Invalid;
@@ -237,7 +237,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
      * True when ValidationStatus is Invalid or ValueChangedButUnvalidated.
      */
-    public doNotSaveNativeValue(): boolean {
+    public get doNotSave(): boolean {
         switch (this.validationStatus) {
             case ValidationStatus.Invalid:
             case ValidationStatus.ValueChangedButUnvalidated:
@@ -331,7 +331,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             {
                 issuesFound: this.getIssuesFound(),
                 isValid: this.isValid,
-                doNotSaveNativeValues: this.doNotSaveNativeValue(),
+                doNotSave: this.doNotSave,
                 asyncProcessing: this.asyncProcessing,
                 status: this.validationStatus
             });

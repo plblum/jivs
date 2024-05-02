@@ -731,7 +731,7 @@ describe('ValidatorsValueHostBase.validate', () => {
             <ValueHostValidationState>{
                 issuesFound: null,
                 isValid: true,
-                doNotSaveNativeValues: false,
+                doNotSave: false,
                 asyncProcessing: false,
                 status: ValidationStatus.Valid
             }
@@ -764,7 +764,7 @@ describe('ValidatorsValueHostBase.validate', () => {
                     summaryMessage: 'Error'
                 }],
                 isValid: false,
-                doNotSaveNativeValues: true,
+                doNotSave: true,
                 asyncProcessing: false,
                 status: ValidationStatus.Invalid
             }
@@ -972,7 +972,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(result).toBe(true);
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             issuesFound: [expectedIssueFound],
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             isValid: false,
             asyncProcessing: false,
             status: ValidationStatus.Invalid
@@ -1251,11 +1251,11 @@ function validateWithAsyncConditions(
             }
             handlerCount++;
             if (doneTime) {
-                expect(vm.doNotSaveNativeValues()).toBe(evr.status === ValidationStatus.Invalid);
+                expect(vm.doNotSave).toBe(evr.status === ValidationStatus.Invalid);
                 done();
             }
             else
-                expect(vm.doNotSaveNativeValues()).toBe(true);
+                expect(vm.doNotSave).toBe(true);
         };
     let stateChangeCounter = 0;
     let onStateChangedHandler: ValueHostInstanceStateChangedHandler =
@@ -1273,7 +1273,7 @@ function validateWithAsyncConditions(
     // we are awaiting a callback to OnValueHostValidated to finish,
     // but only if the expected result is Invalid
     doneTime = true;
-    expect(setup.vm.doNotSaveNativeValues()).toBe(true); // because of Async, regardless of ValidationStatus
+    expect(setup.vm.doNotSave).toBe(true); // because of Async, regardless of ValidationStatus
 }
 describe('validate with async Conditions', () => {
     test('With 1 Condition that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
@@ -1788,7 +1788,7 @@ describe('clearValidation', () => {
         let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [neverMatchIssueFound],
             asyncProcessing: false
         });
@@ -1799,7 +1799,7 @@ describe('clearValidation', () => {
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             issuesFound: null,
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             asyncProcessing: false,
             status: ValidationStatus.NotAttempted
         });
@@ -1841,7 +1841,7 @@ describe('clearValidation', () => {
         let snapshot = vm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [neverMatchIssueFound],
             asyncProcessing: false
         });
@@ -1919,7 +1919,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             isValid: false,
             issuesFound: [neverMatchIssueFound, toBeReplacedIssueFound],
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             asyncProcessing: false,
             status: ValidationStatus.Invalid
         });
@@ -1989,7 +1989,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             isValid: false,
             issuesFound: [strLenIssueFound, neverMatchIssueFound],
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             asyncProcessing: false,
             status: ValidationStatus.Invalid
         });
@@ -2169,7 +2169,7 @@ describe('addValidator function', () => {
         let validationState = vm.validate();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -2221,7 +2221,7 @@ describe('addValidator function', () => {
         let validationState = vm.validate();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -2266,7 +2266,7 @@ describe('addValidator function', () => {
         let validationState = vm.validate();
         expect(validationState).toEqual(<ValidationState>{
             isValid: true,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         });
@@ -2305,7 +2305,7 @@ describe('configValidators function', () => {
         let validationState = vm.validate();
         expect(validationState).toEqual(<ValidationState>{
             isValid: false,
-            doNotSaveNativeValues: true,
+            doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
         });
@@ -2578,9 +2578,7 @@ describe('toIValidatorsValueHostBase function', () => {
         clearBusinessLogicErrors(): boolean {
             throw new Error("Method not implemented.");
         }
-        doNotSaveNativeValue(): boolean {
-            throw new Error("Method not implemented.");
-        }
+        doNotSave: boolean = false;
         getIssueFound(errorCode: string): IssueFound | null {
             throw new Error("Method not implemented.");
         }

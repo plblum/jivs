@@ -484,10 +484,10 @@ describe('ValidatableValueHostBase.clearValidation', () => {
         expect(stateChanges).toEqual(expectedChanges);
     });
 });
-// doNotSaveNativeValue(): boolean
-describe('ValidatableValueHostBase.doNotSaveNativeValue', () => {
+// doNotSave: boolean
+describe('ValidatableValueHostBase.doNotSave', () => {
 
-    function trydoNotSaveNativeValue(initialValidationStatusCode: ValidationStatus, hasPendings: boolean, expectedResult: boolean): void {
+    function trydoNotSave(initialValidationStatusCode: ValidationStatus, hasPendings: boolean, expectedResult: boolean): void {
         let vhConfig: ValidatableValueHostBaseConfig = {
             name: 'Field1',
             valueHostType: 'TestValidatableValueHost'
@@ -503,22 +503,22 @@ describe('ValidatableValueHostBase.doNotSaveNativeValue', () => {
     
             let setup = setupValidatableValueHostBase(vhConfig, state);
     
-            expect(setup.valueHost.doNotSaveNativeValue()).toBe(expectedResult);
+            expect(setup.valueHost.doNotSave).toBe(expectedResult);
         }    
-    test('ValidationStatus = Valid, doNotSaveNativeValue=false', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Valid, false, false);
+    test('ValidationStatus = Valid, doNotSave=false', () => {
+        trydoNotSave(ValidationStatus.Valid, false, false);
     });
-    test('ValidationStatus = Undetermined, doNotSaveNativeValue=false', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Undetermined, false, false);
+    test('ValidationStatus = Undetermined, doNotSave=false', () => {
+        trydoNotSave(ValidationStatus.Undetermined, false, false);
     });
-    test('ValidationStatus = Invalid, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Invalid, false, true);
+    test('ValidationStatus = Invalid, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.Invalid, false, true);
     });
-    test('ValidationStatus = Valid but with async pending, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationStatus.Valid, true, true);
+    test('ValidationStatus = Valid but with async pending, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.Valid, true, true);
     });
-    test('ValidationStatus = ValueChangedButUnvalidated, doNotSaveNativeValue=true', () => {
-        trydoNotSaveNativeValue(ValidationStatus.ValueChangedButUnvalidated, true, true);
+    test('ValidationStatus = ValueChangedButUnvalidated, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.ValueChangedButUnvalidated, true, true);
     });
 
 });
@@ -658,7 +658,7 @@ describe('clearBusinessLogicErrors', () => {
         expect(onValidateResult).toEqual(<ValueHostValidationState>{
             isValid: true,
             issuesFound: null,
-            doNotSaveNativeValues: false,
+            doNotSave: false,
             asyncProcessing: false,
             status: ValidationStatus.NotAttempted
         });
@@ -853,9 +853,7 @@ describe('toIValidatableValueHostBase', () => {
             clearBusinessLogicErrors: function (): boolean {
                 throw new Error('Function not implemented.');
             },
-            doNotSaveNativeValue: function (): boolean {
-                throw new Error('Function not implemented.');
-            },
+            doNotSave: false,
 
             getIssueFound(errorCode: string): IssueFound | null {
                 throw new Error('Function not implemented.');
@@ -966,9 +964,7 @@ describe('toIValidatableValueHostBase function', () => {
         clearBusinessLogicErrors(): boolean {
             throw new Error("Method not implemented.");
         }
-        doNotSaveNativeValue(): boolean {
-            throw new Error("Method not implemented.");
-        }
+        doNotSave = false;
         getIssueFound(errorCode: string): IssueFound | null {
             throw new Error("Method not implemented.");
         }

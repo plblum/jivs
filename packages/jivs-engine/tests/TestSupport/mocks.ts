@@ -154,7 +154,7 @@ export class MockInputValueHost extends MockValueHost
     isValid: boolean = false;
     asyncProcessing: boolean = false;
     
-    doNotSaveNativeValue(): boolean
+    get doNotSave(): boolean
     {
         throw new Error("Method not implemented.");
     }
@@ -483,9 +483,7 @@ export class MockValidationManager implements IValidationManager, IValidationMan
 
     isValid: boolean = true;        
 
-    doNotSaveNativeValues(): boolean {
-        throw new Error("Method not implemented.");
-    }
+    doNotSave: boolean = false;
     notifyOtherValueHostsOfValueChange(valueHostNameThatChanged: string, revalidate: boolean): void {
         this._valueHosts.forEach((vh, key) => {
             if (vh instanceof ValidatableValueHostBase)
