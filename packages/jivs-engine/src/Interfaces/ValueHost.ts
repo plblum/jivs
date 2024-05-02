@@ -73,7 +73,7 @@ export interface IValueHost {
     * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
     */
     setValue(value: any, options?: SetValueOptions): void;
 
@@ -88,7 +88,7 @@ export interface IValueHost {
     * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
      */
     setValueToUndefined(options?: SetValueOptions): void;
 
@@ -119,7 +119,7 @@ export interface IValueHost {
      * They all set it to true automatically except set it to false when the option.Reset is true.
      * The ValidatableValueHost.validate() function may skip validation of a ValueHost when isChanged is false,
      * depending on the options for validate(). For example, calling validate immediately after loading
-     * up the form, you want to avoid showing Required validators. Those should appear only
+     * up the form, you want to avoid showing Category=Require validators. Those should appear only
      * if the user edits, or when the user attempts to submit.
      */
     isChanged: boolean;

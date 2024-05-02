@@ -451,17 +451,19 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         testValidateFunctionHasResult(ivConfigs, state, ValidationStatus.Valid, null);
     });
-    test('With 2 Conditions (Required, RangeCondition) evaluating as Undetermined returns null', () => {
+    test('With 2 Conditions evaluating as Undetermined returns null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
                     conditionType: IsUndeterminedConditionType
-                }
+                },
+                errorCode: '1'
             },
             {
                 conditionConfig: {
                     conditionType: IsUndeterminedConditionType
-                }
+                },
+                errorCode: '2'
             }
         ];
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
@@ -1006,7 +1008,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(result).toBe(true);
         expect(onValidateResult).toBeNull();
     });        
-    test('Ensure Required sorts first amongst several Conditions, placing Required last. Demonstrated by stopping when RequireTextCondition is NoMatch while others return an error', () => {
+    test('Ensure Require sorts first amongst several Conditions, placing Require last. Demonstrated by stopping when RequireTextCondition is NoMatch while others return an error', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1065,7 +1067,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         issuesFound.push(createIssueFound('DTC', ValidationSeverity.Severe));
         expect(vr!.issuesFound).toEqual(issuesFound);
     });
-    test('Ensure Category=Required sorts first, Category=DataTypeCheck sorts second amongst several Conditions, placing Required last. Demonstrated by stopping when DataTypeCheckCondition is NoMatch while others return an error', () => {
+    test('Ensure Category=Require sorts first, Category=DataTypeCheck sorts second amongst several Conditions, placing Require last. Demonstrated by stopping when DataTypeCheckCondition is NoMatch while others return an error', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1088,7 +1090,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
             { // emulate RequireText because the real condition needs Input Value
                 conditionConfig: <UserSuppliedResultConditionConfig>{
                     conditionType: UserSuppliedResultConditionType,
-                    category: ConditionCategory.Required,
+                    category: ConditionCategory.Require,
                     result: ConditionEvaluateResult.Match
                 },
                 errorCode: 'RT'
@@ -2161,7 +2163,7 @@ describe('addValidator function', () => {
             valueHostName: 'Field1',
             errorMessage: 'Error',
             summaryMessage: 'Error',
-            severity: ValidationSeverity.Severe // due to RequiredText
+            severity: ValidationSeverity.Severe // due to RequireText
         };
 
         let validationState = vm.validate();
@@ -2257,7 +2259,7 @@ describe('addValidator function', () => {
             conditionConfig: {
                 conditionType: ConditionType.RequireText
             },
-            errorMessage: 'Required'
+            errorMessage: 'Require'
         });
         vh.setValue('11');  // this should be valid for both conditions
 
@@ -2297,7 +2299,7 @@ describe('configValidators function', () => {
             valueHostName: 'Field1',
             errorMessage: 'Error',
             summaryMessage: 'Error',
-            severity: ValidationSeverity.Severe // the default for RequiredText
+            severity: ValidationSeverity.Severe // the default for RequireText
         };
 
         let validationState = vm.validate();
@@ -2373,7 +2375,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                     // emulate RequireText because the real condition needs Input Value
                     conditionConfig: <UserSuppliedResultConditionConfig>{
                         conditionType: UserSuppliedResultConditionType,
-                        category: ConditionCategory.Required,
+                        category: ConditionCategory.Require,
                         result: ConditionEvaluateResult.NoMatch,
                     },           
                     errorMessage: 'Field2 Error',
@@ -2389,7 +2391,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                     // emulate RequireText because the real condition needs Input Value
                     conditionConfig: <UserSuppliedResultConditionConfig>{
                         conditionType: UserSuppliedResultConditionType,
-                        category: ConditionCategory.Required,
+                        category: ConditionCategory.Require,
                         result: ConditionEvaluateResult.NoMatch,
 
                     },           

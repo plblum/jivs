@@ -45,7 +45,7 @@ import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { BusinessLogicErrorsValueHost } from "../../src/ValueHosts/BusinessLogicErrorsValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { ValueHostValidatedHandler, IValidatableValueHostBase, ValidatableValueHostBaseInstanceState, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
-import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, registerTestingOnlyConditions, NeverMatchesCondition } from "../TestSupport/conditionsForTesting";
+import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, registerTestingOnlyConditions, NeverMatchesCondition, UserSuppliedResultConditionType } from "../TestSupport/conditionsForTesting";
 import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 
@@ -1527,7 +1527,7 @@ describe('InputValueHostGenerator members', () => {
     });
 });
 describe('InputValueHost.requiresInput', () => {
-    test('Has a Required condition. requiresInput returns true', () => {
+    test('Has a RequireTextCondition. requiresInput returns true', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1540,7 +1540,21 @@ describe('InputValueHost.requiresInput', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(true);
     });
-    test('Lacks a Required condition. requiresInput returns false', () => {
+    test('Has a custom condition with Category=Require. requiresInput returns true', () => {
+        let ivConfigs: Array<Partial<ValidatorConfig>> = [
+            {
+                conditionConfig: {
+                    conditionType: UserSuppliedResultConditionType,
+                    category: ConditionCategory.Require
+                }
+            }
+        ];
+        let state: Partial<InputValueHostInstanceState> = {
+        };
+        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        expect(setup.valueHost.requiresInput).toBe(true);
+    });    
+    test('Lacks a condition with category=Require. requiresInput returns false', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1553,7 +1567,7 @@ describe('InputValueHost.requiresInput', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(false);
     });
-    test('Has a Required condition but its last amongst several. requiresInput returns true', () => {
+    test('Has a RequireTextCondition but its last amongst several. requiresInput returns true', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -1576,6 +1590,30 @@ describe('InputValueHost.requiresInput', () => {
         let setup = setupInputValueHostForValidate(ivConfigs, state);
         expect(setup.valueHost.requiresInput).toBe(true);
     });
+    test('Has a custom condition with Category=Require but its last amongst several. requiresInput returns true', () => {
+        let ivConfigs: Array<Partial<ValidatorConfig>> = [
+            {
+                conditionConfig: {
+                    conditionType: NeverMatchesConditionType
+                }
+            },
+            {
+                conditionConfig: {
+                    conditionType: ConditionType.DataTypeCheck
+                }
+            },
+            {
+                conditionConfig: {
+                    conditionType: UserSuppliedResultConditionType,
+                    category: ConditionCategory.Require
+                }
+            }
+        ];
+        let state: Partial<InputValueHostInstanceState> = {
+        };
+        let setup = setupInputValueHostForValidate(ivConfigs, state);
+        expect(setup.valueHost.requiresInput).toBe(true);
+    });    
 });
 
 describe('toIInputValueHost function', () => {

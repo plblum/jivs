@@ -45,7 +45,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     * Reset - Clears validation (except when validate=true) and sets IsChanged to false.
     * ConversionErrorTokenValue - When setting the value to undefined, it means there was an error
     * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Required validator within the {ConversionError} token.
+    * appear in the Category=Require validator within the {ConversionError} token.
     */
     public setValue(value: any, options?: SetValueOptions): void {
         if (!options)

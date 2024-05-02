@@ -26,7 +26,7 @@ export interface ValidateOptions
     /**
      * Set to true when running a validation prior to a submit activity.
      * Typically set to true just after loading the form to report any errors already present.
-     * During this phase, the Required validator is not checked as the user doesn't need
+     * During this phase, the Category=Require validator is not checked as the user doesn't need
      * the noise complaining about missing input when they haven't had a chance to address it.
      * When undefined, it is the same as false.
      */
@@ -140,9 +140,10 @@ export enum ValidationSeverity {
      * The result will block saving.
      * Validation process will stop, leaving remaining validators set to 'ValidationStatus.Undetermined'.
      * Its best to put these early in the list of ValidatableValueHost.Validators.
-     * Consider this for RequiredConditions and DataTypeCondition.
-     * RequiredCondition - If you don't have any data to evaluate, none of the remaining validators serve a purpose.
-     * CanConvertToNativeDataTypeCondition - If you cannot convert a string to the native data type,
+     * It is the default for validators with Category = Require and DataTypeCheck 
+     * (RequireTextCondition and DataTypeCheckCondition).
+     * - RequireTextCondition - If you don't have any data to evaluate, none of the remaining validators serve a purpose.
+     * - DataTypeCheckCondition - If you cannot convert a string to the native data type,
      * none of the remaining validators have native data to evaluate.
      */
     Severe

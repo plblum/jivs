@@ -35,7 +35,7 @@ import { IInputValueHost } from './InputValueHost';
  */
 export interface ICondition {
     /**
-     * A unique identifier for the specific implementation, like "Required" or "Range".
+     * A unique identifier for the specific implementation, like "RequireText" or "Range".
      * Its value appears in the IssueFound.errorCode property unless overridden in ValidatorConfig.errorCode.
      * It allows the consumer of both to correlate those instances with the specific condition.
      * When defining conditions through a ConditionConfig, the conditionType property must 
@@ -65,9 +65,9 @@ export interface ICondition {
     /**
      * Helps identify the purpose of the Condition. Impacts:
      * * Sort order of the list of Conditions evaluated by an Validator,
-     *   placing Required first and DataTypeCheck second.
+     *   placing Require first and DataTypeCheck second.
      * * Sets InputValueHostConfig.requiresInput.
-     * * Sets ValidatorConfig.severity when undefined, where Required
+     * * Sets ValidatorConfig.severity when undefined, where Require
      *   and DataTypeCheck will use Severe. Others will use Error.
      * Many Conditions have this value predefined. However, all will let the user
      * override it with ConditionConfig.category.
@@ -95,7 +95,7 @@ export interface ICondition {
  * Examples: 
  * 
  * RequireTextCondition implements IConditionCore<RequireTextConditionConfig> which usually looks like:
- *  `{ conditionType: 'Required' }`
+ *  `{ conditionType: 'RequireText' }`
  * 
  * RangeCondition implements IConditionCore<RangeConditionConfig> which usually looks like:  
  *  `{ conditionType: 'Range', minimum: any, maximum: any }`
@@ -154,14 +154,14 @@ export const ConditionEvaluateResultStrings = [
 
 /**
  * Each Category gets assigned a category. For the most part, these are merely info.
- * However, Required and DataTypeCheck have special meaning.
- * Required - the InputValueHostConfig.requiresInput property is set if this is found.
+ * However, Require and DataTypeCheck have special meaning.
+ * Require - the InputValueHostConfig.requiresInput property is set if this is found.
  *   These conditions are always placed first in the evaluation order.
- *   When Required, ValidatorConfig.severity of Undefined is treated as Severe, not Error
+ *   When Require, ValidatorConfig.severity of Undefined is treated as Severe, not Error
  *   to stop further Condition evaluation.
  * DataTypeCheck - used to ensure we have a valid native object that can be used by other
  *   conditions. Because these should be evaluated before those, these conditions
- *   are placed just after Required.
+ *   are placed just after Require.
  *   When DataTypeCheck, ValidatorConfig.severity of Undefined is treated as Severe, not Error,
  *   to stop further Condition evaluation.
  *   Users may set RegExpCondition's Category to DataTypeCheck if the expression confirms 
@@ -171,15 +171,15 @@ export const ConditionEvaluateResultStrings = [
  */
 export enum ConditionCategory {
     /**
-     * Use when the data is required: RequireTextCondition and RequiredIndexCondition.
+     * Use when the data is required: RequireTextCondition.
      * These will be evaluated first by the ValidatorsValueHostBase, and will stop further evaluation
      * if evaluation is NoMatch (unless user explicitly sets ValidatorConfig.severity to Error or Warning.)
      */
-    Required,
+    Require,
     /**
      * Use to check the data is in its expected final form, whether a primitive, object (like Date), or
      * if it remains a string, it contains the expected pattern: DataTypeCheckCondition, RegExpCondition
-     * These will be evaluated before all other conditions except Required, and will stop further evaluation
+     * These will be evaluated before all other conditions except Require, and will stop further evaluation
      * if evaluation is NoMatch (unless user explicitly sets ValidatorConfig.severity to Error or Warning.)
       */
     DataTypeCheck,
@@ -241,7 +241,7 @@ export interface SupportsDataTypeConverter extends ConditionConfig
  * like comparing two values. This validation should be limitd to rules
  * that are limited to a string that is likely not in good enough shape
  * to be converted to native. Examples:
- * - Required: does the string have any non-whitespace text?
+ * - RequireText: does the string have any non-whitespace text?
  * - Reg exp to check for invalid characters, such as entering a password.
  *   This allows you to report immediate problems as the user types.
  * - String length: if the user has exceeded the maximum, they know immediately.

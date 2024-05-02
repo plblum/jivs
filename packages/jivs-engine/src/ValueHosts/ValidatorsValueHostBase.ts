@@ -253,7 +253,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
     /**
      * Generates an array of all Validators from ValueHostConfig.validatorConfigs.
-     * Sorts the by Category so Required is always first, DataTypeCheck is just after Required.
+     * Sorts the by Category so Require is always first, DataTypeCheck is just after Require.
      * @returns 
      */
     protected generateValidators(): Array<IValidator> {
@@ -267,7 +267,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     }
 
     /**
-     * Validators are sorted so category=Required comes first and category=DataTypeCheck second.
+     * Validators are sorted so category=Require comes first and category=DataTypeCheck second.
      * @param unordered 
      * @returns 
      */

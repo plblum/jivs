@@ -527,14 +527,14 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         expect(callbackValue).toBeNull();
 
     });    
-    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationStatus.Undetermined because Required should be skipped, leaving NO validators', () => {
+    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationStatus.Undetermined because Require should be skipped, leaving NO validators', () => {
         const conditionType = 'TEST';
         let config = setupInputValueHostConfig(0, [conditionType]);
         let setup = setupValidationManager([config]);
         (setup.services.conditionFactory as ConditionFactory).register<UserSuppliedResultConditionConfig>(
             conditionType, (config) => new UserSuppliedResultCondition({
                 conditionType: conditionType,
-                category: ConditionCategory.Required,
+                category: ConditionCategory.Require,
             result: ConditionEvaluateResult.NoMatch
             }));
     
@@ -561,7 +561,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         (setup.services.conditionFactory as ConditionFactory).register<UserSuppliedResultConditionConfig>(
             conditionType, (config) => new UserSuppliedResultCondition({
                 conditionType: conditionType,
-                category: ConditionCategory.Required,
+                category: ConditionCategory.Require,
             result: ConditionEvaluateResult.NoMatch
         }));
         let expectedIssueFound: IssueFound = {
@@ -569,7 +569,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
             valueHostName: 'Field1',
             errorMessage: 'Error 1: ' + conditionType,
             summaryMessage: 'Summary 1: ' + conditionType,
-            severity: ValidationSeverity.Severe // only because Required conditions default to Severe
+            severity: ValidationSeverity.Severe // only because Require conditions default to Severe
         };
 
         (setup.validationManager.getValueHost('Field1')! as IInputValueHost).setValue('');
@@ -660,7 +660,7 @@ describe('ValidationManager.validate, and isValid, doNotSaveNativeValue, getIssu
         });
 
     });          
-    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit has no impact on Required validators', () => {
+    test('With 1 inputValueHost and a condition that will evaluate as NoMatch, use option DuringEdit=false, expect normal Invalid as DuringEdit has no impact on Category=Require validators', () => {
         let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValidationManager([config]);
         let expectedIssueFound: IssueFound = {
