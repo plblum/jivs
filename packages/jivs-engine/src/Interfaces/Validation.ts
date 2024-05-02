@@ -78,15 +78,13 @@ export interface ValueHostValidateResult extends StatefulValueHostValidateResult
     pending?: Array<Promise<ValidatorValidateResult>> | null;
 }
 
-
-
 /**
  * The state of validation for this ValidatableValueHost.
  * It combines what has happened to the ValueHost's values
  * with the result from validation and influences the behavior
  * of the next attempt to validate.
  */
-export enum ValidationStatus { // ValueHostValidationStatus, ValueHostStatusCode
+export enum ValidationStatus {
     /**
      * Indicates that validate() has yet to be attempted
      * Once attempted, it will always be one of the other results
@@ -96,7 +94,7 @@ export enum ValidationStatus { // ValueHostValidationStatus, ValueHostStatusCode
      * Indicates that either Value or InputValue was changed
      * but has yet to be validated.
      */
-    ValueChangedButUnvalidated,
+    NeedsValidation,
     /**
      * Validation was not run, including when the Validator.severity is Off.
      */
@@ -113,7 +111,7 @@ export enum ValidationStatus { // ValueHostValidationStatus, ValueHostStatusCode
 }
 export const ValidationStatusString = [
     'NotAttempted',
-    'ValueChangedButUnvalidated',
+    'NeedsValidation',
     'Undetermined',
     'Valid',
     'Invalid'
@@ -242,7 +240,7 @@ export interface ValidationState
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
-     * True when ValidationStatus is Invalid or ValueChangedButUnvalidated
+     * True when ValidationStatus is Invalid or NeedsValidation
      * on individual validators.
      */
     doNotSave: boolean;

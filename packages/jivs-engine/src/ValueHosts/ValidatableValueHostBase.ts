@@ -59,7 +59,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         let changed = !deepEquals(value, oldValue);
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
-                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.status = ValidationStatus.NeedsValidation;
                 stateToUpdate.value = value;
             }
             this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
@@ -73,7 +73,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     protected processValidationOptions(options: SetValueOptions): void {
         if (options.validate) {
-            if (this.instanceState.status === ValidationStatus.ValueChangedButUnvalidated)
+            if (this.instanceState.status === ValidationStatus.NeedsValidation)
                 this.validate({ duringEdit: options.duringEdit }); // Result isn't ignored. Its automatically updates state and notifies parent
         }
         else if (options.reset)
@@ -96,7 +96,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             return; // mostly to call out this case isn't desirable.
         if (this.validationStatus === ValidationStatus.NotAttempted)
             return; // validation didn't previously run, so no change now
-        if (!revalidate && (this.validationStatus === ValidationStatus.ValueChangedButUnvalidated))
+        if (!revalidate && (this.validationStatus === ValidationStatus.NeedsValidation))
             return; // validation didn't previously run and the rest only sets the same ValidationStatus
 
         // Looks like validation previously ran...
@@ -110,14 +110,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         }
 
         if (this._associatedValueHosts.has(valueHostIdThatChanged)) {
-            // change the ValidationStatus to ValueChangedButUnvalidated when revalidate is false
+            // change the ValidationStatus to NeedsValidation when revalidate is false
             // call validate() when revalidate is true
             if (revalidate)
                 this.validate();
             else {
                 this.updateInstanceState((stateToUpdate) => {
                     this.clearValidationDataFromInstanceState(stateToUpdate);
-                    stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                    stateToUpdate.status = ValidationStatus.NeedsValidation;
                     return stateToUpdate;
                 }, this);
             }
@@ -167,7 +167,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * 
      * Prior to calling validate() (or setValue()'s validate option),
      * it is NotAttempted.
-     * After setValue it is ValueChangedButUnvalidated.
+     * After setValue it is NeedsValidation.
      * After validate, it may be Valid, Invalid or Undetermined.
      */
     public get validationStatus(): ValidationStatus {
@@ -235,12 +235,12 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
-     * True when ValidationStatus is Invalid or ValueChangedButUnvalidated.
+     * True when ValidationStatus is Invalid or NeedsValidation.
      */
     public get doNotSave(): boolean {
         switch (this.validationStatus) {
             case ValidationStatus.Invalid:
-            case ValidationStatus.ValueChangedButUnvalidated:
+            case ValidationStatus.NeedsValidation:
                 return true;
             default:
                 if (this.instanceState.asyncProcessing) // async running so long as not null

@@ -73,7 +73,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         let changed = !deepEquals(value, oldValue);
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
-                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.status = ValidationStatus.NeedsValidation;
                 stateToUpdate.inputValue = value;
             }
             this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
@@ -111,7 +111,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 // effectively clear past validation
-                stateToUpdate.status = ValidationStatus.ValueChangedButUnvalidated;
+                stateToUpdate.status = ValidationStatus.NeedsValidation;
                 stateToUpdate.issuesFound = null;
 
                 stateToUpdate.value = nativeValue;

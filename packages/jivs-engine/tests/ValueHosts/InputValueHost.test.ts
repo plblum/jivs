@@ -332,7 +332,7 @@ describe('setInputValue with getInputValue to check result', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC")).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -344,7 +344,7 @@ describe('setInputValue with getInputValue to check result', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", {})).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -356,7 +356,7 @@ describe('setInputValue with getInputValue to check result', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", null!)).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -368,7 +368,7 @@ describe('setInputValue with getInputValue to check result', () => {
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setInputValue("ABC", { validate: false })).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe("ABC");
         let changes = setup.validationManager.getHostStateChanges();
@@ -429,7 +429,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10")).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -444,7 +444,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", {})).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -458,7 +458,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", null!)).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -472,7 +472,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let setup = setupInputValueHost();
 
         expect(() => setup.valueHost.setValues(10, "10", { validate: false })).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getValue()).toBe(10);
         expect(setup.valueHost.getInputValue()).toBe("10");
@@ -890,8 +890,8 @@ describe('InputValueHost.doNotSave', () => {
     test('ValidationStatus = Valid but with async pending, doNotSave=true', () => {
         trydoNotSave(ValidationStatus.Valid, true, true);
     });
-    test('ValidationStatus = ValueChangedButUnvalidated, doNotSave=true', () => {
-        trydoNotSave(ValidationStatus.ValueChangedButUnvalidated, false, true);
+    test('ValidationStatus = NeedsValidation, doNotSave=true', () => {
+        trydoNotSave(ValidationStatus.NeedsValidation, false, true);
     });
 
 });
@@ -1301,7 +1301,7 @@ describe('InputValueHostGenerator members', () => {
         expect(state).toEqual(expectedState);
     });
 
-    test('cleanupInstanceState existing state with ValidationStatus=Invalid has an IssuesFound but no associated ValidationConfig. instanceState.IssuesFound is null and ValidationStatus is ValueChangedButUnvalidated', () => {
+    test('cleanupInstanceState existing state with ValidationStatus=Invalid has an IssuesFound but no associated ValidationConfig. instanceState.IssuesFound is null and ValidationStatus is NeedsValidation', () => {
         let originalState: InputValueHostInstanceState = {
             name: 'Field1',
             status: ValidationStatus.Invalid,
@@ -1335,7 +1335,7 @@ describe('InputValueHostGenerator members', () => {
         expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
         let expectedState = { ...originalState };
         expectedState.issuesFound = null;
-        expectedState.status = ValidationStatus.ValueChangedButUnvalidated;
+        expectedState.status = ValidationStatus.NeedsValidation;
         expect(state).toEqual(expectedState);
     });
     test('cleanupInstanceState existing state with ValidationStatus=Invalid, 2 IssuesFound where one is Warning and the other is removed. State.IssuesFound is the warning and ValidationStatus is Valid', () => {

@@ -207,7 +207,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * Determines if a validator doesn't consider the ValueHost's value ready to save
      * based on the latest call to validate(). (It does not run validate().)
      * True when at least one ValueHost's ValidationStatus is 
-     * Invalid or ValueChangedButUnvalidated
+     * Invalid or NeedsValidation
      */
     public get doNotSave(): boolean {
         for (let vh of this.inputValueHost()) {

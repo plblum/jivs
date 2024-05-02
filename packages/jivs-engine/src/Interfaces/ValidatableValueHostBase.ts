@@ -65,7 +65,7 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
      * validation behaves the next time.
      * Prior to calling validate() (or setValue()'s validate option),
      * it is NotAttempted.
-     * After setValue it is ValueChangedButUnvalidated.
+     * After setValue it is NeedsValidation.
      * After validate, it may be Valid, Invalid or Undetermined.
      */
     validationStatus: ValidationStatus;
@@ -98,7 +98,7 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
 
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
-     * True when ValidationStatus is Invalid or ValueChangedButUnvalidated.
+     * True when ValidationStatus is Invalid or NeedsValidation.
      */
     doNotSave: boolean;
 

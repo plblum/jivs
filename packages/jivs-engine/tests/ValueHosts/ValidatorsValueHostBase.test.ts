@@ -2433,7 +2433,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         expect(setup.field2.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
-    test('Field1 previously validated and is Invalid. Field2 changed, revalidate = false. Field1.ValidationStatus => ValueChangedButUnvalidated.', () => {
+    test('Field1 previously validated and is Invalid. Field2 changed, revalidate = false. Field1.ValidationStatus => NeedsValidation.', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setValue('ABC');   // Equal condition will fail
         setup.field2.setValue('BCD');  
@@ -2442,11 +2442,11 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
 
         expect(() => setup.field1.otherValueHostChangedNotification(
             setup.field2.getName(), false)).not.toThrow();
-        expect(setup.field1.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
-        expect(setup.field2.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.field2.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
-    test('Field1 previously validated and is Invalid. Field2 changed via setValue with validate=false. Field1.ValidationStatus => ValueChangedButUnvalidated.', () => {
+    test('Field1 previously validated and is Invalid. Field2 changed via setValue with validate=false. Field1.ValidationStatus => NeedsValidation.', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setValue('ABC');   // Equal condiiton will fail
         setup.field2.setValue('BCD');
@@ -2454,8 +2454,8 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         setup.field1.validate();        // field1 = invalid
 
         setup.field2.setValue('ABC');  // will trigger OtherValueHostChangedNotification with revalidate=false
-        expect(setup.field1.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
-        expect(setup.field2.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.field2.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
     test('Field1 previously validated and is Invalid. Field2 changed via setValue with validate=true. Field1.ValidationStatus => Valid because fields are now equal.', () => {
@@ -2463,7 +2463,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         setup.field1.setValue('ABC');
         setup.field2.setValue('BCD');
 
-        expect(setup.field1.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field1.validationStatus).toBe(ValidationStatus.NeedsValidation);
         setup.field1.validate();
         expect(setup.field1.validationStatus).toBe(ValidationStatus.Invalid);
 
@@ -2472,7 +2472,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         expect(setup.field2.validationStatus).toBe(ValidationStatus.Invalid);   // we validated and its always invalid
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
-    test('Field1 previously validated. Change Field3 with revalidate=false. No change to Field1. Field3.ValidationState=>NotAttempted because it was not ValueChangedButUnvalidated', () => {
+    test('Field1 previously validated. Change Field3 with revalidate=false. No change to Field1. Field3.ValidationState=>NotAttempted because it was not NeedsValidation', () => {
         let setup = setupWithThreeValueHosts();
         setup.field1.setValue('ABC');
         setup.field2.setValue('BCD');
@@ -2482,7 +2482,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         expect(() => setup.field1.otherValueHostChangedNotification(
             setup.field3.getName(), false)).not.toThrow();
         expect(setup.field1.validationStatus).toBe(ValidationStatus.Invalid);
-        expect(setup.field2.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field2.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.field3.validationStatus).toBe(ValidationStatus.NotAttempted);
     });
     test('Field1 previously validated. Use setValues to change Field3 with validate=false. No change to Field1. Field3.ValidationState=>ValueChangedButInvalided', () => {
@@ -2498,7 +2498,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         setup.field3.setValue('X');  // will trigger OtherValueHostCHangedNotification with revalidate=false
         expect(setup.field1.validationStatus).toBe(ValidationStatus.Invalid);  // no change
         expect(setup.field2.validationStatus).toBe(ValidationStatus.Invalid);   // when validated, always invalid
-        expect(setup.field3.validationStatus).toBe(ValidationStatus.ValueChangedButUnvalidated);
+        expect(setup.field3.validationStatus).toBe(ValidationStatus.NeedsValidation);
     });
 
     test('Field1 previously validated. Use setValues to change Field3 with validate=true. No change to Field1.', () => {

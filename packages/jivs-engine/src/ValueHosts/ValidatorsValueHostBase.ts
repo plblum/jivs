@@ -471,7 +471,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
         state.issuesFound = issuesFound as (Array<IssueFound> | null);
         // fix validation result for when validation had occurred
         if (state.status === ValidationStatus.Invalid) {
-            let vr = ValidationStatus.ValueChangedButUnvalidated;
+            let vr = ValidationStatus.NeedsValidation;
             let warningFound = false;
             if (issuesFound) {
                 for (let issueFound of state.issuesFound!) {
@@ -482,7 +482,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
                     else
                         warningFound = true;
                 }
-                if (warningFound && vr === ValidationStatus.ValueChangedButUnvalidated)
+                if (warningFound && vr === ValidationStatus.NeedsValidation)
                     vr = ValidationStatus.Valid;
             }
             state.status = vr;
