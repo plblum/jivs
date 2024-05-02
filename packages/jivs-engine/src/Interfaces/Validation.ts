@@ -227,8 +227,8 @@ export interface BusinessLogicError {
 
 /**
  * Packages key values of the state of validation to be returned
- * by validate() and in the ValidationManagerValidatedHandler.
- * While here, the same values are available directly on ValidationManager.
+ * by validate() and in the onValidationStateChanged callback.
+ * The same values are also available directly on ValidationManager.
  */
 export interface ValidationState
 {

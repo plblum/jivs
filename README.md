@@ -120,13 +120,13 @@ Suppose that you have this HTML:
   <button>Submit</button>
 </form>
 ```
-This code initializes a ValidationManager and sets up the `onValueHostValidated callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
+This code initializes a ValidationManager and sets up the `onValueHostValidationStateChanged callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
 
 ```ts
 let vmConfig: ValidationManagerConfig = {
   services: createValidationServices(),
   valueHostConfigs: ... your configuration for each Input ...
-  onValueHostValidated: fieldValidated
+  onValueHostValidationStateChanged: fieldValidated
 };
 let vm = new ValidationManager(vmConfig);
 
@@ -234,7 +234,7 @@ The term "ValidationSummary" refers to a location in the UI that offers a consol
 
 You need these tools to setup your ValidationSummary:
 * An HTML element to host the ValidationSummary.
-* A function that responds to the `onValidated callback` on the ValidationManager. This function will gather the data and update the ValidationSummary.
+* A function that responds to the `onValidationStateChanged callback` on the ValidationManager. This function will gather the data and update the ValidationSummary.
 * Use the `getIssuesFound()` function on ValidationManager to retrieve those issues.
 
 We've modified the original example to provide a \<div> used for the ValidationSummary. It is shown outside of the \<form> but can be inside, and can be offered in multiple locations too:
@@ -248,14 +248,14 @@ We've modified the original example to provide a \<div> used for the ValidationS
   <button>Submit</button>
 </form>
 ```
-This code initializes a ValidationManager and sets up the `onValidated callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
+This code initializes a ValidationManager and sets up the `onValidationStateChanged callback`. It should be invoked once and the ValidationManager instance should be accessible to the rest of this form's code.
 
 ```ts
 let vmConfig: ValidationManagerConfig = {
   services: createValidationServices(),
   valueHostConfigs: ... your configuration for each Input ...
-  onValueHostValidated: fieldValidated,
-  onValidated: formValidated
+  onValueHostValidationStateChanged: fieldValidated,
+  onValidationStateChanged: formValidated
 };
 let vm = new ValidationManager(vmConfig);
 
@@ -797,10 +797,10 @@ interface ValidationManagerConfig {
     savedValueHostInstanceStates?: null | ValueHostInstanceState[];
     onInputValueChanged?: null | InputValueChangedHandler;
     onInstanceStateChanged?: null | ValidationManagerInstanceStateChangedHandler;
-    onValidated?: null | ValidationManagerValidatedHandler;
+    onValidationStateChanged?: null | ValidationStateChangedHandler;
     onValueChanged?: null | ValueChangedHandler;
     onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
-    onValueHostValidated?: null | ValueHostValidatedHandler;
+    onValueHostValidationStateChanged?: null | ValueHostValidationStateChangedHandler;
 }
 ```
 Let’s go through this type.
@@ -811,7 +811,7 @@ Let’s go through this type.
 -	`onInstanceStateChanged` and `onValueHostInstanceStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 -	`onValueChanged` notifies you when a `ValueHost` had its value changed.
 -	`onInputValueChanged` notifies you when an `InputValueHost` had its Input Value changed.
--	`onValidated` and `onValueHostValidated` notifies you after a `validate function` completes, providing the results.
+-	`onValidationStateChanged` and `onValueHostValidationStateChanged` notifies you after a `validate function` completes, providing the results.
 <a name="validationservices"></a>
 ## ValidationServices
 The `ValidationServices class` supports the operations of Validation with services and factories, which of course means you can heavily customize Jivs through the power of interfaces and dependency injection.

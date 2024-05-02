@@ -285,7 +285,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in AssociatedValueHostName.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
-     * It calls onValueHostValidated if there was a changed to the state.
+     * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * 
      * In this class, we first see if the errorcode in the error matches an existing validator.
      * If so, we use that validator, and add an IssueFound from that validator.

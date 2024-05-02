@@ -10,7 +10,7 @@ import { IInputValueHost, InputValueChangedHandler, InputValueHostInstanceState 
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
-import { IValidationManager, IValidationManagerCallbacks, ValidationManagerValidatedHandler } from "../../src/Interfaces/ValidationManager";
+import { IValidationManager, IValidationManagerCallbacks, ValidationStateChangedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
@@ -28,7 +28,7 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
 import { registerAllConditions, registerDataTypeCheckGenerators, registerDataTypeComparers, registerDataTypeConverters, registerDataTypeFormatters, registerDataTypeIdentifiers } from "./createValidationServices";
-import { ValueHostValidatedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
+import { ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
@@ -514,13 +514,13 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     }
     private _onInstanceStateChanged: ValueHostsManagerInstanceStateChangedHandler | null = null;
 
-    public get onValidated(): ValidationManagerValidatedHandler | null {
+    public get onValidationStateChanged(): ValidationStateChangedHandler | null {
         return this._onValidated;
     }
-    public set onValidated(fn: ValidationManagerValidatedHandler) {
+    public set onValidationStateChanged(fn: ValidationStateChangedHandler) {
         this._onValidated = fn;
     }
-    private _onValidated: ValidationManagerValidatedHandler | null = null;
+    private _onValidated: ValidationStateChangedHandler | null = null;
 
     public get onValueHostInstanceStateChanged(): ValueHostInstanceStateChangedHandler | null {
         return this._onValueHostInstanceStateChanged;
@@ -530,13 +530,13 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     }
     private _onValueHostInstanceStateChanged: ValueHostInstanceStateChangedHandler | null = null;
 
-    public get onValueHostValidated(): ValueHostValidatedHandler | null {
+    public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
         return this._onValueHostValidated;
     }
-    public set onValueHostValidated(fn: ValueHostValidatedHandler) {
+    public set onValueHostValidationStateChanged(fn: ValueHostValidationStateChangedHandler) {
         this._onValueHostValidated = fn;
     }
-    private _onValueHostValidated: ValueHostValidatedHandler | null = null;
+    private _onValueHostValidated: ValueHostValidationStateChangedHandler | null = null;
 
     public get onValueChanged(): ValueChangedHandler | null {
         return this._onValueChanged;

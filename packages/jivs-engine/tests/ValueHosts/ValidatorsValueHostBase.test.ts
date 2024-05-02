@@ -6,7 +6,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
 import { ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { IValidatableValueHostBase, ValueHostValidatedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
+import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState, BusinessLogicError } from "../../src/Interfaces/Validation";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
@@ -723,7 +723,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidated = (valueHost, validateResult) => {
+        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.validate();
@@ -750,7 +750,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
         let results: Array<ValueHostValidationState> = [];
-        setup.validationManager.onValueHostValidated = (valueHost, validateResult) => {
+        setup.validationManager.onValueHostValidationStateChanged = (valueHost, validateResult) => {
             results.push(validateResult);
         };
         setup.valueHost.validate();
@@ -941,7 +941,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -984,7 +984,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1150,7 +1150,7 @@ describe('validate handles exception from custom Validator class', () => {
 
 function testValidateFunctionWithPromise(
     validatorConfigs: Array<Partial<ValidatorConfig>> | null,
-    onValidated: ValueHostValidatedHandler,
+    onValidationStateChanged: ValueHostValidationStateChangedHandler,
     onValueHostInstanceStateChanged?: ValueHostInstanceStateChangedHandler,
     validationGroup?: string | undefined): {
         services: IValidationServices,
@@ -1180,13 +1180,13 @@ function testValidateFunctionWithPromise(
     let vm = new ValidationManager({
         services: services,
         valueHostConfigs: [],
-        onValueHostValidated: onValidated,
+        onValueHostValidationStateChanged: onValidationStateChanged,
         onValueHostInstanceStateChanged: onValueHostInstanceStateChanged
     });
     let vh = vm.addValueHost(vhd1, null) as TestValidatorsValueHost;
 
     // let setup = SetupValidatorsValueHostBaseForValidate(validatorConfigs, inputValueState);
-    // setup.validationManager.OnValueHostValidated = onValidated;
+    // setup.validationManager.OnValueHostValidated = onValidationStateChanged;
 
     let vrDetails: ValueHostValidateResult | null = null;
     expect(() => vrDetails = vh.validate({ group: validationGroup })).not.toThrow();
@@ -1233,7 +1233,7 @@ function validateWithAsyncConditions(
 
     let doneTime = false;
     let handlerCount = 0;
-    let onValidateHandler: ValueHostValidatedHandler =
+    let onValidateHandler: ValueHostValidationStateChangedHandler =
         (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => {
             let vm = (valueHost as TestValidatorsValueHost).valueHostsManager as IValidationManager;
             let evr = expectedValidateResults[handlerCount];
@@ -1559,7 +1559,7 @@ describe('validate with async Conditions', () => {
             // but it does update the state for asyncProcessing=true
             // Then when the promise completes, it also doesn't call onValidate
             // but it does update the state for asyncProcessing=false
-            let onValidateHandler: ValueHostValidatedHandler =
+            let onValidateHandler: ValueHostValidationStateChangedHandler =
                 (vh, vr) => {
                     //         fail();
                 };
@@ -1758,7 +1758,7 @@ describe('clearValidation', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1811,7 +1811,7 @@ describe('clearValidation', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1862,7 +1862,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1931,7 +1931,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };

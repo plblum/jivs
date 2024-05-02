@@ -626,7 +626,7 @@ describe('clearBusinessLogicErrors', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -669,7 +669,7 @@ describe('clearBusinessLogicErrors', () => {
         let vmConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidated: (vh, vr) => {
+            onValueHostValidationStateChanged: (vh, vr) => {
                 onValidateResult = vr;
             }
         };
@@ -1043,7 +1043,7 @@ describe('toIValidatableValueHostBaseCallbacks function', () => {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostInstanceStateChanged(vh: IValueHost, state: ValueHostInstanceState) { }
         onInputValueChanged(vh: IValidatableValueHostBase, old: any) { }
-        onValueHostValidated(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
+        onValueHostValidationStateChanged(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIValidatableValueHostBaseCallbacksImplementation();

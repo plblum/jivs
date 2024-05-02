@@ -190,7 +190,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
-     * It calls onValueHostValidated if there was a changed to the state.
+     * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param options - Only supports the skipCallback and Group options.
      * @returns true when there was something cleared
      */
@@ -256,7 +256,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * the Validation Summary (getIssuesFound) and optionally for an individual ValueHostName,
      * by specifying that valueHostName in AssociatedValueHostName.
      * Each time called, it adds to the existing list. Use clearBusinessLogicErrors() first if starting a fresh list.
-     * It calls onValueHostValidated if there was a changed to the state.
+     * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param error - A business logic error to show. If it has an errorCode assigned and the same
      * errorCode is already recorded here, the new entry replaces the old one.
      * @returns true when a change was made to the known validation state.
@@ -293,7 +293,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     /**
      * Removes any business logic errors. Generally called automatically by
      * ValidationManager as calls are made to SetBusinessLogicErrors and clearValidation().
-     * It calls onValueHostValidated if there was a changed to the state.
+     * It calls onValueHostValidationStateChanged if there was a changed to the state.
      * @param options - Only considers the skipCallback option.
      * @returns true when a change was made to the known validation state.
      */
@@ -312,9 +312,9 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     }
 
     /**
-     * Helper to call onValueHostValidated due to a change in the state associated
+     * Helper to call onValueHostValidationStateChanged due to a change in the state associated
      * with Validate itself or BusinessLogicErrors.
-     * It also asks ValidationManager to call onValidated so observers that only 
+     * It also asks ValidationManager to call onValidationStateChanged so observers that only 
      * watch for validation from a high level will be notified.
      */
     protected invokeOnValueHostValidated(options: ValidateOptions | undefined): void
@@ -324,10 +324,10 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
         // the order is intentional, but not ideal.
         // To unit test the debounce feature of notifyValidationStateChanged, we need
-        // the call to notify to be queued inside of debounce by the time onValueHostValidated is invoked,
-        // so we can leverage the onValueHostValidated to advance the mock timer. (Ugh)
+        // the call to notify to be queued inside of debounce by the time onValueHostValidationStateChanged is invoked,
+        // so we can leverage the onValueHostValidationStateChanged to advance the mock timer. (Ugh)
         toIValidationManager(this.valueHostsManager)?.notifyValidationStateChanged(null, options);
-        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidated?.(this,
+        toIValidationManagerCallbacks(this.valueHostsManager)?.onValueHostValidationStateChanged?.(this,
             {
                 issuesFound: this.getIssuesFound(),
                 isValid: this.isValid,

@@ -191,7 +191,7 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
 }
 
 
-export type ValueHostValidatedHandler = (valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState) => void;
+export type ValueHostValidationStateChangedHandler = (valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState) => void;
 
 
 /**
@@ -212,18 +212,17 @@ export interface ValueHostValidationState extends ValidationState
  */
 export interface IValidatableValueHostBaseCallbacks extends IValueHostCallbacks {
     /**
-     * Called when ValueHost's validate() function has finished, and made
-     * changes to the state. (No point in notifying code intended to update the UI
-     * if nothing changed.) 
-     * Also when validation is cleared or BusinessLogicErrors are added or removed.
-     * Supplies the result to the callback.
+     * Called when the state of validation has changed on a ValidatableValueHost.
+     * That includes validate(), clearValidation(), setBusinessLogicErrors(), 
+     * clearBusinessLogicErrors() and a few edge cases.
+     * Supplies the current ValidationState to the callback.
      * Examples: Use to notify the validation related aspects of the component to refresh, 
      * such as showing error messages and changing style sheets.
      * Use to change the disabled state of the submit button based on validity.
-     * You can setup the same callback on individual ValueHosts.
-     * Here, it aggregates all ValueHost notifications.
+     * See also onValidationStateChanged for a similar callback from
+     * the ValidationManager.
      */
-    onValueHostValidated?: ValueHostValidatedHandler | null;
+    onValueHostValidationStateChanged?: ValueHostValidationStateChangedHandler | null;
 }
 /**
  * Determines if the object implements IValidatableValueHostBaseCallbacks.
@@ -235,7 +234,7 @@ export function toIValidatableValueHostBaseCallbacks(source: any): IValidatableV
     if (toIValueHostCallbacks(source))
     {
         let test = source as IValidatableValueHostBaseCallbacks;
-        if (test.onValueHostValidated !== undefined)
+        if (test.onValueHostValidationStateChanged !== undefined)
             return test;
     }
     return null;
