@@ -132,8 +132,9 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 // resume normal processing with Undetermined state
                 result.status = ValidationStatus.Undetermined;
             }
+            adjustCorrectedFlag();         
             if (updateInstanceStateWithResult(result))
-                self.invokeOnValueHostValidated(options);
+                self.invokeOnValueHostValidationStateChanged(options);
             // when the result hasn't changed from the start, report null as there were no issues found
             return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
                 result : null;
@@ -149,6 +150,10 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         }
         function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean {
             return self.updateInstanceState((stateToUpdate) => {
+                if (result.corrected)
+                    stateToUpdate.corrected = true;
+                else
+                    delete stateToUpdate.corrected;
                 stateToUpdate.status = result.status;
                 stateToUpdate.issuesFound = result.issuesFound;
                 if (options!.group)
@@ -197,7 +202,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                                 result.issuesFound = [];
                             result.issuesFound.push(ivr.issueFound!);
                             if (updateInstanceStateWithResult(result))
-                                self.invokeOnValueHostValidated(options);
+                                self.invokeOnValueHostValidationStateChanged(options);
 
                         }
                         else
@@ -212,6 +217,16 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 }
             );
             // no change to the ValidationStatus here            
+        }
+        function adjustCorrectedFlag(): void
+        {
+            // transition Invalid->Valid or already corrected and still valid, corrected=true
+            if ((self.instanceState.status === ValidationStatus.Invalid &&
+                result.status === ValidationStatus.Valid) ||
+                (self.instanceState.corrected && result.status === ValidationStatus.Valid))
+                result.corrected = true;
+            else
+                delete result.corrected;                        
         }
 
         function bailout(errorMessage: string): null {
@@ -327,7 +342,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                             return stateToUpdate;
                         }, this);
                         if (changed) {
-                            this.invokeOnValueHostValidated(options);
+                            this.invokeOnValueHostValidationStateChanged(options);
                             return true;
                         }
                     }
