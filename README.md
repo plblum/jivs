@@ -110,7 +110,7 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 * Use the onchange event to tell the ValidationManager about the data change and run validation. 
 	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
 	* Use `validationManager.getInputValueHost('name').setValues(native, input, { validate: true});`
-* The ValidationManager will notify you about a validation state change through its `OnValueHostValidated callback`. Implement that callback to update your user interface.
+* The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
 ```ts
@@ -178,7 +178,7 @@ firstNameFld.attachEventListener('onchange', (evt)=>{
 Show or hide the error state as the user types. This is limited to Validators that evaluate the raw string, like RequireText, RegExp, and StringLength. Always setup the onchange event (described above) to get all Validators involved.
 
 * Use the oninput event to tell the ValidationManager about the data change and run validation, with its "duringEdit" option set to true.
-* The ValidationManager will notify you about a validation state change through its `OnValueHostValidated callback`.
+* The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`.
 
 All of the prior setup still applies. Here we add the oninput event handler:
 ```ts

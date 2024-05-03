@@ -391,6 +391,38 @@ function createIssueFound(errorCode: string,
         summaryMessage: summaryMessage
     };
 }
+describe('constructor and resulting property values', () => {
+
+    test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let testItem: TestValidatorsValueHost | null = null;
+        expect(()=> testItem = new TestValidatorsValueHost(vm, {
+            name: 'Field1',
+            valueHostType: 'TestValidatorsValueHost',
+            validatorConfigs: []
+            },
+            {
+                name: 'Field1',
+                status: ValidationStatus.NotAttempted,
+                issuesFound: null,
+                value: undefined
+            })).not.toThrow();
+
+        expect(testItem!.valueHostsManager).toBe(vm);
+
+        expect(testItem!.getName()).toBe('Field1');
+        expect(testItem!.getLabel()).toBe('');
+        expect(testItem!.getDataType()).toBeNull();
+        expect(testItem!.getValue()).toBeUndefined();
+        expect(testItem!.isChanged).toBe(false);
+        expect(testItem!.isValid).toBe(true);
+        expect(testItem!.asyncProcessing).toBe(false);
+        expect(testItem!.corrected).toBe(false);        
+    });
+});
+
+
 describe('ValidatorsValueHostBase.validate', () => {
     //NOTE: Validator tests already handle testing Validator property of Enabled, Enabler,
     // and validate's Group parameter. When those skip the condition, we expect a ConditionEvaluateResult of Undetermined
@@ -712,7 +744,7 @@ describe('ValidatorsValueHostBase.validate', () => {
     test('Group test where setGroup overrides and is not a match to the supplied group. ValidatorsValueHostBase has Group name but validate has a different group name. ValidationStatus = undetermined', () => {
         TestGroupUsingOverride('GROUPA', 'GROUPB', 'GROUPA', null)
     });
-    test('validate one ValueHost with validators that results in Valid. OnValueHostValidated called.', () => {
+    test('validate one ValueHost with validators that results in Valid. onValueHostValidationStateChanged called.', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -733,11 +765,12 @@ describe('ValidatorsValueHostBase.validate', () => {
                 isValid: true,
                 doNotSave: false,
                 asyncProcessing: false,
-                status: ValidationStatus.Valid
+                status: ValidationStatus.Valid,
+                corrected: false
             }
         ]);
     });
-    test('validate one ValueHost with validators that results in Invalid. OnValueHostValidated called.', () => {
+    test('validate one ValueHost with validators that results in Invalid. onValueHostValidationStateChanged called.', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
                 conditionConfig: {
@@ -766,7 +799,8 @@ describe('ValidatorsValueHostBase.validate', () => {
                 isValid: false,
                 doNotSave: true,
                 asyncProcessing: false,
-                status: ValidationStatus.Invalid
+                status: ValidationStatus.Invalid,
+                corrected: false
             }
         ]);
 
@@ -975,7 +1009,8 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
             doNotSave: true,
             isValid: false,
             asyncProcessing: false,
-            status: ValidationStatus.Invalid
+            status: ValidationStatus.Invalid,
+            corrected: false
         });
     });    
     test('Confirm the OnValueHostValidate event is setup but not called due to option.skipCallback', () => {
@@ -1107,7 +1142,235 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(vr!.issuesFound).toEqual(issuesFound);
     });
 });
+describe('corrected property', () => {
 
+    test('Validate without validators, corrected=false', () => {
+        let setup = setupValidatorsValueHostBaseForValidate(null, null);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+    test('When initial state has corrected=true, corrected=true', () => {
+        let setup = setupValidatorsValueHostBaseForValidate(null, {
+            corrected: true,
+            name: 'Field1'
+        });
+        expect(setup.valueHost.corrected).toBe(true);
+    });
+    test('From Invalid->Valid, corrected=true', () => {
+        let setup = setupValidatorsValueHostBaseForValidate([{
+            conditionConfig: {
+                conditionType: NeverMatchesConditionType,
+            },
+            errorMessage: 'NeverMatch',
+            enabled: true
+        },
+        {
+            conditionConfig: {
+                conditionType: AlwaysMatchesConditionType,
+            },
+            errorMessage: 'Never shown',
+            enabled: false
+        }], null);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(false);
+        setup.valueHost.getValidator(NeverMatchesConditionType)?.setEnabled(false);
+        setup.valueHost.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(true);
+    });
+    test('From Invalid->Valid->Valid, corrected=true', () => {
+        let setup = setupValidatorsValueHostBaseForValidate([{
+            conditionConfig: {
+                conditionType: NeverMatchesConditionType,
+            },
+            errorMessage: 'NeverMatch',
+            enabled: true
+        },
+        {
+            conditionConfig: {
+                conditionType: AlwaysMatchesConditionType,
+            },
+            errorMessage: 'Never shown',
+            enabled: false
+        }], null);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(false);
+        setup.valueHost.getValidator(NeverMatchesConditionType)?.setEnabled(false);
+        setup.valueHost.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(true);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(true);
+    });
+    test('From Invalid->Valid->Invalid, corrected=false', () => {
+        let setup = setupValidatorsValueHostBaseForValidate([{
+            conditionConfig: {
+                conditionType: NeverMatchesConditionType,
+            },
+            errorMessage: 'NeverMatch',
+            enabled: true
+        },
+        {
+            conditionConfig: {
+                conditionType: AlwaysMatchesConditionType,
+            },
+            errorMessage: 'Never shown',
+            enabled: false
+        }], null);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(false);
+        setup.valueHost.getValidator(NeverMatchesConditionType)?.setEnabled(false);
+        setup.valueHost.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(true);
+        setup.valueHost.getValidator(NeverMatchesConditionType)?.setEnabled(true);
+        setup.valueHost.getValidator(AlwaysMatchesConditionType)?.setEnabled(false);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+    test('From Invalid->Valid->NotAttempted, corrected=false', () => {
+        let setup = setupValidatorsValueHostBaseForValidate([{
+            conditionConfig: {
+                conditionType: NeverMatchesConditionType,
+            },
+            errorMessage: 'NeverMatch',
+            enabled: true
+        },
+        {
+            conditionConfig: {
+                conditionType: AlwaysMatchesConditionType,
+            },
+            errorMessage: 'Never shown',
+            enabled: false
+        }], null);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(false);
+        setup.valueHost.getValidator(NeverMatchesConditionType)?.setEnabled(false);
+        setup.valueHost.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(true);
+        setup.valueHost.clearValidation();
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+    test('From Invalid->Valid->NeedsValidation, corrected=false', () => {
+        let setup = setupValidatorsValueHostBaseForValidate([{
+            conditionConfig: {
+                conditionType: NeverMatchesConditionType,
+            },
+            errorMessage: 'NeverMatch',
+            enabled: true
+        },
+        {
+            conditionConfig: {
+                conditionType: AlwaysMatchesConditionType,
+            },
+            errorMessage: 'Never shown',
+            enabled: false
+        }], null);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(false);
+        setup.valueHost.getValidator(NeverMatchesConditionType)?.setEnabled(false);
+        setup.valueHost.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(true);
+        setup.valueHost.setValue('A');
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+    test('From state has corrected=true ->NeedsValidation, corrected=false', () => {
+        let setup = setupValidatorsValueHostBaseForValidate(null, {
+            corrected: true,
+            name: 'Field1',
+            status: ValidationStatus.Valid
+        });
+        setup.valueHost.setValue('A');
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+    test('onValueHostValidationStateChanged setup. corrected reported as true after Invalid->Valid and omitted any other time', () => {
+        let onValidateResult: ValueHostValidationState | null = null;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [],
+            onValueHostValidationStateChanged: (vh, vr) => {
+                onValidateResult = vr;
+            }
+        };
+        addGeneratorToServices(vmConfig.services);
+        let vm = new ValidationManager(vmConfig);
+        let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
+            valueHostType: 'TestValidatorsValueHost',
+            name: 'Field1',
+            validatorConfigs: [{
+                conditionConfig: {
+                    conditionType: NeverMatchesConditionType,
+                },
+                errorMessage: 'NeverMatch',
+                enabled: true
+            },
+            {
+                conditionConfig: {
+                    conditionType: AlwaysMatchesConditionType,
+                },
+                errorMessage: 'Never shown',
+                enabled: false
+            }]
+        }, null) as TestValidatorsValueHost;
+
+        let neverMatchIssueFound: IssueFound = {
+            errorCode: NeverMatchesConditionType,
+            errorMessage: 'NeverMatch',
+            summaryMessage: 'NeverMatch',
+            valueHostName: 'Field1',
+            severity: ValidationSeverity.Error
+        };
+
+        let snapshot = vm.validate(); // ensure we have an invalid state without business logic
+        expect(snapshot).toEqual(<ValidationState>{
+            isValid: false,
+            doNotSave: true,
+            issuesFound: [neverMatchIssueFound],
+            asyncProcessing: false,
+        });
+        expect(onValidateResult).toEqual(<ValueHostValidationState>{
+            status: ValidationStatus.Invalid,
+            isValid: false,
+            doNotSave: true,
+            issuesFound: [neverMatchIssueFound],
+            asyncProcessing: false,
+            corrected: false
+        });
+
+        vh.getValidator(NeverMatchesConditionType)?.setEnabled(false);
+        vh.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
+
+        snapshot = vm.validate();
+        expect(snapshot).toEqual(<ValidationState>{
+            isValid: true,
+            doNotSave: false,
+            issuesFound: null,
+            asyncProcessing: false
+        });
+        expect(onValidateResult).toEqual(<ValueHostValidationState>{
+            status: ValidationStatus.Valid,
+            isValid: true,
+            doNotSave: false,
+            issuesFound: null,
+            asyncProcessing: false,
+            corrected: true
+        });
+
+        vh.setValue(10);    // without validation changes status=NeedsValidation and triggers callback
+        expect(onValidateResult).toEqual(<ValueHostValidationState>{
+            status: ValidationStatus.NeedsValidation,
+            isValid: true,
+            doNotSave: true,
+            issuesFound: null,
+            asyncProcessing: false,
+            corrected: false
+        });
+    });        
+
+});
 
 class ThrowExceptionValidator extends Validator {
     constructor(valueHost: IValidatorsValueHostBase, config: ValidatorConfig)
@@ -1186,7 +1449,7 @@ function testValidateFunctionWithPromise(
     let vh = vm.addValueHost(vhd1, null) as TestValidatorsValueHost;
 
     // let setup = SetupValidatorsValueHostBaseForValidate(validatorConfigs, inputValueState);
-    // setup.validationManager.OnValueHostValidated = onValidationStateChanged;
+    // setup.validationManager.onValueHostValidationStateChanged = onValidationStateChanged;
 
     let vrDetails: ValueHostValidateResult | null = null;
     expect(() => vrDetails = vh.validate({ group: validationGroup })).not.toThrow();
@@ -1270,7 +1533,7 @@ function validateWithAsyncConditions(
 
     for (let i = 0; i < setup.promises.length; i++)
         testOnePendingResult(setup.promises[i], expectedValidatorValidateResults[i]);
-    // we are awaiting a callback to OnValueHostValidated to finish,
+    // we are awaiting a callback to onValueHostValidationStateChanged to finish,
     // but only if the expected result is Invalid
     doneTime = true;
     expect(setup.vm.doNotSave).toBe(true); // because of Async, regardless of ValidationStatus
@@ -1752,7 +2015,7 @@ describe('clearValidation', () => {
         ];
         expect(stateChanges).toEqual(expectedChanges);
     });
-    test('OnValueHostValidated called', () => {
+    test('onValueHostValidationStateChanged called', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -1801,11 +2064,12 @@ describe('clearValidation', () => {
             isValid: true,
             doNotSave: false,
             asyncProcessing: false,
-            status: ValidationStatus.NotAttempted
+            status: ValidationStatus.NotAttempted,
+            corrected: false
         });
     });        
 
-    test('OnValueHostValidated not called when options.skipCallback = true', () => {
+    test('onValueHostValidationStateChanged not called when options.skipCallback = true', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -1921,7 +2185,8 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
             issuesFound: [neverMatchIssueFound, toBeReplacedIssueFound],
             doNotSave: true,
             asyncProcessing: false,
-            status: ValidationStatus.Invalid
+            status: ValidationStatus.Invalid,
+            corrected: false
         });
 
     });    
@@ -1991,7 +2256,8 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
             issuesFound: [strLenIssueFound, neverMatchIssueFound],
             doNotSave: true,
             asyncProcessing: false,
-            status: ValidationStatus.Invalid
+            status: ValidationStatus.Invalid,
+            corrected: false
         });
 
     });        
@@ -2572,6 +2838,7 @@ describe('toIValidatorsValueHostBase function', () => {
         isValid: boolean = true;
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
+        corrected: boolean = false;
         setBusinessLogicError(error: BusinessLogicError): boolean {
             throw new Error("Method not implemented.");
         }

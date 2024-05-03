@@ -48,6 +48,36 @@ class TestValidatableValueHost extends ValidatableValueHostBase<ValidatableValue
         else
             this.validateWillReturn = null;
     }
+    // emulate the state change
+    public setCorrected(corrected: boolean): void
+    {
+        this.updateInstanceState((stateToUpdate) => {
+            if (corrected)
+                stateToUpdate.corrected = true;
+            else
+                delete stateToUpdate.corrected;
+            return stateToUpdate;
+        }, this);
+    }
+    // emulate the state change
+    public setAsyncProcess(isAsync: boolean): void
+    {
+        this.updateInstanceState((stateToUpdate) => {
+            if (isAsync)
+                stateToUpdate.asyncProcessing = true;
+            else
+                delete stateToUpdate.asyncProcessing;
+            return stateToUpdate;
+        }, this);
+    }    
+    // emulate the state change
+    public setValidationStatus(status: ValidationStatus): void
+    {
+        this.updateInstanceState((stateToUpdate) => {
+            stateToUpdate.status = status;
+            return stateToUpdate;
+        }, this);
+    }        
     public gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
     }
     public validate(options?: ValidateOptions | undefined): ValueHostValidateResult | null {
@@ -253,33 +283,35 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.getValue()).toBeUndefined();
         expect(testItem!.isChanged).toBe(false);
         expect(testItem!.isValid).toBe(true);
+        expect(testItem!.asyncProcessing).toBe(false);
+        expect(testItem!.corrected).toBe(false);
     });
 
 });
 
 describe('setValue', () => {
-    test('No setValueOptions. ValidationStatus changes to ValueChanged', () => {
+    test('No setValueOptions. ValidationStatus changes to NeedsValidation', () => {
         let setup = setupValidatableValueHostBase();
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(() => setup.valueHost.setValue(10)).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
     });
-    test('setValueOptions is empty. ValidationStatus changes to ValueChanged', () => {
+    test('setValueOptions is empty. ValidationStatus changes to NeedsValidation', () => {
         let setup = setupValidatableValueHostBase();
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(() => setup.valueHost.setValue(10, {})).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
     });    
-    test('setValueOptions is null. ValidationStatus changes to ValueChanged', () => {
+    test('setValueOptions is null. ValidationStatus changes to NeedsValidation', () => {
         let setup = setupValidatableValueHostBase();
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(() => setup.valueHost.setValue(10, null!)).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
     });
-    test('setValueOptions = { validate: false }. ValidationStatus changes to ValueChanged', () => {
+    test('setValueOptions = { validate: false }. ValidationStatus changes to NeedsValidation', () => {
         let setup = setupValidatableValueHostBase();
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
@@ -522,6 +554,59 @@ describe('ValidatableValueHostBase.doNotSave', () => {
     });
 
 });
+describe('corrected property', () => {
+// due to lack of real validate() function, we defer many tests to ValidatorsValueHostBase.test.ts
+
+    test('When initial state has corrected=true, corrected=true', () => {
+        let setup = setupValidatableValueHostBase(null, {
+            corrected: true,
+            name: 'Field1'
+        });
+        expect(setup.valueHost.corrected).toBe(true);
+    });
+    test('From state has corrected=true ->NeedsValidation, corrected=false', () => {
+        let setup = setupValidatableValueHostBase(null, {
+            corrected: true,
+            name: 'Field1',
+            status: ValidationStatus.Valid
+        });
+        setup.valueHost.setValue('A');
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+    test('Test our test class custom function setCorrected=true then false', () => {
+        let setup = setupValidatableValueHostBase(null, null);
+        expect(setup.valueHost.corrected).toBe(false);        
+        setup.valueHost.setCorrected(true);
+        expect(setup.valueHost.corrected).toBe(true);   
+        setup.valueHost.setCorrected(false);
+        expect(setup.valueHost.corrected).toBe(false);   
+    });        
+    test('Initially corrected=true then use setBusinessLogicErrors, corrected=false', () => {
+        let setup = setupValidatableValueHostBase(null, null);
+        setup.valueHost.setCorrected(true);
+        setup.valueHost.setBusinessLogicError({
+            errorMessage: 'Error',
+            errorCode: 'EC',
+        });
+        expect(setup.valueHost.corrected).toBe(false);
+    });    
+    test('Initially corrected=true then use clearBusinessLogicErrors, corrected=false', () => {
+        let setup = setupValidatableValueHostBase(null, null);
+        setup.valueHost.setBusinessLogicError({ // because clearBusinessLogicErrors depends on an existing error to take any action
+            errorMessage: 'Error',
+            errorCode: 'EC',
+        });        
+        setup.valueHost.setCorrected(true);
+        setup.valueHost.clearBusinessLogicErrors();
+        expect(setup.valueHost.corrected).toBe(false);
+    });        
+    test('Initially corrected=true then use clearValidation, corrected=false', () => {
+        let setup = setupValidatableValueHostBase(null, null);
+        setup.valueHost.setCorrected(true);
+        setup.valueHost.clearValidation();
+        expect(setup.valueHost.corrected).toBe(false);
+    });        
+});
 
 describe('ValidatableValueHostBase.setBusinessLogicError', () => {
     test('One call with error adds to the list for the BusinessLogicErrorsValueHost', () => {
@@ -620,7 +705,7 @@ describe('clearBusinessLogicErrors', () => {
         let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
         expect(valueChange2.businessLogicErrors).toBeUndefined();
     });
-    test('OnValueHostValidated called', () => {
+    test('onValueHostValidationStateChanged called', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -660,10 +745,11 @@ describe('clearBusinessLogicErrors', () => {
             issuesFound: null,
             doNotSave: false,
             asyncProcessing: false,
-            status: ValidationStatus.NotAttempted
+            status: ValidationStatus.NotAttempted,
+            corrected: false
         });
     });    
-    test('OnValueHostValidated not called from clearBusinessLogic because options.skipCallback=true', () => {
+    test('onValueHostValidationStateChanged not called from clearBusinessLogic because options.skipCallback=true', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValidationManagerConfig = {
@@ -847,6 +933,7 @@ describe('toIValidatableValueHostBase', () => {
             isValid: false,
             validationStatus: ValidationStatus.NotAttempted,
             asyncProcessing: false,
+            corrected: false,
             setBusinessLogicError: function (error: BusinessLogicError): boolean {
                 throw new Error('Function not implemented.');
             },
@@ -958,6 +1045,7 @@ describe('toIValidatableValueHostBase function', () => {
         isValid: boolean = true;
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
+        corrected: boolean = false;
         setBusinessLogicError(error: BusinessLogicError): boolean {
             throw new Error("Method not implemented.");
         }
