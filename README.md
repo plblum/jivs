@@ -102,6 +102,8 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 - **Native Value** – The actual data that you will store in the Model. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value. This error is what Jivs calls a "Data Type Check".
 - **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, ValidationServices, and connect individual services to it. 
 
+<img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
+
 ## Where you want to use validation
 
 ### As focus leaves an Input and its value changed
@@ -295,6 +297,8 @@ Jivs takes this approach to populating the ValidationManager: Create objects tha
 
 Whenever you see "Config" in a type name, it is one of these configuration objects. (ValueHostConfig, ValidationConfig, ConditionConfig, etc.)
 
+<img src="http://jivs.peterblum.com/images/Config_example.svg"></img>
+
 There are a couple of approaches to configuration, based on whether you want to let your business layer define the input and validator rules.
 
 ### When starting with business logic
@@ -392,6 +396,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 	- There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
 	- `ConditionFactory` – Creates the Condition objects used by business rules.
 
+<img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
 
 Topics:
 - <a href="#conditions">Conditions</a>
