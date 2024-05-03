@@ -6,6 +6,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IInputValueHost } from './InputValueHost';
+import { IValidatableValueHostBase } from './ValidatableValueHostBase';
 import { IServicesAccessor } from './ValidationServices';
 import type { IValueHost } from './ValueHost';
 
@@ -16,15 +17,22 @@ import type { IValueHost } from './ValueHost';
 export interface IValueHostResolver extends IServicesAccessor {
     /**
      * Retrieves the ValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the IValueHost.name property
+     * @param valueHostName - Matches to the ValueHostBaseConfig.name property
      * Returns the instance or null if not found.
      */
     getValueHost(valueHostName: ValueHostName): IValueHost | null;
 
     /**
+     * Retrieves the ValidatableValueHostBase of the identified by valueHostName
+     * @param valueHostName - Matches to the ValidatableValueHostBaseConfig.name property
+     * Returns the instance or null if not found or found a different type of value host.
+     */
+    getValidatableValueHost(valueHostName: ValueHostName): IValidatableValueHostBase | null;    
+
+    /**
      * Retrieves the InputValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the IInputValueHost.name property
-     * Returns the instance or null if not found or found a non-input valuehost.
+     * @param valueHostName - Matches to the InputValueHostConfig.name property
+     * Returns the instance or null if not found or found a different type of value host.
      */
     getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null;
 }
@@ -39,6 +47,7 @@ export function toIValueHostResolver(source: any): IValueHostResolver | null
     if (source && typeof source === 'object') {
         let test = source as IValueHostResolver;    
         if (test.getValueHost !== undefined &&
+            test.getValidatableValueHost !== undefined &&
             test.getInputValueHost !== undefined &&
             test.services !== undefined)
             return test;

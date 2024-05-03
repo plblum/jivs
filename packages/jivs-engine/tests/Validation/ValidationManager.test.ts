@@ -1062,6 +1062,10 @@ describe('toIValidationManager function', () => {
             getValueHost: function (valueHostName: string): IValueHost | null {
                 throw new Error("Function not implemented.");
             },
+            getValidatableValueHost(valueHostName: ValueHostName): IValidatableValueHostBase | null
+            {
+                throw new Error("Function not implemented.");
+            },
             getInputValueHost: function (valueHostName: string): IInputValueHost | null {
                 throw new Error("Function not implemented.");
             },

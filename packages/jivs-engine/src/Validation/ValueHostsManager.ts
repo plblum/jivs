@@ -15,7 +15,7 @@ import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsManagerConfig, IValueHostsManagerCallbacks, ValueHostsManagerInstanceStateChangedHandler } from '../Interfaces/ValueHostsManager';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { IInputValueHost, InputValueChangedHandler } from '../Interfaces/InputValueHost';
-import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
+import { ValidatableValueHostBase, toIValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsInstanceBuilder } from '../ValueHosts/ValueHostsInstanceBuilder';
 
 
@@ -262,6 +262,15 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      */
     public getValueHost(valueHostName: ValueHostName): IValueHost | null {
         return this._valueHosts[valueHostName] ?? null;
+    }
+    /**
+     * Retrieves the ValidatableValueHostBase of the identified by valueHostName
+     * @param valueHostName - Matches to the ValidatableValueHostBaseConfig.name property
+     * Returns the instance or null if not found or found a different type of value host.
+     */
+    public getValidatableValueHost(valueHostName: ValueHostName): IValidatableValueHostBase | null
+    {
+        return toIValidatableValueHostBase(this.getValueHost(valueHostName));
     }
     /**
      * Retrieves the InputValueHost of the identified by valueHostName

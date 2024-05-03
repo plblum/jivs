@@ -8,7 +8,7 @@ import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
-import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
+import { ValidatableValueHostBase, toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationStateChangedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
@@ -28,7 +28,7 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
 import { registerAllConditions, registerDataTypeCheckGenerators, registerDataTypeComparers, registerDataTypeConverters, registerDataTypeFormatters, registerDataTypeIdentifiers } from "./createValidationServices";
-import { ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
+import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
@@ -462,6 +462,10 @@ export class MockValidationManager implements IValidationManager, IValidationMan
 
     public getValueHost(valueHostName: ValueHostName): IValueHost | null {
         return this._valueHosts.get(valueHostName) ?? null;
+    }    
+    public getValidatableValueHost(valueHostName: ValueHostName): IValidatableValueHostBase | null
+    {
+        return toIValidatableValueHostBase(this.getValueHost(valueHostName));
     }    
     public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
         return toIInputValueHost(this.getValueHost(valueHostName));
