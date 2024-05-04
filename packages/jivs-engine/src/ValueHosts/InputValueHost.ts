@@ -18,6 +18,7 @@ import { SetValueOptions } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
+import { toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 
 
 /**
@@ -219,14 +220,12 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
 export function toIInputValueHost(source: any): IInputValueHost | null {
     if (source instanceof InputValueHost)
         return source as IInputValueHost;
-    if (source && typeof source === 'object') {
+    if (toIValidatorsValueHostBase(source)) {
         let test = source as IInputValueHost;
         // some select members of IInputValueHost
-        if (test.addValidator !== undefined &&
-            test.getInputValue !== undefined &&
+        if (test.getInputValue !== undefined &&
             test.setInputValue !== undefined &&
-            test.validate !== undefined &&
-            test.getIssuesFound !== undefined)
+            test.setValues !== undefined)
             return test;
     }
     return null;

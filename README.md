@@ -25,7 +25,7 @@ doing that job well, and not trying to provide the actual UI. For that,
 add or build companion libraries to match your environment,
 such as working in the browser's DOM or React's components. Being a
 UI-independent service, you can build your own UI around it, and it can
-run both in the browser and NodeJS.
+run both in the browser and Node.js.
 
 As of today, only Jivs-engine is available, and you can extend it as needed. I plan to introduce UI support libraries, and possibly libraries that incorporate third party
 libraries of many types, including other schema validation services and internationalization.
@@ -58,28 +58,48 @@ libraries of many types, including other schema validation services and internat
 
 ### Features
 
--	Fields are independently configurable, allowing UI widgets to remain unaware of validation rules and error messages. Jivs notifies UI widgets with validation outcomes.
--	Provides "Condition" objects for a standardized approach to validation, alongside support for custom validation rules, including asynchronous ones. Supplied conditions include: Require, Regular Expression, Range, Compare Two Values, String Length, and Not Null.
--	Most validation rules come from business logic. The "Data Type Check" is different, a rule that comes from the decisions made about UI widgets. For example, a Date can be edited by a textbox or calendar. Jivs automatically applies an appropriate rule for these checks, keeping the UI code free from validation concerns.
--	Jivs enables complex validations by providing the All Match and Any Match Conditions. They provide Boolean logic to a list of other Conditions.
--	Business logic must also validate the Model before saving. Jivs incorporates business logic error messages alongside its own.
+- Validation rule features:
+	-	Validation rules are configurable in the business logic layer, allowing UI widgets to remain unaware of validation rules, but still supply suitable error messages. Jivs notifies UI widgets with validation outcomes.
+	-	The UI may introduce its own validation rules too, either to compliment those from business logic or as an alternative to having business logic supply them.
+	-	Provides "Condition" objects for a standardized approach to validation, alongside support for custom validation rules, including asynchronous ones. Supplied conditions include: Require, Regular Expression, Range, Compare Two Values, String Length, and Not Null.
+	-	Build complex validation rules with the All Match and Any Match Conditions.
+	-	Most validation rules come from business logic. The "Data Type Check" is different, a rule that comes from the decisions made about UI widgets. For example, a Date is often entered as a string within a textbox. Jivs automatically applies suitable validation, keeping the UI code free remembering to set it up.
 -	Error message features:
-	- Embed tokens to reusable templates   
-	`The {Label} must be between {Minimum} and {Maximum}.`
-	- Tokens that can show live data   
-	`The current value is {Value}.`
-	- Token values are localizable
-	- Token values can select a format   
-	`The {Label:Uppercase} must be between {Minimum:AbbrevDate} and {Maximum:AbbrevDate}.`
-	- Message text itself is localizable
+	- Localizable
 	- Validators have two error messages. The first message, designed for proximity to the UI widget, is succinct, focusing on the issue without field context. The second, intended for a Validation Summary displayed elsewhere on the screen, includes the field name for clarity.
-	- You can setup default error messages, localized of course. This is particularly useful for Data Type Check validations, where distinct data types require specific guidance. For instance, use "Enter a date in the form MM/DD/YYYY" for dates, and "Enter a number using only digits" for numbers.
-	- Jivs can provide every error associated with a field, not just the initial one, ensuring thorough feedback and guidance.
-- Jivs provides built-in support for common data types—number, string, Boolean, and date—and accommodates unique usage scenarios through extensive customizability.
+	- You can setup default error message templates, localized of course. This is particularly useful for Data Type Check validations, where distinct data types require specific guidance. For instance, use "Enter a date in the form MM/DD/YYYY" for dates, and "Enter a number using only digits" for numbers.
+	- Error messages can contain tokens:
+	
+		`The {Label} must be between {Minimum} and {Maximum}.`
+		- Tokens can show live data.   
+		`The current value is {Value}.`
+		- Token values are localizable.
+		- Token values can select a format.   
+		`The {Label:Uppercase} must be between {Minimum:AbbrevDate} and {Maximum:AbbrevDate}.`
+- To help the user experience:
+	- Jivs can provide every error message, not just the first one found, ensuring thorough feedback and guidance.
+	- When an error has been corrected, Jivs lets you know so the UI can indicate the fix was accepted.
+	- When you ask it to validate, there are times that some validators should get skipped for better user experience.
+		+ Run form validation after the form is setup can skip the required validators, as it does not make sense to call out errors when the user hasn't had a chance to edit those fields.
+		+ Run field validation as the user types. Only these validators make sense to interactively update error messages: Required, regular expression, and string length.
+		+ Validators have the "Enabler" feature which is a way to turn themselves off when they no longer need to participate. For example, unless a checkbox is marked, an associated text box will not report errors.
+		+ If the user has edited a field and it has yet to be validated, the form reports "do not save", helping prevent form submission without validation.
+- Handling submitting data:
+	-	The "do not save" feature provides a clear way to write code that prevents unvalidated and invalid data from being submitted.
+	-	Business logic must also validate the Model before saving, covering other *use cases*:
+		+	Validation must occur on the server side to prevent hacked data coming through the UI. If your server side is run within Node.js, you can include the same code as used on the client.
+		+	Any errors found on the server side are expected to be passed up to the client, and Jivs will apply them into the UI. The UI can supply appropriate replacements for any error messages from the server.
+		+	Similarly, business logic errors found on the client-side can be passed into Jivs for display in the UI.
+- Jivs provides built-in support for common data types—number, string, Boolean, and date—and accommodates unique usage scenarios through extensive customizability:
 	- Formatter customization: Tailor how values are displayed to users, with localization. For instance, configure error messages to show dates in an abbreviated format rather than a short date format.
 	- Converter customization: Adjust the data under validation to fit various contexts, such as interpreting a JavaScript Date object in multiple ways—anniversary, expiry, total days, date with time, or time alone.
 	- Identifier customization: Integrate custom objects to be treated as standard data types, enabling complex comparisons. An object denoting "tomorrow" or "next month" can be identified as a Date for comparison purposes.
 	- Comparer customization: Supports Conditions that compare two values so they can handler your non-standard data types. 
+- Jivs includes a logging object to help you diagnose issues.
+- Almost all objects are based upon interfaces, allowing you to replace them. 
+	- Consider switching to your preferred logging, localization, and value-to-string formatting libraries. 
+	- Introduce new classes by registering them with factories.
+	- Services and factories injected into Jivs classes are replaceable too.
 
 # Learning Jivs
 [Jivs source code](https://github.com/plblum/jivs) is heavily and meaningfully commented, and it is all available in TypeDoc format at [jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc). Use this section for an orientation.
@@ -109,7 +129,7 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 ### As focus leaves an Input and its value changed
 * Use the onchange event to tell the ValidationManager about the data change and run validation. 
 	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
-	* Use `validationManager.getInputValueHost('name').setValues(native, input, { validate: true});`
+	* Use `validationManager.vh.input('name').setValues(native, input, { validate: true});`
 * The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
@@ -170,7 +190,7 @@ let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=>{
   let inputValue = evt.target.value;
   let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
-  vm.getInputValueHost('FirstName').setValues(nativeValue, inputValue, { validate: true });
+  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true });
 });
 ```
 
@@ -184,7 +204,7 @@ All of the prior setup still applies. Here we add the oninput event handler:
 ```ts
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('oninput', (evt)=>{
-  vm.getInputValueHost('FirstName').setInputValue(evt.target.value, { validate: true, duringEdit: true });
+  vm.vm.input('FirstName').setInputValue(evt.target.value, { validate: true, duringEdit: true });
 });
 ```
 ### When the user submits the data
@@ -352,7 +372,7 @@ let vm = new ValidationManager(vmConfig);
 
 // if you want to modify the configuration after creation, there are plenty of tools
 // for example, add another validator:
-vm.getInputValueHost('EndDate').addValidator(fluent().conditions().greaterThanOrEqualValue(new Date()); // must be greater than today
+vm.vh.input('EndDate').addValidator(fluent().conditions().greaterThanOrEqualValue(new Date()); // must be greater than today
 // add another input:
 vm.build().input('TimeZone', LookupKey.String).requireText();
 ```
@@ -409,6 +429,7 @@ Topics:
 - <a href="#lookupkeys">Lookup Keys: DataTypes and Companion tools</a>
 - <a href="#localization">Localization</a>
 - <a href="#validationdeepdive">Validation Deep Dive</a>
+- <a href="#handlingvalues">Setting and Getting Values</a>
 
 <a name="conditions"></a>
 ## Conditions - the validation rules
@@ -662,6 +683,23 @@ The `ValueHost` names are also used to help a `Condition` retrieve a value from 
   ]
 }
 ```
+<a name="gettingvaluehost"></a>
+### Getting a ValueHost
+Start with a ValidationManager instance. It should already be configured with ValueHosts. Supposing *vm* has that ValidationManager, do this to get a ValueHost:
+
+|Code|Notes|Not found|
+|----|-----|---------|
+|vm.getValueHost('name')|Base to all ValueHosts|Returns null|
+|vm.getValidatorsValueHost('name')|Base to Validatable ValueHosts|Returns null|
+|vm.getInputValueHost('name')|InputValueHost|Returns null|
+|vm.getStaticValueHost('name')|StaticValueHost|Returns null|
+|vm.getCalcValueHost('name')|CalcValueHost|Returns null|
+|vm.vh.input('name')|InputValueHost|Throws error|
+|vm.vh.static('name')|StaticValueHost|Throws error|
+|vm.vh.calc('name')|CalcValueHost|Throws error|
+|vm.vh.any('name')|Base to all ValueHosts|Throws error|
+|vm.vh.validators('name')|Base to all ValueHosts that use the Validator class (InputValueHost and PropertyValueHost)|Throws error|
+
 <a name="calcvaluehost"></a>
 ### Using CalcValueHost
 See a practical example here: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts)
@@ -765,8 +803,11 @@ Here is pseudo-code representation of its interface (omitting some members).
 ```ts
 interface IValidationManager {
     services: IValidationServices;
+    
     getValueHost(valueHostName): null | IValueHost;
+    getValidatorsValueHost(valueHostName): null | IValidatableValueHostBase;
     getInputValueHost(valueHostName): null | IInputValueHost;
+    vh: ValueHostAccessor;
 
     validate(options?): ValidationState;
     clearValidation(options?): boolean;
@@ -801,10 +842,10 @@ interface ValidationManagerConfig {
     valueHostConfigs: ValueHostConfig[];
     savedInstanceState?: null | ValidationManagerInstanceState;
     savedValueHostInstanceStates?: null | ValueHostInstanceState[];
-    onInputValueChanged?: null | InputValueChangedHandler;
     onInstanceStateChanged?: null | ValidationManagerInstanceStateChangedHandler;
     onValidationStateChanged?: null | ValidationStateChangedHandler;
     onValueChanged?: null | ValueChangedHandler;
+    onInputValueChanged?: null | InputValueChangedHandler;
     onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
     onValueHostValidationStateChanged?: null | ValueHostValidationStateChangedHandler;
 }
@@ -999,7 +1040,7 @@ In Jivs, "Data Type Check" means a Condition that can determine if the data supp
 
 Jivs provides the DataTypeCheckCondition, and it handles many cases simply by checking if the Input value (from the UI editor) was successfully converted to the native value. For example, converting a date string "31-May-2030" into a Date object. As a rule, when that conversion fails, Jivs expects you to call `ValueHost.setValueToUndefined()`. DataTypeCheckCondition reports an error only when Input value is assigned and native value is undefined.
 	
-DataTypeCheck doesn't work when no conversion is required. Strings are a great example of a native value that doesn't require conversion. Strings represent all kinds of data. For example, an email address or a phone number. For these cases, create a Lookup Key ("EmailAddress", "PhoneNumber") and implement a `IDataTypeCheckGenerator `that supplies a regular expression to validate the string.
+DataTypeCheckCondition doesn't apply when no conversion is required. Strings are a great example of a native value that doesn't require conversion. Strings represent all kinds of data. For example, an email address or a phone number. For these cases, create a Lookup Key ("EmailAddress", "PhoneNumber") and implement a `IDataTypeCheckGenerator `that supplies a regular expression to validate the string.
 	
 Take a look at [this example for Email Address](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts).
 
@@ -1060,7 +1101,7 @@ See this sample code for more: [https://github.com/plblum/jivs/blob/main/package
 	{
 	   protected getRegExp(valueHostResolver: IValueHostResolver): RegExp
 	   {
-	      let base = @'\d\d\d\-\d\d\d\d';
+	      const base = @'\d\d\d\-\d\d\d\d';
 	      if (this.config.allowTwo)
 	         return new RegExp('^' + base + '(\,\s?' + base + ')?$');
 	      return new RegExp('^' + base + '$');
@@ -1250,12 +1291,12 @@ let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchanged', (evt)=>{
   let inputValue = evt.target.value;
   let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
-  let valueHost = getInputValueHost('FirstName');
+  let valueHost = vm.vh.input('FirstName');	// or vm.getInputValueHost('FirstName')
   valueHost.setValues(nativeValue, inputValue);
   valueHost.validate();
 });	
 firstNameFld.attachEventListener('oninput', (evt)=>{
-  let valueHost = getInputValueHost('FirstName');
+  let valueHost = vm.vh.input('FirstName');	// or vm.getInputValueHost('FirstName')
   valueHost.setInputValue(evt.target.value);
   valueHost.validate({ duringEdit: true });
 });
@@ -1280,12 +1321,10 @@ let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchanged', (evt)=>{
   let inputValue = evt.target.value;
   let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
-  let valueHost = getInputValueHost('FirstName');
-  valueHost.setValues(nativeValue, inputValue, { validate: true });
+  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true });
 });	
 firstNameFld.attachEventListener('oninput', (evt)=>{
-  let valueHost = getInputValueHost('FirstName');
-  valueHost.setInputValue(evt.target.value, { validate: true, duringEdit: true });
+  vm.vh.input('FirstName').setInputValue(evt.target.value, { validate: true, duringEdit: true });
 });
 ```
 Here is the type for the *options* parameter:
@@ -1307,8 +1346,7 @@ These properties are all related to validation:
 	firstNameFld.attachEventListener('onchanged', (evt)=>{
 	  let inputValue = evt.target.value;
 	  let [nativeValue, errorMessage] = YourConvertToNativeCode(inputValue);  
-	  let valueHost = getInputValueHost('FirstName');
-	  valueHost.setValues(nativeValue, inputValue, { validate: true, conversionErrorTokenValue: errorMessage });
+	  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true, conversionErrorTokenValue: errorMessage });
 	});	
 	
 	// set up the DataTypeCheckCondition's error message (local to this form)
@@ -1521,11 +1559,111 @@ Let's go through ValidationState properties:
 - issuesFound - An array of all issues found or null when there are no issues found. See the <a href="issuefound">previous section</a> for details on the IssueFound type that populates this array.
 - asyncProcessing - When evaluating an asynchronous Condition, validation will return before it is done, with the results from the rest of the Conditions. `asyncProcessing` is true at this moment, and until all asynchronous Conditions are finished. Expect `onValueHostValidationStateChange callbacks` after the validation runs, and after each async Condition finishes, giving you the latest validation state.
 
-### Ways to change the validation state
-All of these actions can change the validation state whether on ValidationManager or a ValueHost. However, you will only be notified through onValidationStateChanged and onValueHostValidationStateChanged if the state actually changed.
+### Actions that change the validation state
+All of these actions can change the validation state whether on ValidationManager or a ValueHost. However, you will only be notified through `onValidationStateChanged` and `onValueHostValidationStateChanged` if the state actually changed.
 - `validate()`
 - `clearValidation()`
 - `setBusinessLogicError()`
 - `clearBusinessLogicErrors()`
 - using any of these with the { validate: true} option as a parameter: `setValue()`, `setValues()`, `setInputValue()`, `setValueToUndefined()`.
 - An asynchronous Condition just finished
+
+<a name="handlingvalues"></a>
+## Setting and getting values
+Validation rules work against the inputs from the user, the properties from the model, and other sources of data. The ValueHost classes are built for each of those approaches (InputValueHost, PropertyValueHost, StaticValueHost, etc).
+
+Without the actual values, you cannot validate. This section covers ways to supply values to Jivs and to retrieve them when needed.
+
+### Setting values
+You will set values as you initialize the ValidationManager and as the values are changed. Most of the time, you will use `valueHost.setValue()` and `valueHost.setValueToUndefined()`. 
+```ts
+setValue(value: any, options?: SetValueOptions): void;
+setValueToUndefined(options?: SetValueOptions): void;
+```
+Use `setValueToUndefined()` (or call `setValue(undefined)`) to indicate that the value cannot be determined. For example, the user's input could not be converted into its native data type.
+
+In this example, *vm* is the ValidationManager.
+```ts
+let lastNameVH = vm.getValueHost("LastName");
+lastNameVH.setValue("MyValue");
+// or
+vm.vh.any("LastName").setValue("MyValue");
+```
+> See <a href="#gettingvaluehost">"Getting a ValueHost"</a> for using `getValueHost()` and `vm.vh`.
+
+When called, the ValueHost will consider the value "changed" and its `status` becomes *NeedsValidation*. When initializing the value, modify the code as shown here to avoid changing the status:
+```ts
+let lastNameVH = vm.getValueHost("LastName");
+lastNameVH.setValue("MyValue", {reset: true});
+// or
+vm.vh.any("LastName").setValue("MyValue", {reset: true});
+```
+When initializing the ValidationManager, you supply a ValueHostConfig for each ValueHost. That type includes an *initialValue* property where you can send in the same value.
+```ts
+let lastNameConfig: InputValueHostConfig = {
+  valueHostType: ValueHostType.Input,
+  name: 'LastName',
+  dataType: LookupKey.String,
+  initialValue: 'MyValue'
+};
+let vmConfig: ValidationManagerConfig = {
+  services: createValidationServices(),
+  valueHostConfigs: [ lastNameConfig ]
+};
+let vm = new ValidationManager(vmConfig);
+```
+Both functions have an options parameter. Here is its type:
+```ts
+interface SetValueOptions {
+    validate?: boolean;
+    reset?: boolean;
+    conversionErrorTokenValue?: string;
+    skipValueChangedCallback?: boolean;
+    duringEdit?: boolean;
+}
+```
+These properties are all related to validation:
+- validate - When true, invoke validation but only if the value changed. Only supported by validatable ValueHosts.
+- reset - When true, change the state of the ValueHost to unchanged and validation has not been attempted. Consider setting this to true when using `setValue()` to initialize.
+- skipValueChangedCallback - When true, the onValueChanged and onInputValueChanged callbacks will not be invoked.
+- The other two are special cases covered elsewhere.
+
+### Setting values on InputValueHosts
+InputValueHosts have two values: the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
+As a result, there are additional functions. `setValue()` still works, only with the native value alone. You will mostly use `setValues()` and `setInputValue()`.
+```ts
+setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void;
+setInputValue(value: any, options?: SetValueOptions): void;
+```
+
+Use `setValues()` when initializing the value and as either value has changed. If you cannot determine one of the values, pass in undefined.
+```ts
+let lastNameVH = vm.getValueHost("Age");
+lastNameVH.setValues(25, "25");
+// or
+vm.vh.input("Age").setValues(25, "25");
+```
+Both functions have an options parameter. See the previous section for its definition.
+### Getting the value
+Use `getValue()` to get the value from any ValueHost. For an InputValueHost, it returns the native value. The `evaluate()` function of Conditions use this to gather data. If you are reassembling a Model from the ValidationManager, use it there too.
+```ts
+getValue(): any;
+```
+When it returns undefined, it indicates the value is undetermined.
+```ts
+let lastNameVH = vm.getValueHost("LastName");
+let nativeValue = lastNameVH.getValue();
+// or
+let nativeValue = vm.vh.any("LastName").getValue();
+```
+### Getting the Input value on InputValueHosts
+InputValueHosts have two values, native and input. The `getValue()` function gets its native value. The `getInputValue()` function gets its input value.
+```ts
+getInputValue(): any;
+```
+```ts
+let lastNameVH = vm.getValueHost("LastName");
+let inputValue = lastNameVH.getInputValue();
+// or
+let  inputValue = vm.vh.any("LastName").getInputValue();
+```

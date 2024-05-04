@@ -1,7 +1,10 @@
 import { StaticValueHostConfig, StaticValueHostInstanceState, IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
-import { IGatherValueHostNames, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
+import { ValidationStatus } from "../../src/Interfaces/Validation";
+import { IGatherValueHostNames, SetValueOptions, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { StaticValueHost, StaticValueHostGenerator } from "../../src/ValueHosts/StaticValueHost";
+import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
+import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
+import { StaticValueHost, StaticValueHostGenerator, toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 
 describe('StaticValueHost constructor', () => {
@@ -51,7 +54,7 @@ describe('StaticValueHostGenerator members', () => {
             name: 'Field1',
             label: ''
         })).toBe(true);
-    });    
+    });
 
     test('CanCreate returns true for Type=undefined and lack of ValidatorConfigs property', () => {
         let testItem = new StaticValueHostGenerator();
@@ -60,7 +63,7 @@ describe('StaticValueHostGenerator members', () => {
             name: 'Field1',
             label: ''
         })).toBe(true);
-    });        
+    });
 
     test('CanCreate returns false for Type not defined and presence of ValidatorConfigs property (using null as a value)', () => {
         let testItem = new StaticValueHostGenerator();
@@ -69,7 +72,7 @@ describe('StaticValueHostGenerator members', () => {
             label: '',
             validatorConfigs: null
         })).toBe(false);
-    });        
+    });
     test('CanCreate returns false for Type not defined and presence of ValidatorConfigs property using [] as a value', () => {
         let testItem = new StaticValueHostGenerator();
         expect(testItem.canCreate(<any>{
@@ -77,10 +80,10 @@ describe('StaticValueHostGenerator members', () => {
             label: '',
             validatorConfigs: []
         })).toBe(false);
-    });             
+    });
     test('create returns instance of StaticValueHost with VM, Config and State established', () => {
         let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);        
+        let vm = new MockValidationManager(services);
         let config: StaticValueHostConfig = {
             name: 'Field1',
             valueHostType: ValueHostType.Static,
@@ -113,7 +116,7 @@ describe('StaticValueHostGenerator members', () => {
         expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
         expect(state).toEqual(originalState);
     });
- 
+
     test('createInstanceState returns instance with name and InitialValue from Config', () => {
         let testItem = new StaticValueHostGenerator();
         let config: StaticValueHostConfig = {
@@ -139,11 +142,99 @@ describe('toIGatherValueHostNames function', () => {
     test('Non-matching interface returns null.', () => {
         let testItem = {};
         expect(toIGatherValueHostNames(testItem)).toBeNull();
-    });    
+    });
     test('null returns null.', () => {
         expect(toIGatherValueHostNames(null)).toBeNull();
-    });        
+    });
     test('Non-object returns null.', () => {
         expect(toIGatherValueHostNames(100)).toBeNull();
+    });
+});
+describe('toIStaticValueHost function', () => {
+    test('Passing actual StaticValueHost matches interface returns same object.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new StaticValueHost(vm, {
+                name: 'Field1',
+                label: 'Label1'
+            },
+            {
+                name: 'Field1',
+                value: undefined
+            });
+        expect(toIStaticValueHost(testItem)).toBe(testItem);
+    });
+    test('Passing actual InputValueHost returns null.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new InputValueHost(vm, {
+                name: 'Field1',
+                label: 'Label1',
+                validatorConfigs: []
+            },
+            {
+                name: 'Field1',
+                value: undefined,
+                status: ValidationStatus.NotAttempted,
+                issuesFound: null
+            });
+        expect(toIStaticValueHost(testItem)).toBeNull();
+    });  
+    test('Passing actual CalcValueHost returns null.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new CalcValueHost(vm, {
+                name: 'Field1',
+                label: 'Label1',
+                calcFn: (host, manager) => null
+            },
+            {
+                name: 'Field1',
+                value: undefined
+            });
+        expect(toIStaticValueHost(testItem)).toBeNull();
     });        
+    class TestIStaticValueHostImplementation implements IStaticValueHost {
+        getName(): string {
+            throw new Error("Method not implemented.");
+        }
+        getLabel(): string {
+            throw new Error("Method not implemented.");
+        }
+        setLabel(label: string, labell10n?: string | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        getValue() {
+            throw new Error("Method not implemented.");
+        }
+        setValue(value: any, options?: SetValueOptions | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        setValueToUndefined(options?: SetValueOptions | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        getDataType(): string | null {
+            throw new Error("Method not implemented.");
+        }
+        saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined {
+            throw new Error("Method not implemented.");
+        }
+        isChanged: boolean = false
+        
+    }
+    test('Passing object with interface match returns same object.', () => {
+        let testItem = new TestIStaticValueHostImplementation();
+
+        expect(toIStaticValueHost(testItem)).toBe(testItem);
+    });
+    test('Non-matching interface returns null.', () => {
+        let testItem = {};
+        expect(toIStaticValueHost(testItem)).toBeNull();
+    });
+    test('null returns null.', () => {
+        expect(toIStaticValueHost(null)).toBeNull();
+    });
+    test('Non-object returns null.', () => {
+        expect(toIStaticValueHost(100)).toBeNull();
+    });
 });

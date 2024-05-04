@@ -9,7 +9,7 @@ import {
     ValidationState
 } from './Validation';
 
-import { IGatherValueHostNames, IValueHostCallbacks, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
+import { IGatherValueHostNames, IValueHostCallbacks, toIValueHost, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
 
 /**
 * Manages a value that may use input validation.
@@ -218,6 +218,30 @@ export interface ValueHostValidationState extends ValidationState
      */
     corrected: boolean;    
 }
+
+
+/**
+ * Determines if the object implements IValidatorsValueHostBase.
+ * @param source 
+ * @returns source typecasted to IValidatorsValueHostBase if appropriate or null if not.
+ */
+export function toIValidatableValueHostBase(source: any): IValidatableValueHostBase | null
+{
+    if (toIValueHost(source))
+    {
+        let test = source as IValidatableValueHostBase;    
+        // some select members of IValidatorsValueHostBase
+        if (test.otherValueHostChangedNotification !== undefined &&
+            test.validate !== undefined &&
+            test.clearValidation !== undefined &&
+            'doNotSave' in test &&
+            'isValid' in test &&
+            test.getIssuesFound !== undefined)
+            return test;
+    }
+    return null;
+}
+
 
 /**
  * Provides callback hooks for the consuming system to supply to IValidatableValueHostBaseCallbacks.

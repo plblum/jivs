@@ -1,7 +1,6 @@
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
+import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { ValueHostsInstanceBuilder } from "../../src/ValueHosts/ValueHostsInstanceBuilder";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";

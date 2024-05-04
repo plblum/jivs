@@ -4,10 +4,12 @@
  */
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from '../Interfaces/StaticValueHost';
-import { ValueHostConfig } from '../Interfaces/ValueHost';
+import { ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
+import { CalcValueHost } from './CalcValueHost';
+import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 
 
 /**
@@ -58,4 +60,20 @@ export class StaticValueHostGenerator extends ValueHostBaseGenerator {
     public cleanupInstanceState(state: StaticValueHostInstanceState, config: StaticValueHostConfig): void {
         // nothing needed.
     }
+}
+
+/**
+ * Determines if the object implements IStaticValueHost.
+ * @param source 
+ * @returns source typecasted to IStaticValueHost if appropriate or null if not.
+ */
+export function toIStaticValueHost(source: any): IStaticValueHost | null {
+    if (source instanceof StaticValueHost)
+        return source as IStaticValueHost;
+    // defenses for class types that are compatible but offer no different members
+    if (toIValueHost(source) && !toIValidatableValueHostBase(source) && !(source instanceof CalcValueHost)) {
+        let test = source as IStaticValueHost;
+        return test;
+    }
+    return null;
 }

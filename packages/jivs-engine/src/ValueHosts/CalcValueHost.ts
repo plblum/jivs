@@ -3,7 +3,7 @@
  * @module ValueHosts/ConcreteClasses/CalcValueHost
  */
 import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState, CalculationHandlerResult } from '../Interfaces/CalcValueHost';
-import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
+import { SetValueOptions, ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
@@ -99,4 +99,22 @@ export class CalcValueHostGenerator extends ValueHostBaseGenerator {
     public cleanupInstanceState(state: CalcValueHostInstanceState, config: CalcValueHostConfig): void {
         // nothing needed.
     }
+}
+
+/**
+ * Determines if the object implements ICalcValueHost.
+ * @param source 
+ * @returns source typecasted to ICalcValueHost if appropriate or null if not.
+ */
+export function toICalcValueHost(source: any): ICalcValueHost | null {
+    if (source instanceof CalcValueHost)
+        return source as ICalcValueHost;
+    if (toIValueHost(source)) {
+        let test = source as ICalcValueHost;
+        // some select members of ICalcValueHost
+        if (test.convert !== undefined &&
+            test.convertToPrimitive !== undefined)
+            return test;
+    }
+    return null;
 }

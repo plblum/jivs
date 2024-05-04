@@ -2,12 +2,16 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { CalcValueHostConfig, CalcValueHostInstanceState, CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
-import { CalcValueHost, CalcValueHostGenerator } from "../../src/ValueHosts/CalcValueHost";
+import { CalcValueHost, CalcValueHostGenerator, toICalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { ValidationStatus } from "../../src/Interfaces/Validation";
+import { SetValueOptions, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
+import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
+import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 
 function TestCalcFunctionReturnsOne(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
     CalculationHandlerResult {
@@ -279,5 +283,100 @@ describe('setValue', () => {
         expect(() => testItem?.setValue(0)).not.toThrow();
 
         expect(logger.findMessage('setValue', LoggingLevel.Warn, null, null)).toBeDefined();
+    });
+});
+
+describe('toICalcValueHost function', () => {
+    test('Passing actual CalcValueHost matches interface returns same object.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new CalcValueHost(vm, {
+                name: 'Field1',
+                label: 'Label1',
+                calcFn: (host, manager) => null
+            },
+            {
+                name: 'Field1',
+                value: undefined
+            });
+        expect(toICalcValueHost(testItem)).toBe(testItem);
+    });
+    test('Passing InputValueHost returns null.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new InputValueHost(vm, {
+                name: 'Field1',
+                label: 'Label1',
+                validatorConfigs: []
+            },
+            {
+                name: 'Field1',
+                value: undefined,
+                status: ValidationStatus.NotAttempted,
+                issuesFound: null
+            });
+        expect(toICalcValueHost(testItem)).toBeNull();
+    });  
+    test('Passing StaticValueHost returns null.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new StaticValueHost(vm, {
+                name: 'Field1',
+                label: 'Label1'
+            },
+            {
+                name: 'Field1',
+                value: undefined
+            });
+        expect(toICalcValueHost(testItem)).toBeNull();
+    });        
+    class TestICalcValueHostImplementation implements ICalcValueHost {
+        convert(value: any, dataTypeLookupKey: string | null): CalculationHandlerResult {
+            throw new Error("Method not implemented.");
+        }
+        convertToPrimitive(value: any, dataTypeLookupKey: string | null): string | number | Date | null | undefined {
+            throw new Error("Method not implemented.");
+        }
+        getName(): string {
+            throw new Error("Method not implemented.");
+        }
+        getLabel(): string {
+            throw new Error("Method not implemented.");
+        }
+        setLabel(label: string, labell10n?: string | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        getValue() {
+            throw new Error("Method not implemented.");
+        }
+        setValue(value: any, options?: SetValueOptions | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        setValueToUndefined(options?: SetValueOptions | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        getDataType(): string | null {
+            throw new Error("Method not implemented.");
+        }
+        saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
+            throw new Error("Method not implemented.");
+        }
+        getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined {
+            throw new Error("Method not implemented.");
+        }
+        isChanged: boolean = false;
+ 
+    }
+    test('Passing object with interface match returns same object.', () => {
+        let testItem = new TestICalcValueHostImplementation();
+
+        expect(toICalcValueHost(testItem)).toBe(testItem);
+    });
+    test('Non-matching interface returns null.', () => {
+        let testItem = {};
+        expect(toICalcValueHost(testItem)).toBeNull();
+    });
+    test('null returns null.', () => {
+        expect(toICalcValueHost(null)).toBeNull();
+    });
+    test('Non-object returns null.', () => {
+        expect(toICalcValueHost(100)).toBeNull();
     });
 });

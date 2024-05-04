@@ -2,8 +2,9 @@
  * @module ValueHosts/Types/ValidatorsValueHostBase
  */
 import { IValidator, ValidatorConfig } from "./Validator";
-import { IValidatableValueHostBase, IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, toIValidatableValueHostBaseCallbacks } from "./ValidatableValueHostBase";
+import { IValidatableValueHostBase, IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, toIValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from "./ValidatableValueHostBase";
 import { FluentValidatorCollector } from "../ValueHosts/Fluent";
+import { toIValueHost } from "./ValueHost";
 
 /**
 * Extends ValidatableValueHost to use the Validators class in support of validation.
@@ -115,13 +116,14 @@ export function toIValidatorsValueHostBaseCallbacks(source: any): IValidatorsVal
  */
 export function toIValidatorsValueHostBase(source: any): IValidatorsValueHostBase | null
 {
-    if (source && typeof source === 'object')
+    if (toIValidatableValueHostBase(source))
     {
         let test = source as IValidatorsValueHostBase;    
         // some select members of IValidatorsValueHostBase
         if (test.addValidator !== undefined &&
-            test.validate !== undefined &&
-            test.getIssuesFound !== undefined)
+            test.getValidator !== undefined &&
+            test.configValidators !== undefined &&
+            test.setGroup !== undefined)
             return test;
     }
     return null;

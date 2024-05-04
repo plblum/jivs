@@ -1,3 +1,8 @@
+## 0.15.0
+- **Breaking API changes** - Refactoring and renaming.
+- build() method added to ValidationManager to support adding value hosts with fluent syntax.
+- vm property added to ValidationManager to support simpler syntax for getting strongly typed ValueHosts.
+- onValidationStateChange callback debounced
 ## 0.14.0
 - **Breaking API changes** - Major refactoring and renaming.
 ## 0.13.0

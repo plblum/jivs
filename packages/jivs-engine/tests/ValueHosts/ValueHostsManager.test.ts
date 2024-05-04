@@ -18,9 +18,14 @@ import {
     AlwaysMatchesConditionType, NeverMatchesConditionType
 } from "../TestSupport/conditionsForTesting";
 import { IValueHostsManager, toIValueHostsManager, IValueHostsManagerAccessor, toIValueHostsManagerAccessor, ValueHostsManagerInstanceStateChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerConfig, IValueHostsManagerCallbacks, toIValueHostsManagerCallbacks } from "../../src/Interfaces/ValueHostsManager";
-import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
+import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
+import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
+import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
+import { ValueHostAccessor } from "../../src/ValueHosts/ValueHostAccessor";
+import { IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
+import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValueHostsManager extends ValueHostsManager<ValueHostsManagerInstanceState> {
@@ -773,8 +778,8 @@ describe('ValueHostsManager.discardValueHost completely removes ValueHost, its s
     });
 });
 // getValueHost(valueHostName: ValueHostName): IValueHost | null
-describe('ValueHostsManager.getValueHost and getInputValue', () => {
-    test('With 2 InputValueHostConfigs, get each with both functions.', () => {
+describe('ValueHostsManager.getValueHost, getValidatorsValueHost, getInputValue, getCalcValue, getStaticValue', () => {
+    test('With 2 InputValueHostConfigs, get each with all functions. Expect null for Calc and Static', () => {
 
         let config1: InputValueHostConfig = {
             name: 'Field1',
@@ -800,16 +805,30 @@ describe('ValueHostsManager.getValueHost and getInputValue', () => {
         expect(() => vh2 = testItem.getValueHost('Field2')).not.toThrow();
         expect(vh2).toBeInstanceOf(InputValueHost);
         expect(vh2!.getName()).toBe('Field2');
-        let vh3: IInputValueHost | null = null;
-        expect(() => vh3 = testItem.getInputValueHost('Field1')).not.toThrow();
-        expect(vh3).toBeInstanceOf(InputValueHost);
+        let vh3: IValidatorsValueHostBase | null = null;
+        expect(() => vh3 = testItem.getValidatorsValueHost('Field1')).not.toThrow();
+        expect(vh3).toBeInstanceOf(ValidatableValueHostBase);
         expect(vh3!.getName()).toBe('Field1');
-        let vh4: IInputValueHost | null = null;
-        expect(() => vh4 = testItem.getInputValueHost('Field2')).not.toThrow();
-        expect(vh4).toBeInstanceOf(InputValueHost);
+        let vh4: IValidatorsValueHostBase | null = null;
+        expect(() => vh4 = testItem.getValidatorsValueHost('Field2')).not.toThrow();
+        expect(vh4).toBeInstanceOf(ValidatableValueHostBase);
         expect(vh4!.getName()).toBe('Field2');        
+        let vh5: IInputValueHost | null = null;
+        expect(() => vh5 = testItem.getInputValueHost('Field1')).not.toThrow();
+        expect(vh5).toBeInstanceOf(InputValueHost);
+        expect(vh5!.getName()).toBe('Field1');
+        let vh6: IInputValueHost | null = null;
+        expect(() => vh6 = testItem.getInputValueHost('Field2')).not.toThrow();
+        expect(vh6).toBeInstanceOf(InputValueHost);
+        expect(vh6!.getName()).toBe('Field2');          
+        let vh7: ICalcValueHost | null = null;
+        expect(() => vh7 = testItem.getCalcValueHost('Field2')).not.toThrow();
+        expect(vh7).toBeNull();
+        let vh8: IStaticValueHost | null = null;
+        expect(() => vh8 = testItem.getStaticValueHost('Field2')).not.toThrow();
+        expect(vh8).toBeNull();                 
     });
-    test('With 2 Array<ValueHostConfig>, get each with both functions. getValueHost returns VH, getInputValueHost returns null', () => {
+    test('With 2 Array<ValueHostConfig>, get each with both functions. getValueHost returns VH, getValidatorsValueHost and getInputValueHost return null', () => {
 
         let config1: ValueHostConfig = {
             name: 'Field1',
@@ -818,7 +837,7 @@ describe('ValueHostsManager.getValueHost and getInputValue', () => {
         };
         let config2: ValueHostConfig = {
             name: 'Field2',
-            valueHostType: ValueHostType.Static,
+            valueHostType: ValueHostType.Calc,
             label: 'Field 2'
         };
         let testItem = new PublicifiedValueHostsManager({
@@ -831,14 +850,33 @@ describe('ValueHostsManager.getValueHost and getInputValue', () => {
         expect(vh1!.getName()).toBe('Field1');
         let vh2: IValueHost | null = null;
         expect(() => vh2 = testItem.getValueHost('Field2')).not.toThrow();
-        expect(vh2).toBeInstanceOf(StaticValueHost);
+        expect(vh2).toBeInstanceOf(CalcValueHost);
         expect(vh2!.getName()).toBe('Field2');
-        let vh3: IInputValueHost | null = null;
-        expect(() => vh3 = testItem.getInputValueHost('Field1')).not.toThrow();
+        let vh3: IValidatorsValueHostBase | null = null;
+        expect(() => vh3 = testItem.getValidatorsValueHost('Field1')).not.toThrow();
         expect(vh3).toBeNull();
-        let vh4: IInputValueHost | null = null;
-        expect(() => vh4 = testItem.getInputValueHost('Field2')).not.toThrow();
+        let vh4: IValidatorsValueHostBase | null = null;
+        expect(() => vh4 = testItem.getValidatorsValueHost('Field2')).not.toThrow();
         expect(vh4).toBeNull();
+        let vh5: IInputValueHost | null = null;
+        expect(() => vh5 = testItem.getInputValueHost('Field1')).not.toThrow();
+        expect(vh5).toBeNull();
+        let vh6: IInputValueHost | null = null;
+        expect(() => vh6 = testItem.getInputValueHost('Field2')).not.toThrow();
+        expect(vh6).toBeNull();        
+        let vh7: ICalcValueHost | null = null;
+        expect(() => vh7 = testItem.getCalcValueHost('Field1')).not.toThrow();
+        expect(vh7).toBeNull();
+        let vh8: ICalcValueHost | null = null;
+        expect(() => vh8 = testItem.getCalcValueHost('Field2')).not.toThrow();
+        expect(vh8).toBeInstanceOf(CalcValueHost);            
+        let vh9: IStaticValueHost | null = null;
+        expect(() => vh9 = testItem.getStaticValueHost('Field1')).not.toThrow();
+        expect(vh9).toBeInstanceOf(StaticValueHost);
+        let vh10: IStaticValueHost | null = null;
+        expect(() => vh10 = testItem.getStaticValueHost('Field2')).not.toThrow();
+        expect(vh10).toBeNull();                 
+
     });    
     test('When supplying an unknown ValueHostName, return null.', () => {
 
@@ -856,6 +894,18 @@ describe('ValueHostsManager.getValueHost and getInputValue', () => {
         let vh1: IValueHost | null = null;
         expect(() => vh1 = testItem.getValueHost('Unknown')).not.toThrow();
         expect(vh1).toBeNull();
+        let vh2: IValidatorsValueHostBase | null = null;
+        expect(() => vh2 = testItem.getValidatorsValueHost('Unknown')).not.toThrow();
+        expect(vh1).toBeNull();    
+        let vh3: IInputValueHost | null = null;
+        expect(() => vh3 = testItem.getInputValueHost('Unknown')).not.toThrow();
+        expect(vh3).toBeNull();
+        let vh4: ICalcValueHost | null = null;
+        expect(() => vh4 = testItem.getCalcValueHost('Unknown')).not.toThrow();
+        expect(vh4).toBeNull();      
+        let vh5: IStaticValueHost | null = null;
+        expect(() => vh5 = testItem.getStaticValueHost('Unknown')).not.toThrow();
+        expect(vh5).toBeNull();        
     });
 });
 
@@ -1001,11 +1051,31 @@ describe('ValueHostsManager.updateState', () => {
             expect(() => testItem.updateInstanceState(null!)).toThrow(/updater/);
         });
 });
+describe('vh', () => {
+    test('Returns an instance of ValueHostAccessor', () => {
+        let vhConfig: ValueHostsManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [{
+                valueHostType: ValueHostType.Input,
+                name: 'Field1'
+            }]
+        };
+        let vhm = new ValueHostsManager(vhConfig);
+        expect(vhm.vh).toBeInstanceOf(ValueHostAccessor);
+        expect(vhm.vh.input('Field1')).toBeInstanceOf(InputValueHost);
+        expect(() => vhm.vh.calc('X')).toThrow(/unknown/);
+        expect(() => vhm.vh.calc('Field1')).toThrow(/CalcValueHost/);
+    });
+});
 describe('toIValueHostResolver function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostResolver = {
             getValueHost: (name) => { return <any>{}; },
+            vh: {} as unknown as IValueHostAccessor,
+            getValidatorsValueHost: (name) => { return <any>{} },
             getInputValueHost: (name) => { return <any>{}; },
+            getCalcValueHost: (name) => { return <any>{}; },
+            getStaticValueHost: (name) => { return <any>{}; },
             services: new MockValidationServices(false, false),
         };
         expect(toIValueHostResolver(testItem)).toBe(testItem);
@@ -1032,7 +1102,11 @@ describe('toIValueHostsManager function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostsManager = {
             getValueHost: (name) => { return <any>{}; },
+            vh: {} as unknown as IValueHostAccessor,
+            getValidatorsValueHost: (name) => { return <any>{} },
             getInputValueHost: (name) => { return <any>{}; },
+            getCalcValueHost: (name) => { return <any>{}; },
+            getStaticValueHost: (name) => { return <any>{}; },
             services: new MockValidationServices(false, false),
             notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { },
             dispose: () => void {},
@@ -1074,7 +1148,11 @@ describe('toIValueHostsManagerAccessor function', () => {
         let testItem: IValueHostsManagerAccessor = {
             valueHostsManager :{
                 getValueHost: (name) => { return <any>{}; },
+                vh: {} as unknown as IValueHostAccessor,
+                getValidatorsValueHost: (name) => { return <any>{} },
                 getInputValueHost: (name) => { return <any>{}; },
+                getCalcValueHost: (name) => { return <any>{}; },
+                getStaticValueHost: (name) => { return <any>{}; },
                 services: new MockValidationServices(false, false),
                 notifyOtherValueHostsOfValueChange: (valueHostIdThatChanged, revalidate) => { },
                 dispose: () => void {},
