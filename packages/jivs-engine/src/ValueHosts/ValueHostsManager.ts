@@ -4,7 +4,7 @@
  * it serves the ValidationManager, but can work stand-alone.
  * Conditions are passed the ValueHostsManager meaning they
  * can be used independently of validation. 
- * @module Validation/ConcreteClasses/ValueHostsManager
+ * @module ValueHosts/ConcreteClasses/ValueHostsManager
  */
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
@@ -13,10 +13,10 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsManagerConfig, IValueHostsManagerCallbacks, ValueHostsManagerInstanceStateChangedHandler } from '../Interfaces/ValueHostsManager';
-import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+import { toIInputValueHost } from './InputValueHost';
 import { IInputValueHost, InputValueChangedHandler } from '../Interfaces/InputValueHost';
-import { ValidatableValueHostBase, toIValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
-import { ValueHostsInstanceBuilder } from '../ValueHosts/ValueHostsInstanceBuilder';
+import { ValidatableValueHostBase, toIValidatableValueHostBase } from './ValidatableValueHostBase';
+import { ValueHostsInstanceBuilder } from './ValueHostsInstanceBuilder';
 
 
 /**

@@ -18,7 +18,7 @@ import {
     AlwaysMatchesConditionType, NeverMatchesConditionType
 } from "../TestSupport/conditionsForTesting";
 import { IValueHostsManager, toIValueHostsManager, IValueHostsManagerAccessor, toIValueHostsManagerAccessor, ValueHostsManagerInstanceStateChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerConfig, IValueHostsManagerCallbacks, toIValueHostsManagerCallbacks } from "../../src/Interfaces/ValueHostsManager";
-import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
+import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";

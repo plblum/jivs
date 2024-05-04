@@ -4,7 +4,7 @@
  * it serves the ValidationManager, but can work stand-alone.
  * Conditions are passed the ValueHostsManager meaning they
  * can be used independently of validation. 
- * @module Validation/Types/ValueHostsManager
+ * @module ValueHosts/Types/ValueHostsManager
  */
 
 import { ValueHostsInstanceBuilder } from '../ValueHosts/ValueHostsInstanceBuilder';
