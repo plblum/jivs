@@ -36,6 +36,13 @@ import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { IValueHostsManager, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { CapturingLogger } from "./CapturingLogger";
 import { ValueHostsInstanceBuilder } from "../../src/ValueHosts/ValueHostsInstanceBuilder";
+import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
+import { ValueHostAccessor } from "../../src/ValueHosts/ValueHostAccessor";
+import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
+import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { toICalcValueHost } from "../../src/ValueHosts/CalcValueHost";
+import { toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -463,13 +470,29 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     public getValueHost(valueHostName: ValueHostName): IValueHost | null {
         return this._valueHosts.get(valueHostName) ?? null;
     }    
-    public getValidatableValueHost(valueHostName: ValueHostName): IValidatableValueHostBase | null
+
+    public get vh(): IValueHostAccessor
     {
-        return toIValidatableValueHostBase(this.getValueHost(valueHostName));
+        if (!this._vh)
+            this._vh = new ValueHostAccessor(this);
+        return this._vh;
+    }
+    private _vh: IValueHostAccessor | undefined;
+    
+    public getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null
+    {
+        return toIValidatorsValueHostBase(this.getValueHost(valueHostName));
     }    
     public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
         return toIInputValueHost(this.getValueHost(valueHostName));
     }    
+    public getCalcValueHost(valueHostName: ValueHostName): ICalcValueHost | null {
+        return toICalcValueHost(this.getValueHost(valueHostName));
+    }
+    public getStaticValueHost(valueHostName: ValueHostName): IStaticValueHost | null {
+        return toIStaticValueHost(this.getValueHost(valueHostName));
+    }    
+    
     private _hostInstanceStateChanges: Array<ValueHostInstanceState> = [];
     public onValueHostInstanceStateChangeHandler: ValueHostInstanceStateChangedHandler = (valueHost, stateToRetain) => {
         this._hostInstanceStateChanges.push(stateToRetain);  
