@@ -10,7 +10,7 @@ import type { ValueHostValidationStateChangedHandler } from '../Interfaces/Valid
 import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState } from '../Interfaces/Validation';
 import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, defaultNotifyValidationStateChangedDelay } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
-import { ValueHostsManager } from './ValueHostsManager';
+import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
 import { Debouncer } from '../Utilities/Debounce';
 
 

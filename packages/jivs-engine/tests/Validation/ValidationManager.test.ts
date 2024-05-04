@@ -32,6 +32,9 @@ import {
 import { fluent } from "../../src/ValueHosts/Fluent";
 import { IValueHostsManager, toIValueHostsManager, IValueHostsManagerAccessor, toIValueHostsManagerAccessor, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
+import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<ValidationManagerInstanceState> {
@@ -1062,9 +1065,19 @@ describe('toIValidationManager function', () => {
             getValueHost: function (valueHostName: string): IValueHost | null {
                 throw new Error("Function not implemented.");
             },
+            vh: {} as unknown as IValueHostAccessor,
+            getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null {
+                throw new Error("Function not implemented.");
+            },
             getInputValueHost: function (valueHostName: string): IInputValueHost | null {
                 throw new Error("Function not implemented.");
             },
+            getCalcValueHost: function (valueHostName: string): ICalcValueHost | null {
+                throw new Error("Function not implemented.");
+            },
+            getStaticValueHost: function (valueHostName: string): IStaticValueHost | null {
+                throw new Error("Function not implemented.");
+            },            
             services: new MockValidationServices(false, false),
             addValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
                 throw new Error("Function not implemented.");
@@ -1077,7 +1090,8 @@ describe('toIValidationManager function', () => {
             },
             build: function () {
                 throw new Error("Function not implemented.");
-            }
+            },
+
         };
         expect(toIValidationManager(testItem)).toBe(testItem);
     });

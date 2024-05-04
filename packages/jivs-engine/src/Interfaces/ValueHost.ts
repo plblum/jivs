@@ -330,6 +330,30 @@ export function toIGatherValueHostNames(source: any): IGatherValueHostNames | nu
 
 export type ValueChangedHandler = (valueHost: IValueHost, oldValue: any) => void;
 export type ValueHostInstanceStateChangedHandler = (valueHost: IValueHost, stateToRetain: ValueHostInstanceState) => void;
+
+/**
+ * Determines if the object implements IValueHost.
+ * @param source 
+ * @returns source typecasted to IValueHost if appropriate or null if not.
+ */
+export function toIValueHost(source: any): IValueHost | null
+{
+    if (source && typeof source === 'object')
+    {
+        let test = source as IValueHost;    
+        // some select members of IValueHost
+        if (test.getDataType !== undefined &&
+            test.getFromInstanceState !== undefined &&
+            test.getLabel !== undefined &&
+            test.getName !== undefined &&
+            test.getValue !== undefined)
+            return test;
+    }
+    return null;
+}
+
+
+
 /**
  * Provides callback hooks for the consuming system to get feedback from ValueHosts.
  */

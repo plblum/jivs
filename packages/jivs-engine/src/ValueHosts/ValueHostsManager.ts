@@ -4,7 +4,7 @@
  * it serves the ValidationManager, but can work stand-alone.
  * Conditions are passed the ValueHostsManager meaning they
  * can be used independently of validation. 
- * @module Validation/ConcreteClasses/ValueHostsManager
+ * @module ValueHosts/ConcreteClasses/ValueHostsManager
  */
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
@@ -13,10 +13,17 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsManagerConfig, IValueHostsManagerCallbacks, ValueHostsManagerInstanceStateChangedHandler } from '../Interfaces/ValueHostsManager';
-import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+import { toIInputValueHost } from './InputValueHost';
 import { IInputValueHost, InputValueChangedHandler } from '../Interfaces/InputValueHost';
-import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
-import { ValueHostsInstanceBuilder } from '../ValueHosts/ValueHostsInstanceBuilder';
+import { ValidatableValueHostBase } from './ValidatableValueHostBase';
+import { ValueHostsInstanceBuilder } from './ValueHostsInstanceBuilder';
+import { ValueHostAccessor } from './ValueHostAccessor';
+import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
+import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { ICalcValueHost } from '../Interfaces/CalcValueHost';
+import { IStaticValueHost } from '../Interfaces/StaticValueHost';
+import { toICalcValueHost } from './CalcValueHost';
+import { toIStaticValueHost } from './StaticValueHost';
 
 
 /**
@@ -263,6 +270,29 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     public getValueHost(valueHostName: ValueHostName): IValueHost | null {
         return this._valueHosts[valueHostName] ?? null;
     }
+
+    /**
+     * Alternative to getValueHost that returns strongly typed valuehosts 
+     * in a shortened syntax. Always throws exceptions if the value host requested
+     * is unknown or not the expected type.
+     */
+    public get vh(): IValueHostAccessor
+    {
+        if (!this._vh)
+            this._vh = new ValueHostAccessor(this);
+        return this._vh;
+    }
+    private _vh: IValueHostAccessor | undefined;
+    
+    /**
+     * Retrieves the ValidatorsValueHostBase of the identified by valueHostName
+     * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
+     * Returns the instance or null if not found or found a different type of value host.
+     */
+    public getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null
+    {
+        return toIValidatorsValueHostBase(this.getValueHost(valueHostName));
+    }
     /**
      * Retrieves the InputValueHost of the identified by valueHostName
      * @param valueHostName - Matches to the IInputValueHost.name property
@@ -271,7 +301,23 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
         return toIInputValueHost(this.getValueHost(valueHostName));
     }
-
+    /**
+     * Retrieves the StaticValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the IStaticValueHost.name property
+     * Returns the instance or null if not found or found a non-input valuehost.
+     */
+    public getStaticValueHost(valueHostName: ValueHostName): IStaticValueHost | null {
+        return toIStaticValueHost(this.getValueHost(valueHostName));
+    }
+    /**
+     * Retrieves the CalcValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the ICalcValueHost.name property
+     * Returns the instance or null if not found or found a non-input valuehost.
+     */
+    public getCalcValueHost(valueHostName: ValueHostName): ICalcValueHost | null {
+        return toICalcValueHost(this.getValueHost(valueHostName));
+    }
+    
     /**
      * Upon changing the value of a ValueHost, other ValueHosts need to know. 
      * They may have Conditions that take the changed ValueHost into account and

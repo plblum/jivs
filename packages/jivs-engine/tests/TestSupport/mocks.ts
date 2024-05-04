@@ -8,7 +8,7 @@ import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
-import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
+import { ValidatableValueHostBase, toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationStateChangedHandler } from "../../src/Interfaces/ValidationManager";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
@@ -28,7 +28,7 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { toIInputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
 import { registerAllConditions, registerDataTypeCheckGenerators, registerDataTypeComparers, registerDataTypeConverters, registerDataTypeFormatters, registerDataTypeIdentifiers } from "./createValidationServices";
-import { ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
+import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
@@ -36,6 +36,13 @@ import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { IValueHostsManager, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { CapturingLogger } from "./CapturingLogger";
 import { ValueHostsInstanceBuilder } from "../../src/ValueHosts/ValueHostsInstanceBuilder";
+import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
+import { ValueHostAccessor } from "../../src/ValueHosts/ValueHostAccessor";
+import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
+import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { toICalcValueHost } from "../../src/ValueHosts/CalcValueHost";
+import { toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -463,9 +470,29 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     public getValueHost(valueHostName: ValueHostName): IValueHost | null {
         return this._valueHosts.get(valueHostName) ?? null;
     }    
+
+    public get vh(): IValueHostAccessor
+    {
+        if (!this._vh)
+            this._vh = new ValueHostAccessor(this);
+        return this._vh;
+    }
+    private _vh: IValueHostAccessor | undefined;
+    
+    public getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null
+    {
+        return toIValidatorsValueHostBase(this.getValueHost(valueHostName));
+    }    
     public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
         return toIInputValueHost(this.getValueHost(valueHostName));
     }    
+    public getCalcValueHost(valueHostName: ValueHostName): ICalcValueHost | null {
+        return toICalcValueHost(this.getValueHost(valueHostName));
+    }
+    public getStaticValueHost(valueHostName: ValueHostName): IStaticValueHost | null {
+        return toIStaticValueHost(this.getValueHost(valueHostName));
+    }    
+    
     private _hostInstanceStateChanges: Array<ValueHostInstanceState> = [];
     public onValueHostInstanceStateChangeHandler: ValueHostInstanceStateChangedHandler = (valueHost, stateToRetain) => {
         this._hostInstanceStateChanges.push(stateToRetain);  
