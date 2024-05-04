@@ -43,7 +43,7 @@ export interface ValidateOptions
      */
     duringEdit?: boolean;
     /**
-     * If you have setup a OnValidated or OnValueHostValidated callback,
+     * If you have setup a OnValidated or onValueHostValidationStateChanged callback,
      * you may not want it to fire when you expressly call validate().
      * In that case, set this to true.
      */
@@ -63,6 +63,12 @@ export interface StatefulValueHostValidateResult {
      * The issues that were found.
      */
     issuesFound: Array<IssueFound> | null;
+
+    /**
+     * Set to true when the user has fixed all invalid validators.
+     * Undefined or false otherwise, including if the status changes after this point.
+     */
+    corrected?: boolean;
 }
 /**
  * Result of the validate() function.

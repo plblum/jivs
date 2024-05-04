@@ -58,7 +58,7 @@ export class BusinessLogicErrorsValueHost extends ValidatableValueHostBase<Valid
                 result.status = errorFound ? ValidationStatus.Invalid : ValidationStatus.Valid;
             }
         }
-        this.invokeOnValueHostValidated(options);
+        this.invokeOnValueHostValidationStateChanged(options);
         // when the result hasn't changed from the start, report null as there were no issues found
         return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
             result : null;

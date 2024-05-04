@@ -71,15 +71,17 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
             options = {};
         let oldValue: any = this.instanceState.inputValue;
         let changed = !deepEquals(value, oldValue);
+        let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
+                valStateChanged = stateToUpdate.status !== ValidationStatus.NeedsValidation;
                 stateToUpdate.status = ValidationStatus.NeedsValidation;
                 stateToUpdate.inputValue = value;
             }
             this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
             return stateToUpdate;
         }, this);
-        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateInstanceState()
+        this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(changed, oldValue, options);
     }
@@ -108,9 +110,11 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         let oldInput: any = this.instanceState.inputValue;
         let inputChanged = !deepEquals(inputValue, oldInput);
         let changed = nativeChanged || inputChanged;
+        let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 // effectively clear past validation
+                valStateChanged = (stateToUpdate.status !== ValidationStatus.NeedsValidation) || (stateToUpdate.issuesFound != null);
                 stateToUpdate.status = ValidationStatus.NeedsValidation;
                 stateToUpdate.issuesFound = null;
 
@@ -122,7 +126,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
             return stateToUpdate;
         }, this);
 
-        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateInstanceState()
+        this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(nativeChanged, oldNative, options);
         this.useOnValueChanged(inputChanged, oldInput, options);

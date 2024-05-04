@@ -103,6 +103,12 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
     doNotSave: boolean;
 
     /**
+     * Set to true when the user has fixed all invalid validators.
+     * Undefined or false otherwise, including if the status changes after this point.
+     */
+    corrected: boolean;    
+
+    /**
      * The results of validation specific to one condiiton Type.
      * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property
      * @returns The issue or null if none.
@@ -195,7 +201,7 @@ export type ValueHostValidationStateChangedHandler = (valueHost: IValidatableVal
 
 
 /**
- * The value returned by OnValueHostValidated.
+ * The value returned by onValueHostValidationStateChanged.
  * It includes all issuesfound and businesslogicerrors
  * as compared to validate() which is limited to just the issuesfound.
  */
@@ -205,6 +211,12 @@ export interface ValueHostValidationState extends ValidationState
  * Reports the current ValidationStatus
  */    
     status: ValidationStatus;
+
+    /**
+     * Set to true when the user has fixed all invalid validators.
+     * Undefined or false otherwise, including if the status changes after this point.
+     */
+    corrected: boolean;    
 }
 
 /**
