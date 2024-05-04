@@ -102,13 +102,15 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 - **Native Value** – The actual data that you will store in the Model. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value. This error is what Jivs calls a "Data Type Check".
 - **Service** – A class that provides Jivs with dependency injection or a factory. Jivs has you create a master service object, ValidationServices, and connect individual services to it. 
 
+<img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
+
 ## Where you want to use validation
 
 ### As focus leaves an Input and its value changed
 * Use the onchange event to tell the ValidationManager about the data change and run validation. 
 	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
 	* Use `validationManager.getInputValueHost('name').setValues(native, input, { validate: true});`
-* The ValidationManager will notify you about a validation state change through its `OnValueHostValidated callback`. Implement that callback to update your user interface.
+* The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
 ```ts
@@ -176,7 +178,7 @@ firstNameFld.attachEventListener('onchange', (evt)=>{
 Show or hide the error state as the user types. This is limited to Validators that evaluate the raw string, like RequireText, RegExp, and StringLength. Always setup the onchange event (described above) to get all Validators involved.
 
 * Use the oninput event to tell the ValidationManager about the data change and run validation, with its "duringEdit" option set to true.
-* The ValidationManager will notify you about a validation state change through its `OnValueHostValidated callback`.
+* The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`.
 
 All of the prior setup still applies. Here we add the oninput event handler:
 ```ts
@@ -295,6 +297,8 @@ Jivs takes this approach to populating the ValidationManager: Create objects tha
 
 Whenever you see "Config" in a type name, it is one of these configuration objects. (ValueHostConfig, ValidationConfig, ConditionConfig, etc.)
 
+<img src="http://jivs.peterblum.com/images/Config_example.svg"></img>
+
 There are a couple of approaches to configuration, based on whether you want to let your business layer define the input and validator rules.
 
 ### When starting with business logic
@@ -392,6 +396,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 	- There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
 	- `ConditionFactory` – Creates the Condition objects used by business rules.
 
+<img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
 
 Topics:
 - <a href="#conditions">Conditions</a>

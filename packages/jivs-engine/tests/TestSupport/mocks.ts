@@ -153,6 +153,7 @@ export class MockInputValueHost extends MockValueHost
     }
     isValid: boolean = false;
     asyncProcessing: boolean = false;
+    corrected: boolean = false;
     
     get doNotSave(): boolean
     {

@@ -57,27 +57,32 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         }
         let oldValue: any = this.instanceState.value;
         let changed = !deepEquals(value, oldValue);
+        let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
+                valStateChanged = (stateToUpdate.status !== ValidationStatus.NeedsValidation) || (stateToUpdate.corrected === true);
                 stateToUpdate.status = ValidationStatus.NeedsValidation;
+                delete stateToUpdate.corrected;
                 stateToUpdate.value = value;
             }
             this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
 
             return stateToUpdate;
         }, this);
-        this.processValidationOptions(options); //NOTE: If validates or clears, results in a second updateInstanceState()
+        this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(changed, oldValue, options);
     }
 
-    protected processValidationOptions(options: SetValueOptions): void {
+    protected processValidationOptions(options: SetValueOptions, valStateChanged: boolean): void {
         if (options.validate) {
             if (this.instanceState.status === ValidationStatus.NeedsValidation)
                 this.validate({ duringEdit: options.duringEdit }); // Result isn't ignored. Its automatically updates state and notifies parent
         }
         else if (options.reset)
             this.clearValidation();
+        else if (valStateChanged)
+            this.invokeOnValueHostValidationStateChanged(options);
     }
 
     protected notifyOthersOfChange(options: SetValueOptions): void {
@@ -205,7 +210,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         }, this);
         if (changed)
             if (!options || !options?.skipCallback)
-                this.invokeOnValueHostValidated(options);
+                this.invokeOnValueHostValidationStateChanged(options);
         return changed;
     }
 
@@ -232,6 +237,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         stateToUpdate.issuesFound = null;
         delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
         delete stateToUpdate.businessLogicErrors;
+        delete stateToUpdate.corrected;
     }
     /**
      * Determines if a validator doesn't consider the ValueHost's value ready to save.
@@ -247,6 +253,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                     return true;
                 return false;
         }
+    }
+    /**
+     * Determines if an invalid entry has been corrected.
+     * Is true when the user has fixed all invalid validators.
+     * False otherwise, including if the status changes after this point.
+     */
+    public get corrected(): boolean{
+        return this.instanceState.corrected ?? false;
     }
     //#endregion validation
     //#region business logic errors
@@ -281,10 +295,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                     stateToUpdate.businessLogicErrors.push(error);
                 else
                     stateToUpdate.businessLogicErrors[replacementIndex] = error;
+                delete stateToUpdate.corrected;
                 return stateToUpdate;
             }, this);
             if (changed) {
-                this.invokeOnValueHostValidated(options);
+                this.invokeOnValueHostValidationStateChanged(options);
                 return true;
             }
         }
@@ -301,10 +316,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         if (this.businessLogicErrors) {
             let changed = this.updateInstanceState((stateToUpdate) => {
                 delete stateToUpdate.businessLogicErrors;
+                delete stateToUpdate.corrected;
                 return stateToUpdate;
             }, this);
             if (changed) {
-                this.invokeOnValueHostValidated(options);
+                this.invokeOnValueHostValidationStateChanged(options);
                 return true;
             }
         }
@@ -317,7 +333,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * It also asks ValidationManager to call onValidationStateChanged so observers that only 
      * watch for validation from a high level will be notified.
      */
-    protected invokeOnValueHostValidated(options: ValidateOptions | undefined): void
+    protected invokeOnValueHostValidationStateChanged(options: ValidateOptions | undefined): void
     {
         if (options && options.skipCallback)
             return;
@@ -333,7 +349,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
                 isValid: this.isValid,
                 doNotSave: this.doNotSave,
                 asyncProcessing: this.asyncProcessing,
-                status: this.validationStatus
+                status: this.validationStatus,
+                corrected: this.corrected
             });
     }
     
