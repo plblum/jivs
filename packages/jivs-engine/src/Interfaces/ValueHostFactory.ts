@@ -81,7 +81,10 @@ export enum ValueHostType
  * Associated with InputValueHost
  */    
     Input = 'Input',
-
+/**
+ * Associated with PropertyValueHost
+ */    
+    Property = 'Property',
 /**
  * Associated with CalcValueHost
  */    

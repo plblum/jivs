@@ -32,7 +32,7 @@
  * 
  * // create the CalcValueHostConfig to supply to the ValidationManager
  * let diffDaysConfig: CalcValueHostConfig = {
- *   valueHostType: 'Calc',
+ *   valueHostType: ValueHostType.Calc,
  *   name: 'DiffDays',
  *   dataType: LookupKey.Integer,
  *   calcFn: differenceBetweenDates
@@ -42,7 +42,7 @@
  * 
  * // create the 'StartDate' input with a LessThanCondition
  * let startDateConfig: InputValueHostConfig = {
- *   valueHostType: 'Input',
+ *   valueHostType: ValueHostType.Input,
  *   name: 'StartDate',
  *   dataType: 'Date',
  *   label: 'Start date',

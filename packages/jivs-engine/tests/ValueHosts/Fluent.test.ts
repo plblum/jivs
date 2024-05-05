@@ -280,6 +280,60 @@ describe('fluent().input()', () => {
     });
 });
 
+describe('fluent().property()', () => {
+    test('Valid name, null data type and defined vhConfig. Adds PropertyValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().property('Field1', null, { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem.parentConfig).toEqual({
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            label: 'Field 1',
+            validatorConfigs: []
+        });
+    });
+    test('Name, data type supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().property('Field1', 'Test');
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let expected = {
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            dataType: 'Test',
+            validatorConfigs: []
+        };
+        expect(testItem.parentConfig).toEqual(expected);
+        
+    });
+    test('Name supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().property('Field1');
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let expected = {
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            validatorConfigs: []
+        };
+        expect(testItem.parentConfig).toEqual(expected);
+    });
+    test('Pass in a PropertyValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().property({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let expected = {
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            dataType: 'Test',
+            label: 'Field 1',
+            validatorConfigs: []
+        };
+        expect(testItem.parentConfig).toEqual(expected);
+    });
+    test('Null name throws', () => {
+        expect(() => fluent().property(null!)).toThrow('arg1');
+
+    });
+    test('First parameter is not compatible with overload throws', () => {
+        expect(() => fluent().property(100 as any)).toThrow('pass');
+    });
+});
+
 describe('fluent(vmConfig).conditions', () => {
     test('Undefined parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
         let testItem = fluent().conditions();

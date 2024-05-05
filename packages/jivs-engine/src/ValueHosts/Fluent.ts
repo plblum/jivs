@@ -135,8 +135,8 @@ import { CalculationHandler, CalcValueHostConfig } from '../Interfaces/CalcValue
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { ValidationManagerConfig } from '../Interfaces/ValidationManager';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
-import { ConditionType } from '../Conditions/ConditionTypes';
-import { resolveErrorCode } from '../Validation/Validator';
+import { resolveErrorCode } from '../Utilities/Validation';
+import { PropertyValueHostConfig } from '../Interfaces/PropertyValueHost';
 
 /**
  * Starts a fluent chain. Its methods start InputValueHost (input()),
@@ -157,7 +157,7 @@ export class StartFluent
     private _vmConfig: ValidationManagerConfig | null;
     /**
      * Fluent format to create a InputValueHostConfig.
-     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * This is the start of a fluent series. Extend series with validation rules like "require()".
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a InputValueHostConfig.
@@ -199,6 +199,51 @@ export class StartFluent
         /* istanbul ignore next */
         throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
     }    
+
+    /**
+     * Fluent format to create a PropertyValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "require()".
+     * @param valueHostName - the ValueHost name
+     * @param dataType - optional and can be null. The value for ValueHost.dataType.
+     * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
+     */
+    public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector;
+    /**
+     * Fluent format to create a PropertyValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
+     * You can omit the valueHostType property.
+     */
+    public property(config: FluentPropertyValueConfig): FluentValidatorCollector;
+    // overload resolution
+    public property(arg1: ValueHostName | FluentPropertyValueConfig, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector
+    {
+        this.assertFirstParameterValid(arg1);
+        
+        if (typeof arg1 === 'object') {
+            let config: PropertyValueHostConfig =
+                { ...arg1 as PropertyValueHostConfig, valueHostType: ValueHostType.Property };
+            if (!config.validatorConfigs)
+                config.validatorConfigs = [];
+
+            return new FluentValidatorCollector(config);
+        }
+        if (typeof arg1 === 'string') {
+
+            let config: PropertyValueHostConfig =
+                { valueHostType: ValueHostType.Property, name: arg1 } as PropertyValueHostConfig;
+            if (dataType)
+                config.dataType = dataType;
+            if (parameters)
+                config = { ...parameters, ...config };
+            if (!config.validatorConfigs)
+                config.validatorConfigs = [];
+
+            return new FluentValidatorCollector(config);;
+        }
+        /* istanbul ignore next */
+        throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
+    }        
     /**
      * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -233,22 +278,6 @@ export class StartFluent
         /* istanbul ignore next */
         throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
     }
-    /**
-     * Start of a series to collect ConditionConfigs into any condition that
-     * implements EvaluateChildConditionResultsConfig.
-     * For example, fluent().input('Field1').all(fluent().conditions().required('Field2').required('Field3'))
-     * The fluent function for all (and others that support EvaluateChildConditionResultsConfig)
-     * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
-    * @param config - When null/undefined, the instance is created and the caller is expected
-    * to retrieve its conditionConfigs from the config property.
-    * When assigned, that instance gets conditionConfigs populated and 
-    * there is no need to get a value from configs property.
-    */
-    public conditions(config?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
-    {
-        let collector = new FluentConditionCollector(config ?? null);
-        return collector;
-    }    
 
     /**
      * Fluent format to create a CalcValueHostConfig.
@@ -282,6 +311,23 @@ export class StartFluent
         }
         /* istanbul ignore next */
         throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
+    }    
+
+    /**
+     * Start of a series to collect ConditionConfigs into any condition that
+     * implements EvaluateChildConditionResultsConfig.
+     * For example, fluent().input('Field1').all(fluent().conditions().required('Field2').required('Field3'))
+     * The fluent function for all (and others that support EvaluateChildConditionResultsConfig)
+     * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
+    * @param config - When null/undefined, the instance is created and the caller is expected
+    * to retrieve its conditionConfigs from the config property.
+    * When assigned, that instance gets conditionConfigs populated and 
+    * there is no need to get a value from configs property.
+    */
+    public conditions(config?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
+    {
+        let collector = new FluentConditionCollector(config ?? null);
+        return collector;
     }    
 
     /**
@@ -329,10 +375,18 @@ export function fluent(): StartFluent
 export type FluentStaticParameters = Omit<StaticValueHostConfig, 'conditionType' | 'name' | 'dataType'>;
 
 /**
- * For fluent configInput function.
+ * For fluent input() function.
  */
 export type FluentInputValueConfig = Omit<InputValueHostConfig, 'conditionType' | 'validatorConfigs'>;
 export type FluentInputParameters = Omit<FluentInputValueConfig, 'name' | 'dataType'>;
+
+
+/**
+ * For fluent property() function.
+ */
+export type FluentPropertyValueConfig = Omit<PropertyValueHostConfig, 'conditionType' | 'validatorConfigs'>;
+export type FluentPropertyParameters = Omit<FluentPropertyValueConfig, 'name' | 'dataType'>;
+
 /**
  * Targets fluent functions for conditions as their second parameter, hosting most of the 
  * properties needed for ValidatorConfig

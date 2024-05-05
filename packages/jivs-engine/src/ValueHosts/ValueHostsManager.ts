@@ -24,6 +24,8 @@ import { ICalcValueHost } from '../Interfaces/CalcValueHost';
 import { IStaticValueHost } from '../Interfaces/StaticValueHost';
 import { toICalcValueHost } from './CalcValueHost';
 import { toIStaticValueHost } from './StaticValueHost';
+import { toIPropertyValueHost } from './PropertyValueHost';
+import { IPropertyValueHost } from '../Interfaces/PropertyValueHost';
 
 
 /**
@@ -270,19 +272,6 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     public getValueHost(valueHostName: ValueHostName): IValueHost | null {
         return this._valueHosts[valueHostName] ?? null;
     }
-
-    /**
-     * Alternative to getValueHost that returns strongly typed valuehosts 
-     * in a shortened syntax. Always throws exceptions if the value host requested
-     * is unknown or not the expected type.
-     */
-    public get vh(): IValueHostAccessor
-    {
-        if (!this._vh)
-            this._vh = new ValueHostAccessor(this);
-        return this._vh;
-    }
-    private _vh: IValueHostAccessor | undefined;
     
     /**
      * Retrieves the ValidatorsValueHostBase of the identified by valueHostName
@@ -302,6 +291,14 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         return toIInputValueHost(this.getValueHost(valueHostName));
     }
     /**
+     * Retrieves the PropertyValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the IPropertyValueHost.name property
+     * Returns the instance or null if not found or found a non-Property valuehost.
+     */
+    public getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null {
+        return toIPropertyValueHost(this.getValueHost(valueHostName));
+    }    
+    /**
      * Retrieves the StaticValueHost of the identified by valueHostName
      * @param valueHostName - Matches to the IStaticValueHost.name property
      * Returns the instance or null if not found or found a non-input valuehost.
@@ -317,6 +314,20 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     public getCalcValueHost(valueHostName: ValueHostName): ICalcValueHost | null {
         return toICalcValueHost(this.getValueHost(valueHostName));
     }
+    
+
+    /**
+     * Alternative to getValueHost that returns strongly typed valuehosts 
+     * in a shortened syntax. Always throws exceptions if the value host requested
+     * is unknown or not the expected type.
+     */
+    public get vh(): IValueHostAccessor
+    {
+        if (!this._vh)
+            this._vh = new ValueHostAccessor(this);
+        return this._vh;
+    }
+    private _vh: IValueHostAccessor | undefined;
     
     /**
      * Upon changing the value of a ValueHost, other ValueHosts need to know. 

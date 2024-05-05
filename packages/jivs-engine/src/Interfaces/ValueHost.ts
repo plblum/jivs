@@ -4,12 +4,14 @@
  * Each also has an name, used to lookup the ValueHost,
  * and a Label, which is a UI friendly way to tell the user the source of a validation error.
  * There are several types of ValueHosts:
- * - InputValueHosts - reflects values from user input. 
+ * - InputValueHost - reflects values from user input. 
  *   These have validation capability.
- * - StaticValueHosts - reflects values that are needed by validation
+ * - PropertyValueHost - reflects values from a Model.
+ *   These have validation capability.
+ * - StaticValueHost - reflects values that are needed by validation
  *   but are not editable by the user. Often these are properties from the same
  *   Model being edited.
- * - CalcValueHosts - Its value is calculated when its getValue() method is called. 
+ * - CalcValueHost - Its value is calculated when its getValue() method is called. 
  *   You supply a function callback in its CalcValueHostConfig to set it up.
  * 
  * Base class Validators:
@@ -234,9 +236,10 @@ export interface ValueHostConfig {
      * Identifies the type of ValueHost that will be created to 
      * support the Config. Can use the enumeration ValueHostType to get these strings.
      * InputValueHost - 'Input'
+     * PropertyValueHost - 'Property'
      * StaticValueHost - 'Static'
      * CalcValueHost - 'Calc'
-     * If left null, the ValueHostFactory will determine between ValueHost and InputValueHost
+     * If left null, the ValueHostFactory will determine between StaticValueHost and InputValueHost
      * by checking for inclusion of the InputValueHostConfig.validationConfigs property.
      */
     valueHostType?: string;

@@ -1,3 +1,5 @@
+## 0.15.1
+- **Major feature** - PropertyValueHost handles property values on a Model.
 ## 0.15.0
 - **Breaking API changes** - Refactoring and renaming.
 - build() method added to ValidationManager to support adding value hosts with fluent syntax.

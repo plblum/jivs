@@ -14,6 +14,8 @@ import { toIStaticValueHost } from "./StaticValueHost";
 import { toICalcValueHost } from "./CalcValueHost";
 import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from "../Interfaces/ValidatorsValueHostBase";
+import { IPropertyValueHost } from "../Interfaces/PropertyValueHost";
+import { toIPropertyValueHost } from "./PropertyValueHost";
 
 
 /**
@@ -84,6 +86,15 @@ export class ValueHostAccessor implements IValueHostAccessor
     {
         return this.ensureCorrectValueHost(valueHostName, toIInputValueHost, 'InputValueHost');
     }
+    /**
+     * Returns the associated PropertyValueHost or throws an error when
+     * the valueHostName is unknown or not an PropertyValueHost.
+     * @param valueHostName 
+     */
+    public property(valueHostName: ValueHostName): IPropertyValueHost
+    {
+        return this.ensureCorrectValueHost(valueHostName, toIPropertyValueHost, 'PropertyValueHost');
+    }    
     /**
      * Returns the associated StaticValueHost or throws an error when
      * the valueHostName is unknown or not an StaticValueHost.
