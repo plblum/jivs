@@ -15,6 +15,7 @@ import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { StaticValueHostGenerator } from './StaticValueHost';
 import type { IValueHostFactory, IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { CalcValueHostGenerator } from './CalcValueHost';
+import { PropertyValueHostGenerator } from './PropertyValueHost';
 
 /**
  * Supports creating and working with various ValueHost implementations.
@@ -101,6 +102,7 @@ export class ValueHostFactory implements IValueHostFactory {
 
 export function registerStandardValueHostGenerators(factory: ValueHostFactory): void {
     factory.register(new InputValueHostGenerator());
+    factory.register(new PropertyValueHostGenerator());
     factory.register(new StaticValueHostGenerator());
     factory.register(new CalcValueHostGenerator());
     factory.register(new BusinessLogicErrorsValueHostGenerator());    

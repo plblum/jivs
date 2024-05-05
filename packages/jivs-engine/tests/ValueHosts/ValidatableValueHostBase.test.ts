@@ -517,7 +517,7 @@ describe('ValidatableValueHostBase.clearValidation', () => {
     });
 });
 // doNotSave: boolean
-describe('ValidatableValueHostBase.doNotSave', () => {
+describe('doNotSave', () => {
 
     function trydoNotSave(initialValidationStatusCode: ValidationStatus, hasPendings: boolean, expectedResult: boolean): void {
         let vhConfig: ValidatableValueHostBaseConfig = {
@@ -525,18 +525,18 @@ describe('ValidatableValueHostBase.doNotSave', () => {
             valueHostType: 'TestValidatableValueHost'
         }
 
+        let state: Partial<ValidatableValueHostBaseInstanceState> = {
+            name: 'Field1',
+            status: initialValidationStatusCode,
+            issuesFound: [],
+            asyncProcessing: hasPendings
+        };
 
-            let state: Partial<ValidatableValueHostBaseInstanceState> = {
-                name: 'Field1',
-                status: initialValidationStatusCode,
-                issuesFound: [],
-                asyncProcessing: hasPendings
-            };
-    
-            let setup = setupValidatableValueHostBase(vhConfig, state);
-    
-            expect(setup.valueHost.doNotSave).toBe(expectedResult);
-        }    
+        let setup = setupValidatableValueHostBase(vhConfig, state);
+
+        expect(setup.valueHost.doNotSave).toBe(expectedResult);
+
+    }    
     test('ValidationStatus = Valid, doNotSave=false', () => {
         trydoNotSave(ValidationStatus.Valid, false, false);
     });

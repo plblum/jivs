@@ -4,6 +4,7 @@ import { IGatherValueHostNames, SetValueOptions, ValidTypesForInstanceStateStora
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
+import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
 import { StaticValueHost, StaticValueHostGenerator, toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 
@@ -227,6 +228,49 @@ describe('toIStaticValueHost function', () => {
 
         expect(toIStaticValueHost(testItem)).toBe(testItem);
     });
+    test('PropertyValueHost return null.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new PropertyValueHost(vm, {
+                name: 'Field1',
+                label: 'Label1',
+                validatorConfigs: []
+            },
+            {
+                name: 'Field1',
+                value: undefined,
+                issuesFound: null,
+                status: ValidationStatus.NotAttempted
+            });
+        expect(toIStaticValueHost(testItem)).toBeNull();
+    });            
+    test('InputValueHost return null.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new InputValueHost(vm, {
+                name: 'Field1',
+                label: 'Label1',
+                validatorConfigs: []
+            },
+            {
+                name: 'Field1',
+                value: undefined,
+                issuesFound: null,
+                status: ValidationStatus.NotAttempted
+            });
+        expect(toIStaticValueHost(testItem)).toBeNull();
+    });                
+    test('CalcValueHost return null.', () => {
+        let vm = new MockValidationManager(new MockValidationServices(false, false));
+        let testItem = new CalcValueHost(vm, {
+                name: 'Field1',
+                label: 'Label1',
+                calcFn: (host, mgr)=> 0
+            },
+            {
+                name: 'Field1',
+                value: undefined
+            });
+        expect(toIStaticValueHost(testItem)).toBeNull();
+    });                
     test('Non-matching interface returns null.', () => {
         let testItem = {};
         expect(toIStaticValueHost(testItem)).toBeNull();

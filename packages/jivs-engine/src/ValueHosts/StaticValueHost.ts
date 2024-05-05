@@ -8,12 +8,12 @@ import { ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
-import { CalcValueHost } from './CalcValueHost';
+import { CalcValueHost, hasICalcValueHostSpecificMembers } from './CalcValueHost';
 import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 
 
 /**
- * ValueHost implementation that does not handle validation. (See InputValueHost for validation)
+ * ValueHost implementation that does not handle validation. (See InputValueHost and PropertyValueHost for validation)
  * Use ValueHostConfig.valueHostType = "Static" for the ValidationManager to use this class.
  * 
  * Generally create these when:
@@ -70,10 +70,11 @@ export class StaticValueHostGenerator extends ValueHostBaseGenerator {
 export function toIStaticValueHost(source: any): IStaticValueHost | null {
     if (source instanceof StaticValueHost)
         return source as IStaticValueHost;
+    if (source instanceof CalcValueHost)
+        return null;
     // defenses for class types that are compatible but offer no different members
-    if (toIValueHost(source) && !toIValidatableValueHostBase(source) && !(source instanceof CalcValueHost)) {
-        let test = source as IStaticValueHost;
-        return test;
+    if (toIValueHost(source) && !toIValidatableValueHostBase(source) && !hasICalcValueHostSpecificMembers(source)) {
+        return source as IStaticValueHost;
     }
     return null;
 }

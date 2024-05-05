@@ -19,6 +19,7 @@ import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/src/DataTy
 import { ConditionFactory } from "@plblum/jivs-engine/src/Conditions/ConditionFactory";
 import { LoggingLevel } from "@plblum/jivs-engine/src/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/src/Services/DataTypeFormatterService";
+import { ValueHostType } from "@plblum/jivs-engine/src/Interfaces/ValueHostFactory";
 
 // Here's our target function to use with a CalcValueHost. 
 // Assign CalcValueHostConfig.calcFn to it.
@@ -36,7 +37,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
     // create the CalcValueHostConfig to supply to the ValidationManager
         // fluent: let diffDaysConfig = config().calc('DiffDays', LookupKey.Integer, differenceBetweenDates);    
     let diffDaysConfig: CalcValueHostConfig = {
-        valueHostType: 'Calc',
+        valueHostType: ValueHostType.Calc, // = 'Calc',
         name: 'DiffDays',
         dataType: LookupKey.Integer,
         calcFn: differenceBetweenDates
@@ -50,7 +51,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
         //                .lessThanOrEqual('EndDate', 'Start date must be less than or equal to End date.', { severity: ValidationSeverity.Severe });
         //                .lessThanValue(10, 'The two dates must be less than {CompareTo} days apart.', { valueHostName: 'DiffDays' });
     let startDateConfig: InputValueHostConfig = {
-        valueHostType: 'Input',
+        valueHostType: ValueHostType.Input, // = 'Input'
         name: 'StartDate',
         dataType: 'Date',
         label: 'Start date',
@@ -76,7 +77,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
 
         // fluent: let endDateConfig = config().input('EndDate', 'Date', { label: 'End date' }); 
     let endDateConfig: InputValueHostConfig = {
-        valueHostType: 'Input',
+        valueHostType: ValueHostType.Input, // = 'Input'
         name: 'EndDate',
         dataType: 'Date',
         label: 'End date',

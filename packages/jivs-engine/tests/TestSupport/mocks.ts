@@ -43,6 +43,8 @@ import { IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { toICalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
+import { PropertyValueHostInstanceState, IPropertyValueHost } from "../../src/Interfaces/PropertyValueHost";
+import { toIPropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -463,7 +465,16 @@ export class MockValidationManager implements IValidationManager, IValidationMan
             state = this.services.valueHostFactory.createInstanceState(config) as InputValueHostInstanceState;
         let vh = this.services.valueHostFactory.create(this, config, state) as IInputValueHost;
         this._valueHosts.set(config.name, vh);    
-  //      vh.SetValues(nativeValue, inputValue);
+        return vh;
+    }
+
+    public addPropertyValueHostWithConfig(config: ValueHostConfig,
+        state: PropertyValueHostInstanceState | null): IPropertyValueHost
+    {
+        if (!state)
+            state = this.services.valueHostFactory.createInstanceState(config) as PropertyValueHostInstanceState;
+        let vh = this.services.valueHostFactory.create(this, config, state) as IPropertyValueHost;
+        this._valueHosts.set(config.name, vh);    
         return vh;
     }
 
@@ -486,6 +497,10 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
         return toIInputValueHost(this.getValueHost(valueHostName));
     }    
+
+    public getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null {
+        return toIPropertyValueHost(this.getValueHost(valueHostName));
+    }        
     public getCalcValueHost(valueHostName: ValueHostName): ICalcValueHost | null {
         return toICalcValueHost(this.getValueHost(valueHostName));
     }

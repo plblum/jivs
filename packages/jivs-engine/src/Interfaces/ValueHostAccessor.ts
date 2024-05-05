@@ -5,8 +5,8 @@
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ICalcValueHost } from "./CalcValueHost";
 import { IInputValueHost } from "./InputValueHost";
+import { IPropertyValueHost } from "./PropertyValueHost";
 import { IStaticValueHost } from "./StaticValueHost";
-import { IValidatableValueHostBase } from "./ValidatableValueHostBase";
 import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
 import { IValueHost } from "./ValueHost";
 
@@ -19,6 +19,13 @@ export interface IValueHostAccessor
      */
     input(valueHostName: ValueHostName): IInputValueHost;
     /**
+     * Returns the associated PropertyValueHost or throws an error when
+     * the valueHostName is unknown or not an PropertyValueHost.
+     * @param valueHostName 
+     */
+    property(valueHostName: ValueHostName): IPropertyValueHost;
+
+     /**
      * Returns the associated StaticValueHost or throws an error when
      * the valueHostName is unknown or not an StaticValueHost.
      * @param valueHostName 

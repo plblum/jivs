@@ -35,6 +35,7 @@ import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHo
 import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
+import { IPropertyValueHost } from "../../src/Interfaces/PropertyValueHost";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<ValidationManagerInstanceState> {
@@ -1070,6 +1071,9 @@ describe('toIValidationManager function', () => {
                 throw new Error("Function not implemented.");
             },
             getInputValueHost: function (valueHostName: string): IInputValueHost | null {
+                throw new Error("Function not implemented.");
+            },
+            getPropertyValueHost: function (valueHostName: string): IPropertyValueHost | null {
                 throw new Error("Function not implemented.");
             },
             getCalcValueHost: function (valueHostName: string): ICalcValueHost | null {

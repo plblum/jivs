@@ -7,6 +7,7 @@
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ICalcValueHost } from './CalcValueHost';
 import { IInputValueHost } from './InputValueHost';
+import { IPropertyValueHost } from './PropertyValueHost';
 import { IStaticValueHost } from './StaticValueHost';
 import { IServicesAccessor } from './ValidationServices';
 import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
@@ -39,6 +40,13 @@ export interface IValueHostResolver extends IServicesAccessor {
      * Returns the instance or null if not found or found a different type of value host.
      */
     getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null;
+
+    /**
+     * Retrieves the PropertyValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the PropertyValueHostConfig.name property
+     * Returns the instance or null if not found or found a different type of value host.
+     */
+    getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null;    
 
     /**
      * Retrieves the CalcValueHost of the identified by valueHostName
