@@ -386,6 +386,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
     and/or contributes data used by the validators. You get and set its value both from a Model and the Inputs (your editor widgets) in the UI.
 
 	+ `InputValueHost class` – For your Inputs, a ValueHost with the power of validation. 
+	+ `PropertyValueHost class` – For properties of a Model, a ValueHost with the power of validation. 
 	+ `StaticValueHost class` – For values that do not need validating, but support validation rules of InputValueHosts. 
 	
 	>For example, a postal codes might be validated against a regular expression. But that expression depends on the country of delivery. So you would use a `StaticValueHost` to pass in a country
@@ -549,7 +550,8 @@ class Factory
 ## ValueHosts
 Every value that you expose to Jivs is kept in a ValueHost. There are several types:
 
-- InputValueHost – The value may have validation rules applied. It actually keeps two values around when working with a UI: the value fully compatible with the model's property, and the value from within the editor.
+- InputValueHost – For user input. The value may have validation rules applied. It actually keeps two values around when working with a UI: the value fully compatible with the model's property, and the value from within the editor.
+- PropertyValueHost – For a property on the Model. The value may have validation rules applied.
 - StaticValueHost – The value that is not validated itself, but its value is used in an InputValueHost's validation rule or is a member of the Model that is retained when Jivs is the single-source of truth.
 - CalcValueHost – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
 
@@ -574,6 +576,14 @@ interface IInputValueHost extends IValueHost
     setInputValue(value, options?): void;	// value from the UI's editor
     setValues(nativeValue, inputValue, options?): void;	// both values
     
+    validate(options): ValueHostValidateResult;
+    isValid: boolean;
+    getIssueFound(errorCode): IssueFound | null;
+    getIssuesFound(group?): IssueFound[];	
+}
+interface IPropertyValueHost extends IValueHost
+{
+    getPropertyName(): string;
     validate(options): ValueHostValidateResult;
     isValid: boolean;
     getIssueFound(errorCode): IssueFound | null;
@@ -632,6 +642,13 @@ interface InputValueHostConfig extends ValueHostConfig
   valueHostType: 'Input',	// shown here for documentation purposes
   validatorConfigs: ValidatorConfig[] | null;
   group?: string | Array<string> | null;
+}
+}
+interface PropertyValueHostConfig extends ValueHostConfig 
+{
+  valueHostType: 'Property',	// shown here for documentation purposes
+  validatorConfigs: ValidatorConfig[] | null;
+  propertyName?: string
 }
 interface StaticValueHostConfig extends ValueHostConfig 
 {
@@ -692,9 +709,11 @@ Start with a ValidationManager instance. It should already be configured with Va
 |vm.getValueHost('name')|Base to all ValueHosts|Returns null|
 |vm.getValidatorsValueHost('name')|Base to Validatable ValueHosts|Returns null|
 |vm.getInputValueHost('name')|InputValueHost|Returns null|
+|vm.getPropertyValueHost('name')|PropertyValueHost|Returns null|
 |vm.getStaticValueHost('name')|StaticValueHost|Returns null|
 |vm.getCalcValueHost('name')|CalcValueHost|Returns null|
 |vm.vh.input('name')|InputValueHost|Throws error|
+|vm.vh.power('name')|PropertyValueHost|Throws error|
 |vm.vh.static('name')|StaticValueHost|Throws error|
 |vm.vh.calc('name')|CalcValueHost|Throws error|
 |vm.vh.any('name')|Base to all ValueHosts|Throws error|
@@ -907,12 +926,12 @@ builder.input('LastName', 'String', { label: 'Last Name'})
    
 let validationManager = new ValidationManager(vmConfig);   
 ```
-You can also use the builder object to add StaticValueHosts, CalcValueHosts, and a list of Conditions to these Conditions: All, Any, CountMatches.
+You can also use the builder object to add PropertyValueHosts, StaticValueHosts, CalcValueHosts, and a list of Conditions to these Conditions: All, Any, CountMatches.
 
 ```ts
 builder.static('PersonVisible', 'Boolean');
 builder.static('PersonActive', 'Boolean');
-builder.input('Name').any(
+builder.property('Name').any(
      builder.conditions()
      	.equalTo(true, { valueHostName: 'PersonVisible'})
         .equalTo(true, { valueHostName: 'PersonActive'}));
@@ -922,7 +941,7 @@ If you already have a validationManager instance, the builder is available on it
 ```ts
 validationManager.build().static('PersonVisible', 'Boolean');
 validationManager.build().static('PersonActive', 'Boolean');
-validationManager.build().input('Name').any(
+validationManager.build().property('Name').any(
      builder.conditions()
      	.equalTo(true, { valueHostName: 'PersonVisible'})
         .equalTo(true, { valueHostName: 'PersonActive'}));

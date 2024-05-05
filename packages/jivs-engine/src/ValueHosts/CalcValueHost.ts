@@ -3,7 +3,7 @@
  * @module ValueHosts/ConcreteClasses/CalcValueHost
  */
 import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState, CalculationHandlerResult } from '../Interfaces/CalcValueHost';
-import { SetValueOptions, ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
+import { IValueHost, SetValueOptions, ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
@@ -109,12 +109,20 @@ export class CalcValueHostGenerator extends ValueHostBaseGenerator {
 export function toICalcValueHost(source: any): ICalcValueHost | null {
     if (source instanceof CalcValueHost)
         return source as ICalcValueHost;
-    if (toIValueHost(source)) {
-        let test = source as ICalcValueHost;
-        // some select members of ICalcValueHost
-        if (test.convert !== undefined &&
-            test.convertToPrimitive !== undefined)
-            return test;
-    }
+    if (toIValueHost(source) && hasICalcValueHostSpecificMembers(source))
+        return source as ICalcValueHost;
     return null;
+}
+
+/**
+ * Returns true when it finds members introduced on ICalcValueHost.
+ * @param source 
+ * @returns 
+ */
+export function hasICalcValueHostSpecificMembers(source: IValueHost): boolean
+{
+    let test = source as ICalcValueHost;
+    // members introduced on ICalcValueHost
+    return (test.convert !== undefined &&
+        test.convertToPrimitive !== undefined);    
 }

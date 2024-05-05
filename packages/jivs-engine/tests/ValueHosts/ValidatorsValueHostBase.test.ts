@@ -1,4 +1,4 @@
-import { RegExpConditionConfig, RegExpCondition, StringLengthConditionConfig, StringLengthCondition, AllMatchConditionConfig, AllMatchCondition, DataTypeCheckConditionConfig, RequireTextConditionConfig, EqualToConditionConfig, EqualToCondition } from "../../src/Conditions/ConcreteConditions";
+import { RegExpConditionConfig, RegExpCondition, StringLengthConditionConfig, StringLengthCondition, AllMatchConditionConfig, AllMatchCondition, DataTypeCheckConditionConfig, RequireTextConditionConfig, EqualToConditionConfig, EqualToCondition, RequireTextCondition, RangeConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
@@ -25,10 +25,10 @@ import { MessageTokenResolverService } from "../../src/Services/MessageTokenReso
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { Validator } from "../../src/Validation/Validator";
-import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHostBase";
+import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
-import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType, UserSuppliedResultConditionConfig, registerTestingOnlyConditions } from "../TestSupport/conditionsForTesting";
+import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType, UserSuppliedResultConditionConfig, registerTestingOnlyConditions, NeverMatchesCondition } from "../TestSupport/conditionsForTesting";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
@@ -43,27 +43,28 @@ class TestValidatorsValueHost extends ValidatorsValueHostBase<ValidatorsValueHos
 
 }
 
+const TestValueHostType = 'TestValidatorsValueHost';
 /**
  * This implementation of IValueHostGenerator is actually tested in ValueHostFactory.tests.ts
  */
-class TestValidatorsValueHostGenerator implements IValueHostGenerator {
+class TestValidatorsValueHostGenerator extends ValidatorsValueHostBaseGenerator {
     public canCreate(config: ValueHostConfig): boolean {
-        return config.valueHostType === 'TestValidatorsValueHost';
+        return config.valueHostType === TestValueHostType;
     }
     public create(valueHostsManager : IValueHostsManager, config: ValidatorsValueHostBaseConfig, state: ValidatorsValueHostBaseInstanceState): IValidatorsValueHostBase {
         return new TestValidatorsValueHost(valueHostsManager, config, state);
     }
-    public cleanupInstanceState(state: ValidatorsValueHostBaseInstanceState, config: ValueHostConfig): void {
-    }
-    public createInstanceState(config: ValueHostConfig): ValidatorsValueHostBaseInstanceState {
-        let state: ValidatorsValueHostBaseInstanceState = {
-            name: config.name,
-            value: config.initialValue,
-            status: ValidationStatus.NotAttempted,
-            issuesFound: null
-        };
-        return state;
-    }
+    // public cleanupInstanceState(state: ValidatorsValueHostBaseInstanceState, config: ValueHostConfig): void {
+    // }
+    // public createInstanceState(config: ValueHostConfig): ValidatorsValueHostBaseInstanceState {
+    //     let state: ValidatorsValueHostBaseInstanceState = {
+    //         name: config.name,
+    //         value: config.initialValue,
+    //         status: ValidationStatus.NotAttempted,
+    //         issuesFound: null
+    //     };
+    //     return state;
+    // }
 
 }
 function addGeneratorToServices(services: IValidationServices): void
@@ -87,7 +88,7 @@ function createValidatorsValueHostBaseConfig(fieldNumber: number = 1,
     return {
         name: 'Field' + fieldNumber,
         label: 'Label' + fieldNumber,
-        valueHostType: 'TestValidatorsValueHost',
+        valueHostType: TestValueHostType,
         dataType: dataType,
         initialValue: initialValue,
         validatorConfigs: null
@@ -399,7 +400,7 @@ describe('constructor and resulting property values', () => {
         let testItem: TestValidatorsValueHost | null = null;
         expect(()=> testItem = new TestValidatorsValueHost(vm, {
             name: 'Field1',
-            valueHostType: 'TestValidatorsValueHost',
+            valueHostType: TestValueHostType,
             validatorConfigs: []
             },
             {
@@ -982,7 +983,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         addGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
-            valueHostType: 'TestValidatorsValueHost',
+            valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
                 {
@@ -1026,7 +1027,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         addGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
-            valueHostType: 'TestValidatorsValueHost',
+            valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
                 {
@@ -1298,7 +1299,7 @@ describe('corrected property', () => {
         addGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
-            valueHostType: 'TestValidatorsValueHost',
+            valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [{
                 conditionConfig: {
@@ -1424,7 +1425,7 @@ function testValidateFunctionWithPromise(
     let vhd1: ValidatorsValueHostBaseConfig = {
         name: 'Field1',
         label: 'Field 1',
-        valueHostType: 'TestValidatorsValueHost',
+        valueHostType: TestValueHostType,
         validatorConfigs: finishPartialValidatorConfigs(validatorConfigs ?? null)
     };
     let services = new ValidationServices();
@@ -2028,7 +2029,7 @@ describe('clearValidation', () => {
         addGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
-            valueHostType: 'TestValidatorsValueHost',
+            valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
                 {
@@ -2082,7 +2083,7 @@ describe('clearValidation', () => {
         addGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
-            valueHostType: 'TestValidatorsValueHost',
+            valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
                 {
@@ -2133,7 +2134,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         addGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
-            valueHostType: 'TestValidatorsValueHost',
+            valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
                 {
@@ -2203,7 +2204,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
         addGeneratorToServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
-            valueHostType: 'TestValidatorsValueHost',
+            valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
                 {
@@ -2411,7 +2412,7 @@ describe('addValidator function', () => {
             services: services,
             valueHostConfigs: [
                 {
-                    valueHostType: 'TestValidatorsValueHost',
+                    valueHostType: TestValueHostType,
                     name: 'Field1'
                 }
             ]
@@ -2451,7 +2452,7 @@ describe('addValidator function', () => {
             services: services,
             valueHostConfigs: [
                 <ValidatorsValueHostBaseConfig>{
-                    valueHostType: 'TestValidatorsValueHost',
+                    valueHostType: TestValueHostType,
                     name: 'Field1',
                     validatorConfigs: [
                         {
@@ -2505,7 +2506,7 @@ describe('addValidator function', () => {
             services: services,
             valueHostConfigs: [
                 <ValidatorsValueHostBaseConfig>{
-                    valueHostType: 'TestValidatorsValueHost',
+                    valueHostType: TestValueHostType,
                     name: 'Field1',
                     validatorConfigs: [
                         {
@@ -2550,7 +2551,7 @@ describe('configValidators function', () => {
             services: services,
             valueHostConfigs: [
                 {
-                    valueHostType: 'TestValidatorsValueHost',
+                    valueHostType: TestValueHostType,
                     name: 'Field1'
                 }
             ]
@@ -2621,7 +2622,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
 
         let vhConfigs: Array<ValidatorsValueHostBaseConfig> = [
             { // Refers to Field2. So validation on Field2 should force this to update
-                valueHostType: 'TestValidatorsValueHost',
+                valueHostType: TestValueHostType,
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: [{
@@ -2634,7 +2635,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                 }]
             },
             {
-                valueHostType: 'TestValidatorsValueHost',
+                valueHostType: TestValueHostType,
                 name: 'Field2',
                 label: 'Label2',
                 validatorConfigs: [{
@@ -2649,7 +2650,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                 }]
             },
             { // Value changes should not notify another
-                valueHostType: 'TestValidatorsValueHost',
+                valueHostType: TestValueHostType,
                 name: 'Field3',
                 label: 'Label3',
 
@@ -2911,5 +2912,428 @@ describe('toIValidatorsValueHostBase function', () => {
     });
     test('Non-object returns null.', () => {
         expect(toIValidatorsValueHostBase(100)).toBeNull();
+    });
+});
+
+describe('ValidatorsValueHostBaseGenerator members', () => {
+    test('cleanupInstanceState existing state has no IssuesFound. Returns the same data', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            issuesFound: null,
+            status: ValidationStatus.Valid,
+            value: 10
+        };
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: null
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        expect(state).toEqual(originalState);
+    });
+    test('Using ConditionConfig, cleanupInstanceState existing state has no IssuesFound but there is a new ValidationConfig which has no impact. Returns the same data', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            issuesFound: null,
+            status: ValidationStatus.Valid,
+            value: 10
+        };
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionConfig: <RequireTextConditionConfig>{
+                        conditionType: ConditionType.RequireText,
+                        valueHostName: null
+                    },
+                    errorMessage: ''
+                }
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        expect(state).toEqual(originalState);
+    });
+    test('Using ConditionCreator, cleanupInstanceState existing state has no IssuesFound but there is a new ValidationConfig which has no impact. Returns the same data', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            issuesFound: null,
+            status: ValidationStatus.Valid,
+            value: 10
+        };
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionCreator: (requestor) => new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: 'Field1' }),
+                    conditionConfig: null,
+                    errorMessage: ''
+                }
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        expect(state).toEqual(originalState);
+    });
+    test('Using ConditionConfig, cleanupInstanceState existing state with ValidationStatus.Error has an IssuesFound and there is a ValidatorConfig. instanceState.IssuesFound unchanged', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            status: ValidationStatus.Invalid,
+            value: 10,
+            issuesFound: [],
+        };
+        originalState.issuesFound?.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.RequireText,
+            errorMessage: '',
+            severity: ValidationSeverity.Error,
+            summaryMessage: ''
+        });
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionConfig: <RequireTextConditionConfig>{
+                        conditionType: ConditionType.RequireText,
+                        valueHostName: 'Field1'
+                    },
+                    errorMessage: ''
+                }
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        expect(state).toEqual(originalState);
+    });
+    test('Using ConditionCreator, cleanupInstanceState existing state with ValidationStatus.Error has an IssuesFound and there is a ValidatorConfig. instanceState.IssuesFound unchanged', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            status: ValidationStatus.Invalid,
+            value: 10,
+            issuesFound: [],
+        };
+        originalState.issuesFound?.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.RequireText,
+            errorMessage: '',
+            severity: ValidationSeverity.Error,
+            summaryMessage: ''
+        });
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionCreator: (requestor) => new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: 'Field1' }),
+                    conditionConfig: null,
+                    errorMessage: ''
+                }
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        expect(state).toEqual(originalState);
+    });
+    test('Using ConditionConfig, cleanupInstanceState existing state has an IssuesFound but no associated ValidationConfig. instanceState.IssuesFound is null', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            status: ValidationStatus.Valid,
+            value: 10,
+            issuesFound: [],
+        };
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.RequireText,
+            errorMessage: '',
+            severity: ValidationSeverity.Warning,
+            summaryMessage: ''
+        });
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionConfig: <RangeConditionConfig>{
+                        conditionType: ConditionType.Range,   // different type from in InstanceState
+                        valueHostName: 'Field1'
+                    },
+                    errorMessage: ''
+                }
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        let expectedState = { ...originalState };
+        expectedState.issuesFound = null;
+        expect(state).toEqual(expectedState);
+    });
+    test('Using ConditionCreator, cleanupInstanceState existing state has an IssuesFound but no associated ValidationConfig. instanceState.IssuesFound is null', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            status: ValidationStatus.Valid,
+            value: 10,
+            issuesFound: [],
+        };
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.RequireText,
+            errorMessage: '',
+            severity: ValidationSeverity.Warning,
+            summaryMessage: ''
+        });
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionCreator: (requestor) => new NeverMatchesCondition({ conditionType: NeverMatchesConditionType }),
+                    conditionConfig: null,
+                    errorMessage: ''
+                }
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        let expectedState = { ...originalState };
+        expectedState.issuesFound = null;
+        expect(state).toEqual(expectedState);
+    });
+
+    test('cleanupInstanceState existing state with ValidationStatus=Invalid has an IssuesFound but no associated ValidationConfig. instanceState.IssuesFound is null and ValidationStatus is NeedsValidation', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            status: ValidationStatus.Invalid,
+            value: 10,
+            issuesFound: [],
+        };
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.RequireText,
+            errorMessage: '',
+            severity: ValidationSeverity.Error,
+            summaryMessage: ''
+        });
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionConfig: <RangeConditionConfig>{
+                        conditionType: ConditionType.Range,   // different type from in InstanceState
+                        valueHostName: 'Field1'
+                    },
+                    errorMessage: ''
+                }
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        let expectedState = { ...originalState };
+        expectedState.issuesFound = null;
+        expectedState.status = ValidationStatus.NeedsValidation;
+        expect(state).toEqual(expectedState);
+    });
+    test('cleanupInstanceState existing state with ValidationStatus=Invalid, 2 IssuesFound where one is Warning and the other is removed. State.IssuesFound is the warning and ValidationStatus is Valid', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            status: ValidationStatus.Invalid,
+            value: 10,
+            issuesFound: [],
+        };
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.RequireText,
+            errorMessage: '',
+            severity: ValidationSeverity.Error,
+            summaryMessage: ''
+        });
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: NeverMatchesConditionType,
+            errorMessage: '',
+            severity: ValidationSeverity.Warning,
+            summaryMessage: ''
+        });
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    },
+                    errorMessage: ''
+                }
+                // we've abandoned ConditionType.RequireText which was severity=Error
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        let expectedState = { ...originalState };
+        expectedState.issuesFound!.splice(0, 1);
+        expectedState.status = ValidationStatus.Valid;
+        expect(state).toEqual(expectedState);
+    });
+    test('cleanupInstanceState existing state with ValidationStatus=Invalid, 3 IssuesFound (Error, Warning, Error) and one Error is removed. State.IssuesFound is the warning and the remaining error and ValidationStatus is Invalid', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            status: ValidationStatus.Invalid,
+            value: 10,
+            issuesFound: [],
+        };
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.RequireText,
+            errorMessage: '',
+            severity: ValidationSeverity.Error,
+            summaryMessage: ''
+        });
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: NeverMatchesConditionType,
+            errorMessage: '',
+            severity: ValidationSeverity.Warning,
+            summaryMessage: ''
+        });
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.Range,
+            errorMessage: '',
+            severity: ValidationSeverity.Error,
+            summaryMessage: ''
+        });
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    },
+                    errorMessage: ''
+                },
+                {
+                    conditionConfig: <RangeConditionConfig>{
+                        conditionType: ConditionType.Range,
+                        valueHostName: null
+                    },
+                    errorMessage: ''
+                }
+                // we've abandoned ConditionType.RequireText which was severity=Error
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        let expectedState = { ...originalState };
+        expectedState.issuesFound!.splice(0, 1);
+        expectedState.status = ValidationStatus.Invalid;
+        expect(state).toEqual(expectedState);
+    });
+    test('cleanupInstanceState existing state with ValidationStatus=Invalid, 3 IssuesFound (Error, Warning, Severe) where Error is removed. State.IssuesFound is Warning, Severe and ValidationStatus is Invalid', () => {
+        let originalState: ValidatorsValueHostBaseInstanceState = {
+            name: 'Field1',
+            status: ValidationStatus.Invalid,
+            value: 10,
+            issuesFound: [],
+        };
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.RequireText,
+            errorMessage: '',
+            severity: ValidationSeverity.Error,
+            summaryMessage: ''
+        });
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: NeverMatchesConditionType,
+            errorMessage: '',
+            severity: ValidationSeverity.Warning,
+            summaryMessage: ''
+        });
+        originalState.issuesFound!.push({
+            valueHostName: 'Field1',
+            errorCode: ConditionType.Range,
+            errorMessage: '',
+            severity: ValidationSeverity.Severe,
+            summaryMessage: ''
+        });
+        let state = { ...originalState };
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    },
+                    errorMessage: ''
+                },
+                {
+                    conditionConfig: <RangeConditionConfig>{
+                        conditionType: ConditionType.Range,
+                        valueHostName: null
+                    },
+                    errorMessage: ''
+                }
+                // we've abandoned ConditionType.RequireText which was severity=Error
+            ]
+        };
+        let testItem = new TestValidatorsValueHostGenerator();
+        expect(() => testItem.cleanupInstanceState(state, config)).not.toThrow();
+        let expectedState = { ...originalState };
+        expectedState.issuesFound!.splice(0, 1);
+        expectedState.status = ValidationStatus.Invalid;
+        expect(state).toEqual(expectedState);
+    });
+    test('createInstanceState returns instance with name and InitialValue from Config', () => {
+        let testItem = new TestValidatorsValueHostGenerator();
+        let config: ValidatorsValueHostBaseConfig = {
+            name: 'Field1',
+            valueHostType: TestValueHostType,
+            label: '',
+            initialValue: 'TEST',
+            validatorConfigs: [
+                {
+                    conditionConfig: <RequireTextConditionConfig>{
+                        conditionType: ConditionType.RequireText,
+                        valueHostName: 'Field1'
+                    },
+                    errorMessage: '',
+                }
+            ]
+        };
+        let state: ValidatorsValueHostBaseInstanceState | null = null;
+        expect(() => state = testItem.createInstanceState(config)).not.toThrow();
+        expect(state).not.toBeNull();
+        expect(state!.name).toBe(config.name);
+        expect(state!.status).toBe(ValidationStatus.NotAttempted);
+        expect(state!.group).toBeUndefined();
+        expect(state!.value).toBe(config.initialValue);
+        expect(state!.issuesFound).toBeNull();
     });
 });

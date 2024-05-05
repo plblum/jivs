@@ -1,6 +1,4 @@
-import { RegExpCondition } from './../../src/Conditions/ConcreteConditions';
 import { ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { assertNotNull } from "../../src/Utilities/ErrorHandling";
 import { cultureLanguageCode, deepClone, deepEquals, groupsMatch } from "../../src/Utilities/Utilities";
 
 

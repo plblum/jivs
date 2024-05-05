@@ -18,7 +18,8 @@ import { SetValueOptions } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
-import { toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { PropertyValueHost, hasIPropertyValueHostSpecificMembers } from './PropertyValueHost';
 
 
 /**
@@ -220,15 +221,26 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
 export function toIInputValueHost(source: any): IInputValueHost | null {
     if (source instanceof InputValueHost)
         return source as IInputValueHost;
-    if (toIValidatorsValueHostBase(source)) {
-        let test = source as IInputValueHost;
-        // some select members of IInputValueHost
-        if (test.getInputValue !== undefined &&
-            test.setInputValue !== undefined &&
-            test.setValues !== undefined)
-            return test;
+    if (source instanceof PropertyValueHost)
+        return null;
+    if (toIValidatorsValueHostBase(source) &&
+        !hasIPropertyValueHostSpecificMembers(source) &&
+        hasIInputValueHostSpecificMembers(source)) {
+        return source as IInputValueHost;
     }
     return null;
+}
+/**
+ *  Returns true when it finds members introduced on IInputValueHost.
+ * @param source 
+ * @returns 
+ */
+export function hasIInputValueHostSpecificMembers(source: IValidatorsValueHostBase): boolean
+{
+    let test = source as IInputValueHost;
+    return (test.getInputValue !== undefined &&
+        test.setInputValue !== undefined &&
+        test.setValues !== undefined);
 }
 
 export class InputValueHostGenerator extends ValidatorsValueHostBaseGenerator {

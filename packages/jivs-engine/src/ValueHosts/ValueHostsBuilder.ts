@@ -8,13 +8,12 @@ import { ValidatorConfig } from "../Interfaces/Validator";
 import { ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
-import { FluentConditionCollector, FluentInputParameters, FluentInputValueConfig, FluentStaticParameters, FluentValidatorCollector, StartFluent } from "./Fluent";
+import { FluentConditionCollector, FluentValidatorCollector, StartFluent } from "./Fluent";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
-import { CalcValueHostConfig, CalculationHandler } from "../Interfaces/CalcValueHost";
 import { EvaluateChildConditionResultsBaseConfig } from "../Conditions/EvaluateChildConditionResultsBase";
-import { resolveErrorCode } from "../Validation/Validator";
+import { resolveErrorCode } from '../Utilities/Validation';
 import { ValueHostsBuilderBase } from "./ValueHostsBuilderBase";
 
 
