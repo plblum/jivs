@@ -3,23 +3,23 @@
 // that compares two values, one is the difference in days between StartDate and EndDate,
 // the other is the number of days. It uses the LessThan condition, with the number of days set to 10.
 
-import { DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition, LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig } from "@plblum/jivs-engine/src/Conditions/ConcreteConditions";
-import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
-import { LookupKey } from "@plblum/jivs-engine/src/DataTypes/LookupKeys";
-import { ICalcValueHost, CalcValueHostConfig, CalculationHandlerResult } from "@plblum/jivs-engine/src/Interfaces/CalcValueHost";
-import { InputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/InputValueHost";
-import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostsManager";
+import { DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition, LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
+import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { ICalcValueHost, CalcValueHostConfig, CalculationHandlerResult } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
+import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
+import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { createMinimalValidationServices } from "./support";
-import { ValidationManager } from '@plblum/jivs-engine/src/Validation/ValidationManager';
-import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
-import { IValidationManager } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
-import { DataTypeConverterService } from "@plblum/jivs-engine/src/Services/DataTypeConverterService";
-import { IntegerConverter, TotalDaysConverter } from "@plblum/jivs-engine/src/DataTypes/DataTypeConverters";
-import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/src/DataTypes/DataTypeFormatters";
-import { ConditionFactory } from "@plblum/jivs-engine/src/Conditions/ConditionFactory";
-import { LoggingLevel } from "@plblum/jivs-engine/src/Interfaces/LoggerService";
-import { DataTypeFormatterService } from "@plblum/jivs-engine/src/Services/DataTypeFormatterService";
-import { ValueHostType } from "@plblum/jivs-engine/src/Interfaces/ValueHostFactory";
+import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
+import { ValidationSeverity } from "@plblum/jivs-engine/build/Interfaces/Validation";
+import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
+import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
+import { IntegerConverter, TotalDaysConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
+import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
+import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
+import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
+import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
+import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 
 // Here's our target function to use with a CalcValueHost. 
 // Assign CalcValueHostConfig.calcFn to it.

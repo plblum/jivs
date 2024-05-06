@@ -1,10 +1,10 @@
-import { RegExpConditionConfig } from '@plblum/jivs-engine/src/Conditions/ConcreteConditions';
-import { LookupKey } from '@plblum/jivs-engine/src/DataTypes/LookupKeys';
-import { ConditionEvaluateResult } from '@plblum/jivs-engine/src/Interfaces/Conditions';
-import { InputValueHostConfig } from '@plblum/jivs-engine/src/Interfaces/InputValueHost';
-import { ValueHostType } from '@plblum/jivs-engine/src/Interfaces/ValueHostFactory';
-import { InputValueHost } from '@plblum/jivs-engine/src/ValueHosts/InputValueHost';
-import { ValidationManager } from '@plblum/jivs-engine/src/Validation/ValidationManager';
+import { RegExpConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { InputValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/InputValueHost';
+import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
+import { InputValueHost } from '@plblum/jivs-engine/build/ValueHosts/InputValueHost';
+import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { EmailAddressCondition, EmailAddressConditionType, EmailAddressDataTypeCheckGenerator, EmailAddressLookupKey } from '../src/EmailAddressDataType';
 import { createMinimalValidationServices } from '../src/support';
 

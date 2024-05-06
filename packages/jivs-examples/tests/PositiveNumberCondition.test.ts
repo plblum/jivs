@@ -1,16 +1,16 @@
-import { build } from '@plblum/jivs-engine/src/ValueHosts/ValueHostsBuilder';
-import { ConditionEvaluateResult } from "@plblum/jivs-engine/src/Interfaces/Conditions";
-import { InputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/InputValueHost";
-import { ValueHostType } from "@plblum/jivs-engine/src/Interfaces/ValueHostFactory";
-import { ValidationManager } from "@plblum/jivs-engine/src/Validation/ValidationManager";
+import { build } from '@plblum/jivs-engine/build/ValueHosts/ValueHostsBuilder';
+import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
+import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
+import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
+import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { createMinimalValidationServices } from "../src/support";
-import { LookupKey } from "@plblum/jivs-engine/src/DataTypes/LookupKeys";
-import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
+import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { PositiveNumberCondition, PositiveNumberConditionConfig, positiveNumberConditionType } from "../src/PositiveNumberCondition";
-import { ConditionFactory } from "@plblum/jivs-engine/src/Conditions/ConditionFactory";
-import { ValidationManagerConfig } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
-import { ValidationStatus } from '@plblum/jivs-engine/src/Interfaces/Validation';
-import { LoggingLevel } from '@plblum/jivs-engine/src/Interfaces/LoggerService';
+import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
+import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
+import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 
 describe('PositiveNumberCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
@@ -55,7 +55,6 @@ describe('PositiveNumberCondition tests', () => {
         (services.conditionFactory as ConditionFactory).register<PositiveNumberConditionConfig>(
             positiveNumberConditionType, (config)=> new PositiveNumberCondition(config)
         );
-        services.loggerService.minLevel = LoggingLevel.Debug;
 
         let vmConfig: ValidationManagerConfig = {
             services: services,

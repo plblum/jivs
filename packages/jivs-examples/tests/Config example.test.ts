@@ -1,13 +1,13 @@
-import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
+import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { UIPhase_Customize } from "../src/Config example";
-import { ICalcValueHost } from "@plblum/jivs-engine/src/Interfaces/CalcValueHost";
-import { IInputValueHost } from "@plblum/jivs-engine/src/Interfaces/InputValueHost";
-import { IStaticValueHost } from "@plblum/jivs-engine/src/Interfaces/StaticValueHost";
-import { CalcValueHost } from "@plblum/jivs-engine/src/ValueHosts/CalcValueHost";
-import { InputValueHost } from "@plblum/jivs-engine/src/ValueHosts/InputValueHost";
-import { StaticValueHost } from "@plblum/jivs-engine/src/ValueHosts/StaticValueHost";
-import { Validator } from "@plblum/jivs-engine/src/Validation/Validator";
-import { IValidationManager } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
+import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
+import { IInputValueHost } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
+import { IStaticValueHost } from "@plblum/jivs-engine/build/Interfaces/StaticValueHost";
+import { CalcValueHost } from "@plblum/jivs-engine/build/ValueHosts/CalcValueHost";
+import { InputValueHost } from "@plblum/jivs-engine/build/ValueHosts/InputValueHost";
+import { StaticValueHost } from "@plblum/jivs-engine/build/ValueHosts/StaticValueHost";
+import { Validator } from "@plblum/jivs-engine/build/Validation/Validator";
+import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 
 function testVM(vm: IValidationManager): void
 {

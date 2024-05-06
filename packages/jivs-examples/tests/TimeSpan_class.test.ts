@@ -1,7 +1,7 @@
-import { ComparersResult } from '@plblum/jivs-engine/src/Interfaces/DataTypeComparerService';
-import { DataTypeComparerService } from '@plblum/jivs-engine/src/Services/DataTypeComparerService';
-import { DataTypeConverterService } from '@plblum/jivs-engine/src/Services/DataTypeConverterService';
-import { DataTypeIdentifierService } from '@plblum/jivs-engine/src/Services/DataTypeIdentifierService';
+import { ComparersResult } from '@plblum/jivs-engine/build/Interfaces/DataTypeComparerService';
+import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
 import {
     TimeSpan, TimeSpanAsSecondsLookupKey, TimeSpanIdentifier, TimeSpanLookupKey,
     TimeSpanToHoursConverter, TimeSpanToSecondsConverter
