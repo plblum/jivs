@@ -214,9 +214,6 @@ export interface ValueHostInstanceState {
     items?: CustomItems;
 }
 
-/**
- * @internal
- */
 interface CustomItems {
     [key: string]: ValidTypesForInstanceStateStorage;
 }
