@@ -15,7 +15,8 @@ export function cleanRoot()
         'packages/**/tests/**/*.d.ts',
         'packages/**/tests/**/*.js',
         'packages/**/tests/**/*.map',  
-        
+        'packages/**/temp/**/*',      
+        'packages/**/temp',
         'packages/**/*.md.backup',
         'packages/**/*.tgz'
     ]);

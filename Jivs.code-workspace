@@ -15,25 +15,7 @@
 		"typescript.tsdk": "./node_modules/typescript/lib",
 		"typescript.enablePromptUseWorkspaceTsdk": true,
 		"typescript.enablePromptUseGlobalTsdk": false,		
-		"explorerExclude.backup": {
-			"**/.git": true,
-			"**/.svn": true,
-			"**/.hg": true,
-			"**/CVS": true,
-			"**/.DS_Store": true,
-			"**/Thumbs.db": true,
-			".eslintignore": true,
-			".gitattributes": true,
-			".gitignore": true,
-			".npmignore": true,
-			"Jivs.code-workspace": true,
-			"lerna.json": true,
-			"LICENSE": true,
-			"package-lock.json": true,
-			"typedoc_output": true,
-			"node_modules": true,
-			".vscode": true
-		},
+		"explorerExclude.backup": {},
 		"files.exclude": {
 			"**/.git": false,
 			"**/.svn": false,
@@ -51,17 +33,20 @@
 			"package-lock.json": false,
 			"typedoc_output": false,
 			"node_modules": false,
-			".vscode": false,
+			".vscode": false
 		},
 		"explorerExclude.showPicker": false,
 		"explorer.excludeGitIgnore": false,
-		"jestrunner.configPath": "./jest.config.js",
+		"jestrunner.configPath": "./jest.config.json",
 		"jestTestExplorer.logfile": "E:\\jesttestlog.txt",
 		"jestTestExplorer.pathToJest": "C:\\Code\\Jivs-Suite\\jivs\\node_modules\\jest",
 		"jestrunner.jestPath": "C:\\Code\\Jivs-Suite\\jivs\\node_modules\\jest\\bin\\jest.js",
 		"typescript.preferences.autoImportFileExcludePatterns": [
 			"**/build/**"
 		],
+		"terminal.integrated.env.windows": {
+			"NODE_OPTIONS": "--experimental-vm-modules"
+		},		
 		"search.exclude": {
 			"**/.git": true,
 			"**/build": true,

@@ -1,5 +1,6 @@
 {
   "name": "@plblum/jivs",
+  "type": "module",
   "description": "JavaScript Input Validation Service. Provides the tools for input validation in a user interface or model.",
   "keywords": [
     "validation"
