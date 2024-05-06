@@ -1,5 +1,5 @@
 // credit https://joelhooks.com/jest-and-github-actions/
-export class GithubActionsReporter {
+export default class GithubActionsReporter {
     constructor(globalConfig, options) {
       this._globalConfig = globalConfig
       this._options = options
