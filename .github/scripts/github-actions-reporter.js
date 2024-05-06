@@ -1,5 +1,5 @@
 // credit https://joelhooks.com/jest-and-github-actions/
-class GithubActionsReporter {
+export class GithubActionsReporter {
     constructor(globalConfig, options) {
       this._globalConfig = globalConfig
       this._options = options
@@ -34,4 +34,4 @@ class GithubActionsReporter {
     }
   }
   
-  module.exports = GithubActionsReporter
+ // module.exports = GithubActionsReporter
