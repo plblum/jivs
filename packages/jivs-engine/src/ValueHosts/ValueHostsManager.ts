@@ -97,15 +97,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
 
     /**
      * Access to the ValidationServices.
-     * @internal
-     * The ValueHostsManager and IValidationServices are crosslinked.
-     * A instance of ValueHostsManager is passed to the IValidationServices's constructor
-     * and that constructor sets this property.
      */
     public get services(): IValidationServices {
         return this._config.services!;
     }
-
 
     /**
      * ValueHosts for all ValueHostConfigs.
