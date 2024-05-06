@@ -1,3 +1,5 @@
+## 0.15.2
+- **NPM Blocking Issue** - "services" property not found on IValidationManager. https://github.com/plblum/jivs/issues/52
 ## 0.15.1
 - **Major feature** - PropertyValueHost handles property values on a Model.
 ## 0.15.0
