@@ -1,5 +1,6 @@
 {
   "name": "@plblum/jivs-examples",
+  "type":"module",
   "version": "0.9.0",
   "description": "Code and associated unit tests to show you how to use Jivs",
   "displayName": "Jivs Examples",
@@ -9,9 +10,11 @@
   "private": true,
   "scripts": {
     "compile": "tsc",
-    "test": "jest --silent",    
-    "consoletest": "jest --no-console --noStackTrace",    
-    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'"
+    "pretest": "npm --prefix ../jivs-engine run compile",
+    "test": "jest --silent",
+    "preconsoletest": "npm --prefix ../jivs-engine run compile",
+    "consoletest": "jest --silent --no-console --noStackTrace",
+    "clean": "gulp clean"    
   },
   "eslintConfig": {
     "env": {

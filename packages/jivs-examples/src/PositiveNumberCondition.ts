@@ -1,5 +1,5 @@
-import { ConditionFactory } from '@plblum/jivs-engine/src/Conditions/ConditionFactory';
-import { ConditionType } from '@plblum/jivs-engine/src/Conditions/ConditionTypes';
+import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 // Example: Introduce a new Condition class, including support for fluent syntax
 
 // Here are the activities for creating a Condition class.
@@ -11,18 +11,18 @@ import { ConditionType } from '@plblum/jivs-engine/src/Conditions/ConditionTypes
 // 6. Extend the fluent syntax by using TypeScript Declaration Merging on types:
 //    FluentValidatorCollector, FluentConditionCollector, and ConditionType.
 
-import { OneValueConditionBase, OneValueConditionBaseConfig } from "@plblum/jivs-engine/src/Conditions/OneValueConditionBase";
-import { ValueHostName } from "@plblum/jivs-engine/src/DataTypes/BasicTypes";
-import { LookupKey } from "@plblum/jivs-engine/src/DataTypes/LookupKeys";
-import { ConditionEvaluateResult, ConditionCategory } from "@plblum/jivs-engine/src/Interfaces/Conditions";
-import { ComparersResult } from "@plblum/jivs-engine/src/Interfaces/DataTypeComparerService";
-import { IValidationServices } from '@plblum/jivs-engine/src/Interfaces/ValidationServices';
-import { IValueHost } from "@plblum/jivs-engine/src/Interfaces/ValueHost";
-import { IValueHostResolver } from "@plblum/jivs-engine/src/Interfaces/ValueHostResolver";
+import { OneValueConditionBase, OneValueConditionBaseConfig } from "@plblum/jivs-engine/build/Conditions/OneValueConditionBase";
+import { ValueHostName } from "@plblum/jivs-engine/build/DataTypes/BasicTypes";
+import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { ConditionEvaluateResult, ConditionCategory } from "@plblum/jivs-engine/build/Interfaces/Conditions";
+import { ComparersResult } from "@plblum/jivs-engine/build/Interfaces/DataTypeComparerService";
+import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
+import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
+import { IValueHostResolver } from "@plblum/jivs-engine/build/Interfaces/ValueHostResolver";
 import {
     FluentConditionCollector, FluentValidatorCollector, FluentValidatorConfig,
     finishFluentConditionCollector, finishFluentValidatorCollector
-} from "@plblum/jivs-engine/src/ValueHosts/Fluent";
+} from "@plblum/jivs-engine/build/ValueHosts/Fluent";
 
 export const positiveNumberConditionType = 'PositiveNumber';    // we'll extend Jivs ConditionType enum with this
 
@@ -56,7 +56,7 @@ export class PositiveNumberCondition extends OneValueConditionBase<PositiveNumbe
 }
 
 // TypeScript Declaration Merging with FluentValidatorCollector and FluentConditionCollector
-declare module "@plblum/jivs-engine/src/ValueHosts/Fluent"
+declare module "@plblum/jivs-engine/build/ValueHosts/Fluent"
 {
     export interface FluentValidatorCollector {
         positiveNumber(
@@ -68,7 +68,7 @@ declare module "@plblum/jivs-engine/src/ValueHosts/Fluent"
     }
 }
 // TypeScript Declaration Merging with ConditionType
-declare module "@plblum/jivs-engine/src/Conditions/ConditionTypes"
+declare module "@plblum/jivs-engine/build/Conditions/ConditionTypes"
 {
     export enum ConditionType
     {

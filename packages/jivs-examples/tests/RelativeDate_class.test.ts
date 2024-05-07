@@ -1,9 +1,9 @@
-import { UTCDateOnlyConverter } from '@plblum/jivs-engine/src/DataTypes/DataTypeConverters';
-import { DataTypeComparerService } from '@plblum/jivs-engine/src/Services/DataTypeComparerService';
-import { DataTypeConverterService } from '@plblum/jivs-engine/src/Services/DataTypeConverterService';
-import { DataTypeIdentifierService } from '@plblum/jivs-engine/src/Services/DataTypeIdentifierService';
+import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
+import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
 import { RelativeDataLookupKey, RelativeDate, RelativeDateConverter, RelativeDateIdentifier } from '../src/RelativeDate_class';
-import { ComparersResult } from '@plblum/jivs-engine/src/Interfaces/DataTypeComparerService';
+import { ComparersResult } from '@plblum/jivs-engine/build/Interfaces/DataTypeComparerService';
 import { createMinimalValidationServices } from '../src/support';
 
 // All test relative to 2001-05-15

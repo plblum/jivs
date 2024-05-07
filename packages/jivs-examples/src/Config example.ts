@@ -2,26 +2,26 @@
 // using a simple model. It expands upon the diagram shown here:
 // https://github.com/plblum/jivs/tree/main#apioverview
 
-import { ValidationServices } from "@plblum/jivs-engine/src/Services/ValidationServices";
+import { ValidationServices } from "@plblum/jivs-engine/build/Services/ValidationServices";
 import { createMinimalValidationServices } from "./support";
-import { DataTypeCheckConditionConfig, DataTypeCheckCondition, LessThanConditionConfig, LessThanCondition } from "@plblum/jivs-engine/src/Conditions/ConcreteConditions";
-import { ConditionFactory } from "@plblum/jivs-engine/src/Conditions/ConditionFactory";
-import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
-import { TotalDaysConverter, IntegerConverter } from "@plblum/jivs-engine/src/DataTypes/DataTypeConverters";
-import { StringFormatter, NumberFormatter } from "@plblum/jivs-engine/src/DataTypes/DataTypeFormatters";
-import { DataTypeConverterService } from "@plblum/jivs-engine/src/Services/DataTypeConverterService";
-import { DataTypeFormatterService } from "@plblum/jivs-engine/src/Services/DataTypeFormatterService";
-import { TextLocalizerService } from "@plblum/jivs-engine/src/Services/TextLocalizerService";
-import { LookupKey } from "@plblum/jivs-engine/src/DataTypes/LookupKeys";
-import { IValidationManager, ValidationManagerConfig } from "@plblum/jivs-engine/src/Interfaces/ValidationManager";
-import { InputValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/InputValueHost";
-import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
-import { CalcValueHostConfig, CalculationHandlerResult, ICalcValueHost } from "@plblum/jivs-engine/src/Interfaces/CalcValueHost";
-import { IValueHostsManager } from "@plblum/jivs-engine/src/Interfaces/ValueHostsManager";
-import { ValueHostType } from "@plblum/jivs-engine/src/Interfaces/ValueHostFactory";
-import { StaticValueHostConfig } from "@plblum/jivs-engine/src/Interfaces/StaticValueHost";
-import { ValidationManager } from "@plblum/jivs-engine/src/Validation/ValidationManager";
-import { build } from "@plblum/jivs-engine/src/ValueHosts/ValueHostsBuilder";
+import { DataTypeCheckConditionConfig, DataTypeCheckCondition, LessThanConditionConfig, LessThanCondition } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
+import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
+import { TotalDaysConverter, IntegerConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
+import { StringFormatter, NumberFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
+import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
+import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
+import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
+import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { IValidationManager, ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
+import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
+import { ValidationSeverity } from "@plblum/jivs-engine/build/Interfaces/Validation";
+import { CalcValueHostConfig, CalculationHandlerResult, ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
+import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
+import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
+import { StaticValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/StaticValueHost";
+import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
+import { build } from "@plblum/jivs-engine/build/ValueHosts/ValueHostsBuilder";
 
 export interface FilterDatesModel
 {

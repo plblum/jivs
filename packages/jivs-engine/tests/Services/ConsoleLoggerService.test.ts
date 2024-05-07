@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";

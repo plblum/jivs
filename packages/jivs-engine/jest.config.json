@@ -1,0 +1,36 @@
+{
+    "transform": {
+        "^.+\\.tsx?$": [
+            "ts-jest",
+            {
+                "useESM": true, // required for using ESModules
+                "tsconfig": "tsconfig_with_tests.json"
+            }
+        ]
+    },
+    "extensionsToTreatAsEsm": [ // required for using ESModules
+        ".ts",
+        ".tsx"
+    ],
+
+    "testRegex": "/tests/.*\\.(test)\\.ts$",
+    "testPathIgnorePatterns": [
+        "/node_modules/", 
+        "build", 
+        "docs",
+        "coverage",
+        "temp",
+        "TestSupport"],
+    "modulePaths": ["/src/"],
+    "moduleFileExtensions": ["ts", "js"],
+    "collectCoverage": true,
+    "verbose": false,
+    "coveragePathIgnorePatterns": [
+        "tests", 
+        "build", 
+        "docs",
+        "coverage",
+        "temp",    
+        "TestSupport"
+    ]
+}

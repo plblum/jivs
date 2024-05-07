@@ -1,7 +1,7 @@
-import { LookupKey } from '@plblum/jivs-engine/src/DataTypes/LookupKeys';
-import { ComparersResult } from '@plblum/jivs-engine/src/Interfaces/DataTypeComparerService';
-import { DataTypeComparerService } from '@plblum/jivs-engine/src/Services/DataTypeComparerService';
-import { DataTypeConverterService } from '@plblum/jivs-engine/src/Services/DataTypeConverterService';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { ComparersResult } from '@plblum/jivs-engine/build/Interfaces/DataTypeComparerService';
+import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { UTCMonthYearConverter, MonthYearLookupKey } from '../src/MonthYearConverter';
 import { createMinimalValidationServices } from '../src/support';
 

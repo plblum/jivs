@@ -1,17 +1,14 @@
 // Tests run the same cases demonstrated in the example source, ../src/DifferenceBetweenDates
 
-import { ValidationSeverity } from "@plblum/jivs-engine/src/Interfaces/Validation";
+import { ValidationSeverity } from "@plblum/jivs-engine/build/Interfaces/Validation";
 import { configureVMForDifferentBetweenDate } from "../src/DifferenceBetweenDates";
-import { ConditionType } from "@plblum/jivs-engine/src/Conditions/ConditionTypes";
-import { CapturingLogger } from "@plblum/jivs-engine/tests/TestSupport/CapturingLogger";
-import { LoggingLevel } from "@plblum/jivs-engine/src/Interfaces/LoggerService";
-import { ValidationState } from "@plblum/jivs-engine/src/Interfaces/Validation";
+import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
+import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
+import { ValidationState } from "@plblum/jivs-engine/build/Interfaces/Validation";
 
 describe('Difference between dates is less than 10', () => {
     test('StartDate = EndDate. No errors', () => {
         let vm = configureVMForDifferentBetweenDate();
-        vm.services.loggerService = new CapturingLogger();
-        vm.services.loggerService.minLevel = LoggingLevel.Debug;
         vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
         vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));  
         let diffDays = vm.getValueHost('DiffDays')?.getValue();
