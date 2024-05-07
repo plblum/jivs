@@ -25,7 +25,7 @@ gulp.task('clean', function () {
       'coverage/**/*',
       'build/**/*',
       'temp/**/*',      
-      'temp',
+      'temp',      
       'src/**/*.d.ts',
       // 'src/**/*.js',
       'src/**/*.map',

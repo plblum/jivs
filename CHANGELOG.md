@@ -1,3 +1,5 @@
+## 0.15.3
+- Change paths into @plblum/jivs-engine to use @plblum/jivs-engine/build instead of @plblum/jivs-engine/src
 ## 0.15.2
 - **NPM Blocking Issue** - "services" property not found on IValidationManager. https://github.com/plblum/jivs/issues/52
 ## 0.15.1

@@ -1,24 +1,17 @@
+import { jest } from '@jest/globals';
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
-import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
-import { InputValueHost, InputValueHostGenerator } from '../../src/ValueHosts/InputValueHost';
+import { MockValidationServices } from "../TestSupport/mocks";
 import { BusinessLogicErrorsValueHost, BusinessLogicErrorsValueHostName } from '../../src/ValueHosts/BusinessLogicErrorsValueHost';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
-import { IInputValueHost, InputValueHostConfig, InputValueHostInstanceState } from '../../src/Interfaces/InputValueHost';
-import { ValidationStatus, IssueFound, ValidationSeverity, ValidationState, BusinessLogicError, ValidateOptions } from '../../src/Interfaces/Validation';
+import { IInputValueHost, InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
+import { IssueFound, ValidationSeverity, ValidationState, BusinessLogicError, ValidateOptions } from '../../src/Interfaces/Validation';
 import { IValidationServices } from '../../src/Interfaces/ValidationServices';
 import {
-    IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState,
-    defaultNotifyValidationStateChangedDelay,
-    toIValidationManager,
+    IValidationManager, IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState, toIValidationManager,
     toIValidationManagerCallbacks
 } from '../../src/Interfaces/ValidationManager';
-import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
-import { deepClone } from '../../src/Utilities/Utilities';
-import { IValueHostResolver, toIValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
-import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
@@ -26,11 +19,10 @@ import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces
 import { IValidatableValueHostBase, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig,
-    UserSuppliedResultCondition, UserSuppliedResultConditionType,
-    NeverMatchesConditionType2
+    UserSuppliedResultCondition, UserSuppliedResultConditionType
 } from "../TestSupport/conditionsForTesting";
 import { fluent } from "../../src/ValueHosts/Fluent";
-import { IValueHostsManager, toIValueHostsManager, IValueHostsManagerAccessor, toIValueHostsManagerAccessor, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsManager, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";

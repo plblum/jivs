@@ -7,7 +7,7 @@
     "configureOptions":
     {
         "baseUrl": ".",
-        "outDir": "./global_build",
+        "outDir": "./global_build/",
         "rootDir": "./",
         "declarationDir": "./global_build/types",    
         "paths": {
