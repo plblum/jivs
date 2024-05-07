@@ -10,9 +10,11 @@
   "private": true,
   "scripts": {
     "compile": "tsc",
+    "pretest": "npm --prefix ../jivs-engine run compile",
     "test": "jest --silent",
-    "consoletest": "jest --no-console --noStackTrace",    
-    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'"
+    "preconsoletest": "npm --prefix ../jivs-engine run compile",
+    "consoletest": "jest --silent --no-console --noStackTrace",
+    "clean": "gulp clean"    
   },
   "eslintConfig": {
     "env": {

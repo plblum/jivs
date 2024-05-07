@@ -22,6 +22,9 @@
     "packages/*",
     "starter_code/*"
   ],
+  "dependencies": {
+    "@plblum/jivs-engine": "file:./packages/jivs-engine"
+  },  
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "del": "^7.1.0",
@@ -42,13 +45,17 @@
   },
   "scripts": {
     "typedoc": "typedoc --options typedoc.json",
+    "pretest": "npm --prefix ./packages/jivs-engine run compile",    
     "test": "jest --silent",    
-    "consoletest": "jest --no-console --noStackTrace",    
-    "test:github": "jest --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'",
+    "preconsoletest": "npm --prefix ./packages/jivs-engine run compile",    
+    "consoletest": "jest --no-console --noStackTrace --silent",    
+    "pretest:github": "npm --prefix ./packages/jivs-engine run compile",    
+    "test:github": "jest --silent --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'",
     "gulp": "node gulpfile.mjs",
     "clean": "gulp clean",
     "bumpversion": "lerna version --no-private",
-    "publish_library": "lerna publish --no-private"
+    "publish_library": "lerna publish --no-private",
+    "retry_publish": "lerna publish from-package"    
   },
   "eslintConfig": {
     "env": {

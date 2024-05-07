@@ -38,14 +38,12 @@
 		"explorerExclude.showPicker": false,
 		"explorer.excludeGitIgnore": false,
 		"jestrunner.configPath": "./jest.config.json",
-		"jestTestExplorer.logfile": "E:\\jesttestlog.txt",
-		"jestTestExplorer.pathToJest": "C:\\Code\\Jivs-Suite\\jivs\\node_modules\\jest",
-		"jestrunner.jestPath": "C:\\Code\\Jivs-Suite\\jivs\\node_modules\\jest\\bin\\jest.js",
+
 		"typescript.preferences.autoImportFileExcludePatterns": [
 			"**/build/**"
 		],
 		"terminal.integrated.env.windows": {
-			"NODE_OPTIONS": "--experimental-vm-modules"
+			"NODE_OPTIONS": "--experimental-vm-modules --disable-warning ExperimentalWarning"
 		},		
 		"search.exclude": {
 			"**/.git": true,

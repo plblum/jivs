@@ -10,10 +10,8 @@
   "scripts": {
     "compile": "tsc",
     "test": "jest --silent",
-    "consoletest": "jest --no-console --noStackTrace",
-    "clean": "gulp clean",
-    "bumpversion": "lerna version --no-private",
-    "publish_library": "lerna publish --no-private"
+    "consoletest": "jest --silent --no-console --noStackTrace",
+    "clean": "gulp clean"
   },
   "eslintConfig": {
     "env": {

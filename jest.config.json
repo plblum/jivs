@@ -16,7 +16,10 @@
     "testRegex": "/tests/.*\\.(test)\\.ts$",
     "testPathIgnorePatterns": [
         "/node_modules/",
-        "/build/",
+        "build",
+        "temp",
+        "coverage",
+        "docs",        
         "TestSupport"
     ],
     "modulePaths": [
@@ -29,6 +32,11 @@
     "collectCoverage": true,
     "verbose": false,
     "coveragePathIgnorePatterns": [
+        "build",
+        "temp",
+        "coverage",
+        "docs",
+        "tests",
         "/packages/jivs-examples/",
         "/starter_code",
         "TestSupport"
