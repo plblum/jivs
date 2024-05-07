@@ -44,6 +44,7 @@
     "typescript-eslint": "^7.3.1"
   },
   "scripts": {
+    "pretypedoc": "npm --prefix ./packages/jivs-engine run compile",    
     "typedoc": "typedoc --options typedoc.json",
     "pretest": "npm --prefix ./packages/jivs-engine run compile",    
     "test": "jest --silent",    

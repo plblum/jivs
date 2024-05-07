@@ -17,6 +17,8 @@ jobs:
         node-version: '20'
     - run: npm install
     - run: npm run typedoc
+      env: 
+        NODE_OPTIONS: "--experimental-vm-modules"
 
     - name: 📂 Sync files
       if: ${{ success() }}    
