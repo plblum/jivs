@@ -2,7 +2,6 @@ on:
   push:
     branches:
       - main
-      - feature*
 name: 🚀 Generate docs with TypeDoc and deploy
 jobs:
   web-deploy:
