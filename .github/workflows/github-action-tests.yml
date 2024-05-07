@@ -21,6 +21,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: NODE_OPTIONS
+        run: echo "NODE_OPTIONS=--experimental-vm-modules" >> $GITHUB_ENV        
         # node_modules is in the root of the repo. So install it there.
       - run: npm install
       - run: npm run test:github
