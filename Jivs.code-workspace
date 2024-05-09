@@ -37,7 +37,13 @@
 		},
 		"explorerExclude.showPicker": false,
 		"explorer.excludeGitIgnore": false,
+
 		"jestrunner.configPath": "./jest.config.json",
+		"jestrunner.debugOptions": {
+			"runtimeArgs": [
+			  "--experimental-vm-modules"
+			]
+		},		
 
 		"typescript.preferences.autoImportFileExcludePatterns": [
 			"**/build/**"

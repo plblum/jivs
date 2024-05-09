@@ -218,6 +218,102 @@ describe('build(vmConfig).input()', () => {
         expect(() => build(createVMConfig()).input(100 as any)).toThrow('pass');
     });
 });
+describe('build(vmConfig).property()', () => {
+    test('Valid name, null data type and defined vhConfig. Adds PropertyValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+
+        let testItem = build(vmConfig).property('Field1', null, { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem.parentConfig).toEqual({
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            label: 'Field 1',
+            validatorConfigs: []
+        });
+    });
+    test('Name, data type supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+
+        let testItem = build(vmConfig).property('Field1', 'Test');
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let expected = {
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            dataType: 'Test',
+            validatorConfigs: []
+        };
+        expect(testItem.parentConfig).toEqual(expected);
+
+        expect(vmConfig.valueHostConfigs).toEqual([expected]);
+    });
+    test('Name supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+
+        let testItem = build(vmConfig).property('Field1');
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let expected = {
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            validatorConfigs: []
+        };
+        expect(testItem.parentConfig).toEqual(expected);
+        expect(vmConfig.valueHostConfigs).toEqual([expected]);
+    });
+    test('Pass in a PropertyValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+        let testItem = build(vmConfig).property({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let expected = {
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            dataType: 'Test',
+            label: 'Field 1',
+            validatorConfigs: []
+        };
+        expect(testItem.parentConfig).toEqual(expected);
+        expect(vmConfig.valueHostConfigs).toEqual([expected]);
+    });
+    test('Add same name twice throws', () => {
+        let vmConfig = createVMConfig();
+
+        let testItem = build(vmConfig).property('Field1');
+        expect(() => build(vmConfig).property('Field1')).toThrow(/already defined/)
+    });
+    test('Add 2 propertys, 1 non-property. All valid and generates 3 ValueHostConfigs in vmConfig', () => {
+        let vmConfig = createVMConfig();
+
+        let testItem1 = build(vmConfig).property('Field1');
+        expect(testItem1).toBeInstanceOf(FluentValidatorCollector);
+        let expected1 = {
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            validatorConfigs: []
+        };
+        expect(testItem1.parentConfig).toEqual(expected1);
+        let testItem2 = build(vmConfig).property('Field2');
+        expect(testItem2).toBeInstanceOf(FluentValidatorCollector);
+        let expected2 = {
+            valueHostType: ValueHostType.Property,
+            name: 'Field2',
+            validatorConfigs: []
+        };
+        expect(testItem2.parentConfig).toEqual(expected2);
+
+        let testItem3 = build(vmConfig).static('Field3');
+        let expected3 = {
+            valueHostType: ValueHostType.Static,
+            name: 'Field3'
+        };
+        expect(vmConfig.valueHostConfigs).toEqual([expected1, expected2, expected3]);
+    });
+    test('Null name throws', () => {
+        expect(() => build(createVMConfig()).property(null!)).toThrow('arg1');
+
+    });
+    test('First parameter is not compatible with overload throws', () => {
+        expect(() => build(createVMConfig()).property(100 as any)).toThrow('pass');
+    });
+});
 describe('build(vmConfig).conditions', () => {
     test('Undefined parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
         let vmConfig = createVMConfig();
