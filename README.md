@@ -594,7 +594,7 @@ interface IStaticValueHost extends IValueHost
 }
 interface ICalcValueHost extends IValueHost
 {
-  convert(source, validationManager): number | Date | string | null | undefined;
+  convert(source, validationManager): SimpleValueType;
 }
 ```
 <a name="naming"></a>

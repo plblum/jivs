@@ -2,13 +2,14 @@
  * {@inheritDoc ValueHosts/Types/CalcValueHost}
  * @module ValueHosts/ConcreteClasses/CalcValueHost
  */
-import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState, CalculationHandlerResult } from '../Interfaces/CalcValueHost';
+import { ICalcValueHost, CalcValueHostConfig, CalcValueHostInstanceState } from '../Interfaces/CalcValueHost';
 import { IValueHost, SetValueOptions, ValueHostConfig, toIValueHost } from '../Interfaces/ValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
+import { SimpleValueType } from '../Interfaces/DataTypeConverterService';
 
 
 /**
@@ -28,7 +29,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * @param value 
      * @param dataTypeLookupKey 
      */
-    public convert(value: any, dataTypeLookupKey: string | null): CalculationHandlerResult
+    public convert(value: any, dataTypeLookupKey: string | null): SimpleValueType
     {
         return this.valueHostsManager.services.dataTypeConverterService.convert(value, dataTypeLookupKey);
     }
@@ -42,7 +43,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * @param dataTypeLookupKey - if not supplied, it will attempt to resolve it with
      * the DataTypeIdentifiers.
      */
-    public convertToPrimitive(value: any, dataTypeLookupKey: string | null): CalculationHandlerResult
+    public convertToPrimitive(value: any, dataTypeLookupKey: string | null): SimpleValueType
     {
         return this.valueHostsManager.services.dataTypeConverterService.convertToPrimitive(value, dataTypeLookupKey);
     }
@@ -51,7 +52,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      * Returns the calculated value or undefined if it could not calculate.
      * @returns 
      */
-    public getValue(): CalculationHandlerResult {
+    public getValue(): SimpleValueType {
         if (this._reentrantCount > 0)
             throw new CodingError('Recursive call from your Calculation function not allowed.');
         try {

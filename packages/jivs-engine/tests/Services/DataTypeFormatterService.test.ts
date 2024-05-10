@@ -130,10 +130,8 @@ describe('DataTypeFormatterService.format', () => {
         let testItem = services.dataTypeFormatterService;
         let logger = services.loggerService as CapturingLogger;
         let result: DataTypeResolution<string> | null = null;
-        expect(() => result = testItem.format({})).not.toThrow();
-        expect(result).not.toBeNull();
-        expect(result!.value).toBeUndefined();
-        expect(result!.errorMessage).toMatch(/LookupKey/);
+        expect(() => result = testItem.format({})).toThrow(/LookupKey/);
+
         expect(logger.findMessage('LookupKey', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService')).not.toBeNull();
     });
     test('Unsupported lookupKey error', () => {
@@ -143,11 +141,8 @@ describe('DataTypeFormatterService.format', () => {
 
         let logger = services.loggerService as CapturingLogger;
         let result: DataTypeResolution<string> | null = null;
-        expect(() => result = testItem.format(0, 'huh')).not.toThrow();
-        expect(result).not.toBeNull();
-        expect(result!.value).toBeUndefined();
-        expect(result!.errorMessage).toMatch(/LookupKey/);
-        expect(logger.findMessage('LookupKey', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService')).not.toBeNull();
+        expect(() => result = testItem.format(0, 'huh')).toThrow(/Unsupported/);
+        expect(logger.findMessage('Unsupported', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService')).not.toBeNull();
     });
 
     test('Lookup Key in DataTypeFormatter en', () => {

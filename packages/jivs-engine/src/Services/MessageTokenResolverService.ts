@@ -4,11 +4,10 @@
  */
 import type { DataTypeResolution } from '../Interfaces/DataTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
+import { assertNotNull, CodingError, SevereErrorBase } from '../Utilities/ErrorHandling';
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
-import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 
 
@@ -80,6 +79,9 @@ export class MessageTokenResolverService implements IMessageTokenResolverService
                     {
                         valueHostResolver.services.loggerService.log(`${capturedToken.full}: ${(e as Error).message}`,
                             LoggingLevel.Error, LoggingCategory.TypeMismatch, fnName); 
+                        if (e instanceof SevereErrorBase)
+                            throw e;
+                                    
                     }
                 }
             }

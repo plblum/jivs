@@ -8,7 +8,7 @@ import { IDataTypeFormatter } from "../Interfaces/DataTypeFormatters";
 import { DataTypeResolution } from "../Interfaces/DataTypes";
 import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
 import { IValidationServices } from "../Interfaces/ValidationServices";
-import { CodingError } from "../Utilities/ErrorHandling";
+import { CodingError, SevereErrorBase } from "../Utilities/ErrorHandling";
 import { cultureLanguageCode, deepClone } from "../Utilities/Utilities";
 import { DataTypeServiceBaseWithServices } from "./DataTypeServiceBase";
 
@@ -95,12 +95,12 @@ export class DataTypeFormatterService extends DataTypeServiceBaseWithServices<ID
             if (!lookupKey)
                 lookupKey = this.services.dataTypeIdentifierService.identify(value);
             if (lookupKey === null)
-                throw new Error('Value type requires a LookupKey');
+                throw new CodingError('Value type requires a LookupKey');
             let cultureId: string | null = this.services.activeCultureId;
             while (cultureId) {
                 let cc = this.getCultureIdFallback(cultureId);
                 if (!cc)
-                    throw new Error(`Need to support CultureID ${cultureId} in DataTypeServices.`);
+                    throw new CodingError(`Need to support CultureID ${cultureId} in DataTypeServices.`);
                 let dtlf = this.find(lookupKey, cultureId);
                 if (dtlf)
                     return dtlf.format(value, lookupKey, cultureId);
@@ -108,12 +108,14 @@ export class DataTypeFormatterService extends DataTypeServiceBaseWithServices<ID
                 cultureId = cc.fallbackCultureId ?? null;
             }
 
-            throw new Error(`Unsupported LookupKey ${lookupKey}`);
+            throw new CodingError(`Unsupported LookupKey ${lookupKey}`);
         }
         catch (e) {
             if (e instanceof Error) // should always be true. Mostly used for typecast
             {
                 this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService');
+                if (e instanceof SevereErrorBase)
+                    throw e;
                 return {
                     errorMessage: e.message,
                     value: undefined

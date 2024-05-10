@@ -8,6 +8,12 @@ import { IDataTypeServiceBase } from "./DataTypes";
 import { IServicesAccessor } from "./ValidationServices";
 
 /**
+ * Identifies types that are simple values. Most objects are not, but Date object really
+ * represents a simple value. Includes number, string, boolean, Date, null and undefined.
+ */
+export type SimpleValueType = number | Date | string | null | boolean | undefined;
+
+/**
  * Service for changing the original value into 
  * something that you want a condition to evaluate
  * using {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
@@ -24,7 +30,7 @@ export interface IDataTypeConverterService extends IDataTypeServiceBase, IServic
      * @param dataTypeLookupKey - if not supplied, a converter must determine if it supports
      * the value itself to be used.
      */
-    convert(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined;
+    convert(value: any, dataTypeLookupKey: string | null): SimpleValueType;
 
     /**
      * Converts the value using the DataTypeConverter identified in dataTypeLookupKey.
@@ -37,7 +43,7 @@ export interface IDataTypeConverterService extends IDataTypeServiceBase, IServic
      * @param dataTypeLookupKey - if not supplied, it will attempt to resolve it with
      * the DataTypeIdentifiers.
      */
-    convertToPrimitive(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined;    
+    convertToPrimitive(value: any, dataTypeLookupKey: string | null): SimpleValueType;    
  
     /**
      * Finds the first {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}

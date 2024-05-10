@@ -7,7 +7,8 @@ import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
-import { CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 
 
 function createValueHostsManager(): IValueHostsManager {
@@ -213,7 +214,7 @@ describe('static()', () => {
 
 
 describe('calc()', () => {
-    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): CalculationHandlerResult {
+    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
         return 1;
     }    
     test('Valid name, null data type and defined vhConfig. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {

@@ -93,6 +93,10 @@ describe('Utilities.deepClone', () => {
         let d1 = new Date(Date.UTC(2000, 5, 1));
         expect(deepClone(d1)).toEqual(d1);
     });
+    test('RegExp object', () => {
+        let d1 = /\d/;
+        expect(deepClone(d1)).toEqual(d1);
+    });    
     test('Objects', () => {
         let d1 = new Date(Date.UTC(2000, 5, 1));
         expect(deepClone({})).toEqual({});

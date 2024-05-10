@@ -4,7 +4,7 @@
 
 import { IValueHostAccessor } from "../Interfaces/ValueHostAccessor";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { assertNotNull } from "../Utilities/ErrorHandling";
+import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { toIInputValueHost } from "./InputValueHost";
 import { IValueHost, toIValueHost } from "../Interfaces/ValueHost";
@@ -58,7 +58,7 @@ export class ValueHostAccessor implements IValueHostAccessor
         let vh = this.valueHostResolver.getValueHost(valueHostName);
         if (vh)
             return vh;
-        throw new Error(`ValueHost named ${valueHostName} is unknown.`);
+        throw new CodingError(`ValueHost named ${valueHostName} is unknown.`);
     }
 
     /**
@@ -74,7 +74,7 @@ export class ValueHostAccessor implements IValueHostAccessor
         let vh = fn(this.ensureValueHost(valueHostName));
         if (vh)
             return vh;
-        throw new Error(`ValueHost named ${valueHostName} is not an ${className}.`);
+        throw new CodingError(`ValueHost named ${valueHostName} is not an ${className}.`);
     }
 
     /**

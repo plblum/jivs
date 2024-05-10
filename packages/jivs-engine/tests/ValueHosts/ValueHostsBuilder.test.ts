@@ -2,8 +2,9 @@ import { RequireTextConditionConfig, RegExpConditionConfig, RequireTextCondition
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { EvaluateChildConditionResultsBaseConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { ICalcValueHost, CalculationHandlerResult } from "../../src/Interfaces/CalcValueHost";
+import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
+import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { ValidationSeverity } from "../../src/Interfaces/Validation";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
@@ -366,7 +367,7 @@ describe('build(vmConfig).conditions', () => {
 });
 
 describe('build(vmConfig).calc', () => {
-    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): CalculationHandlerResult {
+    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
         return 1;
     }
     test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {

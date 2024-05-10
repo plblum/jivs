@@ -1,5 +1,5 @@
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { CalcValueHostConfig, CalcValueHostInstanceState, CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { CalcValueHostConfig, CalcValueHostInstanceState, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost, CalcValueHostGenerator, toICalcValueHost } from "../../src/ValueHosts/CalcValueHost";
@@ -12,26 +12,27 @@ import { ValidationStatus } from "../../src/Interfaces/Validation";
 import { SetValueOptions, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
+import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 
 function TestCalcFunctionReturnsOne(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
-    CalculationHandlerResult {
+    SimpleValueType {
     return 1;
 }
 function TestCalcFunctionReturnsValueOfField1(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
-    CalculationHandlerResult {
+    SimpleValueType {
     return findValueHost.getValueHost('Field1')?.getValue();
 }
 function TestCalcFunctionReentrant(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
-    CalculationHandlerResult {
+    SimpleValueType {
     return findValueHost.getValueHost(calcValueHost.getName())?.getValue();
 }
 function TestCalcFunctionUsingConvert(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
-    CalculationHandlerResult {
+    SimpleValueType {
     let date1 = new Date(Date.UTC(2000, 0, 1));
     return calcValueHost.convert(date1, 'Date');
 }
 function TestCalcFunctionUsingConvertToPrimitive(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
-    CalculationHandlerResult {
+    SimpleValueType {
     let date1 = new Date(Date.UTC(2000, 0, 1));
     return calcValueHost.convertToPrimitive(date1, 'Date');
 }
@@ -328,7 +329,7 @@ describe('toICalcValueHost function', () => {
         expect(toICalcValueHost(testItem)).toBeNull();
     });        
     class TestICalcValueHostImplementation implements ICalcValueHost {
-        convert(value: any, dataTypeLookupKey: string | null): CalculationHandlerResult {
+        convert(value: any, dataTypeLookupKey: string | null): SimpleValueType {
             throw new Error("Method not implemented.");
         }
         convertToPrimitive(value: any, dataTypeLookupKey: string | null): string | number | Date | null | undefined {

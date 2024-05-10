@@ -6,7 +6,8 @@
 import { DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition, LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ICalcValueHost, CalcValueHostConfig, CalculationHandlerResult } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
+import { ICalcValueHost, CalcValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
+import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
 import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { createMinimalValidationServices } from "./support";
@@ -23,7 +24,7 @@ import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFac
 
 // Here's our target function to use with a CalcValueHost. 
 // Assign CalcValueHostConfig.calcFn to it.
-function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) : CalculationHandlerResult {
+function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) : SimpleValueType {
     let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), LookupKey.TotalDays);
     let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('EndDate')?.getValue(), LookupKey.TotalDays);
     if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')

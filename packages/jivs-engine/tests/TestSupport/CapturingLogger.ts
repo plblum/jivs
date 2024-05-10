@@ -21,6 +21,11 @@ export class CapturingLogger implements ILoggerService
     
     public captured: Array<MockCapturedLog> = [];
 
+    public clearAll(): void
+    {
+        this.captured = [];
+    }
+
     public get extraLogger(): ILoggerService
     {
         return this._extraLogger;

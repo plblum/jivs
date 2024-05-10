@@ -12,8 +12,9 @@ import {
     fluent
 } from './../../src/ValueHosts/Fluent';
 import { ValidationManagerConfig } from '../../src/Interfaces/ValidationManager';
-import { ICalcValueHost, CalculationHandlerResult } from '../../src/Interfaces/CalcValueHost';
+import { ICalcValueHost } from '../../src/Interfaces/CalcValueHost';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
+import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
 
 function createVMConfig(): ValidationManagerConfig
 {
@@ -377,7 +378,7 @@ describe('fluent(vmConfig).conditions', () => {
     });        
 });
 describe('configCalc', () => {
-    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): CalculationHandlerResult
+    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType
     {
         return 1;
     }

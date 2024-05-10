@@ -20,7 +20,7 @@ import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionE
 import { type ValidateOptions, ValidationSeverity, type IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
+import { assertNotNull, CodingError, SevereErrorBase } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { cleanString } from '../Utilities/Utilities';
@@ -110,15 +110,15 @@ export class Validator implements IValidator {
             try {
                 if (this.config.conditionCreator) {
                     if (this.config.conditionConfig)
-                        throw new Error('Cannot assign both ConditionConfig and ConditionCreator');
+                        throw new CodingError('Cannot assign both ConditionConfig and ConditionCreator');
                     this._condition = this.config.conditionCreator(this.config);
                     if (!this._condition)
-                        throw new Error('ConditionCreator function must return an instance');
+                        throw new CodingError('ConditionCreator function must return an instance');
                 }
                 else if (this.config.conditionConfig)
                     this._condition = this.services.conditionFactory.create(this.config.conditionConfig);
                 else
-                    throw new Error('Condition must be setup');
+                    throw new CodingError('Condition must be setup');
             }
             catch (e) {
                 if (e instanceof Error)
@@ -145,10 +145,10 @@ export class Validator implements IValidator {
             try {
                 if (this.config.enablerCreator) {
                     if (this.config.enablerConfig)
-                        throw new Error('Cannot assign both EnablerConfig and EnablerCreator');
+                        throw new CodingError('Cannot assign both EnablerConfig and EnablerCreator');
                     this._enabler = this.config.enablerCreator(this.config);
                     if (!this._enabler)
-                        throw new Error('EnablerCreator function must return an instance');
+                        throw new CodingError('EnablerCreator function must return an instance');
                 }
                 else if (this.config.enablerConfig)
                     this._enabler = this.services.conditionFactory.create(this.config.enablerConfig);
@@ -326,8 +326,11 @@ export class Validator implements IValidator {
 
         }
         catch (e) {
-            if (e instanceof Error)
+            if (e instanceof Error) {
                 logError(e.message);
+                if (e instanceof SevereErrorBase)
+                    throw e;
+            }
             // resume normal processing with Undetermined state
             resultState.conditionEvaluateResult = ConditionEvaluateResult.Undetermined;
             resultState.issueFound = null;
@@ -626,7 +629,7 @@ export class ValidatorFactory implements IValidatorFactory {
         let fn = this._map.get(config.validatorType);
         if (fn)
             return fn(config) as IValidator;
-        throw new Error(`ValidationType not supported: ${config.validatorType}`);        
+        throw new CodingError(`ValidationType not supported: ${config.validatorType}`);        
     }
    // user supplies JSON string or object implementing ValidatorConfig
     // and it returns an instance of IValidator.

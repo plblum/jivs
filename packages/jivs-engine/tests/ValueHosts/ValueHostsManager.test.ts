@@ -19,7 +19,7 @@ import {
 } from "../TestSupport/conditionsForTesting";
 import { IValueHostsManager, toIValueHostsManager, IValueHostsManagerAccessor, toIValueHostsManagerAccessor, ValueHostsManagerInstanceStateChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerConfig, IValueHostsManagerCallbacks, toIValueHostsManagerCallbacks } from "../../src/Interfaces/ValueHostsManager";
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
-import { CalculationHandlerResult, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
@@ -27,6 +27,10 @@ import { ValueHostAccessor } from "../../src/ValueHosts/ValueHostAccessor";
 import { IStaticValueHost } from "../../src/Interfaces/StaticValueHost";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IPropertyValueHost } from "../../src/Interfaces/PropertyValueHost";
+import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { EqualToValueCondition, EqualToValueConditionConfig, RegExpCondition, RegExpConditionConfig } from "../../src/Conditions/ConcreteConditions";
+import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValueHostsManager extends ValueHostsManager<ValueHostsManagerInstanceState> {
@@ -220,7 +224,71 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onValueChanged).not.toBeNull();
         expect(testItem!.onInputValueChanged).not.toBeNull();
     });
+    test('Configure with an actual RegExp object to ensure that object is still present when needed', () => {
+        let services = createValidationServicesForTesting();
+        let cf = services.conditionFactory as ConditionFactory;
+        cf.register<RegExpConditionConfig>(ConditionType.RegExp, (config) => new RegExpCondition(config));
+        let vm = new PublicifiedValueHostsManager({
+            services: services,
+            valueHostConfigs: [<InputValueHostConfig>{
+                valueHostType: ValueHostType.Input,
+                name: 'Property1',
+                dataType: LookupKey.String,
+                validatorConfigs: [
+                    {
+                        conditionConfig: <RegExpConditionConfig> {
+                            conditionType: ConditionType.RegExp,
+                            valueHostName: 'Property1',
+                            expression: /^ABC$/im // <<< monitoring this value
+                        }
+                    
+                    }
+                ]
+            }]
+        });
 
+        let vh = vm.getInputValueHost('Property1')!;
+        vh.setValue('ABC');
+        vh.validate();
+        expect(vh.validationStatus).toBe(ValidationStatus.Valid);
+        vh.setValue('ABCDEF');
+        vh.validate();
+        expect(vh.validationStatus).toBe(ValidationStatus.Invalid);
+    });
+    test('Configure with an actual Date object to ensure that object is still present when needed', () => {
+        let services = createValidationServicesForTesting();
+        let cf = services.conditionFactory as ConditionFactory;
+        cf.register<EqualToValueConditionConfig>(ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
+        let vm = new PublicifiedValueHostsManager({
+            services: services,
+            valueHostConfigs: [<InputValueHostConfig>{
+                valueHostType: ValueHostType.Input,
+                name: 'Property1',
+                dataType: LookupKey.Date,
+                validatorConfigs: [
+                    {
+                        conditionConfig: <EqualToValueConditionConfig> {
+                            conditionType: ConditionType.EqualToValue,
+                            valueHostName: 'Property1',
+                            secondValue: new Date(2000, 0, 1)
+                        }
+                    
+                    }
+                ]
+            }],
+            savedValueHostInstanceStates: [
+                {
+                    name: 'Property1',
+                    value: new Date(2000, 0, 1) // <<< monitoring this value
+                    
+                }
+            ]
+        });
+
+        let vh = vm.getInputValueHost('Property1')!;
+        vh.validate();
+        expect(vh.validationStatus).toBe(ValidationStatus.Valid);
+    });
 });
 function testValueHostInstanceState(testItem: PublicifiedValueHostsManager, valueHostName: ValueHostName,
     instanceState: Partial<InputValueHostInstanceState> | null): void
@@ -1349,7 +1417,7 @@ describe('build()', () => {
         expect(vh1!.getDataType()).toBeNull();
     });    
     test('calc() gets added correctly', () => {
-        function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): CalculationHandlerResult {
+        function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
             return 1;
         }        
         let vmConfig: ValueHostsManagerConfig = {

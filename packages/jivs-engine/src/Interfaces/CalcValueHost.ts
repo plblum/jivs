@@ -21,7 +21,7 @@
  * Here is pseudo code for configuring the CalcValueHost used in this example.
  * ```ts
  * function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager)
- * : number | Date | string | null | undefined
+ * : SimpleValueType
  * {
  *      let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), LookupKey.TotalDays);
  *      let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('EndDate')?.getValue(), LookupKey.TotalDays);
@@ -65,14 +65,15 @@
 * @module ValueHosts/Types/CalcValueHost
  */
 
+import { SimpleValueType } from "./DataTypeConverterService";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManager } from "./ValueHostsManager";
 
 /**
  * Function definition for calculation functions used by CalcValueHost
  */
-export type CalculationHandler = (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => CalculationHandlerResult;
-export type CalculationHandlerResult = number | Date | string | null | undefined;
+export type CalculationHandler = (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => SimpleValueType;
+
 /**
  * Structure of CalcValueHost
  */
@@ -84,7 +85,7 @@ export interface ICalcValueHost extends IValueHost
      * @param value 
      * @param dataTypeLookupKey 
      */
-    convert(value: any, dataTypeLookupKey: string | null): CalculationHandlerResult;
+    convert(value: any, dataTypeLookupKey: string | null): SimpleValueType;
     
     /**
      * Provides conversion support against the original value using the DataTypeConverters
@@ -96,7 +97,7 @@ export interface ICalcValueHost extends IValueHost
      * @param dataTypeLookupKey - if not supplied, it will attempt to resolve it with
      * the DataTypeIdentifiers.
      */
-    convertToPrimitive(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined;        
+    convertToPrimitive(value: any, dataTypeLookupKey: string | null): SimpleValueType;        
 }
 /**
  * How the user configures the CalcValueHost. They are expected to supply

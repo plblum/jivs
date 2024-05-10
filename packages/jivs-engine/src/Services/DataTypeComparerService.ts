@@ -8,6 +8,7 @@ import { IDataTypeComparer } from "../Interfaces/DataTypeComparers";
 import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
 import { BooleanDataTypeComparer, defaultComparer } from "../DataTypes/DataTypeComparers";
 import { DataTypeConverterServiceBase } from "./DataTypeServiceBase";
+import { SevereErrorBase } from "../Utilities/ErrorHandling";
 
 /**
  * A service for changing the comparing two values
@@ -73,8 +74,12 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
             return defaultComparer(cleanedUpValue1, cleanedUpValue2);
         }
         catch (e) {
-            if (e instanceof Error)
+            if (e instanceof Error) {
                 this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeComparerService');
+                if (e instanceof SevereErrorBase)
+                    throw e;
+
+            }
             return ComparersResult.Undetermined;
         }
     }
