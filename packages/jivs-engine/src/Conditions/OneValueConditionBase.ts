@@ -3,6 +3,7 @@
  * identified in OneValueConditionBase.valueHostName.
  * @module Conditions/AbstractClasses/OneValueConditionBase
  */
+import { CodingError } from '../Utilities/ErrorHandling';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
@@ -63,7 +64,7 @@ export abstract class OneValueConditionBase<TConditionConfig extends OneValueCon
         }
         if (valueHost)
             return valueHost;
-        throw new Error('Missing value for valueHostName.');
+        throw new CodingError('Missing value for valueHostName.');
     }
     protected getValueHost(valueHostName: ValueHostName, valueHostResolver: IValueHostResolver): IValueHost | null {
         return valueHostResolver.getValueHost(valueHostName);

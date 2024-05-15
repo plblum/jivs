@@ -5,6 +5,7 @@
  */
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import type { ConditionConfig, ICondition, IConditionCore, IConditionFactory } from '../Interfaces/Conditions';
+import { CodingError } from '../Utilities/ErrorHandling';
 
 //#region ConditionFactory
 
@@ -24,11 +25,11 @@ export class ConditionFactory implements IConditionFactory {
     public create<TConfig extends ConditionConfig>
         (config: TConfig): IConditionCore<TConfig> {
         if (!config.conditionType)
-            throw new Error('conditionType property not assigned in ConditionConfig');
+            throw new CodingError('conditionType property not assigned in ConditionConfig');
         let fn = this._map.get(config.conditionType);
         if (fn)
             return fn(config) as IConditionCore<TConfig>;
-        throw new Error(`ConditionType not registered: ${config.conditionType}`);
+        throw new CodingError(`ConditionType not registered: ${config.conditionType}`);
     }
     // user supplies JSON string or object implementing ConditionConfig
     // and it returns an instance of IValidator.

@@ -5,7 +5,7 @@
 
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ValueHostConfig } from "../Interfaces/ValueHost";
-import { FluentInputParameters, FluentInputValueConfig, FluentStaticParameters, FluentValidatorCollector, StartFluent } from "./Fluent";
+import { FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentStaticParameters, FluentValidatorCollector, StartFluent } from "./Fluent";
 import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { CalcValueHostConfig, CalculationHandler } from "../Interfaces/CalcValueHost";
 
@@ -76,7 +76,7 @@ export abstract class ValueHostsBuilderBase
     public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
     /**
      * Fluent format to create a InputValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param config - Supply the entire InputValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
@@ -98,6 +98,39 @@ export abstract class ValueHostsBuilderBase
         this.applyConfig(collector.parentConfig);
         return collector;        
     }    
+    /**
+     * Fluent format to create a PropertyValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param valueHostName - the ValueHost name
+     * @param dataType - optional and can be null. The value for ValueHost.dataType.
+     * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
+     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     */
+    public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector;
+    /**
+     * Fluent format to create a PropertyValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
+     * You can omit the valueHostType property.
+     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     */
+    public property(config: FluentPropertyValueConfig): FluentValidatorCollector;
+    // overload resolution
+    public property(arg1: ValueHostName | FluentPropertyValueConfig, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector
+    {
+        let fluent = this.createFluent();
+        let collector: FluentValidatorCollector;
+        if (typeof arg1 === 'object') {
+            collector = fluent.property(arg1);
+        }
+        else if (typeof arg1 === 'string') {
+            collector = fluent.property(arg1, dataType, parameters);
+        }
+        else
+            throw new TypeError('Must pass valuehost name or PropertyValueHostConfig');
+        this.applyConfig(collector.parentConfig);
+        return collector;        
+    }        
     /**
      * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.

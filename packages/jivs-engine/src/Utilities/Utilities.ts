@@ -64,25 +64,50 @@ export function deepEquals(obj1: any, obj2: any): boolean
     
 }
 
-export function deepClone(value: any): any {
+export function deepClone(value: any, clones = new WeakMap()): any {
     if (typeof value !== 'object' || value === null) {
       return value;
     }
+    // Handle circular references
+    if (clones.has(value)) {
+        return clones.get(value);
+    }    
     if (value instanceof Date)
         return new Date(value.getTime());
-    let clone = new value.constructor();
+    if (value instanceof RegExp)
+        return new RegExp(value.source, value.flags);
 
-    for (const key in value) {
-        clone[key] = deepClone(value[key]);
+    if (value.constructor && value.constructor !== Object) {
+        const newInstance = new value.constructor();
+        clones.set(value, newInstance);
+
+        // Clone properties recursively
+        for (let key in value) {
+            if (value.hasOwnProperty(key)) {
+                newInstance[key] = deepClone(value[key], clones);
+            }
+        }
+
+        return newInstance;
     }
 
-    return clone;
+    // Handle plain objects
+    const newObj: { [key: string | number | symbol]: unknown } = {};
+    clones.set(value, newObj);
+
+    for (let key in value) {
+        if (value.hasOwnProperty(key)) {
+            newObj[key] = deepClone(value[key], clones);
+        }
+    }
+
+    return newObj;    
     
   }
 
-export function objectKeysCount(obj: object | null): number
+export function objectKeysCount(value: object | null): number
 {
-    return obj ? Object.keys(obj).length : 0;
+    return value ? Object.keys(value).length : 0;
 }
 
 /**

@@ -4,7 +4,7 @@
  */
 
 
-import { assertNotNull } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 
 
 /**
@@ -68,7 +68,7 @@ export class NameToFunctionMapper<TValue, TResult> implements INameToFunctionMap
             fnOrKey = fnOrKey.toLowerCase();
             let temp = this._map.get(fnOrKey);
             if (temp === undefined)
-                throw new Error(`Use Register(${key}, fn) first.`);
+                throw new CodingError(`Use Register(${key}, fn) first.`);
             fn = temp;
         }
         else

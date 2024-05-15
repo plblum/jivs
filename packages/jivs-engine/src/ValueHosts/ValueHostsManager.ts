@@ -11,7 +11,7 @@ import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
-import { assertNotNull } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsManagerConfig, IValueHostsManagerCallbacks, ValueHostsManagerInstanceStateChangedHandler } from '../Interfaces/ValueHostsManager';
 import { toIInputValueHost } from './InputValueHost';
 import { IInputValueHost, InputValueChangedHandler } from '../Interfaces/InputValueHost';
@@ -177,7 +177,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         if (!this._valueHostConfigs[config.name])
             return this.applyConfig(config, initialState);
 
-        throw new Error(`Property ${config.name} already assigned.`);
+        throw new CodingError(`Property ${config.name} already assigned.`);
     }
     /**
      * Replaces a ValueHostConfig for an already added ValueHost. 
