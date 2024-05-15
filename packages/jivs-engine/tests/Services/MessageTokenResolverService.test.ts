@@ -192,11 +192,9 @@ describe('resolveTokens', () => {
         };
         let testItem = new MessageTokenResolverService();
         vm.services.activeCultureId = 'de-DE';  // not configured in LA
-        expect(testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vm, messageTokeSource)).toBe('{token:' + LookupKey.Number + '}');
+        expect(() => testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vm, messageTokeSource)).toThrow();
 
         expect(logger.findMessage('support CultureID', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService')).not.toBeNull();
-        expect(logger.findMessage('token', LoggingLevel.Error, LoggingCategory.Configuration, 'MessageTokenResolver')).not.toBeNull();        
-        expect(logger.findMessage('not replaced', LoggingLevel.Warn, LoggingCategory.Formatting, 'MessageTokenResolver')).not.toBeNull();
     });        
 });
 

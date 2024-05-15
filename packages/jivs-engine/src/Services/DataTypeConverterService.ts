@@ -5,9 +5,10 @@
 
 import { LoggingLevel, LoggingCategory } from "../Interfaces/LoggerService";
 import { UTCDateOnlyConverter } from "../DataTypes/DataTypeConverters";
-import { IDataTypeConverterService } from "../Interfaces/DataTypeConverterService";
+import { IDataTypeConverterService, SimpleValueType } from "../Interfaces/DataTypeConverterService";
 import { IDataTypeConverter } from "../Interfaces/DataTypeConverters";
 import { DataTypeConverterServiceBase } from "./DataTypeServiceBase";
+import { CodingError, SevereErrorBase } from "../Utilities/ErrorHandling";
 
 /**
  * A service for changing the original value into 
@@ -37,7 +38,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     /**
      * {@inheritDoc Services/Types/IDataTypeConverterService!IDataTypeConverterService#convert }
      */
-    public convert(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined {
+    public convert(value: any, dataTypeLookupKey: string | null): SimpleValueType {
         try {
             let dtc = this.find(value, dataTypeLookupKey);
 
@@ -46,8 +47,12 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
             return undefined;
         }
         catch (e) {
-            if (e instanceof Error)
+            if (e instanceof Error) {
                 this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Convert, 'DataTypeComparerService');
+                if (e instanceof SevereErrorBase)
+                    throw e;
+
+            }
             return undefined;
         }
 
@@ -63,7 +68,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      * @param dataTypeLookupKey - if not supplied, it will attempt to resolve it with
      * the DataTypeIdentifiers.
      */
-    public convertToPrimitive(value: any, dataTypeLookupKey: string | null): number | Date | string | null | undefined
+    public convertToPrimitive(value: any, dataTypeLookupKey: string | null): SimpleValueType
     {
         try {
             if (value == null) // null or undefined
@@ -74,8 +79,11 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
             return this.cleanupConvertableValue(value, dataTypeLookupKey);
         }
         catch (e) {
-            if (e instanceof Error)
+            if (e instanceof Error) {
                 this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeConverterService');
+                if (e instanceof SevereErrorBase)
+                    throw e;
+            }
             return undefined;
         }
     }

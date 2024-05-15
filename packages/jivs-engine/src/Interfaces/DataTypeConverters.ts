@@ -3,6 +3,8 @@
  * @module DataTypes/Types/IDataTypeConverter
  */
 
+import { SimpleValueType } from "./DataTypeConverterService";
+
 /**
  * Provides a way to include non-standard types in comparison Conditions
  * by taking the value in its non-standard type form and returning
@@ -43,5 +45,5 @@ export interface IDataTypeConverter
  * @param value 
  * @param dataTypeLookupKey 
  */
-    convert(value: any, dataTypeLookupKey: string): number | Date | string | null | undefined;
+    convert(value: any, dataTypeLookupKey: string): SimpleValueType;
 }

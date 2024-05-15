@@ -5,7 +5,7 @@ import { IDataTypeConverter } from "../../src/Interfaces/DataTypeConverters";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IDataTypeIdentifier } from '../../src/Interfaces/DataTypeIdentifier';
-import { LoggingLevel } from '../../src/Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggerService';
 
 
 class TestDataTypeAsNumber {
@@ -194,16 +194,21 @@ describe('convertToPrimitive', ()=> {
         expect(convertDate1).toBe(Math.floor(date1.getTime() / 86400000));
 
     });
-    test('With 2 converters registered but no supporting identifiers, convertToPrimitive with data types not identified results in undefined', () => {
+    test('With 2 converters registered but no supporting identifiers, convertToPrimitive with data types not identified throws and logs', () => {
         let services = new ValidationServices();  
         let idService = new DataTypeIdentifierService();  // expected to have preregistered standard DataTypeIdentifiers
         services.dataTypeIdentifierService = idService;
+        let logger = new CapturingLogger();
+        services.loggerService = logger;
 
         let testItem = new DataTypeConverterService();
         services.dataTypeConverterService = testItem;
 
-        expect(testItem.convertToPrimitive(new TestDataTypeAsNumber(500), "")).toBeUndefined();
-        expect(testItem.convertToPrimitive(new TestDataTypeAsString("ZYX"), "")).toBeUndefined();
+        expect(()=> testItem.convertToPrimitive(new TestDataTypeAsNumber(500), "")).toThrow(/unknown/);
+        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeConverterService')).not.toBeNull();      
+        logger.clearAll();
+        expect(()=> testItem.convertToPrimitive(new TestDataTypeAsString("ZYX"), "")).toThrow(/unknown/);
+        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeConverterService')).not.toBeNull();      
     });    
     test('convertToPrimitive returns the same value when passed either null or undefined', () => {
         let services = new ValidationServices();  

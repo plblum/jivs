@@ -343,22 +343,20 @@ describe('DataTypeComparerService.compare', () => {
         expect(testItem.compare(date1, date2, null, null)).toBe(ComparersResult.GreaterThan);        
     });               
     
-    test('Unsupported data type for lookupKey using JavaScript object logs error and reports Undetermined', () => {
+    test('Unsupported data type for lookupKey using JavaScript object logs error and throws', () => {
         let testItem = new DataTypeComparerService();
         testItem.services = new MockValidationServices(true, true);
         let result: ComparersResult | null = null;
-        expect(() => result = testItem.compare({}, 'A', null, null)).not.toThrow();
-        expect(result).toBe(ComparersResult.Undetermined);
+        expect(() => result = testItem.compare({}, 'A', null, null)).toThrow(/operand/);
         let logger = testItem.services.loggerService as CapturingLogger;
         expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeComparerService')).not.toBeNull();        
 
     });    
-    test('Unsupported data type for lookupKey using some class instance logs error and reports Undetermined', () => {
+    test('Unsupported data type for lookupKey using some class instance logs error and throws', () => {
         let testItem = new DataTypeComparerService();
         testItem.services = new MockValidationServices(true, true);
         let result: ComparersResult | null = null;
-        expect(() => result = testItem.compare(testItem /* some class */, 'A', null, null)).not.toThrow();
-        expect(result).toBe(ComparersResult.Undetermined);
+        expect(() => result = testItem.compare(testItem /* some class */, 'A', null, null)).toThrow(/operand/);
         let logger = testItem.services.loggerService as CapturingLogger;
         expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeComparerService')).not.toBeNull();        
 

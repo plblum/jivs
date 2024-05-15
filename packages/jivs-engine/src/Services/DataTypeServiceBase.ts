@@ -129,7 +129,7 @@ export abstract class DataTypeConverterServiceBase<T> extends DataTypeServiceBas
             if (!key)
                 key = this.services.dataTypeIdentifierService.identify(v);
             if (!key)
-                throw new Error(`${part} operand value has an unknown datatype. Supply the appropriate DataTypeLookupKey and/or register an IDataTypeIdentifier`);
+                throw new CodingError(`${part} operand value has an unknown datatype. Supply the appropriate DataTypeLookupKey and/or register an IDataTypeIdentifier`);
         }
         return key;
     }

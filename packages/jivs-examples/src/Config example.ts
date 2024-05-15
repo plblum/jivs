@@ -10,13 +10,14 @@ import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { TotalDaysConverter, IntegerConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 import { StringFormatter, NumberFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
 import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
+import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
 import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { IValidationManager, ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
 import { ValidationSeverity } from "@plblum/jivs-engine/build/Interfaces/Validation";
-import { CalcValueHostConfig, CalculationHandlerResult, ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
+import { CalcValueHostConfig, ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { StaticValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/StaticValueHost";
@@ -236,7 +237,7 @@ function createValidationServices(): ValidationServices
     return services;
 }
 // Used by CalcValueHosts in this example
-function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) : CalculationHandlerResult {
+function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) : SimpleValueType {
     let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), LookupKey.TotalDays);
     let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('EndDate')?.getValue(), LookupKey.TotalDays);
     if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')

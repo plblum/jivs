@@ -9,7 +9,7 @@
 
 import { BusinessLogicErrorsValueHostGenerator } from './BusinessLogicErrorsValueHost';
 import { InputValueHostGenerator } from './InputValueHost';
-import { assertNotNull } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostInstanceState, IValueHost, ValueHostConfig } from '../Interfaces/ValueHost';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { StaticValueHostGenerator } from './StaticValueHost';
@@ -46,12 +46,12 @@ export class ValueHostFactory implements IValueHostFactory {
      */
     private resolveConfig(config: ValueHostConfig): IValueHostGenerator {
         if (!config.valueHostType)
-            throw new Error('ValueHostConfig.valueHostType field required');
+            throw new CodingError('ValueHostConfig.valueHostType field required');
         for (const generator of this._configResolvers) {
             if (generator.canCreate(config))
                 return generator;
         }
-        throw new Error(`Unsupported ValueHostConfig ${config.valueHostType}`);
+        throw new CodingError(`Unsupported ValueHostConfig ${config.valueHostType}`);
     }
 
     /**

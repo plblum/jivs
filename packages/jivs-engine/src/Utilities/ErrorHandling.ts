@@ -3,16 +3,23 @@
  * @module Utilities
  */
 
-
 /**
- * Exception for reporting bad coding.
+ * Classes based on this should throw their error all the way to the top.
  */
-export class CodingError extends Error
+export abstract class SevereErrorBase extends Error
 {
 
 }
 
-export class InvalidTypeError extends Error
+/**
+ * Exception for reporting bad coding.
+ */
+export class CodingError extends SevereErrorBase
+{
+
+}
+
+export class InvalidTypeError extends SevereErrorBase
 {
     constructor(valueSupplied: any)
     {

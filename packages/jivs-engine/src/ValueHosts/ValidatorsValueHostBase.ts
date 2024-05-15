@@ -10,7 +10,7 @@ import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidationStatusString, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
-import { assertNotNull } from '../Utilities/ErrorHandling';
+import { SevereErrorBase, assertNotNull } from '../Utilities/ErrorHandling';
 import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { FluentValidatorCollector } from './Fluent';
@@ -127,8 +127,12 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
             }
             catch (e) {
-                if (e instanceof Error)
+                if (e instanceof Error) {
                     logError(e.message);
+                    if (e instanceof SevereErrorBase)
+                        throw e;
+    
+                }
                 // resume normal processing with Undetermined state
                 result.status = ValidationStatus.Undetermined;
             }

@@ -449,11 +449,15 @@ Business logic validation code still gets used, but only upon attempting to save
 About all the UI developer should know is:
 - The identity of the Model’s field, so it can move values between Model and UI.
 - The data type of the field. Specifically the property’s data type, like a number, date, Boolean, or complex object. The developer uses that to determine the widget that will edit the value. They also use that to write the code that converts the value between the Model property’s data type and the widget’s data type.
-- It is possible that there are validation rules. What they are doesn’t matter. The UI developer can build a widget that shows up when issues are found.
-	- There is one case where the UI developer might introduce a validation rule: reporting an issue when their code to convert from widget to Model property fails. Even that is often resolved behinds the scenes in Jivs.
-- Provide a common area on screen for consolidation of errors, including those reported by Business Logic. This is referred to as the ValidationSummary.
 
-Someone will code all of those validation rules in a way that Jivs can apply them. Whether it’s done by the UI developer or not, this new code will be separate from the UI code. (And unit tested.) This will likely be the most code you need to write to work with Jivs (or any validation system).
+The UI developer provides these UI-specific elements:
+- A widget that shows issues that are found.
+- A widget that shows a consolidation of issues found, including those reported by Business Logic. This is referred to as the ValidationSummary.
+- Any additional validation rules that support the UI elements. Typical use case: reporting an issue when  converting the value of the widget into the value needed by the Model.
+- More appropriate error messages for the UI than business logic supplied.
+- Field labels that will appear in error messages, as the property name is often a poor choice for a field label.
+
+Someone will code all of those business logic validation rules in a way that Jivs can consume them. Whether it’s done by the UI developer or not, this new code should be separate from the UI code. (And unit tested.) This will likely be the most code you need to write to work with Jivs (or any validation system).
 </details>
 
 <a name="configuringconditions"></a>
@@ -491,12 +495,11 @@ To use them, you need to populate their `ConditionConfig`, which has configurati
 
 We'll work with this example: Compare a date from the Input to today's date.
 
-The `EqualToCondition` is the right Condition for the job.  You need to create a `EqualToConditionConfig` that Jivs will use later to prepare the `EqualToCondition`. Here's its `ConditionConfig`:
+The `EqualToValueCondition` is the right Condition for the job.  You need to create a `EqualToValueConditionConfig` that Jivs will use later to prepare the `EqualToValueCondition`. Here's its `ConditionConfig`:
 ```ts
-interface EqualToConditionConfig {
-    conditionType: string;
+interface EqualToValueConditionConfig {
+    conditionType: string;	// get this value from the ConditionType type: ConditionType.EqualToValue
     valueHostName: null | string;
-    secondValueHostName: null | string;
     secondValue?: any;
     conversionLookupKey?: null | string;
     secondConversionLookupKey?: null | string;
@@ -508,7 +511,7 @@ interface EqualToConditionConfig {
 Your new code should look like this, where `ValueHostName` is your identifier for a field on the Model that you call “SignedOnDate”. (More on <a href="#naming">`ValueHost Names`</a> later.)
 ```ts
 {
-    conditionType: 'EqualTo';
+    conditionType: ConditionType.EqualToValue,	// = 'EqualToValue';
     valueHostName: 'SignedOnDate';
     secondValue: ...date object representing Today...;
 }
@@ -523,7 +526,7 @@ Your new code should look like this, where `ValueHostName` is your identifier fo
 We recommend that you create a Factory-style class that takes your business logic validation information in and returns the appropriate `ConditionConfig` already configured. Let’s suppose that your business logic has a class called BusinessLogicComparer that looks like this:
 ```ts
 class BusinessLogicComparer {
-    operator: ConditionOperators; // equals, notequals, etc
+    operator: ConditionOperators; // equals, not equals, etc
     compareTo?: ((date object representing Today));
 }
 ```
@@ -537,8 +540,8 @@ class Factory
       switch (businessLogicRule.operator)
       {
         case ConditionOperators.Equals:
-          return <EqualTosConditionConfig>{
-            conditionType: 'EqualTo',
+          return <EqualToValueConditionConfig>{
+            conditionType: ConditionType.EqualToValue, 	// = 'EqualToValue'
             valueHostName: fieldRef,
             secondValue: businessLogicRule.secondValue
           }
@@ -594,7 +597,7 @@ interface IStaticValueHost extends IValueHost
 }
 interface ICalcValueHost extends IValueHost
 {
-  convert(source, validationManager): number | Date | string | null | undefined;
+  convert(source, validationManager): SimpleValueType;
 }
 ```
 <a name="naming"></a>
@@ -630,7 +633,7 @@ In fact, that’s about right, only with more properties. Those objects are asso
 ```ts
 interface ValueHostConfig
 {
-  valueHostType?: string;
+  valueHostType?: string;	// get this value from ValueHostType type, such as ValueHostType.Input
   name: string;
   dataType?: string;
   label?: string;
@@ -664,14 +667,14 @@ Here’s how your configuration actually looks:
 ```ts
 [
   {
-    valueHostType: 'Input',
+    valueHostType: ValueHostType.Input, // = 'Input'
     name: 'FirstName',
     dataType: 'String',
     label: 'First name', // localized, of course!
     validatorConfigs: [ ValidatorConfigs ]
   },
   {
-    valueHostType: 'Input',
+    valueHostType: ValueHostType.Input, // = 'Input'
     name: 'LastName',
     dataType: 'String',
     label: 'Last name',
@@ -690,7 +693,7 @@ The `ValueHost` names are also used to help a `Condition` retrieve a value from 
     {
       conditionConfig: 
       {
-        conditionType: 'NotEqualTo',
+        conditionType: ConditionType.NotEqualTo, // = 'NotEqualTo'
         valueHostName: null, // because owning ValueHost is provided automatically to the Condition.evaluate function.
         secondValueHostName: 'LastName'
       }      
@@ -775,13 +778,13 @@ Because this is so full of goodness, let’s go through each property.
 Now let’s place a `ValidatorConfig` into our previous example using a Model with FirstName and LastName.
 ```ts
 [{
-  valueHostType: 'Input',
+  valueHostType: ValueHostType.Input, // = 'Input'
   name: 'FirstName',
   dataType: 'String',
   label: 'First name',
   validatorConfigs: [{
     conditionConfig: {
-      conditionType: 'RequireText',
+      conditionType: ConditionType.RequireText, // = 'RequireText'
       valueHostName: null
     },
     errorMessage: 'This field requires a value',
@@ -789,7 +792,7 @@ Now let’s place a `ValidatorConfig` into our previous example using a Model wi
   },
   {
     conditionConfig: {
-      conditionType: 'NotEqualTo',
+      conditionType: ConditionType.NotEqualTo, // = 'NotEqualTo'
       valueHostName: null,
       secondValueHostName: 'LastName'
     },
@@ -799,13 +802,13 @@ Now let’s place a `ValidatorConfig` into our previous example using a Model wi
   }]
 },
 {
-  valueHostType: 'Input',
+  valueHostType: ValueHostType.Input, // = 'Input'
   name: 'LastName',
   dataType: 'String',
   label: 'Last name',
   validatorConfigs: [{
     conditionConfig: {
-      conditionType: 'RequireText',
+      conditionType: ConditionType.RequireText, // = 'RequireText'
       valueHostName: null
     },
     errorMessage: 'This field requires a value',
@@ -996,7 +999,7 @@ Consider these *Use Cases*:
 	Here is the NotEqualToCondition configured with CaseInsensitive:
 	```ts
 	{
-	  valueHostType: 'Input',
+	  valueHostType: ValueHostType.Input, // = 'Input'
 	  name: 'FirstName',
 	  dataType: 'String',
 	  label: 'First name',
@@ -1004,7 +1007,7 @@ Consider these *Use Cases*:
 	  	{
 	  	  conditionConfig: 
 	  	  {
-	  	    conditionType: 'NotEqual',
+	  	    conditionType: ConditionType.NotEqual, // = 'NotEqual'
 	  	    secondValueHostName: 'LastName',
 	  	    conversionLookupKey: 'CaseInsensitive',
 	  	    secondConversionLookupKey: 'CaseInsensitive'
@@ -1208,7 +1211,7 @@ Let's suppose that you have a label "First Name" which you want in several langu
 2. Assign both label and labell10n properties during configuration.
 	```ts
 	{
-	  valueHostType: 'Input',
+	  valueHostType: ValueHostType.Input, // = 'Input'
 	  name: 'FirstName',
 	  label: 'First Name',
 	  labell10n: 'FirstName'
@@ -1620,7 +1623,7 @@ vm.vh.any("LastName").setValue("MyValue", {reset: true});
 When initializing the ValidationManager, you supply a ValueHostConfig for each ValueHost. That type includes an *initialValue* property where you can send in the same value.
 ```ts
 let lastNameConfig: InputValueHostConfig = {
-  valueHostType: ValueHostType.Input,
+  valueHostType: ValueHostType.Input, // = 'Input'
   name: 'LastName',
   dataType: LookupKey.String,
   initialValue: 'MyValue'
