@@ -441,6 +441,12 @@ export class MockValidationManager implements IValidationManager, IValidationMan
  * Always replace a ValueHost when the associated Config or InstanceState are changed.
  */    
     private _valueHosts: Map<string, IValueHost> = new Map<string, IValueHost>();  
+
+    public *enumerateValueHosts(): Generator<IValueHost> {
+        for (let key in this._valueHosts) {
+            yield this._valueHosts.get(key)!;
+        }
+    }    
     
     public addMockValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
     {

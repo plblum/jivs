@@ -1,3 +1,5 @@
+## 0.15.7
+- ValidationManager offers enumerateValueHosts as a way to enumerate through existing ValueHosts
 ## 0.15.3
 - Change paths into @plblum/jivs-engine to use @plblum/jivs-engine/build instead of @plblum/jivs-engine/src
 ## 0.15.2
