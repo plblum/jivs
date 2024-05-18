@@ -4,6 +4,7 @@ import { IInputValueHost } from "../../src/Interfaces/InputValueHost";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
+import { CodingError } from "../../src/Utilities/ErrorHandling";
 
 // Custom Conditions designed for testing validation where the Condition has a predictable behavior
 export abstract class MockConditionBase<TConfig extends ConditionConfig> implements IConditionCore<TConfig>
@@ -75,6 +76,14 @@ export class ThrowsExceptionCondition extends MockConditionBase<ConditionConfig>
         throw new Error("Always Throws");
     }
 }
+export const ThrowsSevereExceptionConditionType = "AlwaysThrowsSevere";
+
+export class ThrowsSevereExceptionCondition extends MockConditionBase<ConditionConfig>{
+    protected get DefaultConditionType(): string { return this.config.conditionType; }    
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        throw new CodingError("Always Throws");
+    }
+}
 
 export const UserSuppliedResultConditionWithDuringEditType = 'UserSuppliedResultWithDuringEdit';
 export const UserSuppliedResultConditionType = 'UserSuppliedResult';
@@ -104,6 +113,7 @@ export function registerTestingOnlyConditions(factory: ConditionFactory): void
     factory.register(NeverMatchesConditionType, (config) => new NeverMatchesCondition(config));
     factory.register(IsUndeterminedConditionType, (config) => new IsUndeterminedCondition(config));
     factory.register(ThrowsExceptionConditionType, (config) => new ThrowsExceptionCondition(config));
+    factory.register(ThrowsSevereExceptionConditionType, (config) => new ThrowsSevereExceptionCondition(config));
     factory.register<UserSuppliedResultConditionConfig>(UserSuppliedResultConditionType, (config) => new UserSuppliedResultCondition(config));
     factory.register<UserSuppliedResultConditionConfig>(UserSuppliedResultConditionWithDuringEditType, (config) => new UserSuppliedResultConditionWithDuringEdit(config));
     // yes, two conditions of the same class can be registered with different Type names.

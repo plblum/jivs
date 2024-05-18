@@ -70,7 +70,7 @@ export function deepClone(value: any, clones = new WeakMap()): any {
     }
     // Handle circular references
     if (clones.has(value)) {
-        return clones.get(value);
+        return undefined;
     }    
     if (value instanceof Date)
         return new Date(value.getTime());

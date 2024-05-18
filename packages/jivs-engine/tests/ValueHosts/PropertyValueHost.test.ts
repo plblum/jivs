@@ -260,7 +260,7 @@ describe('setValue', () => {
 describe('PropertyValueHostGenerator members', () => {
     test('CanCreate returns true for ValueHostType.Property', () => {
         let testItem = new PropertyValueHostGenerator();
-        expect(testItem.canCreate({
+        expect(testItem.canCreate(<PropertyValueHostConfig>{
             valueHostType: ValueHostType.Property,
             name: 'Field1',
             label: '',
@@ -269,7 +269,7 @@ describe('PropertyValueHostGenerator members', () => {
     });
     test('CanCreate returns false for unexpected ValueHostType', () => {
         let testItem = new PropertyValueHostGenerator();
-        expect(testItem.canCreate({
+        expect(testItem.canCreate(<PropertyValueHostConfig>{
             valueHostType: 'Unexpected',
             name: 'Field1',
             label: '',
@@ -279,7 +279,7 @@ describe('PropertyValueHostGenerator members', () => {
 
     test('CanCreate returns false for ValueHostType not defined even if it has validatorConfigs and propertyName', () => {
         let testItem = new PropertyValueHostGenerator();
-        expect(testItem.canCreate({
+        expect(testItem.canCreate(<PropertyValueHostConfig>{
             name: 'Field1',
             label: '',
             validatorConfigs: null,

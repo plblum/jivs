@@ -114,6 +114,12 @@ describe('Utilities.deepClone', () => {
         expect(deepClone([1, 2])).toEqual([1, 2]);        
         expect(deepClone([{a: 1}])).toEqual([{a: 1}]);        
     });    
+    test('Stops at circular references, leaving the field with the circular reference = undefined', () => {
+        let testItem = { a: 1, b: { c: 2, d: null as any } };
+        let expected = { a: 1, b: { c: 2, d: undefined } }
+        testItem.b.d = testItem;
+        expect(deepClone(testItem)).toEqual(expected);
+    });
 });
 
 // function GroupsMatch(group1: string | Array<string> | undefined | null,
