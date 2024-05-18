@@ -52,6 +52,8 @@ export function createValidationServicesForTesting(): ValidationServices {
 
     vs.conditionFactory = createConditionFactory();
 
+    // vs.valueHostFactory = unnecessary because uses ValueHostFactory with all ValueHostGenerators by default.
+
     let dtis = new DataTypeIdentifierService();
     vs.dataTypeIdentifierService = dtis;
     registerDataTypeIdentifiers(dtis);
