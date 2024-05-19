@@ -1,3 +1,6 @@
+## 0.16.0
+- **Breaking API change** - refactor of DataTypeFormatterService to create a stand-alone CultureService.
+
 ## 0.15.7
 - ValidationManager offers enumerateValueHosts as a way to enumerate through existing ValueHosts
 ## 0.15.3
