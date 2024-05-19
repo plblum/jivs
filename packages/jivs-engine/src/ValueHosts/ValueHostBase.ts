@@ -66,7 +66,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         let label = (this.getFromInstanceState('_label') ?? (this.config.label ?? '')) as string;
         let labell10n: string | null = (this.getFromInstanceState('_labell10n') ?? this.config.labell10n ?? null) as string | null;
         if (labell10n)
-            return this.services.textLocalizerService.localize(this.services.activeCultureId, labell10n, label) ?? '';
+            return this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId, labell10n, label) ?? '';
         return label;
     }
     /**

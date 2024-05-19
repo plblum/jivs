@@ -44,11 +44,13 @@ import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
+import { ICultureService } from "../../src/Interfaces/CultureService";
+import { CultureService } from "../../src/Services/CultureService";
 
 
 export function createValidationServicesForTesting(): ValidationServices {
     let vs = new ValidationServices();
-    vs.activeCultureId = 'en';
+    registerCultures(vs.cultureService);
 
     vs.conditionFactory = createConditionFactory();
 
@@ -186,9 +188,10 @@ export function registerAllConditions(cf: ConditionFactory): void
  * Cultures that you want to localize. 
  * -> Create an array of CultureIdFallback objects in configureCultures()
  */
-export function configureCultures(): Array<CultureIdFallback>
+export function registerCultures(cs: ICultureService): void
 {
-   return [
+    cs.activeCultureId = 'en';    
+    let cultures: Array<CultureIdFallback> = [
             {
                 cultureId: 'en',
                 fallbackCultureId: null    // when this is the default culture,
@@ -209,7 +212,8 @@ export function configureCultures(): Array<CultureIdFallback>
                 cultureId: 'fr',
                 fallbackCultureId: 'en'
             }
-        ];
+    ];
+    cultures.forEach((culture) => cs.register(culture));
 }
 
 

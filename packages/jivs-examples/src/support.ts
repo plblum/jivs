@@ -15,7 +15,8 @@ import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTyp
 export function createMinimalValidationServices(): ValidationServices {
     let vs = new ValidationServices();
 
-    vs.activeCultureId = 'en';
+    // --- CultureServices ----------------------------
+    vs.cultureService.activeCultureId = 'en'; // set this to your default culture
 
     vs.conditionFactory = new ConditionFactory();
     // no Conditions pre-installed except DataTypecheck because

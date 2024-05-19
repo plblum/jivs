@@ -26,6 +26,8 @@ import { IDataTypeConverterService } from '../Interfaces/DataTypeConverterServic
 import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterService';
 import { IDataTypeIdentifierService } from '../Interfaces/DataTypeIdentifierService';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
+import { ICultureService } from '../Interfaces/CultureService';
+import { CultureService } from './CultureService';
 
 /**
  * Supplies services and tools to be used as dependency injection
@@ -77,17 +79,20 @@ export class ValidationServices implements IValidationServices {
     //#endregion IServices
     
     /**
-     * The culture shown to the user in the app. Its the ISO language-region format.
-       This value is the starting point to search through localizations.
-       If not supplied, it defaults to 'en'.
+     * Service to create Culture objects.
      */
-    public get activeCultureId(): string {
-        return this._activeCultureID ?? 'en';
+    public get cultureService(): ICultureService {
+        let service = this.getService<ICultureService>(ServiceName.culture);
+        if (!service) {
+            service = new CultureService();
+            this.setService(ServiceName.culture, service);
+        }
+        return service;
     }
-    public set activeCultureId(cultureID: string) {
-        this._activeCultureID = cultureID;
+    public set cultureService(service: ICultureService) {
+        this.setService(ServiceName.culture, service);
     }
-    private _activeCultureID: string | null = null;
+
 
     /**
      * Factory to create Condition objects.

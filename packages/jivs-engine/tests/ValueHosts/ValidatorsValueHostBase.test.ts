@@ -1444,7 +1444,7 @@ function testValidateFunctionWithPromise(
     };
     let services = new ValidationServices();
     addGeneratorToServices(services);
-    services.activeCultureId = 'en';
+    services.cultureService.activeCultureId = 'en';
     services.conditionFactory = new ConditionFactory();
     services.loggerService = new CapturingLogger();
     registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);

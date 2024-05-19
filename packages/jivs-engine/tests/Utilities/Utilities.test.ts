@@ -1,5 +1,5 @@
 import { ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { cultureLanguageCode, deepClone, deepEquals, groupsMatch } from "../../src/Utilities/Utilities";
+import { deepClone, deepEquals, groupsMatch } from "../../src/Utilities/Utilities";
 
 
 
@@ -153,16 +153,4 @@ describe('Utilities.groupsMatch', () => {
         expect(groupsMatch(['A'], ['B', 'C'])).toBe(false);
         expect(groupsMatch(['A', 'C'], ['B'])).toBe(false);
     });    
-});
-
-describe('cultureLanguageCode', () => {
-    test('Returns the country code as text before a dash', () => {
-        expect(cultureLanguageCode('en-US')).toBe('en');
-        expect(cultureLanguageCode('Abcdef-FR')).toBe('Abcdef');    // because we return everything verbatim if it lacks a dash
-        expect(cultureLanguageCode('-FR')).toBe('-FR'); // dash at the start is a meaningless value
-    });    
-    test('Returns the same when it lacks the country code', () => {
-        expect(cultureLanguageCode('en')).toBe('en');
-        expect(cultureLanguageCode('Abcdef')).toBe('Abcdef');    // because we return everything verbatim if it lacks a dash
-    });
 });
