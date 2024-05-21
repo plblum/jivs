@@ -79,13 +79,17 @@ import { DataTypeComparerService } from "@plblum/jivs-engine/build/Services/Data
  * 'server' is intended for business logic layer itself, where it is working with properties on the model
  * and lacks knowledge of the user's culture. It uses PropertyValueHosts (but not InputValueHosts)
  * When 'all', you get everything.
+ * @param activeCultureId - The CultureId (like 'en' and 'en-US') which is used for localization.
+ * You can change it without creating a new service like this:
+ * services.activeCultureId = 'new cultureid';
  * @returns 
  */
-export function createValidationServices(usage: 'client' | 'server' | 'all' = 'client'): ValidationServices {
+export function createValidationServices(activeCultureId: string,
+    usage: 'client' | 'server' | 'all' = 'client'): ValidationServices {
     let vs = new ValidationServices();
 
     // --- CultureServices ----------------------------
-    vs.cultureService.activeCultureId = 'en'; // set this to your default culture
+    vs.cultureService.activeCultureId = activeCultureId; // set this to your default culture
     registerCultures(vs.cultureService);    // define cultures that you support and their fallbacks
 
     // --- ConditionFactory ---------------------------

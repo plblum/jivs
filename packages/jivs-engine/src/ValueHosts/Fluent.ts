@@ -94,7 +94,7 @@
  *         ConditionType.RegExp, valueHostName, _genCDRegExp(expression, ignoreCase, conditionConfig));
  * }
  * 
- * declare module "../../@plblum/jivs-engine/build/ValueHosts/fluent"
+ * declare module "@plblum/jivs-engine/build/ValueHosts/fluent"
  * {
  *    export interface FluentValidatorCollector
  *    {
