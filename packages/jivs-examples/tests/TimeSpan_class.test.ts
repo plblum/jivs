@@ -60,7 +60,7 @@ test('Register and test values against the TimeSpanIdentifier', () => {
 });
 
 test('Register and test values against TimeSpanToHoursConverter', () => {
-    let vs = createMinimalValidationServices();
+    let vs = createMinimalValidationServices('en');
     let dtcs = vs.dataTypeConverterService as DataTypeConverterService;    
     dtcs.register(new TimeSpanToHoursConverter());
     let timeSpan1 = new TimeSpan(1, 0);
@@ -74,7 +74,7 @@ test('Register and test values against TimeSpanToHoursConverter', () => {
 });
 
 test('Register and test values against TimeSpanToSecondsConverter', () => {
-    let vs = createMinimalValidationServices();
+    let vs = createMinimalValidationServices('en');
     let dtcs = vs.dataTypeConverterService as DataTypeConverterService;    
     dtcs.register(new TimeSpanToSecondsConverter());
     let timeSpan1 = new TimeSpan(1, 0);

@@ -14,7 +14,7 @@ import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost } from '../Interfaces/InputValueHost';
-import { SetValueOptions } from '../Interfaces/ValueHost';
+import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
@@ -244,11 +244,11 @@ export function hasIInputValueHostSpecificMembers(source: IValidatorsValueHostBa
 }
 
 export class InputValueHostGenerator extends ValidatorsValueHostBaseGenerator {
-    public canCreate(config: InputValueHostConfig): boolean {
+    public canCreate(config: ValueHostConfig): boolean {
         if (config.valueHostType != null)    // null/undefined
             return config.valueHostType === ValueHostType.Input;
 
-        if (config.validatorConfigs === undefined)
+        if ((config as InputValueHostConfig).validatorConfigs === undefined)
             return false;
         return true;
     }

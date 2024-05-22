@@ -8,11 +8,11 @@
  * @module DataTypes/ConcreteClasses/DataTypeFormatters
  */
 
+import { cultureLanguageCode } from '../Services/CultureService';
 import { IDataTypeFormatter } from '../Interfaces/DataTypeFormatters';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { IServicesAccessor, IValidationServices } from '../Interfaces/ValidationServices';
 import { CodingError } from '../Utilities/ErrorHandling';
-import { cultureLanguageCode } from '../Utilities/Utilities';
 import { LookupKey } from './LookupKeys';
 
 /**

@@ -1,11 +1,14 @@
-import { InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
+import { InputValueHost, InputValueHostGenerator } from "../../src/ValueHosts/InputValueHost";
 import { ValueHostInstanceState, IValueHost, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
-import { ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
+import { InputValueHostFactory, PropertyValueHostFactory, ValueHostFactory, registerStandardValueHostGenerators } from "../../src/ValueHosts/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { MockValidationManager, MockValidationServices } from "../TestSupport/mocks";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { BusinessLogicErrorsValueHostType } from "../../src/ValueHosts/BusinessLogicErrorsValueHost";
+import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
+import { ValidatorsValueHostBaseConfig } from "../../src/Interfaces/ValidatorsValueHostBase";
 
 /**
  * For testing the Factory's support of IValueHostGenerator implementations
@@ -214,5 +217,165 @@ describe('registerDefaultValueHostGenerators', () => {
         expect(() => registerStandardValueHostGenerators(factory)).not.toThrow();
         expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '', label: '' })).toBe(true);
         
+    });
+});
+
+describe('InputValueHostFactory', () => {
+    test('Contains all ValueHosts except PropertyValueHost', () => {
+        let factory = new InputValueHostFactory();
+        expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '' })).toBe(true);
+        expect(factory.isRegistered({ valueHostType: ValueHostType.Static, name: '' })).toBe(true);
+        expect(factory.isRegistered({ valueHostType: ValueHostType.Calc, name: '' })).toBe(true);
+        expect(factory.isRegistered({ valueHostType: BusinessLogicErrorsValueHostType, name: '' })).toBe(true);
+
+        expect(factory.isRegistered({ valueHostType: ValueHostType.Property, name: '' })).toBe(false);
+    });
+    test('create using ValueHostType.Input creates InputValueHost', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let config: ValueHostConfig = {
+            name: 'Field1',
+            label: 'Label1',
+            valueHostType: ValueHostType.Input,
+            dataType: LookupKey.String,
+            initialValue: 'DATA'
+        };
+
+        let state: IFactoryTestsValueHostInstanceState = {
+            name: 'Field1',
+            value: 'Value',
+            Counter: 0
+        };
+        let testItem = new InputValueHostFactory();
+        let valueHost: IValueHost | null = null;
+        expect(() => valueHost = testItem.create(vm, config, state)).not.toThrow();
+        expect(valueHost).toBeInstanceOf(InputValueHost);
+        expect(valueHost!.getName()).toBe('Field1');
+        expect(valueHost!.getValue()).toBe('Value');
+    });    
+    test('create using ValueHostType.Property returns InputValueHost (autoconverted)', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let config: ValueHostConfig = {
+            name: 'Field1',
+            label: 'Label1',
+            valueHostType: ValueHostType.Property,
+            dataType: LookupKey.String,
+            initialValue: 'DATA'
+        };
+
+        let state: IFactoryTestsValueHostInstanceState = {
+            name: 'Field1',
+            value: 'Value',
+            Counter: 0
+        };
+        let testItem = new InputValueHostFactory();
+        let valueHost: IValueHost | null = null;
+        expect(() => valueHost = testItem.create(vm, config, state)).not.toThrow();
+        expect(valueHost).toBeInstanceOf(InputValueHost);
+        expect(valueHost!.getName()).toBe('Field1');
+        expect(valueHost!.getValue()).toBe('Value');
+
+    });        
+
+    describe('PropertyValueHostFactory', () => {
+        test('Contains all ValueHosts except InputValueHost', () => {
+            let factory = new PropertyValueHostFactory();
+            expect(factory.isRegistered({ valueHostType: ValueHostType.Property, name: '' })).toBe(true);
+            expect(factory.isRegistered({ valueHostType: ValueHostType.Static, name: '' })).toBe(true);
+            expect(factory.isRegistered({ valueHostType: ValueHostType.Calc, name: '' })).toBe(true);
+            expect(factory.isRegistered({ valueHostType: BusinessLogicErrorsValueHostType, name: '' })).toBe(true);
+    
+            expect(factory.isRegistered({ valueHostType: ValueHostType.Input, name: '' })).toBe(false);
+        });
+        test('create using ValueHostType.Property creates PropertyValueHost', () => {
+            let services = new MockValidationServices(false, false);
+            let vm = new MockValidationManager(services);
+            let config: ValueHostConfig = {
+                name: 'Field1',
+                label: 'Label1',
+                valueHostType: ValueHostType.Property,
+                dataType: LookupKey.String,
+                initialValue: 'DATA'
+            };
+    
+            let state: IFactoryTestsValueHostInstanceState = {
+                name: 'Field1',
+                value: 'Value',
+                Counter: 0
+            };
+            let testItem = new PropertyValueHostFactory();
+            let valueHost: IValueHost | null = null;
+            expect(() => valueHost = testItem.create(vm, config, state)).not.toThrow();
+            expect(valueHost).toBeInstanceOf(PropertyValueHost)
+            expect(valueHost!.getName()).toBe('Field1');
+            expect(valueHost!.getValue()).toBe('Value');
+        });
+        test('create using ValueHostType.Input returns PropertyValueHost (autoconverted)', () => {
+            let services = new MockValidationServices(false, false);
+            let vm = new MockValidationManager(services);
+            let config: ValueHostConfig = {
+                name: 'Field1',
+                label: 'Label1',
+                valueHostType: ValueHostType.Input,
+                dataType: LookupKey.String,
+                initialValue: 'DATA'
+            };
+    
+            let state: IFactoryTestsValueHostInstanceState = {
+                name: 'Field1',
+                value: 'Value',
+                Counter: 0
+            };
+            let testItem = new PropertyValueHostFactory();
+            let valueHost: IValueHost | null = null;
+            expect(() => valueHost = testItem.create(vm, config, state)).not.toThrow();
+            expect(valueHost).toBeInstanceOf(PropertyValueHost);
+    
+        });
+        test('create using ValueHostType.null and has validatorConfigs property returns PropertyValueHost (autoconverted)', () => {
+            let services = new MockValidationServices(false, false);
+            let vm = new MockValidationManager(services);
+            let config: ValidatorsValueHostBaseConfig = {
+                name: 'Field1',
+                label: 'Label1',
+                valueHostType: null!,
+                dataType: LookupKey.String,
+                initialValue: 'DATA',
+                validatorConfigs: []
+            };
+    
+            let state: IFactoryTestsValueHostInstanceState = {
+                name: 'Field1',
+                value: 'Value',
+                Counter: 0
+            };
+            let testItem = new PropertyValueHostFactory();
+            let valueHost: IValueHost | null = null;
+            expect(() => valueHost = testItem.create(vm, config, state)).not.toThrow();
+            expect(valueHost).toBeInstanceOf(PropertyValueHost);
+    
+        });        
+        test('create using ValueHostType.null and lacks validatorConfigs property to throw', () => {
+            let services = new MockValidationServices(false, false);
+            let vm = new MockValidationManager(services);
+            let config: ValueHostConfig = {
+                name: 'Field1',
+                label: 'Label1',
+                valueHostType: null!,
+                dataType: LookupKey.String,
+                initialValue: 'DATA'
+            };
+    
+            let state: IFactoryTestsValueHostInstanceState = {
+                name: 'Field1',
+                value: 'Value',
+                Counter: 0
+            };
+            let testItem = new PropertyValueHostFactory();
+            let valueHost: IValueHost | null = null;
+            expect(() => valueHost = testItem.create(vm, config, state)).toThrow();
+    
+        });                
     });
 });

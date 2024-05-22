@@ -69,6 +69,12 @@ export interface IValueHostResolver extends IServicesAccessor {
      * is unknown or not the expected type.
      */
     vh: IValueHostAccessor;    
+
+    /**
+     * Provides a way to enumerate through existing ValueHosts.
+     * @returns A generator that yields ValueHosts
+     */
+    enumerateValueHosts(filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost>;
 }
 
 /**
@@ -85,7 +91,8 @@ export function toIValueHostResolver(source: any): IValueHostResolver | null
             test.getInputValueHost !== undefined &&
             test.getCalcValueHost !== undefined &&
             test.getStaticValueHost !== undefined &&
-            test.services !== undefined)
+            test.services !== undefined &&
+            test.enumerateValueHosts !== undefined)
             return test;
     }
     return null;

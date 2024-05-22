@@ -191,10 +191,10 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
-        vm.services.activeCultureId = 'de-DE';  // not configured in LA
-        expect(() => testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vm, messageTokeSource)).toThrow();
+        vm.services.cultureService.activeCultureId = 'de-DE';  // not configured in LA
+        expect(() => testItem.resolveTokens('{token:UNKNOWNLOOKUPKEY}', null!, vm, messageTokeSource)).toThrow();
 
-        expect(logger.findMessage('support CultureID', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('Unsupported LookupKey', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService')).not.toBeNull();
     });        
 });
 

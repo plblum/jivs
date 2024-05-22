@@ -37,7 +37,7 @@ describe('UTCMonthYearConverter', () => {
         let date7 = new Date(Date.UTC(2000, 10, 30, 23, 59, 59));
         let date8 = new Date(Date.UTC(2001, 10, 1));
         
-        let vs = createMinimalValidationServices();
+        let vs = createMinimalValidationServices('en');
         let dtcs = vs.dataTypeConverterService as DataTypeConverterService;    
         dtcs.register(new UTCMonthYearConverter());
         let compareService = vs.dataTypeComparerService as DataTypeComparerService;

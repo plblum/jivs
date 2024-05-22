@@ -45,6 +45,8 @@ import { toICalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { toIStaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { PropertyValueHostInstanceState, IPropertyValueHost } from "../../src/Interfaces/PropertyValueHost";
 import { toIPropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
+import { ICultureService } from "../../src/Interfaces/CultureService";
+import { CultureService } from "../../src/Services/CultureService";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -237,7 +239,8 @@ export class MockValidationServices implements IValidationServices
         this._valueHostFactory = factory;
         this._validatorFactory = new ValidatorFactory();
 
-        this.activeCultureId = 'en';
+        this._cultureService = new CultureService();
+        this.cultureService.activeCultureId = 'en';
         this._conditionFactory = new ConditionFactory();
         this.dataTypeFormatterService = new DataTypeFormatterService();
         this.dataTypeComparerService = new DataTypeComparerService();
@@ -291,13 +294,15 @@ export class MockValidationServices implements IValidationServices
 
     private _services: { [serviceName: string]: any } = {};
     
-    public get activeCultureId(): string {
-        return this._activeCultureID;
+
+    public get cultureService(): ICultureService {
+        return this._cultureService;
     }
-    public set activeCultureId(cultureID: string) {
-        this._activeCultureID = cultureID;
+    public set cultureService(service: ICultureService)
+    {
+        this._cultureService = service;
     }
-    private _activeCultureID: string = 'en';
+    private _cultureService!: ICultureService;    
 
     public get conditionFactory(): IConditionFactory
     {
@@ -441,6 +446,12 @@ export class MockValidationManager implements IValidationManager, IValidationMan
  * Always replace a ValueHost when the associated Config or InstanceState are changed.
  */    
     private _valueHosts: Map<string, IValueHost> = new Map<string, IValueHost>();  
+
+    public *enumerateValueHosts(): Generator<IValueHost> {
+        for (let key in this._valueHosts) {
+            yield this._valueHosts.get(key)!;
+        }
+    }    
     
     public addMockValueHost(name: ValueHostName, dataTypeLookupKey: string, label: string, value?: any): MockValueHost
     {

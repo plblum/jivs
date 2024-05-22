@@ -12,10 +12,11 @@ import { MessageTokenResolverService } from "@plblum/jivs-engine/build/Services/
 import { DataTypeCheckCondition, DataTypeCheckConditionConfig } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 
-export function createMinimalValidationServices(): ValidationServices {
+export function createMinimalValidationServices(activeCultureId: string): ValidationServices {
     let vs = new ValidationServices();
 
-    vs.activeCultureId = 'en';
+    // --- CultureServices ----------------------------
+    vs.cultureService.activeCultureId = activeCultureId; // set this to your default culture
 
     vs.conditionFactory = new ConditionFactory();
     // no Conditions pre-installed except DataTypecheck because

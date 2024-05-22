@@ -1,4 +1,4 @@
-import { createCultureIdFallbacksForEn, createCultureIdFallbacksForFR, populateServicesWithManyCultures } from "../TestSupport/utilities";
+import { registerCultureIdFallbacksForEn, registerCultureIdFallbacksForFR, populateServicesWithManyCultures } from "../TestSupport/utilities";
 import { BooleanFormatter, NumberFormatter } from "../../src/DataTypes/DataTypeFormatters";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService";
@@ -30,95 +30,19 @@ class TestFormatter implements IDataTypeFormatter {
 
 describe('DataTypeFormatterServices constructor and properties', () => {
 
-    class Publicify_DataTypeFormatterService extends DataTypeFormatterService {
-        constructor(cultureConfig?: Array<CultureIdFallback> | null) {
-            super(cultureConfig);
-        }
-        public get exposedCultureIdFallback(): Array<CultureIdFallback> {
-            return this.cultureIdFallback;
-        }
-        public exposedGetCultureIdFallback(cultureId: string): CultureIdFallback | null {
-            return this.getCultureIdFallback(cultureId);
-        }
-    }
     test('Constructor with no parameters', () => {
-        let testItem = new Publicify_DataTypeFormatterService();
+        let testItem = new DataTypeFormatterService();
         expect(() => testItem.services).toThrow(/Assign/);
-        expect(() => testItem.exposedCultureIdFallback).toThrow(/CultureIdFallback/);
+
     });
 
     test('Attach Services returns the same instance', () => {
         let services = new MockValidationServices(false, false);
-        let testItem = new Publicify_DataTypeFormatterService();
+        let testItem = new DataTypeFormatterService();
         expect(() => testItem.services = services).not.toThrow();
         let x: any;
         expect(() => x = testItem.services).not.toThrow();
         expect(x).toBe(services);
-        expect(testItem.exposedCultureIdFallback).toEqual([{
-            cultureId: 'en'
-        }]);
-    });
-    test('Change activeCultureID in Services impacts cultureIdFallback', () => {
-        let services = new MockValidationServices(false, false);
-        let testItem = new Publicify_DataTypeFormatterService();
-        services.activeCultureId = 'fr';
-        testItem.services = services;
-
-        expect(testItem.exposedCultureIdFallback).toEqual([{
-            cultureId: 'fr'
-        }]);
-    });
-    test('Constructor with Culture Fallbacks can retrieve the fr Culture Fallback', () => {
-        let ccs: Array<CultureIdFallback> = [
-            {
-                cultureId: 'en',
-                fallbackCultureId: null
-            },
-            {
-                cultureId: 'fr',
-                fallbackCultureId: 'en'
-            }
-        ];
-        let services = new MockValidationServices(false, false);
-        let testItem = new Publicify_DataTypeFormatterService(ccs);
-        testItem.services = services;
-
-        expect(testItem.exposedCultureIdFallback).toEqual(ccs);
-        services.activeCultureId = 'fr';
-        expect(testItem.exposedGetCultureIdFallback('fr')).toEqual({
-            cultureId: 'fr',
-            fallbackCultureId: 'en'
-        });
-    });
-});
-
-describe('DataTypeFormatterServices.getClosestCultureId', () => {
-    describe('getClosestCultureId with en as final fallback', () => {
-        test('Various', () => {
-            let ccs = createCultureIdFallbacksForEn();
-            let testItem = new DataTypeFormatterService(ccs);
-            expect(testItem.getClosestCultureId('en')).toBe('en');
-            expect(testItem.getClosestCultureId('fr')).toBe('fr');
-            expect(testItem.getClosestCultureId('fr-FR')).toBe('fr-FR');
-            expect(testItem.getClosestCultureId('en-US')).toBe('en-US');
-            expect(testItem.getClosestCultureId('fr-CA')).toBe('fr');
-            expect(testItem.getClosestCultureId('en-MX')).toBe('en');
-            expect(testItem.getClosestCultureId('de')).toBeNull();
-            expect(testItem.getClosestCultureId('de-DE')).toBeNull();
-        });
-    });
-    describe('getClosestCultureId with fr as final fallback', () => {
-        test('Various', () => {
-            let ccs = createCultureIdFallbacksForFR();
-            let testItem = new DataTypeFormatterService(ccs);
-            expect(testItem.getClosestCultureId('fr')).toBe('fr');
-            expect(testItem.getClosestCultureId('fr-FR')).toBe('fr-FR');
-            expect(testItem.getClosestCultureId('en-US')).toBe('en-US');
-            expect(testItem.getClosestCultureId('fr-CA')).toBe('fr');
-            expect(testItem.getClosestCultureId('en-MX')).toBe('en');
-            expect(testItem.getClosestCultureId('de')).toBeNull();
-            expect(testItem.getClosestCultureId('de-DE')).toBeNull();
-        });
     });
 });
 
@@ -175,11 +99,11 @@ describe('DataTypeFormatterService.format', () => {
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
         let date = new Date(2000, 0, 11);
-        testItem.services.activeCultureId = 'en-GB';
+        testItem.services.cultureService.activeCultureId = 'en-GB';
         expect(testItem.format(date)).toEqual({ value: '11/01/2000' });
-        testItem.services.activeCultureId = 'en';
+        testItem.services.cultureService.activeCultureId = 'en';
         expect(testItem.format(date)).toEqual({ value: '1/11/2000' });
-        testItem.services.activeCultureId = 'fr';
+        testItem.services.cultureService.activeCultureId = 'fr';
         expect(testItem.format(date)).toEqual({ value: '11/01/2000' });
     });
     test('Number to string using built-in localization', () => {
@@ -188,11 +112,11 @@ describe('DataTypeFormatterService.format', () => {
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
         let value = 4000.932;
-        testItem.services.activeCultureId = 'en-GB';
+        testItem.services.cultureService.activeCultureId = 'en-GB';
         expect(testItem.format(value)).toEqual({ value: '4,000.932' });
-        testItem.services.activeCultureId = 'en';
+        testItem.services.cultureService.activeCultureId = 'en';
         expect(testItem.format(value)).toEqual({ value: '4,000.932' });
-        testItem.services.activeCultureId = 'fr';
+        testItem.services.cultureService.activeCultureId = 'fr';
         expect(testItem.format(value)).toEqual({ value: '4\u{202F}000,932' });
     });
     test('String to string using built-in localization. Expect no changes', () => {
@@ -200,11 +124,11 @@ describe('DataTypeFormatterService.format', () => {
         populateServicesWithManyCultures(services, 'en', true);
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         let value = 'abcZYX';
-        testItem.services.activeCultureId = 'en-GB';
+        testItem.services.cultureService.activeCultureId = 'en-GB';
         expect(testItem.format(value)).toEqual({ value: value });
-        testItem.services.activeCultureId = 'en';
+        testItem.services.cultureService.activeCultureId = 'en';
         expect(testItem.format(value)).toEqual({ value: value });
-        testItem.services.activeCultureId = 'fr';
+        testItem.services.cultureService.activeCultureId = 'fr';
         expect(testItem.format(value)).toEqual({ value: value });
     });
     test('Lookup Key supplied not compatible with native data type error', () => {

@@ -14,7 +14,7 @@ import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService
 
 describe('PositiveNumberCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
-        let services = createMinimalValidationServices();
+        let services = createMinimalValidationServices('en');
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: []
@@ -51,7 +51,7 @@ describe('PositiveNumberCondition tests', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('Using Fluent Syntax, demonstrate validate() returns Valid and Invalid as expected', () => {
-        let services = createMinimalValidationServices();
+        let services = createMinimalValidationServices('en');
         (services.conditionFactory as ConditionFactory).register<PositiveNumberConditionConfig>(
             positiveNumberConditionType, (config)=> new PositiveNumberCondition(config)
         );

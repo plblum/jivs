@@ -85,7 +85,7 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
         validatorConfigs: []
     };
 
-    let services = createMinimalValidationServices();
+    let services = createMinimalValidationServices('en');
     // let's add the supporting tools needed by this example
     // normally you call createValidationServices() which already has this stuff setup
     let convertService = services.dataTypeConverterService as DataTypeConverterService;

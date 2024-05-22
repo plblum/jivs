@@ -4,7 +4,7 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { cleanString, deepEquals, groupsMatch } from '../Utilities/Utilities';
-import { type SetValueOptions} from '../Interfaces/ValueHost';
+import { ValueHostConfig, type SetValueOptions} from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
@@ -446,7 +446,7 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 }
 
 export abstract class ValidatableValueHostBaseGenerator implements IValueHostGenerator {
-    public abstract canCreate(config: ValidatableValueHostBaseConfig): boolean;
+    public abstract canCreate(config: ValueHostConfig): boolean;
 
     public abstract create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase;
 
