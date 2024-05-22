@@ -31,6 +31,7 @@ import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { EqualToValueCondition, EqualToValueConditionConfig, RegExpCondition, RegExpConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
+import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValueHostsManager extends ValueHostsManager<ValueHostsManagerInstanceState> {
@@ -1150,17 +1151,115 @@ describe('vh', () => {
         expect(() => vhm.vh.property('Field1')).toThrow(/PropertyValueHost/);        
     });
 });
+describe('enumerateValueHosts', () => {
+    test('No valuehosts exist, returns generator.result.done=true on first request', () => {
+        let vhConfig: ValueHostsManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: []
+        };
+        let vhm = new ValueHostsManager(vhConfig);
+        let generator = vhm.enumerateValueHosts();
+        expect(generator).toBeDefined();
+        let first = generator.next();
+        expect(first.done).toBe(true);
+        expect(first.value).toBeUndefined();
+    });
+    test('3 valuehosts exist, returns all 3 and on the 4th call, returns result.done=true', () => {
+        let vhConfig: ValueHostsManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [{
+                valueHostType: ValueHostType.Input,
+                name: 'Field1'
+            },
+            {
+                valueHostType: ValueHostType.Property,
+                name: 'Field2'
+            },
+            {
+                valueHostType: ValueHostType.Static,
+                name: 'Field3'
+            }]
+        };
+        let vhm = new ValueHostsManager(vhConfig);
+        let generator = vhm.enumerateValueHosts();
+        expect(generator).toBeDefined();
+        let first = generator.next();
+        expect(first.done).toBe(false);
+        expect(first.value).toBeInstanceOf(InputValueHost);
+        let second = generator.next();
+        expect(second.done).toBe(false);
+        expect(second.value).toBeInstanceOf(PropertyValueHost);
+        let third = generator.next();
+        expect(third.done).toBe(false);
+        expect(third.value).toBeInstanceOf(StaticValueHost);
+        let fourth = generator.next();
+        expect(fourth.done).toBe(true);
+        expect(fourth.value).toBeUndefined();       
+    });    
+    test('3 valuehosts exist and filter wants only InputValueHost, returns 1 InputValueHost and on the 2nd call, returns result.done=true', () => {
+        let vhConfig: ValueHostsManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [{
+                valueHostType: ValueHostType.Input,
+                name: 'Field1'
+            },
+            {
+                valueHostType: ValueHostType.Property,
+                name: 'Field2'
+            },
+            {
+                valueHostType: ValueHostType.Static,
+                name: 'Field3'
+            }]
+        };
+        let vhm = new ValueHostsManager(vhConfig);
+        let generator = vhm.enumerateValueHosts((vh)=> vh instanceof InputValueHost);
+        expect(generator).toBeDefined();
+        let first = generator.next();
+        expect(first.done).toBe(false);
+        expect(first.value).toBeInstanceOf(InputValueHost);
+        let second = generator.next();
+        expect(second.done).toBe(true);
+        expect(second.value).toBeUndefined();     
+    });        
+    test('3 valuehosts exist and filter wants only CalcValueHost, returns result.done=true on first request', () => {
+        let vhConfig: ValueHostsManagerConfig = {
+            services: createValidationServicesForTesting(),
+            valueHostConfigs: [{
+                valueHostType: ValueHostType.Input,
+                name: 'Field1'
+            },
+            {
+                valueHostType: ValueHostType.Property,
+                name: 'Field2'
+            },
+            {
+                valueHostType: ValueHostType.Static,
+                name: 'Field3'
+            }]
+        };
+        let vhm = new ValueHostsManager(vhConfig);
+        let generator = vhm.enumerateValueHosts((vh)=> vh instanceof CalcValueHost);
+        expect(generator).toBeDefined();
+        let first = generator.next();
+        expect(first.done).toBe(true);
+        expect(first.value).toBeUndefined();
+    });            
+});
 describe('toIValueHostResolver function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostResolver = {
             getValueHost: (name) => { return <any>{}; },
             vh: {} as unknown as IValueHostAccessor,
-            getValidatorsValueHost: (name) => { return <any>{} },
+            getValidatorsValueHost: (name) => { return <any>{}; },
             getInputValueHost: (name) => { return <any>{}; },
             getPropertyValueHost: (name) => { return <any>{}; },
             getCalcValueHost: (name) => { return <any>{}; },
             getStaticValueHost: (name) => { return <any>{}; },
             services: new MockValidationServices(false, false),
+            enumerateValueHosts: function (): Generator<IValueHost, any, unknown> {
+                throw new Error("Function not implemented.");
+            }
         };
         expect(toIValueHostResolver(testItem)).toBe(testItem);
     });
@@ -1187,7 +1286,7 @@ describe('toIValueHostsManager function', () => {
         let testItem: IValueHostsManager = {
             getValueHost: (name) => { return <any>{}; },
             vh: {} as unknown as IValueHostAccessor,
-            getValidatorsValueHost: (name) => { return <any>{} },
+            getValidatorsValueHost: (name) => { return <any>{}; },
             getInputValueHost: (name) => { return <any>{}; },
             getPropertyValueHost: (name) => { return <any>{}; },
             getCalcValueHost: (name) => { return <any>{}; },
@@ -1205,6 +1304,9 @@ describe('toIValueHostsManager function', () => {
                 throw new Error("Function not implemented.");
             },
             build: function () {
+                throw new Error("Function not implemented.");
+            },
+            enumerateValueHosts: function (filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
                 throw new Error("Function not implemented.");
             }
         };
@@ -1234,7 +1336,7 @@ describe('toIValueHostsManagerAccessor function', () => {
             valueHostsManager :{
                 getValueHost: (name) => { return <any>{}; },
                 vh: {} as unknown as IValueHostAccessor,
-                getValidatorsValueHost: (name) => { return <any>{} },
+                getValidatorsValueHost: (name) => { return <any>{}; },
                 getInputValueHost: (name) => { return <any>{}; },
                 getPropertyValueHost: (name) => { return <any>{}; },
                 getCalcValueHost: (name) => { return <any>{}; },
@@ -1252,6 +1354,9 @@ describe('toIValueHostsManagerAccessor function', () => {
                     throw new Error("Function not implemented.");
                 },
                 build: function () {
+                    throw new Error("Function not implemented.");
+                },
+                enumerateValueHosts: function (filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
                     throw new Error("Function not implemented.");
                 }
             }

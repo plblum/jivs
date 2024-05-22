@@ -13,13 +13,13 @@ import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifier
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { IServiceWithFallback, IServicesAccessor, toIServiceWithFallback, toIServicesAccessor } from "../../src/Interfaces/ValidationServices";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CultureService } from "../../src/Services/CultureService";
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
     test('Has parameters', () => {
 
         let testItem = new ValidationServices();
-        // check defaults for factories and services
-        expect(testItem.activeCultureId).toBe('en');        
+      
         let x: any;
         expect(() => x = testItem.conditionFactory).toThrow(/ConditionFactory/);
         expect(() => x = testItem.dataTypeFormatterService).toThrow(/dataTypeFormatterService/);
@@ -32,6 +32,7 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(testItem.valueHostFactory).toBeInstanceOf(ValueHostFactory);
         expect(testItem.validatorFactory).toBeInstanceOf(ValidatorFactory);
         expect(testItem.textLocalizerService).toBeInstanceOf(TextLocalizerService);
+        expect(testItem.cultureService).toBeInstanceOf(CultureService);        
     });
 });
 describe('Replace factories and services', () => {
@@ -104,12 +105,7 @@ describe('Replace factories and services', () => {
         testItem.validatorFactory = replacement;
         expect(testItem.validatorFactory).toBe(replacement);
     });    
-    test('Replace activeCultureID', () => {
-        let replacement = 'fr';
-        let testItem = new ValidationServices();
-        testItem.activeCultureId = replacement;
-        expect(testItem.activeCultureId).toBe(replacement);
-    });    
+
 });
 describe('valueHostFactory property', () => {
     test('Set and Get', () => {

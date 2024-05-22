@@ -1,4 +1,4 @@
-import { assertNotNull } from "../../src/Utilities/ErrorHandling";
+import { InvalidTypeError, assertNotNull } from "../../src/Utilities/ErrorHandling";
 
 // function assertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
 describe("Utilities.assertNotNull tests", () => {
@@ -13,4 +13,11 @@ describe("Utilities.assertNotNull tests", () => {
         expect(() => assertNotNull({}, 'parm')).not.toThrow();
         expect(() => assertNotNull([], 'parm')).not.toThrow();
    }); 
+});
+describe('InvalidTypeError', () => {
+    test('create', () => {
+        let testItem = new InvalidTypeError('Value');
+        expect(testItem.message).toBe('Type is not supported for this value: Value');
+        expect(testItem).toBeInstanceOf(Error);
+    });
 });

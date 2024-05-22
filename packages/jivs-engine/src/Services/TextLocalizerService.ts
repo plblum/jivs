@@ -2,7 +2,7 @@
  * @module Services/ConcreteClasses/TextLocalizerService
  */
 import { CultureToText, ITextLocalizerService } from '../Interfaces/TextLocalizerService';
-import { cultureLanguageCode } from '../Utilities/Utilities';
+import { cultureLanguageCode } from '../Services/CultureService';
 import { assertValidFallbacks } from './ValidationServices';
 
 /**

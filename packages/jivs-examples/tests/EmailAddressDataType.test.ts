@@ -10,7 +10,7 @@ import { createMinimalValidationServices } from '../src/support';
 
 describe('EmailAddressCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
-        let services = createMinimalValidationServices();
+        let services = createMinimalValidationServices('en');
         let vm = new ValidationManager({
             services: services,
             valueHostConfigs: []
@@ -48,7 +48,7 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
         expect(testItem.supportsValue(LookupKey.String)).toBe(false);
     });
     test('createCondition() function (only supports EmailAddressLookupKey)', () => {
-        let services = createMinimalValidationServices();
+        let services = createMinimalValidationServices('en');
         let vm = new ValidationManager({
             services: services,
             valueHostConfigs: []

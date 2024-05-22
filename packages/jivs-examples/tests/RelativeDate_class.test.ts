@@ -48,7 +48,7 @@ test('Register and test values against the RelativeDateIdentifier', () => {
 });
 
 test('Register and test values against RelativeDateConverter', () => {
-    let vs = createMinimalValidationServices();
+    let vs = createMinimalValidationServices('en');
 
     let dtis = vs.dataTypeIdentifierService as DataTypeIdentifierService;
     dtis.register(new RelativeDateIdentifier());

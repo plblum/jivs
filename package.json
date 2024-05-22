@@ -54,7 +54,9 @@
     "test:github": "jest --silent --ci --reporters='default' --reporters='./.github/scripts/github-actions-reporter'",
     "gulp": "node gulpfile.mjs",
     "clean": "gulp clean",
+    "prebumpversion": "npm --prefix ./packages/jivs-engine run compile",      
     "bumpversion": "lerna version --no-private",
+    "prepublish_library": "npm --prefix ./packages/jivs-engine run compile",      
     "publish_library": "lerna publish --no-private",
     "retry_publish": "lerna publish from-package"    
   },

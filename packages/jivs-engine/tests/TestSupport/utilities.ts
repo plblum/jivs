@@ -1,3 +1,4 @@
+import { ICultureService } from "../../src/Interfaces/CultureService";
 import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
@@ -6,15 +7,15 @@ import { registerDataTypeIdentifiers, registerDataTypeFormatters } from "./creat
 
 
 export function populateServicesWithManyCultures(services: IValidationServices, activeCultureId: string, registerFormatters: boolean = false): void {
-    services.activeCultureId = activeCultureId;
+    services.cultureService.activeCultureId = activeCultureId;
+    registerCultureIdFallbacksForEn(services.cultureService);
 
     let dtis = new DataTypeIdentifierService();
     services.dataTypeIdentifierService = dtis;
 
     registerDataTypeIdentifiers(dtis);   // always
     if (registerFormatters) {
-        let ccs = createCultureIdFallbacksForEn();
-        let dtfs = new DataTypeFormatterService(ccs);
+        let dtfs = new DataTypeFormatterService();
         services.dataTypeFormatterService = dtfs;
         dtfs.services = services;
         registerDataTypeFormatters(dtfs);
@@ -23,48 +24,44 @@ export function populateServicesWithManyCultures(services: IValidationServices, 
 }
 
 
-export function createCultureIdFallbacksForEn(): Array<CultureIdFallback> {
-    return [
-        {
-            cultureId: 'en',
-            fallbackCultureId: null
-        },
-        {
-            cultureId: 'fr',
-            fallbackCultureId: 'en'
-        },
-        {
-            cultureId: 'fr-FR',
-            fallbackCultureId: 'fr'
-        },
-        {
-            cultureId: 'en-US',
-            fallbackCultureId: 'en'
-        },
-        {
-            cultureId: 'en-GB',
-            fallbackCultureId: 'en-US'
-        },
-    ];
-}
-export function createCultureIdFallbacksForFR(): Array<CultureIdFallback> {
-    return [
-        {
-            cultureId: 'fr',
-            fallbackCultureId: null
-        },
-        {
-            cultureId: 'en',
-            fallbackCultureId: 'fr'
-        },
-        {
-            cultureId: 'fr-FR',
-            fallbackCultureId: 'fr'
-        },
-        {
-            cultureId: 'en-US',
-            fallbackCultureId: 'en'
-        },
+export function registerCultureIdFallbacksForEn(service: ICultureService): void {
+    service.register(<CultureIdFallback>{
+        cultureId: 'en',
+        fallbackCultureId: null
+    });
+    service.register(<CultureIdFallback>{
+        cultureId: 'fr',
+        fallbackCultureId: 'en'
+    });
+    service.register(<CultureIdFallback>{
+        cultureId: 'fr-FR',
+        fallbackCultureId: 'fr'
+    });
+    service.register(<CultureIdFallback>{
+        cultureId: 'en-US',
+        fallbackCultureId: 'en'
+    });
+    service.register(<CultureIdFallback>{
+        cultureId: 'en-GB',
+        fallbackCultureId: 'en-US'
+    });
 
-    ];
+}
+export function registerCultureIdFallbacksForFR(service: ICultureService): void {
+    service.register(<CultureIdFallback>{
+        cultureId: 'fr',
+        fallbackCultureId: null
+    });
+    service.register(<CultureIdFallback>{
+        cultureId: 'en',
+        fallbackCultureId: 'fr'
+    });
+    service.register(<CultureIdFallback>{
+        cultureId: 'fr-FR',
+        fallbackCultureId: 'fr'
+    });
+    service.register(<CultureIdFallback>{
+        cultureId: 'en-US',
+        fallbackCultureId: 'en'
+    });
 }

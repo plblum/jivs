@@ -8,6 +8,7 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { InputValueHost, hasIInputValueHostSpecificMembers } from './InputValueHost';
+import { ValueHostConfig } from '../Interfaces/ValueHost';
 
 
 /**
@@ -52,7 +53,7 @@ export class PropertyValueHost extends ValidatorsValueHostBase<PropertyValueHost
  */
 export class PropertyValueHostGenerator extends ValidatorsValueHostBaseGenerator {
 
-    public canCreate(config: PropertyValueHostConfig): boolean {
+    public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === ValueHostType.Property;
     }
     public create(valueHostsManager: IValueHostsManager, config: PropertyValueHostConfig, state: PropertyValueHostInstanceState): IPropertyValueHost {

@@ -213,11 +213,11 @@ export class Validator implements IValidator {
         let l10n = (this.getFromInstanceState('errorMessagel10n') ??
                     this.config.errorMessagel10n) as string | null;
         if (l10n)
-            msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
+            msg = this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId,
                 l10n, msg);
         if (msg == null)  // null/undefined
         {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
-            msg = this.services.textLocalizerService.getErrorMessage(this.services.activeCultureId,
+            msg = this.services.textLocalizerService.getErrorMessage(this.services.cultureService.activeCultureId,
                 this.errorCode, this.valueHost.getDataType());
         }
         if (msg == null) {
@@ -245,11 +245,11 @@ export class Validator implements IValidator {
         let l10n = (this.getFromInstanceState('summaryMessagel10n') ??
                     this.config.summaryMessagel10n) as string | null;
         if (l10n)
-            msg = this.services.textLocalizerService.localize(this.services.activeCultureId,
+            msg = this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId,
                 l10n, msg ?? '');
         if (msg == null)  // null/undefined
         {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
-            msg = this.services.textLocalizerService.getSummaryMessage(this.services.activeCultureId,
+            msg = this.services.textLocalizerService.getSummaryMessage(this.services.cultureService.activeCultureId,
                 this.errorCode, this.valueHost.getDataType());
         }
         if (msg == null)

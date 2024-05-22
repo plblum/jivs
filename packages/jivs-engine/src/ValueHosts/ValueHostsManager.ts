@@ -111,6 +111,20 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     }
 
     private readonly _valueHosts: IValueHostsMap = {};
+
+    /**
+     * Provides a way to enumerate through existing ValueHosts.
+     * @returns A generator that yields a tuple of [valueHostName, IValueHost]
+     */
+    public *enumerateValueHosts(filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
+        for (let key in this.valueHosts) {
+            let vh = this.valueHosts[key];
+            if (filter && !filter(vh))
+                continue;
+            yield vh;
+        }
+    }
+
     /**
      * ValueHostConfigs supplied by the caller (business logic).
      * Always replace a ValueHost when its Config changes.

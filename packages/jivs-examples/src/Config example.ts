@@ -194,7 +194,7 @@ export function UIPhase_Customize(use: 'objects' | 'fluent'): IValidationManager
 // for this example.
 function createValidationServices(): ValidationServices
 {
-    let services = createMinimalValidationServices();
+    let services = createMinimalValidationServices('en');
     // We are expecting to use
     // Data Types: Date, Integer, String. We automatically get Date and String setup.
     // Integer is supported as "Number" automatically. We only need to

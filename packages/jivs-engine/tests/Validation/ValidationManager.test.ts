@@ -1073,7 +1073,7 @@ describe('toIValidationManager function', () => {
             },
             getStaticValueHost: function (valueHostName: string): IStaticValueHost | null {
                 throw new Error("Function not implemented.");
-            },            
+            },
             services: new MockValidationServices(false, false),
             addValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
                 throw new Error("Function not implemented.");
@@ -1087,7 +1087,9 @@ describe('toIValidationManager function', () => {
             build: function () {
                 throw new Error("Function not implemented.");
             },
-
+            enumerateValueHosts: function (filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
+                throw new Error('Function not implemented.');
+            }
         };
         expect(toIValidationManager(testItem)).toBe(testItem);
     });

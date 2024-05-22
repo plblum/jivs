@@ -1,5 +1,5 @@
 import { ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { cultureLanguageCode, deepClone, deepEquals, groupsMatch } from "../../src/Utilities/Utilities";
+import { deepClone, deepEquals, groupsMatch } from "../../src/Utilities/Utilities";
 
 
 
@@ -114,6 +114,12 @@ describe('Utilities.deepClone', () => {
         expect(deepClone([1, 2])).toEqual([1, 2]);        
         expect(deepClone([{a: 1}])).toEqual([{a: 1}]);        
     });    
+    test('Stops at circular references, leaving the field with the circular reference = undefined', () => {
+        let testItem = { a: 1, b: { c: 2, d: null as any } };
+        let expected = { a: 1, b: { c: 2, d: undefined } }
+        testItem.b.d = testItem;
+        expect(deepClone(testItem)).toEqual(expected);
+    });
 });
 
 // function GroupsMatch(group1: string | Array<string> | undefined | null,
@@ -147,16 +153,4 @@ describe('Utilities.groupsMatch', () => {
         expect(groupsMatch(['A'], ['B', 'C'])).toBe(false);
         expect(groupsMatch(['A', 'C'], ['B'])).toBe(false);
     });    
-});
-
-describe('cultureLanguageCode', () => {
-    test('Returns the country code as text before a dash', () => {
-        expect(cultureLanguageCode('en-US')).toBe('en');
-        expect(cultureLanguageCode('Abcdef-FR')).toBe('Abcdef');    // because we return everything verbatim if it lacks a dash
-        expect(cultureLanguageCode('-FR')).toBe('-FR'); // dash at the start is a meaningless value
-    });    
-    test('Returns the same when it lacks the country code', () => {
-        expect(cultureLanguageCode('en')).toBe('en');
-        expect(cultureLanguageCode('Abcdef')).toBe('Abcdef');    // because we return everything verbatim if it lacks a dash
-    });
 });

@@ -146,7 +146,7 @@ This code initializes a ValidationManager and sets up the `onValueHostValidation
 
 ```ts
 let vmConfig: ValidationManagerConfig = {
-  services: createValidationServices(),
+  services: createValidationServices('en-US'),
   valueHostConfigs: ... your configuration for each Input ...
   onValueHostValidationStateChanged: fieldValidated
 };
@@ -274,7 +274,7 @@ This code initializes a ValidationManager and sets up the `onValidationStateChan
 
 ```ts
 let vmConfig: ValidationManagerConfig = {
-  services: createValidationServices(),
+  services: createValidationServices('en-US'),
   valueHostConfigs: ... your configuration for each Input ...
   onValueHostValidationStateChanged: fieldValidated,
   onValidationStateChanged: formValidated
@@ -330,7 +330,7 @@ There are a couple of approaches to configuration, based on whether you want to 
 
 ```ts
 let vmConfig: ValidationManagerConfig = {
-  services: createValidationServices(),
+  services: createValidationServices('en-US'),
   valueHostConfigs: []	
 };
 
@@ -354,7 +354,7 @@ let vm = new ValidationManager(vmConfig);
 
 ```ts
 let vmConfig: ValidationManagerConfig = {
-  services: createValidationServices(),
+  services: createValidationServices('en-US'),
   valueHostConfigs: []	
 };
 
@@ -851,7 +851,7 @@ Here’s pseudo-code for creating the `ValidationManager`.
 ```ts
 let valueHostConfigs = ... copied from previous example ...
 let config = <IValidationManagerConfig>{
-  services: createValidationServices(),	// alert! Feature needs configuration
+  services: createValidationServices('en-US'),	// alert! Feature needs configuration
   valueHostConfigs: ValueHostConfigs
 }
 let validationManager = new ValidationManager(config);
@@ -891,7 +891,7 @@ Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts]
 
 Add the contents of this file to your project. You will likely need to regenerate the list of inputs as your project source may be NPM. It results in several new functions starting with this one.
 ```ts
-export function createValidationServices(): ValidationServices {
+export function createValidationServices(... parameters ...): ValidationServices {
 …
 }
 // also many register() functions plus configureCultures() and createTextLocalizationService
@@ -902,7 +902,7 @@ Now that you have the `createValidationServices function`, use it during `Valida
 ```ts
 let valueHostConfigs = ... array that configures ValueHosts ...
 let config = <IValidationManagerConfig>{
-  services: createValidationServices(),	// use it here
+  services: createValidationServices('en-US'),	// use it here
   valueHostConfigs: ValueHostConfigs
 }
 let validationManager = new ValidationManager(config);
@@ -915,7 +915,7 @@ Jivs comes with a fluent syntax to simplify the manual configuration work.
 Here's how the example with FirstName and LastName properties looks with this syntax.
 ```ts
 let vmConfig = <IValidationManagerConfig>{
-  services: createValidationServices(),
+  services: createValidationServices('en-US'),
   valueHostConfigs: []
 }
 let builder = build(vmConfig);
@@ -1441,7 +1441,7 @@ interface ValueHostValidationState {
 Here is an example of using `onValueHostValidationStateChanged callback`.
 ```ts
 let vmConfig: ValidationManagerConfig = {
-  services: createValidationServices(),
+  services: createValidationServices('en-US'),
   valueHostConfigs: ... your configuration for each Input ...
   onValueHostValidationStateChanged: fieldValidated
 };
@@ -1536,7 +1536,7 @@ interface ValidationState {
 Here is an example of using `onValidationStateChanged callback`.
 ```ts
 let vmConfig: ValidationManagerConfig = {
-  services: createValidationServices(),
+  services: createValidationServices('en-US'),
   valueHostConfigs: ... your configuration for each Input ...
   onValueHostValidationStateChanged: fieldValidated,
   onValidationStateChanged: formValidated
@@ -1629,7 +1629,7 @@ let lastNameConfig: InputValueHostConfig = {
   initialValue: 'MyValue'
 };
 let vmConfig: ValidationManagerConfig = {
-  services: createValidationServices(),
+  services: createValidationServices('en-US'),
   valueHostConfigs: [ lastNameConfig ]
 };
 let vm = new ValidationManager(vmConfig);

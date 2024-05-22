@@ -70,7 +70,7 @@ export function deepClone(value: any, clones = new WeakMap()): any {
     }
     // Handle circular references
     if (clones.has(value)) {
-        return clones.get(value);
+        return undefined;
     }    
     if (value instanceof Date)
         return new Date(value.getTime());
@@ -108,20 +108,6 @@ export function deepClone(value: any, clones = new WeakMap()): any {
 export function objectKeysCount(value: object | null): number
 {
     return value ? Object.keys(value).length : 0;
-}
-
-/**
- * Returns the language code part of the cultureId.
- * If cultureId is only that already, it gets returned.
- * @param cultureId 
- * @returns 
- */
-export function cultureLanguageCode(cultureId: string): string
-{
-    let pos = cultureId.indexOf('-');
-    if (pos > 0)
-        return cultureId.substring(0, pos);
-    return cultureId;
 }
 
 /**
