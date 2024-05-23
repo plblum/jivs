@@ -3,6 +3,7 @@
  */
 
 import { IMessageTokenSource } from "./MessageTokenSource";
+import { IServiceWithAccessor } from "./ValidationServices";
 import { IValidatorsValueHostBase } from "./ValidatorsValueHostBase";
 import { IValueHostResolver } from "./ValueHostResolver";
 
@@ -24,7 +25,7 @@ import { IValueHostResolver } from "./ValueHostResolver";
  * as a {@link DataTypes/Types/LookupKey | LookupKey } used to identify a data type.
  * Tokens are supplied by implementers of IMessageTokenSource.
  */
-export interface IMessageTokenResolverService {
+export interface IMessageTokenResolverService extends IServiceWithAccessor {
     /**
      * Replaces tokens in the message with user friendly values
      * @param message 

@@ -176,7 +176,7 @@ describe('class DataTypeCheckCondition', () => {
         let testItem = new DataTypeCheckCondition(config);
         expect(() => testItem.evaluate(vh, vm)).toThrow(/Invalid ValueHost/);
         let logger = vm.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Invalid ValueHost', LoggingLevel.Error, null, null)).toBeDefined();
+        expect(logger.findMessage('Invalid ValueHost', LoggingLevel.Error, null, null)).not.toBeNull();
 
     });    
     test('getValuesForTokens where ConversionErrorTokenValue is setup shows that token', () => {

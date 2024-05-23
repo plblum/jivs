@@ -6,6 +6,7 @@ import { DataTypeConverterService } from "../../src/Services/DataTypeConverterSe
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IDataTypeIdentifier } from '../../src/Interfaces/DataTypeIdentifier';
 import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggerService';
+import { MockValidationServices } from '../TestSupport/mocks';
 
 
 class TestDataTypeAsNumber {
@@ -92,16 +93,19 @@ class TestConverterThatThrows implements IDataTypeConverter {
 describe('DataTypeComparerService constructor, register, and find', () => {
     test('Confirm UTCDateOnlyConverter is preregistered', () => {
         let testItem = new DataTypeConverterService();
+        testItem.services = new MockValidationServices(false, true);          
         expect(testItem.find(new Date(), null)).toBeInstanceOf(UTCDateOnlyConverter);    
     });    
     test('register and find matching only value', () => {
         let testItem = new DataTypeConverterService();
+        testItem.services = new MockValidationServices(false, true);          
         testItem.register(new TestDataTypeAsNumberConverter());
         expect(testItem.find(new TestDataTypeAsNumber(10), null)).toBeInstanceOf(TestDataTypeAsNumberConverter);
         expect(testItem.find(new TestDataTypeAsNumber(10), 'Anything')).toBeInstanceOf(TestDataTypeAsNumberConverter);        
     });
     test('register and find matching only values that are string and lookupKey = TEST', () => {
         let testItem = new DataTypeConverterService();
+        testItem.services = new MockValidationServices(false, true);          
         testItem.register(new TestConverterToLowerCase());
         expect(testItem.find("ABC", "TEST")).toBeInstanceOf(TestConverterToLowerCase);
         expect(testItem.find("ABC", 'Anything')).toBeNull();
@@ -110,12 +114,14 @@ describe('DataTypeComparerService constructor, register, and find', () => {
     });    
     test('find returns null when nothing is registered', () => {
         let testItem = new DataTypeConverterService();
+        testItem.services = new MockValidationServices(false, true);          
         expect(testItem.find(new TestDataTypeAsNumber(10), null)).toBeNull();
 
     });
     test('find returns null when there is a registration but its the wrong data type', () => {
 
         let testItem = new DataTypeConverterService();
+        testItem.services = new MockValidationServices(false, true);          
         testItem.register(new TestDataTypeAsNumberConverter());
         expect(testItem.find(new TestDataTypeAsString(''), null)).toBeNull();
 
@@ -124,6 +130,10 @@ describe('DataTypeComparerService constructor, register, and find', () => {
 describe('convert', ()=> {
     test('Convert all 4 registered test converters successfully', () => {
         let testItem = new DataTypeConverterService();
+        testItem.services = new MockValidationServices(false, true); 
+        let logger = testItem.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        
         testItem.register(new TestDataTypeAsNumberConverter());
         testItem.register(new TestDataTypeAsStringConverter());
         testItem.register(new TestDataTypeAsDateConverter());        
@@ -132,6 +142,9 @@ describe('convert', ()=> {
         let date1 = new Date(2000, 0, 1);
 
         expect(testItem.convert(new TestDataTypeAsNumber(500), "")).toBe(500);
+        expect(logger.findMessage('Using TestDataTypeAsNumberConverter', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Converted to', LoggingLevel.Info, null, null)).not.toBeNull();
+
         expect(testItem.convert(new TestDataTypeAsString("ZYX"), "")).toBe("ZYX");
         let convertDate1 = testItem.convert(new TestDataTypeAsDate(date1), "");
         expect(convertDate1).toBeInstanceOf(Date);
@@ -140,17 +153,25 @@ describe('convert', ()=> {
     });
     test('With 2 converters registered, convert with data types not registered results in undefined', () => {
         let testItem = new DataTypeConverterService();
-
+        testItem.services = new MockValidationServices(false, true);  
+        let logger = testItem.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        
         expect(testItem.convert(new TestDataTypeAsNumber(500), "")).toBeUndefined();
+        expect(logger.findMessage('No converter found', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(testItem.convert(new TestDataTypeAsString("ZYX"), "")).toBeUndefined();
         expect(testItem.convert(100, "")).toBeUndefined();
         expect(testItem.convert(new TestDataTypeAsDate(new Date()), "")).toBeUndefined();
     });    
     test('Attempt converting a string when data typelookup is not TEST returns undefined', () => {
         let testItem = new DataTypeConverterService();
+        testItem.services = new MockValidationServices(false, true);          
+        let logger = testItem.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
         testItem.register(new TestConverterToLowerCase());
 
         expect(testItem.convert("ABC", "")).toBeUndefined();
+        expect(logger.findMessage('No converter found', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(testItem.convert("ABC", null)).toBeUndefined();
         expect(testItem.convert("ABC", "Anything")).toBeUndefined();
         expect(testItem.convert(100, "")).toBeUndefined();
@@ -159,18 +180,23 @@ describe('convert', ()=> {
         let services = new ValidationServices();  
         let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Debug;
+        services.loggerService = logger;
         let testItem = new DataTypeConverterService();
         services.dataTypeConverterService = testItem;
-        services.loggerService = logger;
         testItem.register(new TestConverterThatThrows());
 
         expect(testItem.convert("ABC", "")).toBeUndefined();
-        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).toBeDefined();
+        expect(logger.findMessage('Using TestConverterThatThrows', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
     });    
 });
 describe('convertToPrimitive', ()=> {
     test('convertToPrimitive all 4 registered test converters successfully', () => {
         let services = new ValidationServices();  
+        let logger = new CapturingLogger();
+        logger.minLevel = LoggingLevel.Debug;
+        services.loggerService = logger;
+
         let idService = new DataTypeIdentifierService();  // expected to have preregistered standard DataTypeIdentifiers
         services.dataTypeIdentifierService = idService;
         idService.register(new TestDataTypeAsNumberIdentifier());
@@ -186,6 +212,8 @@ describe('convertToPrimitive', ()=> {
         let date1 = new Date(2000, 0, 1);
 
         expect(testItem.convertToPrimitive(new TestDataTypeAsNumber(500), "")).toBe(500);
+        expect(logger.findMessage('Converted to', LoggingLevel.Info, null, null)).not.toBeNull();
+
         expect(testItem.convertToPrimitive(new TestDataTypeAsString("ZYX"), "")).toBe("ZYX");
         expect(testItem.convertToPrimitive("ABC", "TEST")).toBe("abc");
 
@@ -205,13 +233,15 @@ describe('convertToPrimitive', ()=> {
         services.dataTypeConverterService = testItem;
 
         expect(()=> testItem.convertToPrimitive(new TestDataTypeAsNumber(500), "")).toThrow(/unknown/);
-        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeConverterService')).not.toBeNull();      
+        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeConverterService')).not.toBeNull();      
         logger.clearAll();
         expect(()=> testItem.convertToPrimitive(new TestDataTypeAsString("ZYX"), "")).toThrow(/unknown/);
-        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeConverterService')).not.toBeNull();      
+        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeConverterService')).not.toBeNull();      
     });    
     test('convertToPrimitive returns the same value when passed either null or undefined', () => {
         let services = new ValidationServices();  
+        let logger = new CapturingLogger();
+        logger.minLevel = LoggingLevel.Debug;
         let idService = new DataTypeIdentifierService();  // expected to have preregistered standard DataTypeIdentifiers
         services.dataTypeIdentifierService = idService;
 
@@ -219,6 +249,7 @@ describe('convertToPrimitive', ()=> {
         services.dataTypeConverterService = testItem;
 
         expect(testItem.convertToPrimitive(null, "")).toBeNull();
+        expect(logger.entryCount()).toBe(0);
         expect(testItem.convertToPrimitive(undefined, "")).toBeUndefined();
     });        
     test('Within convertToPrimitive, Converter that throws is handled by returning undefined and adding to the log.', () => {
@@ -232,6 +263,6 @@ describe('convertToPrimitive', ()=> {
         testItem.register(new TestConverterThatThrows());
 
         expect(testItem.convertToPrimitive("ABC", "")).toBeUndefined();
-        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).toBeDefined();
+        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
     });        
 });

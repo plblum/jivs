@@ -1,7 +1,10 @@
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, NumberDataTypeIdentifier, StringDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IDataTypeIdentifier } from "../../src/Interfaces/DataTypeIdentifier";
+import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { MockValidationServices } from "../TestSupport/mocks";
 
 class TestDataType { }
 class TestIdentifier implements IDataTypeIdentifier {
@@ -24,7 +27,8 @@ describe('DataTypeIdentifierService register and find', () => {
     });
     test('register adds new item', () => {
         let testItem = new DataTypeIdentifierService();
-
+        let services = new MockValidationServices(false, false);
+        testItem.services = services;
         testItem.register(new TestIdentifier());
         expect(testItem.identify(new TestDataType())).toBe('TEST');
         // confirm we didn't clobber the built in ones
@@ -41,6 +45,8 @@ describe('DataTypeIdentifierService register and find', () => {
 
         }
         let testItem = new DataTypeIdentifierService();
+        let services = new MockValidationServices(false, false);
+        testItem.services = services;
         testItem.register(new TestIdentifier());
         expect(testItem.identify(new TestDataType())).toBe(LookupKey.Date);
         expect(testItem.identify(new Date())).toBeNull();
@@ -56,8 +62,16 @@ describe('DataTypeIdentifierService.identify', () => {
     // IdentifyLookupKey(value: any): string
     test('identify', () => {
         let testItem = new DataTypeIdentifierService();
+        let services = new MockValidationServices(false, false);
+        testItem.services = services;
+        let logger = services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
         testItem.register(new TestIdentifier());
         expect(testItem.identify(0)).toBe(LookupKey.Number);
+        expect(logger.findMessage('Identified Number', LoggingLevel.Debug, null, null)).not.toBeNull();
+
+
         expect(testItem.identify('abc')).toBe(LookupKey.String);
         expect(testItem.identify(false)).toBe(LookupKey.Boolean);
         expect(testItem.identify(new Date())).toBe(LookupKey.Date);

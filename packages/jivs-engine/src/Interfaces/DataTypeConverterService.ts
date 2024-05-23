@@ -4,7 +4,7 @@
  */
 
 import { IDataTypeConverter } from "./DataTypeConverters";
-import { IDataTypeServiceBase } from "./DataTypes";
+import { IDataTypeService } from "./DataTypes";
 import { IServicesAccessor } from "./ValidationServices";
 
 /**
@@ -18,7 +18,7 @@ export type SimpleValueType = number | Date | string | null | boolean | undefine
  * something that you want a condition to evaluate
  * using {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter} instances.
  */
-export interface IDataTypeConverterService extends IDataTypeServiceBase, IServicesAccessor {
+export interface IDataTypeConverterService extends IDataTypeService, IServicesAccessor {
     /**
      * Return the value based on the original value. It may be a new data type
      * of number, Date, or string.

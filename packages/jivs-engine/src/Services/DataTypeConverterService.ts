@@ -8,7 +8,8 @@ import { UTCDateOnlyConverter } from "../DataTypes/DataTypeConverters";
 import { IDataTypeConverterService, SimpleValueType } from "../Interfaces/DataTypeConverterService";
 import { IDataTypeConverter } from "../Interfaces/DataTypeConverters";
 import { DataTypeConverterServiceBase } from "./DataTypeServiceBase";
-import { CodingError, SevereErrorBase } from "../Utilities/ErrorHandling";
+import { SevereErrorBase, ensureError } from "../Utilities/ErrorHandling";
+import { valueForLog } from "../Utilities/Utilities";
 
 /**
  * A service for changing the original value into 
@@ -22,6 +23,7 @@ import { CodingError, SevereErrorBase } from "../Utilities/ErrorHandling";
  */
 export class DataTypeConverterService extends DataTypeConverterServiceBase<IDataTypeConverter>
     implements IDataTypeConverterService {
+
     constructor() {
         super();
         this.preRegister();
@@ -42,20 +44,22 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
         try {
             let dtc = this.find(value, dataTypeLookupKey);
 
-            if (dtc)
-                return dtc.convert(value, dataTypeLookupKey!);
-            return undefined;
+            if (dtc) {
+                this.log(() => `Using ${dtc.constructor.name}`, LoggingLevel.Debug);
+                let result = dtc.convert(value, dataTypeLookupKey!);
+                this.log(() => `Converted to ${valueForLog(result)}`, LoggingLevel.Info);
+                return result;
+            }
+            this.log(() => `No converter found for ${dataTypeLookupKey}`, LoggingLevel.Debug);
         }
         catch (e) {
-            if (e instanceof Error) {
-                this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Convert, 'DataTypeComparerService');
-                if (e instanceof SevereErrorBase)
-                    throw e;
+            let err = ensureError(e);
+            this.log(err.message, LoggingLevel.Error);
+            if (err instanceof SevereErrorBase)
+                throw err;
 
-            }
-            return undefined;
         }
-
+        return undefined;
     }
     /**
      * Converts the value using the DataTypeConverter identified in dataTypeLookupKey.
@@ -68,22 +72,23 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      * @param dataTypeLookupKey - if not supplied, it will attempt to resolve it with
      * the DataTypeIdentifiers.
      */
-    public convertToPrimitive(value: any, dataTypeLookupKey: string | null): SimpleValueType
-    {
+    public convertToPrimitive(value: any, dataTypeLookupKey: string | null): SimpleValueType {
+
         try {
             if (value == null) // null or undefined
                 return value;
 
             dataTypeLookupKey = this.resolveLookupKey(value, dataTypeLookupKey, 'CalcValueHost function');
 
-            return this.cleanupConvertableValue(value, dataTypeLookupKey);
+            let result = this.cleanupConvertableValue(value, dataTypeLookupKey);
+            this.log(() => `Converted to ${valueForLog(result)}`, LoggingLevel.Info);
+            return result;
         }
         catch (e) {
-            if (e instanceof Error) {
-                this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeConverterService');
-                if (e instanceof SevereErrorBase)
-                    throw e;
-            }
+            let err = ensureError(e);
+            this.log(err.message, LoggingLevel.Error);
+            if (err instanceof SevereErrorBase)
+                throw e;
             return undefined;
         }
     }

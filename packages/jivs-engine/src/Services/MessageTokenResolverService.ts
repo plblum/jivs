@@ -9,12 +9,13 @@ import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { ServiceWithAccessorBase } from './ServiceBase';
 
 
 /**
  * {@inheritDoc Services/Types/IMessageTokenResolverService!IMessageTokenResolverService}
  */
-export class MessageTokenResolverService implements IMessageTokenResolverService
+export class MessageTokenResolverService extends ServiceWithAccessorBase implements IMessageTokenResolverService
 {
     /**
      * Used to extract full tokens.
@@ -32,7 +33,7 @@ export class MessageTokenResolverService implements IMessageTokenResolverService
         assertNotNull(valueHostResolver, 'valueHostResolver');
         if (!hosts || !hosts.length || hosts[0] == null)    // null/undefined
             throw new CodingError('hosts required');
-        const fnName = 'MessageTokenResolver.resolveTokens';
+
         // capture all token patterns and build a list of CapturedTokens
         // If none found, return the message
         let foundTokens = message.match(this._tokensInMessageRegEx);
@@ -71,14 +72,14 @@ export class MessageTokenResolverService implements IMessageTokenResolverService
                         else
                             if (replacement.errorMessage)
                             {
-                                valueHostResolver.services.loggerService.log(`${capturedToken.full}: ${replacement.errorMessage}`,
-                                    LoggingLevel.Error, LoggingCategory.Configuration, fnName);   
+                                this.log(()=> `${capturedToken.full}: ${replacement.errorMessage}`,
+                                    LoggingLevel.Error, LoggingCategory.Configuration);   
                             }
                     }
                     catch (e)
                     {
-                        valueHostResolver.services.loggerService.log(`${capturedToken.full}: ${(e as Error).message}`,
-                            LoggingLevel.Error, LoggingCategory.TypeMismatch, fnName); 
+                        this.log(()=>`${capturedToken.full}: ${(e as Error).message}`,
+                            LoggingLevel.Error, LoggingCategory.TypeMismatch); 
                         if (e instanceof SevereErrorBase)
                             throw e;
                                     
@@ -88,8 +89,8 @@ export class MessageTokenResolverService implements IMessageTokenResolverService
             if (!resolved)
             {
                 //Log token was not replaced
-                valueHostResolver.services.loggerService.log(`{${capturedToken.full}}: Token not replaced.`,
-                    LoggingLevel.Warn, LoggingCategory.Formatting, fnName); 
+                this.log(()=>`{${capturedToken.full}}: Token not replaced.`,
+                    LoggingLevel.Warn); 
             }
         });
         return revised;

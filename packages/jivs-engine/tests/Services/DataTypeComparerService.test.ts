@@ -118,8 +118,11 @@ describe('DataTypeComparerServices.register and find', () => {
     });
 });
 describe('DataTypeComparerServices compare with custom classes', ()=>{
-    test('New comparer that handles numbers with custom type and datatype lookup resolved by IDataTypeIdentifier', () => {
+    test('Custom comparer with datatype lookup resolved by IDataTypeIdentifier', () => {
         let services = new MockValidationServices(false, true);
+        let logger = services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
         let testItem = new DataTypeComparerService();
         services.dataTypeComparerService = testItem;
         testItem.services = services;
@@ -134,6 +137,11 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
         let test4 = new TestDataType("z", "y");
 
         expect(testItem.compare(test1, test1, null, null)).toBe(ComparersResult.Equals);
+        expect(logger.findMessage('Identified TEST', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+
+
         expect(testItem.compare(test2, test3, null, null)).toBe(ComparersResult.Equals);
         expect(testItem.compare(test3, test2, null, null)).toBe(ComparersResult.Equals);
         expect(testItem.compare(test1, test2, null, null)).toBe(ComparersResult.LessThan);
@@ -141,8 +149,11 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
         expect(testItem.compare(test1, test4, null, null)).toBe(ComparersResult.LessThan);
     });
 
+ 
     test('New comparer that handles numbers with custom type and datatype lookup resolved by LookupKey', () => {
         let services = new MockValidationServices(false, true);
+        let logger = services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
         let testItem = new DataTypeComparerService();
         services.dataTypeComparerService = testItem;
         testItem.services = services;
@@ -157,6 +168,11 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
         let test4 = new TestDataType("z", "y");
 
         expect(testItem.compare(test1, test1, "TEST", "TEST")).toBe(ComparersResult.Equals);
+        expect(logger.findMessage('Identified TEST', LoggingLevel.Debug, null, null)).toBeNull();
+        expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+
+
         expect(testItem.compare(test2, test3, "TEST", "TEST")).toBe(ComparersResult.Equals);
         expect(testItem.compare(test3, test2, "TEST", "TEST")).toBe(ComparersResult.Equals);
         expect(testItem.compare(test1, test2, "TEST", "TEST")).toBe(ComparersResult.LessThan);
@@ -168,12 +184,17 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
 describe('DataTypeComparerService.compare', () => {
     test('Number value resolves lookupKey and correctly handles comparisons', () => {
         let services = new MockValidationServices(false, true);
+        let logger = services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
         let testItem = new DataTypeComparerService();
         services.dataTypeComparerService = testItem;
         testItem.services = services;
-
-        let dtis = services.dataTypeIdentifierService as DataTypeIdentifierService;        
+      
         expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equals);
+        expect(logger.findMessage('Identified Number', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug, null, null)).toBeNull();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+
         expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equals);
         expect(testItem.compare(1, 0, null, null)).toBe(ComparersResult.GreaterThan);
         expect(testItem.compare(0, 1, null, null)).toBe(ComparersResult.LessThan);        
@@ -203,6 +224,9 @@ describe('DataTypeComparerService.compare', () => {
             }
         }
         let services = new MockValidationServices(false, true);
+        let logger = services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
         let testItem = new DataTypeComparerService();
         services.dataTypeComparerService = testItem;
         testItem.services = services;
@@ -214,6 +238,11 @@ describe('DataTypeComparerService.compare', () => {
         dtic.register(new TestConverter());        
 
         expect(testItem.compare(new TestDataType(0), 0, null, null)).toBe(ComparersResult.Equals);
+        expect(logger.findMessage('Identified TEST', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified Number', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+
         expect(testItem.compare(new TestDataType(10), 0, null, null)).toBe(ComparersResult.GreaterThan);
         expect(testItem.compare(new TestDataType(undefined!), 0, null, null)).toBe(ComparersResult.Undetermined);        
     });
@@ -233,6 +262,9 @@ describe('DataTypeComparerService.compare', () => {
     });    
     test('String value with Lookup Key assigned resolves correctly handles comparisons', () => {
         let services = new MockValidationServices(false, true);
+        let logger = services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
         let testItem = new DataTypeComparerService();
         services.dataTypeComparerService = testItem;
         testItem.services = services;
@@ -240,6 +272,9 @@ describe('DataTypeComparerService.compare', () => {
         let dtcs = services.dataTypeConverterService as DataTypeConverterService;
         dtcs.register(new CaseInsensitiveStringConverter());
         expect(testItem.compare("ABC", "ABC", LookupKey.CaseInsensitive, LookupKey.CaseInsensitive)).toBe(ComparersResult.Equals);
+        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+
         expect(testItem.compare("ABC", "abc", LookupKey.CaseInsensitive, LookupKey.CaseInsensitive)).toBe(ComparersResult.Equals);
         expect(testItem.compare("abc", "ABC", LookupKey.CaseInsensitive, LookupKey.CaseInsensitive)).toBe(ComparersResult.Equals);
         expect(testItem.compare(" ABC", "ABC ", LookupKey.CaseInsensitive, LookupKey.CaseInsensitive)).toBe(ComparersResult.LessThan);
@@ -342,14 +377,28 @@ describe('DataTypeComparerService.compare', () => {
         expect(testItem.compare(date2, date1, null, null)).toBe(ComparersResult.LessThan);
         expect(testItem.compare(date1, date2, null, null)).toBe(ComparersResult.GreaterThan);        
     });               
-    
+    test('Logging tracked for valid value that results in successful request', () => {
+        let services = new MockValidationServices(false, true);
+        let logger = services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        let testItem = new DataTypeComparerService();
+        services.dataTypeComparerService = testItem;
+        testItem.services = services;
+
+        let dtis = services.dataTypeIdentifierService as DataTypeIdentifierService;        
+        expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equals);
+        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('Compare result: Equals', LoggingLevel.Info, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+
+    });
     test('Unsupported data type for lookupKey using JavaScript object logs error and throws', () => {
         let testItem = new DataTypeComparerService();
         testItem.services = new MockValidationServices(true, true);
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare({}, 'A', null, null)).toThrow(/operand/);
         let logger = testItem.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('Compare result:', LoggingLevel.Info, null, null)).toBeNull();        
 
     });    
     test('Unsupported data type for lookupKey using some class instance logs error and throws', () => {
@@ -358,7 +407,7 @@ describe('DataTypeComparerService.compare', () => {
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare(testItem /* some class */, 'A', null, null)).toThrow(/operand/);
         let logger = testItem.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
 
     });    
 

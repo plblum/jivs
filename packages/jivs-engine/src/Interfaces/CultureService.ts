@@ -3,12 +3,14 @@
  * @module Services/Types/ICultureService
  */
 
+import { IService } from "./ValidationServices";
+
 /**
  * Service for identifying cultures that you will use in the app,
  * by their CultureID  ('en', 'en-US', 'en-GB', etc), and provides
  * fallbacks for when a requested CultureID is not found.
  */
-export interface ICultureService  {
+export interface ICultureService extends IService  {
 /**
  * The culture shown to the user in the app. Its the ISO language-region format.
    This value is the starting point to search through localizations.

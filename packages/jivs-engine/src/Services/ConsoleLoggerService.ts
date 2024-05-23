@@ -3,6 +3,7 @@
  * @module Services/ConcreteClasses/LoggerService
  */
 import { ILoggerService, LoggingLevel } from '../Interfaces/LoggerService';
+import { ServiceBase } from './ServiceBase';
 
 
 /**
@@ -10,7 +11,7 @@ import { ILoggerService, LoggingLevel } from '../Interfaces/LoggerService';
  * If you want to log both to the console and another system, create both loggers,
  * passing the other into this constructor.
  */
-export class ConsoleLoggerService implements ILoggerService
+export class ConsoleLoggerService extends ServiceBase implements ILoggerService
 {
 /**
  * Constructor
@@ -20,6 +21,7 @@ export class ConsoleLoggerService implements ILoggerService
  */    
     constructor(minLevel: LoggingLevel = LoggingLevel.Warn, mainLogger?: ILoggerService)
     {
+        super();
         this._minLevel = minLevel;
         this._mainLogger = mainLogger ?? null;
     }

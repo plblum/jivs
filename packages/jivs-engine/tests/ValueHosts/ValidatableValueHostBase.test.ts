@@ -403,7 +403,7 @@ describe('setValue', () => {
         logger.minLevel = LoggingLevel.Debug;
         let options: SetValueOptions = { duringEdit: true };
         expect(() => setup.valueHost.setValue(10, options)).not.toThrow();
-        expect(logger.findMessage('does not support duringEdit', LoggingLevel.Warn, null, null)).toBeDefined();
+        expect(logger.findMessage('does not support duringEdit', LoggingLevel.Warn, null, null)).not.toBeNull();
         expect(options.duringEdit).not.toBe(true);
     });
 

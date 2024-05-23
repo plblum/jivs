@@ -6,11 +6,13 @@
  * @module Services/Types/ILoggerService
  */
 
+import { IService } from "./ValidationServices";
+
 /**
  * Provide a logging service for this system to report into.
  * Attach an instance to ValidationServices.loggerService.
  */
-export interface ILoggerService
+export interface ILoggerService extends IService
 {
 /**
  * Control which levels are output.
@@ -43,10 +45,7 @@ export enum LoggingCategory {
     Info = 'Info',
     Configuration = 'Configuration',
     TypeMismatch = 'Type Mismatch',
-    Formatting = 'Formatting',
     Validation = 'Validation',
-    LookupKey = 'LookupKey',
-    Compare = 'Compare',
-    Convert = 'Convert'
+    Service = 'Service'
 }
 
