@@ -53,7 +53,7 @@ export interface ICondition {
      * Validator.validate() knows to pass the ValueHostName that hosts the Validator.
      * Expect this to be null in other cases, such as when Condition is a child of the AllMatchCondition
      * and its peers. In otherwords, support both ways.
-     * @param valueHostResolver - Its primary use is to lookup ValueHosts to get their data.
+     * @param valueHostsManager - Its primary use is to lookup ValueHosts to get their data.
      * @returns Any of these values:
      * - Match - consistent with the rule
      * - NoMatch - violates the rule
