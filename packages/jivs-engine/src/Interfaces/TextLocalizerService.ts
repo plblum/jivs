@@ -3,7 +3,7 @@
  * @module Services/Types/ITextLocalizerService
  */
 
-import { IServiceWithFallback } from "./ValidationServices";
+import { IServiceWithFallback } from "./Services";
 
 /**
  * A service to offer text alternatives to the default text

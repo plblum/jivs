@@ -5,9 +5,9 @@
 
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { ConditionEvaluateResult, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { IValidationServices } from '../Interfaces/ValidationServices';
+import { IValueHostsServices } from '../Interfaces/ValueHostsManager';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 
 /**
@@ -45,10 +45,10 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the value from input field/element and the native value resolved by data type.
      * This function checks both in valueHost to determine a string source.
-     * @param valueHostResolver 
+     * @param valueHostsManager 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = this.resolveValue(valueHost);
         if (value === undefined)
             return ConditionEvaluateResult.Undetermined;
@@ -57,7 +57,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
         // trimming is not appropriate since we are evaluating an already cleaned up native value
         // if (this.config.trim ?? true)
         //     text = text.trim();
-        return this.evaluateString(text, valueHost, valueHostResolver.services);
+        return this.evaluateString(text, valueHost, valueHostsManager.services);
     }
     /**
      * Applies the business rule against the string value (already trimmed if 
@@ -66,7 +66,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * @param valueHost
      * @param services 
      */
-    protected abstract evaluateString(text: string, valueHost: IValueHost, services: IValidationServices):
+    protected abstract evaluateString(text: string, valueHost: IValueHost, services: IValueHostsServices):
         ConditionEvaluateResult;
     /**
      * Runs when Config.supportsDuringEdit is true and validateOptions.DuringEdit is true
@@ -77,7 +77,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * @returns When supportsDuringEdit is false, returns undetermined. Otherwise it follows
      * the rules from the Config.
      */
-    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValidationServices): ConditionEvaluateResult{
+    public evaluateDuringEdits(text: string, valueHost: IInputValueHost, services: IValueHostsServices): ConditionEvaluateResult{
         if (this.config.supportsDuringEdit !== false)
         {
             if (this.config.trim ?? true)

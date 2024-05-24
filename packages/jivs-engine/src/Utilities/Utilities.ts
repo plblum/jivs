@@ -127,6 +127,14 @@ export function cleanString(value: string | null | undefined): string | null
     return null;
 }
 
+/**
+ * Returns a string to be used in a log that communicates
+ * the value. It turns null into "[null]", undefined into "[undefined]",
+ * an object into its constructor name or "Plain object",
+ * and a Date or primitive into a string, truncated to 20 characters.
+ * @param value 
+ * @returns 
+ */
 export function valueForLog(value: any): string
 {
     if (value === undefined)

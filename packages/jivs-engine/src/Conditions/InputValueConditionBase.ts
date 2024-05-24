@@ -8,7 +8,7 @@ import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
-import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
@@ -32,12 +32,12 @@ export abstract class InputValueConditionBase<TConfig extends InputValueConditio
      * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the value from input field/element and the native value resolved by data type.
      * This function checks both in valueHost to determine a string source.
-     * @param valueHostResolver 
+     * @param valueHostsManager 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         if (!toIInputValueHost(valueHost)) {
-            valueHostResolver.services.loggerService.log('Invalid ValueHost used. Must be an InputValueHost',
+            valueHostsManager.services.loggerService.log('Invalid ValueHost used. Must be an InputValueHost',
                 LoggingLevel.Error, LoggingCategory.Configuration, 'InputValueConditionBase.Evaluate');
             throw new CodingError('Invalid ValueHost used. Must be an InputValueHost');
         }
@@ -46,7 +46,7 @@ export abstract class InputValueConditionBase<TConfig extends InputValueConditio
         if (value === undefined)
             return ConditionEvaluateResult.Undetermined;
 
-        return this.evaluateInputValue(value, iValueHost, valueHostResolver);
+        return this.evaluateInputValue(value, iValueHost, valueHostsManager);
     }
-    protected abstract evaluateInputValue(value: any, valueHost: IInputValueHost, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
+    protected abstract evaluateInputValue(value: any, valueHost: IInputValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
 }

@@ -21,10 +21,10 @@
  * @module Conditions/Types
  */
 
-import { IValueHostResolver } from './ValueHostResolver';
 import { IValueHost } from './ValueHost';
 import { IValidationServices } from './ValidationServices';
 import { IInputValueHost } from './InputValueHost';
+import { IValueHostsManager } from './ValueHostsManager';
 
 /**
  * The basis for any condition that you want to work with these validators.
@@ -60,7 +60,7 @@ export interface ICondition {
      * - Undetermined - Cannot invoke the rule. Usually data incompatible with use within the rule,
      *    like the value is null, undefined, or the wrong data type.
      */
-    evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
      * Helps identify the purpose of the Condition. Impacts:

@@ -6,11 +6,8 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ICalcValueHost } from './CalcValueHost';
-import { IInputValueHost } from './InputValueHost';
-import { IPropertyValueHost } from './PropertyValueHost';
 import { IStaticValueHost } from './StaticValueHost';
-import { IServicesAccessor } from './ValidationServices';
-import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
+import { IServicesAccessor } from './Services';
 import type { IValueHost } from './ValueHost';
 import { IValueHostAccessor } from './ValueHostAccessor';
 
@@ -25,29 +22,6 @@ export interface IValueHostResolver extends IServicesAccessor {
      * Returns the instance or null if not found.
      */
     getValueHost(valueHostName: ValueHostName): IValueHost | null;
-
-
-    /**
-     * Retrieves the IValidatorsValueHostBase of the identified by valueHostName
-     * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
-     * Returns the instance or null if not found or found a different type of value host.
-     */
-    getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null;    
-
-    /**
-     * Retrieves the InputValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the InputValueHostConfig.name property
-     * Returns the instance or null if not found or found a different type of value host.
-     */
-    getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null;
-
-    /**
-     * Retrieves the PropertyValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the PropertyValueHostConfig.name property
-     * Returns the instance or null if not found or found a different type of value host.
-     */
-    getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null;    
-
     /**
      * Retrieves the CalcValueHost of the identified by valueHostName
      * @param valueHostName - Matches to the CalcValueHostConfig.name property
@@ -61,6 +35,9 @@ export interface IValueHostResolver extends IServicesAccessor {
      * Returns the instance or null if not found or found a different type of value host.
      */
     getStaticValueHost(valueHostName: ValueHostName): IStaticValueHost | null;    
+
+    //FYI: Any ValueHost that is based on ValidatableValueHostBase has its get function
+    // in IValidationManager.
 
 
     /**
@@ -87,11 +64,10 @@ export function toIValueHostResolver(source: any): IValueHostResolver | null
     if (source && typeof source === 'object') {
         let test = source as IValueHostResolver;    
         if (test.getValueHost !== undefined &&
-            test.getValidatorsValueHost !== undefined &&
-            test.getInputValueHost !== undefined &&
             test.getCalcValueHost !== undefined &&
             test.getStaticValueHost !== undefined &&
             test.services !== undefined &&
+            test.vh !== undefined &&
             test.enumerateValueHosts !== undefined)
             return test;
     }

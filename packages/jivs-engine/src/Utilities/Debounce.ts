@@ -1,6 +1,6 @@
 /**
  * A class for debouncing a function.
- * @Utilities
+ * @module Utilities
  */
 
 import { assertNotNull } from "./ErrorHandling";

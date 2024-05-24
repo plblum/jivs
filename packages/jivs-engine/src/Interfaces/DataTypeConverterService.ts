@@ -5,7 +5,7 @@
 
 import { IDataTypeConverter } from "./DataTypeConverters";
 import { IDataTypeService } from "./DataTypes";
-import { IServicesAccessor } from "./ValidationServices";
+import { IServicesAccessor } from "./Services";
 
 /**
  * Identifies types that are simple values. Most objects are not, but Date object really

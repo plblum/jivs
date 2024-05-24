@@ -7,7 +7,7 @@ import { LoggingLevel, LoggingCategory } from "../Interfaces/LoggerService";
 import { UTCDateOnlyConverter } from "../DataTypes/DataTypeConverters";
 import { IDataTypeConverterService, SimpleValueType } from "../Interfaces/DataTypeConverterService";
 import { IDataTypeConverter } from "../Interfaces/DataTypeConverters";
-import { DataTypeConverterServiceBase } from "./DataTypeServiceBase";
+import { DataTypeConverterServiceBase } from "./DataTypeConverterServiceBase";
 import { SevereErrorBase, ensureError } from "../Utilities/ErrorHandling";
 import { valueForLog } from "../Utilities/Utilities";
 

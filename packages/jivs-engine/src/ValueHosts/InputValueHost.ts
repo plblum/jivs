@@ -9,7 +9,6 @@
  * @module ValueHosts/ConcreteClasses/InputValueHost
  */
 import { deepEquals } from '../Utilities/Utilities';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
@@ -20,6 +19,7 @@ import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { PropertyValueHost, hasIPropertyValueHostSpecificMembers } from './PropertyValueHost';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 
 
 /**
@@ -39,8 +39,8 @@ import { PropertyValueHost, hasIPropertyValueHostSpecificMembers } from './Prope
  */
 export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig, InputValueHostInstanceState>
     implements IInputValueHost {
-    constructor(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostInstanceState) {
-        super(valueHostsManager, config, state);
+    constructor(validationManager: IValidationManager, config: InputValueHostConfig, state: InputValueHostInstanceState) {
+        super(validationManager, config, state);
     }
 
     //#region IInputValueHost
@@ -252,8 +252,8 @@ export class InputValueHostGenerator extends ValidatorsValueHostBaseGenerator {
             return false;
         return true;
     }
-    public create(valueHostsManager: IValueHostsManager, config: InputValueHostConfig, state: InputValueHostInstanceState): IInputValueHost {
-        return new InputValueHost(valueHostsManager, config, state);
+    public create(validationManager: IValidationManager, config: InputValueHostConfig, state: InputValueHostInstanceState): IInputValueHost {
+        return new InputValueHost(validationManager, config, state);
     }
 
     public createInstanceState(config: InputValueHostConfig): InputValueHostInstanceState {

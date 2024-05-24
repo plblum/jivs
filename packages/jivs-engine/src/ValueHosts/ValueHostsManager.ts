@@ -1,9 +1,12 @@
 /**
  * Provides a container for ValueHosts that can be used
- * when working with a model or form. Ultimately in Jivs,
- * it serves the ValidationManager, but can work stand-alone.
- * Conditions are passed the ValueHostsManager meaning they
- * can be used independently of validation. 
+ * when working with a model or form. It works together with IValueHostsServices.
+ * Since IValueHostsServices doesn't deal with validation services,
+ * ValueHostsManager doesn't support ValueHosts inheriting from
+ * ValidatableValueHostBase, including Input and Property,
+ * as those are built for validation.
+ * IValueHostsServices does handle conditions, so it can be shared with Conditions
+ * that need services.
  * @module ValueHosts/ConcreteClasses/ValueHostsManager
  */
 import { deepClone, deepEquals } from '../Utilities/Utilities';
@@ -13,25 +16,28 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsManagerConfig, IValueHostsManagerCallbacks, ValueHostsManagerInstanceStateChangedHandler } from '../Interfaces/ValueHostsManager';
-import { toIInputValueHost } from './InputValueHost';
-import { IInputValueHost, InputValueChangedHandler } from '../Interfaces/InputValueHost';
+import { InputValueChangedHandler } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from './ValidatableValueHostBase';
 import { ValueHostsInstanceBuilder } from './ValueHostsInstanceBuilder';
 import { ValueHostAccessor } from './ValueHostAccessor';
 import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
-import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ICalcValueHost } from '../Interfaces/CalcValueHost';
 import { IStaticValueHost } from '../Interfaces/StaticValueHost';
 import { toICalcValueHost } from './CalcValueHost';
 import { toIStaticValueHost } from './StaticValueHost';
-import { toIPropertyValueHost } from './PropertyValueHost';
-import { IPropertyValueHost } from '../Interfaces/PropertyValueHost';
 
 
 /**
  * Provides a container for ValueHosts that can be used
- * when working with a model or form. Ultimately in Jivs,
- * it serves the ValueHostsManager, but can work stand-alone.
+ * when working with a model or form. It works together with IValueHostsServices.
+ * Since IValueHostsServices doesn't deal with validation services,
+ * ValueHostsManager doesn't support ValueHosts inheriting from
+ * ValidatableValueHostBase, including Input and Property,
+ * as those are built for validation.
+ * IValueHostsServices does handle conditions, so it can be shared with Conditions
+ * that need services.
+ * 
+ * Ultimately in Jivs, it supports the ValidationManager, but can work stand-alone.
  * Conditions are passed the ValueHostsManager meaning they
  * can be used independently of validation. 
  */
@@ -281,32 +287,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     public getValueHost(valueHostName: ValueHostName): IValueHost | null {
         return this._valueHosts[valueHostName] ?? null;
     }
-    
-    /**
-     * Retrieves the ValidatorsValueHostBase of the identified by valueHostName
-     * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
-     * Returns the instance or null if not found or found a different type of value host.
-     */
-    public getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null
-    {
-        return toIValidatorsValueHostBase(this.getValueHost(valueHostName));
-    }
-    /**
-     * Retrieves the InputValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the IInputValueHost.name property
-     * Returns the instance or null if not found or found a non-input valuehost.
-     */
-    public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
-        return toIInputValueHost(this.getValueHost(valueHostName));
-    }
-    /**
-     * Retrieves the PropertyValueHost of the identified by valueHostName
-     * @param valueHostName - Matches to the IPropertyValueHost.name property
-     * Returns the instance or null if not found or found a non-Property valuehost.
-     */
-    public getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null {
-        return toIPropertyValueHost(this.getValueHost(valueHostName));
-    }    
+
     /**
      * Retrieves the StaticValueHost of the identified by valueHostName
      * @param valueHostName - Matches to the IStaticValueHost.name property
@@ -323,7 +304,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     public getCalcValueHost(valueHostName: ValueHostName): ICalcValueHost | null {
         return toICalcValueHost(this.getValueHost(valueHostName));
     }
-    
+    //FYI: other getValueHosts are built around validation and declared in IValidationManager
 
     /**
      * Alternative to getValueHost that returns strongly typed valuehosts 

@@ -3,7 +3,7 @@
  * @module Services/Types/ILookupKeyFallbackService
  */
 
-import { IService } from "./ValidationServices";
+import { IService } from "./Services";
 
 /**
  * Service for creating a relationship between a lookup key and another
