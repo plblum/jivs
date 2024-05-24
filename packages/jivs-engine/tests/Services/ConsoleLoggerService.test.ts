@@ -13,6 +13,7 @@ describe('ConsoleLoggerService constructor and supporting properties', () => {
     });
     test('All parameters supplied', () => {
         let altLogger: ILoggerService = {
+            serviceName: '',
             log: (message: string, level: LoggingLevel, category?: string, source?: string) => void
                 {
                     

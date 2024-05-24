@@ -4,7 +4,7 @@
  */
 
 import { IDataTypeComparer } from "./DataTypeComparers";
-import { IDataTypeServiceBase } from "./DataTypes";
+import { IDataTypeService } from "./DataTypes";
 import { IServicesAccessor } from "./ValidationServices";
 
 /**
@@ -15,7 +15,7 @@ import { IServicesAccessor } from "./ValidationServices";
  * with the JavaScript comparison operators. Due to the Converter's ability to prepare
  * most values for the default comparison function, these aren't often created.
  */
-export interface IDataTypeComparerService extends IDataTypeServiceBase, IServicesAccessor {
+export interface IDataTypeComparerService extends IDataTypeService, IServicesAccessor {
 
     /**
      * Compares two values to see if they are equal or not.

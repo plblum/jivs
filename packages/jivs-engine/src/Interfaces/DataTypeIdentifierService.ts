@@ -3,13 +3,13 @@
  * @module Services/Types/IDataTypeIdentifierService
  */
 import { IDataTypeIdentifier } from "./DataTypeIdentifier";
-import { IDataTypeServiceBase } from "./DataTypes";
+import { IDataTypeService } from "./DataTypes";
 
 /**
  * A service for identifing the Data Type Lookup Key associated with a data type
  * using {@link DataTypes/Types/IDataTypeIdentifier!IDataTypeIdentifier | IDataTypeIdentifier} instances.
  */
-export interface IDataTypeIdentifierService extends IDataTypeServiceBase {
+export interface IDataTypeIdentifierService extends IDataTypeService {
 
     /**
      * When a value is supplied without a DataType Lookup Key, this resolves the

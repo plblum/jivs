@@ -172,10 +172,11 @@ describe('resolveTokens', () => {
             }
         };
         let testItem = new MessageTokenResolverService();
+        testItem.services = vm.services;
         expect(testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vm, messageTokeSource)).toBe('{token:' + LookupKey.Number + '}');
 
-        expect(logger.findMessage('token', LoggingLevel.Error, LoggingCategory.Configuration, 'MessageTokenResolver')).not.toBeNull();        
-        expect(logger.findMessage('not replaced', LoggingLevel.Warn, LoggingCategory.Formatting, 'MessageTokenResolver')).not.toBeNull();        
+        expect(logger.findMessage('token', LoggingLevel.Error, LoggingCategory.Configuration, 'MessageTokenResolverService')).not.toBeNull();        
+        expect(logger.findMessage('not replaced', LoggingLevel.Warn, LoggingCategory.Service, 'MessageTokenResolverService')).not.toBeNull();        
     });          
     test('Message with {token:formatter} where the value cannot be resolved and is not replaced and gets logged', () => {
         let vm = createMockValidationManagerForMessageTokenResolver(true);
@@ -194,7 +195,7 @@ describe('resolveTokens', () => {
         vm.services.cultureService.activeCultureId = 'de-DE';  // not configured in LA
         expect(() => testItem.resolveTokens('{token:UNKNOWNLOOKUPKEY}', null!, vm, messageTokeSource)).toThrow();
 
-        expect(logger.findMessage('Unsupported LookupKey', LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('Unsupported LookupKey', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
     });        
 });
 

@@ -4,14 +4,14 @@
  */
 
 import { IDataTypeFormatter } from "./DataTypeFormatters";
-import { DataTypeResolution, IDataTypeServiceBase } from "./DataTypes";
+import { DataTypeResolution, IDataTypeService } from "./DataTypes";
 import { IServicesAccessor } from "./ValidationServices";
 
 /**
  * Service for formatting data types used within tokens of error messages
  * using {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
  */
-export interface IDataTypeFormatterService extends IDataTypeServiceBase, IServicesAccessor {
+export interface IDataTypeFormatterService extends IDataTypeService, IServicesAccessor {
 
     /**
      * Converts the native value to a string that can be shown to the user.

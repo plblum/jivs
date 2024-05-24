@@ -3,10 +3,12 @@
  * @module Services/ConcreteClasses/DataTypeIdentifierService
  */
 
+import { valueForLog } from "../Utilities/Utilities";
 import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIdentifier, DateDataTypeIdentifier } from "../DataTypes/DataTypeIdentifiers";
 import { IDataTypeIdentifier } from "../Interfaces/DataTypeIdentifier";
 import { IDataTypeIdentifierService } from "../Interfaces/DataTypeIdentifierService";
 import { DataTypeServiceBase } from "./DataTypeServiceBase";
+import { LoggingLevel } from "../Interfaces/LoggerService";
 
 /**
  * A service for identifing the Data Type Lookup Key associated with a data type
@@ -17,11 +19,13 @@ import { DataTypeServiceBase } from "./DataTypeServiceBase";
 export class DataTypeIdentifierService extends DataTypeServiceBase<IDataTypeIdentifier>
 implements IDataTypeIdentifierService
 {
+
     constructor()
     {
         super();
         this.preRegister();
     }
+
     protected preRegister(): void
     {
         this.register(new NumberDataTypeIdentifier());
@@ -40,7 +44,9 @@ implements IDataTypeIdentifierService
      */    
     public identify(value: any): string | null {
         let idt = this.find(value);
-        return idt ? idt.dataTypeLookupKey : null;
+        let result = idt ? idt.dataTypeLookupKey : null;
+        this.log(() => `Identified ${valueForLog(result)}`, LoggingLevel.Debug);    // considered using Info, but Debug felt better
+        return result;
     }
 
     /**

@@ -478,7 +478,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let logger = setup.services.loggerService as CapturingLogger;        
         let vrDetails: ValueHostValidateResult | null = null;
         expect(() => vrDetails = setup.valueHost.validate()).toThrow('Always Throws');
-        expect(logger.findMessage('Always Throws', LoggingLevel.Error, null, null)).toBeDefined();
+        expect(logger.findMessage('Always Throws', LoggingLevel.Error, null, null)).not.toBeNull();
     });    
     test('With 2 Conditions evaluating as Match is ValidatorResult.Valid, IssuesFound = null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -833,7 +833,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         setup.valueHost.validate();
-        expect(logger.findMessage('Validating ValueHostName Field1', LoggingLevel.Debug, null, null)).toBeDefined();
+        expect(logger.findMessage('Validating ValueHostName Field1', LoggingLevel.Debug, null, null)).not.toBeNull();
     });    
 });
 

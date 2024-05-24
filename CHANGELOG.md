@@ -1,3 +1,7 @@
+## 0.16.1
+- New service: LookupKeyFallbackService, to allow formatter service and parser service (future) fall back to another lookup key when searching for the object they will use.
+- Refactored services to all implement IService and be based on ServiceBase. 
+- Improved logging information coming from services.
 ## 0.16.0
 - **Breaking API change** - refactor of DataTypeFormatterService to create a stand-alone CultureService.
 

@@ -2,12 +2,13 @@
  * @module DataTypes/Types
  */
 
+import { IServiceWithAccessor } from "./ValidationServices";
+
 /**
  * Base interface for Data Type services.
  */
-export interface IDataTypeServiceBase
+export interface IDataTypeService extends IServiceWithAccessor
 {
-
 }
 
 /**

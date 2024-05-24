@@ -227,7 +227,7 @@ describe('getValue using the calcFn', () => {
         let testItem = vm.getValueHost('Field1');
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(testItem?.getValue()).toBeUndefined();
-        expect(logger.findMessage('calcFn', LoggingLevel.Warn, null, null)).toBeDefined();
+        expect(logger.findMessage('calcFn', LoggingLevel.Warn, null, null)).not.toBeNull();
 
     });          
     test('function uses convert on a Date and gets a total number of days', () => {
@@ -283,7 +283,7 @@ describe('setValue', () => {
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(() => testItem?.setValue(0)).not.toThrow();
 
-        expect(logger.findMessage('setValue', LoggingLevel.Warn, null, null)).toBeDefined();
+        expect(logger.findMessage('setValue', LoggingLevel.Warn, null, null)).not.toBeNull();
     });
 });
 
