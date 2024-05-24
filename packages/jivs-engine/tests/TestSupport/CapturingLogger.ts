@@ -1,12 +1,13 @@
 import { ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
+import { ServiceBase } from "../../src/Services/ServiceBase";
 
 /**
  * Captures all logged info that qualifies with minLevel
  * for unit tests to evaluate through findMessage().
  * Also writes to the console
  */
-export class CapturingLogger implements ILoggerService
+export class CapturingLogger extends ServiceBase implements ILoggerService
 {
     public get minLevel(): LoggingLevel
     {

@@ -8,7 +8,8 @@ import { IDataTypeComparer } from "../Interfaces/DataTypeComparers";
 import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
 import { BooleanDataTypeComparer, defaultComparer } from "../DataTypes/DataTypeComparers";
 import { DataTypeConverterServiceBase } from "./DataTypeServiceBase";
-import { SevereErrorBase } from "../Utilities/ErrorHandling";
+import { SevereErrorBase, ensureError } from "../Utilities/ErrorHandling";
+import { valueForLog } from "../Utilities/Utilities";
 
 /**
  * A service for changing the comparing two values
@@ -28,6 +29,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
         super();
         this.preRegister();
     }
+
     protected preRegister(): void
     {
         this.register(new BooleanDataTypeComparer());        
@@ -48,39 +50,60 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
                 return ComparersResult.Undetermined;
             return null;    // not handled. Continue processing
         }
+        let result: ComparersResult | null | undefined = undefined;
         try {
-            let testNullsResult = handleNullsAndUndefined(value1, value2);
-            if (testNullsResult != null)
-                return testNullsResult;
+            try {
+                result = handleNullsAndUndefined(value1, value2);
+                if (result != null) {
+                    this.log('Has nulls', LoggingLevel.Debug);
+                    return result;
+                }
 
-            lookupKey1 = this.resolveLookupKey(value1, lookupKey1, 'Left');
-            lookupKey2 = this.resolveLookupKey(value2, lookupKey2, 'Right');
+                lookupKey1 = this.resolveLookupKey(value1, lookupKey1, 'Left');
+                lookupKey2 = this.resolveLookupKey(value2, lookupKey2, 'Right');
 
-            let comparer = this.find(value1, value2);
-            if (comparer)
-                return comparer.compare(value1, value2);
+                let comparer = this.find(value1, value2);
+                if (comparer) {
+                    this.log(()=> `Using ${valueForLog(comparer)} with ${lookupKey1} and ${lookupKey2}`, LoggingLevel.Debug);
+                    result = comparer.compare(value1, value2);
+                    return result;
+                }
 
-            let cleanedUpValue1 = this.cleanupConvertableValue(value1, lookupKey1);
-            let cleanedUpValue2 = this.cleanupConvertableValue(value2, lookupKey2);
+                let cleanedUpValue1 = this.cleanupConvertableValue(value1, lookupKey1);
+                let cleanedUpValue2 = this.cleanupConvertableValue(value2, lookupKey2);
 
-            let testNullsResultCU = handleNullsAndUndefined(cleanedUpValue1, cleanedUpValue2);
-            if (testNullsResultCU != null)
-                return testNullsResultCU;
+                result = handleNullsAndUndefined(cleanedUpValue1, cleanedUpValue2);
+                if (result != null) {
+                    this.log('Has nulls', LoggingLevel.Debug);
+                    return result;
+                }
 
-            let comparerCU = this.find(cleanedUpValue1, cleanedUpValue2);
-            if (comparerCU)
-                return comparerCU.compare(cleanedUpValue1, cleanedUpValue2);
+                let comparerCU = this.find(cleanedUpValue1, cleanedUpValue2);
+                if (comparerCU) {
+                    this.log(()=> `Using ${valueForLog(comparerCU)} with ${lookupKey1} and ${lookupKey2}`, LoggingLevel.Debug);
+                    result = comparerCU.compare(cleanedUpValue1, cleanedUpValue2);
+                    return result;
+                }
 
-            return defaultComparer(cleanedUpValue1, cleanedUpValue2);
-        }
-        catch (e) {
-            if (e instanceof Error) {
-                this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Compare, 'DataTypeComparerService');
-                if (e instanceof SevereErrorBase)
+                this.log(`Using defaultComparer with ${lookupKey1} and ${lookupKey2}`, LoggingLevel.Debug);
+                result = defaultComparer(cleanedUpValue1, cleanedUpValue2);
+                return result;
+            }
+            catch (e) {
+                let err = ensureError(e);
+
+                this.log(err.message, LoggingLevel.Error);
+                if (err instanceof SevereErrorBase)
                     throw e;
 
+                result = ComparersResult.Undetermined;
+                return result;
             }
-            return ComparersResult.Undetermined;
+        }
+        finally
+        {
+            if (result !== undefined)
+                this.log(`Compare result: ${ComparersResult[result]}`, LoggingLevel.Info);
         }
     }
     /**

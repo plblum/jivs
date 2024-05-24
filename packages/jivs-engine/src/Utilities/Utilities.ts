@@ -126,3 +126,20 @@ export function cleanString(value: string | null | undefined): string | null
     }
     return null;
 }
+
+export function valueForLog(value: any): string
+{
+    if (value === undefined)
+        return '[undefined]';
+    if (value == null)
+        return '[null]';
+    if (typeof value !== 'string') {
+        if (value.constructor !== undefined && value.constructor.name !== undefined)
+            return value.constructor.name;
+        if (typeof value === 'object')  // an object without a constructor
+        {
+            return `Plain object`;
+        }
+    }
+    return (value.toString() as string).substring(0, 20);   // clipped
+}

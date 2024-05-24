@@ -6,6 +6,7 @@
 
 import { CultureIdFallback, ICultureService } from "../Interfaces/CultureService";
 import { assertNotNull } from "../Utilities/ErrorHandling";
+import { ServiceBase } from "./ServiceBase";
 
 /**
  * Service for identifying cultures that you will use in the app,
@@ -14,7 +15,7 @@ import { assertNotNull } from "../Utilities/ErrorHandling";
  * 
  * This class is available on {@link Services/ConcreteClasses/ValidationServices!ValidationServices.cultureService | ValidationServices.cultureService}.
  */
-export class CultureService implements ICultureService {
+export class CultureService extends ServiceBase implements ICultureService {
 
 
     /**

@@ -7,8 +7,8 @@ import { IDataTypeFormatterService } from "../Interfaces/DataTypeFormatterServic
 import { IDataTypeFormatter } from "../Interfaces/DataTypeFormatters";
 import { DataTypeResolution } from "../Interfaces/DataTypes";
 import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
-import { CodingError, SevereErrorBase } from "../Utilities/ErrorHandling";
-import { DataTypeServiceBaseWithServices } from "./DataTypeServiceBase";
+import { CodingError, SevereErrorBase, ensureError } from "../Utilities/ErrorHandling";
+import { DataTypeServiceBase } from "./DataTypeServiceBase";
 
 /**
  * A service for formatting data types used within tokens of error messages
@@ -22,7 +22,7 @@ import { DataTypeServiceBaseWithServices } from "./DataTypeServiceBase";
  * 
  * This class is available on {@link Services/ConcreteClasses/ValidationServices!ValidationServices.dataTypeFormatterService | ValidationServices.dataTypeFormatterService}.
  */
-export class DataTypeFormatterService extends DataTypeServiceBaseWithServices<IDataTypeFormatter>
+export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeFormatter>
     implements IDataTypeFormatterService {
 
     /**
@@ -40,40 +40,58 @@ export class DataTypeFormatterService extends DataTypeServiceBaseWithServices<ID
      * {@inheritDoc Services/Types/IDataTypeFormatterService!IDataTypeFormatterService#format }
      */    
     public format(value: any, lookupKey?: string | null): DataTypeResolution<string> {
+        return this.formatRecursive(value, lookupKey, new Set<string>());
+    }
+    protected formatRecursive(value: any, lookupKey: string | null | undefined, alreadyChecked: Set<string>): DataTypeResolution<string> {
         try {
-            if (!lookupKey)
+            if (!lookupKey) {
+                this.log('Identify LookupKey from value', LoggingLevel.Debug);
                 lookupKey = this.services.dataTypeIdentifierService.identify(value);
+            }
             if (lookupKey === null)
                 throw new CodingError('Value type requires a LookupKey');
+
+            // recursion defense
+            if (alreadyChecked.has(lookupKey))
+                throw new CodingError(`LookupKeyFallbackService has a loop involving ${lookupKey}`);
+            alreadyChecked.add(lookupKey);
+
             let cultureId: string | null = this.services.cultureService.activeCultureId;
             while (cultureId) {
                 let cc = this.services.cultureService.find(cultureId);
                 if (!cc)
                     throw new CodingError(`Need to support CultureID ${cultureId} in DataTypeServices.`);
+                this.log(() => `Trying cultureId: ${cultureId}`, LoggingLevel.Debug);
                 let dtlf = this.find(lookupKey, cultureId);
-                if (dtlf)
-                    return dtlf.format(value, lookupKey, cultureId);
+                if (dtlf) {
+                    this.log(()=> `Using ${dtlf.constructor.name} with culture "${cultureId}"`, LoggingLevel.Debug);
+                    let result = dtlf.format(value, lookupKey, cultureId);
+                    if (result.value)
+                        this.log(()=> `Formatted ${lookupKey} with culture "${cultureId}": "${result.value}`, LoggingLevel.Info);                    
+                    return result;
+                }
 
                 cultureId = cc.fallbackCultureId ?? null;
             }
-
+            let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
+            if (fallbackLookupKey) {
+                this.log(() => `Trying fallback: ${fallbackLookupKey}`, LoggingLevel.Debug);
+                return this.formatRecursive(value, fallbackLookupKey, alreadyChecked);
+            }
+            
             throw new CodingError(`Unsupported LookupKey ${lookupKey}`);
         }
         catch (e) {
-            if (e instanceof Error) // should always be true. Mostly used for typecast
-            {
-                this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.LookupKey, 'DataTypeFormatterService');
-                if (e instanceof SevereErrorBase)
-                    throw e;
-                return {
-                    errorMessage: e.message,
-                    value: undefined
-                };
-            }
-            return { errorMessage: 'Unspecified' }; // only gets here if IDataTypeFormatter.format itself throws without Error class
+            let err = ensureError(e);
+            this.log(err.message, LoggingLevel.Error);
+            if (err instanceof SevereErrorBase)
+                throw err;
+            return {
+                errorMessage: err.message,
+                value: undefined
+            };
         }
     }
-
     /**
      * Removes the first {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
      * that supports both parameters.

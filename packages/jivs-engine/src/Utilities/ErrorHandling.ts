@@ -3,6 +3,8 @@
  * @module Utilities
  */
 
+import { valueForLog } from "./Utilities";
+
 /**
  * Classes based on this should throw their error all the way to the top.
  */
@@ -25,6 +27,15 @@ export class InvalidTypeError extends SevereErrorBase
     {
         super(`Type is not supported for this value: ${valueSupplied?.toString()}`);
     }
+}
+
+export function ensureError(value: any): Error
+{
+    if (value instanceof Error)
+        return value;
+    if (typeof value === 'string')
+        return new CodingError(value);  // must be a SevereError.
+    return new Error(valueForLog(value));
 }
 
 /**

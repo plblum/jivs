@@ -306,9 +306,15 @@ export class Validator implements IValidator {
                 let ivh = toIInputValueHost(this.valueHost);
                 if (ivh) {
                     let text = ivh.getInputValue();
-                    if (typeof text === 'string')
+                    if (typeof text === 'string') {
+                        lazyLog(() => {
+                            return {
+                                message: 'Using DuringEdit validation',
+                            };
+                        }, LoggingLevel.Debug);
                         return resolveCER((this.condition as IEvaluateConditionDuringEdits).evaluateDuringEdits(
                             text, ivh, this.services));
+                    }
                 }
                 return bailout('Value intended for evaluateDuringEdits was not a string.');
             }

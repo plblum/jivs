@@ -3,6 +3,7 @@
  */
 import { CultureToText, ITextLocalizerService } from '../Interfaces/TextLocalizerService';
 import { cultureLanguageCode } from '../Services/CultureService';
+import { ServiceBase } from './ServiceBase';
 import { assertValidFallbacks } from './ValidationServices';
 
 /**
@@ -29,7 +30,7 @@ import { assertValidFallbacks } from './ValidationServices';
  * - Fallback text. The text supplied when the lookup key does not have
  *   anything to offer for the given culture.
  */
-export class TextLocalizerService implements ITextLocalizerService
+export class TextLocalizerService extends ServiceBase implements ITextLocalizerService
 {
     /**
      * Reference to a fallback of the same service or null if no fallback.
