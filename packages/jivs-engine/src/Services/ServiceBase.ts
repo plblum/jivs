@@ -64,10 +64,12 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
      */
     protected log(message: (()=>string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void
     {
-        let logger = this.services.loggerService;
-        if (logger.minLevel <= logLevel) {
-            logger.log((typeof message === 'function') ? message() : message,
-                logLevel, logCategory ?? this.logCategory(), this.serviceName);
+        if (this.hasServices()) {
+            let logger = this.services.loggerService;
+            if (logger.minLevel <= logLevel) {
+                logger.log((typeof message === 'function') ? message() : message,
+                    logLevel, logCategory ?? this.logCategory(), this.serviceName);
+            }
         }
     }
 
