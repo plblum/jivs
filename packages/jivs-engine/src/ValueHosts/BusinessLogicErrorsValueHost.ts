@@ -9,9 +9,9 @@ import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, 
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { cleanString } from '../Utilities/Utilities';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 
 
 /**
@@ -20,6 +20,10 @@ import { cleanString } from '../Utilities/Utilities';
  */
 export class BusinessLogicErrorsValueHost extends ValidatableValueHostBase<ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState>
 {
+    constructor(validationManager: IValidationManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState) {
+        super(validationManager, config, state);
+
+    }    
     /**
      * Result is based on the presence of Business Logic Errors that are not warnings.
      * If none, ValidationStatus = Valid.
@@ -81,8 +85,8 @@ export class BusinessLogicErrorsValueHostGenerator extends ValidatableValueHostB
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {
         return config.valueHostType === BusinessLogicErrorsValueHostType;
     }
-    public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase {
-        return new BusinessLogicErrorsValueHost(valueHostsManager, config, state);
+    public create(validationManager: IValidationManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase {
+        return new BusinessLogicErrorsValueHost(validationManager, config, state);
     }
     public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValidatableValueHostBaseConfig): void {
         // nothing to do

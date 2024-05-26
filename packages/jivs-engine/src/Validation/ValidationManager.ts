@@ -12,13 +12,18 @@ import { type ValidationManagerInstanceState, type IValidationManager, type Vali
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
 import { Debouncer } from '../Utilities/Debounce';
+import { IInputValueHost } from '../Interfaces/InputValueHost';
+import { IPropertyValueHost } from '../Interfaces/PropertyValueHost';
+import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+import { toIPropertyValueHost } from '../ValueHosts/PropertyValueHost';
 
 
 /**
  * ValidationManager is the central object for using this system.
  * It is where you describe the shape of your inputs and their validation rules.
- * Once setup, it has a list of ValueHost objects. Those that are InputValueHosts
- * contain validators.
+ * Once setup, it keeps a list of ValueHost objects that represent the elements of your model
+ * or form, even if they don't need validation.
  * 
  * Configs are interfaces you use with plain objects to fashion them into 
  * ValidationManager's configuration. ValueHostConfig describes a ValueHost.
@@ -106,7 +111,32 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
     {
         return super.config;
     }
-
+    
+    /**
+     * Retrieves the ValidatorsValueHostBase of the identified by valueHostName
+     * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
+     * Returns the instance or null if not found or found a different type of value host.
+     */
+    public getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null
+    {
+        return toIValidatorsValueHostBase(this.getValueHost(valueHostName));
+    }
+    /**
+     * Retrieves the InputValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the IInputValueHost.name property
+     * Returns the instance or null if not found or found a non-input valuehost.
+     */
+    public getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null {
+        return toIInputValueHost(this.getValueHost(valueHostName));
+    }
+    /**
+     * Retrieves the PropertyValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the IPropertyValueHost.name property
+     * Returns the instance or null if not found or found a non-Property valuehost.
+     */
+    public getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null {
+        return toIPropertyValueHost(this.getValueHost(valueHostName));
+    }    
     /**
      * Runs validation against all validatable ValueHosts, except those that do not
      * match the validation group supplied in options.

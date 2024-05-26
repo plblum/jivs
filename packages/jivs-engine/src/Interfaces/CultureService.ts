@@ -3,7 +3,7 @@
  * @module Services/Types/ICultureService
  */
 
-import { IService } from "./ValidationServices";
+import { IService } from "./Services";
 
 /**
  * Service for identifying cultures that you will use in the app,

@@ -1,5 +1,6 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { ValidationServices, assertValidFallbacks } from "../../src/Services/ValidationServices";
+import { ValidationServices } from "../../src/Services/ValidationServices";
+import { assertValidFallbacks } from "../../src/Interfaces/Services";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { ValidatorFactory } from "../../src/Validation/Validator";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
@@ -11,7 +12,7 @@ import { DataTypeConverterService } from "../../src/Services/DataTypeConverterSe
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
-import { IServiceWithFallback, IServicesAccessor, toIServiceWithFallback, toIServicesAccessor } from "../../src/Interfaces/ValidationServices";
+import { IServiceWithFallback, IServicesAccessor, toIServiceWithFallback, toIServicesAccessor } from "../../src/Interfaces/Services";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { CultureService } from "../../src/Services/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";

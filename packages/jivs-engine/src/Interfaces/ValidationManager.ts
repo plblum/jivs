@@ -29,12 +29,42 @@ import { IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfi
 import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState } from './Validation';
 import { ValueHostInstanceState } from './ValueHost';
 import { ValueHostsManagerInstanceState } from './ValueHostsManager';
-import { IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
+import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
+import { IValidationServices } from './ValidationServices';
+import { IInputValueHost } from './InputValueHost';
+import { IPropertyValueHost } from './PropertyValueHost';
 
 /**
  * Interface from which to implement a ValidationManager.
  */
 export interface IValidationManager extends IValueHostsManager {
+    /**
+     * Provides access to ValidationServices (override IServices).
+     */
+    services: IValidationServices; 
+
+
+    /**
+     * Retrieves the IValidatorsValueHostBase of the identified by valueHostName
+     * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
+     * Returns the instance or null if not found or found a different type of value host.
+     */
+    getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null;    
+
+    /**
+     * Retrieves the InputValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the InputValueHostConfig.name property
+     * Returns the instance or null if not found or found a different type of value host.
+     */
+    getInputValueHost(valueHostName: ValueHostName): IInputValueHost | null;
+
+    /**
+     * Retrieves the PropertyValueHost of the identified by valueHostName
+     * @param valueHostName - Matches to the PropertyValueHostConfig.name property
+     * Returns the instance or null if not found or found a different type of value host.
+     */
+    getPropertyValueHost(valueHostName: ValueHostName): IPropertyValueHost | null;    
+
 
     /**
      * Runs validation against all validatable ValueHosts, except those that do not
@@ -232,7 +262,9 @@ export function toIValidationManager(source: any): IValidationManager | null
             test.clearValidation !== undefined &&
             test.isValid !== undefined &&
             test.doNotSave !== undefined &&
-            test.getIssuesFound !== undefined)
+            test.getIssuesFound !== undefined &&
+            test.getInputValueHost !== undefined &&
+            test.getPropertyValueHost !== undefined)
             return test;
     }
     return null;

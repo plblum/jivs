@@ -9,7 +9,7 @@
 import { IValidatorsValueHostBase } from "../Interfaces/ValidatorsValueHostBase";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { TokenLabelAndValue } from "../Interfaces/MessageTokenSource";
-import { IValueHostResolver } from "../Interfaces/ValueHostResolver";
+import { IValueHostsManager } from "../Interfaces/ValueHostsManager";
 import { OneValueConditionBaseConfig, OneValueConditionBase } from "./OneValueConditionBase";
 
 /**
@@ -31,19 +31,19 @@ export interface TwoValueConditionBaseConfig extends OneValueConditionBaseConfig
  */
 export abstract class TwoValueConditionBase<TConfig extends TwoValueConditionBaseConfig> extends OneValueConditionBase<TConfig>
 {
-    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
-        super.gatherValueHostNames(collection, valueHostResolver);
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void {
+        super.gatherValueHostNames(collection, valueHostsManager);
         if (this.config.secondValueHostName)
             collection.add(this.config.secondValueHostName);
     }
 
-    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate
         let secondLabel: string | null = null;
         if (this.config.secondValueHostName) {
-            let vh = this.getValueHost(this.config.secondValueHostName, valueHostResolver);
+            let vh = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
             if (vh)
                 secondLabel = vh.getLabel();
         }

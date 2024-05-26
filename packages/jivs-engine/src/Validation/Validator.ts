@@ -28,6 +28,8 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import { IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+import { IValidationManager, toIValidationManager } from '../Interfaces/ValidationManager';
+import { ValidationManager } from './ValidationManager';
 
 /**
  * An IValidator implementation that represents a single validator 
@@ -66,17 +68,20 @@ export class Validator implements IValidator {
     }
 
     protected get services(): IValidationServices {
-        return this.valueHostsManager.services;
+        return this.validationManager.services;
     }
 
     protected get valueHost(): IValidatorsValueHostBase {
         return this._valueHost;
     }
 
-    protected get valueHostsManager(): IValueHostsManager {
-        let vh = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
-        if (vh)
-            return vh;
+    protected get validationManager(): IValidationManager {
+        let vm = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
+        if (vm) {
+            if (vm instanceof ValidationManager || toIValidationManager(vm))
+                return vm as IValidationManager;
+            throw new CodingError('ValueHost.services must contain IValidationManager');
+        }
         /* istanbul ignore next */
         throw new CodingError('ValueHost must implement IValueHostsManagerAccessor');
     }
@@ -294,7 +299,7 @@ export class Validator implements IValidator {
                 // When that is the case, their ConditionConfig.valueHostName
                 // must be setup to retrieve the correct one.
                 // ValueHostName takes precedence.
-                let result = enabler.evaluate(this.valueHost, this.valueHostsManager);
+                let result = enabler.evaluate(this.valueHost, this.validationManager);
                 switch (result) {
                     case ConditionEvaluateResult.NoMatch:
                     case ConditionEvaluateResult.Undetermined:
@@ -319,7 +324,7 @@ export class Validator implements IValidator {
                 return bailout('Value intended for evaluateDuringEdits was not a string.');
             }
 
-            let pendingCER = this.condition.evaluate(this.valueHost, this.valueHostsManager);
+            let pendingCER = this.condition.evaluate(this.valueHost, this.validationManager);
 
             if (pendingCER instanceof Promise) {
                 // Support Async evaluation by letting evaluate() return a promise
@@ -436,10 +441,10 @@ export class Validator implements IValidator {
         issueFound.severity = this.severity;
         let errorMessage = this.getErrorMessageTemplate();
         issueFound.errorMessage = services.messageTokenResolverService.resolveTokens(
-            errorMessage, this.valueHost, this.valueHostsManager, this);
+            errorMessage, this.valueHost, this.validationManager, this);
         let summaryMessage = this.getSummaryMessageTemplate();
         issueFound.summaryMessage = summaryMessage ?
-            services.messageTokenResolverService.resolveTokens(summaryMessage, this._valueHost, this.valueHostsManager, this) :
+            services.messageTokenResolverService.resolveTokens(summaryMessage, this._valueHost, this.validationManager, this) :
             undefined;
     }
 

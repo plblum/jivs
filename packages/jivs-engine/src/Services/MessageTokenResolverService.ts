@@ -9,7 +9,8 @@ import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { ServiceWithAccessorBase } from './ServiceBase';
+import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 
 
 /**
@@ -27,10 +28,10 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
      * @param hosts 
      * @returns the message with formatting resolved
      */
-    public resolveTokens(message: string, valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver, ...hosts: Array<IMessageTokenSource>): string
+    public resolveTokens(message: string, valueHost: IValidatorsValueHostBase, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string
     {
         assertNotNull(message, 'message');
-        assertNotNull(valueHostResolver, 'valueHostResolver');
+        assertNotNull(validationManager, 'valueHostResolver');
         if (!hosts || !hosts.length || hosts[0] == null)    // null/undefined
             throw new CodingError('hosts required');
 
@@ -48,7 +49,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
         let revised = message;
         let allTavs: Array<TokenLabelAndValue> = [];
         hosts.forEach((tokenSource, index) => {
-            let tavs = tokenSource.getValuesForTokens(valueHost, valueHostResolver);
+            let tavs = tokenSource.getValuesForTokens(valueHost, validationManager);
             if (tavs)
                 allTavs = allTavs.concat(tavs);
         });
@@ -62,7 +63,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
                 if (capturedToken.isMatch(tav))
                 {
                     try {
-                        let replacement = capturedToken.replacement(tav.associatedValue, valueHostResolver);
+                        let replacement = capturedToken.replacement(tav.associatedValue, validationManager);
                         if (replacement.value !== undefined)
                         {
                             let finalized = this.finalizeReplacement(replacement.value, tav);
@@ -170,8 +171,8 @@ class CapturedToken
  * @param validationManager 
  * @returns 
  */    
-    public replacement(replacementValue: any, valueHostResolver: IValueHostResolver): DataTypeResolution<string>
+    public replacement(replacementValue: any, validationManager: IValidationManager): DataTypeResolution<string>
     {
-        return valueHostResolver.services.dataTypeFormatterService.format(replacementValue, this.formatterKey ?? undefined);
+        return validationManager.services.dataTypeFormatterService.format(replacementValue, this.formatterKey ?? undefined);
     }
 }

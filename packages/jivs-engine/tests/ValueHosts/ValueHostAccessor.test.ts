@@ -7,6 +7,7 @@ import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
+import { ValidationManager } from "../../src/Validation/ValidationManager";
 
 describe('constructor', () => {
     test('Valid parameter does not throw', () => {
@@ -31,7 +32,7 @@ describe('input', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.input('Field1')).not.toThrow();
@@ -46,7 +47,7 @@ describe('input', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.input('Field1')).toThrow(/InputValueHost/);
@@ -59,7 +60,7 @@ describe('input', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.input('Field1')).toThrow(/InputValueHost/);
@@ -72,7 +73,7 @@ describe('input', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig); 
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.input('Field1')).toThrow(/InputValueHost/);
@@ -82,7 +83,7 @@ describe('input', () => {
             services: createValidationServicesForTesting(),
             valueHostConfigs: []
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.input('Field1')).toThrow(/unknown/);
@@ -98,7 +99,7 @@ describe('property', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.property('Field1')).not.toThrow();
@@ -113,7 +114,7 @@ describe('property', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.property('Field1')).toThrow(/PropertyValueHost/);
@@ -126,7 +127,7 @@ describe('property', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.property('Field1')).toThrow(/PropertyValueHost/);
@@ -139,7 +140,7 @@ describe('property', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.property('Field1')).toThrow(/PropertyValueHost/);
@@ -149,7 +150,7 @@ describe('property', () => {
             services: createValidationServicesForTesting(),
             valueHostConfigs: []
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.property('Field1')).toThrow(/unknown/);
@@ -193,7 +194,7 @@ describe('static', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.static('Field1')).toThrow(/StaticValueHost/);
@@ -206,7 +207,7 @@ describe('static', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.static('Field1')).toThrow(/StaticValueHost/);
@@ -259,7 +260,7 @@ describe('calc', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.calc('Field1')).toThrow(/CalcValueHost/);
@@ -272,7 +273,7 @@ describe('calc', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.calc('Field1')).toThrow(/CalcValueHost/);
@@ -297,7 +298,7 @@ describe('any', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.any('Field1')).not.toThrow();
@@ -312,7 +313,7 @@ describe('any', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.any('Field1')).not.toThrow();
@@ -370,7 +371,7 @@ describe('validators', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.validators('Field1')).not.toThrow();
@@ -385,7 +386,7 @@ describe('validators', () => {
                 name: 'Field1'
             }]
         };
-        let vhm = new ValueHostsManager(vhConfig);
+        let vhm = new ValidationManager(vhConfig);
         let testItem = new ValueHostAccessor(vhm);    
         let result: any;
         expect(() => result = testItem.validators('Field1')).not.toThrow();

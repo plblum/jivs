@@ -5,35 +5,36 @@
 import { IPropertyValueHost, PropertyValueHostConfig, PropertyValueHostInstanceState } from '../Interfaces/PropertyValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { InputValueHost, hasIInputValueHostSpecificMembers } from './InputValueHost';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 
 
 /**
- * ValueHost implementation that does not handle validation. (See InputValueHost for validation)
- * Use ValueHostConfig.valueHostType = "Property" for the ValidationManager to use this class.
+ * ValueHost used to manage and validate properties on a model.
+ * Each valuehost's native value is expected to be the same as the actual
+ * property on the model. For example, if the model has an integer property,
+ * the value must be a number that does not contain any decimal information.
+ * This ValueHost is a sibling of InputValueHost, which is used to manage and validate
+ * inputs.
  * 
- * Generally create these when:
- * - Expose a value from the UI that doesn't need validation, but its value is used by 
- *   other validators.
- * - Expose a global value - something not part of the form - that can be used by your
- *   Conditions, such as the current Country code used to select the right regular expression
- *   for postal codes, phone numbers, etc.
- * - Store all of the remaining members of your Model. Makes ValidationManager's ValueHosts
- *   your ---Single Source of Truth (SSOT)--- for that Model.
- *   When working with a Model, you will need to write code that transfers the Model's property values
- *   into the UI elements. Since ValidationManager needs those same values, you can build
- *   your input fields/elements to get their value from ValidationManager and upon change, provide
- *   the new values back.
+ * Business logic needs to be able to describe each property and its validators.
+ * Its rules are expected to be converted into PropertyValueHosts with Jiv's validators.
+ * 
+ * There is an interesting use case: the UI can ask for business logic to build the 
+ * ValueHosts it uses, but the UI really wants InputValueHosts.
+ * You can setup the ValidationServices so that each ValueHost created by business
+ * logic will be converted into an InputValueHost.
+ * Just set the ValidationServices.valueHostFactor = new InputValueHostFactory()
+ * or pass 'client' into the createValidationServices() function.
  */
 export class PropertyValueHost extends ValidatorsValueHostBase<PropertyValueHostConfig, PropertyValueHostInstanceState>
     implements IPropertyValueHost
 {
-    constructor(valueHostsManager: IValueHostsManager, config: PropertyValueHostConfig, state: PropertyValueHostInstanceState)
+    constructor(validationManager: IValidationManager, config: PropertyValueHostConfig, state: PropertyValueHostInstanceState)
     {
-        super(valueHostsManager, config, state);
+        super(validationManager, config, state);
     }
 
     /**
@@ -56,8 +57,8 @@ export class PropertyValueHostGenerator extends ValidatorsValueHostBaseGenerator
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === ValueHostType.Property;
     }
-    public create(valueHostsManager: IValueHostsManager, config: PropertyValueHostConfig, state: PropertyValueHostInstanceState): IPropertyValueHost {
-        return new PropertyValueHost(valueHostsManager, config, state);
+    public create(validationManager: IValidationManager, config: PropertyValueHostConfig, state: PropertyValueHostInstanceState): IPropertyValueHost {
+        return new PropertyValueHost(validationManager, config, state);
     }
 }
 

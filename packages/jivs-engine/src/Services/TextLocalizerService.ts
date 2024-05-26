@@ -4,7 +4,7 @@
 import { CultureToText, ITextLocalizerService } from '../Interfaces/TextLocalizerService';
 import { cultureLanguageCode } from '../Services/CultureService';
 import { ServiceBase } from './ServiceBase';
-import { assertValidFallbacks } from './ValidationServices';
+import { assertValidFallbacks } from '../Interfaces/Services';
 
 /**
  * A service to offer text alternatives to the default text

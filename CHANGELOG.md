@@ -2,6 +2,9 @@
 - New service: LookupKeyFallbackService, to allow formatter service and parser service (future) fall back to another lookup key when searching for the object they will use.
 - Refactored services to all implement IService and be based on ServiceBase. 
 - Improved logging information coming from services.
+- Refactored IValidationServices to have ancestors: IServices -> IValueHostServices -> IValidationServices.
+  As a result, now InputValueHost and PropertyValueHost can only be associated with IValidationService,
+  while the rest can be used with IValueHostServices.
 ## 0.16.0
 - **Breaking API change** - refactor of DataTypeFormatterService to create a stand-alone CultureService.
 

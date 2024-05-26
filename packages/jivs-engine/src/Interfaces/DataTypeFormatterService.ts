@@ -5,7 +5,7 @@
 
 import { IDataTypeFormatter } from "./DataTypeFormatters";
 import { DataTypeResolution, IDataTypeService } from "./DataTypes";
-import { IServicesAccessor } from "./ValidationServices";
+import { IServicesAccessor } from "./Services";
 
 /**
  * Service for formatting data types used within tokens of error messages

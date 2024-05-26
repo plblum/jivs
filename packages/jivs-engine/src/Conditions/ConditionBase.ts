@@ -9,7 +9,7 @@ import { type ConditionConfig, type IConditionCore, ConditionEvaluateResult, Con
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull } from '../Utilities/ErrorHandling';
-import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 
@@ -51,9 +51,9 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * the ValueHost from the Model, and this parameter is ignored.
      * This parameter can be null, but the ConditionConfig will need to supply a ValueHostName
      * to a value host instead.
-     * @param valueHostResolver 
+     * @param valueHostsManager 
      */
-    public abstract evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    public abstract evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
 
     /**
      * Data that supports the business rule defined in evaluate().
@@ -87,7 +87,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Config.
      */
-    public abstract gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void;
+    public abstract gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void;
 
     /**
      * Implementation for IMessageTokenSource.
@@ -97,21 +97,21 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      *  - In CompareToValueCondition, secondValueHostName property is the source for the {CompareTo} token.
      *  This implementation feels like it violates Single Responsibility pattern.
      *  But keeping this feature separate from conditions greatly increases complexity.
-     * @param valueHostResolver 
+     * @param valueHostsManager 
      * @returns An array. If an empty array if there are no token to offer.
      * This base class has no tokens to offer.
      */
-    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         return [];
     }
 
     /**
      * Utility to log when a conditionConfig property is incorrectly setup.
      * @param errorMessage 
-     * @param valueHostResolver 
+     * @param valueHostsManager 
      */
-    protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostResolver: IValueHostResolver): void {
+    protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostsManager: IValueHostsManager): void {
         let fnName = this.constructor.name;
-        valueHostResolver.services.loggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, LoggingCategory.Configuration, fnName);
+        valueHostsManager.services.loggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, LoggingCategory.Configuration, fnName);
     }
 }

@@ -13,7 +13,7 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
 
 import type { IValueHost } from '../Interfaces/ValueHost';
-import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import {
     type ICondition,
     ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter, IEvaluateConditionDuringEdits
@@ -56,14 +56,14 @@ export class DataTypeCheckCondition extends InputValueConditionBase<DataTypeChec
     public static get DefaultConditionType(): ConditionType { return ConditionType.DataTypeCheck; }
     
     protected evaluateInputValue(value: any, valueHost: IInputValueHost,
-        valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+        valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         // value has already been proven to be something other than undefined...
         return valueHost.getValue() !== undefined ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate
         let ivh = toIInputValueHost(valueHost);
         if (ivh)
@@ -117,8 +117,8 @@ export class RequireTextCondition extends OneValueConditionBase<RequireTextCondi
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.RequireText; }    
 
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (value === undefined) 
             return ConditionEvaluateResult.Undetermined;
@@ -164,8 +164,8 @@ export class NotNullCondition extends OneValueConditionBase<NotNullConditionConf
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.NotNull; }    
 
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (value === undefined) 
             return ConditionEvaluateResult.Undetermined;
@@ -294,13 +294,13 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Range; }
     
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (value == null)  // includes undefined
             return ConditionEvaluateResult.Undetermined;
 
-        let services = valueHostResolver.services;
+        let services = valueHostsManager.services;
         let lookupKey = this.config.conversionLookupKey ?? valueHost.getDataType();
         let lower = this.config.minimum != null ?  // null/undefined
             services.dataTypeComparerService.compare(this.config.minimum, value,
@@ -327,9 +327,9 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
 
         return ConditionEvaluateResult.NoMatch;
     }
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate
 
         list.push({
@@ -683,9 +683,9 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
         return ConditionEvaluateResult.Match;
     }
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate
 
         list.push({
@@ -728,9 +728,9 @@ export class AllMatchCondition extends EvaluateChildConditionResultsBase<AllMatc
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.And; }
     
-    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         for (let condition of conditions)
-            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostResolver))) {
+            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostsManager))) {
                 case ConditionEvaluateResult.NoMatch:
                     return ConditionEvaluateResult.NoMatch;
                 case ConditionEvaluateResult.Undetermined:
@@ -757,10 +757,10 @@ export class AnyMatchCondition extends EvaluateChildConditionResultsBase<AnyMatc
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Or; }
 
-    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         let countMatches = 0;
         for (let condition of conditions)
-            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostResolver))) {
+            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostsManager))) {
                 case ConditionEvaluateResult.Match:
                     countMatches++;
                     break;
@@ -801,10 +801,10 @@ export class CountMatchesCondition extends EvaluateChildConditionResultsBase<Cou
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.CountMatches; }
     
-    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
+    protected evaluateChildren(conditions: ICondition[], parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         let countMatches = 0;
         for (let condition of conditions)
-            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostResolver))) {
+            switch (this.cleanupChildResult(condition.evaluate(parentValueHost, valueHostsManager))) {
                 case ConditionEvaluateResult.Match:
                     countMatches++;
                     break;

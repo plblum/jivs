@@ -18,7 +18,7 @@ import { ConditionEvaluateResult, ConditionCategory } from "@plblum/jivs-engine/
 import { ComparersResult } from "@plblum/jivs-engine/build/Interfaces/DataTypeComparerService";
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
-import { IValueHostResolver } from "@plblum/jivs-engine/build/Interfaces/ValueHostResolver";
+import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import {
     FluentConditionCollector, FluentValidatorCollector, FluentValidatorConfig,
     finishFluentConditionCollector, finishFluentValidatorCollector
@@ -37,11 +37,11 @@ export interface PositiveNumberConditionConfig extends OneValueConditionBaseConf
  */
 export class PositiveNumberCondition extends OneValueConditionBase<PositiveNumberConditionConfig>
 {
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (typeof value === 'number') {
-            let comparison = valueHostResolver.services.dataTypeComparerService.compare(
+            let comparison = valueHostsManager.services.dataTypeComparerService.compare(
                 value, 0,
                 LookupKey.Number, LookupKey.Number);  
             if (comparison === ComparersResult.GreaterThan)

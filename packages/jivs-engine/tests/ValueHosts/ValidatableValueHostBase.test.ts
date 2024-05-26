@@ -10,7 +10,7 @@ import {
     BusinessLogicError
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
-import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
+import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { SetValueOptions, IValueHost, ValueHostInstanceState, ValidTypesForInstanceStateStorage, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
@@ -100,8 +100,8 @@ class TestValidatableValueHostGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === 'TestValidatableValueHost';
     }
-    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: ValidatableValueHostBaseInstanceState): IValueHost {
-        return new TestValidatableValueHost(valueHostsManager, config, state);
+    public create(validationManager : IValidationManager, config: ValueHostConfig, state: ValidatableValueHostBaseInstanceState): IValueHost {
+        return new TestValidatableValueHost(validationManager, config, state);
     }
     public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValueHostConfig): void {
     }
