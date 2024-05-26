@@ -78,6 +78,23 @@ describe('register and find, ', () => {
         expect(testItem.find('fr-FR')).toBe(frFR);
         expect(testItem.find('fr-DE')).toBe(frDE);
     });
+    test('Register same cultureID twice replaces', () => {
+        let testItem = new CultureService();
+        testItem.activeCultureId = 'en';
+        let cif: CultureIdFallback = {
+            cultureId: 'en-US',
+            fallbackCultureId: 'en'
+        };
+        testItem.register(cif);
+
+        let cif2: CultureIdFallback = {
+            cultureId: 'en-US',
+            fallbackCultureId: 'en-CA'
+        };
+        expect(() => testItem.register(cif2)).not.toThrow();
+        expect(testItem.find('en-US')).toBe(cif2);
+ 
+    });        
     test('Invalid parameters', () => {
         let testItem = new CultureService();
         expect(() => testItem.register(null!)).toThrow(/culture/);

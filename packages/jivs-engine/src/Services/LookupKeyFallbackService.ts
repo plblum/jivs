@@ -84,7 +84,7 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
             throw new CodingError('Cannot use the same value for both parameters');
 
         this.ensureBuiltIn();
-        this._registered?.set(lookupKey, fallbackLookupKey);    // will add or replace
+        this._registered!.set(lookupKey, fallbackLookupKey);    // will add or replace
     }
   
     /**
@@ -96,7 +96,7 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
     {
         this.ensureBuiltIn();
 
-        return this._registered?.get(lookupKey) ?? null;
+        return this._registered!.get(lookupKey) ?? null;
     }
   
   }

@@ -53,5 +53,6 @@ describe('register and find, ', () => {
         let testItem = new LookupKeyFallbackService();
         expect(() => testItem.register(null!, 'A')).toThrow('lookupKey');
         expect(() => testItem.register('B', null!)).toThrow('fallbackLookupKey');
+        expect(() => testItem.register('B', 'B')).toThrow(/same value/);        
     });        
 });

@@ -1,9 +1,10 @@
-import { BooleanDataTypeComparer } from "../../src/DataTypes/DataTypeComparers";
+import { BooleanDataTypeComparer, defaultComparer } from "../../src/DataTypes/DataTypeComparers";
 import { CaseInsensitiveStringConverter, DateTimeConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIdentifier, DateDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ComparersResult } from "../../src/Interfaces/DataTypeComparerService";
 import { IDataTypeComparer } from "../../src/Interfaces/DataTypeComparers";
+import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { IDataTypeConverter } from "../../src/Interfaces/DataTypeConverters";
 import { IDataTypeIdentifier } from "../../src/Interfaces/DataTypeIdentifier";
 import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
@@ -293,7 +294,58 @@ describe('DataTypeComparerService.compare', () => {
         expect(testItem.compare(false, true, null, null)).toBe(ComparersResult.NotEquals);
         expect(testItem.compare(true, false, null, null)).toBe(ComparersResult.NotEquals);        
     });       
-     
+
+    class BooleanAsStringConverter implements IDataTypeConverter
+    {
+        supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+            return (dataTypeLookupKey === LookupKey.Boolean) &&
+                typeof value === 'string';
+        }
+        convert(value: string, dataTypeLookupKey: string): SimpleValueType {
+            let lc = value.toLowerCase();
+            if (['yes', 'true'].includes(lc))
+                return true;
+            if (['no', 'false'].includes(lc))
+                return false;
+            return undefined;
+        }
+        
+    }
+    test('String containing YES or NO against a lookupKey of boolean is converted to a boolean then uses the booleanComparer', () => {
+/*
+expect:
+"yes" + LookupKey.Boolean ->
+yesnobooleanconverter -> true
+booleancomparer compares the two values
+
+*/
+
+        let services = new MockValidationServices(false, true);
+        let logger = services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        let dtcs = services.dataTypeConverterService as DataTypeConverterService;
+        dtcs.register(new BooleanAsStringConverter());
+
+        let testItem = new DataTypeComparerService();
+        services.dataTypeComparerService = testItem;
+        testItem.services = services;
+
+        testItem.register(new BooleanDataTypeComparer());
+        expect(testItem.compare("YES", "yes", LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.Equals);
+        expect(logger.findMessage('Using BooleanAsStringConverter', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using BooleanDataTypeComparer with Boolean and Boolean', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Compare result: Equal', LoggingLevel.Info, null, null)).not.toBeNull();
+
+
+        expect(testItem.compare("NO", "YES", LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.NotEquals);
+        expect(testItem.compare("yes", "no", LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.NotEquals);  
+        expect(testItem.compare("No", "no", LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.Equals);   
+        expect(testItem.compare("true", "true", LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.Equals);        
+        expect(testItem.compare("FALSE", "false", LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.Equals);       
+        expect(testItem.compare("true", "false", LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.NotEquals);        
+    });  
+    
     test('Date value resolves lookupKey and correctly handles comparisons', () => {
         let date1 = new Date(2000, 5, 31);
         let date2 = new Date(2000, 5, 30);
@@ -391,6 +443,32 @@ describe('DataTypeComparerService.compare', () => {
         expect(logger.findMessage('Compare result: Equals', LoggingLevel.Info, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
 
     });
+
+    test('Comparer throws a non-severe Error returns a value of Undetermined and logs', () => {
+        class NonSevereErrorComparer implements IDataTypeComparer
+        {
+            supportsValues(value1: any, value2: any): boolean {
+                return true;
+            }
+            compare(value1: any, value2: any): ComparersResult {
+                throw new Error("Non-severe");
+            }
+            
+        }
+        let services = new MockValidationServices(false, true);
+        let logger = services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+        let testItem = new DataTypeComparerService();
+        services.dataTypeComparerService = testItem;
+        testItem.services = services;
+        testItem.register(new NonSevereErrorComparer());    
+
+        expect(testItem.compare(1, 1, LookupKey.Number, LookupKey.Number)).toBe(ComparersResult.Undetermined);
+        expect(logger.findMessage('Using NonSevereErrorComparer', LoggingLevel.Debug, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('Non-severe', LoggingLevel.Error, null, null)).not.toBeNull();        
+        expect(logger.findMessage('Compare result: Undetermined', LoggingLevel.Info, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+
+    });    
     test('Unsupported data type for lookupKey using JavaScript object logs error and throws', () => {
         let testItem = new DataTypeComparerService();
         testItem.services = new MockValidationServices(true, true);
