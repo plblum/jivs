@@ -4,12 +4,13 @@
  * 
  * In this Condition, the value of the current input field/element passed into 
  * evaluate(vh) is passed along to child Conditions that do not specify a ValueHost.
+ * @module Conditions/AbstractClasses/EvaluateChildConditionResultsBase
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionConfig, ConditionEvaluateResult, ICondition, ConditionCategory } from '../Interfaces/Conditions';
 import { IValueHost, toIGatherValueHostNames } from '../Interfaces/ValueHost';
-import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { ConditionBase } from './ConditionBase';
 
@@ -43,34 +44,34 @@ export abstract class EvaluateChildConditionResultsBase<TConfig extends Evaluate
     /**
      * 
      * @param valueHost - this is passed down to the child ValueHosts
-     * @param valueHostResolver 
+     * @param valueHostsManager 
      * @returns 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        let conditions = this.conditions(valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        let conditions = this.conditions(valueHostsManager);
         if (conditions.length === 0)
             return ConditionEvaluateResult.Undetermined;
-        return this.evaluateChildren(conditions, valueHost, valueHostResolver);
+        return this.evaluateChildren(conditions, valueHost, valueHostsManager);
     }
 
-    protected conditions(valueHostResolver: IValueHostResolver): Array<ICondition> {
+    protected conditions(valueHostsManager: IValueHostsManager): Array<ICondition> {
         if (!this._conditions) {
-            this._conditions = this.generateConditions(valueHostResolver);
+            this._conditions = this.generateConditions(valueHostsManager);
         }
         return this._conditions;
     }
-    protected generateConditions(valueHostResolver: IValueHostResolver): Array<ICondition> {
+    protected generateConditions(valueHostsManager: IValueHostsManager): Array<ICondition> {
         let conditions: Array<ICondition> = [];
         for (let condConfig of this.config.conditionConfigs) {
             // expect exceptions here for invalid Configs
-            let condition = valueHostResolver.services.conditionFactory.create(condConfig);
+            let condition = valueHostsManager.services.conditionFactory.create(condConfig);
             conditions.push(condition);
         }
         return conditions;
     }
     private _conditions: Array<ICondition> | null = null;
 
-    protected abstract evaluateChildren(conditions: Array<ICondition>, parentValueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
+    protected abstract evaluateChildren(conditions: Array<ICondition>, parentValueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
 
     /**
      * Utility for EvaluateChildren to apply the Config.treatUndeterminedAs
@@ -85,11 +86,11 @@ export abstract class EvaluateChildConditionResultsBase<TConfig extends Evaluate
         return childResult;
     }
 
-    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void
     {
-        let conditions = this.conditions(valueHostResolver);
+        let conditions = this.conditions(valueHostsManager);
         for (let condition of conditions)
-            toIGatherValueHostNames(condition)?.gatherValueHostNames(collection, valueHostResolver);
+            toIGatherValueHostNames(condition)?.gatherValueHostNames(collection, valueHostsManager);
     }        
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Children;

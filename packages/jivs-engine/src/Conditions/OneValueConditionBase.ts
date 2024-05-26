@@ -7,7 +7,7 @@ import { CodingError } from '../Utilities/ErrorHandling';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ConditionBase } from './ConditionBase';
 
 
@@ -52,25 +52,25 @@ export abstract class OneValueConditionBase<TConditionConfig extends OneValueCon
      * and if not, supplying one identified by ConditionConfig.valueHostName.
      * ConditionConfig.valueHostName takes precidence over the valueHost passed in.
      * @param valueHost 
-     * @param valueHostResolver 
+     * @param valueHostsManager 
      * @returns 
      */
-    protected ensurePrimaryValueHost(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): IValueHost   // IValueHost
+    protected ensurePrimaryValueHost(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): IValueHost   // IValueHost
     {
         if (this.config.valueHostName) {
-            valueHost = this.getValueHost(this.config.valueHostName, valueHostResolver);
+            valueHost = this.getValueHost(this.config.valueHostName, valueHostsManager);
             if (!valueHost)
-                this.logInvalidPropertyData('valueHostName', 'valueHostName is unknown', valueHostResolver);
+                this.logInvalidPropertyData('valueHostName', 'valueHostName is unknown', valueHostsManager);
         }
         if (valueHost)
             return valueHost;
         throw new CodingError('Missing value for valueHostName.');
     }
-    protected getValueHost(valueHostName: ValueHostName, valueHostResolver: IValueHostResolver): IValueHost | null {
-        return valueHostResolver.getValueHost(valueHostName);
+    protected getValueHost(valueHostName: ValueHostName, valueHostsManager: IValueHostsManager): IValueHost | null {
+        return valueHostsManager.getValueHost(valueHostName);
     }
 
-    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
+    public gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void {
         if (this.config.valueHostName)
             collection.add(this.config.valueHostName);
     }

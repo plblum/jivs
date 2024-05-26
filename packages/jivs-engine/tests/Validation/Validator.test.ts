@@ -28,6 +28,7 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested
@@ -38,8 +39,8 @@ class PublicifiedValidator extends Validator {
     public ExposeServices(): IValidationServices {
         return this.services;
     }
-    public ExposeValidationManager(): IValueHostsManager {
-        return this.valueHostsManager;
+    public ExposeValidationManager(): IValidationManager {
+        return this.validationManager;
     }
     public ExposeValueHost(): IValidatorsValueHostBase {
         return this.valueHost;

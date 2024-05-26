@@ -5,7 +5,7 @@
  * @module Conditions/AbstractClasses/CompareToValueConditionBase
  */
 
-import { IValueHostResolver } from './../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from './../Interfaces/ValueHostsManager';
 import { ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter } from './../Interfaces/Conditions';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
@@ -43,8 +43,8 @@ export interface CompareToValueConditionBaseConfig extends OneValueConditionBase
  */
 export abstract class CompareToValueConditionBase<TConfig extends CompareToValueConditionBaseConfig> extends OneValueConditionBase<TConfig>
 {
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (value == null)  // null/undefined
             return ConditionEvaluateResult.Undetermined;
@@ -53,16 +53,16 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
         if (this.config.secondValue == null)    // null/undefined
         {
             const msg = 'secondValue lacks value to evaluate';
-            this.logInvalidPropertyData('secondValue', msg, valueHostResolver);
+            this.logInvalidPropertyData('secondValue', msg, valueHostsManager);
             return ConditionEvaluateResult.Undetermined;
         }
         secondValue = this.config.secondValue;
 
-        let comparison = valueHostResolver.services.dataTypeComparerService.compare(
+        let comparison = valueHostsManager.services.dataTypeComparerService.compare(
             value, secondValue,
             this.config.conversionLookupKey ?? valueHost.getDataType(), this.config.secondConversionLookupKey ?? null);
         if (comparison === ComparersResult.Undetermined) {
-            valueHostResolver.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
+            valueHostsManager.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
                 LoggingLevel.Warn, LoggingCategory.TypeMismatch, `${this.constructor.name} for ${valueHost.getName()}`);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -71,9 +71,9 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         let secondValue = this.config.secondValue;
         
         list.push({

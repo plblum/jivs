@@ -1,12 +1,11 @@
 /**
  * A ValueHost that uses the Validator class to provide validation.
- * @module ValueHosts/ConcreteClasses/ValidatorsValueHostBase
+ * @module ValueHosts/AbstractClasses/ValidatorsValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidationStatusString, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
@@ -16,13 +15,14 @@ import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './V
 import { FluentValidatorCollector } from './Fluent';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
 import { ConditionType } from '../Conditions/ConditionTypes';
+import { IValidationManager } from '../Interfaces/ValidationManager';
 
 /**
  * Standard implementation of IValidatorsValueHostBase. It owns a list of Validators
  * which support its validate() function.
  * 
 * Each instance depends on a few things, all passed into the constructor:
-* - valueHostsManager - Typically this is the ValidationManager.
+* - validationManager 
 * - ValidatorsValueHostBaseConfig - The business logic supplies these rules
 *   to implement a ValueHost's name, label, data type, validation rules,
 *   and other business logic metadata.
@@ -34,8 +34,8 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHostBaseConfig, TState extends ValidatorsValueHostBaseInstanceState>
     extends ValidatableValueHostBase<TConfig, TState>
     implements IValidatorsValueHostBase {
-    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
-        super(valueHostsManager, config, state);
+    constructor(validationManager: IValidationManager, config: TConfig, state: TState) {
+        super(validationManager, config, state);
     }
 
     //#region IValidatorsValueHostBase

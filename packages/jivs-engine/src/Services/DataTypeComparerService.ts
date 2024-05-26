@@ -7,7 +7,7 @@ import { ComparersResult, IDataTypeComparerService } from "../Interfaces/DataTyp
 import { IDataTypeComparer } from "../Interfaces/DataTypeComparers";
 import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
 import { BooleanDataTypeComparer, defaultComparer } from "../DataTypes/DataTypeComparers";
-import { DataTypeConverterServiceBase } from "./DataTypeServiceBase";
+import { DataTypeConverterServiceBase } from "./DataTypeConverterServiceBase";
 import { SevereErrorBase, ensureError } from "../Utilities/ErrorHandling";
 import { valueForLog } from "../Utilities/Utilities";
 

@@ -11,9 +11,10 @@
 import { cultureLanguageCode } from '../Services/CultureService';
 import { IDataTypeFormatter } from '../Interfaces/DataTypeFormatters';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { IServicesAccessor, IValidationServices } from '../Interfaces/ValidationServices';
+import { IValidationServices } from '../Interfaces/ValidationServices';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { LookupKey } from './LookupKeys';
+import { IServicesAccessor } from '../Interfaces/Services';
 
 /**
  * Abstract implementation of IDataTypeFormatter.

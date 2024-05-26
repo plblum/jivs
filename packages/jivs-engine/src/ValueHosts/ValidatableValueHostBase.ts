@@ -4,15 +4,17 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { cleanString, deepEquals, groupsMatch } from '../Utilities/Utilities';
-import { ValueHostConfig, type SetValueOptions} from '../Interfaces/ValueHost';
+import { ValueHostConfig, type SetValueOptions } from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from '../Interfaces/ValidatableValueHostBase';
 import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
-import { toIValidationManager, toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
+import { IValidationManager, toIValidationManager, toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { IValidationServices } from '../Interfaces/ValidationServices';
+import { CodingError } from '../Utilities/ErrorHandling';
 
 
 /**
@@ -22,7 +24,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     extends ValueHostBase<TConfig, TState>
     implements IValidatableValueHostBase {
 /**
- * @param valueHostsManager - Contains all ValueHosts. This is usually ValidationManager.
+ * @param validationManager - Contains all ValueHosts and supports validation.
  *   It is the owner of all state and provides group validation.
  * @param config - The business logic supplies these rules
  *   to implement a ValueHost's name, label, data type, validation rules,
@@ -30,10 +32,23 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
  * @param state - InstanceState used by this ValidatableValueHost including its validators.
  * If the caller changes any of these, discard the instance. Treat as immutable.
  */    
-    constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
-        super(valueHostsManager, config, state);
+    constructor(validationManager: IValidationManager, config: TConfig, state: TState) {
+        super(validationManager, config, state);
+        if (!toIValidationManager(validationManager))
+            throw new CodingError('ValueHost requires ValidationManager');        
     }
 
+    public get valueHostsManager(): IValidationManager {
+        return super.valueHostsManager as IValidationManager;
+    }
+
+
+    //#endregion IValueHostsManagerAccessor
+    
+    protected get services(): IValidationServices
+    {
+        return super.services as IValidationServices;
+    }
 
     //#region IValidatableValueHostBase
     /**

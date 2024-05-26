@@ -5,7 +5,7 @@ import {
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsManager, IValueHostsServices } from "../../src/Interfaces/ValueHostsManager";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
@@ -24,7 +24,7 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
     constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
         super(valueHostsManager, config, state);
     }
-    public ExposeServices(): IValidationServices {
+    public ExposeServices(): IValueHostsServices {
         return this.services;
     }
 

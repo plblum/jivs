@@ -9,7 +9,7 @@ import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter } from './../Interfaces/Conditions';
 import { TwoValueConditionBaseConfig, TwoValueConditionBase } from './TwoValueConditionBase';
 
@@ -37,18 +37,18 @@ export interface CompareToSecondValueHostConditionBaseConfig extends TwoValueCon
  */
 export abstract class CompareToSecondValueHostConditionBase<TConfig extends CompareToSecondValueHostConditionBaseConfig> extends TwoValueConditionBase<TConfig>
 {
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostResolver);
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (value == null)  // null/undefined
             return ConditionEvaluateResult.Undetermined;
         let secondValue: any = undefined;
         let secondValueLookupKey: string | null = null;
         if (this.config.secondValueHostName) {
-            let vh2 = this.getValueHost(this.config.secondValueHostName, valueHostResolver);
+            let vh2 = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
             if (!vh2) {
                 const msg = 'secondValueHostName is unknown';
-                this.logInvalidPropertyData('secondValueHostName', msg, valueHostResolver);
+                this.logInvalidPropertyData('secondValueHostName', msg, valueHostsManager);
                 return ConditionEvaluateResult.Undetermined;
             }
             secondValue = vh2.getValue();
@@ -57,15 +57,15 @@ export abstract class CompareToSecondValueHostConditionBase<TConfig extends Comp
         if (secondValue == null)  // null/undefined
         {
             const msg = 'secondValue lacks value to evaluate';
-            this.logInvalidPropertyData('secondValue', msg, valueHostResolver);
+            this.logInvalidPropertyData('secondValue', msg, valueHostsManager);
             return ConditionEvaluateResult.Undetermined;
         }
 
-        let comparison = valueHostResolver.services.dataTypeComparerService.compare(
+        let comparison = valueHostsManager.services.dataTypeComparerService.compare(
             value, secondValue,
             this.config.conversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
-            valueHostResolver.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
+            valueHostsManager.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
                 LoggingLevel.Warn, LoggingCategory.TypeMismatch, `${this.constructor.name} for ${valueHost.getName()}`);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -74,12 +74,12 @@ export abstract class CompareToSecondValueHostConditionBase<TConfig extends Comp
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
-        list = list.concat(super.getValuesForTokens(valueHost, valueHostResolver));
+        list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         let secondValue: any = undefined;
         if (this.config.secondValueHostName) {
-            let vh = this.getValueHost(this.config.secondValueHostName, valueHostResolver);
+            let vh = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
             if (vh)
                 secondValue = vh.getValue();
         }

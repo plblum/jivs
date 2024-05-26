@@ -50,8 +50,8 @@ class TestValidatorsValueHostGenerator extends ValidatorsValueHostBaseGenerator 
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === TestValueHostType;
     }
-    public create(valueHostsManager : IValueHostsManager, config: ValidatorsValueHostBaseConfig, state: ValidatorsValueHostBaseInstanceState): IValidatorsValueHostBase {
-        return new TestValidatorsValueHost(valueHostsManager, config, state);
+    public create(validationManager : IValidationManager, config: ValidatorsValueHostBaseConfig, state: ValidatorsValueHostBaseInstanceState): IValidatorsValueHostBase {
+        return new TestValidatorsValueHost(validationManager, config, state);
     }
     // public cleanupInstanceState(state: ValidatorsValueHostBaseInstanceState, config: ValueHostConfig): void {
     // }
