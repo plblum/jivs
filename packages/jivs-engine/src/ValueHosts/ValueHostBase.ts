@@ -3,7 +3,7 @@
  * @module ValueHosts/AbstractClasses/ValueHostBase
  */
 import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
-import { assertNotNull } from '../Utilities/ErrorHandling';
+import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone } from '../Utilities/Utilities';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
@@ -19,15 +19,16 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         assertNotNull(valueHostsManager, 'valueHostsManager');
         assertNotNull(config, 'config');
         assertNotNull(state, 'state');
-        this._valueHostsManager = valueHostsManager;
+        this._valueHostsManager = new WeakRef<IValueHostsManager>(valueHostsManager);
         this._config = config;
         this._instanceState = state;
     }
 //#region IValueHostsManagerAccessor
     public get valueHostsManager(): IValueHostsManager {
-        return this._valueHostsManager;
+        assertWeakRefExists(this._valueHostsManager, 'ValueHostManager disposed');
+        return this._valueHostsManager.deref()!;
     }
-    private readonly _valueHostsManager: IValueHostsManager;
+    private readonly _valueHostsManager: WeakRef<IValueHostsManager>;
 
     //#endregion IValueHostsManagerAccessor
     

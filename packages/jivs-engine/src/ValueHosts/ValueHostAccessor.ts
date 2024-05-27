@@ -4,7 +4,7 @@
 
 import { IValueHostAccessor } from "../Interfaces/ValueHostAccessor";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
+import { CodingError, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { toIInputValueHost } from "./InputValueHost";
 import { IValueHost, toIValueHost } from "../Interfaces/ValueHost";
@@ -40,13 +40,14 @@ export class ValueHostAccessor implements IValueHostAccessor
     constructor(resolver: IValueHostResolver)
     {
         assertNotNull(resolver, 'resolver');
-        this._valueHostsResolver = resolver;
+        this._valueHostsResolver = new WeakRef<IValueHostResolver>(resolver);
     }
     protected get valueHostResolver(): IValueHostResolver
     {
-        return this._valueHostsResolver;
+        assertWeakRefExists(this._valueHostsResolver, 'ValueHostResolver disposed');
+        return this._valueHostsResolver.deref()!;
     }
-    private _valueHostsResolver: IValueHostResolver;
+    private _valueHostsResolver: WeakRef<IValueHostResolver>;
 
     /**
      * Gets the ValueHost for the valueHostName or throws exception if not found.
