@@ -191,7 +191,7 @@ export class ValueHostsBuilder extends ValueHostsBuilderBase
     {
         assertNotNull(valueHostConfig, 'valueHostConfig');
         if (valueHostConfig!.valueHostType !== expectedType)
-            throw new CodingError(`ValueHost name ${valueHostConfig!.name ?? 'Unknown'} is not type=${expectedType}.`);
+            throw new CodingError(`ValueHost name ${valueHostConfig!.name} is not type=${expectedType}.`);
 
     }
 
@@ -280,13 +280,14 @@ export class ValueHostsBuilder extends ValueHostsBuilderBase
     {
         let vhConfig = this.getValueHostConfig(valueHostName, true);
         if (vhConfig && (vhConfig as InputValueHostConfig).validatorConfigs) { 
-            let result = (vhConfig as InputValueHostConfig).validatorConfigs?.find((ivConfig) => {
+            let result = (vhConfig as InputValueHostConfig).validatorConfigs!.find((ivConfig) => {
                 return resolveErrorCode(ivConfig) === errorCode;
             }) ?? null;
             if (!result && throwWhenNotFound)
                 throw new CodingError(`ValueHostName ${valueHostName} with errorCode ${errorCode} is not defined.`);      
             return result;
         }
-        return null;
+        /* istanbul ignore next */
+        return null;    // should not get here
     }
 }

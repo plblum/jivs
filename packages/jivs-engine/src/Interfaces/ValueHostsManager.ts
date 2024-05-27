@@ -186,6 +186,12 @@ export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
 {
     /**
      * Provides services into the system. Dependency Injection and factories.
+     * @remarks
+     * While most objects have a WeakRef to services, we keep an active reference here
+     * because we invite the user to create the service, pass it into this Config
+     * and let the ValueHostsManager/ValidationManager's reference be the one to access.
+     * If this is set to another object created within the scope of ValueHostsManager,
+     * that other object should keep a WeakRef to it.
      */
     services: IValidationServices;
     /**

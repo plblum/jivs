@@ -12,7 +12,7 @@ import { cultureLanguageCode } from '../Services/CultureService';
 import { IDataTypeFormatter } from '../Interfaces/DataTypeFormatters';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { IValidationServices } from '../Interfaces/ValidationServices';
-import { CodingError } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
 import { LookupKey } from './LookupKeys';
 import { IServicesAccessor } from '../Interfaces/Services';
 
@@ -28,19 +28,19 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
      */
     public get services(): IValidationServices
     {
-        if (!this._services)
-            throw new CodingError('Register with ValidationServices.dataTypeFormatterService first.');
-        return this._services;
+        assertWeakRefExists(this._services, 'Register with ValidationServices.dataTypeFormatterService first.');
+        return this._services!.deref()!;
     }
     public set services(services: IValidationServices)
     {
-        this._services = services;
+        assertNotNull(services);
+        this._services = new WeakRef<IValidationServices>(services);
     }
     protected get hasServices(): boolean
     {
-        return this._services !== null;
+        return this._services !== null && this._services.deref() !== undefined;
     }
-    private _services: IValidationServices | null = null;
+    private _services: WeakRef<IValidationServices> | null = null;
     
     /**
      * The DataTypeLookup key(s) that this class supports.

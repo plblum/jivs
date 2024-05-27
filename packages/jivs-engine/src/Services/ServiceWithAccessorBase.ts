@@ -3,7 +3,7 @@
  * @module Services/AbstractClasses/ServiceWithAccessorBase
  */
 
-import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
+import { CodingError, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
 import { ServiceBase } from "./ServiceBase";
@@ -22,17 +22,17 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
      */
     public get services(): IValidationServices
     {
-        if (!this._services)
-            throw new CodingError('Assign services property first.');
-        return this._services;
+        assertWeakRefExists(this._services,
+            'Assign services property first.');
+        return this._services!.deref()!;
     }
     public set services(services: IValidationServices)
     {
         assertNotNull(services, 'services');
-        this._services = services;
+        this._services = new WeakRef<IValidationServices>(services);
         this.updateServices(services);
     }
-    private _services: IValidationServices | null = null;
+    private _services: WeakRef<IValidationServices> | null = null;
 
     protected hasServices(): boolean
     {

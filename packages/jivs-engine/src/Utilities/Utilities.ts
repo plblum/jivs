@@ -149,20 +149,19 @@ export function valueForLog(value: any): string
             return value.toString();
         case 'string':
             return value.length > 25 ? value.substring(0, 20) + '...' : value;   // clipped
-        case 'function':
-        case 'symbol':
-            return `[${typeof value}]`;
-        default:
+        // @ts-ignore so we don't worry about the fall-thru        
+        case 'object':
             if (isPlainObject(value))
                 return `Plain object`;                
             if (value.constructor !== undefined && value.constructor.name !== undefined)
                 return value.constructor.name;
-
+            // intentional fall thru: note: missing code coverage on this case due to it being rare if impossible to get here
+        default: // function, symbol, or object not covered above.
             return `[${typeof value}]`;
     }
 
 }
-function isPlainObject(obj: any): boolean {
+export function isPlainObject(obj: any): boolean {
     if (typeof obj !== 'object' || obj === null) {
         return false;
     }

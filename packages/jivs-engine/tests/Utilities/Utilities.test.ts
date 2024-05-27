@@ -1,5 +1,5 @@
 import { ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { deepClone, deepEquals, groupsMatch, isSupportedAsValue, valueForLog } from "../../src/Utilities/Utilities";
+import { deepClone, deepEquals, groupsMatch, isPlainObject, isSupportedAsValue, valueForLog } from "../../src/Utilities/Utilities";
 
 
 
@@ -197,6 +197,25 @@ describe('isSupportedAsValue', () => {
         expect(isSupportedAsValue(new WeakMap())).toBe(false);
         expect(isSupportedAsValue(new WeakSet)).toBe(false);
 
+
+    });
+});
+
+describe('isPlainObject', () => {
+    test('Results as expected', () => {
+        class X { }
+        expect(isPlainObject(new Object())).toBe(true); 
+        expect(isPlainObject({ a: 1 })).toBe(true);      
+        expect(isPlainObject(new Date())).toBe(false);
+        expect(isPlainObject(new X())).toBe(false);     
+        expect(isPlainObject(new Set())).toBe(false);     
+        expect(isPlainObject([])).toBe(false);       
+        
+        expect(isPlainObject(undefined)).toBe(false);
+        expect(isPlainObject(null)).toBe(false);
+        expect(isPlainObject(false)).toBe(false);
+        expect(isPlainObject(10)).toBe(false);
+        expect(isPlainObject('abc')).toBe(false);
 
     });
 });

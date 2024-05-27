@@ -70,7 +70,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         assertNotNull(config, 'config');
         assertNotNull(config.services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
-        let savedServices = config.services ?? null;
+        let savedServices = config.services;
         config.services = null as any; // to ignore during DeepClone
         let internalConfig = deepClone(config) as ValueHostsManagerConfig;
         config.services = savedServices;
