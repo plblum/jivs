@@ -329,6 +329,7 @@ describe('toICalcValueHost function', () => {
         expect(toICalcValueHost(testItem)).toBeNull();
     });        
     class TestICalcValueHostImplementation implements ICalcValueHost {
+        dispose(): void {}
         convert(value: any, dataTypeLookupKey: string | null): SimpleValueType {
             throw new Error("Method not implemented.");
         }

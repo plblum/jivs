@@ -13,7 +13,6 @@ import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } f
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationManager, MockValidationServices, MockInputValueHost } from "../TestSupport/mocks";
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
-import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
 import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
@@ -29,6 +28,7 @@ import { IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsException
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValidationManager } from "../../src/Interfaces/ValidationManager";
+import { IDisposable } from "../../src/Interfaces/General_Purpose";
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested
@@ -1311,4 +1311,40 @@ describe('toIMessageTokenSource', () => {
         expect(toIMessageTokenSource({})).toBeNull();
         expect(toIMessageTokenSource({ GETValuesForTokens: null })).toBeNull();        
     });    
+});
+
+describe('dispose', () => {
+    test('dispose kills many references including state and config', () => {
+        let setup = setupWithField1AndField2({
+            errorCode: ' TEST ',
+            conditionConfig: { conditionType: ConditionType.RequireText },
+        });
+        setup.validator.dispose();
+        expect(() => setup.validator.errorCode).toThrow(TypeError);  // value is from config which is undefined
+        // config items locally can be checked
+        expect(setup.config.conditionConfig).toBeUndefined();
+        expect(setup.config.conditionCreator).toBeUndefined();
+        expect(setup.config.enablerConfig).toBeUndefined();
+        expect(setup.config.enablerCreator).toBeUndefined();
+    });   
+    
+    test('dispose with validatorConfig having its own dispose kills what the config.dispose expects', () => {
+        interface X extends ValidatorConfig, IDisposable
+        {
+            x: {}
+        }
+
+        let setup = setupWithField1AndField2({
+            errorCode: ' TEST ',
+            conditionConfig: { conditionType: ConditionType.RequireText },
+        });
+        let valConfig = setup.config as X;
+        valConfig.x = {};
+        valConfig.dispose = () => { (valConfig.x as any) = undefined };
+        setup.validator.dispose();
+
+        expect(valConfig.x).toBeUndefined();
+
+    });               
+
 });

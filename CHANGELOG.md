@@ -1,3 +1,6 @@
+## 0.16.2
+- Introduce IDisposable interface to allow more direct control over releasing ValidationManager and ValidationServices.
+
 ## 0.16.1
 - New service: LookupKeyFallbackService, to allow formatter service and parser service (future) fall back to another lookup key when searching for the object they will use.
 - Refactored services to all implement IService and be based on ServiceBase. 

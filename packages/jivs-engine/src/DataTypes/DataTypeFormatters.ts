@@ -22,6 +22,16 @@ import { IServicesAccessor } from '../Interfaces/Services';
 export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServicesAccessor
 {
     /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        (this._services as any) = undefined;
+    }        
+    /**
      * Services accessor.
      * Note: Not passed into the constructor because this object should be created before
      * ValidationServices itself. So it gets assigned when ValidationService.dataTypeFormatterService is assigned a value.

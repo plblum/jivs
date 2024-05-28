@@ -31,6 +31,8 @@ import { createValidationServicesForTesting } from "../TestSupport/createValidat
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
+import { IValueHostsServices } from "../../src/Interfaces/ValueHostsManager";
+import { IDisposable } from "../../src/Interfaces/General_Purpose";
 
 
 /**
@@ -38,7 +40,21 @@ import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
  */
 class TestValidatorsValueHost extends ValidatorsValueHostBase<ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState>
 {
+    public get exposeValidators(): Array<IValidator>
+    {
+        return this.validators();
+    }
+    public get exposeServices(): IValueHostsServices {
+        return this.services;
+    }
 
+    public get exposeConfig(): ValueHostConfig {
+        return this.config;
+    }
+
+    public get exposeState(): ValidatorsValueHostBaseInstanceState {
+        return this.instanceState;
+    }    
 }
 
 const TestValueHostType = 'TestValidatorsValueHost';
@@ -2837,6 +2853,7 @@ describe('toIValidatorsValueHostBase function', () => {
         expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
     });
     class TestIValidatorsValueHostBaseImplementation implements IValidatorsValueHostBase {
+        dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");
         }
@@ -3362,4 +3379,36 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
         expect(state!.value).toBe(config.initialValue);
         expect(state!.issuesFound).toBeNull();
     });
+});
+describe('dispose', () => {
+
+    test('dispose kills many references including state and config', () => {
+        let setup = setupValidatorsValueHostBase();
+        let vhConfig = setup.config;
+        setup.valueHost.dispose();
+        expect(setup.valueHost.exposeValidators).toBeUndefined();
+        expect(setup.valueHost.exposeState).toBeUndefined();
+        expect(setup.valueHost.exposeConfig).toBeUndefined();            
+        expect(vhConfig.validatorConfigs).toBeUndefined();
+        expect(() => setup.valueHost.getValue()).toThrow(TypeError);  // value is from config which is undefined
+        expect(() => setup.valueHost.exposeServices).toThrow(TypeError);
+
+    });   
+    
+    test('dispose with ValidatorsValueHostBaseConfig having its own dispose kills what the config.dispose expects', () => {
+        interface X extends ValidatorsValueHostBaseConfig, IDisposable
+        {
+            x: {}
+        }
+
+        let setup = setupValidatorsValueHostBase();
+        let vhConfig = setup.config as X;
+        vhConfig.x = {};
+        vhConfig.dispose = () => { (vhConfig.x as any) = undefined };
+        setup.valueHost.dispose();
+
+        expect(vhConfig.x).toBeUndefined();
+
+    });               
+
 });

@@ -174,3 +174,19 @@ describe('getSummaryMessage', () => {
         expect(testItem.getSummaryMessage('fr', 'Code4', null)).toBeNull();     
     });    
 });
+describe('dispose', () => {
+    test('With fallbackService setup, request a value that exists on the top level, and that value is returned.', () => {
+        let testItem = new TextLocalizerService();
+        testItem.register('hello', {
+            'en': 'en-Hello'
+        });
+        let fallbackService = new TextLocalizerService();
+        testItem.fallbackService = fallbackService;
+        fallbackService.register('hello', {
+            'en': 'en-Hello-fallback'
+        });
+        testItem.dispose();
+        expect(() => testItem.localize('en', 'hello', 'fallback')).toThrow(TypeError);
+        expect(() => fallbackService.localize('en', 'hello', 'fallback')).toThrow(TypeError);
+    });    
+});

@@ -42,6 +42,17 @@ export class ValueHostAccessor implements IValueHostAccessor
         assertNotNull(resolver, 'resolver');
         this._valueHostsResolver = new WeakRef<IValueHostResolver>(resolver);
     }
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        (this._valueHostsResolver as any) = undefined;
+    }    
+
     protected get valueHostResolver(): IValueHostResolver
     {
         assertWeakRefExists(this._valueHostsResolver, 'ValueHostResolver disposed');

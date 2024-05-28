@@ -160,7 +160,8 @@ describe('validatorFactory property', () => {
 describe('toIServicesAccessor', () => {
     test('Valid object returns it', () => {
         let test: IServicesAccessor = {
-            services: new MockValidationServices(false, false)
+            services: new MockValidationServices(false, false),
+            dispose: () => { },
         };
         expect(toIServicesAccessor(test)).toBe(test);
     });
@@ -174,7 +175,8 @@ describe('toIServiceWithFallback', () => {
     test('Valid object with fallbackService=null returns it', () => {
         let test: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };
         expect(toIServiceWithFallback(test)).toBe(test);
     });
@@ -183,7 +185,8 @@ describe('toIServiceWithFallback', () => {
             serviceName: '',
             fallbackService: {
                 fallbackService: null
-            }
+            },
+            dispose: () => { },
         };
         expect(toIServiceWithFallback(test)).toBe(test);
     });    
@@ -197,18 +200,21 @@ describe('assertValidFallbacks', () => {
     test('Pass null does not throw', () => {
         let hostService: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };
         expect(()=> assertValidFallbacks(null, hostService)).not.toThrow();
     });
     test('Pass service with its fallbackService=null does not throw', () => {
         let hostService: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };
         let fallbackService: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };        
         expect(()=> assertValidFallbacks(fallbackService, hostService)).not.toThrow();
     });    
@@ -216,9 +222,11 @@ describe('assertValidFallbacks', () => {
         let hostService: IServiceWithFallback<any> = {
             serviceName: '',
             fallbackService: null,
+            dispose: () => { },
         }
         let fallbackService: IServiceWithFallback<any> = {
             serviceName: '',
+            dispose: () => { },
             fallbackService: {
                 fallbackService: {
                     fallbackService: {
@@ -242,10 +250,12 @@ describe('assertValidFallbacks', () => {
     test('hostService already has 10 ancestors, throws', () => {
         let hostService: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };
         let fallbackService: IServiceWithFallback<any> = {
             serviceName: '',
+            dispose: () => { },
             fallbackService: {
                 fallbackService: {
                     fallbackService: {
@@ -273,11 +283,13 @@ describe('assertValidFallbacks', () => {
     test('fallback already points to hostService, causing a loop, throws', () => {
         let hostService: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };
         let fallbackService: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };        
         fallbackService.fallbackService = hostService;
         expect(()=> assertValidFallbacks(fallbackService, hostService)).toThrow(/loops/);
@@ -285,18 +297,45 @@ describe('assertValidFallbacks', () => {
     test('fallback already points to hostService through its child, causing a loop, throws', () => {
         let hostService: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };
         let fallbackService1: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };      
         let fallbackService2: IServiceWithFallback<any> = {
             serviceName: '',
-            fallbackService: null
+            fallbackService: null,
+            dispose: () => { },
         };                
         fallbackService1.fallbackService = fallbackService2;
         fallbackService2.fallbackService = hostService;
         expect(()=> assertValidFallbacks(fallbackService1, hostService)).toThrow(/loops/);
     });                    
+});
+describe('dispose', () => {
+    test('accessing any service after dispose throws a TypeError', () => {
+        let testItem = new ValidationServices();
+        testItem.autoGenerateDataTypeCheckService = new AutoGenerateDataTypeCheckService();
+        testItem.conditionFactory = new ConditionFactory();
+        testItem.cultureService = new CultureService();
+        testItem.dataTypeComparerService = new DataTypeComparerService();
+        testItem.dataTypeConverterService = new DataTypeConverterService();
+        testItem.dataTypeFormatterService = new DataTypeFormatterService();
+        testItem.dataTypeIdentifierService = new DataTypeIdentifierService();
+        testItem.loggerService = new ConsoleLoggerService();
+        testItem.lookupKeyFallbackService = new LookupKeyFallbackService();
+        testItem.messageTokenResolverService = new MessageTokenResolverService();
+        testItem.textLocalizerService = new TextLocalizerService();
+        testItem.validatorFactory = new ValidatorFactory();
+        testItem.valueHostFactory = new ValueHostFactory();
+        testItem.dispose();
+        expect(() => testItem.autoGenerateDataTypeCheckService).toThrow(TypeError);
+        expect(() => testItem.conditionFactory).toThrow(TypeError);        
+        expect(() => testItem.cultureService).toThrow(TypeError);        
+        expect(() => testItem.dataTypeComparerService).toThrow(TypeError);
+        expect(() => testItem.textLocalizerService).toThrow(TypeError);
+    });
 });

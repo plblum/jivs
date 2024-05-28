@@ -38,10 +38,19 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         super(validationManager, config, state);
     }
 
-    //#region IValidatorsValueHostBase
-
-
-    //#endregion IValidatorsValueHostBase
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        (this.config.validatorConfigs as any) = undefined;
+        super.dispose();
+        this._validators?.forEach((validator) => validator.dispose());
+        (this._validators as any) = undefined;
+    }
 
     /**
      * Runs validation against some of all validators.

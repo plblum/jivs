@@ -3,11 +3,12 @@
  * @module Services/AbstractClasses/DataTypeServiceBase
  */
 
-import { toIServicesAccessor } from "../Interfaces/Services";
-import { IDataTypeService } from "../Interfaces/DataTypes";
-import { IValidationServices } from "../Interfaces/ValidationServices";
-import { assertNotNull } from "../Utilities/ErrorHandling";
-import { ServiceWithAccessorBase } from "./ServiceWithAccessorBase";
+import { toIServicesAccessor } from '../Interfaces/Services';
+import { IDataTypeService } from '../Interfaces/DataTypes';
+import { IValidationServices } from '../Interfaces/ValidationServices';
+import { assertNotNull } from '../Utilities/ErrorHandling';
+import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
+import { toIDisposable } from '../Interfaces/General_Purpose';
 
 
 /**
@@ -16,7 +17,20 @@ import { ServiceWithAccessorBase } from "./ServiceWithAccessorBase";
  */
 export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase implements IDataTypeService
 {
-
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        super.dispose();
+        this._registeredClasses.forEach((item) => {
+            toIDisposable(item)?.dispose(); 
+        });
+        (this._registeredClasses as any) = undefined;
+    }    
     /**
      * Changes the services on all implementations of IServicesAccessor
      * @param services 

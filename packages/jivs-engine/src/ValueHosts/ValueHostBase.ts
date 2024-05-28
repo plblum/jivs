@@ -5,10 +5,10 @@
 import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone } from '../Utilities/Utilities';
-import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import type { IValueHostsManager, IValueHostsManagerAccessor, IValueHostsServices } from '../Interfaces/ValueHostsManager';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
+import { toIDisposable } from '../Interfaces/General_Purpose';
 
 /**
  * Standard implementation of IValueHost
@@ -46,6 +46,20 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         return this._config;
     }
     private readonly _config: TConfig;
+
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        toIDisposable(this._config)?.dispose();
+        (this._config as any) = undefined;
+        (this._instanceState as any) = undefined;
+        (this._valueHostsManager as any) = undefined;
+    }
 
     //#region IValueHost
     /**

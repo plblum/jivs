@@ -143,3 +143,20 @@ describe('cultureLanguageCode', () => {
         expect(cultureLanguageCode('Abcdef')).toBe('Abcdef');    // because we return everything verbatim if it lacks a dash
     });
 });
+describe('dispose()', () => {
+
+    test('Nothing defined demonstrates exceptions are thrown after dispose', () => {
+        let testItem = new CultureService();
+        testItem.dispose();
+
+        expect(()=> testItem.find('en')).toThrow(TypeError);
+    });
+
+    test('Change activeCultureID in Services impacts cultureIdFallback', () => {
+        let testItem = new CultureService();
+        testItem.activeCultureId = 'fr';
+        testItem.dispose();
+
+        expect(() => testItem.find('fr')).toThrow(TypeError);
+    });
+});

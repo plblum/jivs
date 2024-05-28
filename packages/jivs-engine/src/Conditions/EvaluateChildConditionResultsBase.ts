@@ -7,6 +7,7 @@
  * @module Conditions/AbstractClasses/EvaluateChildConditionResultsBase
  */
 
+import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionConfig, ConditionEvaluateResult, ICondition, ConditionCategory } from '../Interfaces/Conditions';
 import { IValueHost, toIGatherValueHostNames } from '../Interfaces/ValueHost';
@@ -41,6 +42,18 @@ export interface EvaluateChildConditionResultsBaseConfig extends ConditionConfig
 export abstract class EvaluateChildConditionResultsBase<TConfig extends EvaluateChildConditionResultsBaseConfig>
     extends ConditionBase<TConfig>
 {
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        super.dispose();
+        this._conditions?.forEach((cond)=>  toIDisposable(cond)?.dispose());
+        (this._conditions as any) = undefined;
+    }    
     /**
      * 
      * @param valueHost - this is passed down to the child ValueHosts
@@ -80,6 +93,7 @@ export abstract class EvaluateChildConditionResultsBase<TConfig extends Evaluate
      */
     protected cleanupChildResult(childResult: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
         if (childResult instanceof Promise)
+            /* istanbul ignore next */
             throw new CodingError('Promises are not supported for child conditions at this time.');
         if (childResult === ConditionEvaluateResult.Undetermined)
             return this.config.treatUndeterminedAs ?? ConditionEvaluateResult.Undetermined;

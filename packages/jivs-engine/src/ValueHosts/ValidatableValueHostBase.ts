@@ -49,7 +49,17 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     {
         return super.services as IValidationServices;
     }
-
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        super.dispose();
+        (this._associatedValueHostNames as any) = undefined;
+    }
     //#region IValidatableValueHostBase
     /**
       * System consumer assigns the native value to make it available
@@ -121,15 +131,14 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
         // Looks like validation previously ran...
         // check if we use a Condition that specifies valueHostIdThatChanged.
-        if (!this._associatedValueHosts) { // this is a cache that is only cleared by recreating the ValueHost
+        if (!this._associatedValueHostNames) { // this is a cache that is only cleared by recreating the ValueHost
             // it assumes that the Config is immutable, so there cannot be any changes to ValueHosts
             // without creating a new instance of this ValueHost
-            this._associatedValueHosts = new Set<ValueHostName>();
-            this.gatherValueHostNames(this._associatedValueHosts, this.valueHostsManager);
-
+            this._associatedValueHostNames = new Set<ValueHostName>();
+            this.gatherValueHostNames(this._associatedValueHostNames, this.valueHostsManager);
         }
 
-        if (this._associatedValueHosts.has(valueHostIdThatChanged)) {
+        if (this._associatedValueHostNames.has(valueHostIdThatChanged)) {
             // change the ValidationStatus to NeedsValidation when revalidate is false
             // call validate() when revalidate is true
             if (revalidate)
@@ -143,7 +152,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             }
         }
     }
-    private _associatedValueHosts: Set<ValueHostName> | null = null;
+    private _associatedValueHostNames: Set<ValueHostName> | null = null;
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
      * Config.

@@ -62,3 +62,12 @@ describe('enableFluentConditions', () => {
         expect(FluentConditionCollector.prototype.dataTypeCheck).toBeDefined();
     });
 });
+describe('dispose()', () => {
+    test('using functions after dispose throw TypeError', () => {
+        let factory = new ConditionFactory();
+        factory.dispose();
+        expect(() => factory.create({ conditionType: ConditionType.RequireText })).toThrow(TypeError);
+        expect(() => factory.isRegistered(ConditionType.RequireText)).toThrow(TypeError);
+        expect(() => factory.register<RequireTextConditionConfig>(ConditionType.RequireText, (config) => new RequireTextCondition(config))).toThrow(TypeError);
+    });
+});

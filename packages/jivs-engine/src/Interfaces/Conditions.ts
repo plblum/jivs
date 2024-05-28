@@ -32,6 +32,11 @@ import { IValueHostsManager } from './ValueHostsManager';
  * all which allow a Config approach of configuration.
  * Implement this directly when you want to handle all of the work in the evaluate()
  * function yourself, and supply your own way of configuring.
+ * 
+ * NOTE: Classes that implement ICondition can introduce IDisposable
+ * knowing the dispose function will be called as a Validator is disposed.
+ * Conditions that reference other conditions should call 
+ * toDisposable(cond)?.dispose() in response.
  */
 export interface ICondition {
     /**

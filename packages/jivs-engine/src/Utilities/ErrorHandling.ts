@@ -51,12 +51,12 @@ export function assertNotNull(valueToCheck: any, memberName: string = 'parameter
 
 /**
  * Check a field that is supposed to contain an active reference within a WeakRef object.
- * If the field is unassigned, null, or the reference was discarded, throw an error.
+ * If the field is unassigned, null, or the reference was discarded, throw a TypeError.
  * @param ref 
  * @param message 
  */
 export function assertWeakRefExists(ref: WeakRef<any> | null | undefined, message: string): void
 {
     if (!ref || ref.deref() === undefined)
-        throw new CodingError(message);
+        throw new TypeError(message);
 }

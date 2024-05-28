@@ -5,6 +5,7 @@ import { CultureToText, ITextLocalizerService } from '../Interfaces/TextLocalize
 import { cultureLanguageCode } from '../Services/CultureService';
 import { ServiceBase } from './ServiceBase';
 import { assertValidFallbacks } from '../Interfaces/Services';
+import { toIDisposable } from '../Interfaces/General_Purpose';
 
 /**
  * A service to offer text alternatives to the default text
@@ -32,6 +33,19 @@ import { assertValidFallbacks } from '../Interfaces/Services';
  */
 export class TextLocalizerService extends ServiceBase implements ITextLocalizerService
 {
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        super.dispose();
+        toIDisposable(this._fallbackService)?.dispose();
+        (this._fallbackService as any) = undefined;
+        (this._l10nKeyMap as any) = undefined;
+    }        
     /**
      * Reference to a fallback of the same service or null if no fallback.
      * When assigned, a call to any function (except registration) will

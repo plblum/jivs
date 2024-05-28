@@ -193,6 +193,7 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBeNull();
     });        
     class TestIStaticValueHostImplementation implements IStaticValueHost {
+        dispose(): void {}
         getName(): string {
             throw new Error("Method not implemented.");
         }

@@ -329,6 +329,7 @@ describe('toIPropertyValueHost function', () => {
         expect(toIPropertyValueHost(testItem)).toBe(testItem);
     });
     class TestIPropertyValueHostImplementation implements IPropertyValueHost {
+        dispose(): void {}
         getPropertyName(): string {
             throw new Error("Method not implemented.");
         }

@@ -4,11 +4,12 @@
  */
 
 import { CodingError } from "../Utilities/ErrorHandling";
+import { IDisposable } from "./General_Purpose";
 
 /**
  * Base interface for all services including factories
  */
-export interface IService
+export interface IService extends IDisposable
 {
     serviceName: string;
 }
@@ -16,7 +17,7 @@ export interface IService
 /**
  * Interface to have access to services.
  */
-export interface IServicesAccessor
+export interface IServicesAccessor extends IDisposable
 {
 /**
  * Provides access to services.

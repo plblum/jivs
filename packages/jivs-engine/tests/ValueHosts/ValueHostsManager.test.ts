@@ -17,6 +17,8 @@ import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
 import { ValueHostAccessor } from "../../src/ValueHosts/ValueHostAccessor";
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from "../../src/Interfaces/StaticValueHost";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
+import { ValueHostsBuilder, build } from "../../src/ValueHosts/ValueHostsBuilder";
+import { IDisposable } from "../../src/Interfaces/General_Purpose";
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValueHostsManager extends ValueHostsManager<ValueHostsManagerInstanceState> {
@@ -845,6 +847,7 @@ describe('enumerateValueHosts', () => {
 describe('toIValueHostResolver function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostResolver = {
+            dispose: () => { },
             getValueHost: (name) => { return <any>{}; },
             vh: {} as unknown as IValueHostAccessor,
             getCalcValueHost: (name) => { return <any>{}; },
@@ -1053,4 +1056,41 @@ describe('build()', () => {
         expect(vh1!.getName()).toBe('Field1');        
         expect(vh1!.getDataType()).toBe('Test');
     });        
+});
+describe('dispose', () => {
+    test('dispose kills all expected properties', () => {
+        let vmConfig: ValueHostsManagerConfig = {
+            services: new MockValidationServices(true, false), valueHostConfigs: []
+        };
+        let builder = build(vmConfig);
+        builder.static('Field1');
+        let testItem = new PublicifiedValueHostsManager(vmConfig);
+        let vh = testItem.vh.static('Field1');
+        testItem.dispose();
+        expect(testItem.exposedState).toBeUndefined();
+        expect(testItem.exposedValueHostConfigs).toBeUndefined();
+        expect(testItem.exposedValueHosts).toBeUndefined();
+        
+        expect(() => testItem.getValueHost('Field1')).toThrow(TypeError);
+        expect(() => vh.getDataType()).toThrow(TypeError);
+        expect(() => vh.setValue(0)).toThrow(TypeError);
+   
+    });
+    test('dispose with valueHostsConfig having its own dispose kills what the config.dispose expects', () => {
+        interface X extends ValueHostsManagerConfig, IDisposable
+        {
+            x: {}
+        }        
+        let vmConfig: X = {
+            services: new MockValidationServices(true, false), valueHostConfigs: [],
+            x: {},
+            dispose: ()=> { (vmConfig.x as any) = undefined }
+        };
+        let builder = build(vmConfig);
+        builder.static('Field1');
+        let testItem = new PublicifiedValueHostsManager(vmConfig);
+        testItem.dispose();
+        expect(vmConfig.x).toBeUndefined();
+   
+    });    
 });

@@ -47,7 +47,16 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
     protected updateServices(services: IValidationServices): void
     {
     }
-
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        (this._services as any) = undefined;
+    }    
     /**
      * Wrapper around logging that takes no action if logLevel is below min,
      * allowing for some of the work to set up to be skipped, especially

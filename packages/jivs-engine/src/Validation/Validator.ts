@@ -20,16 +20,17 @@ import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionE
 import { type ValidateOptions, ValidationSeverity, type IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull, CodingError, SevereErrorBase } from '../Utilities/ErrorHandling';
+import { assertNotNull, assertWeakRefExists, CodingError, SevereErrorBase } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { cleanString } from '../Utilities/Utilities';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
-import { IValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
+import { toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { IValidationManager, toIValidationManager } from '../Interfaces/ValidationManager';
 import { ValidationManager } from './ValidationManager';
+import { toIDisposable } from '../Interfaces/General_Purpose';
 
 /**
  * An IValidator implementation that represents a single validator 
@@ -56,10 +57,10 @@ export class Validator implements IValidator {
     constructor(valueHost: IValidatorsValueHostBase, config: ValidatorConfig) {
         assertNotNull(valueHost, 'valueHost');
         assertNotNull(config, 'config');
-        this._valueHost = valueHost;
+        this._valueHost = new WeakRef<IValidatorsValueHostBase>(valueHost);
         this._config = config;
     }
-    private readonly _valueHost: IValidatorsValueHostBase;
+    private readonly _valueHost: WeakRef<IValidatorsValueHostBase>;
     /**
     * The business rules behind this validator.
     */
@@ -72,7 +73,8 @@ export class Validator implements IValidator {
     }
 
     protected get valueHost(): IValidatorsValueHostBase {
-        return this._valueHost;
+        assertWeakRefExists(this._valueHost, 'ValueHost disposed');
+        return this._valueHost.deref()!;
     }
 
     protected get validationManager(): IValidationManager {
@@ -92,6 +94,33 @@ export class Validator implements IValidator {
      * a new one and a new Config instance.
      */
     private readonly _config: ValidatorConfig;
+
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        function disposeStandardConfigItems(config: ValidatorConfig)
+        {
+            toIDisposable(config.conditionConfig)?.dispose();
+            (config.conditionConfig as any) = undefined;
+            config.conditionCreator = undefined;
+            toIDisposable(config.enablerConfig)?.dispose();
+            config.enablerConfig = undefined;
+            config.enablerCreator = undefined;
+        }
+        toIDisposable(this._condition)?.dispose();
+        (this._condition as any) = undefined;
+        toIDisposable(this._enabler)?.dispose();
+        (this._enabler as any) = undefined;
+        disposeStandardConfigItems(this._config);
+        toIDisposable(this._config)?.dispose(); // handle anything introduced by alternative implementations if they add dispose()
+        (this._config as any) = undefined;
+        (this._valueHost as any) = undefined;
+    }    
 
     /**
      * Provides the error code associated with this instance.
@@ -444,7 +473,7 @@ export class Validator implements IValidator {
             errorMessage, this.valueHost, this.validationManager, this);
         let summaryMessage = this.getSummaryMessageTemplate();
         issueFound.summaryMessage = summaryMessage ?
-            services.messageTokenResolverService.resolveTokens(summaryMessage, this._valueHost, this.validationManager, this) :
+            services.messageTokenResolverService.resolveTokens(summaryMessage, this.valueHost, this.validationManager, this) :
             undefined;
     }
 
@@ -611,7 +640,7 @@ export class Validator implements IValidator {
     }
 
     protected getLogSourceText(): string {
-        return `Validator on ValueHost ${this._valueHost.getName()}`;
+        return `Validator on ValueHost ${this.valueHost.getName()}`;
     }
 }
 
