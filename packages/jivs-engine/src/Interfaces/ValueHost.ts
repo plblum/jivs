@@ -1,3 +1,4 @@
+import { IDisposable } from './General_Purpose';
 /**
  * Exposes values from the consuming system to the validation engine.
  * Each instance represents a single value from the consuming system.
@@ -29,7 +30,7 @@ import { IValueHostsManager } from './ValueHostsManager';
 /**
  * Interface for creating ValueHosts.
  */
-export interface IValueHost {
+export interface IValueHost extends IDisposable {
     /**
      * Provides a unique name for this ValueHost.
      * Consuming systems use this name to locate the ValueHost
@@ -223,10 +224,14 @@ interface CustomItems {
  * It should not contain any supporting functions or services.
  * It should be generatable from JSON, and simply gets typed to this or a
  * child implementation.
+ * 
  * This provides the business rules and other non-state values for each ValueHost.
  * The server side could in fact supply this object via JSON,
  * allowing the server's Model to dictate this, except values are converted to their native forms
  * like a JSON date is a Date object.
+ * 
+ * NOTE: extensions of this interface can implement IDisposable knowing
+ * that the ValueHost will call dispose() if supplied, during its own disposal.
  */
 export interface ValueHostConfig {
     /**

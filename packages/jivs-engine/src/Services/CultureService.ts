@@ -17,7 +17,17 @@ import { ServiceBase } from "./ServiceBase";
  */
 export class CultureService extends ServiceBase implements ICultureService {
 
-
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        super.dispose();
+        (this._cultureConfig as any) = undefined;
+    }    
     /**
      * The culture shown to the user in the app. Its the ISO language-region format.
      * This value is the starting point to search through localizations.

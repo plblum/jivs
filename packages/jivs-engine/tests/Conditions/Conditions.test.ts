@@ -44,6 +44,8 @@ import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedCo
 import { CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
 import { CompareToValueConditionBaseConfig } from "../../src/Conditions/CompareToValueConditionBase";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { RegExpConditionBase, RegExpConditionBaseConfig } from "../../src/Conditions/RegExpConditionBase";
+import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 
 
 
@@ -109,6 +111,20 @@ describe('ConditionBase class additional cases', () => {
         vh.setValue('');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
+    test('dispose', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: RequireTextConditionConfig = {
+            conditionType: ConditionType.RequireText,
+            valueHostName: null,
+            trim: true
+        };
+        let testItem = new RequireTextCondition(config);
+        testItem.dispose();
+        expect(()=> testItem.evaluate(null, vm)).toThrow(TypeError);
+    });    
 });
 
 describe('class DataTypeCheckCondition', () => {
@@ -467,6 +483,31 @@ describe('class RequireTextCondition', () => {
     });
 });
 
+describe('class RegExpConditionBase', () => {
+    class TestRegExpConditionBase extends RegExpConditionBase<RegExpConditionBaseConfig> 
+    {
+        protected getRegExp(services: IValidationServices): RegExp {
+            return /^\d*$/;
+        }
+        
+    }
+    test('Text contains "ABC" somewhere (case sensitive). evaluate returns Match if it is present and NoMatch if not', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: RegExpConditionConfig = {
+            conditionType: ConditionType.RegExp,
+            valueHostName: 'Property1'
+        };
+        let testItem = new TestRegExpConditionBase(config);
+        vh.setValue('1');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue('A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+    });
+});
+
 describe('class RegExpCondition', () => {
     test('DefaultConditionType', () => {
         expect(RegExpCondition.DefaultConditionType).toBe(ConditionType.RegExp);
@@ -804,6 +845,22 @@ describe('class RegExpCondition', () => {
         let testItem = new Set<ValueHostName>();
         expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
+    });
+    test('dispose', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: RegExpConditionConfig = {
+            conditionType: ConditionType.RegExp,
+            valueHostName: 'Property1',
+            expressionAsString: 'ABC'
+        };
+        let testItem = new RegExpCondition(config);
+        vh.setValue('ABC');
+        testItem.evaluate(vh, vm);  // creates the regex
+        testItem.dispose();
+        expect(()=> testItem.evaluate(vh, vm)).toThrow(TypeError);
     });
 });
 
@@ -3924,6 +3981,22 @@ describe('class AllMatchCondition', () => {
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
     });        
+    test('dispose followed by calls throws TypeErrors', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: AllMatchConditionConfig = {
+            conditionType: ConditionType.And,
+            conditionConfigs: [{
+                conditionType: AlwaysMatchesConditionType
+            }]
+        };
+        let testItem = new AllMatchCondition(config);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        testItem.dispose();
+        expect(() => testItem.evaluate(vh, vm)).toThrow(TypeError);
+    });    
 });
 describe('class AnyMatchCondition', () => {
     test('DefaultConditionType', () => {

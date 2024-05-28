@@ -69,6 +69,7 @@ export class MockValueHost implements IValueHost
         this._label = label ?? name;
         this._value = undefined;
     }
+    dispose(): void {}
     _valueHostsManager: IValueHostsManager;
     _name: string;
     _label: string;

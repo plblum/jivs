@@ -55,6 +55,9 @@ import { DataTypeIdentifierService } from "@plblum/jivs-engine/build/Services/Da
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
 import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
 import { DataTypeComparerService } from "@plblum/jivs-engine/build/Services/DataTypeComparerService";
+import { ILookupKeyFallbackService } from "@plblum/jivs-engine/build/Interfaces/LookupKeyFallbackService";
+import { LookupKeyFallbackService } from "@plblum/jivs-engine/build/Services/LookupKeyFallbackService";
+
 
 /**
  * You must create a ValidationServices object prior to your ValidationManager.
@@ -154,6 +157,11 @@ export function createValidationServices(activeCultureId: string,
     // --- MessageTokenResolverService ----------------------
     // Generally you don't have to modify this.
     vs.messageTokenResolverService = new MessageTokenResolverService();
+
+    // --- LookupKeyFallbackService -------------------------
+    // Modify this only when you introduce new lookup keys for data types
+    // whose underlying data type is the same as an already known lookup key.
+    vs.lookupKeyFallbackService = createLookupKeyFallbackService();
 
     return vs;
 }
@@ -489,4 +497,36 @@ export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 
 
     return service;
     
+}
+
+/**
+ * Service for creating a relationship between a lookup key and another
+ * that is the base data type it is built around.
+ * For example, LookupKey.Integer uses a number as the base data type.
+ * So it has a relationship with LookupKey.Number.
+ * This service keeps these relationships. The DataTypeFormatterService and DataTypeParserService
+ * consume this as they try to find the best fitting Formatter or Parser.
+ * 
+ * Suppose that your InputValueHost has its datatype="PositiveInteger".
+ * Initially DataTypeFormatterService and DataTypeParserService look for a Formatter
+ * or Parser whose LookupKey is "PositiveInteger". If not found, we don't want to 
+ * force the user to either create a new class or register a map with "PositiveInteger"
+ * and a suitable class: NumberFormatter or NumberParser.
+ * 
+ * As a result, the user should register each NEW lookupkey they create if it has a
+ * natural base data type.
+ * 
+ * Jivs will automatically register its own built-in LookupKeys (see LookupKeys.ts)
+ * @returns 
+ */    
+export function createLookupKeyFallbackService(): ILookupKeyFallbackService
+{
+    let service = new LookupKeyFallbackService();
+/*
+    // example. Suppose you introduced "PositiveInteger" lookup key.
+    // If you don't also create a DataTypeFormatter or DataTypeParser for it,
+    // this code will allow it to use the built-in ones for "Integer" lookup key.
+    service.register('PositiveInteger', LookupKey.Integer);
+*/
+    return service;
 }

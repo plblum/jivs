@@ -6,7 +6,7 @@
 import { IDataTypeFormatterService } from "../Interfaces/DataTypeFormatterService";
 import { IDataTypeFormatter } from "../Interfaces/DataTypeFormatters";
 import { DataTypeResolution } from "../Interfaces/DataTypes";
-import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
+import { LoggingLevel } from "../Interfaces/LoggerService";
 import { CodingError, SevereErrorBase, ensureError } from "../Utilities/ErrorHandling";
 import { DataTypeServiceBase } from "./DataTypeServiceBase";
 
@@ -59,6 +59,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
             let cultureId: string | null = this.services.cultureService.activeCultureId;
             while (cultureId) {
                 let cc = this.services.cultureService.find(cultureId);
+                /* istanbul ignore next */ // this error is defensive, but currently find will never return null for an activeCultureID
                 if (!cc)
                     throw new CodingError(`Need to support CultureID ${cultureId} in DataTypeServices.`);
                 this.log(() => `Trying cultureId: ${cultureId}`, LoggingLevel.Debug);

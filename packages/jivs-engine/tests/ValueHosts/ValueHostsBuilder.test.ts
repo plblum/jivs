@@ -852,6 +852,12 @@ describe('favorUIMessages', () => {
                 summaryMessagel10n: 'sml10n'
             }
         ).requireText(null, 'Field2Require');
+        build(vmConfig).input('Field3').requireText(null, null, // has no error message. Must use eml10n, which will result in ''
+            {
+                errorMessagel10n: 'eml10n',
+                summaryMessagel10n: 'sml10n'
+            }
+        );        
         build(vmConfig).favorUIMessages();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
@@ -887,7 +893,19 @@ describe('favorUIMessages', () => {
                     },
                     errorMessage: 'Field2Require',
                 }]
-        }
+            },
+            {
+                valueHostType: ValueHostType.Input,
+                name: 'Field3',
+                validatorConfigs: [
+                    {
+                        conditionConfig: {
+                            conditionType: ConditionType.RequireText
+                        },
+                        errorMessagel10n: 'eml10n',
+                        summaryMessagel10n: 'sml10n'
+                    }]
+            }        
         ]);
     });
     test('TextLocalizerService has matches. Null all 4 message properties on all matches', () => {

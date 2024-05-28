@@ -920,7 +920,7 @@ describe('toIValidatableValueHostBase', () => {
     });
     test('Compatible object match', () => {
         let testItem: IValidatableValueHostBase = {
-
+            dispose(): void {},
             otherValueHostChangedNotification: function (valueHostIdThatChanged: string, revalidate: boolean): void {
                 throw new Error('Function not implemented.');
             },
@@ -1017,6 +1017,7 @@ describe('toIValidatableValueHostBase function', () => {
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });
     class TestIValidatableValueHostBaseImplementation implements IValidatableValueHostBase {
+        dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");
         }

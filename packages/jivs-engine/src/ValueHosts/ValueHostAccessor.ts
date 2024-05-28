@@ -4,7 +4,7 @@
 
 import { IValueHostAccessor } from "../Interfaces/ValueHostAccessor";
 import { IInputValueHost } from "../Interfaces/InputValueHost";
-import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
+import { CodingError, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { toIInputValueHost } from "./InputValueHost";
 import { IValueHost, toIValueHost } from "../Interfaces/ValueHost";
@@ -40,13 +40,25 @@ export class ValueHostAccessor implements IValueHostAccessor
     constructor(resolver: IValueHostResolver)
     {
         assertNotNull(resolver, 'resolver');
-        this._valueHostsResolver = resolver;
+        this._valueHostsResolver = new WeakRef<IValueHostResolver>(resolver);
     }
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        (this._valueHostsResolver as any) = undefined;
+    }    
+
     protected get valueHostResolver(): IValueHostResolver
     {
-        return this._valueHostsResolver;
+        assertWeakRefExists(this._valueHostsResolver, 'ValueHostResolver disposed');
+        return this._valueHostsResolver.deref()!;
     }
-    private _valueHostsResolver: IValueHostResolver;
+    private _valueHostsResolver: WeakRef<IValueHostResolver>;
 
     /**
      * Gets the ValueHost for the valueHostName or throws exception if not found.

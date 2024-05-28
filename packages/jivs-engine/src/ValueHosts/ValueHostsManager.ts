@@ -25,6 +25,7 @@ import { ICalcValueHost } from '../Interfaces/CalcValueHost';
 import { IStaticValueHost } from '../Interfaces/StaticValueHost';
 import { toICalcValueHost } from './CalcValueHost';
 import { toIStaticValueHost } from './StaticValueHost';
+import { toIDisposable } from '../Interfaces/General_Purpose';
 
 
 /**
@@ -70,7 +71,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         assertNotNull(config, 'config');
         assertNotNull(config.services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
-        let savedServices = config.services ?? null;
+        let savedServices = config.services;
         config.services = null as any; // to ignore during DeepClone
         let internalConfig = deepClone(config) as ValueHostsManagerConfig;
         config.services = savedServices;
@@ -90,10 +91,32 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     }
     /**
      * If the user needs to abandon this instance, they should use this to 
-     * clean up active resources (like timers)
+     * clean up active resources (like timers) and to release memory that
+     * would stall the garbage collector from disposing this object.
      */
     public dispose(): void
     {
+        for (let name in this._valueHosts)
+        {
+            this._valueHosts[name].dispose();
+            delete this._valueHosts[name];
+        }
+        (this._valueHosts as any) = undefined;
+        for (let name in this._valueHostConfigs)
+        {
+            toIDisposable(this._valueHostConfigs[name])?.dispose();
+            delete this._valueHostConfigs[name];
+        }
+        (this._valueHostConfigs as any) = undefined;
+
+        toIDisposable(this._config)?.dispose();        
+        (this._config as any) = undefined;
+
+        (this._instanceState as any) = undefined;
+        (this._lastValueHostInstanceStates as any) = undefined;
+
+        this._vh?.dispose();
+        this._vh = undefined;
     }    
     protected get config(): ValueHostsManagerConfig
     {
@@ -115,7 +138,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     protected get valueHosts(): IValueHostsMap {
         return this._valueHosts;
     }
-
+    /**
+     * This is the only place we expect to find strong references to ValueHosts
+     * within a Manager. Use WeakRef elsewhere to point to the same instances.
+     */
     private readonly _valueHosts: IValueHostsMap = {};
 
     /**

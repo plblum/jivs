@@ -116,7 +116,7 @@ Here are a few terms used.
 	> In fact, you can use Jivs and its ValueHost as your form's **Single Source of Truth** as you convert between the Model/Entity and the UI.
 
 - **Validation Summary** – A UI-specific area that shows error messages found throughout your form.
-- **ValidationManager** – A Jivs object; it is main class you interact with. You configure it to know about your form or Model, where ValueHosts are created for each value in the form or Model. 
+- **ValidationManager** – A Jivs object; it is the main class you interact with. You configure it to know about your form or Model, where ValueHosts are created for each value in the form or Model. 
 You will use it to supply data from your Inputs and Properties, to invoke validation, to retrieve a list of issues to display, and to report additional errors determined by your business logic.
 - **Input Value** – The raw data from the Input. Often this is a string representing the actual data, but needs to be cleaned up or converted before it can be stored.
 - **Native Value** – The actual data that you will store in the Model. Often you have conversion code to move between Native and Input Values. One classic validation error is when your conversion code finds fault in the Input Value and cannot generate the Native Value. This error is what Jivs calls a "Data Type Check".

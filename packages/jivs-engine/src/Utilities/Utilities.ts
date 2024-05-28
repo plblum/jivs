@@ -141,13 +141,45 @@ export function valueForLog(value: any): string
         return '[undefined]';
     if (value == null)
         return '[null]';
-    if (typeof value !== 'string') {
-        if (value.constructor !== undefined && value.constructor.name !== undefined)
-            return value.constructor.name;
-        if (typeof value === 'object')  // an object without a constructor
-        {
-            return `Plain object`;
-        }
+    switch (typeof value)
+    {
+        case 'bigint':
+        case 'boolean':
+        case 'number':
+            return value.toString();
+        case 'string':
+            return value.length > 25 ? value.substring(0, 20) + '...' : value;   // clipped
+        // @ts-ignore so we don't worry about the fall-thru        
+        case 'object':
+            if (isPlainObject(value))
+                return `Plain object`;                
+            if (value.constructor !== undefined && value.constructor.name !== undefined)
+                return value.constructor.name;
+            // intentional fall thru: note: missing code coverage on this case due to it being rare if impossible to get here
+        default: // function, symbol, or object not covered above.
+            return `[${typeof value}]`;
     }
-    return (value.toString() as string).substring(0, 20);   // clipped
+
 }
+export function isPlainObject(obj: any): boolean {
+    if (typeof obj !== 'object' || obj === null) {
+        return false;
+    }
+
+    const proto = Object.getPrototypeOf(obj);
+    return proto === Object.prototype || proto === null;
+}
+
+const notSupportedAsValue = [
+    Array, Function, Error, RegExp, Map, Set, WeakMap, WeakSet
+    // add more built-in constructors if needed
+];
+
+export function isSupportedAsValue(obj: any) {
+    if (obj === null || obj === undefined || typeof obj !== 'object')
+        return true;
+
+    if (notSupportedAsValue.includes(obj.constructor))
+        return false;
+    return true;
+};

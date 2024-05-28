@@ -6,8 +6,8 @@ import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditio
 import { BusinessLogicError, IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
 import { IGatherValueHostNames } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
-import { IInputValueHost } from './InputValueHost';
 import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
+import { IDisposable } from './General_Purpose';
 
 /**
  * Represents a single validator for the value of an InputValueHost.
@@ -19,7 +19,7 @@ import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
  * allowing the system consumer to know how to deal with the data
  * of the ValueHost (save or not) and the UI to display the state.
  */
-export interface IValidator extends IMessageTokenSource, IGatherValueHostNames {
+export interface IValidator extends IDisposable, IMessageTokenSource, IGatherValueHostNames {
     /**
      * Perform validation activity and provide the results including
      * whether there is an error (ConditionEvaluateResult), fully formatted
@@ -114,6 +114,9 @@ export interface IValidator extends IMessageTokenSource, IGatherValueHostNames {
  * cases a business rule is client side only (parser error converting "abc" to number)
  * and times when a business rule is server side only (looking for injection attacks
  * for the purpose of logging and blocking.)
+ * 
+ * NOTE: extensions of this interface can implement IDisposable knowing
+ * that the Validator will call dispose() if supplied, during its own disposal.
  */
 export interface ValidatorConfig {
     /**

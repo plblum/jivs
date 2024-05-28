@@ -3,7 +3,9 @@ import {
     DataTypeFormatterBase, DateFormatter, DateTimeFormatter, LongDOWDateFormatter, LongDateFormatter,
     LowercaseStringFormatter, NumberFormatter, Percentage100Formatter, PercentageFormatter, StringFormatter,
     TimeofDayHMSFormatter, TimeofDayFormatter, UppercaseStringFormatter,
-    IntegerFormatter
+    IntegerFormatter,
+    BooleanFormatterBase,
+    DefaultLabelsForBoolean
 } from '../../src/DataTypes/DataTypeFormatters';
 
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
@@ -36,6 +38,14 @@ describe('DataTypeFormatterBase', () => {
         expect(() => testItem.services = services).not.toThrow();
         expect(testItem.services).toBe(services);
     });
+
+    test('dispose then get services throws TypeError', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestClass();
+        testItem.services = services;
+        testItem.dispose();
+        expect(()=> testItem.services).toThrow(TypeError);
+    });    
 });
 
 describe('StringFormatter', () => {
@@ -379,7 +389,22 @@ describe('NumberFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('-9.501');
     });
-
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.NumberFormatOptions = {
+            signDisplay: 'auto',
+            minimumFractionDigits: 2,
+        };
+        let testItem = new NumberFormatter(options);
+        
+        let dts = testItem.format(1, LookupKey.Number, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1.00');
+        expect(dts.errorMessage).toBeUndefined();
+        
+        dts = testItem.format(1.5, LookupKey.Number, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1.50');
+    });
     test('fr culture with various valid numbers', () => {
         let testItem = new NumberFormatter();
         
@@ -459,7 +484,23 @@ describe('CurrencyFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('-$9.50');
     });
-
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.NumberFormatOptions = {
+            style: 'currency',
+            currency: 'DEFAULT',
+            currencyDisplay: 'name'
+        };
+        let testItem = new CurrencyFormatter('USD', options);
+        
+        let dts = testItem.format(1, LookupKey.Currency, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1.00 US dollars');
+        expect(dts.errorMessage).toBeUndefined();
+        
+        dts = testItem.format(1.5, LookupKey.Currency, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1.50 US dollars');
+    });
     test('fr culture with various valid numbers', () => {
         let testItem = new CurrencyFormatter('USD', null,
             {
@@ -593,6 +634,20 @@ describe('IntegerFormatter', () => {
         expect(dts.value).toBe('-10');
     });
 
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.NumberFormatOptions = {
+            signDisplay: 'auto',
+            maximumFractionDigits: 0,
+            style: 'unit',
+            unit: 'meter'
+        };
+        let testItem = new IntegerFormatter(options);
+        
+        let dts = testItem.format(1, LookupKey.Integer, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1 m');
+        expect(dts.errorMessage).toBeUndefined();
+    });
     test('fr culture with various valid numbers', () => {
         let testItem = new IntegerFormatter();
         
@@ -672,7 +727,22 @@ describe('PercentageFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('-9%');
     });
-
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.NumberFormatOptions = {
+            style: 'percent',
+            minimumFractionDigits: 2
+        };
+        let testItem = new PercentageFormatter(options);
+        
+        let dts = testItem.format(1, LookupKey.Percentage, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('100.00%');
+        expect(dts.errorMessage).toBeUndefined();
+        
+        dts = testItem.format(1.5, LookupKey.Percentage, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('150.00%');
+    });
     test('fr culture with various valid numbers', () => {
         let testItem = new PercentageFormatter();
         
@@ -754,7 +824,22 @@ describe('Percentage100Formatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('-9%');
     });
-
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.NumberFormatOptions = {
+            style: 'percent',
+            minimumFractionDigits: 2
+        };
+        let testItem = new Percentage100Formatter(options);
+        
+        let dts = testItem.format(1, LookupKey.Percentage100, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1.00%');
+        expect(dts.errorMessage).toBeUndefined();
+        
+        dts = testItem.format(1.5, LookupKey.Percentage100, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('1.50%');
+    });
     test('fr culture with various valid numbers', () => {
         let testItem = new Percentage100Formatter();
         
@@ -803,12 +888,19 @@ describe('Percentage100Formatter', () => {
 });
 
 describe('BooleanFormatter', () => {
+
     test('en culture supports LookupKey.Boolean is true. All others are false', () => {
         let testItem = new BooleanFormatter(LookupKey.Boolean);
         
         expect(testItem.supports(LookupKey.Boolean, 'en')).toBe(true);        
         expect(testItem.supports('anylookupkey', 'en')).toBe(false);
     });
+    test('en culture supports LookupKey=null is true because LookupKey is assigned to default Boolean. All others are false', () => {
+        let testItem = new BooleanFormatter(null!);
+        
+        expect(testItem.supports(LookupKey.Boolean, 'en')).toBe(true);        
+        expect(testItem.supports('anylookupkey', 'en')).toBe(false);
+    });    
     test('any culture supports LookupKey.Boolean is true. All others are false', () => {
         let testItem = new BooleanFormatter(LookupKey.Boolean);
         
@@ -933,6 +1025,33 @@ describe('BooleanFormatter', () => {
         expect(dts.errorMessage).toBe('Not a boolean');
         
     });
+    test('Using BooleanFormatterBase with defaults that are null sets up with "true", "false", and LookupKey.Boolean', () => {
+        class TestBooleanFormatterBase extends BooleanFormatterBase
+        {
+            protected getDefaultLabels(): DefaultLabelsForBoolean {
+                return {
+                    falseLabel: null!,
+                    trueLabel: null!,
+                    falseLabell10n: undefined!,
+                    trueLabell10n: undefined!
+                }
+            }
+            protected supportsCulture(cultureId: string): boolean {
+                return true;
+            }
+            public get exposedExpectedLookupKeys(): string | Array<string>
+            {
+                return this.expectedLookupKeys;
+            }
+        }
+        let testItem = new TestBooleanFormatterBase(null!);
+        expect(testItem.falseLabel).toBe('false');
+        expect(testItem.trueLabel).toBe('true');
+        expect(testItem.falseLabell10n).toBeNull();
+        expect(testItem.trueLabell10n).toBeNull();
+        expect(testItem.exposedExpectedLookupKeys).toBe(LookupKey.Boolean);
+
+    });
 });
 describe('DateTimeFormatter', () => {
     test('en: supports LookupKey.DateTime is true. Others are false', () => {
@@ -966,6 +1085,23 @@ describe('DateTimeFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1/15/1980, 4:04 PM');
     });
+    test('en culture with options overriding defaults formats as expected', () => {
+        let options: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric'
+        };
+        let testItem = new DateTimeFormatter(options);
+        
+        let date1 = new Date(2000, 9, 31);
+        let dts = testItem.format(date1, LookupKey.DateTime, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('October 31, 2000 at 12:00 AM');
+        expect(dts.errorMessage).toBeUndefined();
+    
+    });    
 
     test('fr culture with various valid dates', () => {
         let testItem = new DateTimeFormatter();
@@ -1056,7 +1192,20 @@ describe('DateFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('1/15/1980');
     });
-
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.DateTimeFormatOptions = {
+            year: '2-digit',
+            month: 'numeric',
+            day: 'numeric'
+        };
+        let testItem = new DateFormatter(options);
+        
+        let date1 = new Date(2000, 9, 31);
+        let dts = testItem.format(date1, LookupKey.Date, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('10/31/00');
+        expect(dts.errorMessage).toBeUndefined();
+    });
     test('fr culture with various valid dates', () => {
         let testItem = new DateFormatter();
         
@@ -1146,7 +1295,20 @@ describe('AbbrevDateFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('Jan 15, 1980');
     });
-
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.DateTimeFormatOptions = {
+            year: '2-digit',
+            month: 'short',
+            day: 'numeric'
+        };
+        let testItem = new AbbrevDateFormatter(options);
+        
+        let date1 = new Date(2000, 9, 31);
+        let dts = testItem.format(date1, LookupKey.AbbrevDate, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('Oct 31, 00');
+        expect(dts.errorMessage).toBeUndefined();
+    });
     test('fr culture with various valid dates', () => {
         let testItem = new AbbrevDateFormatter();
         
@@ -1236,7 +1398,21 @@ describe('AbbrevDOWDateFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('Fri, Jan 18, 1980');
     });
-
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.DateTimeFormatOptions = {
+            year: '2-digit',
+            month: 'short',
+            day: 'numeric',
+            weekday: 'short'
+        };
+        let testItem = new AbbrevDOWDateFormatter(options);
+        
+        let date1 = new Date(2000, 9, 31);
+        let dts = testItem.format(date1, LookupKey.AbbrevDOWDate, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('Tue, Oct 31, 00');
+        expect(dts.errorMessage).toBeUndefined();
+    });
     test('fr culture with various valid dates', () => {
         let testItem = new AbbrevDOWDateFormatter();
         
@@ -1325,7 +1501,20 @@ describe('LongDateFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('January 15, 1980');
     });
-
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.DateTimeFormatOptions = {
+            year: '2-digit',
+            month: 'long',
+            day: 'numeric'
+        };
+        let testItem = new LongDateFormatter(options);
+        
+        let date1 = new Date(2000, 9, 31);
+        let dts = testItem.format(date1, LookupKey.LongDate, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('October 31, 00');
+        expect(dts.errorMessage).toBeUndefined();
+    });
     test('fr culture with various valid dates', () => {
         let testItem = new LongDateFormatter();
         
@@ -1415,7 +1604,21 @@ describe('LongDOWDateFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('Friday, January 18, 1980');
     });
-
+    test('en culture with custom options formats as expected', () => {
+        let options: Intl.DateTimeFormatOptions = {
+            year: '2-digit',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        };
+        let testItem = new LongDOWDateFormatter(options);
+        
+        let date1 = new Date(2000, 9, 31);
+        let dts = testItem.format(date1, LookupKey.LongDOWDate, 'en');
+        expect(dts).not.toBeNull();
+        expect(dts.value).toBe('Tuesday, October 31, 00');
+        expect(dts.errorMessage).toBeUndefined();
+    });
     test('fr culture with various valid dates', () => {
         let testItem = new LongDOWDateFormatter();
         

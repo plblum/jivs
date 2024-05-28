@@ -1,5 +1,5 @@
 import { ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { deepClone, deepEquals, groupsMatch } from "../../src/Utilities/Utilities";
+import { deepClone, deepEquals, groupsMatch, isPlainObject, isSupportedAsValue, valueForLog } from "../../src/Utilities/Utilities";
 
 
 
@@ -153,4 +153,69 @@ describe('Utilities.groupsMatch', () => {
         expect(groupsMatch(['A'], ['B', 'C'])).toBe(false);
         expect(groupsMatch(['A', 'C'], ['B'])).toBe(false);
     });    
+});
+
+describe('valueForLog', () => {
+    test('Results are as expected', () => {
+        class X
+        {
+
+        }
+        expect(valueForLog(undefined)).toBe('[undefined]');
+        expect(valueForLog(null)).toBe('[null]');
+        expect(valueForLog(false)).toBe('false');
+        expect(valueForLog(10)).toBe('10');
+        expect(valueForLog('abc')).toBe('abc');
+        expect(valueForLog(new Date())).toBe('Date');
+        expect(valueForLog({ a: 1 })).toBe('Plain object');
+        expect(valueForLog(new X())).toBe('X');     
+        expect(valueForLog([])).toBe('Array');
+        expect(valueForLog(()=>0)).toBe('[function]');        
+        expect(valueForLog('123456789012345678901234567890')).toBe('12345678901234567890...');        
+        expect(valueForLog('1234567890123456789012345')).toBe('1234567890123456789012345');        
+        expect(valueForLog('12345678901234567890123456')).toBe('12345678901234567890...');        
+    });
+});
+
+describe('isSupportedAsValue', () => {
+    test('Results as expected', () => {
+        class X { }
+        expect(isSupportedAsValue(undefined)).toBe(true);
+        expect(isSupportedAsValue(null)).toBe(true);
+        expect(isSupportedAsValue(false)).toBe(true);
+        expect(isSupportedAsValue(10)).toBe(true);
+        expect(isSupportedAsValue('abc')).toBe(true);
+        expect(isSupportedAsValue(new Date())).toBe(true);
+        expect(isSupportedAsValue({ a: 1 })).toBe(true);
+        expect(isSupportedAsValue(new X())).toBe(true);     
+        expect(isSupportedAsValue([])).toBe(false);
+        expect(isSupportedAsValue(new Object())).toBe(true);
+        expect(isSupportedAsValue(new Error())).toBe(false);
+        expect(isSupportedAsValue(new RegExp(''))).toBe(false);
+        expect(isSupportedAsValue(new Map())).toBe(false);
+        expect(isSupportedAsValue(new Set())).toBe(false);
+        expect(isSupportedAsValue(new WeakMap())).toBe(false);
+        expect(isSupportedAsValue(new WeakSet)).toBe(false);
+
+
+    });
+});
+
+describe('isPlainObject', () => {
+    test('Results as expected', () => {
+        class X { }
+        expect(isPlainObject(new Object())).toBe(true); 
+        expect(isPlainObject({ a: 1 })).toBe(true);      
+        expect(isPlainObject(new Date())).toBe(false);
+        expect(isPlainObject(new X())).toBe(false);     
+        expect(isPlainObject(new Set())).toBe(false);     
+        expect(isPlainObject([])).toBe(false);       
+        
+        expect(isPlainObject(undefined)).toBe(false);
+        expect(isPlainObject(null)).toBe(false);
+        expect(isPlainObject(false)).toBe(false);
+        expect(isPlainObject(10)).toBe(false);
+        expect(isPlainObject('abc')).toBe(false);
+
+    });
 });

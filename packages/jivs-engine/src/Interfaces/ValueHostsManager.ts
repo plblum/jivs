@@ -22,6 +22,7 @@ import { IDataTypeConverterService } from './DataTypeConverterService';
 import { IDataTypeIdentifierService } from './DataTypeIdentifierService';
 import { IDataTypeComparerService } from './DataTypeComparerService';
 import { IConditionFactory } from './Conditions';
+import { IDisposable } from './General_Purpose';
 
 export interface IValueHostsServices extends IServices
 {
@@ -99,18 +100,12 @@ export interface IValueHostsServices extends IServices
  * Conditions are passed the ValueHostsManager meaning they
  * can be used independently of validation. 
  */
-export interface IValueHostsManager extends IValueHostResolver
+export interface IValueHostsManager extends IValueHostResolver, IDisposable
 {
     /**
      * Typecast from IServices
      */
     services: IValueHostsServices;
-
-    /**
-     * If the user needs to abandon this instance, they should use this to 
-     * clean up active resources (like timers)
-     */
-    dispose(): void;    
 
     /**
      * Adds a ValueHostConfig for a ValueHost not previously added. 
@@ -180,12 +175,21 @@ export interface ValueHostsManagerInstanceState {
 
 
 /**
- * Provides the configuration for the ValueHostsManager constructor
+ * Provides the configuration for the ValueHostsManager constructor.
+ * 
+ * NOTE: extensions of this interface can implement IDisposable knowing
+ * that the ValueHostManager will call dispose() if supplied, during its own disposal.
  */
 export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
 {
     /**
      * Provides services into the system. Dependency Injection and factories.
+     * @remarks
+     * While most objects have a WeakRef to services, we keep an active reference here
+     * because we invite the user to create the service, pass it into this Config
+     * and let the ValueHostsManager/ValidationManager's reference be the one to access.
+     * If this is set to another object created within the scope of ValueHostsManager,
+     * that other object should keep a WeakRef to it.
      */
     services: IValidationServices;
     /**
