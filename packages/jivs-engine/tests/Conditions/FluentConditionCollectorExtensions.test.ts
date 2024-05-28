@@ -3,8 +3,8 @@ import { FluentConditionCollector, fluent } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
-    EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, RangeConditionConfig,
+    EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
     RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
 } from '../../src/Conditions/ConcreteConditions';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
@@ -965,4 +965,61 @@ describe('countMatches on conditions', () => {
                 }]
             });
     });
+});
+
+describe('positive on conditions', () => {
+    test('With no parameters, creates ValidatorConfig with PositiveCondition with type=Positive assigned', () => {
+
+        let testItem = fluent().conditions().positive();
+        TestFluentConditionCollector(testItem, <PositiveConditionConfig>{
+            conditionType: ConditionType.Positive
+        });
+    });
+    test('With valueHostName assigned, creates ValidatorConfig with PositiveCondition with type=Positive and valueHostName assigned', () => {
+
+        let testItem = fluent().conditions().positive('Field1');
+        TestFluentConditionCollector(testItem, <PositiveConditionConfig>{
+            conditionType: ConditionType.Positive,
+            valueHostName: 'Field1'
+        });
+    });
+
+});
+describe('integer on conditions', () => {
+    test('With no parameters, creates ValidatorConfig with IntegerCondition with type=Integer assigned', () => {
+
+        let testItem = fluent().conditions().integer();
+        TestFluentConditionCollector(testItem, <IntegerConditionConfig>{
+            conditionType: ConditionType.Integer
+        });
+    });
+    test('With valueHostName assigned, creates ValidatorConfig with IntegerCondition with type=Integer and valueHostName assigned', () => {
+
+        let testItem = fluent().conditions().integer('Field1');
+        TestFluentConditionCollector(testItem, <IntegerConditionConfig>{
+            conditionType: ConditionType.Integer,
+            valueHostName: 'Field1'
+        });
+    });
+
+});
+describe('maxDecimals on conditions', () => {
+    test('With no parameters, creates ValidatorConfig with MaxDecimalsCondition with type=MaxDecimals assigned', () => {
+
+        let testItem = fluent().conditions().maxDecimals(2);
+        TestFluentConditionCollector(testItem, <MaxDecimalsConditionConfig>{
+            conditionType: ConditionType.MaxDecimals,
+            maxDecimals: 2
+        });
+    });
+    test('With valueHostName assigned, creates ValidatorConfig with MaxDecimalsCondition with type=MaxDecimals and valueHostName assigned', () => {
+
+        let testItem = fluent().conditions().maxDecimals(1, 'Field1');
+        TestFluentConditionCollector(testItem, <MaxDecimalsConditionConfig>{
+            conditionType: ConditionType.MaxDecimals,
+            valueHostName: 'Field1',
+            maxDecimals: 1
+        });
+    });
+
 });

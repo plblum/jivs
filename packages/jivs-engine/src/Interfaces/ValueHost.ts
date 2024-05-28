@@ -1,4 +1,3 @@
-import { IDisposable } from './General_Purpose';
 /**
  * Exposes values from the consuming system to the validation engine.
  * Each instance represents a single value from the consuming system.
@@ -27,6 +26,7 @@ import { IDisposable } from './General_Purpose';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver } from './ValueHostResolver';
 import { IValueHostsManager } from './ValueHostsManager';
+import { IDisposable } from './General_Purpose';
 /**
  * Interface for creating ValueHosts.
  */

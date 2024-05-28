@@ -5,8 +5,8 @@ import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
-    EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, RangeConditionConfig,
+    EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
     RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
 } from '../../src/Conditions/ConcreteConditions';
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
@@ -1765,6 +1765,175 @@ describe('countMatches on fluent().input', () => {
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 conditionConfigs: []
+            },
+            errorMessage: 'FirstError'
+        });
+    });
+});
+
+describe('positive on fluent().input', () => {
+    test('With no parameters, creates ValidatorConfig with PositiveCondition with type=Positive', () => {
+
+        let testItem = fluent().input('Field1').positive();
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <PositiveConditionConfig>{
+                conditionType: ConditionType.Positive
+            }
+        });
+    });
+
+    test('With only errorMessage creates ValidatorConfig with PositiveCondition with only type assigned and errorMessage assigned', () => {
+
+        let testItem = fluent().input('Field1').positive('Error');
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <PositiveConditionConfig>{
+                conditionType: ConditionType.Positive
+            },
+            errorMessage: 'Error'
+        });
+    });
+    test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with PositiveCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+
+        let testItem = fluent().input('Field1').positive('Error', { summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <PositiveConditionConfig>{
+                conditionType: ConditionType.Positive
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with PositiveCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+
+        let testItem = fluent().input('Field1').positive(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <PositiveConditionConfig>{
+                conditionType: ConditionType.Positive
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with PositiveCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
+
+        let testItem = fluent().input('Field1').positive('FirstError', { errorMessage: 'SecondError' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <PositiveConditionConfig>{
+                conditionType: ConditionType.Positive
+            },
+            errorMessage: 'FirstError'
+        });
+    });
+});
+describe('integer on fluent().input', () => {
+    test('With no parameters, creates ValidatorConfig with IntegerCondition with type=Integer', () => {
+
+        let testItem = fluent().input('Field1').integer();
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <IntegerConditionConfig>{
+                conditionType: ConditionType.Integer
+            }
+        });
+    });
+
+    test('With only errorMessage creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage assigned', () => {
+
+        let testItem = fluent().input('Field1').integer('Error');
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <IntegerConditionConfig>{
+                conditionType: ConditionType.Integer
+            },
+            errorMessage: 'Error'
+        });
+    });
+    test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+
+        let testItem = fluent().input('Field1').integer('Error', { summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <IntegerConditionConfig>{
+                conditionType: ConditionType.Integer
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+
+        let testItem = fluent().input('Field1').integer(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <IntegerConditionConfig>{
+                conditionType: ConditionType.Integer
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with IntegerCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
+
+        let testItem = fluent().input('Field1').integer('FirstError', { errorMessage: 'SecondError' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <IntegerConditionConfig>{
+                conditionType: ConditionType.Integer
+            },
+            errorMessage: 'FirstError'
+        });
+    });
+});
+
+describe('maxDecimals on fluent().input', () => {
+    test('With no parameters, creates ValidatorConfig with MaxDecimalsCondition with type=MaxDecimals', () => {
+
+        let testItem = fluent().input('Field1').maxDecimals(2);
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <MaxDecimalsConditionConfig>{
+                conditionType: ConditionType.MaxDecimals,
+                maxDecimals: 2
+            }
+        });
+    });
+
+    test('With only errorMessage creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage assigned', () => {
+
+        let testItem = fluent().input('Field1').maxDecimals(1, 'Error');
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <MaxDecimalsConditionConfig>{
+                conditionType: ConditionType.MaxDecimals,
+                maxDecimals: 1
+            },
+            errorMessage: 'Error'
+        });
+    });
+    test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+
+        let testItem = fluent().input('Field1').maxDecimals(2, 'Error', { summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <MaxDecimalsConditionConfig>{
+                conditionType: ConditionType.MaxDecimals,
+                maxDecimals: 2
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+
+        let testItem = fluent().input('Field1').maxDecimals(2, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <MaxDecimalsConditionConfig>{
+                conditionType: ConditionType.MaxDecimals,
+                maxDecimals: 2
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with MaxDecimalsCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
+
+        let testItem = fluent().input('Field1').maxDecimals(2, 'FirstError', { errorMessage: 'SecondError' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <MaxDecimalsConditionConfig>{
+                conditionType: ConditionType.MaxDecimals,
+                maxDecimals: 2
             },
             errorMessage: 'FirstError'
         });

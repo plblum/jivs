@@ -115,13 +115,7 @@ export enum ValidationStatus {
      */
     Invalid
 }
-export const ValidationStatusString = [
-    'NotAttempted',
-    'NeedsValidation',
-    'Undetermined',
-    'Valid',
-    'Invalid'
-];
+
 
 /**
  * Determines how a Validator will behave when a Condition evaluates as NoMatch.

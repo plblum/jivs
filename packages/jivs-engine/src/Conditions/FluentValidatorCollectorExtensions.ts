@@ -30,8 +30,10 @@ import {
     _genCDDataTypeCheck, _genCDRange, _genCDRegExp, _genDCAll, _genDCAny,
     _genDCCountMatches, _genDCEqualTo, _genDCEqualToValue, _genDCGreaterThan,
     _genDCGreaterThanOrEqual, _genDCGreaterThanOrEqualValue, _genDCGreaterThanValue,
+    _genDCInteger,
     _genDCLessThan, _genDCLessThanOrEqual, _genDCLessThanOrEqualValue, _genDCLessThanValue,
-    _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCRequireText,
+    _genDCMaxDecimals,
+    _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCPositive, _genDCRequireText,
     _genDCStringLength, enableFluentConditions
 } from "./FluentConditionCollectorExtensions";
 
@@ -148,6 +150,16 @@ declare module "./../ValueHosts/Fluent"
             collector: FluentConditionCollector,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;      
+        positive(
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;       
+        integer(
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;               
+        maxDecimals(
+            maxDecimals: number,
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;               
         
     //#region shorter names for some
         ltValue(
@@ -226,6 +238,9 @@ export function enableFluent(): void {
     FluentValidatorCollector.prototype.all = all;
     FluentValidatorCollector.prototype.any = any;
     FluentValidatorCollector.prototype.countMatches = countMatches;
+    FluentValidatorCollector.prototype.positive = positive;
+    FluentValidatorCollector.prototype.integer = integer;
+    FluentValidatorCollector.prototype.maxDecimals = maxDecimals;
 
 
     //#region shorter names for some
@@ -439,5 +454,32 @@ function countMatches(
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
         ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, collector),
+        errorMessage, validatorParameters);
+}
+function positive(
+    errorMessage?: string | null,
+    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
+    // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty        
+    return finishFluentValidatorCollector(this,
+        ConditionType.Positive, _genDCPositive(),
+        errorMessage, validatorParameters);
+}
+
+function integer(
+    errorMessage?: string | null,
+    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
+    // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty        
+    return finishFluentValidatorCollector(this,
+        ConditionType.Integer, _genDCInteger(),
+        errorMessage, validatorParameters);
+}
+
+function maxDecimals(
+    maxDecimals: number,
+    errorMessage?: string | null,
+    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
+    // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty        
+    return finishFluentValidatorCollector(this,
+        ConditionType.MaxDecimals, _genDCMaxDecimals(maxDecimals),
         errorMessage, validatorParameters);
 }
