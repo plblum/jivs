@@ -1,7 +1,6 @@
-import { registerCultureIdFallbacksForEn, registerCultureIdFallbacksForFR, populateServicesWithManyCultures } from "../TestSupport/utilities";
+import { populateServicesWithManyCultures } from "../TestSupport/utilities";
 import { BooleanFormatter, CurrencyFormatter, NumberFormatter } from "../../src/DataTypes/DataTypeFormatters";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService";
 import { IDataTypeFormatter } from "../../src/Interfaces/DataTypeFormatters";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
@@ -11,7 +10,7 @@ import { MockValidationServices } from "../TestSupport/mocks";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
-import { CodingError, SevereErrorBase } from "../../src/Utilities/ErrorHandling";
+import { SevereErrorBase } from "../../src/Utilities/ErrorHandling";
 
 
 class TestFormatter implements IDataTypeFormatter {

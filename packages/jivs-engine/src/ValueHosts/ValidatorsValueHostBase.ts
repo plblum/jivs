@@ -38,10 +38,19 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         super(validationManager, config, state);
     }
 
-    //#region IValidatorsValueHostBase
-
-
-    //#endregion IValidatorsValueHostBase
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        (this.config.validatorConfigs as any) = undefined;
+        super.dispose();
+        this._validators?.forEach((validator) => validator.dispose());
+        (this._validators as any) = undefined;
+    }
 
     /**
      * Runs validation against some of all validators.
@@ -73,7 +82,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         };
 
         if (!this.groupsMatch(options.group, false))
-            return bailout(`Group names do not match "${options.group}" vs "${this.config.group?.toString()}"`);
+            return bailout(`Group names do not match "${options.group}" vs "${this.config.group}"`);
 
         try {
             try {
@@ -247,11 +256,15 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 let parms = fn();
                 self.services.loggerService.log(parms.message, logLevel,
                     LoggingCategory.Validation,
-                    parms.source ?? `ValueHost name ${self.config.name}`);
+                    parms.source ??
+                /* istanbul ignore next */  // defensive
+                    `ValueHost name ${self.config.name}`);
             }
         }
         function logError(message: string): void {
-            self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
+            self.services.loggerService.log('Exception: ' + (message ??
+                /* istanbul ignore next */  // defensive             
+                'Reason unspecified'),
                 LoggingLevel.Error, LoggingCategory.Validation, self.config.name);
         }
     }
@@ -294,7 +307,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         let fn = (a: IValidator, b: IValidator): number => a.condition.category - b.condition.category;
         if (unordered.toSorted)    // recently introduced API, so provide fallback
             return unordered.toSorted(fn);
-        else
+        else        /* istanbul ignore next */ // we don't run our unit tests in pre-ES2016 mode required to test this.
             return unordered.sort(fn);
     }
 
@@ -328,6 +341,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                         let changed = this.updateInstanceState((stateToUpdate) => {
                             let replacementIndex = -1;
                             if (!stateToUpdate.issuesFound)
+                              /* istanbul ignore next */ // defensive. Current code always sets this up
                                 stateToUpdate.issuesFound = [];
                             // replace if the same issuefound exists
                             for (let issueIndex = 0; issueIndex < stateToUpdate.issuesFound.length; issueIndex++) {
@@ -472,6 +486,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
                         errorCode = cond.conditionType;
                 }
                 if (!errorCode)
+                    /* istanbul ignore next */  // defensive. Current code always establishes an error code
                     errorCode = ConditionType.Unknown;
                 let found = oldState.find((value) => value.errorCode === errorCode);
                 if (found) {

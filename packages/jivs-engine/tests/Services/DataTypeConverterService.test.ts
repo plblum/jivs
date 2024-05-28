@@ -7,6 +7,9 @@ import { ValidationServices } from "../../src/Services/ValidationServices";
 import { IDataTypeIdentifier } from '../../src/Interfaces/DataTypeIdentifier';
 import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggerService';
 import { MockValidationServices } from '../TestSupport/mocks';
+import { CodingError } from '../../src/Utilities/ErrorHandling';
+import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
+import { LookupKey } from '../../src/DataTypes/LookupKeys';
 
 
 class TestDataTypeAsNumber {
@@ -83,11 +86,16 @@ class TestConverterToLowerCase implements IDataTypeConverter {
     }
 }
 class TestConverterThatThrows implements IDataTypeConverter {
+    constructor(error: Error)
+    {
+        this._error = error;
+    }
+    private _error: Error;
     supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
         return true;
     }
     convert(value: TestDataTypeAsDate, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        throw new Error('TEST');
+        throw this._error;
     }
 }
 describe('DataTypeComparerService constructor, register, and find', () => {
@@ -176,19 +184,33 @@ describe('convert', ()=> {
         expect(testItem.convert("ABC", "Anything")).toBeUndefined();
         expect(testItem.convert(100, "")).toBeUndefined();
     });
-    test('Converter that throws is handled by returning undefined and adding to the log.', () => {
+    test('Converter that throws non-severe is handled by returning undefined and adding to the log.', () => {
         let services = new ValidationServices();  
         let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Debug;
         services.loggerService = logger;
         let testItem = new DataTypeConverterService();
         services.dataTypeConverterService = testItem;
-        testItem.register(new TestConverterThatThrows());
+        testItem.register(new TestConverterThatThrows(new Error('test')));
 
         expect(testItem.convert("ABC", "")).toBeUndefined();
         expect(logger.findMessage('Using TestConverterThatThrows', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
     });    
+
+    test('Converter that throws severe is handled by throwing and adding to the log.', () => {
+        let services = new ValidationServices();  
+        let logger = new CapturingLogger();
+        logger.minLevel = LoggingLevel.Debug;
+        services.loggerService = logger;
+        let testItem = new DataTypeConverterService();
+        services.dataTypeConverterService = testItem;
+        testItem.register(new TestConverterThatThrows(new CodingError('test')));
+
+        expect(()=> testItem.convert("ABC", "")).toThrow(/test/);
+        expect(logger.findMessage('Using TestConverterThatThrows', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
+    });        
 });
 describe('convertToPrimitive', ()=> {
     test('convertToPrimitive all 4 registered test converters successfully', () => {
@@ -252,7 +274,7 @@ describe('convertToPrimitive', ()=> {
         expect(logger.entryCount()).toBe(0);
         expect(testItem.convertToPrimitive(undefined, "")).toBeUndefined();
     });        
-    test('Within convertToPrimitive, Converter that throws is handled by returning undefined and adding to the log.', () => {
+    test('Within convertToPrimitive, Converter that throws non-severe is handled by returning undefined and adding to the log.', () => {
         let services = new ValidationServices();  
         let logger = new CapturingLogger();
         logger.minLevel = LoggingLevel.Debug;
@@ -260,9 +282,70 @@ describe('convertToPrimitive', ()=> {
         services.dataTypeConverterService = testItem;
         services.loggerService = logger;
         services.dataTypeIdentifierService = new DataTypeIdentifierService();
-        testItem.register(new TestConverterThatThrows());
+        testItem.register(new TestConverterThatThrows(new Error('TEST')));
 
         expect(testItem.convertToPrimitive("ABC", "")).toBeUndefined();
         expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
     });        
+    test('Within convertToPrimitive, Converter that throws severe throws and adding to the log.', () => {
+        let services = new ValidationServices();  
+        let logger = new CapturingLogger();
+        logger.minLevel = LoggingLevel.Debug;
+        let testItem = new DataTypeConverterService();
+        services.dataTypeConverterService = testItem;
+        services.loggerService = logger;
+        services.dataTypeIdentifierService = new DataTypeIdentifierService();
+        testItem.register(new TestConverterThatThrows(new CodingError('TEST')));
+
+        expect(()=> testItem.convertToPrimitive("ABC", "")).toThrow(/TEST/);
+        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
+    });            
+});
+
+describe('cleanupConvertableValue', () => { 
+    class TestLookupKeyConverter implements IDataTypeConverter
+    {
+        supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+            return dataTypeLookupKey !== null;
+        }
+        convert(value: any, dataTypeLookupKey: string): SimpleValueType {
+            return value;
+        }
+        
+    }
+    test('Check values to primitive types, undefined, and null return the expected value', () => {
+        let testItem = new DataTypeConverterService();
+        let services = new MockValidationServices(false, true);
+        services.dataTypeConverterService = testItem;
+        testItem.services = services;
+        testItem.register(new TestLookupKeyConverter());
+        let logger = testItem.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        expect(testItem.cleanupConvertableValue(0, LookupKey.Number)).toBe(0);
+        expect(logger.findMessage('Using TestLookupKeyConverter', LoggingLevel.Debug, null, null)).not.toBeNull();
+     
+        expect(testItem.cleanupConvertableValue(true, LookupKey.Boolean)).toBe(true);
+        expect(testItem.cleanupConvertableValue('text', LookupKey.String)).toBe('text');
+/* TS2737: BigInt literals are not available when targeting lower than ES2020.        
+        expect(testItem.cleanupConvertableValue(0n, LookupKey.Number)).toBe(0n);
+*/        
+        expect(testItem.cleanupConvertableValue(undefined, LookupKey.Number)).toBeUndefined();
+        expect(testItem.cleanupConvertableValue(null, LookupKey.Number)).toBe(null);
+
+    });
+    test('Array is unsupported and will throw', () => {
+        let testItem = new DataTypeConverterService();
+        let services = new MockValidationServices(false, true);
+        services.dataTypeConverterService = testItem;
+        testItem.services = services;
+        testItem.register(new TestLookupKeyConverter());
+        let logger = testItem.services.loggerService as CapturingLogger;
+        logger.minLevel = LoggingLevel.Debug;
+
+        expect(() => testItem.cleanupConvertableValue([], 'SOMETHING')).toThrow(/unsupported/);
+        expect(logger.findMessage('Using TestLookupKeyConverter', LoggingLevel.Debug, null, null)).not.toBeNull();
+     
+    });
+
 });

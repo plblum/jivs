@@ -5,7 +5,7 @@
 
 import { LoggingLevel } from "../Interfaces/LoggerService";
 import { CodingError } from "../Utilities/ErrorHandling";
-import { valueForLog } from "../Utilities/Utilities";
+import { isSupportedAsValue, valueForLog } from "../Utilities/Utilities";
 import { DataTypeServiceBase } from "./DataTypeServiceBase";
 
 /**
@@ -50,11 +50,16 @@ export abstract class DataTypeConverterServiceBase<T> extends DataTypeServiceBas
                 case 'bigint':
                 case 'undefined':
                     break;
+                // @ts-ignore so we don't worry about the fall-thru
                 case 'object':  // try again. For example, we got a date. Need it to be a number
                     if (value === null)
                         return value;
-                    value = this.cleanupConvertableValue(value, null);
-                    break;
+                    // make sure the object is a class that inherits from Object
+                    if (isSupportedAsValue(value)) {
+                        value = this.cleanupConvertableValue(value, null);
+                        break;
+                    }
+                    // intentional fall-thru to use the exception below
                 default:/* istanbul ignore next */
                     throw new CodingError('Type converted to unsupported value.');
             }

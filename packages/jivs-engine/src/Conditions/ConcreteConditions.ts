@@ -232,6 +232,17 @@ export interface RegExpConditionConfig extends RegExpConditionBaseConfig {
  */
 export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
 {
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        super.dispose();
+        (this._savedRE as any) = undefined;
+    }        
     public static get DefaultConditionType(): ConditionType { return ConditionType.RegExp; }
     
     private _savedRE: RegExp | null = null; // cache the results. By design, any change to the Config requires creating a new instance of the condition, discarding this

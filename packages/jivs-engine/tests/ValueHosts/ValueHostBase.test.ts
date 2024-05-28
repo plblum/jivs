@@ -1,4 +1,3 @@
-import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import {
     type ValueHostInstanceState, type IValueHost, ValueHostConfig, IValueHostCallbacks, toIValueHostCallbacks
 } from "../../src/Interfaces/ValueHost";
@@ -9,6 +8,7 @@ import { IValueHostsManager, IValueHostsServices } from "../../src/Interfaces/Va
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
+import { IDisposable } from "../../src/Interfaces/General_Purpose";
 
 
 interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
@@ -24,15 +24,15 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
     constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
         super(valueHostsManager, config, state);
     }
-    public ExposeServices(): IValueHostsServices {
+    public get exposeServices(): IValueHostsServices {
         return this.services;
     }
 
-    public ExposeConfig(): ValueHostConfig {
+    public get exposeConfig(): ValueHostConfig {
         return this.config;
     }
 
-    public ExposeState(): IPublicifiedValueHostInstanceState {
+    public get exposeState(): IPublicifiedValueHostInstanceState {
         return this.instanceState;
     }
 }
@@ -138,9 +138,9 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.getValue()).toBeUndefined();
         expect(testItem!.isChanged).toBe(false);
 
-        expect(testItem!.ExposeServices()).toBe(services);
-        expect(testItem!.ExposeConfig()).toBe(vhConfig);
-        expect(testItem!.ExposeState().name).toBe('Field1');
+        expect(testItem!.exposeServices).toBe(services);
+        expect(testItem!.exposeConfig).toBe(vhConfig);
+        expect(testItem!.exposeState.name).toBe('Field1');
         expect(testItem!.valueHostsManager).toBe(vm);
     });
 
@@ -223,10 +223,10 @@ describe('updateState', () => {
             };
             // try several times
             for (let i = 1; i <= 3; i++) {
-                let originalState = testItem.ExposeState();
+                let originalState = testItem.exposeState;
                 expect(() => testItem.updateInstanceState(fn, testItem)).not.toThrow();
                 expect(testItem.getValue()).toBe(initialValue + i);
-                expect(testItem.ExposeState()).not.toBe(originalState);   // different instances
+                expect(testItem.exposeState).not.toBe(originalState);   // different instances
             }
             let changes = setup.validationManager.getHostStateChanges();
             expect(changes.length).toBe(3);
@@ -249,10 +249,10 @@ describe('updateState', () => {
             };
             // try several times
             for (let i = 1; i <= 3; i++) {
-                let originalState = testItem.ExposeState();
+                let originalState = testItem.exposeState;
                 expect(() => testItem.updateInstanceState(fn, testItem)).not.toThrow();
                 expect(testItem.getValue()).toBe(initialValue);
-                expect(testItem.ExposeState()).toBe(originalState);   // same instance
+                expect(testItem.exposeState).toBe(originalState);   // same instance
             }
             let changes = setup.validationManager.getHostStateChanges();
             expect(changes.length).toBe(0);
@@ -604,4 +604,40 @@ describe('toIValueHostCallbacks function', () => {
     test('Non-object returns null.', () => {
         expect(toIValueHostCallbacks(100)).toBeNull();
     });        
+});
+
+describe('dispose', () => {
+    test('dispose kills many references including state and config', () => {
+        let setup = setupValueHost({
+            name: 'Field1',
+            dataType: LookupKey.Number
+        });
+        setup.valueHost.dispose();
+        expect(setup.valueHost.exposeConfig).toBeUndefined();
+        expect(setup.valueHost.exposeState).toBeUndefined();
+        expect(() => setup.valueHost.getValue()).toThrow(TypeError);  // value is from config which is undefined
+        expect(()=> setup.valueHost.exposeServices).toThrow(TypeError);
+
+    });   
+    
+    test('dispose with ValueHostConfig having its own dispose kills what the config.dispose expects', () => {
+        interface X extends ValueHostConfig, IDisposable
+        {
+            x: {}
+        }
+
+        let setup = setupValueHost({
+            name: 'Field1',
+            dataType: LookupKey.Number
+        });
+
+        let valConfig = setup.config as X;
+        valConfig.x = {};
+        valConfig.dispose = () => { (valConfig.x as any) = undefined };
+        setup.valueHost.dispose();
+
+        expect(valConfig.x).toBeUndefined();
+
+    });               
+
 });

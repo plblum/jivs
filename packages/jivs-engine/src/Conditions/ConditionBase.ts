@@ -12,6 +12,7 @@ import { assertNotNull } from '../Utilities/ErrorHandling';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
 
 /**
  * Base implementation of ICondition.
@@ -21,7 +22,7 @@ import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase'
  * Instances should be registered in the ConditionFactory.
  */
 export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
-    implements IConditionCore<TConditionConfig>, IMessageTokenSource, IGatherValueHostNames {
+    implements IDisposable, IConditionCore<TConditionConfig>, IMessageTokenSource, IGatherValueHostNames {
     constructor(config: TConditionConfig) {
         assertNotNull(config, 'config');
         this._config = config;
@@ -41,7 +42,17 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
     {
         return this.config.conditionType;
     }
-
+    /**
+     * Participates in releasing memory.
+     * While not required, the idea is to be a more friendly participant in the ecosystem.
+     * Note that once called, expect null reference errors to be thrown if any other functions
+     * try to use them.
+     */
+    public dispose(): void
+    {
+        toIDisposable(this._config)?.dispose();
+        (this._config as any) = undefined;
+    }
     /**
      * Evaluate a value using its business rule and configuration in the Config.
      * @param valueHost - contains both the raw value from input field/element and the value resolved by data type.

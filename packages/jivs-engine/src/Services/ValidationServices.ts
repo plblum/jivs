@@ -79,43 +79,6 @@ export class ValidationServices extends ValueHostsServices implements IValidatio
         this.setService(ServiceName.messageTokenResolver, service);
     }
 
-    /**
-     * Service to get the ILogger instance that replaces
-     * tokens in messages.
-     * Defaults to using ConsoleLoggerService.
-     */
-    public get loggerService(): ILoggerService {
-        let service = this.getService<ILoggerService>(ServiceName.logger);
-        if (!service) {
-            service = new ConsoleLoggerService();
-            this.setService(ServiceName.logger, service);
-        }
-        return service;
-    }
-    public set loggerService(service: ILoggerService) {
-        this.setService(ServiceName.logger, service);
-    }
-
-    //#region ValueHostFactory
-    /**
-     * The ValueHostFactory to use.
-     * It supplies a default if not setup by the user.
-     */
-    public get valueHostFactory(): IValueHostFactory {
-        let service = this.getService<IValueHostFactory>(ServiceName.valueHostFactory);
-        if (!service) {
-            let factory = service = new ValueHostFactory();
-            registerStandardValueHostGenerators(factory);
-            this.setService(ServiceName.valueHostFactory, factory);
-        }
-        return service;
-    }
-    public set valueHostFactory(factory: IValueHostFactory) {
-        this.setService(ServiceName.valueHostFactory, factory);
-    }
-
-    //#endregion ValueHostFactory
-
     //#region ValidatorFactory    
     /**
      * The ValidatorFactory to use.

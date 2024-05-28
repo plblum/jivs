@@ -7,7 +7,7 @@ import { ValueHostConfig } from "../Interfaces/ValueHost";
 import { StartFluent } from "./Fluent";
 import { ValueHostsBuilderBase } from "./ValueHostsBuilderBase";
 import { IValueHostsManager } from "../Interfaces/ValueHostsManager";
-import { assertNotNull } from "../Utilities/ErrorHandling";
+import { assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
 
 /**
  * Supplies fluent entry to ValueHostManager by being exposed in its build() function.
@@ -18,13 +18,14 @@ export class ValueHostsInstanceBuilder extends ValueHostsBuilderBase
     {
         super();
         assertNotNull(valueHostManager, 'valueHostManager');
-        this._valueHostManager = valueHostManager;
+        this._valueHostManager = new WeakRef<IValueHostsManager>(valueHostManager);
     }
-    private _valueHostManager: IValueHostsManager;
+    private _valueHostManager: WeakRef<IValueHostsManager>;
 
     protected get valueHostManager(): IValueHostsManager
     {
-        return this._valueHostManager;
+        assertWeakRefExists(this._valueHostManager, 'ValueHostsManager disposed');
+        return this._valueHostManager.deref()!;
     }
 
     protected applyConfig(config: ValueHostConfig): void {

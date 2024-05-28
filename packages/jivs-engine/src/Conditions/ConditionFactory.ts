@@ -6,6 +6,7 @@
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import type { ConditionConfig, ICondition, IConditionCore, IConditionFactory } from '../Interfaces/Conditions';
 import { CodingError } from '../Utilities/ErrorHandling';
+import { IDisposable } from '../Interfaces/General_Purpose';
 
 //#region ConditionFactory
 
@@ -16,7 +17,11 @@ import { CodingError } from '../Utilities/ErrorHandling';
  * ConditionConfig.conditionType is used to determine the Condition class to create.
  * Supports IConditionCore implementations of ICondition.
  */
-export class ConditionFactory implements IConditionFactory {
+export class ConditionFactory implements IConditionFactory, IDisposable {
+
+    public dispose(): void {
+        (this._map as any) = undefined;
+    }
     /**
      * Create an instance of a Condition from the ConditionConfig.
      * @param config 
