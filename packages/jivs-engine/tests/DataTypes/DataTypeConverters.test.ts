@@ -3,8 +3,6 @@ import {
     TotalDaysConverter, IntegerConverter, TimeOfDayOnlyConverter, TimeOfDayHMSOnlyConverter
 } from './../../src/DataTypes/DataTypeConverters';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { MockValidationServices } from '../TestSupport/mocks';
-import { DataTypeComparerService } from '../../src/Services/DataTypeComparerService';
 describe('DataTypeConverter concrete classes', () => {
     describe('CaseInsensitiveStringConverter', () => {
         test('supportsValue', () => {
@@ -23,11 +21,7 @@ describe('DataTypeConverter concrete classes', () => {
             expect(testItem.convert("", LookupKey.CaseInsensitive)).toBe("");
             expect(testItem.convert("abc", LookupKey.CaseInsensitive)).toBe("abc");
         });
-        test('Within DataTypeComparerService', () => {
-            let vs = new MockValidationServices(false, false);
-            let testItem = new DataTypeComparerService(); 
-        
-         });
+
     });
     describe('DateTimeConverter', () => {
         test('supportsValue', () => {
