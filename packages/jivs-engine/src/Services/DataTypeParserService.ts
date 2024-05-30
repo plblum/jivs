@@ -78,8 +78,9 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
 
     /**
      * Return a matching DataTypeParser or null.
-     * @param dataTypeLookupKey 
+     * @param lookupKey 
      * @param cultureId 
+     * @param text
      */
     public find(lookupKey: string, cultureId: string, text: string): IDataTypeParser<any> | null {
         return this.getAll().find((dtp) => dtp.supports(lookupKey, cultureId, text)) ?? null;
