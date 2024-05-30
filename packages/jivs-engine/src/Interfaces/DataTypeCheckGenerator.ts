@@ -39,13 +39,17 @@ export interface IDataTypeCheckGenerator
  */
     supportsValue(dataTypeLookupKey: string): boolean;
 /**
- * Creates a Condition based on the DataTypeLookupKey that will handle the Data Type Check feature.
+ * Creates condition based on the DataTypeLookupKey that will handle the Data Type Check feature.
  * Most of the time, ICondition.ConditionCategory should be DataTypeCheck.
+ * Often you supply several conditions to cover different aspects of the data that may 
+ * need correcting, so each can have its own error message.
+ * If your data type check needs the DataTypeCheckCondition in addition to others,
+ * return the DataTypeCheckCondition instance too.
  * @param valueHost 
  * @param dataTypeLookupKey 
  * @param conditionFactory
- * @returns A Condition instance to use or null to block auto-generation.
+ * @returns An array of Condition instances to use or empty array auto-generation.
  */
-    createCondition(valueHost: IInputValueHost, dataTypeLookupKey: string,
-        conditionFactory: IConditionFactory): ICondition | null;
+    createConditions(valueHost: IInputValueHost, dataTypeLookupKey: string,
+        conditionFactory: IConditionFactory): Array<ICondition>;
 }

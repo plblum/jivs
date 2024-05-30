@@ -5,16 +5,14 @@ import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFac
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { createMinimalValidationServices } from "../src/support";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { PositiveNumberCondition, PositiveNumberConditionConfig, positiveNumberConditionType } from "../src/PositiveNumberCondition";
-import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
+import { EvenNumberCondition, EvenNumberConditionConfig, evenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
 import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
 
-describe('PositiveNumberCondition tests', () => {
+describe('EvenNumberCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
+        registerEvenNumberCondition(services);
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: []
@@ -28,21 +26,25 @@ describe('PositiveNumberCondition tests', () => {
             validatorConfigs: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
         };
         let vh = vm.addValueHost(vhConfig, null);
-        let config: PositiveNumberConditionConfig = {
-            conditionType: ConditionType.PositiveNumber,
+        let config: EvenNumberConditionConfig = {
+            conditionType: evenNumberConditionType,
             valueHostName: 'Field1',
         };
-        let testItem = new PositiveNumberCondition(config);
+        let testItem = new EvenNumberCondition(config);
 
-        vh.setValue(1);
+        vh.setValue(2);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);    
-        vh.setValue(0.1);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);            
+        vh.setValue(1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);            
         vh.setValue(0);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
         vh.setValue(-1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-    // anything other than a Number is Undetermined
+        vh.setValue(-2);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);            
+    // anything other than an integer is Undetermined
+        vh.setValue(1.5);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('TEXT');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
         vh.setValue(null);
@@ -52,29 +54,31 @@ describe('PositiveNumberCondition tests', () => {
     });
     test('Using Fluent Syntax, demonstrate validate() returns Valid and Invalid as expected', () => {
         let services = createMinimalValidationServices('en');
-        (services.conditionFactory as ConditionFactory).register<PositiveNumberConditionConfig>(
-            positiveNumberConditionType, (config)=> new PositiveNumberCondition(config)
-        );
+        registerEvenNumberCondition(services);
 
         let vmConfig: ValidationManagerConfig = {
             services: services,
             valueHostConfigs: []
         };
-        build(vmConfig).input('Field1', LookupKey.Number).positiveNumber('Must be a number above 0.');
+        build(vmConfig).input('Field1', LookupKey.Number).evenNumber('Must be an even number.');
         let vm = new ValidationManager(vmConfig);
         let vh = vm.getInputValueHost('Field1')!;
 
-        vh.setValue(1);
+        vh.setValue(2);
         let valResult = vh.validate();
         expect(valResult?.status).toBe(ValidationStatus.Valid);    
-        vh.setValue(0.1);
+        vh.setValue(1);
         valResult = vh.validate();
-        expect(valResult?.status).toBe(ValidationStatus.Valid);    
+        expect(valResult?.status).toBe(ValidationStatus.Invalid);
         vh.setValue(0);
         valResult = vh.validate();
-        expect(valResult?.status).toBe(ValidationStatus.Invalid);        
+        expect(valResult?.status).toBe(ValidationStatus.Valid);    
+   
         vh.setValue(-1);
         valResult = vh.validate();
         expect(valResult?.status).toBe(ValidationStatus.Invalid);    
+        vh.setValue(-2);
+        valResult = vh.validate();
+        expect(valResult?.status).toBe(ValidationStatus.Valid);            
     });    
 });

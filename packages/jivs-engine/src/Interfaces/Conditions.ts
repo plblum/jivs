@@ -151,12 +151,6 @@ export enum ConditionEvaluateResult {
     NoMatch
 }
 
-export const ConditionEvaluateResultStrings = [
-    'Undetermined',
-    'Match',
-    'NoMatch'
-];
-
 /**
  * Each Category gets assigned a category. For the most part, these are merely info.
  * However, Require and DataTypeCheck have special meaning.

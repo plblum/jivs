@@ -20,7 +20,13 @@ import {
     LessThanValueConditionConfig,
     NotEqualToValueCondition,
     NotEqualToValueConditionConfig,
-    GreaterThanValueConditionConfig
+    GreaterThanValueConditionConfig,
+    PositiveCondition,
+    PositiveConditionConfig,
+    IntegerCondition,
+    IntegerConditionConfig,
+    MaxDecimalsCondition,
+    MaxDecimalsConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -180,6 +186,12 @@ export function registerAllConditions(cf: ConditionFactory): void
         (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
     cf.register<NotNullConditionConfig>(
         ConditionType.NotNull, (config) => new NotNullCondition(config));
+    cf.register<PositiveConditionConfig>
+        (ConditionType.Positive, (config) => new PositiveCondition(config));  
+    cf.register<IntegerConditionConfig>
+        (ConditionType.Integer, (config) => new IntegerCondition(config));
+    cf.register<MaxDecimalsConditionConfig>
+        (ConditionType.MaxDecimals, (config) => new MaxDecimalsCondition(config));
 
 }
 

@@ -1131,7 +1131,7 @@ See this sample code for more: [https://github.com/plblum/jivs/blob/main/package
 	   public get conditionType(): string { return 'MyConditionType'; }
 	}
 	```
-See this sample code for more: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts)
+See this sample code for more: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
 <a name="customconditions"></a>
 ### One-off conditions
 Choose one of the methodologies below. When establishing the InputValueHost with your condition, it goes here:
@@ -1189,7 +1189,7 @@ let fieldNameConfig = config().input('fieldname')
 - You may be building replacements for the Condition classes supplied in Jivs especially if you prefer a third party's validation schema code. In that case, implement the `IConditionFactory interface` to expose your replacements. Always attach your factory to the `ValidationServices class` in the `createValidationServices function`.
 
 ### Adding your new Condition class to fluent syntax
-See this example: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/PositiveNumberCondition.ts)
+See this example: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
 
 ## Localization
 Any text displayed to the user and any input supplied from them is subject to localization. Jivs is localization-ready with several tools. There are third party tools that may do the job more to your liking, and they can be swapped in by implementing the correct interfaces.

@@ -1,3 +1,4 @@
+import { IDataTypeIdentifier } from './../../src/Interfaces/DataTypeIdentifier';
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import {
     type RequireTextConditionConfig, type RangeConditionConfig, 
@@ -27,7 +28,13 @@ import {
     LessThanValueCondition,
     LessThanValueConditionConfig,
     NotEqualToValueCondition,
-    NotEqualToValueConditionConfig
+    NotEqualToValueConditionConfig,
+    PositiveCondition,
+    PositiveConditionConfig,
+    IntegerCondition,
+    IntegerConditionConfig,
+    MaxDecimalsCondition,
+    MaxDecimalsConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
@@ -46,7 +53,12 @@ import { CompareToValueConditionBaseConfig } from "../../src/Conditions/CompareT
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { RegExpConditionBase, RegExpConditionBaseConfig } from "../../src/Conditions/RegExpConditionBase";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
-
+import { NumberConditionBaseConfig, NumberConditionBase } from "../../src/Conditions/NumberConditionBase";
+import { IValueHost } from "../../src/Interfaces/ValueHost";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
+import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
+import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
 
 
 describe('ConditionBase class additional cases', () => {
@@ -4639,5 +4651,366 @@ describe('class NotNullCondition', () => {
         let testItem = new Set<ValueHostName>();
         expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
         expect(testItem.size).toBe(0);
+    });
+});
+
+describe('NumberConditionBase', () => {
+    class TestNumberConditionBase extends NumberConditionBase<NumberConditionBaseConfig>
+    {
+        protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            return value >= 0 ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
+        }
+        protected get defaultCategory(): ConditionCategory {
+            return ConditionCategory.Undetermined
+        }
+        
+    }
+    test('Evaluate numbers that are positive are a match and less than 0 are not a match', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: NumberConditionBaseConfig = {
+            conditionType: 'TEST',
+            valueHostName: null,
+        };
+        let testItem = new TestNumberConditionBase(config);
+        vh.setValue(1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(0);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);   
+        vh.setValue(-1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+    });
+    test('Evaluate non-number types are undetermined', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: NumberConditionBaseConfig = {
+            conditionType: 'TEST',
+            valueHostName: null,
+        };
+        let testItem = new TestNumberConditionBase(config);
+        vh.setValue('ABC');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);   
+        vh.setValue(new Date());
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);     
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);                
+    });    
+    test('Evaluate objects that can be converted to a number use that number to evaluate. Positive are a match and less than 0 are not a match', () => {
+        class NumberHolder
+        {
+            constructor(value: number)
+            {
+                this.value = value;
+            }   
+            public value: number;
+        }
+        class NumberHolderIdentifier implements IDataTypeIdentifier
+        {
+            dataTypeLookupKey: string = 'test';
+            supportsValue(value: any): boolean {
+                return value instanceof NumberHolder;
+            }
+        }
+        class NumberHolderConverter implements IDataTypeConverter
+        {
+            supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+                return value instanceof NumberHolder;
+            }
+            convert(source: NumberHolder, dataTypeLookupKey: string): SimpleValueType {
+                return source.value;
+            }
+            
+        }
+        let services = new MockValidationServices(false, true);
+        (services.dataTypeIdentifierService as DataTypeIdentifierService).register(new NumberHolderIdentifier());
+        (services.dataTypeConverterService as DataTypeConverterService).register(new NumberHolderConverter());        
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: NumberConditionBaseConfig = {
+            conditionType: 'TEST',
+            valueHostName: null,
+        };
+        let testItem = new TestNumberConditionBase(config);
+        vh.setValue(new NumberHolder(1));
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(new NumberHolder(0));
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);   
+        vh.setValue(new NumberHolder(-1));
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+    });    
+    test('gatherValueHostNames when all are assigned', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let config: NumberConditionBaseConfig = {
+            conditionType: 'TEST',
+            valueHostName: 'Property1',
+        };
+        let condition = new TestNumberConditionBase(config);
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
+        expect(testItem.size).toBe(1);
+        expect(testItem.has('Property1')).toBe(true);
+    });
+    test('gatherValueHostNames when none are assigned', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let config: NumberConditionBaseConfig = {
+            conditionType: 'TEST',
+            valueHostName: null,
+        };
+        let condition = new TestNumberConditionBase(config);
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
+        expect(testItem.size).toBe(0);
+    });    
+});
+
+describe('PositiveCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(PositiveCondition.DefaultConditionType).toBe(ConditionType.Positive);
+    });    
+    test('evaluate numbers; when 0 or higher, Match. When negative, NoMatch', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: PositiveConditionConfig = {
+            conditionType: ConditionType.Positive,
+            valueHostName: 'Property1'
+        };
+        let testItem = new PositiveCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(0.1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
+        vh.setValue(0);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(-0.1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+        vh.setValue(-1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+    });
+    test('evaluate non-numbers; all return Undetermined', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: PositiveConditionConfig = {
+            conditionType: ConditionType.Positive,
+            valueHostName: 'Property1'
+        };
+        let testItem = new PositiveCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue('A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(new Date());
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);                
+    });
+    test('category is DataTypeCheck', () => {
+        let config: PositiveConditionConfig = {
+            conditionType: ConditionType.Positive,
+            valueHostName: 'Property1'
+        };
+        let testItem = new PositiveCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.DataTypeCheck);
+    });
+    test('category is overridden', () => {
+        let config: PositiveConditionConfig = {
+            conditionType: ConditionType.Positive,
+            valueHostName: 'Property1',
+            category: ConditionCategory.Contents
+        };
+        let testItem = new PositiveCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Contents);
+    });
+});
+
+
+describe('IntegerCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(IntegerCondition.DefaultConditionType).toBe(ConditionType.Integer);
+    });    
+    test('evaluate numbers; when an integer, Match. When with decimals, noMatch', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: IntegerConditionConfig = {
+            conditionType: ConditionType.Integer,
+            valueHostName: 'Property1'
+        };
+        let testItem = new IntegerCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(0);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(-1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(1.1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(0.5);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(-1.9);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+    });
+    test('evaluate non-numbers; all return Undetermined', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: IntegerConditionConfig = {
+            conditionType: ConditionType.Integer,
+            valueHostName: 'Property1'
+        };
+        let testItem = new IntegerCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue('A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(new Date());
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);                
+    });
+    test('category is DataTypeCheck', () => {
+        let config: IntegerConditionConfig = {
+            conditionType: ConditionType.Integer,
+            valueHostName: 'Property1'
+        };
+        let testItem = new IntegerCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.DataTypeCheck);
+    });
+    test('category is overridden', () => {
+        let config: IntegerConditionConfig = {
+            conditionType: ConditionType.Integer,
+            valueHostName: 'Property1',
+            category: ConditionCategory.Contents
+        };
+        let testItem = new IntegerCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Contents);
+    });
+
+});
+
+describe('MaxDecimalsCondition', () => {
+    test('DefaultConditionType', () => {
+        expect(MaxDecimalsCondition.DefaultConditionType).toBe(ConditionType.MaxDecimals);
+    });    
+    test('constructor with maxDecimals null throws', () => {
+        let config: MaxDecimalsConditionConfig = {
+            conditionType: ConditionType.MaxDecimals,
+            valueHostName: 'Property1',
+            maxDecimals: null!
+        };
+        expect(() => new MaxDecimalsCondition(config)).toThrow(/maxDecimals/);
+    });
+    test('constructor with maxDecimals undefined throws', () => {
+        let config: MaxDecimalsConditionConfig = {
+            conditionType: ConditionType.MaxDecimals,
+            valueHostName: 'Property1',
+            maxDecimals: undefined!
+        };
+        expect(() => new MaxDecimalsCondition(config)).toThrow(/maxDecimals/);
+    });    
+    test('constructor with maxDecimals 0 throws', () => {
+        let config: MaxDecimalsConditionConfig = {
+            conditionType: ConditionType.MaxDecimals,
+            valueHostName: 'Property1',
+            maxDecimals: 0
+        };
+        expect(() => new MaxDecimalsCondition(config)).toThrow(/must be 1/);
+    });    
+    test('evaluate numbers using maxDecimals=1; when integer or 1 decimal, match. All others NoMatch', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: MaxDecimalsConditionConfig = {
+            conditionType: ConditionType.MaxDecimals,
+            valueHostName: 'Property1',
+            maxDecimals: 1
+        };
+        let testItem = new MaxDecimalsCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(0);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(-1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(1.5);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(0.1);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(-1.6);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
+        vh.setValue(1.51);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(0.66);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue(-1.63);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+    });
+    test('evaluate non-numbers; all return Undetermined', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: MaxDecimalsConditionConfig = {
+            conditionType: ConditionType.MaxDecimals,
+            valueHostName: 'Property1',
+            maxDecimals: 1
+        };
+        let testItem = new MaxDecimalsCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue('A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(false);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(new Date());
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        vh.setValue(null);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
+        vh.setValue(undefined);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);                
+    });
+    test('category is DataTypeCheck', () => {
+        let config: MaxDecimalsConditionConfig = {
+            conditionType: ConditionType.MaxDecimals,
+            valueHostName: 'Property1',
+            maxDecimals: 1
+        };
+        let testItem = new MaxDecimalsCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.DataTypeCheck);
+    });
+    test('category is overridden', () => {
+        let config: MaxDecimalsConditionConfig = {
+            conditionType: ConditionType.MaxDecimals,
+            valueHostName: 'Property1',
+            category: ConditionCategory.Contents,
+            maxDecimals : 1
+        };
+        let testItem = new MaxDecimalsCondition(config);
+        expect(testItem.category).toBe(ConditionCategory.Contents);
     });
 });
