@@ -2,13 +2,20 @@
  * @module DataTypes/Types
  */
 
-import { IServiceWithAccessor } from "./Services";
+import { IServiceWithAccessor } from './Services';
 
 /**
  * Base interface for Data Type services.
  */
 export interface IDataTypeService extends IServiceWithAccessor
 {
+    /**
+      * Registers an instance of the interface supported by this service.
+      * It may replace an existing one, as determined by the subclass.
+      * Replace supported on: IDataTypeIdentifier
+      * @param item
+      */
+    register(item: any): void;    
 }
 
 /**

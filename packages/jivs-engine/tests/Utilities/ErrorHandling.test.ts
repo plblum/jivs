@@ -1,4 +1,4 @@
-import { CodingError, InvalidTypeError, assertNotNull, ensureError } from "../../src/Utilities/ErrorHandling";
+import { CodingError, InvalidTypeError, assertNotEmptyString, assertNotNull, ensureError } from "../../src/Utilities/ErrorHandling";
 
 // function assertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
 describe("Utilities.assertNotNull tests", () => {
@@ -12,6 +12,19 @@ describe("Utilities.assertNotNull tests", () => {
         expect(() => assertNotNull('', 'parm')).not.toThrow();
         expect(() => assertNotNull({}, 'parm')).not.toThrow();
         expect(() => assertNotNull([], 'parm')).not.toThrow();
+   }); 
+});
+describe("Utilities.assertNotEmptyString tests", () => {
+    test("empty string, not a string, null or undefined is exception", () => {
+        expect(() => assertNotEmptyString(null, 'parm')).toThrow('parm required');
+        expect(() => assertNotEmptyString(undefined, 'parm')).toThrow('parm required');
+        expect(() => assertNotEmptyString('', 'parm')).toThrow('parm not empty string');
+        expect(() => assertNotEmptyString(0, 'parm')).toThrow('parm must be string');
+        
+    });
+    test("values that do not throw an exception", () => {
+        expect(() => assertNotEmptyString('abc', 'parm')).not.toThrow();
+        expect(() => assertNotEmptyString('  ', 'parm')).not.toThrow();
    }); 
 });
 describe('InvalidTypeError', () => {

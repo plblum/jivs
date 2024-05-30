@@ -50,6 +50,8 @@ import { CultureService } from "../../src/Services/CultureService";
 import { ILookupKeyFallbackService } from "../../src/Interfaces/LookupKeyFallbackService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { toIServicesAccessor } from "../../src/Interfaces/Services";
+import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserService";
+import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -247,6 +249,7 @@ export class MockValidationServices implements IValidationServices
         this.cultureService.activeCultureId = 'en';
         this._conditionFactory = new ConditionFactory();
         this.dataTypeFormatterService = new DataTypeFormatterService();
+        this.dataTypeParserService = new DataTypeParserService();
         this.dataTypeComparerService = new DataTypeComparerService();
         this.dataTypeConverterService = new DataTypeConverterService();
         this.dataTypeIdentifierService = new DataTypeIdentifierService();
@@ -325,6 +328,15 @@ export class MockValidationServices implements IValidationServices
     }
     private _dataTypeFormatterService!: IDataTypeFormatterService;
 
+    public get dataTypeParserService(): IDataTypeParserService {
+        return this._dataTypeParserService;
+    }
+    public set dataTypeParserService(service: IDataTypeParserService)
+    {
+        this._dataTypeParserService = service;
+        service.services = this;
+    }
+    private _dataTypeParserService!: IDataTypeParserService;
     public get dataTypeIdentifierService(): IDataTypeIdentifierService {
         return this._dataTypeIdentifierService;
     }

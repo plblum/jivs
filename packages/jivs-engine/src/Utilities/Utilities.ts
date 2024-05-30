@@ -4,6 +4,16 @@
  */
 
 /**
+ * Escape function for strings to retain their original characters when used
+ * inside of a regexp pattern.
+ * @param text 
+ * @returns 
+ */
+export function escapeRegExp(text: string): string {
+    return text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
+/**
  * Determines if the supplied group or group(s) are found in both parameters.
  * When either parameter is '', '*', empty array, null or undefined, it means to match
  * everything and this function returns true.

@@ -3,10 +3,10 @@
  * @module Services/Types/ILookupKeyFallbackService
  */
 
-import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
-import { LookupKey } from "../DataTypes/LookupKeys";
-import { ILookupKeyFallbackService } from "../Interfaces/LookupKeyFallbackService";
-import { ServiceBase } from "./ServiceBase";
+import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
+import { LookupKey } from '../DataTypes/LookupKeys';
+import { ILookupKeyFallbackService } from '../Interfaces/LookupKeyFallbackService';
+import { ServiceBase } from './ServiceBase';
 
 /**
  * Service for creating a relationship between a lookup key and another
@@ -98,7 +98,19 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
 
         return this._registered!.get(lookupKey) ?? null;
     }
+
+    /**
+     * Defense for recursion looking through fallbacks to avoid loops.
+     * Throws when lookupKey has already been seen.
+     * @param lookupKey 
+     * @param alreadyCheckedLookupKeys 
+     */
+    public static ensureRecursionSafe(lookupKey: string, alreadyCheckedLookupKeys: Set<string>): void
+    {
+        if (alreadyCheckedLookupKeys.has(lookupKey))
+            throw new CodingError(`LookupKeyFallbackService has a loop involving ${lookupKey}`);
+        alreadyCheckedLookupKeys.add(lookupKey);
+    }
   
   }
-  
   

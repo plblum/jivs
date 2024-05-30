@@ -16,6 +16,7 @@ import { IServiceWithFallback, IServicesAccessor, toIServiceWithFallback, toISer
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { CultureService } from "../../src/Services/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
+import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
     test('Has parameters', () => {
@@ -52,6 +53,12 @@ describe('Replace factories and services', () => {
         testItem.dataTypeFormatterService = replacement;
         expect(testItem.dataTypeFormatterService).toBe(replacement);
     });
+    test('Replace dataTypeParserService', () => {
+        let replacement = new DataTypeParserService();
+        let testItem = new ValidationServices();
+        testItem.dataTypeParserService = replacement;
+        expect(testItem.dataTypeParserService).toBe(replacement);
+    });    
     test('Replace dataTypeComparerService', () => {
         let replacement = new DataTypeComparerService();
         let testItem = new ValidationServices();
