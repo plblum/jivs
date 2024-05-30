@@ -16,7 +16,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidationServices } from '../Interfaces/ValidationServices';
 import { toIGatherValueHostNames, type IValueHost, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { type IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { type ICondition, ConditionCategory, ConditionEvaluateResult, ConditionEvaluateResultStrings, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
+import { type ICondition, ConditionCategory, ConditionEvaluateResult, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { type ValidateOptions, ValidationSeverity, type IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
@@ -332,7 +332,7 @@ export class Validator implements IValidator {
                 switch (result) {
                     case ConditionEvaluateResult.NoMatch:
                     case ConditionEvaluateResult.Undetermined:
-                        return bailout(`Enabler using ${enabler.conditionType} evaluated as ${ConditionEvaluateResultStrings[result]}`);
+                        return bailout(`Enabler using ${enabler.conditionType} evaluated as ${ConditionEvaluateResult[result]}`);
                 }
             }
 
@@ -388,7 +388,7 @@ export class Validator implements IValidator {
         function resolveCER(cer: ConditionEvaluateResult): ValidatorValidateResult {
             lazyLog(() => {
                 return {
-                    message: `Condition ${self.conditionType} evaluated as ${ConditionEvaluateResultStrings[cer]}`
+                    message: `Condition ${self.conditionType} evaluated as ${ConditionEvaluateResult[cer]}`
                 };
             });
             resultState.conditionEvaluateResult = cer;

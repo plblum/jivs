@@ -7,7 +7,7 @@
  */
 
 import { FluentConditionCollector, finishFluentConditionCollector } from "../ValueHosts/Fluent";
-import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig } from "./ConcreteConditions";
+import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig } from "./ConcreteConditions";
 import { ConditionType } from "./ConditionTypes";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { assertNotNull } from "../Utilities/ErrorHandling";
@@ -88,7 +88,13 @@ declare module "./../ValueHosts/Fluent"
         countMatches(
             minimum: number | null, maximum: number | null,
             collector: FluentConditionCollector): FluentConditionCollector;
-
+        
+        positive(
+            valueHostName?: ValueHostName): FluentConditionCollector;
+        integer(
+            valueHostName?: ValueHostName): FluentConditionCollector;
+        maxDecimals(maxDecimals: number,
+            valueHostName?: ValueHostName): FluentConditionCollector;        
 
         //#region shorter names for some
         ltValue(
@@ -159,6 +165,9 @@ export function enableFluentConditions(): void {
     FluentConditionCollector.prototype.all = all;
     FluentConditionCollector.prototype.any = any;
     FluentConditionCollector.prototype.countMatches = countMatches;
+    FluentConditionCollector.prototype.positive = positive;
+    FluentConditionCollector.prototype.integer = integer;
+    FluentConditionCollector.prototype.maxDecimals = maxDecimals;
 
 
     //#region shorter names for some
@@ -639,5 +648,47 @@ function countMatches(
     collector: FluentConditionCollector): FluentConditionCollector {
     return finishFluentConditionCollector(this,
         ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, collector));
+}
+
+/**
+ * Common code to setup PositiveConditionConfig for support within
+ * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * @internal
+ */
+export function _genDCPositive(): PositiveConditionConfig {
+    return {} as PositiveConditionConfig;
+}
+function positive(
+    valueHostName?: ValueHostName): FluentConditionCollector {
+    return finishFluentConditionCollector(this,
+        ConditionType.Positive, _genDCPositive(), valueHostName);
+}
+
+/**
+ * Common code to setup IntegerConditionConfig for support within
+ * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * @internal
+ */
+export function _genDCInteger(): IntegerConditionConfig {
+    return {} as IntegerConditionConfig;
+}
+function integer(
+    valueHostName?: ValueHostName): FluentConditionCollector {
+    return finishFluentConditionCollector(this,
+        ConditionType.Integer, _genDCInteger(), valueHostName);
+}
+
+/**
+ * Common code to setup MaxDecimalsConditionConfig for support within
+ * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * @internal
+ */
+export function _genDCMaxDecimals(maxDecimals: number): MaxDecimalsConditionConfig {
+    return { maxDecimals: maxDecimals } as MaxDecimalsConditionConfig;
+}
+function maxDecimals(maxDecimals: number,
+    valueHostName?: ValueHostName): FluentConditionCollector {
+    return finishFluentConditionCollector(this,
+        ConditionType.MaxDecimals, _genDCMaxDecimals(maxDecimals), valueHostName);
 }
 

@@ -10,7 +10,7 @@
  */
 
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { CodingError } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 
 import type { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
@@ -33,6 +33,7 @@ import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditio
 import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from './CompareToValueConditionBase';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
+import { NumberConditionBase, NumberConditionBaseConfig } from './NumberConditionBase';
 
 
 /**
@@ -828,5 +829,88 @@ export class CountMatchesCondition extends EvaluateChildConditionResultsBase<Cou
         if (this.config.maximum !== undefined && countMatches > this.config.maximum)
             return ConditionEvaluateResult.NoMatch;
         return ConditionEvaluateResult.Match;
+    }
+}
+
+/**
+ * ConditionConfig for {@link PositiveCondition}
+ */
+export interface PositiveConditionConfig extends NumberConditionBaseConfig
+{
+
+}
+/**
+ * Evaluates a number to confirm it is a value of 0 or higher.
+ * The value can be from an object that has a DataTypeConverter to make it into a number.
+ * Defaults to a DataTypeCheck ConditionCategory.
+ */
+export class PositiveCondition extends NumberConditionBase<PositiveConditionConfig>
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.Positive; }    
+    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        return value >= 0 ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
+    }
+    protected get defaultCategory(): ConditionCategory {
+        return ConditionCategory.DataTypeCheck;
+    }
+}
+
+/**
+ * ConditionConfig for {@link IntegerCondition}
+ */
+export interface IntegerConditionConfig extends NumberConditionBaseConfig
+{
+
+}
+/**
+ * Evaluates a number to confirm it is a value is an integer.
+ * The value can be from an object that has a DataTypeConverter to make it into a number.
+ * Defaults to a DataTypeCheck ConditionCategory.
+ */
+export class IntegerCondition extends NumberConditionBase<IntegerConditionConfig>
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.Integer; }    
+    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        return value === Math.floor(value) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
+    }
+    protected get defaultCategory(): ConditionCategory {
+        return ConditionCategory.DataTypeCheck;
+    }
+}
+
+/**
+ * ConditionConfig for {@link MaxDecimalsCondition}
+ */
+export interface MaxDecimalsConditionConfig extends NumberConditionBaseConfig
+{
+    /**
+     * Maximum number of decimal places allowed.
+     * Requires a value.
+     */
+    maxDecimals: number;
+}
+/**
+ * Evaluates a number to confirm it is a value of 0 or higher.
+ * The value can be from an object that has a DataTypeConverter to make it into a number.
+ * Defaults to a DataTypeCheck ConditionCategory.
+ */
+export class MaxDecimalsCondition extends NumberConditionBase<MaxDecimalsConditionConfig>
+{
+    public static get DefaultConditionType(): ConditionType { return ConditionType.MaxDecimals; }
+    
+    constructor(config: MaxDecimalsConditionConfig)
+    {
+        super(config);
+        assertNotNull(config.maxDecimals, 'maxDecimals');
+        if (config.maxDecimals < 1)
+            throw new CodingError('maxDecimals must be 1 or higher');
+    }
+    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        let poweredValue = value * Math.pow(10, this.config.maxDecimals);
+        
+        return poweredValue === Math.floor(poweredValue) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
+    }
+    protected get defaultCategory(): ConditionCategory {
+        return ConditionCategory.DataTypeCheck;
     }
 }

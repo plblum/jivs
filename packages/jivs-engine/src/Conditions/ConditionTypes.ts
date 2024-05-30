@@ -130,6 +130,19 @@ export enum ConditionType
     NotNull = 'NotNull',
 
     /**
+     * Associated with PositiveCondition class.
+     */
+    Positive = 'Positive',
+    /**
+     * Associated with IntegerCondition class.
+     */
+    Integer = 'Integer',
+    /**
+     * Associated with MaxDecimalsCondition class.
+     */
+    MaxDecimals = 'MaxDecimals',
+
+    /**
      * Returned when ConditionType is not supplied
      */
     Unknown = 'UNKNOWN'

@@ -7,7 +7,7 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidationStatusString, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { SevereErrorBase, assertNotNull } from '../Utilities/ErrorHandling';
 import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
@@ -156,7 +156,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         finally {
             lazyLog(() => {
                 return {
-                    message: `Input Validation result: ${ValidationStatusString[result.status]} Issues found:` +
+                    message: `Input Validation result: ${ValidationStatus[result.status]} Issues found:` +
                         (result.issuesFound ? JSON.stringify(result.issuesFound) : 'none')
                 };
             });
