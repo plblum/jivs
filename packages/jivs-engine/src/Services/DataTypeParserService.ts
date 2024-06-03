@@ -23,6 +23,29 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
     protected indexOfExisting(item: IDataTypeParser<any>): number {
         return -1;  // register does not replace existing
     }
+
+    /**
+     * Determines if the Parser service is active. When false, do not call parse().
+     * Defaults to true.
+     * It does not block any methods (register, find, etc).
+     */
+
+    public get enabled(): boolean {
+        return this._enabled;
+    }
+    public set enabled(value: boolean) {
+        this._enabled = value;
+    }
+    private _enabled: boolean = true;    
+    /**
+     * Returns true if enabled and there is at least one parser registered.
+     * Used by InputValueHost.setInputValue instead of enabled.
+     */
+    public isActive(): boolean
+    {
+        return this.enabled && this.getAll().length > 0;
+    }
+    
     /**
      * Parse the text supplied, attempting to create another value from it that will be returned.
      * The new value may be a different data type, 

@@ -98,7 +98,7 @@ describe('PublicifyDataTypeServiceBase register, unregister', () => {
             expect(testItem.find('TEST1')).toBe(toRegister2);
             expect(testItem.publicify_getAll().length).toBe(1);
         });        
-        test('register with an item that implements IServiceAccessor assigns services to that item', () => {
+        test('register with an item that implements IServicesAccessor assigns services to that item', () => {
             let services = new MockValidationServices(false, false);
             let testItem = new PublicifyDataTypeServiceBase();
             testItem.services = services;
@@ -109,7 +109,7 @@ describe('PublicifyDataTypeServiceBase register, unregister', () => {
             let resultTypecast = result as TestItemWithService;
             expect(resultTypecast.services).toBe(services);
         });       
-        test('register with an item that implements IServiceAccessor but has no services to offer does not assign services to that item', () => {
+        test('register with an item that implements IServicesAccessor but has no services to offer does not assign services to that item', () => {
             let testItem = new PublicifyDataTypeServiceBase();
             let toRegister = new TestItemWithService('TEST');
             expect(() => testItem.register(toRegister)).not.toThrow();
@@ -150,7 +150,7 @@ describe('PublicifyDataTypeServiceBase register, unregister', () => {
     
             expect(testItem.publicify_getAll().length).toBe(2);
         });        
-        test('register with an item that implements IServiceAccessor assigns services to that item', () => {
+        test('register with an item that implements IServicesAccessor assigns services to that item', () => {
             let services = new MockValidationServices(false, false);
             let testItem = new PublicifyDataTypeServiceBase();
             testItem.registerCanOverwrite = true;
@@ -162,7 +162,7 @@ describe('PublicifyDataTypeServiceBase register, unregister', () => {
             let resultTypecast = result as TestItemWithService;
             expect(resultTypecast.services).toBe(services);
         });       
-        test('register with an item that implements IServiceAccessor but has no services to offer does not assign services to that item', () => {
+        test('register with an item that implements IServicesAccessor but has no services to offer does not assign services to that item', () => {
             let testItem = new PublicifyDataTypeServiceBase();
             testItem.registerCanOverwrite = true;
             let toRegister = new TestItemWithService('TEST');

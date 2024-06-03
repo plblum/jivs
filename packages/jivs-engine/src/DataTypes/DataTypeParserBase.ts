@@ -3,10 +3,12 @@
  * @module DataTypes/AbstractClasses/DataTypeParsers
  */
 
+import { IServicesAccessor } from '../Interfaces/Services';
 import { IDataTypeParser } from '../Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
-import { escapeRegExp } from '../Utilities/Utilities';
+import { assertNotNull, assertWeakRefExists, CodingError } from '../Utilities/ErrorHandling';
+import { escapeRegExp, hasLetters, hasMultipleOccurances, onlyTheseCharacters } from '../Utilities/Utilities';
+import { IValidationServices } from '../Interfaces/ValidationServices';
 
 
 /**
@@ -44,7 +46,8 @@ export interface DataTypeParserOptions<TDataType>
  * allow the subclass to dictate behavior.
  */
 export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypeParserOptions<TDataType | null>>
-    implements IDataTypeParser<TDataType> {
+    implements IDataTypeParser<TDataType>, IServicesAccessor {
+    
     constructor(supportedLookupKey: string, options: TOptions) {
         assertNotNull(supportedLookupKey, 'supportedLookupKey');
         this._supportedLookupKey = supportedLookupKey;
@@ -60,6 +63,7 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
         if (options.trim === undefined)
             options.trim = true;
     }
+    
     protected assertMustHaveCharacter(optionVal: string, optionName: string) : void
     {
         assertNotNull(optionVal, optionName);
@@ -77,6 +81,31 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
         return this._options;
     }
     private _options: TOptions;
+
+    public dispose(): void
+    {
+        (this._services as any) = undefined;
+    }        
+    /**
+     * Services accessor.
+     * Note: Not passed into the constructor because this object should be created before
+     * ValidationServices itself. So it gets assigned when ValidationService.dataTypeFormatterService is assigned a value.
+     */
+    public get services(): IValidationServices
+    {
+        assertWeakRefExists(this._services, 'Register with ValidationServices.dataTypeFormatterService first.');
+        return this._services!.deref()!;
+    }
+    public set services(services: IValidationServices)
+    {
+        assertNotNull(services);
+        this._services = new WeakRef<IValidationServices>(services);
+    }
+    protected get hasServices(): boolean
+    {
+        return this._services !== null && this._services.deref() !== undefined;
+    }
+    private _services: WeakRef<IValidationServices> | null = null;    
 
     /**
      * The default for the options.emptyStringResult when the user doesn't supply it.
@@ -120,6 +149,11 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
      * @returns 
      */
     protected cleanText(text: string, dataTypeLookupKey: string, cultureId: string): string
+    {
+        return this.applyTrimming(text);
+    }
+
+    protected applyTrimming(text: string): string
     {
         switch (this.options.trim) {
             case true:
@@ -291,6 +325,9 @@ export abstract class StrongPatternParserBase<TDataType, TOptions extends DataTy
     public supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
         if (super.supports(dataTypeLookupKey, cultureId, text)) {
             text = this.cleanText(text, dataTypeLookupKey, cultureId);
+            if (text.length === 0)
+                return true;    // parser will use emptystring 
+            // We know there is some kind of number
             if (this.responsibleForThisText(dataTypeLookupKey, cultureId, text))
                 return true;
         }
@@ -612,6 +649,16 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
         return new RegExp(pattern, 'g');
     }
 
+    public parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number | null> {
+        text = super.applyTrimming(text);
+        if (text.length === 0)
+            return { value: this.options.emptyStringResult };        
+
+        if (this.cannotBeNumber(text))
+            return { errorMessage: this.patternDidNotMatchMessage() };
+        return super.parse(text, dataTypeLookupKey, cultureId);
+    }
+
     /**
      * Expect the output to be setup for a regular expression that looks for either:
      * digits + period + digits
@@ -652,6 +699,59 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
         return text.includes(this.options.negativeSymbol) || /\(.+\)/.test(text);
     }
 
+    /**
+     * Responsible for anything that cannot be a number and 
+     * number patterns that conform to the current options, like have
+     * a currencysymbol only when its setup. When its a number that 
+     * cannot work with the options, reject it so another registered number parser
+     * can deal with it. That way, the NumberParser doesn't try to handle
+     * what was intended for CurrencyParser or PercentageParser.
+     * @param dataTypeLookupKey 
+     * @param cultureId 
+     * @param text 
+     * @returns 
+     */
+    protected responsibleForThisText(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+       
+        // we'll always handle anything that cannot be converted to a number.
+        // The user requested the NumberParser. Therefore it should return an error message
+        // during parse().
+        // At this point, supports() has called cleanText which NumberParserBase 
+        // makes it as close to a number as possible.
+        // NOTE: parseFloat seems like a good idea but considers digits followed by non-digits as valid by only keeping the digits
+        if (this.cannotBeNumber(text))
+            return true;
+        return super.responsibleForThisText(dataTypeLookupKey, cultureId, text);
+    }
+
+    /**
+     * Determine if the text will never be considered a number during parsing.
+     * We want to give that to the parser and let it report an error.
+     * @param text 
+     * @returns 
+     */
+    protected cannotBeNumber(text: string): boolean
+    {
+        if (hasLetters(text))   // its possible to have currency in letters like $1.00USD. This isn't supported
+            return true;
+        const onlyOnceChars = (this.options.decimalSeparator ?? '') +
+            (this.options.negativeSymbol ?? '') + '()';
+        const alwaysLegalChars = onlyOnceChars +
+            (this.options.thousandsSeparator ?? '') +
+            ' ';    // spaces are always legal at this point
+        const allowedChars = alwaysLegalChars +
+            (this.options.currencySymbol ?? '') +
+            (this.options.percentSymbol ?? '');
+        if (!onlyTheseCharacters(text, allowedChars, '\\d'))
+            return true;
+        if (hasMultipleOccurances(text, onlyOnceChars))
+            return true;
+        const notBetweenDigits = (this.options.negativeSymbol ?? '') +
+            '()';
+        if (new RegExp('\\d[' + escapeRegExp(notBetweenDigits) + ']+\\d').test(text))
+            return true;
+        return false;
+    }
     /**
      * Expects the string to be:
      * optional minus (in group named "neg")

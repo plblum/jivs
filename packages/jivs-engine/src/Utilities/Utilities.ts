@@ -193,3 +193,15 @@ export function isSupportedAsValue(obj: any) {
         return false;
     return true;
 };
+
+export function hasLetters(source: string): boolean {
+    return /\p{L}/u.test(source);
+}
+export function onlyTheseCharacters(source: string, validChars: string, validRegExpSymbols: string): boolean {
+    const escapedValidChars = escapeRegExp(validChars);
+    return new RegExp(`[${escapedValidChars + validRegExpSymbols}]`).test(source);
+}
+export function hasMultipleOccurances(source: string, singleOccuranceChars: string): boolean {
+    const escapedChars = escapeRegExp(singleOccuranceChars);
+    return new RegExp(`([${escapedChars}]).*\\1`).test(source);
+}

@@ -3,7 +3,7 @@ import { InputValueHost, InputValueHostGenerator, toIInputValueHost } from "../.
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
-import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, IInputValueHostCallbacks, toIInputValueHostCallbacks } from "../../src/Interfaces/InputValueHost";
+import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, IInputValueHostCallbacks, toIInputValueHostCallbacks, SetInputValueOptions } from "../../src/Interfaces/InputValueHost";
 import {
     ValidationStatus, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions,
     BusinessLogicError
@@ -27,6 +27,10 @@ import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
+import { registerDataTypeParsers } from "../TestSupport/createValidationServices";
+import { IDataTypeParser } from "../../src/Interfaces/DataTypeParsers";
+import { CodingError } from "../../src/Utilities/ErrorHandling";
+import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -309,56 +313,36 @@ describe('InputValueHost.getInputValue', () => {
 });
 
 describe('setInputValue with getInputValue to check result', () => {
-    test('Value of "ABC", options is undefined. Sets value to "ABC" and does not validate. IsChanged is true', () => {
+    function testWithoutValidation(inputValue: any,
+        options: SetInputValueOptions| null | undefined): void
+    {
         let setup = setupInputValueHost();
+        setup.services.dataTypeParserService.enabled = false;
 
-        expect(() => setup.valueHost.setInputValue("ABC")).not.toThrow();
+        expect(() => setup.valueHost.setInputValue(inputValue, options!)).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.isChanged).toBe(true);
-        expect(setup.valueHost.getInputValue()).toBe("ABC");
+        expect(setup.valueHost.getInputValue()).toBe(inputValue);
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(1);
-        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe("ABC");
-        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);
+        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe(inputValue);
+        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);        
+    }
+    test('Value of "ABC", options is undefined. Sets value to "ABC" and does not validate. IsChanged is true', () => {
+        testWithoutValidation("ABC", undefined);
     });
     test('Value of "ABC", options is empty object. Sets value to "ABC" and does not validate', () => {
-        let setup = setupInputValueHost();
-
-        expect(() => setup.valueHost.setInputValue("ABC", {})).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
-        expect(setup.valueHost.isChanged).toBe(true);
-        expect(setup.valueHost.getInputValue()).toBe("ABC");
-        let changes = setup.validationManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
-        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe("ABC");
-        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);
+        testWithoutValidation("ABC", {});
     });
     test('Value of "ABC", options is null. Sets value to "ABC" and does not validate', () => {
-        let setup = setupInputValueHost();
-
-        expect(() => setup.valueHost.setInputValue("ABC", null!)).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
-        expect(setup.valueHost.isChanged).toBe(true);
-        expect(setup.valueHost.getInputValue()).toBe("ABC");
-        let changes = setup.validationManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
-        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe("ABC");
-        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);
+        testWithoutValidation("ABC", null);
     });
     test('Value of "ABC", options is { validate: false }. Sets value to "ABC" and does not validate', () => {
-        let setup = setupInputValueHost();
-
-        expect(() => setup.valueHost.setInputValue("ABC", { validate: false })).not.toThrow();
-        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
-        expect(setup.valueHost.isChanged).toBe(true);
-        expect(setup.valueHost.getInputValue()).toBe("ABC");
-        let changes = setup.validationManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
-        expect((<InputValueHostInstanceState>changes[0]).inputValue).toBe("ABC");
-        expect((<InputValueHostInstanceState>changes[0]).changeCounter).toBe(1);
+        testWithoutValidation("ABC", { validate: false });
     });
     test('Value of "ABC", options is { validate: true }. Sets value to "ABC" and validate (no Validators to cause Invalid, so result is Undetermined)', () => {
         let setup = setupInputValueHost();
+        setup.services.dataTypeParserService.enabled = false;
 
         expect(() => setup.valueHost.setInputValue("ABC", { validate: true })).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
@@ -374,6 +358,7 @@ describe('setInputValue with getInputValue to check result', () => {
     });
     test('Before calling, validate for ValidationStatus=Undetermined. Set value to 10 with options { Reset: true }. Expect value to be 20, IsChanged = false, and ValidationStatus to NotAttempted', () => {
         let setup = setupInputValueHost();
+        setup.services.dataTypeParserService.enabled = false;
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         setup.valueHost.validate();
@@ -385,23 +370,263 @@ describe('setInputValue with getInputValue to check result', () => {
     });
     test('ConversionErrorTokenValue supplied and is applied because native value is undefined', () => {
         let setup = setupInputValueHost();
+        setup.services.dataTypeParserService.enabled = false;
 
         expect(() => setup.valueHost.setInputValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
     });
     test('ConversionErrorTokenValue supplied and is ignored because native value is defined', () => {
         let setup = setupInputValueHost();
+        setup.services.dataTypeParserService.enabled = false;
         setup.valueHost.setValue('ABC');
         expect(() => setup.valueHost.setInputValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
     });    
     test('ConversionErrorTokenValue supplied in previous setValueToUndefined, and retained by SetInputValue despite not setting native value here', () => {
         let setup = setupInputValueHost();
+        setup.services.dataTypeParserService.enabled = false;
 
         setup.valueHost.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
 
         expect(() => setup.valueHost.setInputValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
+    });
+});
+describe('setInputValue with parser enabled to see both input value and native values are assigned', () => {
+    function testWithParser(inputValue: any,
+        nativeDataTypeLookupKey: string,
+        parserLookupKey: string | null | undefined,
+        parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
+        options: SetInputValueOptions| null | undefined,
+        expectedNativeValue: any
+        ): ITestSetupConfig
+    {
+        let ivh: InputValueHostConfig = {
+            name: 'Field1',
+            validatorConfigs: [],
+            dataType: nativeDataTypeLookupKey,
+            parserLookupKey: parserLookupKey,
+            parserCreator: parserCreator
+        }
+        let setup = setupInputValueHost(ivh);
+        registerDataTypeParsers(setup.services.dataTypeParserService);
+        setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
+
+        expect(() => setup.valueHost.setInputValue(inputValue, options!)).not.toThrow();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(setup.valueHost.getInputValue()).toBe(inputValue);
+        expect(setup.valueHost.getValue()).toBe(expectedNativeValue);     
+        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        return setup;
+    }
+    function testWithParserWithErrorMessage(inputValue: any,
+        nativeDataTypeLookupKey: string,
+        parserLookupKey: string | null | undefined,
+        parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
+        options: SetInputValueOptions| null | undefined
+        ): ITestSetupConfig
+    {
+        let ivh: InputValueHostConfig = {
+            name: 'Field1',
+            validatorConfigs: [],
+            dataType: nativeDataTypeLookupKey,
+            parserLookupKey: parserLookupKey,
+            parserCreator: parserCreator
+        }
+        let setup = setupInputValueHost(ivh);
+        registerDataTypeParsers(setup.services.dataTypeParserService);
+        setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
+
+        expect(() => setup.valueHost.setInputValue(inputValue, options!)).not.toThrow();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(setup.valueHost.getInputValue()).toBe(inputValue);
+        expect(setup.valueHost.getValue()).toBeUndefined();     
+        expect(setup.valueHost.getConversionErrorMessage()).toBeTruthy();
+        return setup;
+    }    
+    function testWithParserWhereErrorIsThrown(inputValue: any,
+        nativeDataTypeLookupKey: string,
+        parserLookupKey: string | null | undefined,
+        parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
+        options: SetInputValueOptions| null | undefined,
+        errorMsg: RegExp
+        ): ITestSetupConfig
+    {
+        let ivh: InputValueHostConfig = {
+            name: 'Field1',
+            validatorConfigs: [],
+            dataType: nativeDataTypeLookupKey,
+            parserLookupKey: parserLookupKey,
+            parserCreator: parserCreator
+        }
+        let setup = setupInputValueHost(ivh);
+        registerDataTypeParsers(setup.services.dataTypeParserService);
+        setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
+
+        expect(() => setup.valueHost.setInputValue(inputValue, options!)).toThrow(errorMsg);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(setup.valueHost.getInputValue()).toBeUndefined();
+        expect(setup.valueHost.getValue()).toBeUndefined();     
+        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        return setup;
+    }        
+    function testWithDisabledParser(inputValue: any,
+        nativeDataTypeLookupKey: string,
+        parserLookupKey: string | null | undefined, // when null, no parser
+        parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
+        options: SetInputValueOptions | null | undefined,    // when disableParser = true
+        isActiveParser: boolean = true  // when false, no parser
+        ): ITestSetupConfig
+    {
+        let ivh: InputValueHostConfig = {
+            name: 'Field1',
+            validatorConfigs: [],
+            dataType: nativeDataTypeLookupKey,
+            parserLookupKey: parserLookupKey,
+            parserCreator: parserCreator
+        }
+        let setup = setupInputValueHost(ivh);
+        setup.services.dataTypeParserService.enabled = isActiveParser;
+        registerDataTypeParsers(setup.services.dataTypeParserService);
+        setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
+
+        expect(() => setup.valueHost.setInputValue(inputValue, options!)).not.toThrow();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(setup.valueHost.getInputValue()).toBe(inputValue);    
+        expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        return setup;
+    }    
+// trims then appends '!' to show this function was applied
+    function parserFnTrimString(valueHost: IInputValueHost): IDataTypeParser<string>
+    {
+        return <IDataTypeParser<string>>{
+            supports(dataTypeLookupKey : string, cultureId: string, text: string): boolean {
+                return !dataTypeLookupKey || (dataTypeLookupKey === LookupKey.String);
+            },
+            parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+                return { value: text.trim() + '!' };
+            },
+        }
+    }
+    // converts to a number then adds 1 to show this function was applied.
+    function parserFnToNumber(valueHost: IInputValueHost): IDataTypeParser<number>
+    {
+        return <IDataTypeParser<number>>{
+            supports(dataTypeLookupKey : string, cultureId: string, text: string): boolean {
+                return !dataTypeLookupKey || dataTypeLookupKey === LookupKey.Number;
+            },
+            parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number> {
+                let num = parseFloat(text);
+                if (!isNaN(num))
+                    return { value: num + 1 };
+                
+                return { errorMessage: 'Invalid data type ' };
+            },
+        }
+    }    
+    function parserFnThrows(valueHost: IInputValueHost): IDataTypeParser<string>
+    {
+        return <IDataTypeParser<string>>{
+            supports(dataTypeLookupKey : string, cultureId: string, text: string): boolean {
+                return true;
+            },
+            parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+                throw new CodingError('ERROR');
+            },
+        }
+    }    
+
+    test('As a string with dataType=string, expecting to parse and update native value. The parser will be CleanupStringParser set only to trim. This parser does not encounter any errors', () => {
+        testWithParser('ABC', LookupKey.String, undefined, undefined, {}, 'ABC');
+        testWithParser(' ABC ', LookupKey.String, undefined, undefined, {}, 'ABC');     
+        testWithParser('ABC', LookupKey.String, LookupKey.String, undefined, {}, 'ABC');     
+        testWithParser('ABC', null!, LookupKey.String, undefined, {}, 'ABC');         
+        testWithParser('ABC', undefined!, LookupKey.String, undefined, {}, 'ABC');     
+        testWithParser('ABC', undefined!, LookupKey.String, undefined, { disableParser: false}, 'ABC');           
+        
+        testWithParser('ABC', LookupKey.String, undefined, parserFnTrimString, {}, 'ABC!');
+        testWithParser('ABC', undefined!, undefined, parserFnTrimString, {}, 'ABC!');
+        testWithParser(' ABC ', LookupKey.String, undefined, parserFnTrimString, {}, 'ABC!');     
+        testWithParser(' ABC ', undefined!, undefined, parserFnTrimString, {}, 'ABC!');     
+        testWithParser('ABC', LookupKey.String, LookupKey.String, parserFnTrimString, {}, 'ABC!');     
+        testWithParser('ABC', null!, LookupKey.String, parserFnTrimString, {}, 'ABC!');         
+        testWithParser('ABC', undefined!, undefined, parserFnTrimString, { disableParser: false }, 'ABC!');     
+        testWithParser('ABC', undefined!, LookupKey.String, parserFnTrimString, { disableParser: false}, 'ABC!');           
+    });
+    test('As a string representing a number with dataType=number, expecting to parse and update native value. None will generate errors', () => {
+        testWithParser('10', LookupKey.Number, undefined, undefined, {}, 10);
+        testWithParser(' 20 ', LookupKey.Number, undefined, undefined, {}, 20);     
+        testWithParser('30', LookupKey.Number, LookupKey.Number, undefined, {}, 30);        
+        testWithParser('30', null!, LookupKey.Number, undefined, {}, 30);           
+        testWithParser('30', undefined!, LookupKey.Number, undefined, {}, 30);                
+        testWithParser('30', undefined!, LookupKey.Number, undefined, { disableParser: false }, 30);
+
+        testWithParser('10', LookupKey.Number, undefined, parserFnToNumber, {}, 11);
+        testWithParser('10', undefined!, undefined, parserFnToNumber, {}, 11);
+        testWithParser(' 20 ', LookupKey.Number, undefined, parserFnToNumber, {}, 21);     
+        testWithParser(' 20 ', undefined!, undefined, parserFnToNumber, {}, 21);     
+        testWithParser('30', LookupKey.Number, LookupKey.Number, parserFnToNumber, {}, 31);        
+        testWithParser('30', null!, LookupKey.Number, parserFnToNumber, {}, 31);           
+        testWithParser('30', undefined!, LookupKey.Number, parserFnToNumber, { disableParser: false }, 31);                
+        testWithParser('30', undefined!, LookupKey.Number, parserFnToNumber, { disableParser: false }, 31);
+    });
+    test('As a string representing a number with dataType=integer, expecting to parse using fallback lookupkey and update native value. None will generate errors', () => {
+        testWithParser('10', LookupKey.Integer, undefined, undefined, {}, 10);
+        testWithParser(' 20 ', LookupKey.Integer, undefined, undefined, {}, 20);     
+        testWithParser('30', null!, LookupKey.Integer, undefined, {}, 30);        
+        testWithParser('30', undefined!, LookupKey.Integer, undefined, {}, 30);
+
+    });    
+    test('parserCreator is provided but its supports() will return false. The parserLookupKey or dataType will be used instead.', () => {
+        testWithParser('30', undefined!, LookupKey.Integer, parserFnToNumber, {}, 30);        
+        testWithParser('30', LookupKey.Integer, LookupKey.Integer, parserFnToNumber, {}, 30);        
+        testWithParser('30', LookupKey.Integer, undefined, parserFnToNumber, {}, 30);        
+    });
+
+    test('As a string that cannot parse to a number, but using datatype=number, reports an error', () => {
+        testWithParserWithErrorMessage('ABC', LookupKey.Number, undefined, undefined, {});
+        testWithParserWithErrorMessage('ABC', undefined!, LookupKey.Number, undefined, {});
+        testWithParserWithErrorMessage('ABC', LookupKey.Integer, undefined, undefined, {});
+        testWithParserWithErrorMessage('ABC', undefined!, LookupKey.Integer, undefined, {});   
+        testWithParserWithErrorMessage('ABC', undefined!, LookupKey.Number, parserFnToNumber, {});        
+    });
+
+    test('parserLookupKey = null disables parsing, resulting in just updating input value but no change to native value', () => {
+        testWithDisabledParser('ABC', LookupKey.String, null, undefined, {});   // parserLookupKey = null
+    });
+    test('parserCreator is setup and used despite parserLookupKey = null, resulting in just updating input value but no change to native value', () => {
+        testWithParser('ABC', LookupKey.String, null, parserFnTrimString, {}, 'ABC!');   
+    });    
+    test('option.disableParser=true disables parsing, resulting in just updating input value but no change to native value', () => {
+        testWithDisabledParser('ABC', LookupKey.String, undefined, undefined, { disableParser: true });
+        testWithDisabledParser('ABC', LookupKey.String, undefined, parserFnTrimString, { disableParser: true });
+    });   
+    test('option.duringEdit=true disables parsing, resulting in just updating input value but no change to native value', () => {
+        testWithDisabledParser('ABC', LookupKey.String, undefined, undefined, { duringEdit: true });
+        testWithDisabledParser('ABC', LookupKey.String, undefined, parserFnTrimString, { duringEdit: true });
+    });        
+    test('dataTypeParserService.enabled=false disables parsing, resulting in just updating input value but no change to native value', () => {
+        testWithDisabledParser('ABC', LookupKey.String, null, undefined, { }, false);  // parserservice disabled
+        testWithDisabledParser('ABC', LookupKey.String, null, parserFnTrimString, { }, false);  // parserservice disabled
+    });    
+    test('value is not a string disables parsing, resulting in just updating input value but no change to native value', () => {
+        testWithDisabledParser(10, LookupKey.Number, undefined, undefined, {}); // not a string
+        testWithDisabledParser(false, LookupKey.Number, undefined, undefined, {}); // not a string
+        testWithDisabledParser(new Date(), LookupKey.Number, undefined, undefined, {}); // not a string
+        testWithDisabledParser(10, LookupKey.Number, undefined, parserFnTrimString, {}); // not a string
+        testWithDisabledParser(false, LookupKey.Number, undefined, parserFnTrimString, {}); // not a string
+        testWithDisabledParser(new Date(), LookupKey.Number, undefined, parserFnTrimString, {}); // not a string
+    });    
+    test('Cases that throw exceptions', () => {
+        testWithParserWhereErrorIsThrown('ABC', undefined!, undefined, undefined, {}, /Cannot parse/);
+        testWithParserWhereErrorIsThrown('ABC', undefined!, undefined, parserFnThrows, {}, /ERROR/);
+        testWithParserWhereErrorIsThrown('10', LookupKey.Integer, undefined, (vh) => {
+            throw new CodingError('ERROR');  
+        }, {}, /ERROR/);        
     });
 });
 
@@ -556,7 +781,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
             }
         );        
 
-        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).not.toBeNull();
+        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'InputValueHost')).not.toBeNull();
     });
     test('1 condition exists and it is not a DataTypeCheck category. DataTypeCheckCondition gets added', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -608,7 +833,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         );
 
 
-        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).not.toBeNull();
+        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'InputValueHost')).not.toBeNull();
     });
     test('1 condition and it is an actual DataTypeCheckCondition. No DataTypeCheckCondition gets added.', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -796,7 +1021,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                 corrected: false
             });        
 
-        expect(logger.findMessage('PhoneNumber Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).not.toBeNull();
+        expect(logger.findMessage('PhoneNumber Condition for Data Type Check', LoggingLevel.Info, null, null)).not.toBeNull();
     });
 
 });
@@ -1036,6 +1261,11 @@ describe('toIInputValueHost function', () => {
         getConversionErrorMessage(): string | null {
             throw new Error("Method not implemented.");
         }
+        
+        getParserLookupKey(): string | null | undefined
+        {
+            throw new Error("Method not implemented.");
+        }        
         requiresInput: boolean = false;
         getName(): string {
             throw new Error("Method not implemented.");

@@ -43,18 +43,19 @@ libraries of many types, including other schema validation services and internat
 - **What Jivs Excels At:** Its forte is value validation. This distinct focus from UI concerns allows for flexible UI development on any framework, such as React, which requires a unique approach to HTML manipulation. We plan to support both standard DOM and React-specific libraries.
 - **What Jivs Lacks:** As of this writing, only the core library Jivs-engine is offered. I hope to surround it with UI libraries, and support third party libraries that offer much of the tooling you use.
 - **Not Just for Browsers:** Despite seeming browser-centric, server-side validation is critical to prevent tampered data and address server-specific validations. Jivs supports this on Node.js, enabling consistent validation rules across client and server.
-- **Code Effort:** While using Jivs involves coding, it’s basically what you would have to write anyway. Some of your coding work with or without Jivs:
-	- **Defining validation rules:** Jivs encourages business logic-driven validation, independent of UI. It has a large library of rules already, and makes it easy to add new ones through your code.
-	- **Data conversion with a model:** Managing the conversion between model properties and UI representations, like converting a Date object in the model to a string for an \<input> field, is up to you. Jivs doesn't intrude here.
+- **Code Effort:** While using Jivs involves coding, it covers many cases that you normally have to write.
+
+    Here are some facets of building validation and how Jivs participates:
+	- **Defining validation rules:** Jivs has a large library of rules already, and makes it easy to add new ones through your code.
+	- **Business logic driven validation:** Using your business logic code to establish fields and their validation rules. Jivs needs you to write a conversion class to translate your rules into Jivs format. This is likely the biggest coding task. (You don't have to use business logic code for rules, but its best practice.)
+    - **Error messages:** Validation works best with meaningful and relevant error messages. Jivs has this covered in many ways: localization, library for each validation rule's message, in-message tokens that will be replaced by live data using localized formatting rules.
+    - **Converting input values:** Jivs provides parsers to convert the textual input into the native value needed by the model. 
 	- **Managing save attempts:** Jivs aids in handling errors, whether from UI or business logic, facilitating the delivery of additional messages and error handling
--  **Coding Style:** Jivs is built using modern OOP patterns. Expect single responsibility objects, dependency injection, and strong separation of concerns.
-	- Benefits: 
-		- Most aspects of Jivs is expandable due to use of interfaces and dependency injection.
-		- Easy to extend the existing business rule objects ("Conditions") to work with special cases, like comparing two Date objects but only by their day of week.
-		- UI development is mostly unaware of the validation rules supplied by business logic.
-	- Weaknesses:
-		- OOP APIs are more demanding on coding. If you want the smallest, tightest code, OOP APIs aren't ideal.
-		- It's built using TypeScript and naturally supports your work in TypeScript. If you prefer JavaScript alone, you will not benefit from IDE support when creating objects.
+-  **Coding Style:** Jivs is built using modern OOP patterns. Expect TypeScript interfaces, single responsibility objects, dependency injection, and strong separation of concerns.
+	- Most aspects of Jivs is expandable due to use of interfaces and dependency injection.
+	- Easy to extend the existing business rule objects ("Conditions") to work with special cases, like comparing two Date objects but only by their day of week.
+	- UI development is mostly unaware of the validation rules supplied by business logic. It just knows that it is managing a field that may be validated, and provides the UI for the elements that report validation. Jivs supplies it with the validation status and error messages.
+
 
 ### Features
 
@@ -85,6 +86,7 @@ libraries of many types, including other schema validation services and internat
 		+ Validators have the "Enabler" feature which is a way to turn themselves off when they no longer need to participate. For example, unless a checkbox is marked, an associated text box will not report errors.
 		+ If the user has edited a field and it has yet to be validated, the form reports "do not save", helping prevent form submission without validation.
 - Handling submitting data:
+	- When submitting HTML form data, the server gets strings representing the data that need to be converted into their native values (like a string with a date into a Date object). Jivs provides parsers to handle this.
 	-	The "do not save" feature provides a clear way to write code that prevents unvalidated and invalid data from being submitted.
 	-	Business logic must also validate the Model before saving, covering other *use cases*:
 		+	Validation must occur on the server side to prevent hacked data coming through the UI. If your server side is run within Node.js, you can include the same code as used on the client.
@@ -93,6 +95,7 @@ libraries of many types, including other schema validation services and internat
 - Jivs provides built-in support for common data types—number, string, Boolean, and date—and accommodates unique usage scenarios through extensive customizability:
 	- Formatter customization: Tailor how values are displayed to users, with localization. For instance, configure error messages to show dates in an abbreviated format rather than a short date format.
 	- Converter customization: Adjust the data under validation to fit various contexts, such as interpreting a JavaScript Date object in multiple ways—anniversary, expiry, total days, date with time, or time alone.
+	- Parser customization: Transform the strings from your inputs and form data into their native types in your own way, with localization. 
 	- Identifier customization: Integrate custom objects to be treated as standard data types, enabling complex comparisons. An object denoting "tomorrow" or "next month" can be identified as a Date for comparison purposes.
 	- Comparer customization: Supports Conditions that compare two values so they can handler your non-standard data types. 
 - Jivs includes a logging object to help you diagnose issues.
@@ -124,12 +127,14 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 
 <img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
 
+<a name="wheretousevalidation"></a>
 ## Where you want to use validation
-
+<a name="focusleavesinput"></a>
 ### As focus leaves an Input and its value changed
 * Use the onchange event to tell the ValidationManager about the data change and run validation. 
 	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
-	* Use `validationManager.vh.input('name').setValues(native, input, { validate: true});`
+	* Jivs lets you assign a parser to each InputValueHost. Just use: `validationManager.vh.input('name').setInputValue(inputValue, { validate: true });`
+	* If you want to handle parsing elsewhere, use `validationManager.vh.input('name').setValues(native, input, { validate: true });`
 * The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
@@ -184,7 +189,15 @@ function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidat
   }
 }
 ```
-This code sets up the onchange event.
+This code sets up the onchange event with built-in parsing:
+```ts
+let firstNameFld = document.getElementById('FirstName');
+firstNameFld.attachEventListener('onchange', (evt)=>{
+  let inputValue = evt.target.value;
+  vm.vh.input('FirstName').setInputValue(inputValue, { validate: true });
+});
+```
+This code sets up the onchange event with your own parsing:
 ```ts
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=>{
@@ -204,10 +217,10 @@ All of the prior setup still applies. Here we add the oninput event handler:
 ```ts
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('oninput', (evt)=>{
-  vm.vm.input('FirstName').setInputValue(evt.target.value, { validate: true, duringEdit: true });
+  vm.vh.input('FirstName').setInputValue(evt.target.value, { validate: true, duringEdit: true });
 });
 ```
-### When the user submits the data
+### When the user submits the data - client side handling
 The ValidationManager should already have all changed values captured due to onchange events on your Inputs. 
 
 Run validation and proceed with submission if data is valid.
@@ -218,19 +231,39 @@ if (status.doNotSave)
 else
   // Submit the page's data
 ```
-### Server side with data submitted from an HTML \<form>
-The HTML form data starts as strings. Ultimately, its values should populate a Model, but that requires converting the strings to data types expected by properties on the Model. 
+### Submit data to the server
+There are several implementations for handling data submission, but all require validating all data before saving. (Otherwise hackers can push data to your server easily.)
 
-> If your server is Node.js, you can use Jivs to do most of the work.
+The overall steps are:
 
-* Convert each form element into its native value. 
-	* Capture all conversion errors. They indicate validation failure, but go through all of the fields first.
-	* For any successful conversions, assign them to a Model that you are preparing to save.
-* Validate the Model with your business logic. Capture any errors it finds.
-* If there are no errors, save the Model.
-* With errors, do not save. Instead, supply the captured errors to the client-side to report to the user through Jivs.
-* Back on the client-side, gather the errors and create `BusinessLogicError objects` from them. Then call `ValidationManager.setBusinessLogicErrors()`.
+1. Validate the data, gathering issues found.
+2. If there were no issues, save the data.
+3. If there were issues, do not save. Instead, pass the issues back to the client so Jivs can show them.
+
+**Step 1** is where we find different implementations.
+- Data is from an HTML \<form> - Form data is all strings. They need to be converted to the native values that you save. Conversion may identify errors. If no errors there, then apply validation.
+- Data is from JSON - A JSON string converter can convert some data to its native values. Where it cannot, provide a converter. 
+
+Jivs can assist when you have Node.js on the server. Otherwise, the work is up to you.
+
+**Step 2** is up to you.
+
+<a name="submitstep3"></a>
+**Step 3** has a server and client side implementation.
+
+On the server side, create a JSON representation of the issues found. If you use Jivs own `BusinessLogicError interface`, you will reduce the work on the client side.
 ```ts
+interface BusinessLogicError {
+    errorMessage: string;
+    associatedValueHostName?: string;
+    severity?: ValidationSeverity;
+    errorCode?: string;
+}
+```
+On the client side, gather the data, an make sure it is an array of BusinessLogicError objects. Call `ValidationManager.setBusinessLogicErrors()`.
+
+```ts
+// this converts from a different data format into BusinessLogicError objects
 let errors = myServerSideErrors();	// your code
 let blErrors: Array<BusinessLogicError> = [];
 for (let i = 0; i < errors.length; i++)
@@ -240,16 +273,77 @@ for (let i = 0; i < errors.length; i++)
     errorMessage: error.myErrorMessage,
     errorCode: myMapToErrorCode(error), // optional. Try to match up to a known client-side error code or Condition Type to get the UI's error messages
     associatedValueHostName: myMapToValueHostName(error)  // optional. Jivs will update the actual field, not just the ValidationSummary
-  };
-  blErrors.push(blError);
+   };
+   blErrors.push(blError);
 }
-
+	
 vm.setBusinessLogicErrors(blErrors);	// will notify the UI's validation elements
 ```
-### Server side with data submitted in a Model via API call
-Similar to the HTML \<form> except that your Model is already formed with native values, eliminating any of the conversion errors. However, all of the business logic validation rules must still be checked against the native values.
+<a name="nodejsserver"></a>
+### Using Jivs on a Node.js server
+#### Data is from an HTML \<form>
+The HTML form data starts as strings. Convert each form element into its native value.
 
-Jump to the previous section and follow the instructions after the conversion steps.
+- Using built-in parsing:
+  * Ensure you have setup appropriate DataTypeParser objects in the services. See <a href="#validationservices">Setup services</a>.
+  * Ensure that each ValueHost is an InputValueHost and has its InputValueHostConfig.dataType property assigned. dataType will serve to lookup the DataTypeParser. However, if the parser uses a different Lookup Key, set it on the InputValueHostConfig.parserLookupKey property.
+  * Pass the string value from the form data into the InputValueHost: 
+	  ```ts
+	  vm.vh.input('FirstName').setInputValue(formValue);
+	  ```
+- Using your own parsing:
+  * Ensure that each ValueHost is an InputValueHost and has its InputValueHostConfig.dataType property assigned.
+  * Parse - for you to implement. Just need to get back either the native value or an error message.
+	```ts
+	let { nativeValue, errorMessage } = myParser(text); 
+	```
+
+  * If there are no errors, pass both the input value and native value into the InputValueHost:
+	```ts
+	vm.vh.input('FirstName').setValues(nativeValue, inputValue);
+	```
+  * If there are errors, pass *undefined* for the native value, the input value, and the error message into the InputValueHost: 
+	```ts
+	vm.vh.input('FirstName').setValues(undefined, inputValue, { conversionErrorTokenValue: errorMessage });
+	```
+	
+Continue below <a href="#nodejsvalidate">"Validation and either save or handle errors"</a>.
+#### Data is in JSON
+Upon converting a JSON string into an object, you can pass along each property to the associated ValueHost.
+We recommend using InputValueHost over PropertyValueHost in case there are strings that need parsing.
+```ts
+vm.vh.input('FirstName').setValue(nativeValue);
+```
+
+There remain several cases that involve parsing, and for those, use the instructions in the previous section.
+- You know the field's value is incompatible with the native value without running a parser on it. For example, you know the JSON property contains a string representation of the number you need.
+- The field's value is a string, but it must be cleaned up through parsing, before its value is allowed to be saved.
+
+<a name="nodejsvalidate"></a>
+#### Validate and either save or handle errors
+* Validate using `validationManager.validate()`. Capture any errors it finds from `validationManager.getIssuesFound()`.
+* Also run your business logic validation against the model for cases not covered by input level validators. Capture any errors it finds.
+* If there are no errors, save the data.
+* With errors, do not save. Instead, supply the captured errors to the client-side to report to the user through Jivs. See <a href="#nodejsvalidate">above, step 3</a>.
+```ts
+let status = vm.validate();
+let businessLogicErrors = myBusinessLogicValidation();	// you write this.
+if (status.doNotSave || businessLogicErrors) {
+  // Gather the issues found and deliver them to the client-side
+  sendErrorsBack(vm.getIssuesFound(), businessLogicErrors); // you write sendErrorsBack()
+}
+else {
+  // Data can be saved.
+  // If you don't already have a populated model, 
+  // you might create Model and transfer values from each ValueHost like this:
+  let model = new PersonModel();
+  model.FirstName = vm.vh.input('FirstName').getValue();
+  model.LastName = vm.vh.input('LastName').getValue();
+  
+  // Save the data.
+  repository.update(model);	// your code
+}
+```
 
 ### Showing all errors in a ValidationSummary
 The term "ValidationSummary" refers to a location in the UI that offers a consolidated view of all error messages. Aside from how its presented, it is very similar to showing errors specific to one field, except it shows all errors and updates upon any ValueHost's validation.
@@ -257,7 +351,8 @@ The term "ValidationSummary" refers to a location in the UI that offers a consol
 You need these tools to setup your ValidationSummary:
 * An HTML element to host the ValidationSummary.
 * A function that responds to the `onValidationStateChanged callback` on the ValidationManager. This function will gather the data and update the ValidationSummary.
-* Use the `getIssuesFound()` function on ValidationManager to retrieve those issues.
+* Use the `getIssuesFound()` function on ValidationManager to retrieve those issues. 
+>You will get issues generated by your business logic too with `ValidationManager.setBusinessLogicErrors()`.
 
 We've modified the original example to provide a \<div> used for the ValidationSummary. It is shown outside of the \<form> but can be inside, and can be offered in multiple locations too:
 ```ts
@@ -414,6 +509,7 @@ You will be working with classes and interfaces. Here are the primary pieces to 
 	- `IDataTypeConverter` – For these use cases:
 		+ Changing an object value into something as simple as a string or number for Conditions that compare values. The JavaScript Date object is a good example, as you should use its getTime() function for comparisons.
 		+ Changing a value to something else. Take the Date object again. Instead of working with its complete date and time, you may be interested only in the date, the time, or even parts like Month or Hours.
+	- `IDataTypeParser` – For converting the input value into a native value, ready for validation. A parser can detect an error and report it for a validator to show. Parsers are localizable.
 	- There are also `IDataTypeCheckGenerator`, `IDataTypeComparer`, and `IDataTypeIdentifier` to cover some special cases.
 	- `ConditionFactory` – Creates the Condition objects used by business rules.
 
@@ -644,6 +740,8 @@ interface InputValueHostConfig extends ValueHostConfig
 {
   valueHostType: 'Input',	// shown here for documentation purposes
   validatorConfigs: ValidatorConfig[] | null;
+  parserLookupKey?: string;
+  parserCreator?: (valueHost) => IDataTypeParser | null;
   group?: string | Array<string> | null;
 }
 }
@@ -979,6 +1077,7 @@ A Lookup Key is very powerful! It connects up with these behaviors:
 - <a href="#datatypeconverter">Converters</a>
 - <a href="#datatypeformatter">Formatters</a>
 - <a href="#datatypecomparer">Comparers</a>
+- <a href="#datatypeparser">Parsers</a>
 - <a href="#datatypecheckgenerator">DataTypeCheckGenerators</a>
 
 Let's look at each.
@@ -1051,6 +1150,47 @@ To override it, such as using the abbreviated date format, include the Lookup Ke
 Jivs provides these formatters: "ShortDate", "AbbrevDate", "AbbrevDOWDate" (adds day of week), "LongDate", "LongDOWDate" (adds day of week), "TimeOfDay" (omits seconds), "TimeOfDayHMS", "Integer", "Currency", "Percentage" (where 1.0 = 100%), "Percentage100" (where 100 = 100%), "Uppercase", "Lowercase", "Boolean" (say "True" and "False" for boolean values) and "YesNoBoolean" (say "Yes" or "No" for boolean values).
 
 [See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+
+#### Building your own
+See [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts).
+
+Also [https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/DataTypes/DataTypeFormatters.ts](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/DataTypes/DataTypeFormatters.ts).
+
+<a name="datatypeparser"></a>
+### Parsers
+Convert from the input value into the native value with implementations of `IDataTypeParser`. They can report problems with the input value, and their error can be shown in a validation error message.
+
+Parsers are used:
+* only on InputValueHosts, when calling `InputValueHost.setInputValue()`. 
+	* In the client-side in response to the onchange event of a form \<input>.
+	* In the node.js server that uses Jivs to validate. See <a href="#nodejsserver">Validation in Node.Js</a>.
+* when the input value is a string (even if the native value is also a string)
+* automatically, so long as a `IDataTypeParser` is setup for the lookup key assigned to InputValueHostConfig.dataType or InputValueHostConfig.parserLookupKey. Alternatively, pass a function to create the parser in InputValueHostConfig.parserCreator.
+
+#### Error reporting
+Jivs has been designed so that you have a parser do very limited error reporting, leaving most cases to validators. Suppose that your native value is expected to be a positive integer. Our NumberParser will convert the input into a number, including negatives and floating point. You add two Validators with these conditions: PositiveCondition and IntegerCondition. This lets you supply specific error messages to the user.
+
+Number parser may report "Expecting a number" if it encounters "ABC". It converts "1.0", "-2", "3,201.40" and others that have the culture's currency and percent symbols. So your native value is 1, -2, or 3201.4.
+The PositiveCondition's error message might say "Negative numbers are not allowed."
+The IntegerCondition's error message might say "Must be an integer."
+
+#### String clean up 
+When the native type is a string, the input value may need to be changed if it's what you intend to save. Trimming lead and trailing whitespace is almost always used on Inputs. As a result, our CleanUpStringParser is already registered to trim all ValueHosts with a data type lookup key of LookupKey.String.
+
+A phone number often has culture specific formatting, but in the end, you intend to store it in a fixed format, such as +\[country code] \[all digits of the phone number without formatting]. Use a Parser to deliver this, only reporting an error when the input is severely inappropriate.
+
+"(800)204-9000" -> "+1 8002049000"
+
+"+44 7911 123456" -> "+44 7911123456"
+
+"ABC" -> error message
+
+The CleanUpStringParser has numerous configuration options that together may deliver the desired format. 
+
+#### Building your own
+See [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts).
+
+Also [https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/DataTypes/DataTypeParserBase.ts](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/DataTypes/DataTypeParserBase.ts) and [https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/DataTypes/DataTypeParsers.ts](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/DataTypes/DataTypeParsers.ts).
 <a name="datatypecomparer"></a>
 ### Comparers
 Staying with the "single responsibility pattern", Jivs recommends that you use its comparison Conditions (Range, Equal, NotEqual, LessThan, etc) for all data types. It already knows how to handle comparing strings, numbers, dates and booleans. It does so with implementations of IDataTypeComparer. It also uses the Converters to get a Date, number or string from the value. So its pretty unusual to need to provide your own Comparer class. But its here if you need it.
@@ -1665,6 +1805,8 @@ lastNameVH.setValues(25, "25");
 // or
 vm.vh.input("Age").setValues(25, "25");
 ```
+Use `setInputValue()` when you have parsers setup, as they will convert and save the native value for you. See <a href="#wheretousevalidation">Where you want to use validation</a>.
+
 Both functions have an options parameter. See the previous section for its definition.
 ### Getting the value
 Use `getValue()` to get the value from any ValueHost. For an InputValueHost, it returns the native value. The `evaluate()` function of Conditions use this to gather data. If you are reassembling a Model from the ValidationManager, use it there too.

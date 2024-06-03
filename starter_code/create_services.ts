@@ -397,6 +397,8 @@ export function registerDataTypeComparers(dtcs: DataTypeComparerService): void
  * @param dtps 
  */
 export function registerDataTypeParsers(dtps: DataTypeParserService): void {
+    dtps.enabled = true;
+    
 // Register DataTypeParsers the app will use, including adding your own
 // The order registered is the order used for matching lookup keys.
 
@@ -462,7 +464,7 @@ export function registerDataTypeParsers(dtps: DataTypeParserService): void {
         percentSymbol: '%'
     };
 
-    function regNumbersFor(cultureIDs: Array<string>, cultureInfo: NumberCultureInfo): void {
+    function registerNumbersFor(cultureIDs: Array<string>, cultureInfo: NumberCultureInfo): void {
         // for LookupKey.Number
         dtps.register(new NumberParser(cultureIDs, cultureInfo));
         // for LookupKey.Currency
@@ -473,12 +475,12 @@ export function registerDataTypeParsers(dtps: DataTypeParserService): void {
         dtps.register(new Percentage100Parser(cultureIDs, cultureInfo));
     }
 
-    regNumbersFor(['en-US', 'en-MX', 'es-MX', 'en'], enUSNumbers);
-    regNumbersFor(['en-CA'], enCANumbers);
-    regNumbersFor(['en-GB'], enGBNumbers);
-    regNumbersFor(['fr-FR', 'fr'], frFRNumbers);
-    regNumbersFor(['fr-CA'], frCANumbers);
-    regNumbersFor(['es-ES', 'de-DE', 'es', 'de'], esESNumbers);
+    registerNumbersFor(['en-US', 'en-MX', 'es-MX', 'en'], enUSNumbers);
+    registerNumbersFor(['en-CA'], enCANumbers);
+    registerNumbersFor(['en-GB'], enGBNumbers);
+    registerNumbersFor(['fr-FR', 'fr'], frFRNumbers);
+    registerNumbersFor(['fr-CA'], frCANumbers);
+    registerNumbersFor(['es-ES', 'de-DE', 'es', 'de'], esESNumbers);
 
 // --- DateTimes ------
     // 'US'
@@ -504,14 +506,14 @@ export function registerDataTypeParsers(dtps: DataTypeParserService): void {
     }
 
     let usingUTCForDates = true;    // set to false if using local time for dates
-    function regDateTimesFor(cultureIDs: Array<string>, cultureInfo: DateTimeCultureInfo): void {
+    function registerDateTimesFor(cultureIDs: Array<string>, cultureInfo: DateTimeCultureInfo): void {
         dtps.register(new ShortDatePatternParser(LookupKey.Date, cultureIDs, cultureInfo, usingUTCForDates));
         dtps.register(new ShortDatePatternParser(LookupKey.ShortDate, cultureIDs, cultureInfo, usingUTCForDates));
     }
 
-    regDateTimesFor(['en-US', 'es-US'], enUSDateTimes);
-    regDateTimesFor(['en-CA'], enCADateTimes);
-    regDateTimesFor(['en-GB', 'fr-FR', 'fr-CA', 'es-MX', 'es-ES', 'de-DE'], enGBDateTimes);
+    registerDateTimesFor(['en-US', 'es-US'], enUSDateTimes);
+    registerDateTimesFor(['en-CA'], enCADateTimes);
+    registerDateTimesFor(['en-GB', 'fr-FR', 'fr-CA', 'es-MX', 'es-ES', 'de-DE'], enGBDateTimes);
 
 // --- booleans -----------
     // If you post back form input of type='checkbox', it needs the boolean parser.

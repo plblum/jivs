@@ -14,6 +14,16 @@ import { DataTypeResolution, IDataTypeService } from './DataTypes';
 export interface IDataTypeParserService extends IDataTypeService
 {
     /**
+     * Returns true if enabled and there is at least one parser registered.
+     * Used by InputValueHost.setInputValue instead of enabled.
+     */
+    isActive(): boolean;
+    /**
+     * Determines if the Parser service is active. When false, do not call parse().
+     */
+    enabled: boolean;
+
+    /**
      * Parse the text supplied, attempting to create another value from it that will be returned.
      * The new value may be a different data type, 
      * whether primitive or an object that you have registered with DataTypeIdentifier.

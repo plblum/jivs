@@ -138,6 +138,7 @@ export class MockInputValueHost extends MockValueHost
 
     _inputValue: any = undefined;
     _conversionErrorMessage: string | undefined;
+    _parserLookupKey: string | null | undefined;
 
     public override setValue(value: any, options?: SetValueOptions | undefined): void {
         super.setValue(value, options);
@@ -199,7 +200,10 @@ export class MockInputValueHost extends MockValueHost
     {
         return this._conversionErrorMessage ?? null;
     }
-
+    public getParserLookupKey(): string | null | undefined
+    {
+        return this._parserLookupKey;
+    }
     requiresInput: boolean = false;
     
     otherValueHostChangedNotification(valueHostNameThatChanged: string, revalidate: boolean): void {

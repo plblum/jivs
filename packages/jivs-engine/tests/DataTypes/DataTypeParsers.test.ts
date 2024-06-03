@@ -5,6 +5,7 @@ import {
 } from '../../src/DataTypes/DataTypeParserBase';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
+import { MockValidationServices } from '../TestSupport/mocks';
 import {
     BooleanParser, CleanUpStringParser, CurrencyParser, EmptyStringIsFalseParser, NumberParser,
     Percentage100Parser, PercentageParser, ShortDatePatternParser
@@ -107,7 +108,25 @@ describe('DataTypeParserBase', () => {
         const result = parser.parse(text, 'lookupKey', 'en-US');
         expect(result.value).toBe('');
     });
+    test('Services that are unassigned throw', () => {
+        let testItem = new TestDataTypeParserBase('lookupKey', {});
+        let x: any;
+        expect(() => x = testItem.services).toThrow(/Register/);
+    });
+    test('Services to return same ValidationService as assigned', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestDataTypeParserBase('lookupKey', {});
+        expect(() => testItem.services = services).not.toThrow();
+        expect(testItem.services).toBe(services);
+    });
 
+    test('dispose then get services throws TypeError', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestDataTypeParserBase('lookupKey', {});
+        testItem.services = services;
+        testItem.dispose();
+        expect(()=> testItem.services).toThrow(TypeError);
+    });    
 });
 
 describe('CleanUpStringParser', () => {
@@ -578,7 +597,8 @@ describe('NumberParserBase', () => {
         {
             decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: ',',
             currencySymbol: '$', percentSymbol: '%' // these are ignored, the stripTheseStrings parameter is used instead
-         }, ['%', '$']);
+            }, ['%', '$']);
+        // values that can be seen as numbers, after cleanup
         expect(testItem.supports('KEY', 'en', '1')).toBe(true);
         expect(testItem.supports('KEY', 'en', '-1')).toBe(true);
         expect(testItem.supports('KEY', 'en', '(1)')).toBe(true);
@@ -606,12 +626,29 @@ describe('NumberParserBase', () => {
         expect(testItem.supports('KEY', 'en', '1,000.99')).toBe(true);
         expect(testItem.supports('KEY', 'en', '(1')).toBe(true);
         expect(testItem.supports('KEY', 'en', '1)')).toBe(true);
+        // empty string cases use default empty string
+        expect(testItem.supports('KEY', 'en', '')).toBe(true);     
+        expect(testItem.supports('KEY', 'en', '  ')).toBe(true);    
 
+        // values that cannot be numbers are still supported, and later rejected by parse()
+        expect(testItem.supports('KEY', 'en', 'A1')).toBe(true);    
+        expect(testItem.supports('KEY', 'en', 'ABC')).toBe(true);      
+        expect(testItem.supports('KEY', 'en', '1..5')).toBe(true);      
+        expect(testItem.supports('KEY', 'en', '.1.5')).toBe(true);  
+        expect(testItem.supports('KEY', 'en', '(1.5(')).toBe(true);  
+        expect(testItem.supports('KEY', 'en', ')1.5)')).toBe(true);  
+        expect(testItem.supports('KEY', 'en', '--1.5')).toBe(true);          
+        expect(testItem.supports('KEY', 'en', '-1.5-')).toBe(true);        
+        expect(testItem.supports('KEY', 'en', '1-5')).toBe(true);         
+        expect(testItem.supports('KEY', 'en', '1(5')).toBe(true);  
+        expect(testItem.supports('KEY', 'en', '1)5')).toBe(true);
+        expect(testItem.supports('KEY', 'en', 'USD $1.00')).toBe(true); 
+        expect(testItem.supports('KEY', 'en', '$1.00USD')).toBe(true);   
+        expect(testItem.supports('KEY', 'en', 'USD1.00')).toBe(true);         
+        // non-value parameters that don't match
         expect(testItem.supports('WRONGKEY', 'en', '1')).toBe(false);
         expect(testItem.supports('KEY', 'fr', '1')).toBe(false);
-        expect(testItem.supports('KEY', 'en', 'A1')).toBe(false);    
-        expect(testItem.supports('KEY', 'en', '1..5')).toBe(false);      
-        expect(testItem.supports('KEY', 'en', '.1.5')).toBe(false);            
+          
     });    
 
     test('parse() with number without thousands separators and characters to strip', () => {
@@ -633,7 +670,25 @@ describe('NumberParserBase', () => {
         expect(testItem.parse('1%', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
         expect(testItem.parse('$-1', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
         expect(testItem.parse('-1%', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+
+        expect(testItem.parse('', 'KEY', 'en')).toEqual({ value: 0 }); // default for empty
+        expect(testItem.parse('  ', 'KEY', 'en')).toEqual({ value: 0 });
         
+        expect(testItem.parse('A1', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('ABC', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('1..5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('.1.5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('(1.5(', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse(')1.5)', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('--1.5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('-1.5-', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('1-5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('1(5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('1)5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('1 5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('$1.50USD', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('USD $1.50', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('USD1.50', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
     });
     test('parse() with stripTheseStrings containing an array', () => {
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
@@ -657,7 +712,7 @@ describe('NumberParserBase', () => {
         expect(testItem.parse('1,000,388', 'KEY', 'en' )).toEqual({ value: 1000388 });
         expect(testItem.parse('1.5', 'KEY', 'en' )).toEqual({ value: 1.5 });
         expect(testItem.parse(' 1 ', 'KEY', 'en')).toEqual({ value: 1 });
-        expect(testItem.parse('-1-', 'KEY', 'en')).toEqual({ value: -1 });
+
         expect(testItem.parse('(1)', 'KEY', 'en')).toEqual({ value: -1 });    
         
         expect(testItem.parse(' 1.5 ', 'KEY', 'en')).toEqual({ value: 1.5 });
@@ -675,8 +730,9 @@ describe('NumberParserBase', () => {
         expect(testItem.parse('(1', 'KEY', 'en')).toEqual({ value: 1 });
         expect(testItem.parse('1)', 'KEY', 'en')).toEqual({ value: 1 });
  
-        expect(testItem.parse('KEY', 'en', '1..5')).toEqual({ errorMessage: NumberParserBase.badNumberMessage});      
-        expect(testItem.parse('KEY', 'en', '.1.5')).toEqual({ errorMessage: NumberParserBase.badNumberMessage});            
+        expect(testItem.parse('1..5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('.1.5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('-1-', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });        
     });    
     test('parse() with stripTheseStrings containing a string', () => {
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
