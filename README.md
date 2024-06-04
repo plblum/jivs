@@ -1072,6 +1072,24 @@ You *must* assign dataType to the name of a data type when the data is not a str
 
 We use the term "Lookup Key" when specifying the name of a data type. Please [see this page](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all supplied with Jivs and how they are used.
 
+Here are some use cases for creating your own Lookup Key:
+- Enumerated types, where the user sees text but the value is stored as a number. Check out [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts) to get supporting code and see how to use it.
+	+ Parsing, from string to number
+	+ Formatting, from number to string in an error message
+- String values that have a strong pattern, like a phone number.
+	+ Parsing, to clean up the user's input into the text that you want to store
+	+ Formatting, to format the text you have stored
+	+ Validating, using a Regular Expression. 
+	+ Auto generating data type check validators
+- Extracting some data from the native value, like the day of week from a Date object.
+	+ Converting, to get the Date.day property.
+- A class that you store as a single entity, like class NumberWithUnits { value: number, units: string }
+	+ Identifing, to recognize your class
+	+ Converting, to get a value you can use in comparing, such as the NumberWithUnits.value.
+	+ Comparing, to compare two instances of the same class
+	+ Formatting, to show the current value in an error message
+	+ Parsing, to convert user input into your class.
+
 A Lookup Key is very powerful! It connects up with these behaviors:
 - <a href="#datatypeidentifier">Identifiers</a>
 - <a href="#datatypeconverter">Converters</a>
