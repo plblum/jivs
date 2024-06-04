@@ -162,8 +162,20 @@ describe('constructor and resulting property values', () => {
         let testItem = setup.valueHost;
 
         expect(testItem.getLabel()).toBe('*-Label1');
-
     });
+    test('constructor with Config.labell10n setup but not in the textlocalizer and no value in config.label. GetLabel results in empty string', () => {
+        let setup = setupValueHost({
+            labell10n: 'Label1-key',
+            label: undefined
+        });
+        let tls = setup.services.textLocalizerService as TextLocalizerService;
+        tls.register('Different-key', {
+            '*': '*-Label1'
+        });
+        let testItem = setup.valueHost;
+
+        expect(testItem.getLabel()).toBe('');
+    });    
     test('constructor with null in each parameter throws', () => {
 
         let services = new MockValidationServices(false, false);

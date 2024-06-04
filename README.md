@@ -52,7 +52,7 @@ libraries of many types, including other schema validation services and internat
     - **Converting input values:** Jivs provides parsers to convert the textual input into the native value needed by the model. 
 	- **Managing save attempts:** Jivs aids in handling errors, whether from UI or business logic, facilitating the delivery of additional messages and error handling
 -  **Coding Style:** Jivs is built using modern OOP patterns. Expect TypeScript interfaces, single responsibility objects, dependency injection, and strong separation of concerns.
-	- Most aspects of Jivs is expandable due to use of interfaces and dependency injection.
+	- Most aspects of Jivs are expandable due to use of interfaces and dependency injection.
 	- Easy to extend the existing business rule objects ("Conditions") to work with special cases, like comparing two Date objects but only by their day of week.
 	- UI development is mostly unaware of the validation rules supplied by business logic. It just knows that it is managing a field that may be validated, and provides the UI for the elements that report validation. Jivs supplies it with the validation status and error messages.
 
@@ -134,7 +134,7 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 * Use the onchange event to tell the ValidationManager about the data change and run validation. 
 	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
 	* Jivs lets you assign a parser to each InputValueHost. Just use: `validationManager.vh.input('name').setInputValue(inputValue, { validate: true });`
-	* If you want to handle parsing elsewhere, use `validationManager.vh.input('name').setValues(native, input, { validate: true });`
+	* If you want to handle parsing elsewhere, use: `validationManager.vh.input('name').setValues(nativeValue, inputValue, { validate: true });`
 * The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
@@ -202,8 +202,8 @@ This code sets up the onchange event with your own parsing:
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=>{
   let inputValue = evt.target.value;
-  let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
-  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true });
+  let { nativeValue, errorMessage } = myParser(inputValue);	// return nativeValue=undefined when there is an error
+  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true, conversionErrorTokenValue: errorMessage });
 });
 ```
 
@@ -1450,7 +1450,7 @@ When a ValueHosts' value changed, call its `validate()` function or pass the `{ 
 
 ```ts
 let firstNameFld = document.getElementById('FirstName');
-firstNameFld.attachEventListener('onchanged', (evt)=>{
+firstNameFld.attachEventListener('onchange', (evt)=>{
   let inputValue = evt.target.value;
   let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
   let valueHost = vm.vh.input('FirstName');	// or vm.getInputValueHost('FirstName')
@@ -1480,7 +1480,7 @@ The `setValue()`, `setValues()`, `setInputValue()`, and `setValueToUndefined()` 
 
 ```ts
 let firstNameFld = document.getElementById('FirstName');
-firstNameFld.attachEventListener('onchanged', (evt)=>{
+firstNameFld.attachEventListener('onchange', (evt)=>{
   let inputValue = evt.target.value;
   let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
   vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true });
@@ -1505,7 +1505,7 @@ These properties are all related to validation:
 - conversionErrorTokenValue - Provide an error message related to parsing from the Input Value into native value. This message can be shown when using DataTypeCheckCondition, by using the {ConversionError} token in its error message:
 	```ts
 	let firstNameFld = document.getElementById('FirstName');
-	firstNameFld.attachEventListener('onchanged', (evt)=>{
+	firstNameFld.attachEventListener('onchange', (evt)=>{
 	  let inputValue = evt.target.value;
 	  let [nativeValue, errorMessage] = YourConvertToNativeCode(inputValue);  
 	  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true, conversionErrorTokenValue: errorMessage });
