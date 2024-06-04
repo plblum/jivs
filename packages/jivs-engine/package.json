@@ -1,7 +1,7 @@
 {
   "name": "@plblum/jivs-engine",
   "type": "module",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "description": "The workhorse of validation. Classes without UI that just take in values and output validation results. This lib is completely standalone from DOM, HTML, and Web APIs. The Suite contains support for UI aspects of validation too.",
   "displayName": "JavaScript Input Validation Service",
   "license": "MIT",
