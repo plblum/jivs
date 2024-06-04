@@ -4,6 +4,7 @@
 import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from "./ValidatableValueHostBase";
 import { SetValueOptions } from "./ValueHost";
 import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "./ValidatorsValueHostBase";
+import { IDataTypeParser } from "./DataTypeParsers";
 
 
 /**
@@ -49,7 +50,7 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
     * converting. Provide a string here that is a UI friendly error message. It will
     * appear in the Category=Require validator within the {ConversionError} token.
      */
-    setInputValue(value: any, options?: SetValueOptions): void;
+    setInputValue(value: any, options?: SetInputValueOptions): void;
 
     /**
      * Sets both (native data type) Value and Input Value at the same time
@@ -75,7 +76,7 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
      *Returns true for a condition with Category=Require. UI can use it to 
      * display a "requires a value" indicator.
      */
-     requiresInput: boolean;
+    requiresInput: boolean;
 
 
      /**
@@ -83,7 +84,12 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
       * to setValue() or setValues(). Its null when not supplied or has been cleared.
       * Associated with the {ConversionError} token of the DataTypeCheckCondition.
       */
-     getConversionErrorMessage(): string | null;
+    getConversionErrorMessage(): string | null;
+    
+    /**
+     * Returns the value from InputValueHostConfig.parserLookupKey.
+     */
+    getParserLookupKey(): string | null | undefined;
 }
 /**
  * Just the data that is used to describe this input value.
@@ -100,7 +106,49 @@ export interface IInputValueHost extends IValidatorsValueHostBase {
  */
 export interface InputValueHostConfig extends ValidatorsValueHostBaseConfig {
 
+    /**
+     * A DataTypeParser object is used when calling setInputValue() to convert
+     * the input value into the native value. It results in calling setValue() with the native value,
+     * or if the parser had an error, calling setValueToUndefined() and retaining
+     * the error information to show in the error message.
+     * 
+     * The value here is a lookup key, and is usually one of the Data Type lookup keys, 
+     * like LookupKey.Integer for an integer-specific parser. However, individual
+     * DataTypeParser classes may have a unique lookup key to assign here.
+     * - Assign to the lookup key to use a parser that supports the lookup key.
+     * - Leave it undefined to use the dataType configuration property (for a Data Type Lookup Key)
+     *   on the ValueHost, but remember to assign that property.
+     * - Assign to null to prevent any parser from being setup.
+     * 
+     * Note that the options object for setInputValue has a property called disableParser
+     * which if set to true will prevent parsing too.
+     * 
+     * Alternatively, you can leave this undefined and use parserCreator to create the DataTypeParser
+     * instance you want.
+     */
+    parserLookupKey?: string | null;
 
+    /**
+     * Alternative to parserLookupKey that establishes a parser used when calling setInputValue()
+     * to convert the input value into the native value. It results in calling setValue() with the native value,
+     * or if the parser had an error, calling setValueToUndefined() and retaining
+     * the error information to show in the error message.
+     * 
+     * It provides a callback function that is expected to create an object that implements IDataTypeParser
+     * or return null if no parser is appropriate.
+     * 
+     * While parserLookupKey knows how to fallback to another data type using LookupKeyFallbackService,
+     * this parser function completely ignores DataTypeParserService.parse where that happens.
+     * Instead, its up to you to handle any fallbacks. You should also expect that the parse()
+     * functions lookupKey parameter may be null if parserLookupKey and dataType properties were not setup.
+     * 
+     * Your parser object's supports() method will be called. If it returns false, your
+     * object won't be used, and it will fallback to the parserLookupKey.
+     * @param valueHost
+     * @returns Object that implements IDataTypeParser
+     * or return null if no parser is appropriate
+     */
+    parserCreator?: (valueHost: IInputValueHost) => IDataTypeParser<any> | null;
 }
 
 /**
@@ -147,6 +195,18 @@ export interface IInputValueHostChangedCallback
 export interface IInputValueHostCallbacks extends IInputValueHostChangedCallback, IValidatorsValueHostBaseCallbacks {
 
 }
+
+/**
+ * Additional options for setInputValue().
+ */
+export interface SetInputValueOptions extends SetValueOptions
+{
+    /**
+     * When true, do not use the DataTypeParser to convert the input value into its native value.
+     */
+    disableParser?: boolean;
+}
+
 /**
  * Determines if the object implements IInputValueHostCallbacks.
  * @param source 

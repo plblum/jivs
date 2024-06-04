@@ -50,6 +50,8 @@ import { CultureService } from "../../src/Services/CultureService";
 import { ILookupKeyFallbackService } from "../../src/Interfaces/LookupKeyFallbackService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { toIServicesAccessor } from "../../src/Interfaces/Services";
+import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserService";
+import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -136,6 +138,7 @@ export class MockInputValueHost extends MockValueHost
 
     _inputValue: any = undefined;
     _conversionErrorMessage: string | undefined;
+    _parserLookupKey: string | null | undefined;
 
     public override setValue(value: any, options?: SetValueOptions | undefined): void {
         super.setValue(value, options);
@@ -197,7 +200,10 @@ export class MockInputValueHost extends MockValueHost
     {
         return this._conversionErrorMessage ?? null;
     }
-
+    public getParserLookupKey(): string | null | undefined
+    {
+        return this._parserLookupKey;
+    }
     requiresInput: boolean = false;
     
     otherValueHostChangedNotification(valueHostNameThatChanged: string, revalidate: boolean): void {
@@ -247,6 +253,7 @@ export class MockValidationServices implements IValidationServices
         this.cultureService.activeCultureId = 'en';
         this._conditionFactory = new ConditionFactory();
         this.dataTypeFormatterService = new DataTypeFormatterService();
+        this.dataTypeParserService = new DataTypeParserService();
         this.dataTypeComparerService = new DataTypeComparerService();
         this.dataTypeConverterService = new DataTypeConverterService();
         this.dataTypeIdentifierService = new DataTypeIdentifierService();
@@ -325,6 +332,15 @@ export class MockValidationServices implements IValidationServices
     }
     private _dataTypeFormatterService!: IDataTypeFormatterService;
 
+    public get dataTypeParserService(): IDataTypeParserService {
+        return this._dataTypeParserService;
+    }
+    public set dataTypeParserService(service: IDataTypeParserService)
+    {
+        this._dataTypeParserService = service;
+        service.services = this;
+    }
+    private _dataTypeParserService!: IDataTypeParserService;
     public get dataTypeIdentifierService(): IDataTypeIdentifierService {
         return this._dataTypeIdentifierService;
     }

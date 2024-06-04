@@ -50,6 +50,26 @@ export function assertNotNull(valueToCheck: any, memberName: string = 'parameter
 }
 
 /**
+ * Throw a CodingError when valueToCheck is null, not a string or an empty string.
+ * @param valueToCheck 
+ * @param memberName 
+ * @returns 
+ */
+export function assertNotEmptyString(valueToCheck: any, memberName: string = 'parameter'): void
+{
+    assertNotNull(valueToCheck, memberName);
+
+    if (typeof valueToCheck === 'string')   // includes undefined
+        if (valueToCheck.length === 0)    // ignore trimming
+            throw new CodingError(`${memberName} not empty string`);          
+        else
+            return;
+        
+    
+    throw new CodingError(`${memberName} must be string`);
+}
+
+/**
  * Check a field that is supposed to contain an active reference within a WeakRef object.
  * If the field is unassigned, null, or the reference was discarded, throw a TypeError.
  * @param ref 

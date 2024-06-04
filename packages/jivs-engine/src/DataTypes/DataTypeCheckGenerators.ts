@@ -1,6 +1,4 @@
 /**
- * Concrete implementations of IDataTypeCheckGenerator.
- * 
  * {@inheritDoc DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
  * @module DataTypes/ConcreteClasses/DataTypeCheckGenerators
  */

@@ -195,7 +195,7 @@ describe('resolveTokens', () => {
         vm.services.cultureService.activeCultureId = 'de-DE';  // not configured in LA
         expect(() => testItem.resolveTokens('{token:UNKNOWNLOOKUPKEY}', null!, vm, messageTokeSource)).toThrow();
 
-        expect(logger.findMessage('Unsupported LookupKey', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeFormatter for LookupKey', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
     });        
 });
 

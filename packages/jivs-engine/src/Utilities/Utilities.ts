@@ -4,6 +4,16 @@
  */
 
 /**
+ * Escape function for strings to retain their original characters when used
+ * inside of a regexp pattern.
+ * @param text 
+ * @returns 
+ */
+export function escapeRegExp(text: string): string {
+    return text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
+/**
  * Determines if the supplied group or group(s) are found in both parameters.
  * When either parameter is '', '*', empty array, null or undefined, it means to match
  * everything and this function returns true.
@@ -183,3 +193,15 @@ export function isSupportedAsValue(obj: any) {
         return false;
     return true;
 };
+
+export function hasLetters(source: string): boolean {
+    return /\p{L}/u.test(source);
+}
+export function onlyTheseCharacters(source: string, validChars: string, validRegExpSymbols: string): boolean {
+    const escapedValidChars = escapeRegExp(validChars);
+    return new RegExp(`[${escapedValidChars + validRegExpSymbols}]`).test(source);
+}
+export function hasMultipleOccurances(source: string, singleOccuranceChars: string): boolean {
+    const escapedChars = escapeRegExp(singleOccuranceChars);
+    return new RegExp(`([${escapedChars}]).*\\1`).test(source);
+}

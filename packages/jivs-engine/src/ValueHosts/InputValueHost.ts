@@ -12,7 +12,7 @@ import { deepEquals } from '../Utilities/Utilities';
 import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost } from '../Interfaces/InputValueHost';
+import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, SetInputValueOptions } from '../Interfaces/InputValueHost';
 import { SetValueOptions, ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
@@ -20,6 +20,8 @@ import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { PropertyValueHost, hasIPropertyValueHostSpecificMembers } from './PropertyValueHost';
 import { IValidationManager } from '../Interfaces/ValidationManager';
+import { DataTypeResolution } from '../Interfaces/DataTypes';
+import { CodingError } from '../Utilities/ErrorHandling';
 
 
 /**
@@ -56,21 +58,42 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
 
     /**
     * Consuming system assigns the same value it assigns to the input field/element.
-    * Its used with any condition that supports the validationOption { duringEdit: true},
-    * including RequireTextCondition and RegExpCondition.
-    * It is also used by DataTypeCheckCondition which determines the input is invalid
-    * when InputValue is assigned and native Value is undefined.
+    * In HTML, this is typically called by the onchanged event handler.
+    * 
+    * It can also be called by the oninput event handler so long as options.duringEdit=true.
+    * If runs validation when options.validate=true. 
+    * 
+    * When setting the input value, it is important to also set the native value so the
+    * Data Type Check conditions to work. DataTypeCheckCondition itself reports
+    * an error if you set the native value to undefined.
+    * 
+    * To set the native value, you can do it manually, but also consider setting up 
+    * a DataTypeParser on the inputValueOptionConfig.parserLookupKey to do it automatically.
+    * When setup, setInputValue() will run the parser and call setInput() or setInputAsUndefined() for you.
+    * 
     * @param value
     * @param options - 
+    * - duringEdit - Set to true when handling an intermediate change activity, such as a keystroke
+    *     changed a textbox but the user remains in the textbox. For example, on the 
+    *     HTMLInputElement.oninput event.
+    *     This will involve only validators that make sense during such an edit.
+    *     Specifically their Condition implements IEvaluateConditionDuringEdits.
+    *     The IEvaluateConditionDuringEdits.evaluateDuringEdit() function is used
+    *     instead of ICondition.evaluate().
     * - validate - Invoke validation after setting the value.
     * - reset - Clears validation (except when validate=true) and sets IsChanged to false.
+    * - disableParser - When true, do not use the DataTypeParser to convert from input value to native value.
     * - conversionErrorTokenValue - When setting the value to undefined, it means there was an error
-    * converting. Provide a string here that is a UI friendly error message. It will
-    * appear in the Category=Require validator within the {ConversionError} token.
+    *    converting. Provide a string here that is a UI friendly error message. It will
+    *    appear in the Category=Require validator within the {ConversionError} token.
+    *    A Data Type parser will also setup the conversionErrorTokenValue if it reports an error.
     */
-    public setInputValue(value: any, options?: SetValueOptions): void {
+    public setInputValue(value: any, options?: SetInputValueOptions): void {
         if (!options)
             options = {};
+        if (this.tryParse(value, options))
+            return; // determines the native value and redirects to setValues().
+
         let oldValue: any = this.instanceState.inputValue;
         let changed = !deepEquals(value, oldValue);
         let valStateChanged = false;
@@ -89,10 +112,79 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
     }
 
     /**
+     * Determines if parsing is setup and the value is parsable (must be a string). 
+     * If so, it determines the native value, and calls upon setValues() to handle it all.
+     * If the parser detects an error, the native value will be set to undefined
+     * and options.conversionErrorTokenValue gets set to the parser's reported error info.
+     * Supports config.parserDataType and config.parserCreator.
+     * 
+     * @param inputValue 
+     * @param options - Set disableParser = true to prevent parsing. When duringEdit=true,
+     * parsing is not supported and this function returns false.
+     * @returns True used the parser and finished with setValues. No further work is needed.
+     * False means the parser is not used, and setInputValue should continue.
+     */
+    protected tryParse(inputValue: any, options: SetInputValueOptions): boolean
+    {
+        function sendResultAlong(resolution: DataTypeResolution<any>): void
+        {
+            let nativeValue = resolution.value; // may be undefined which indicates a parser error
+            if (resolution.errorMessage)
+                options.conversionErrorTokenValue = resolution.errorMessage;
+            self.log('Parsed into native value', LoggingLevel.Debug, LoggingCategory.Debug);
+
+            self.setValues(nativeValue, inputValue, options);
+        }
+        let self = this;
+        // not supported in duringEdit mode as we are focused
+        // on validating the input value alone
+        if (options.duringEdit === true)
+            return false;
+        if (typeof inputValue === 'string') {
+            if (options.disableParser === true)
+            {
+                this.log('option.disableParser=true', LoggingLevel.Debug, LoggingCategory.Debug);
+                return false;
+            }
+            let dtps = this.services.dataTypeParserService;
+            if (dtps.isActive()) {
+                this.log('Attempt to parse into native value', LoggingLevel.Debug, LoggingCategory.Debug);
+                         
+                let lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
+                let cultureId = this.services.cultureService.activeCultureId;
+                let parser = this.config.parserCreator?.(this);
+                if (parser && parser.supports(lookupKey!, cultureId, inputValue))
+                { // in this case, we have to let the parser function deal with
+                    // any fallback behavior and we'll supply a null lookupKey.
+                    this.log(() => 'Parsing', LoggingLevel.Info, LoggingCategory.Info);
+                    let result = parser.parse(inputValue, lookupKey!, cultureId);
+                    sendResultAlong(result);
+                    return true;
+                }
+                if (this.config.parserLookupKey === null)
+                    return false;
+                
+                if (lookupKey) {
+                    let result = dtps.parse(inputValue, lookupKey, cultureId);
+                    sendResultAlong(result);
+                    return true;                    
+                }
+                let msg = `Cannot parse until parserDataType or dataType is assigned to "${this.getName()}"`;
+                this.log(() => msg, LoggingLevel.Error);
+                throw new CodingError(msg);
+            }
+        }
+        return false;
+    }
+
+    /**
      * Sets both (native data type) Value and input field/element Value at the same time
      * and optionally invokes validation.
      * Use when the consuming system resolves both input and native values
      * at the same time so there is one state change and attempt to validate.
+     * 
+     * NOTE: The DataTypeParser feature is not used by this function as you have already done
+     * the parsing to establish the native value.
      * @param nativeValue - Can be undefined to indicate the value could not be resolved
      * from the input field/element's value, such as inability to convert a string to a date.
      * All other values, including null and the empty string, are considered real data.
@@ -182,8 +274,8 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
                         severity: ValidationSeverity.Severe
                     };
                     validators.push(this.services.validatorFactory.create(this, config));
-                    this.services.loggerService.log(`Added ${condition.conditionType} Condition for Data Type Check`,
-                        LoggingLevel.Info, LoggingCategory.Configuration, `Validator on ${this.getName()}`);
+                    this.log(()=> `Added ${condition.conditionType} Condition for Data Type Check`,
+                        LoggingLevel.Info);
                     created = true;
                 });
             }
@@ -210,7 +302,13 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
     public getConversionErrorMessage(): string | null {
         return this.instanceState.conversionErrorTokenValue ?? null;
     }
-
+    /**
+     * Returns the value from InputValueHostConfig.parserLookupKey.
+     */
+    public getParserLookupKey(): string | null | undefined
+    {
+        return this.config.parserLookupKey;
+    }
 }
 
 /**
@@ -240,7 +338,9 @@ export function hasIInputValueHostSpecificMembers(source: IValidatorsValueHostBa
     let test = source as IInputValueHost;
     return (test.getInputValue !== undefined &&
         test.setInputValue !== undefined &&
-        test.setValues !== undefined);
+        test.setValues !== undefined &&
+        test.getParserLookupKey !== undefined &&
+        test.getConversionErrorMessage !== undefined);
 }
 
 export class InputValueHostGenerator extends ValidatorsValueHostBaseGenerator {

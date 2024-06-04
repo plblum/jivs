@@ -78,7 +78,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         if (options.duringEdit)
         {
             options.duringEdit = false;
-            this.services.loggerService.log('setValue does not support duringEdit option', LoggingLevel.Warn, LoggingCategory.Validation, 'ValueHost');
+            this.log('setValue does not support duringEdit option', LoggingLevel.Warn, LoggingCategory.Validation);
         }
         let oldValue: any = this.instanceState.value;
         let changed = !deepEquals(value, oldValue);
