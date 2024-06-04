@@ -59,7 +59,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
             this._reentrantCount++;
             if (this.config.calcFn)
                 return this.config.calcFn(this, this.valueHostsManager);
-            this.services.loggerService.log('calcFn property not configured', LoggingLevel.Warn, LoggingCategory.Configuration, 'CalcValueHost');
+            this.log('calcFn property not configured', LoggingLevel.Warn);
             return undefined;
         }
         finally
@@ -81,7 +81,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
      */
     public setValue(value: any, options?: SetValueOptions | undefined): void {
         // does nothing
-        this.valueHostsManager.services.loggerService.log('setValue does nothing', LoggingLevel.Warn, LoggingCategory.Configuration, 'CalcValueHost');
+        this.log('setValue does nothing', LoggingLevel.Warn);
     }
 }
 

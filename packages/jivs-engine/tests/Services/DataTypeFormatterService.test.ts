@@ -71,9 +71,9 @@ describe('DataTypeFormatterService.format', () => {
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
-        expect(() => result = testItem.format(0, 'huh')).toThrow(/Unsupported/);
+        expect(() => result = testItem.format(0, 'huh')).toThrow(/No DataTypeFormatter/);
         expect(logger.findMessage('Trying cultureId', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Unsupported', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeFormatter', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
     });
 
     test('Lookup Key in DataTypeFormatter en', () => {
@@ -87,8 +87,8 @@ describe('DataTypeFormatterService.format', () => {
         testItem.register(new TestFormatter(['en'], 'EN TestKey'));
         expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en TestKey' });
         expect(logger.findMessage('Trying cultureId: en', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Using TestFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Formatted TestKey with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
+        expect(logger.findMessage('Formatter selected: TestFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
     });
     test('Lookup Key in DataTypeFormatter en using fallback from en-GB', () => {
         let services = new MockValidationServices(false, true);
@@ -102,8 +102,8 @@ describe('DataTypeFormatterService.format', () => {
 
         expect(logger.findMessage('Trying cultureId: en-GB', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('Trying cultureId: en', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Using TestFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Formatted TestKey with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
+        expect(logger.findMessage('Formatter selected: TestFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
     });
     test('Lookup Key in DataTypeFormatter en and en-GB gets from en-GB', () => {
         let services = new MockValidationServices(false, true);
@@ -178,7 +178,7 @@ describe('DataTypeFormatterService.format', () => {
         testItem.register(new FormatterThrowsError());
         expect(testItem.format(10, 'TEST').errorMessage).toBe('ERROR');
          // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService'
-        expect(logger.findMessage('Using FormatterThrowsError', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Formatter selected: FormatterThrowsError', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
     });
     test('Formatter throws string. results throwing exception using the string as the error message', () => {
@@ -199,6 +199,7 @@ describe('DataTypeFormatterService.format', () => {
         testItem.register(new FormatterThrowsString());
         try {
             testItem.format(10, 'TEST');
+            fail();
         }
         catch (e)
         {
@@ -206,7 +207,7 @@ describe('DataTypeFormatterService.format', () => {
             expect((e as Error).message).toBe('ERROR');
         }
         // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService'
-        expect(logger.findMessage('Using FormatterThrowsString', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Formatter selected: FormatterThrowsString', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
     });
 });
@@ -235,8 +236,8 @@ describe('format() using lookupKeyFallbackService', () => {
         let result = dtfs.format(1, LookupKey.Integer);
         expect(result.value).toEqual('1');
         expect(logger.findMessage('Trying fallback', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Using NumberFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();        
-        expect(logger.findMessage('Formatted Number with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
+        expect(logger.findMessage('Formatter selected: NumberFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();        
+        expect(logger.findMessage('Formatted "Number" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
     });
     test('Custom currency type falls back to Currency', () => {
         let services = createValidationServices();
@@ -253,8 +254,8 @@ describe('format() using lookupKeyFallbackService', () => {
         expect(result.value).toEqual('$1.00');
         expect(logger.findMessage('Trying fallback: CUSTOMA', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('Trying fallback: Currency', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Using CurrencyFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();        
-        expect(logger.findMessage('Formatted Currency with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();        
+        expect(logger.findMessage('Formatter selected: CurrencyFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();        
+        expect(logger.findMessage('Formatted "Currency" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();        
     });    
     test('Fallback loop stopped with exception', () => {
         let services = createValidationServices();
@@ -283,6 +284,28 @@ describe('DataTypeFormatterServices register, unregister, and find', () => {
         expect(() => testItem.register(new TestFormatter(['en']))).not.toThrow();
         expect(testItem.find(LookupKey.Number, 'fr')).toBeNull();
     });
+    test('register with multiple cultures and find registered returns the same Formatter class', () => {
+        let testItem = new DataTypeFormatterService();
+        let formatter = new TestFormatter(['en', 'fr', 'en-GB']);
+        testItem.register(formatter);
+        expect(testItem.find(LookupKey.Number, 'en')).toBe(formatter);
+        expect(testItem.find(LookupKey.Number, 'fr')).toBe(formatter);
+        expect(testItem.find(LookupKey.Number, 'en-GB')).toBe(formatter);
+        expect(testItem.find(LookupKey.Number, 'de')).toBeNull();
+    });    
+    test('register formatter for individual cultures and find registered returns the same Formatter class', () => {
+        let testItem = new DataTypeFormatterService();
+        let formatterEN = new TestFormatter(['en']);
+        let formatterFR = new TestFormatter(['fr']);
+        let formatterGB = new TestFormatter(['en-GB']);
+        testItem.register(formatterEN);
+        testItem.register(formatterFR);
+        testItem.register(formatterGB);        
+        expect(testItem.find(LookupKey.Number, 'en')).toBe(formatterEN);
+        expect(testItem.find(LookupKey.Number, 'fr')).toBe(formatterFR);
+        expect(testItem.find(LookupKey.Number, 'en-GB')).toBe(formatterGB);
+        expect(testItem.find(LookupKey.Number, 'de')).toBeNull();
+    });        
     test('find when not registered returns null', () => {
         let testItem = new DataTypeFormatterService();
         expect(testItem.find('Anything', 'en')).toBeNull();

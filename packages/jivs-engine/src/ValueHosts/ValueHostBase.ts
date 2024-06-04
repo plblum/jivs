@@ -9,6 +9,7 @@ import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, typ
 import type { IValueHostsManager, IValueHostsManagerAccessor, IValueHostsServices } from '../Interfaces/ValueHostsManager';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { toIDisposable } from '../Interfaces/General_Purpose';
+import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 
 /**
  * Standard implementation of IValueHost
@@ -266,6 +267,17 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     {
         return this.instanceState.items ? this.instanceState.items[key] : undefined;
     }
+
+    protected log(message: (()=>string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void
+    {
+        let logger = this.services.loggerService;
+        if (logger.minLevel <= logLevel) {
+            logger.log((typeof message === 'function') ? message() : message,
+                logLevel, logCategory ?? LoggingCategory.Configuration, `${this.constructor.name} "${this.getName()}"`);
+        }
+        
+    }
+
 }
 
 

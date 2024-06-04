@@ -262,10 +262,10 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             }
         }
         function logError(message: string): void {
-            self.services.loggerService.log('Exception: ' + (message ??
+            self.log(()=> 'Exception: ' + (message ??
                 /* istanbul ignore next */  // defensive             
                 'Reason unspecified'),
-                LoggingLevel.Error, LoggingCategory.Validation, self.config.name);
+                LoggingLevel.Error, LoggingCategory.Validation);
         }
     }
 

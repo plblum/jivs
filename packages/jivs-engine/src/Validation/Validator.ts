@@ -501,7 +501,7 @@ export class Validator implements IValidator {
             };
             return resultState;
         }
-        return null
+        return null;
     }
     //#region state management
 
