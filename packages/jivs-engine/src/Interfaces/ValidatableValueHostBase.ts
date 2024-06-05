@@ -6,7 +6,8 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import {
     type ValidateOptions, type ValueHostValidateResult, ValidationStatus,
     type BusinessLogicError, type IssueFound, StatefulValueHostValidateResult,
-    ValidationState
+    ValidationState,
+    SetIssuesFoundErrorCodeMissingBehavior
 } from './Validation';
 
 import { IGatherValueHostNames, IValueHostCallbacks, toIValueHost, toIValueHostCallbacks, type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState } from './ValueHost';
@@ -132,7 +133,21 @@ export interface IValidatableValueHostBase extends IValueHost, IGatherValueHostN
      *   is returned.
      */
     getIssuesFound(group?: string): Array<IssueFound> | null;
-
+  
+    /**
+     * Adds or replaces all IssueFound items that are associated with this ValueHost.
+     * It ignores those with another ValueHost name, allowing for the same list to be culled
+     * by all ValueHosts. (As a result, it never changes the values sent in, or the array itself.) 
+     * Replacement when the errorCode is the same.
+     * Always invokes the onValueHostValidationStateChanged callback.
+     * 
+     * Use case: client-side getting server-side Jivs-generated IssuesFound,
+     * so the UI can incorporate it.
+     * @param issueFound 
+     * @param behavior - keep or omit an issueFound that does not have a matching validator
+     * based on the errorCode.
+     */
+    setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean;
 }
 
 /**

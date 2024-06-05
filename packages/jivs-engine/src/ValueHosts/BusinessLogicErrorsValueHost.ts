@@ -24,6 +24,16 @@ export class BusinessLogicErrorsValueHost extends ValidatableValueHostBase<Valid
         super(validationManager, config, state);
 
     }    
+
+    /**
+     * Determines if this ValueHost handles validation for a specific error code.
+     * @param errorCode 
+     */
+    protected handlesErrorCode(errorCode: string): boolean
+    {
+        return true;
+    }
+
     /**
      * Result is based on the presence of Business Logic Errors that are not warnings.
      * If none, ValidationStatus = Valid.

@@ -251,7 +251,7 @@ Jivs can assist when you have Node.js on the server. Otherwise, the work is up t
 <a name="submitstep3"></a>
 **Step 3** has a server and client side implementation.
 
-On the server side, create a JSON representation of the issues found. If you use Jivs own `BusinessLogicError interface`, you will reduce the work on the client side.
+On the server side, create a JSON representation of the business logic errors found. If you use Jivs own `BusinessLogicError interface`, you will reduce the work on the client side.
 ```ts
 interface BusinessLogicError {
     errorMessage: string;
@@ -260,15 +260,26 @@ interface BusinessLogicError {
     errorCode?: string;
 }
 ```
-On the client side, gather the data, an make sure it is an array of BusinessLogicError objects. Call `ValidationManager.setBusinessLogicErrors()`.
+If you use Jivs on the server side, also create JSON from the results of `ValidationManager.getIssuesFound()`. This is an array of IssueFound objects.
 
+Let's suppose you generated the following script for the client side:
+```ts
+var businessLogicErrors = [
+  { ... error 1 ... },
+  { ... error 2 ... }
+];
+var jivsIssuesFound = [
+  { ... issue 1 ... },
+  { ... issue 2 ... }
+];
+```
+On the client side, convert *businessLogicErrors* into an array of BusinessLogicError objects as shown here.
 ```ts
 // this converts from a different data format into BusinessLogicError objects
-let errors = myServerSideErrors();	// your code
 let blErrors: Array<BusinessLogicError> = [];
-for (let i = 0; i < errors.length; i++)
+for (let i = 0; i < businessLogicErrors.length; i++)
 {
-  let error = errors[i];
+  let error = businessLogicErrors[i];
   let blError: BusinessLogicError = {
     errorMessage: error.myErrorMessage,
     errorCode: myMapToErrorCode(error), // optional. Try to match up to a known client-side error code or Condition Type to get the UI's error messages
@@ -276,9 +287,14 @@ for (let i = 0; i < errors.length; i++)
    };
    blErrors.push(blError);
 }
-	
-vm.setBusinessLogicErrors(blErrors);	// will notify the UI's validation elements
 ```
+Finally call `ValidationManager.setBusinessLogicErrors()` with the business logic errors array and `ValidationManager.setIssuesFound()` with the Jivs issues found.
+```ts
+vm.setBusinessLogicErrors(blErrors);	// will notify the UI's validation elements
+vm.setIssuesFound(jivsIssuesFound);		// also will notify UI's validation elements
+```
+> `setIssuesFound()` has an optional second parameter. Suppose your server side code actually has a validator not setup on the client, and it is part of Issues Found. Use the second parameter to determine whether to keep it or omit it. By default, it is kept.
+
 <a name="nodejsserver"></a>
 ### Using Jivs on a Node.js server
 #### Data is from an HTML \<form>
@@ -330,6 +346,8 @@ let status = vm.validate();
 let businessLogicErrors = myBusinessLogicValidation();	// you write this.
 if (status.doNotSave || businessLogicErrors) {
   // Gather the issues found and deliver them to the client-side
+  // This should send back up to 2 lists: IssuesFound from Jivs and those from your code.
+  // On the client-side, we'll each list into Jivs differently, keep the lists separate.
   sendErrorsBack(vm.getIssuesFound(), businessLogicErrors); // you write sendErrorsBack()
 }
 else {

@@ -9,12 +9,12 @@ import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState } from '../Interfaces/ValidatableValueHostBase';
-import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
+import { BusinessLogicError, IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
 import { IValidationManager, toIValidationManager, toIValidationManagerCallbacks } from '../Interfaces/ValidationManager';
 import { IValueHostsManager, toIValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { IValidationServices } from '../Interfaces/ValidationServices';
-import { CodingError } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 
 
 /**
@@ -162,6 +162,12 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     //#endregion IValidatableValueHostBase
 
     //#region validation
+
+    /**
+     * Determines if this ValueHost handles validation for a specific error code.
+     * @param errorCode 
+     */
+    protected abstract handlesErrorCode(errorCode: string): boolean;
     /**
     * Runs validation against some of all validators.
     * If at least one validator was NoMatch, it returns IValidatorInstanceStateDictionary
@@ -430,6 +436,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
         return list.length ? list : null;
     }
+
     private addBusinessLogicErrorsToSnapshotList(list: Array<IssueFound>): void {
         if (this.businessLogicErrors) {
             let issueCount = 0;
@@ -445,6 +452,91 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             }
         }
     }
+
+    /**
+     * Adds or replaces all IssueFound items that are associated with this ValueHost.
+     * It ignores those with another ValueHost name, allowing for the same list to be culled
+     * by all ValueHosts. (As a result, it never changes the values sent in, or the array itself.) 
+     * Replacement when the errorCode is the same.
+     * This call invokes the onValueHostValidationStateChanged callback if there were IssueFound items applied.
+     * 
+     * Use case: client-side getting server-side Jivs-generated IssuesFound,
+     * so the UI can incorporate it.
+     * @param issueFound 
+     * @param behavior - keep or omit an issueFound that does not have a matching validator
+     * based on the errorCode. Defaults to Keep.
+     */
+    public setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior = SetIssuesFoundErrorCodeMissingBehavior.Keep): boolean
+    {
+        assertNotNull(issuesFound, 'issuesFound');
+        let changed = false;
+        let thisName = this.getName();
+        for (let issueFound of issuesFound)
+        {
+            if (issueFound.valueHostName === thisName)
+                if (this.setIssueFound(issueFound, behavior))
+                    changed = true;
+        }
+        if (changed)
+            this.invokeOnValueHostValidationStateChanged(undefined);
+        return changed;
+    }
+
+    /**
+     * Adds or replaces an IssueFound. 
+     * Replacement when the errorCode is the same.
+     * This does NOT invoke the onValueHostValidated callback.
+     * 
+     * Use case: client-side getting server-side Jivs-generated IssuesFound,
+     * so the UI can incorporate it.
+     * @param issueFound 
+     */
+    protected setIssueFound(issueFound: IssueFound, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
+    {
+        assertNotNull(issueFound, 'issueFound');
+        let errorMsg: string | null = null;
+        if (!issueFound.errorCode)
+            errorMsg = 'IssueFound needs an errorCode';
+        /* istanbul ignore next */ // defensive. Does not get called with the current implementation
+        if (issueFound.valueHostName !== this.getName())
+            errorMsg = 'IssueFound has wrong valueHostName';
+        if (errorMsg)
+        {
+            this.log(errorMsg, LoggingLevel.Error);
+            throw new CodingError(errorMsg);            
+        }
+
+        if (!this.handlesErrorCode(issueFound.errorCode))
+        {
+            switch (behavior)
+            {
+                case SetIssuesFoundErrorCodeMissingBehavior.Omit:
+                    return false;
+            }
+        }
+
+        // we'll be replacing the entire this.instanceState.issuesFound array
+        // during updateState. For now, initialize with the existing IssueFound objects.
+
+        let updating: Array<IssueFound> = [];
+        if (this.instanceState.issuesFound)
+            updating = updating.concat(this.instanceState.issuesFound);
+        let pos = updating.findIndex((item) => item.errorCode === issueFound.errorCode);
+        if (pos >= 0)
+            updating[pos] = issueFound;
+        else
+            updating.push(issueFound);
+        let changed = this.updateInstanceState((stateToUpdate) => {
+            stateToUpdate.issuesFound = updating;
+            if (issueFound.severity !== ValidationSeverity.Warning)
+                stateToUpdate.status = ValidationStatus.Invalid;
+            //!!!PENDING: Clean up async work done against the same error code?
+            return stateToUpdate;
+        }, this);
+
+        return changed;
+    }
+        
     //#endregion validation results
 
 }

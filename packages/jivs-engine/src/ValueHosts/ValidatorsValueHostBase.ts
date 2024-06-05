@@ -51,7 +51,15 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         this._validators?.forEach((validator) => validator.dispose());
         (this._validators as any) = undefined;
     }
-
+    /**
+     * Determines if this ValueHost handles validation for a specific error code.
+     * @param errorCode 
+     */
+    protected handlesErrorCode(errorCode: string): boolean
+    {
+        return this.getValidator(errorCode) !== null;
+    }
+    
     /**
      * Runs validation against some of all validators.
      * If at least one validator was NoMatch, it returns ValueHostValidateResult

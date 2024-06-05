@@ -1,4 +1,4 @@
-import { IssueFound, ValidationStatus } from './../../src/Interfaces/Validation';
+import { IssueFound, SetIssuesFoundErrorCodeMissingBehavior, ValidationStatus } from './../../src/Interfaces/Validation';
 import { IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseInstanceState, ValueHostValidationState, toIValidatableValueHostBaseCallbacks } from './../../src/Interfaces/ValidatableValueHostBase';
 import { ValidatableValueHostBase, toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
@@ -80,6 +80,19 @@ class TestValidatableValueHost extends ValidatableValueHostBase<ValidatableValue
     }        
     public gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
     }
+
+    public get handledErrorCodes(): Array<string>
+    {
+        return this._handledErrorCodes;
+    }
+    public set handledErrorCodes(value: Array<string>)
+    {
+        this._handledErrorCodes = value;
+    }    
+    private _handledErrorCodes: Array<string> = [];
+    protected handlesErrorCode(errorCode: string): boolean {
+        return this.handledErrorCodes.includes(errorCode);
+    }    
     public validate(options?: ValidateOptions | undefined): ValueHostValidateResult | null {
         this.updateInstanceState((stateToUpdate) => {
             stateToUpdate.status =
@@ -948,6 +961,10 @@ describe('toIValidatableValueHostBase', () => {
             getIssuesFound: function (group?: string | undefined): IssueFound[] {
                 throw new Error('Function not implemented.');
             },
+            setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
+            {
+                throw new Error('Function not implemented.');
+            },
 
             getLabel: function (): string {
                 throw new Error('Function not implemented.');
@@ -1061,6 +1078,10 @@ describe('toIValidatableValueHostBase function', () => {
         getIssuesFound(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
+        setIssuesFound(issuesFound: Array<IssueFound>): boolean
+        {
+            throw new Error('Function not implemented.');
+        }        
         getConversionErrorMessage(): string | null {
             throw new Error("Method not implemented.");
         }

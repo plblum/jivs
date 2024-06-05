@@ -6,7 +6,8 @@ import { MockValidationServices, MockValidationManager } from "../TestSupport/mo
 import { InputValueHostConfig, InputValueHostInstanceState, IInputValueHost, IInputValueHostCallbacks, toIInputValueHostCallbacks, SetInputValueOptions } from "../../src/Interfaces/InputValueHost";
 import {
     ValidationStatus, IssueFound, ValueHostValidateResult, ValidationSeverity, ValidateOptions,
-    BusinessLogicError
+    BusinessLogicError,
+    SetIssuesFoundErrorCodeMissingBehavior
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -1258,6 +1259,10 @@ describe('toIInputValueHost function', () => {
         getIssuesFound(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
+        setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
+        {
+            throw new Error('Function not implemented.');
+        }        
         getConversionErrorMessage(): string | null {
             throw new Error("Method not implemented.");
         }

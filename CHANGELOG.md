@@ -1,3 +1,5 @@
+## 0.17.1
+- Added setIssuesFound() method on ValidationManager and ValidatableValueHostBase. Simplifies how to send Jivs errors found by the server and sent up to the client.
 ## 0.17.0
 - **Major feature** Added a parser feature to convert from input value to native value on calls to InputValueHost.setInputValue. It includes a service (DataTypeParserService), interface (IDataTypeParser), and classes to cover a few common cases.
 Aside from using it with the client-side, this will help when posting back form data, to convert the strings sent from the client into native values ready to be validated.

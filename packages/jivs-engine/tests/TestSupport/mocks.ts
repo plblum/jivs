@@ -7,7 +7,7 @@ import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFac
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
-import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
+import { ValidateOptions, ValueHostValidateResult, ValidationStatus, BusinessLogicError, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
 import { ValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { IValidator, IValidatorFactory, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { IValidationManager, IValidationManagerCallbacks, ValidationStateChangedHandler } from "../../src/Interfaces/ValidationManager";
@@ -195,7 +195,10 @@ export class MockInputValueHost extends MockValueHost
     getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }    
-
+    setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
+    {
+        throw new Error("Method not implemented.");
+    }
     public getConversionErrorMessage(): string | null
     {
         return this._conversionErrorMessage ?? null;
@@ -593,7 +596,10 @@ export class MockValidationManager implements IValidationManager, IValidationMan
     getIssuesFound(group?: string | undefined): IssueFound[] {
         throw new Error("Method not implemented.");
     }
-
+    setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
+    {
+        throw new Error("Method not implemented.");        
+    }
     notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void
     {
 
