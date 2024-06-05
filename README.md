@@ -340,7 +340,7 @@ There remain several cases that involve parsing, and for those, use the instruct
 * Validate using `validationManager.validate()`. Capture any errors it finds from `validationManager.getIssuesFound()`.
 * Also run your business logic validation against the model for cases not covered by input level validators. Capture any errors it finds.
 * If there are no errors, save the data.
-* With errors, do not save. Instead, supply the captured errors to the client-side to report to the user through Jivs. See <a href="#nodejsvalidate">above, step 3</a>.
+* With errors, do not save. Instead, supply the captured errors to the client-side to report to the user through Jivs. See <a href="#submitstep3">above, step 3</a>.
 ```ts
 let status = vm.validate();
 let businessLogicErrors = myBusinessLogicValidation();	// you write this.
