@@ -15,7 +15,7 @@ import { IServicesAccessor } from "./Services";
  * with the JavaScript comparison operators. Due to the Converter's ability to prepare
  * most values for the default comparison function, these aren't often created.
  */
-export interface IDataTypeComparerService extends IDataTypeService, IServicesAccessor {
+export interface IDataTypeComparerService extends IDataTypeService<IDataTypeComparer>, IServicesAccessor {
 
     /**
      * Compares two values to see if they are equal or not.

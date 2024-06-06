@@ -34,6 +34,9 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
         let fn = this._map.get(config.conditionType);
         if (fn)
             return fn(config) as IConditionCore<TConfig>;
+        if (this.ensureLazyLoaded())
+            // try again
+            return this.create(config);
         throw new CodingError(`ConditionType not registered: ${config.conditionType}`);
     }
     // user supplies JSON string or object implementing ConditionConfig
@@ -60,6 +63,33 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
     public isRegistered(conditionType: string): boolean {
         return this._map.get(conditionType) !== undefined;
     }
+
+    /**
+     * Sets up a function to lazy load the configuration when the localize() function 
+     * tries and fails to match a request.
+     */
+    public set lazyLoad(fn: (factory: ConditionFactory) => void)
+    {
+        this._lazyLoader = fn;
+    }
+    private _lazyLoader: null | ((factory: ConditionFactory) => void) = null;
+
+    /**
+     * Runs the lazyload function if setup and returns true if run.
+     * @returns 
+     */
+    protected ensureLazyLoaded(): boolean
+    {
+        if (this._lazyLoader) {
+            // prevent recursion by disabling the feature right away
+            let fn = this._lazyLoader;
+            this._lazyLoader = null;
+            fn(this);
+            return true;
+        }
+        return false;
+    }
+
 }
 
 //#endregion ConditionFactory

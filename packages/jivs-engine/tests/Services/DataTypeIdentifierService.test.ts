@@ -80,3 +80,77 @@ describe('DataTypeIdentifierService.identify', () => {
         expect(testItem.identify([])).toBeNull();
     });
 });
+
+describe('lazyLoad', () => {
+    class NormalDataType { }
+    class NormalIdentifier implements IDataTypeIdentifier
+    {
+        dataTypeLookupKey: string = 'Normal';
+        supportsValue(value: any): boolean {
+            return value instanceof NormalDataType;
+        }     
+    }
+    class LazyDataType { }
+    class LazyLoadIdentifier implements IDataTypeIdentifier
+    {
+        dataTypeLookupKey: string = 'LazyLoad';
+        supportsValue(value: any): boolean {
+            return value instanceof LazyDataType;
+        }
+    }    
+    test('Call to register does not lazy load', () => {
+        let tls = new DataTypeIdentifierService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadIdentifier());
+            loaded = true;
+        };
+        tls.register(new NormalIdentifier());
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for already registered does not lazy load', () => {
+        let tls = new DataTypeIdentifierService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadIdentifier());
+            loaded = true;
+        };
+        tls.register(new NormalIdentifier());
+        expect(loaded).toBe(false);
+        expect(tls.find(new NormalDataType())).toBeInstanceOf(NormalIdentifier);  // looks for NumberIdentifier
+        expect(loaded).toBe(false);
+ 
+    });
+    test('Call to find for unregistered does load but later find does not load for unregistered', () => {
+        let tls = new DataTypeIdentifierService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadIdentifier());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(tls.find(new LazyDataType())).toBeInstanceOf(LazyLoadIdentifier);
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(tls.find(new NormalDataType())).toBeNull();      // Number support not registered
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for unregistered does load but fails to load what it needs but has loaded one we use later', () => {
+        let tls = new DataTypeIdentifierService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadIdentifier());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(tls.find(new NormalDataType())).toBeNull();      // not registered
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(tls.find(new LazyDataType())).toBeInstanceOf(LazyLoadIdentifier);
+        expect(loaded).toBe(false);
+    });    
+});

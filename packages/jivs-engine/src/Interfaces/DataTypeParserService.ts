@@ -11,7 +11,7 @@ import { DataTypeResolution, IDataTypeService } from './DataTypes';
  * A service for parsing strings into the native data type
  * using {@link DataTypes/Types/IDataTypeParser!IDataTypeParser | IDataTypeParser} instances.
  */
-export interface IDataTypeParserService extends IDataTypeService
+export interface IDataTypeParserService extends IDataTypeService<IDataTypeParser<any>>
 {
     /**
      * Returns true if enabled and there is at least one parser registered.

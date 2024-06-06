@@ -7,15 +7,23 @@ import { IServiceWithAccessor } from './Services';
 /**
  * Base interface for Data Type services.
  */
-export interface IDataTypeService extends IServiceWithAccessor
+export interface IDataTypeService<T> extends IServiceWithAccessor
 {
+    /**
+     * Sets up a function to lazy load the configuration when any of the other
+     * functions are called.
+     * This function can be set after some initial registration.
+     * It will be discarded immediately after its used.
+     */
+    lazyLoad: (service: IDataTypeService<T>) => void;
+
     /**
       * Registers an instance of the interface supported by this service.
       * It may replace an existing one, as determined by the subclass.
       * Replace supported on: IDataTypeIdentifier
       * @param item
       */
-    register(item: any): void;    
+    register(item: T): void;    
 }
 
 /**

@@ -108,12 +108,16 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
     }
     /**
      * Returns a comparer that supports both values or null if not.
+     * Runs the lazyloader if setup and the first search fails.
      * @param value1 
      * @param value2 
      * @returns 
      */
     public find(value1: any, value2: any): IDataTypeComparer | null {
-        return this.getAll().find((dtc) => dtc.supportsValues(value1, value2)) ?? null;
+        let result = this.getAll().find((dtc) => dtc.supportsValues(value1, value2)) ?? null;
+        if (result === null && this.ensureLazyLoaded())
+            result = this.find(value1, value2);
+        return result;
     }
 
 }

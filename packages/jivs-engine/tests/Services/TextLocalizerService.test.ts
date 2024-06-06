@@ -221,84 +221,111 @@ describe('getDataTypeName', () => {
         expect(testItem.getDataTypeLabel('fr', 'Code4')).toBe('Code4');     
     });    
 });
-describe('lazyLoader', () => {
-   test('First call is to register, should be able to localize from what was lazy loaded', () => {
-       let tls = new TextLocalizerService();
-       tls.lazyLoad = (service) => {
+describe('lazyLoad', () => {
+   test('Call to register does not lazy load', () => {
+       let testItem = new TextLocalizerService();
+       let loaded = false;
+       testItem.lazyLoad = (service) => {
            service.register('Code1', {
                '*': 'Code1_Text'
            });
+           loaded = true;
        };
-       tls.register('Code2', { '*': 'Code2_Text' });    // this should load Code1
-       expect(tls.localize('en', 'Code1', null)).toBe('Code1_Text');
+       testItem.register('Code2', { '*': 'Code2_Text' });
+       expect(loaded).toBe(false);
    }); 
-    test('First call is to localize for the value to be lazyloaded, should be able to localize', () => {
-        let tls = new TextLocalizerService();
-        tls.lazyLoad = (service) => {
+   test('Call to localize for already registered does not lazy load', () => {
+    let testItem = new TextLocalizerService();
+    let loaded = false;
+    testItem.lazyLoad = (service) => {
+        service.register('Code1', {
+            '*': 'Code1_Text'
+        });
+        loaded = true;
+    };
+    testItem.register('Code2', { '*': 'Code2_Text' });
+    expect(loaded).toBe(false);
+    testItem.localize('en', 'Code2', null);
+    expect(loaded).toBe(false);
+
+   });     
+    test('Call to localize for unregistered does load but later localize does not load for unregistered', () => {
+        let testItem = new TextLocalizerService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
             service.register('Code1', {
                 '*': 'Code1_Text'
             });
+            loaded = true;
         };
-        expect(tls.localize('en', 'Code1', null)).toBe('Code1_Text');
+        expect(testItem.localize('en', 'Code1', null)).toBe('Code1_Text');
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded
+        loaded = false;
+        expect(testItem.localize('en', 'Code2', null)).toBeNull();      // code2 is unregistered  
+        expect(loaded).toBe(false);
     });     
-    test('First call is to registerErrorMessage, should be able to localize from what was lazy loaded', () => {
-        let tls = new TextLocalizerService();
-        tls.lazyLoad = (service) => {
-            service.registerErrorMessage('Code1', null, {
-                '*': 'Code1_Text'
-            });
-        };
-        tls.registerErrorMessage('Code2', null, { '*': 'Code2_Text' });    // this should load Code1
-        expect(tls.getErrorMessage('en', 'Code1', null)).toBe('Code1_Text');
-    });     
-    test('First call is to registerSummaryMessage, should be able to localize from what was lazy loaded', () => {
-        let tls = new TextLocalizerService();
-        tls.lazyLoad = (service) => {
-            service.registerSummaryMessage('Code1', null, {
-                '*': 'Code1_Text'
-            });
-        };
-        tls.registerSummaryMessage('Code2', null, { '*': 'Code2_Text' });    // this should load Code1
-        expect(tls.getSummaryMessage('en', 'Code1', null)).toBe('Code1_Text');
-    });         
-    test('First call is to registerDataTypeLabel, should be able to localize from what was lazy loaded', () => {
-        let tls = new TextLocalizerService();
-        tls.lazyLoad = (service) => {
-            service.registerDataTypeLabel('Code1', {
-                '*': 'Code1_Text'
-            });
-        };
-        tls.registerDataTypeLabel('Code2', { '*': 'Code2_Text' });    // this should load Code1
-        expect(tls.getDataTypeLabel('en', 'Code1')).toBe('Code1_Text');
-    });
-    test('First call is to getErrorMessage for a value to be lazy loaded, should be able to localize from what was lazy loaded', () => {
-        let tls = new TextLocalizerService();
-        tls.lazyLoad = (service) => {
-            service.registerErrorMessage('Code1', null, {
-                '*': 'Code1_Text'
-            });
-        };
-        expect(tls.getErrorMessage('en', 'Code1', null)).toBe('Code1_Text');
-    });     
-    test('First call is to getSummaryMessage for a value to be lazy loaded, should be able to localize from what was lazy loaded', () => {
-        let tls = new TextLocalizerService();
-        tls.lazyLoad = (service) => {
-            service.registerSummaryMessage('Code1', null, {
-                '*': 'Code1_Text'
-            });
-        };
-        expect(tls.getSummaryMessage('en', 'Code1', null)).toBe('Code1_Text');
-    });         
-    test('First call is to getDataTypeLabel for a value to be lazy loaded, should be able to localize from what was lazy loaded', () => {
-        let tls = new TextLocalizerService();
-        tls.lazyLoad = (service) => {
-            service.registerDataTypeLabel('Code1', {
-                '*': 'Code1_Text'
-            });
-        };
-        expect(tls.getDataTypeLabel('en', 'Code1')).toBe('Code1_Text');
-    });
 
+    test('registerErrorMessage does not lazyload, getErrorMessage to registered does not lazyload, getErrorMessage to unregister does lazyload, getErrorMessage after lazyload does not lazyload', () => {
+        let testItem = new TextLocalizerService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.registerErrorMessage('Code1', null, {
+                '*': 'Code1_Text'
+            });
+            loaded = true;
+        };
+        testItem.registerErrorMessage('Code2', null, { '*': 'Code2_Text' }); 
+        expect(loaded).toBe(false);
+        expect(testItem.getErrorMessage('en', 'Code2', null)).toBe('Code2_Text');
+        expect(loaded).toBe(false);
+        expect(testItem.getErrorMessage('en', 'Code1', null)).toBe('Code1_Text');   // this should load Code1
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded
+        loaded = false;
+        expect(testItem.getErrorMessage('en', 'Code3', null)).toBeNull();      // code3 is unregistered  
+        expect(loaded).toBe(false);        
+    });     
+    test('registerSummaryMessage does not lazyload, getSummaryMessage to registered does not lazyload, getSummaryMessage to unregister does lazyload, getSummaryMessage after lazyload does not lazyload', () => {
+        let testItem = new TextLocalizerService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.registerSummaryMessage('Code1', null, {
+                '*': 'Code1_Text'
+            });
+            loaded = true;
+        };
+        testItem.registerSummaryMessage('Code2', null, { '*': 'Code2_Text' }); 
+        expect(loaded).toBe(false);
+        expect(testItem.getSummaryMessage('en', 'Code2', null)).toBe('Code2_Text');
+        expect(loaded).toBe(false);
+        expect(testItem.getSummaryMessage('en', 'Code1', null)).toBe('Code1_Text');   // this should load Code1
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded
+        loaded = false;
+        expect(testItem.getSummaryMessage('en', 'Code3', null)).toBeNull();      // code3 is unregistered  
+        expect(loaded).toBe(false);        
+    });     
+    test('registerDataTypeLabel does not lazyload, getDataTypeLabel to registered does not lazyload, getDataTypeLabel to unregister does lazyload, getDataTypeLabel after lazyload does not lazyload', () => {
+        let testItem = new TextLocalizerService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.registerDataTypeLabel('Code1', {
+                '*': 'Code1_Text'
+            });
+            loaded = true;
+        };
+        testItem.registerDataTypeLabel('Code2', { '*': 'Code2_Text' }); 
+        expect(loaded).toBe(false);
+        expect(testItem.getDataTypeLabel('en', 'Code2')).toBe('Code2_Text');
+        expect(loaded).toBe(false);
+        expect(testItem.getDataTypeLabel('en', 'Code1',)).toBe('Code1_Text');   // this should load Code1
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded
+        loaded = false;
+        expect(testItem.getDataTypeLabel('en', 'Code3')).toBe('Code3');      // code3 is unregistered, so its lookupKey is used
+        expect(loaded).toBe(false);        
+    });     
 });
 
 describe('dispose', () => {

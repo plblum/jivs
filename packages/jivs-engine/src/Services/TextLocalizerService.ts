@@ -63,27 +63,6 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
     private _fallbackService: ITextLocalizerService | null = null;
 
     /**
-     * Sets up a function to lazy load the configuration when any of the other
-     * functions are called.
-     */
-    public set lazyLoad(fn: (service: TextLocalizerService) => void)
-    {
-        this._lazyLoader = fn;
-    }
-
-    private _lazyLoader: null | ((service: TextLocalizerService) => void) = null;
-
-    protected ensureLazyLoaded(): void
-    {
-        if (this._lazyLoader) {
-            // prevent recursion by disabling the feature right away
-            let fn = this._lazyLoader;
-            this._lazyLoader = null;
-            fn(this);
-        }
-    }
-
-    /**
      * Returns the localized version of the text for the given culture.
      * Will try the language from the culture ('en' from 'en-US')
      * and a code called '*' to be used as a general fallback. You will have to 
@@ -105,8 +84,6 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public localize(cultureIdToMatch: string, l10nKey: string | null, fallback: string | null): string | null
     {
-        this.ensureLazyLoaded();
-
         if (!l10nKey)   // including '', null and undefined
             return fallback;
 
@@ -119,6 +96,11 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
             text = mapped['*'];
             if (text !== undefined)
                 return text;
+        }
+        else if (this.ensureLazyLoaded())
+        {
+            // try again now that we've lazy loaded
+            return this.localize(cultureIdToMatch, l10nKey, fallback);  //! recursion
         }
         if (this.fallbackService !== null)
             return this.fallbackService.localize(cultureIdToMatch, l10nKey, fallback);
@@ -215,7 +197,6 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public register(l10nKey: string, cultureToText: CultureToText): void
     {
-        this.ensureLazyLoaded();
         this._l10nKeyMap.set(l10nKey, cultureToText);
     }
 
@@ -279,4 +260,33 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      * }
      */
     private readonly _l10nKeyMap: Map<string, CultureToText> = new Map<string, CultureToText>();
+
+
+    /**
+     * Sets up a function to lazy load the configuration when the localize() function 
+     * tries and fails to match a request.
+     */
+    public set lazyLoad(fn: (service: TextLocalizerService) => void)
+    {
+        this._lazyLoader = fn;
+    }
+
+    private _lazyLoader: null | ((service: TextLocalizerService) => void) = null;
+
+    /**
+     * Runs the lazyload function if setup and returns true if run.
+     * @returns 
+     */
+    protected ensureLazyLoaded(): boolean
+    {
+        if (this._lazyLoader) {
+            // prevent recursion by disabling the feature right away
+            let fn = this._lazyLoader;
+            this._lazyLoader = null;
+            fn(this);
+            return true;
+        }
+        return false;
+    }
+
 }

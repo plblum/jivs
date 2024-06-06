@@ -1,6 +1,6 @@
-import { BooleanDataTypeComparer, defaultComparer } from "../../src/DataTypes/DataTypeComparers";
-import { CaseInsensitiveStringConverter, DateTimeConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
-import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIdentifier, DateDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
+import { BooleanDataTypeComparer } from "../../src/DataTypes/DataTypeComparers";
+import { CaseInsensitiveStringConverter, DateTimeConverter } from "../../src/DataTypes/DataTypeConverters";
+import { StringDataTypeIdentifier, BooleanDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ComparersResult } from "../../src/Interfaces/DataTypeComparerService";
 import { IDataTypeComparer } from "../../src/Interfaces/DataTypeComparers";
@@ -557,4 +557,77 @@ booleancomparer compares the two values
         expect(testItem.compare(test2, test1, "HoldsDate", "HoldsDate")).toBe(ComparersResult.NotEquals);        
         expect(testItem.compare(test1, test3, "HoldsDate", "HoldsDate")).toBe(ComparersResult.Equals);
     });      
+});
+
+describe('lazyLoad', () => {
+    class NormalComparer implements IDataTypeComparer
+    {
+        supportsValues(value1: any, value2: any): boolean {
+            return typeof value1 === 'number' && typeof value2 === 'number';
+        }
+        compare(value1: number, value2: number): ComparersResult {
+            if (value1 === value2)
+                return ComparersResult.Equals;
+            else if (value1 < value2)
+                return ComparersResult.LessThan;
+            return ComparersResult.GreaterThan
+        }
+        
+    }
+    class LazyLoadComparer extends TestComparer { }
+    test('Call to register does not lazy load', () => {
+        let tls = new DataTypeComparerService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadComparer());
+            loaded = true;
+        };
+        tls.register(new NormalComparer());
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for already registered does not lazy load', () => {
+        let tls = new DataTypeComparerService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadComparer());
+            loaded = true;
+        };
+        tls.register(new NormalComparer());
+        expect(loaded).toBe(false);
+        expect(tls.find(1, 2)).toBeInstanceOf(NormalComparer);  // looks for NumberComparer
+        expect(loaded).toBe(false);
+ 
+    });
+    test('Call to find for unregistered does load but later find does not load for unregistered', () => {
+        let tls = new DataTypeComparerService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadComparer());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(tls.find(new TestDataType('p', 'b'), new TestDataType('p', 'b'))).toBeInstanceOf(LazyLoadComparer);
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(tls.find(2, 3)).toBeNull();      // Number support not registered
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for unregistered does load but fails to load what it needs but has loaded one we use later', () => {
+        let tls = new DataTypeComparerService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadComparer());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(tls.find(2, 3)).toBeNull();      // Number support not registered
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(tls.find(new TestDataType('p', 'b'), new TestDataType('p', 'b'))).toBeInstanceOf(LazyLoadComparer);
+        expect(loaded).toBe(false);
+    });    
 });

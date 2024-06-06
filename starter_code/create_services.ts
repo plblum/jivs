@@ -226,26 +226,32 @@ export function registerConditions(cf: ConditionFactory): void
         (ConditionType.LessThanOrEqualValue, (config) => new LessThanOrEqualValueCondition(config));    
     cf.register<StringLengthConditionConfig>
         (ConditionType.StringLength, (config) => new StringLengthCondition(config));
-    cf.register<AllMatchConditionConfig>
-        (ConditionType.And, (config) => new AllMatchCondition(config));
-    cf.register<AnyMatchConditionConfig>
-        (ConditionType.Or, (config) => new AnyMatchCondition(config));
-    cf.register<CountMatchesConditionConfig>
-        (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
-    cf.register<NotNullConditionConfig>(
-        ConditionType.NotNull, (config) => new NotNullCondition(config));
-    // aliases for users who don't deal well with boolean logic can relate
-    cf.register<AllMatchConditionConfig>
-        (ConditionType.All, (config) => new AllMatchCondition(config));
-    cf.register<AnyMatchConditionConfig>
-        (ConditionType.Any, (config) => new AnyMatchCondition(config));
     
-    cf.register<PositiveConditionConfig>
-        (ConditionType.Positive, (config) => new PositiveCondition(config));  
-    cf.register<IntegerConditionConfig>
-        (ConditionType.Integer, (config) => new IntegerCondition(config));
-    cf.register<MaxDecimalsConditionConfig>
-        (ConditionType.MaxDecimals, (config) => new MaxDecimalsCondition(config));    
+    // Lazy load anything that is infrequently used.
+    // Feel free to move conditions into and out of this as needed.
+    cf.lazyLoad = (factory) => {
+    
+        cf.register<AllMatchConditionConfig>
+            (ConditionType.And, (config) => new AllMatchCondition(config));
+        cf.register<AnyMatchConditionConfig>
+            (ConditionType.Or, (config) => new AnyMatchCondition(config));
+        cf.register<CountMatchesConditionConfig>
+            (ConditionType.CountMatches, (config) => new CountMatchesCondition(config));
+        cf.register<NotNullConditionConfig>(
+            ConditionType.NotNull, (config) => new NotNullCondition(config));
+        // aliases for users who don't deal well with boolean logic can relate
+        cf.register<AllMatchConditionConfig>
+            (ConditionType.All, (config) => new AllMatchCondition(config));
+        cf.register<AnyMatchConditionConfig>
+            (ConditionType.Any, (config) => new AnyMatchCondition(config));
+    
+        cf.register<PositiveConditionConfig>
+            (ConditionType.Positive, (config) => new PositiveCondition(config));
+        cf.register<IntegerConditionConfig>
+            (ConditionType.Integer, (config) => new IntegerCondition(config));
+        cf.register<MaxDecimalsConditionConfig>
+            (ConditionType.MaxDecimals, (config) => new MaxDecimalsCondition(config));
+    }
 }
 
 
@@ -293,6 +299,12 @@ export function registerDataTypeIdentifiers(dtis: DataTypeIdentifierService): vo
     dtis.register(new DateDataTypeIdentifier());
     */
     // See see \examples\ComparingCustomDataTypeAsNumber and ComparingCustomDataTypeAsDate examples of custom DataTypeIdentifiers    
+    // this supports lazyload if you want it
+    /*
+    dtis.lazyLoad = (service)=>{
+        dtis.register();
+    }
+    */
 }
 
 /**
@@ -304,40 +316,43 @@ export function registerDataTypeIdentifiers(dtis: DataTypeIdentifierService): vo
  */
 export function registerDataTypeFormatters(dtfs: DataTypeFormatterService): void
 {
-// Register DataTypeFormatters the app will use, including adding your own
+    // NOTE: Lazy loads here, but its optional, and you can register some before attaching the callback
+    // for cases that you know will be needed early on.
+    dtfs.lazyLoad = (service) => {
+        // Register DataTypeFormatters the app will use, including adding your own
 
-    // Most of these can be modified through their constructor.
-    // - Those that use the Intl library for localization let you pass options
-    //   supported by Intl.NumberFormat or Intl.DateFormat.
-    // - The Boolean and YesNo let you supply a list of cultures and their
-    //   language specific values for "TrueLabel" and "FalseLabel"
-    dtfs.register(new StringFormatter());
-    dtfs.register(new NumberFormatter());     // options?: Intl.NumberFormatOptions
-    dtfs.register(new IntegerFormatter());    // options?: Intl.NumberFormatOptions
-    dtfs.register(new DateFormatter());       // options?: Intl.DateTimeFormatOptions
+        // Most of these can be modified through their constructor.
+        // - Those that use the Intl library for localization let you pass options
+        //   supported by Intl.NumberFormat or Intl.DateFormat.
+        // - The Boolean and YesNo let you supply a list of cultures and their
+        //   language specific values for "TrueLabel" and "FalseLabel"
+        dtfs.register(new StringFormatter());
+        dtfs.register(new NumberFormatter());     // options?: Intl.NumberFormatOptions
+        dtfs.register(new IntegerFormatter());    // options?: Intl.NumberFormatOptions
+        dtfs.register(new DateFormatter());       // options?: Intl.DateTimeFormatOptions
 
-    // less used - consider commenting out until you know they are neded
-    dtfs.register(new CapitalizeStringFormatter());
-    dtfs.register(new UppercaseStringFormatter());
-    dtfs.register(new LowercaseStringFormatter());
-    dtfs.register(new DateTimeFormatter());       // options?: Intl.DateTimeFormatOptions
-    dtfs.register(new AbbrevDateFormatter());     // options?: Intl.DateTimeFormatOptions
-    dtfs.register(new AbbrevDOWDateFormatter());  // options?: Intl.DateTimeFormatOptions
-    dtfs.register(new LongDateFormatter());       // options?: Intl.DateTimeFormatOptions
-    dtfs.register(new LongDOWDateFormatter());    // options?: Intl.DateTimeFormatOptions
-    dtfs.register(new TimeofDayFormatter());      // options?: Intl.DateTimeFormatOptions
-    dtfs.register(new TimeofDayHMSFormatter());   // options?: Intl.DateTimeFormatOptions
-    dtfs.register(new CurrencyFormatter('USD'));  // set this to your currency code
-    // defaultCurrencyCode: 'USD', options?: Intl.NumberFormatOptions, cultureToCurrencyCode? { 'en-US' : 'USD', 'es-SP': 'EUR' }
+        // less used - consider commenting out until you know they are neded
+        dtfs.register(new CapitalizeStringFormatter());
+        dtfs.register(new UppercaseStringFormatter());
+        dtfs.register(new LowercaseStringFormatter());
+        dtfs.register(new DateTimeFormatter());       // options?: Intl.DateTimeFormatOptions
+        dtfs.register(new AbbrevDateFormatter());     // options?: Intl.DateTimeFormatOptions
+        dtfs.register(new AbbrevDOWDateFormatter());  // options?: Intl.DateTimeFormatOptions
+        dtfs.register(new LongDateFormatter());       // options?: Intl.DateTimeFormatOptions
+        dtfs.register(new LongDOWDateFormatter());    // options?: Intl.DateTimeFormatOptions
+        dtfs.register(new TimeofDayFormatter());      // options?: Intl.DateTimeFormatOptions
+        dtfs.register(new TimeofDayHMSFormatter());   // options?: Intl.DateTimeFormatOptions
+        dtfs.register(new CurrencyFormatter('USD'));  // set this to your currency code
+        // defaultCurrencyCode: 'USD', options?: Intl.NumberFormatOptions, cultureToCurrencyCode? { 'en-US' : 'USD', 'es-SP': 'EUR' }
 
-    dtfs.register(new PercentageFormatter());     // options?: Intl.NumberFormatOptions
-    dtfs.register(new Percentage100Formatter());  // options?: Intl.NumberFormatOptions
-    // NOTE: BooleanFormatter has its strings localized in ValidationServices.TextLocalizerService
-    // connected to the TrueLabell10n and FalseLabell10n properties.
-    dtfs.register(new BooleanFormatter(LookupKey.Boolean)); // "true" and "false"
-   // Example of providing another set of labels for true/false by supplying a different lookup key
-    dtfs.register(new BooleanFormatter(LookupKey.YesNoBoolean, 'yes', 'no')); 
- 
+        dtfs.register(new PercentageFormatter());     // options?: Intl.NumberFormatOptions
+        dtfs.register(new Percentage100Formatter());  // options?: Intl.NumberFormatOptions
+        // NOTE: BooleanFormatter has its strings localized in ValidationServices.TextLocalizerService
+        // connected to the TrueLabell10n and FalseLabell10n properties.
+        dtfs.register(new BooleanFormatter(LookupKey.Boolean)); // "true" and "false"
+        // Example of providing another set of labels for true/false by supplying a different lookup key
+        dtfs.register(new BooleanFormatter(LookupKey.YesNoBoolean, 'yes', 'no'));
+    }
 }
 
 /**
@@ -350,19 +365,23 @@ export function registerDataTypeFormatters(dtfs: DataTypeFormatterService): void
  */
 export function registerDataTypeConverters(dtcs: DataTypeConverterService): void
 {
-    // Register DataTypeConverters the app will use, including adding your own.
+    // NOTE: Lazy loads here, but its optional, and you can register some before attaching the callback
+    // for cases that you know will be needed early on.
+    dtcs.lazyLoad = (service) => {
+        // Register DataTypeConverters the app will use, including adding your own.
 
-    /* These are pre-installed into DataTypeIdentifierService as they are core functionality
-        dtcs.register(new UTCDateOnlyConverter()); // so Dates have support out of the box
-    */
-    // see \examples\ folder for numerous examples of custom DataTypeConverters.
-    dtcs.register(new CaseInsensitiveStringConverter());
-    dtcs.register(new DateTimeConverter());
-    dtcs.register(new LocalDateOnlyConverter());
-    dtcs.register(new TimeOfDayOnlyConverter());
-    dtcs.register(new TimeOfDayHMSOnlyConverter());
-    dtcs.register(new IntegerConverter());
-    dtcs.register(new TotalDaysConverter());
+        /* These are pre-installed into DataTypeIdentifierService as they are core functionality
+            dtcs.register(new UTCDateOnlyConverter()); // so Dates have support out of the box
+        */
+        // see \examples\ folder for numerous examples of custom DataTypeConverters.
+        dtcs.register(new CaseInsensitiveStringConverter());
+        dtcs.register(new DateTimeConverter());
+        dtcs.register(new LocalDateOnlyConverter());
+        dtcs.register(new TimeOfDayOnlyConverter());
+        dtcs.register(new TimeOfDayHMSOnlyConverter());
+        dtcs.register(new IntegerConverter());
+        dtcs.register(new TotalDaysConverter());
+    }
 }
 
 /**
@@ -376,9 +395,16 @@ export function registerDataTypeConverters(dtcs: DataTypeConverterService): void
  * @param dtcs 
  */
 export function registerDataTypeComparers(dtcs: DataTypeComparerService): void
-{ /* These are pre-installed into DataTypeIdentifierService as they are core functionality
+{
+/* These are pre-installed into DataTypeIdentifierService as they are core functionality
     dtcs.register(new BooleanDataTypeComparer());
-*/    
+*/
+    // this supports the lazyLoad model:
+    /*
+    dtcs.lazyLoad = (service)=>{
+    // dtcs.register()
+    }
+    */
 }
 /**
  * Give data types their parsers, for use with InputValueHosts.
@@ -398,164 +424,167 @@ export function registerDataTypeComparers(dtcs: DataTypeComparerService): void
  */
 export function registerDataTypeParsers(dtps: DataTypeParserService): void {
     dtps.enabled = true;
+    // NOTE: Lazy loads here, but its optional, and you can register some before attaching the callback
+    // for cases that you know will be needed early on.
+    dtps.lazyLoad = (service) => {
     
-// Register DataTypeParsers the app will use, including adding your own
-// The order registered is the order used for matching lookup keys.
+        // Register DataTypeParsers the app will use, including adding your own
+        // The order registered is the order used for matching lookup keys.
 
 
-    // This registratation ensures that every string trims lead and trailing spaces...
-    dtps.register(new CleanUpStringParser(LookupKey.String, { trim: true }));
+        // This registratation ensures that every string trims lead and trailing spaces...
+        dtps.register(new CleanUpStringParser(LookupKey.String, { trim: true }));
 
-    // CleanUpStringParser has many useful options to cleanup strings.
-    // You might have specialized lookup keys for strong patterned strings,
-    // like a phone number or postal code that need strings cleaned up from
-    // within the user's formatted entry, such as converting "(203) 300-4000"
-    // into the pattern [3 digit]-[3 digit]-[4 digit] pattern ("203-300-4000") 
-    // expected when you store it.
-    // You will still need validators to reject the final text when it is not the expected pattern.
-    /*
-    dtps.register(new CleanUpStringParser("USPhoneNumber", {
-        trim: true,
-        compressWhitespace: true,
-        replaceWhitespace: '-',
-        stripTheseCharacters: '().'
-    }));
-    */
-
-// --- The following sections are culture sensitive.
-// Example data is provided for:
-// 'en-US', 'en-CA', 'en-GB', 'en-MX', 'en'
-// 'es-ES', 'es-MX', 'es'
-// 'fr-FR', 'fr-CA', 'fr'
-// 'de-DE', 'de'
-// Rework each section to accomodate the cultures your app uses.
-    
-
-// --- Numbers -------------------
-
-    // culture specific number rules
-    // 'US', 'GB, 'CA', 'MX'
-    let enUSNumbers: NumberCultureInfo = {
-        decimalSeparator: '.',
-        negativeSymbol: '-',
-        thousandsSeparator: ',',
-        currencySymbol: '$',
-        percentSymbol: '%'
-    };
-    let enGBNumbers: NumberCultureInfo = { ...enUSNumbers, currencySymbol: '£' };
-    let enCANumbers: NumberCultureInfo = { ...enUSNumbers, currencySymbol: '$' }
-    
-    // 'FR', 'CA'
-    let frFRNumbers: NumberCultureInfo = {
-        decimalSeparator: ',',
-        negativeSymbol: '-',
-        thousandsSeparator: ' ',
-        currencySymbol: '€',
-        percentSymbol: '%'
-    };
-    let frCANumbers: NumberCultureInfo = { ...frFRNumbers, currencySymbol: '$' }
-    
-    // Spanish and German: 'ES', 'DE'
-    let esESNumbers: NumberCultureInfo = {
-        decimalSeparator: ',',
-        negativeSymbol: '-',
-        thousandsSeparator: '.',
-        currencySymbol: '€',
-        percentSymbol: '%'
-    };
-
-    function registerNumbersFor(cultureIDs: Array<string>, cultureInfo: NumberCultureInfo): void {
-        // for LookupKey.Number
-        dtps.register(new NumberParser(cultureIDs, cultureInfo));
-        // for LookupKey.Currency
-        dtps.register(new CurrencyParser(cultureIDs, cultureInfo));
-        // for LookupKey.Percentage
-        dtps.register(new PercentageParser(cultureIDs, cultureInfo));
-        // for LookupKey.Percentage100
-        dtps.register(new Percentage100Parser(cultureIDs, cultureInfo));
-    }
-
-    registerNumbersFor(['en-US', 'en-MX', 'es-MX', 'en'], enUSNumbers);
-    registerNumbersFor(['en-CA'], enCANumbers);
-    registerNumbersFor(['en-GB'], enGBNumbers);
-    registerNumbersFor(['fr-FR', 'fr'], frFRNumbers);
-    registerNumbersFor(['fr-CA'], frCANumbers);
-    registerNumbersFor(['es-ES', 'de-DE', 'es', 'de'], esESNumbers);
-
-// --- DateTimes ------
-    // 'US'
-    let enUSDateTimes: DateTimeCultureInfo = {
-        order: 'mdy',
-        shortDateSeparator: '/',
-        twoDigitYearBreak: 29
-    };
-
-    // 'CA'
-    let enCADateTimes: DateTimeCultureInfo =
-    {
-        order: 'ymd',
-        shortDateSeparator: '/',
-        twoDigitYearBreak: 29
-    }
-    // most others
-    let enGBDateTimes: DateTimeCultureInfo =
-    {
-        order: 'dmy',
-        shortDateSeparator: '/',
-        twoDigitYearBreak: 29
-    }
-
-    let usingUTCForDates = true;    // set to false if using local time for dates
-    function registerDateTimesFor(cultureIDs: Array<string>, cultureInfo: DateTimeCultureInfo): void {
-        dtps.register(new ShortDatePatternParser(LookupKey.Date, cultureIDs, cultureInfo, usingUTCForDates));
-        dtps.register(new ShortDatePatternParser(LookupKey.ShortDate, cultureIDs, cultureInfo, usingUTCForDates));
-    }
-
-    registerDateTimesFor(['en-US', 'es-US'], enUSDateTimes);
-    registerDateTimesFor(['en-CA'], enCADateTimes);
-    registerDateTimesFor(['en-GB', 'fr-FR', 'fr-CA', 'es-MX', 'es-ES', 'de-DE'], enGBDateTimes);
-
-// --- booleans -----------
-    // If you post back form input of type='checkbox', it needs the boolean parser.
-    // The value varies, but is always a non-empty string.
-    // EmptyStringIsFalseParser handles that special case, but you must supply a lookup key.
-    dtps.register(new EmptyStringIsFalseParser('NEEDS A LOOKUP KEY'));
-
-    // There is a BooleanParser that can handle a list of strings for both true and false.
-    // This is a sample configuration.
-
-    // all text is case insensitive matching
-    let coreTrueValues = ['1', 'true', 't'];
-    let coreFalseValues = ['0', 'false', 'f', ''];
-    let enExtraTrueValues = ['yes'];
-    let enExtraFalseValues = ['no'];
-    let esExtraTrueValues = ['sí', 'verdadero'];
-    let esExtraFalseValues = ['no', 'falso'];
-    let frExtraTrueValues = ['oui', 'vrai'];
-    let frExtraFalseValues = ['non', 'faux'];
-    let deExtraTrueValues = ['ja', 'wahr'];
-    let deExtraFalseValues = ['nein', 'falsch'];
-    dtps.register(new BooleanParser(['en', 'en-US', 'en-CA', 'en-GB'],
-        {
-            trueValues: coreTrueValues.concat(enExtraTrueValues),
-            falseValues: coreFalseValues.concat(enExtraFalseValues)
+        // CleanUpStringParser has many useful options to cleanup strings.
+        // You might have specialized lookup keys for strong patterned strings,
+        // like a phone number or postal code that need strings cleaned up from
+        // within the user's formatted entry, such as converting "(203) 300-4000"
+        // into the pattern [3 digit]-[3 digit]-[4 digit] pattern ("203-300-4000") 
+        // expected when you store it.
+        // You will still need validators to reject the final text when it is not the expected pattern.
+        /*
+        dtps.register(new CleanUpStringParser("USPhoneNumber", {
+            trim: true,
+            compressWhitespace: true,
+            replaceWhitespace: '-',
+            stripTheseCharacters: '().'
         }));
-    dtps.register(new BooleanParser(['es', 'es-US', 'es-ES', 'es-MX'],
-        {
-            trueValues: coreTrueValues.concat(esExtraTrueValues),
-            falseValues: coreFalseValues.concat(esExtraFalseValues)
-        }));
-    dtps.register(new BooleanParser(['fr', 'fr-FR', 'fr-CA'],
-        {
-            trueValues: coreTrueValues.concat(frExtraTrueValues),
-            falseValues: coreFalseValues.concat(frExtraFalseValues)
-        }));
-    dtps.register(new BooleanParser(['de', 'de-DE'],
-        {
-            trueValues: coreTrueValues.concat(deExtraTrueValues),
-            falseValues: coreFalseValues.concat(deExtraFalseValues)
-        }));    
+        */
 
+        // --- The following sections are culture sensitive.
+        // Example data is provided for:
+        // 'en-US', 'en-CA', 'en-GB', 'en-MX', 'en'
+        // 'es-ES', 'es-MX', 'es'
+        // 'fr-FR', 'fr-CA', 'fr'
+        // 'de-DE', 'de'
+        // Rework each section to accomodate the cultures your app uses.
+    
+
+        // --- Numbers -------------------
+
+        // culture specific number rules
+        // 'US', 'GB, 'CA', 'MX'
+        let enUSNumbers: NumberCultureInfo = {
+            decimalSeparator: '.',
+            negativeSymbol: '-',
+            thousandsSeparator: ',',
+            currencySymbol: '$',
+            percentSymbol: '%'
+        };
+        let enGBNumbers: NumberCultureInfo = { ...enUSNumbers, currencySymbol: '£' };
+        let enCANumbers: NumberCultureInfo = { ...enUSNumbers, currencySymbol: '$' }
+    
+        // 'FR', 'CA'
+        let frFRNumbers: NumberCultureInfo = {
+            decimalSeparator: ',',
+            negativeSymbol: '-',
+            thousandsSeparator: ' ',
+            currencySymbol: '€',
+            percentSymbol: '%'
+        };
+        let frCANumbers: NumberCultureInfo = { ...frFRNumbers, currencySymbol: '$' }
+    
+        // Spanish and German: 'ES', 'DE'
+        let esESNumbers: NumberCultureInfo = {
+            decimalSeparator: ',',
+            negativeSymbol: '-',
+            thousandsSeparator: '.',
+            currencySymbol: '€',
+            percentSymbol: '%'
+        };
+
+        function registerNumbersFor(cultureIDs: Array<string>, cultureInfo: NumberCultureInfo): void {
+            // for LookupKey.Number
+            dtps.register(new NumberParser(cultureIDs, cultureInfo));
+            // for LookupKey.Currency
+            dtps.register(new CurrencyParser(cultureIDs, cultureInfo));
+            // for LookupKey.Percentage
+            dtps.register(new PercentageParser(cultureIDs, cultureInfo));
+            // for LookupKey.Percentage100
+            dtps.register(new Percentage100Parser(cultureIDs, cultureInfo));
+        }
+
+        registerNumbersFor(['en-US', 'en-MX', 'es-MX', 'en'], enUSNumbers);
+        registerNumbersFor(['en-CA'], enCANumbers);
+        registerNumbersFor(['en-GB'], enGBNumbers);
+        registerNumbersFor(['fr-FR', 'fr'], frFRNumbers);
+        registerNumbersFor(['fr-CA'], frCANumbers);
+        registerNumbersFor(['es-ES', 'de-DE', 'es', 'de'], esESNumbers);
+
+        // --- DateTimes ------
+        // 'US'
+        let enUSDateTimes: DateTimeCultureInfo = {
+            order: 'mdy',
+            shortDateSeparator: '/',
+            twoDigitYearBreak: 29
+        };
+
+        // 'CA'
+        let enCADateTimes: DateTimeCultureInfo =
+        {
+            order: 'ymd',
+            shortDateSeparator: '/',
+            twoDigitYearBreak: 29
+        }
+        // most others
+        let enGBDateTimes: DateTimeCultureInfo =
+        {
+            order: 'dmy',
+            shortDateSeparator: '/',
+            twoDigitYearBreak: 29
+        }
+
+        let usingUTCForDates = true;    // set to false if using local time for dates
+        function registerDateTimesFor(cultureIDs: Array<string>, cultureInfo: DateTimeCultureInfo): void {
+            dtps.register(new ShortDatePatternParser(LookupKey.Date, cultureIDs, cultureInfo, usingUTCForDates));
+            dtps.register(new ShortDatePatternParser(LookupKey.ShortDate, cultureIDs, cultureInfo, usingUTCForDates));
+        }
+
+        registerDateTimesFor(['en-US', 'es-US'], enUSDateTimes);
+        registerDateTimesFor(['en-CA'], enCADateTimes);
+        registerDateTimesFor(['en-GB', 'fr-FR', 'fr-CA', 'es-MX', 'es-ES', 'de-DE'], enGBDateTimes);
+
+        // --- booleans -----------
+        // If you post back form input of type='checkbox', it needs the boolean parser.
+        // The value varies, but is always a non-empty string.
+        // EmptyStringIsFalseParser handles that special case, but you must supply a lookup key.
+        dtps.register(new EmptyStringIsFalseParser('NEEDS A LOOKUP KEY'));
+
+        // There is a BooleanParser that can handle a list of strings for both true and false.
+        // This is a sample configuration.
+
+        // all text is case insensitive matching
+        let coreTrueValues = ['1', 'true', 't'];
+        let coreFalseValues = ['0', 'false', 'f', ''];
+        let enExtraTrueValues = ['yes'];
+        let enExtraFalseValues = ['no'];
+        let esExtraTrueValues = ['sí', 'verdadero'];
+        let esExtraFalseValues = ['no', 'falso'];
+        let frExtraTrueValues = ['oui', 'vrai'];
+        let frExtraFalseValues = ['non', 'faux'];
+        let deExtraTrueValues = ['ja', 'wahr'];
+        let deExtraFalseValues = ['nein', 'falsch'];
+        dtps.register(new BooleanParser(['en', 'en-US', 'en-CA', 'en-GB'],
+            {
+                trueValues: coreTrueValues.concat(enExtraTrueValues),
+                falseValues: coreFalseValues.concat(enExtraFalseValues)
+            }));
+        dtps.register(new BooleanParser(['es', 'es-US', 'es-ES', 'es-MX'],
+            {
+                trueValues: coreTrueValues.concat(esExtraTrueValues),
+                falseValues: coreFalseValues.concat(esExtraFalseValues)
+            }));
+        dtps.register(new BooleanParser(['fr', 'fr-FR', 'fr-CA'],
+            {
+                trueValues: coreTrueValues.concat(frExtraTrueValues),
+                falseValues: coreFalseValues.concat(frExtraFalseValues)
+            }));
+        dtps.register(new BooleanParser(['de', 'de-DE'],
+            {
+                trueValues: coreTrueValues.concat(deExtraTrueValues),
+                falseValues: coreFalseValues.concat(deExtraFalseValues)
+            }));
+    }
 }
 
 /**
@@ -580,10 +609,13 @@ export function registerDataTypeParsers(dtps: DataTypeParserService): void {
  */
 export function registerDataTypeCheckGenerators(ag: AutoGenerateDataTypeCheckService): void
 {
-// See \examples\EmailAddressDataType.ts for example.
-//    ag.register(new EmailAddressDataTypeCheckConverter());
+    ag.lazyLoad = (service) => {
+    
+        // See \examples\EmailAddressDataType.ts for example.
+        //    ag.register(new EmailAddressDataTypeCheckConverter());
 
-    ag.register(new IntegerDataTypeCheckGenerator());
+        ag.register(new IntegerDataTypeCheckGenerator());
+    }
 }
 
 
@@ -700,7 +732,7 @@ export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 
             'en': 'an integer number',
             'es': 'un número entero'
         });
-        
+
         // the following is specific to TextLocalizerService class
         // and simply an example of working with it.
         // Feel free to replace this code in supporting your own

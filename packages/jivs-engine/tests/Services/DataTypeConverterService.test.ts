@@ -349,3 +349,80 @@ describe('cleanupConvertableValue', () => {
     });
 
 });
+describe('lazyLoad', () => {
+    class NormalConverter implements IDataTypeConverter
+    {
+        supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+            return dataTypeLookupKey === 'Normal';
+        }
+        convert(value: any, dataTypeLookupKey: string): SimpleValueType {
+            throw new Error('Method not implemented.');
+        }
+        
+    }
+    class LazyLoadConverter implements IDataTypeConverter
+    {
+        supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
+            return dataTypeLookupKey === 'LazyLoad';
+        }
+        convert(value: any, dataTypeLookupKey: string): SimpleValueType {
+            throw new Error('Method not implemented.');
+        }
+        
+    }    
+    test('Call to register does not lazy load', () => {
+        let testItem = new DataTypeConverterService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register(new LazyLoadConverter());
+            loaded = true;
+        };
+        testItem.register(new NormalConverter());
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for already registered does not lazy load', () => {
+        let testItem = new DataTypeConverterService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register(new LazyLoadConverter());
+            loaded = true;
+        };
+        testItem.register(new NormalConverter());
+        expect(loaded).toBe(false);
+        expect(testItem.find(0, 'Normal')).toBeInstanceOf(NormalConverter);
+        expect(loaded).toBe(false);
+ 
+    });
+    test('Call to find for unregistered does load but later find does not load for unregistered', () => {
+        let testItem = new DataTypeConverterService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register(new LazyLoadConverter());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(testItem.find(0, 'LazyLoad')).toBeInstanceOf(LazyLoadConverter);
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(testItem.find(0, 'Normal')).toBeNull();      // not registered
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for unregistered does load but fails to load what it needs but has loaded one we use later', () => {
+        let testItem = new DataTypeConverterService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register(new LazyLoadConverter());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(testItem.find(0, 'Normal')).toBeNull();      // not registered
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(testItem.find(0, 'LazyLoad')).toBeInstanceOf(LazyLoadConverter);
+        expect(loaded).toBe(false);
+    });    
+});
