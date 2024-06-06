@@ -221,6 +221,85 @@ describe('getDataTypeName', () => {
         expect(testItem.getDataTypeLabel('fr', 'Code4')).toBe('Code4');     
     });    
 });
+describe('lazyLoader', () => {
+   test('First call is to register, should be able to localize from what was lazy loaded', () => {
+       let tls = new TextLocalizerService();
+       tls.lazyLoad = (service) => {
+           service.register('Code1', {
+               '*': 'Code1_Text'
+           });
+       };
+       tls.register('Code2', { '*': 'Code2_Text' });    // this should load Code1
+       expect(tls.localize('en', 'Code1', null)).toBe('Code1_Text');
+   }); 
+    test('First call is to localize for the value to be lazyloaded, should be able to localize', () => {
+        let tls = new TextLocalizerService();
+        tls.lazyLoad = (service) => {
+            service.register('Code1', {
+                '*': 'Code1_Text'
+            });
+        };
+        expect(tls.localize('en', 'Code1', null)).toBe('Code1_Text');
+    });     
+    test('First call is to registerErrorMessage, should be able to localize from what was lazy loaded', () => {
+        let tls = new TextLocalizerService();
+        tls.lazyLoad = (service) => {
+            service.registerErrorMessage('Code1', null, {
+                '*': 'Code1_Text'
+            });
+        };
+        tls.registerErrorMessage('Code2', null, { '*': 'Code2_Text' });    // this should load Code1
+        expect(tls.getErrorMessage('en', 'Code1', null)).toBe('Code1_Text');
+    });     
+    test('First call is to registerSummaryMessage, should be able to localize from what was lazy loaded', () => {
+        let tls = new TextLocalizerService();
+        tls.lazyLoad = (service) => {
+            service.registerSummaryMessage('Code1', null, {
+                '*': 'Code1_Text'
+            });
+        };
+        tls.registerSummaryMessage('Code2', null, { '*': 'Code2_Text' });    // this should load Code1
+        expect(tls.getSummaryMessage('en', 'Code1', null)).toBe('Code1_Text');
+    });         
+    test('First call is to registerDataTypeLabel, should be able to localize from what was lazy loaded', () => {
+        let tls = new TextLocalizerService();
+        tls.lazyLoad = (service) => {
+            service.registerDataTypeLabel('Code1', {
+                '*': 'Code1_Text'
+            });
+        };
+        tls.registerDataTypeLabel('Code2', { '*': 'Code2_Text' });    // this should load Code1
+        expect(tls.getDataTypeLabel('en', 'Code1')).toBe('Code1_Text');
+    });
+    test('First call is to getErrorMessage for a value to be lazy loaded, should be able to localize from what was lazy loaded', () => {
+        let tls = new TextLocalizerService();
+        tls.lazyLoad = (service) => {
+            service.registerErrorMessage('Code1', null, {
+                '*': 'Code1_Text'
+            });
+        };
+        expect(tls.getErrorMessage('en', 'Code1', null)).toBe('Code1_Text');
+    });     
+    test('First call is to getSummaryMessage for a value to be lazy loaded, should be able to localize from what was lazy loaded', () => {
+        let tls = new TextLocalizerService();
+        tls.lazyLoad = (service) => {
+            service.registerSummaryMessage('Code1', null, {
+                '*': 'Code1_Text'
+            });
+        };
+        expect(tls.getSummaryMessage('en', 'Code1', null)).toBe('Code1_Text');
+    });         
+    test('First call is to getDataTypeLabel for a value to be lazy loaded, should be able to localize from what was lazy loaded', () => {
+        let tls = new TextLocalizerService();
+        tls.lazyLoad = (service) => {
+            service.registerDataTypeLabel('Code1', {
+                '*': 'Code1_Text'
+            });
+        };
+        expect(tls.getDataTypeLabel('en', 'Code1')).toBe('Code1_Text');
+    });
+
+});
 
 describe('dispose', () => {
     test('With fallbackService setup, request a value that exists on the top level, and that value is returned.', () => {
