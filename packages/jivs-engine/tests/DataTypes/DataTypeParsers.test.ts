@@ -30,6 +30,11 @@ describe('DataTypeParserBase', () => {
             return { value: text };
         }
 
+        public get Publicify_hasServices(): boolean
+        {
+            return super.hasServices;
+        }
+
     }    
     test('Constructor assigns supportedLookupKey and supports() matches only to supportedLookupKey', () => {
         let testItem = new TestDataTypeParserBase('KEY', {});
@@ -110,6 +115,7 @@ describe('DataTypeParserBase', () => {
     });
     test('Services that are unassigned throw', () => {
         let testItem = new TestDataTypeParserBase('lookupKey', {});
+        expect(testItem.Publicify_hasServices).toBe(false);
         let x: any;
         expect(() => x = testItem.services).toThrow(/Register/);
     });
@@ -118,6 +124,7 @@ describe('DataTypeParserBase', () => {
         let testItem = new TestDataTypeParserBase('lookupKey', {});
         expect(() => testItem.services = services).not.toThrow();
         expect(testItem.services).toBe(services);
+        expect(testItem.Publicify_hasServices).toBe(true);
     });
 
     test('dispose then get services throws TypeError', () => {
@@ -309,7 +316,7 @@ describe('SpecificCulturesPatternParserBase', () => {
 
 describe('DatePatternParserBase', () => {
     class TestDatePatternParserBase extends DatePatternParserBase<DateTimeCultureInfo> {
-        constructor(supportedLookupKey: string, supportedCultures: Array<string>, options: DateTimeCultureInfo, utc: boolean)
+        constructor(supportedLookupKey: string, supportedCultures: Array<string>, options: DateTimeCultureInfo, utc?: boolean)
         {
             super(supportedLookupKey, supportedCultures, options, utc);
         }
@@ -333,11 +340,18 @@ describe('DatePatternParserBase', () => {
     test('constructor with UTC=true and mdy does not throw and parameters are assigned to correct properties.', () => {
         let testItem: TestDatePatternParserBase;
         expect(() => testItem = new TestDatePatternParserBase('KEY', ['en-US'], { order: 'mdy', shortDateSeparator:'/' }, true)).not.toThrow();
+        expect(testItem!.utc).toBe(true);
+    });   
+    test('constructor with utc omitted does not throw and becomes utc=true.', () => {
+        let testItem: TestDatePatternParserBase;
+        expect(() => testItem = new TestDatePatternParserBase('KEY', ['en-US'], { order: 'mdy', shortDateSeparator: '/' })).not.toThrow();
+        expect(testItem!.utc).toBe(true);
 
-    });    
+    });        
     test('constructor with UTC=false and dmy does not throw and parameters are assigned to correct properties.', () => {
         let testItem: TestDatePatternParserBase;
-        expect(() => testItem = new TestDatePatternParserBase('KEY', ['en-US'], { order: 'dmy', shortDateSeparator:'/' }, false)).not.toThrow();
+        expect(() => testItem = new TestDatePatternParserBase('KEY', ['en-US'], { order: 'dmy', shortDateSeparator: '/' }, false)).not.toThrow();
+        expect(testItem!.utc).toBe(false);        
     });        
     test('constructor with order=null throws.', () => {
         let testItem: TestDatePatternParserBase;
@@ -574,14 +588,14 @@ describe('NumberParserBase', () => {
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
             {
                 decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: null,
+                parenthesisAsNegative: undefined,
                 currencySymbol: '$', percentSymbol: '%' // these are ignored, the stripTheseStrings parameter is used instead
             });
         expect(testItem.supports('KEY', 'en', '1')).toBe(true);
-        expect(testItem.supports('KEY', 'en', '-1')).toBe(true); // while it supports, the parser will later disqualify it
-        expect(testItem.supports('KEY', 'en', '(1)')).toBe(true); // while it supports, the parser will later disqualify it
+        expect(testItem.supports('KEY', 'en', '-1')).toBe(true); 
         expect(testItem.supports('WRONGKEY', 'en', '1')).toBe(false);
         expect(testItem.supports('KEY', 'fr', '1')).toBe(false);
-        expect(testItem.supports('KEY', 'en', '1,000')).toBe(false);
+        expect(testItem.supports('KEY', 'en', '1000')).toBe(true);
         expect(testItem.supports('KEY', 'en', '1.5')).toBe(true);
         expect(testItem.supports('KEY', 'en', ' 1 ')).toBe(true);
         expect(testItem.supports('KEY', 'en', '.5')).toBe(true);    
@@ -591,11 +605,35 @@ describe('NumberParserBase', () => {
         expect(testItem.supports('KEY', 'en', '1.0%')).toBe(false);        
         expect(testItem.supports('KEY', 'en', '$-1')).toBe(false);        
         expect(testItem.supports('KEY', 'en', '-1%')).toBe(false);
+
+        // text contains an illegal value, such as unexpected character, but let the parser reject it
+        expect(testItem.supports('KEY', 'en', '(1)')).toBe(true); // no ()
+        expect(testItem.supports('KEY', 'en', '1,000')).toBe(true); // thousands separator was not defined. So comma is unexpected
+        expect(testItem.supports('KEY', 'en', 'A1')).toBe(true);    // no letters
+        expect(testItem.supports('KEY', 'en', 'ABC')).toBe(true);      
+        expect(testItem.supports('KEY', 'en', '!')).toBe(true);        // no !
+        expect(testItem.supports('KEY', 'en', '1!')).toBe(true);           
+        expect(testItem.supports('KEY', 'en', '!1')).toBe(true);      
+        expect(testItem.supports('KEY', 'en', 'USD $1.00')).toBe(true); 
+        expect(testItem.supports('KEY', 'en', '$1.00USD')).toBe(true);   
+        expect(testItem.supports('KEY', 'en', 'USD1.00')).toBe(true);            
+        
+        // values that cannot be numbers are still supported, and later rejected by parse()
+        expect(testItem.supports('KEY', 'en', '1..5')).toBe(true);      
+        expect(testItem.supports('KEY', 'en', '.1.5')).toBe(true);  
+        expect(testItem.supports('KEY', 'en', '(1.5(')).toBe(true);  
+        expect(testItem.supports('KEY', 'en', ')1.5)')).toBe(true);  
+        expect(testItem.supports('KEY', 'en', '--1.5')).toBe(true);          
+        expect(testItem.supports('KEY', 'en', '-1.5-')).toBe(true);        
+        expect(testItem.supports('KEY', 'en', '1-5')).toBe(true);         
+        expect(testItem.supports('KEY', 'en', '1(5')).toBe(true);  
+        expect(testItem.supports('KEY', 'en', '1)5')).toBe(true);
     });
     test('supports() with any float with thousands separators and currency or percent symbol', () => {
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
         {
             decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: ',',
+            parenthesisAsNegative: true,
             currencySymbol: '$', percentSymbol: '%' // these are ignored, the stripTheseStrings parameter is used instead
             }, ['%', '$']);
         // values that can be seen as numbers, after cleanup
@@ -632,6 +670,9 @@ describe('NumberParserBase', () => {
 
         // values that cannot be numbers are still supported, and later rejected by parse()
         expect(testItem.supports('KEY', 'en', 'A1')).toBe(true);    
+        expect(testItem.supports('KEY', 'en', '!')).toBe(true);        
+        expect(testItem.supports('KEY', 'en', '1!')).toBe(true);           
+        expect(testItem.supports('KEY', 'en', '!1')).toBe(true);           
         expect(testItem.supports('KEY', 'en', 'ABC')).toBe(true);      
         expect(testItem.supports('KEY', 'en', '1..5')).toBe(true);      
         expect(testItem.supports('KEY', 'en', '.1.5')).toBe(true);  
@@ -650,50 +691,114 @@ describe('NumberParserBase', () => {
         expect(testItem.supports('KEY', 'fr', '1')).toBe(false);
           
     });    
-
-    test('parse() with number without thousands separators and characters to strip', () => {
+    test('parse() with number without thousands separators, (), and characters to strip', () => {
+        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
         {
             decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: null,
+            parenthesisAsNegative: undefined,
             currencySymbol: '$', percentSymbol: '%' // these are ignored, the stripTheseStrings parameter is used instead
          });
         expect(testItem.parse('1', 'KEY', 'en')).toEqual({ value: 1 });
         expect(testItem.parse('-1', 'KEY', 'en')).toEqual({ value: -1}); 
-        expect(testItem.parse('(1)', 'KEY', 'en')).toEqual({ value: -1}); 
+        expect(testItem.parse('1-', 'KEY', 'en')).toEqual({ value: -1}); 
         expect(testItem.parse('1.5', 'KEY', 'en')).toEqual({ value: 1.5 }); 
         expect(testItem.parse(' 1 ', 'KEY', 'en')).toEqual({ value: 1 });
         expect(testItem.parse('.5', 'KEY', 'en')).toEqual({ value: 0.5 });    
         expect(testItem.parse('1.', 'KEY', 'en')).toEqual({ value: 1 });      
         expect(testItem.parse('1.0', 'KEY', 'en')).toEqual({ value: 1 });                
-        expect(testItem.parse('1,000', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('$1', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('1%', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('$-1', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('-1%', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        expect(testItem.parse('1,000', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('$1', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1%', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('$-1', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('-1%', 'KEY', 'en')).toEqual(errResult);
 
         expect(testItem.parse('', 'KEY', 'en')).toEqual({ value: 0 }); // default for empty
         expect(testItem.parse('  ', 'KEY', 'en')).toEqual({ value: 0 });
-        
-        expect(testItem.parse('A1', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('ABC', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('1..5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('.1.5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('(1.5(', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse(')1.5)', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('--1.5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('-1.5-', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('1-5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('1(5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('1)5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('1 5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('$1.50USD', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('USD $1.50', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('USD1.50', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
+        // unsupported characters
+        expect(testItem.parse('(1)', 'KEY', 'en')).toEqual(errResult); 
+        expect(testItem.parse('A1', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('!', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1!', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('!1', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('ABC', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('$1.50USD', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('USD $1.50', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('USD1.50', 'KEY', 'en')).toEqual(errResult);
+
+        // expected characters in the wrong place
+        expect(testItem.parse('1..5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('.1.5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('(1.5(', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse(')1.5)', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('--1.5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('-1.5-', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1-5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1(5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1)5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1 5', 'KEY', 'en')).toEqual(errResult);
+
     });
+    test('parse() with number allowing () and negative symbol is !', () => {
+        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
+        let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
+        {
+            decimalSeparator: '.', negativeSymbol: '!', thousandsSeparator: ',',
+            parenthesisAsNegative: true,
+            currencySymbol: undefined!, percentSymbol: undefined!
+         });
+        expect(testItem.parse('1', 'KEY', 'en')).toEqual({ value: 1 });
+        expect(testItem.parse('(1)', 'KEY', 'en')).toEqual({ value: -1}); 
+        expect(testItem.parse('!1', 'KEY', 'en')).toEqual({ value: -1}); 
+        expect(testItem.parse('1.5', 'KEY', 'en')).toEqual({ value: 1.5 }); 
+        expect(testItem.parse(' 1 ', 'KEY', 'en')).toEqual({ value: 1 });
+        expect(testItem.parse('.5', 'KEY', 'en')).toEqual({ value: 0.5 });    
+        expect(testItem.parse('1.', 'KEY', 'en')).toEqual({ value: 1 });      
+        expect(testItem.parse('1.0', 'KEY', 'en')).toEqual({ value: 1 });                
+        expect(testItem.parse('1,000', 'KEY', 'en')).toEqual({ value: 1000 });
+        expect(testItem.parse('(1,000)', 'KEY', 'en')).toEqual({ value: -1000 });
+       
+        expect(testItem.parse('!1,000', 'KEY', 'en')).toEqual({ value: -1000 });
+
+        // very unexpected but we're gonna strip out all thousands separators
+        expect(testItem.parse(',1000', 'KEY', 'en')).toEqual({ value: 1000 });
+        expect(testItem.parse('1000,', 'KEY', 'en')).toEqual({ value: 1000 });
+        expect(testItem.parse(',,1,0,0,0,,', 'KEY', 'en')).toEqual({ value: 1000 });
+
+
+        // wrong negative symbol
+        expect(testItem.parse('-1.5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1.5-', 'KEY', 'en')).toEqual(errResult);
+
+        // expected characters in the wrong place
+
+        expect(testItem.parse('(1.5(', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse(')1.5(', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('!!1.5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('!1.5!', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1!5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1()5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1)5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('(1', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('1)', 'KEY', 'en')).toEqual(errResult);
+
+         // must have at least one digit
+        expect(testItem.parse(',', 'KEY', 'en')).toEqual(errResult);  
+        expect(testItem.parse('ABC', 'KEY', 'en')).toEqual(errResult);  
+
+        // must not have letters
+        expect(testItem.parse('A1', 'KEY', 'en')).toEqual(errResult);  
+        expect(testItem.parse('1000 A', 'KEY', 'en')).toEqual(errResult);  
+
+
+    });    
     test('parse() with stripTheseStrings containing an array', () => {
+        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
+
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
         {
             decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: ',',
+            parenthesisAsNegative: true,
             currencySymbol: '$', percentSymbol: '%' // these are ignored, the stripTheseStrings parameter is used instead
             }, ['%', '$']);
         
@@ -714,7 +819,7 @@ describe('NumberParserBase', () => {
         expect(testItem.parse(' 1 ', 'KEY', 'en')).toEqual({ value: 1 });
 
         expect(testItem.parse('(1)', 'KEY', 'en')).toEqual({ value: -1 });    
-        
+
         expect(testItem.parse(' 1.5 ', 'KEY', 'en')).toEqual({ value: 1.5 });
         expect(testItem.parse('1.1', 'KEY', 'en')).toEqual({ value: 1.1 });
         expect(testItem.parse('-1.0', 'KEY', 'en')).toEqual({ value: -1 });
@@ -727,17 +832,28 @@ describe('NumberParserBase', () => {
         expect(testItem.parse('$ 1.00', 'KEY', 'en')).toEqual({ value: 1 });
         expect(testItem.parse('1.1 %', 'KEY', 'en' )).toEqual({ value: 1.1 });
         expect(testItem.parse('1,000.99', 'KEY', 'en' )).toEqual({ value: 1000.99 });
-        expect(testItem.parse('(1', 'KEY', 'en')).toEqual({ value: 1 });
-        expect(testItem.parse('1)', 'KEY', 'en')).toEqual({ value: 1 });
+
  
-        expect(testItem.parse('1..5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('.1.5', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });
-        expect(testItem.parse('-1-', 'KEY', 'en')).toEqual({ errorMessage: NumberParserBase.badNumberMessage });        
+        expect(testItem.parse('1..5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('.1.5', 'KEY', 'en')).toEqual(errResult);
+        expect(testItem.parse('-1-', 'KEY', 'en')).toEqual(errResult);   
+        
+         // must have at least one digit
+         expect(testItem.parse(',', 'KEY', 'en')).toEqual(errResult);  
+         expect(testItem.parse('ABC', 'KEY', 'en')).toEqual(errResult);  
+ 
+         // must not have letters
+         expect(testItem.parse('A1%', 'KEY', 'en')).toEqual(errResult);  
+         expect(testItem.parse('1000 USD', 'KEY', 'en')).toEqual(errResult);  
+         expect(testItem.parse('$1000 USD', 'KEY', 'en')).toEqual(errResult);  
+ 
+ 
     });    
     test('parse() with stripTheseStrings containing a string', () => {
         let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
         {
             decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: ',',
+            parenthesisAsNegative: true,
             currencySymbol: '$', percentSymbol: '%' // these are ignored, the stripTheseStrings parameter is used instead
             }, '%');
         
@@ -749,6 +865,40 @@ describe('NumberParserBase', () => {
         expect(testItem.parse('1.9%', 'KEY', 'en')).toEqual({ value: 1.9 });
         expect(testItem.parse('-1.0%', 'KEY', 'en')).toEqual({ value: -1 }); 
     });        
+    test('parse() with number with decimalSeparator is !', () => {
+        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
+        let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
+            {
+                decimalSeparator: '!', negativeSymbol: '-', thousandsSeparator: ',',
+                parenthesisAsNegative: true,
+                currencySymbol: undefined!, percentSymbol: undefined!
+            });
+        expect(testItem.parse('1', 'KEY', 'en')).toEqual({ value: 1 });
+        expect(testItem.parse('1!0', 'KEY', 'en')).toEqual({ value: 1 });
+        expect(testItem.parse('10!3', 'KEY', 'en')).toEqual({ value: 10.3 });
+        expect(testItem.parse('-1', 'KEY', 'en')).toEqual({ value: -1 });
+        expect(testItem.parse('-1!0', 'KEY', 'en')).toEqual({ value: -1 });
+        expect(testItem.parse('-10!3', 'KEY', 'en')).toEqual({ value: -10.3 });
+        expect(testItem.parse('1.1', 'KEY', 'en')).toEqual(errResult);
+    });
+    test('parse() with number with thousandsSeparator is _', () => {
+        const errResult = { errorMessage: NumberParserBase.badNumberMessage };
+        let testItem = new TestNumberParserBase('KEY', ['en', 'en-US'],
+            {
+                decimalSeparator: '.', negativeSymbol: '-', thousandsSeparator: '_',
+                parenthesisAsNegative: undefined,
+                currencySymbol: undefined!, percentSymbol: undefined!
+            });
+        expect(testItem.parse('1', 'KEY', 'en')).toEqual({ value: 1 });
+        expect(testItem.parse('100', 'KEY', 'en')).toEqual({ value: 100 });
+        expect(testItem.parse('1003', 'KEY', 'en')).toEqual({ value: 1003 });
+        expect(testItem.parse('1_003', 'KEY', 'en')).toEqual({ value: 1003 });
+        expect(testItem.parse('99999_003', 'KEY', 'en')).toEqual({ value: 99999003 });
+        expect(testItem.parse('-99_999_003', 'KEY', 'en')).toEqual({ value: -99999003 });
+        expect(testItem.parse('99999__003', 'KEY', 'en')).toEqual({ value: 99999003 });
+        expect(testItem.parse('_', 'KEY', 'en')).toEqual(errResult); 
+        expect(testItem.parse('1,100', 'KEY', 'en')).toEqual(errResult);
+    });    
 });
 
 describe('NumberParser', () => {

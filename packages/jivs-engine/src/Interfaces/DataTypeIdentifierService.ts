@@ -9,7 +9,7 @@ import { IDataTypeService } from "./DataTypes";
  * A service for identifing the Data Type Lookup Key associated with a data type
  * using {@link DataTypes/Types/IDataTypeIdentifier!IDataTypeIdentifier | IDataTypeIdentifier} instances.
  */
-export interface IDataTypeIdentifierService extends IDataTypeService {
+export interface IDataTypeIdentifierService extends IDataTypeService<IDataTypeIdentifier> {
 
     /**
      * When a value is supplied without a DataType Lookup Key, this resolves the

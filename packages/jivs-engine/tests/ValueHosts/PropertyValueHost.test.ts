@@ -3,7 +3,8 @@ import { MockValidationServices, MockValidationManager } from "../TestSupport/mo
 import { PropertyValueHostConfig, PropertyValueHostInstanceState, IPropertyValueHost } from "../../src/Interfaces/PropertyValueHost";
 import {
     ValidationStatus, IssueFound, ValueHostValidateResult, ValidateOptions,
-    BusinessLogicError
+    BusinessLogicError,
+    SetIssuesFoundErrorCodeMissingBehavior
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
 import { SetValueOptions, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
@@ -371,6 +372,10 @@ describe('toIPropertyValueHost function', () => {
         getIssuesFound(group?: string | undefined): IssueFound[] | null {
             throw new Error("Method not implemented.");
         }
+        setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
+        {
+            throw new Error('Function not implemented.');
+        }
         getName(): string {
             throw new Error("Method not implemented.");
         }
@@ -392,6 +397,10 @@ describe('toIPropertyValueHost function', () => {
         getDataType(): string | null {
             throw new Error("Method not implemented.");
         }
+        getDataTypeLabel(): string {
+            throw new Error("Method not implemented.");
+        }
+    
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
             throw new Error("Method not implemented.");
         }

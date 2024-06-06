@@ -126,6 +126,13 @@ export interface IValueHost extends IDisposable {
      * if the user edits, or when the user attempts to submit.
      */
     isChanged: boolean;
+
+    /**
+     * Provides a localized label for the data type when it needs to be shown to the user.
+     * Since the ValueHostConfig.dataType is optional, this will end up returning the empty string,
+     * unless the native value has been assigned and the DataTypeIdentifierService can figure out its lookupKey.
+     */
+    getDataTypeLabel(): string;
 }
 
 /**

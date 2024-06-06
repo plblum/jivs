@@ -7,7 +7,7 @@
 import { BusinessLogicErrorsValueHostType, BusinessLogicErrorsValueHostName } from '../ValueHosts/BusinessLogicErrorsValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState } from '../Interfaces/Validation';
+import { type ValidateOptions, type BusinessLogicError, type IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from '../Interfaces/Validation';
 import { type ValidationManagerInstanceState, type IValidationManager, type ValidationManagerConfig, type IValidationManagerCallbacks, type ValidationStateChangedHandler, defaultNotifyValidationStateChangedDelay } from '../Interfaces/ValidationManager';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
 import { ValueHostsManager } from '../ValueHosts/ValueHostsManager';
@@ -17,6 +17,7 @@ import { IPropertyValueHost } from '../Interfaces/PropertyValueHost';
 import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { toIPropertyValueHost } from '../ValueHosts/PropertyValueHost';
+import { assertNotNull } from '../Utilities/ErrorHandling';
 
 
 /**
@@ -151,7 +152,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
         if (!options)
             options = {};
 
-        for (let vh of this.inputValueHost()) {
+        for (let vh of this.validatableValueHost()) {
             vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationState
         }
         let snapshot = this.createValidationState(options);
@@ -165,7 +166,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      */
     public clearValidation(options?: ValidateOptions): boolean {
         let changed = false;
-        for (let vh of this.inputValueHost()) {
+        for (let vh of this.validatableValueHost()) {
             if (vh.clearValidation(options))
                 changed = true;
         }
@@ -228,7 +229,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * When false, there is at least one validation error.
      */
     public get isValid(): boolean {
-        for (let vh of this.inputValueHost())
+        for (let vh of this.validatableValueHost())
             if (!vh.isValid)
                 return false;
         return true;
@@ -240,7 +241,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * Invalid or NeedsValidation
      */
     public get doNotSave(): boolean {
-        for (let vh of this.inputValueHost()) {
+        for (let vh of this.validatableValueHost()) {
             if (vh.doNotSave)
                 return true;
         }
@@ -251,7 +252,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      */
     public get asyncProcessing(): boolean
     {
-        for (let vh of this.inputValueHost()) {
+        for (let vh of this.validatableValueHost()) {
             if (vh.asyncProcessing)
                 return true;
         }
@@ -271,7 +272,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      */
     public setBusinessLogicErrors(errors: Array<BusinessLogicError> | null, options?: ValidateOptions): boolean {
         let changed = false;
-        for (let vh of this.inputValueHost()) {
+        for (let vh of this.validatableValueHost()) {
             if (vh.clearBusinessLogicErrors())
                 changed = true;
         }
@@ -331,7 +332,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      */
     public getIssuesFound(group?: string): Array<IssueFound> | null {
         let list: Array<IssueFound> = [];
-        for (let vh of this.inputValueHost()) {
+        for (let vh of this.validatableValueHost()) {
             let vhIssues = vh.getIssuesFound(group);
             if (vhIssues)
                 list = list.concat(vhIssues);
@@ -339,6 +340,27 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
         return list.length ? list : null;
     }
     
+    /**
+     * Adds or replaces all IssueFound items to the appropriate ValueHosts.
+     * Each ValueHost will invoke the onValueHostValidationStateChanged callback if needed.
+     * 
+     * Use case: client-side getting server-side Jivs-generated IssuesFound,
+     * so the UI can incorporate it.
+     * @param issuesFound 
+     * @param behavior - keep or omit an issueFound that does not have a matching validator
+     * based on the errorCode. Defaults to Keep
+     */
+    public setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior = SetIssuesFoundErrorCodeMissingBehavior.Keep): boolean
+    {
+        assertNotNull(issuesFound, 'issuesFound');
+        let changed = false;
+        for (let vh of this.validatableValueHost()) {
+            if (vh.setIssuesFound(issuesFound, behavior))
+                changed = true;
+        }
+        return changed;
+    }
+
     //#region IValidationManagerCallbacks
 
     /**

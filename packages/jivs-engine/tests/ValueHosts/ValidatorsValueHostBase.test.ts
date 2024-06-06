@@ -7,7 +7,7 @@ import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition
 import { ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
-import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState, BusinessLogicError } from "../../src/Interfaces/Validation";
+import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState, BusinessLogicError, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
@@ -26,7 +26,7 @@ import { Validator } from "../../src/Validation/Validator";
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
-import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType, UserSuppliedResultConditionConfig, registerTestingOnlyConditions, NeverMatchesCondition, ThrowsSevereExceptionConditionType } from "../TestSupport/conditionsForTesting";
+import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType, UserSuppliedResultConditionConfig, registerTestingOnlyConditions, NeverMatchesCondition, ThrowsSevereExceptionConditionType, AlwaysMatchesCondition } from "../TestSupport/conditionsForTesting";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
@@ -88,9 +88,16 @@ function addGeneratorToServices(services: IValidationServices): void
     services.valueHostFactory = factory;
 }
 
-interface ITestSetupConfig {
+interface ITestSetupConfigWithMocks {
     services: MockValidationServices,
     validationManager: MockValidationManager,
+    config: ValidatorsValueHostBaseConfig,
+    state: ValidatorsValueHostBaseInstanceState,
+    valueHost: TestValidatorsValueHost
+};
+interface ITestSetupConfig {
+    services: IValidationServices,
+    validationManager: IValidationManager,
     config: ValidatorsValueHostBaseConfig,
     state: ValidatorsValueHostBaseInstanceState,
     valueHost: TestValidatorsValueHost
@@ -201,7 +208,7 @@ function finishPartialValidatorsValueHostBaseInstanceState(partialState: Partial
  */
 function setupValidatorsValueHostBase(
     partialIVHConfig?: Partial<ValidatorsValueHostBaseConfig> | null,
-    partialState?: Partial<ValidatorsValueHostBaseInstanceState> | null): ITestSetupConfig {
+    partialState?: Partial<ValidatorsValueHostBaseInstanceState> | null): ITestSetupConfigWithMocks {
     let services = new MockValidationServices(true, true);
     addGeneratorToServices(services);
 
@@ -233,7 +240,7 @@ function setupValidatorsValueHostBase(
 function setupValidatorsValueHostBaseForValidate(
     partialValidatorConfigs: Array<Partial<ValidatorConfig>> | null,
     partialValidatorsState: Partial<ValidatorsValueHostBaseInstanceState> | null,
-    vhGroup?: string | null): ITestSetupConfig {
+    vhGroup?: string | null): ITestSetupConfigWithMocks {
 
     let inputValueConfig: Partial<ValidatorsValueHostBaseConfig> = {
         validatorConfigs: partialValidatorConfigs ?
@@ -350,7 +357,7 @@ function testValidateFunctionHasResult(validatorConfigs: Array<Partial<Validator
     expectedIssuesFound: Array<IssueFound> | null,
     validationGroupForValueHost?: string | undefined,
     validationGroupForValidateFn?: string | undefined,
-    expectedStateChanges: number = 1): ITestSetupConfig {
+    expectedStateChanges: number = 1): ITestSetupConfigWithMocks {
 
     let setup = setupValidatorsValueHostBaseForValidate(validatorConfigs, inputValueState, validationGroupForValueHost);
     setup.services.loggerService.minLevel = LoggingLevel.Debug;
@@ -382,7 +389,7 @@ function testValidateFunctionIsNull(validatorConfigs: Array<Partial<ValidatorCon
     inputValueState: Partial<ValidatorsValueHostBaseInstanceState> | null,
     validationGroupForValueHost?: string | undefined,
     validationGroupForValidateFn?: string | undefined,
-    expectedStateChanges: number = 1): ITestSetupConfig {
+    expectedStateChanges: number = 1): ITestSetupConfigWithMocks {
 
     let setup = setupValidatorsValueHostBaseForValidate(validatorConfigs, inputValueState, validationGroupForValueHost);
     setup.services.loggerService.minLevel = LoggingLevel.Debug;
@@ -725,7 +732,7 @@ describe('ValidatorsValueHostBase.validate', () => {
                 severity: ValidationSeverity.Error,
                 valueHostName: 'Field1'
             };
-        let setup: ITestSetupConfig;
+        let setup: ITestSetupConfigWithMocks;
         if (expectedResult)
         {
             setup = testValidateFunctionHasResult(ivConfigs, state, expectedResult,
@@ -2444,6 +2451,273 @@ describe('ValidatorsValueHostBase.getIssuesFound', () => {
     });
 });
 
+describe('setIssuesFound', () => {
+    // Creates an array of ValidatorConfigs, with the number supplied the length of conditionTypes.
+    // The conditionTypes are used in order.
+    // The errorCodes are 'EC1', 'EC2', 'EC3', etc
+    // 
+    function generateVHConfig(conditionTypes: Array<string>, valueHostName: string = 'Field1'): ValidatorsValueHostBaseConfig
+    {
+        let configs: Array<ValidatorConfig> = [];
+        let count = 1;
+        for (let ct of conditionTypes) {
+            let code = 'EC' + count;
+            count++;
+            configs.push(
+                {
+                    errorCode: code,
+                    conditionConfig: {
+                        conditionType: ct 
+                    },
+                    errorMessage: 'errorcode ' + code    // so we can show this error message is not used
+                }
+            );
+        }
+        let vhConfig: ValidatorsValueHostBaseConfig = {
+            valueHostType: TestValueHostType,
+            name: valueHostName,
+            validatorConfigs: configs
+        };    
+        return vhConfig;
+    }
+    // Creates an array of IssueFound, with the number supplied the length of severities.
+    // The severities are used in order.
+    // The errorCodes are 'EC1', 'EC2', 'EC3', etc
+    function generateIssuesFound(severities: Array<ValidationSeverity>, valueHostName: string = 'Field1'): Array<IssueFound>
+    {
+        let issuesFound: Array<IssueFound> = [];
+        let count = 1;
+        for (let s of severities) {
+            let code = 'EC' + count;
+            count++;
+            issuesFound.push(
+                {
+                    errorCode: code,
+                    severity: s,
+                    valueHostName: valueHostName,
+                    errorMessage: 'Message errorcode ' + code + ' from IssueFound',
+                    summaryMessage: 'Summary errorcode ' + code + ' from IssueFound'                    
+                }
+            );
+        }
+        return issuesFound;
+    }
+    function setupForSetIssuesFound(vhConfig: Array<ValidatorsValueHostBaseConfig>, onValidatedCallback?: ValueHostValidationStateChangedHandler): ITestSetupConfig
+    {
+        let services = createValidationServicesForTesting();
+        addGeneratorToServices(services);
+        services.autoGenerateDataTypeCheckService.enabled = false;
+
+        let vmConfig: ValidationManagerConfig = {
+            services: services,
+            valueHostConfigs: vhConfig,
+            onValueHostValidationStateChanged : onValidatedCallback
+        };
+        let vm = new ValidationManager(vmConfig);
+        let testItem = vm.getValueHost('Field1') as TestValidatorsValueHost;
+        return {
+            config: null!,  
+            services: services,
+            state: undefined!,
+            validationManager: vm,
+            valueHost: testItem
+        };
+    }
+
+    function testSetIssuesFound(setup: ITestSetupConfig, issuesFoundToSet: Array<IssueFound>, expectedIssuesFoundToGet: Array<IssueFound> | null, expectedChanged: boolean = true,
+        expectedValidationStatus: ValidationStatus = ValidationStatus.Invalid, behavior: SetIssuesFoundErrorCodeMissingBehavior = SetIssuesFoundErrorCodeMissingBehavior.Omit
+    ): void
+    {
+        let testItem = setup.valueHost;
+        let changed = false;
+        expect(() => changed = testItem.setIssuesFound(issuesFoundToSet, behavior)).not.toThrow();
+        expect(changed).toBe(expectedChanged);
+        expect(testItem.validationStatus).toBe(expectedValidationStatus);
+        let retrieved = testItem.getIssuesFound();
+        if (expectedIssuesFoundToGet) {
+            expect(retrieved).not.toBeNull();
+            expect(retrieved).not.toBe(expectedIssuesFoundToGet); // list object is different
+            expect(retrieved).toEqual(expectedIssuesFoundToGet); // but structure is the same        
+        }
+        else
+            expect(retrieved).toBeNull();
+    }
+    function testMatchToGetIssuesFound(setup: ITestSetupConfig, expectedIssuesFoundToGet: Array<IssueFound>): void
+    {
+        let retrieved = setup.valueHost.getIssuesFound();
+        expect(retrieved).not.toBeNull();
+        expect(retrieved).toEqual(expectedIssuesFoundToGet); // but structure is the same        
+    }
+    function getExpectedIssueFoundFromValidator(issueIndex: number, valueHostName: string = 'Field1'): IssueFound
+    {
+        let ec = 'EC' + (issueIndex + 1);
+        return <IssueFound> {
+            errorCode: ec,
+            errorMessage: 'errorcode ' + ec, // expected to match the one setup in vhConfig
+            severity: ValidationSeverity.Error,
+            valueHostName: valueHostName,
+            summaryMessage: 'errorcode ' + ec, // expected to match the one setup in vhConfig
+        };        
+    }
+    test('With 2 validators on the VH and nothing validated, provide an IssueFound for each. Expect ValidationStatus=Invalid and both IssuesFound returned verbatim from getIssuesFound()', () => {
+        let vhConfig = generateVHConfig([AlwaysMatchesConditionType, AlwaysMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+        let issuesFound = generateIssuesFound([ValidationSeverity.Error, ValidationSeverity.Error]);
+        testSetIssuesFound(setup, issuesFound, issuesFound, true, ValidationStatus.Invalid);
+    });
+    test('One existing validation error gets replaced', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+        setup.valueHost.validate();
+        
+        let issuesFound = generateIssuesFound([ValidationSeverity.Error]);
+        testSetIssuesFound(setup, issuesFound, issuesFound, true, ValidationStatus.Invalid);
+    });
+
+    test('IssueFound has different errorCode from validators and behavior=Keep includes IssueFound', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+        setup.valueHost.validate();
+        
+        let issuesFound = generateIssuesFound([ValidationSeverity.Error]);
+        issuesFound[0].errorCode = 'Unknown';
+        let expectedIssueFound = getExpectedIssueFoundFromValidator(0);
+        testSetIssuesFound(setup, issuesFound, [expectedIssueFound, issuesFound[0] ], true, ValidationStatus.Invalid, SetIssuesFoundErrorCodeMissingBehavior.Keep);       
+    });
+
+    test('IssueFound has different errorCode from validators and behavior=Omit omits IssueFound and makes no changes', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+        setup.valueHost.validate();
+        
+        let issuesFound = generateIssuesFound([ValidationSeverity.Error]);
+        issuesFound[0].errorCode = 'Unknown';
+        let expectedIssueFound = getExpectedIssueFoundFromValidator(0);
+        testSetIssuesFound(setup, issuesFound, [expectedIssueFound], false, ValidationStatus.Invalid, SetIssuesFoundErrorCodeMissingBehavior.Omit);     
+    });
+
+    test('Two IssuesFound, but one validator. One errorcode matches and replaces. The other has behavior=Omit. Result is IssuesFound has the first IssueFound only and changed = true', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+        setup.valueHost.validate();
+        
+        let issuesFound = generateIssuesFound([ValidationSeverity.Error, ValidationSeverity.Error]);
+        let issueFoundEC1 = issuesFound[0];
+        issuesFound[1].errorCode = 'Unknown';
+        testSetIssuesFound(setup, issuesFound, [issueFoundEC1], true, ValidationStatus.Invalid, SetIssuesFoundErrorCodeMissingBehavior.Omit);     
+    });
+
+
+    test('IssueFound that was added is gone after using validate on valid data.', () => {
+        let vhConfig = generateVHConfig([AlwaysMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+        let issuesFound = generateIssuesFound([ValidationSeverity.Error]);
+        let testItem = setup.valueHost;
+        testItem.setIssuesFound(issuesFound, SetIssuesFoundErrorCodeMissingBehavior.Keep);
+
+        testItem.validate();
+        expect(testItem.validationStatus).toBe(ValidationStatus.Valid);
+        expect(testItem.getIssuesFound()).toBeNull();
+    });
+    test('IssueFound that was added is replaced after using validate on invalid data with the same validator errorcode.', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+        let issuesFound = generateIssuesFound([ValidationSeverity.Error]);
+        let testItem = setup.valueHost;
+        testItem.setIssuesFound(issuesFound, SetIssuesFoundErrorCodeMissingBehavior.Keep);
+
+        testItem.validate();
+        expect(testItem.validationStatus).toBe(ValidationStatus.Invalid);
+        const expectedIssueFound = getExpectedIssueFoundFromValidator(0);
+        testMatchToGetIssuesFound(setup, [expectedIssueFound]);
+    });
+    test('1 issue found with Severity=Warn does not change ValidationState already at Valid', () => {
+        let vhConfig = generateVHConfig([AlwaysMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+        let issuesFound = generateIssuesFound([ValidationSeverity.Warning]);
+        let testItem = setup.valueHost;
+        testItem.validate();    // ValidationStatus is now Valid
+        testItem.setIssuesFound(issuesFound, SetIssuesFoundErrorCodeMissingBehavior.Keep);
+        expect(testItem.validationStatus).toBe(ValidationStatus.Valid);
+    });    
+
+    test('1 issue found with Severity=Warn does not change ValidationState already at Invalid', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+        let issuesFound = generateIssuesFound([ValidationSeverity.Warning]);
+        let testItem = setup.valueHost;
+        testItem.validate();    // ValidationStatus is now Invalid
+        testItem.setIssuesFound(issuesFound, SetIssuesFoundErrorCodeMissingBehavior.Keep);
+        expect(testItem.validationStatus).toBe(ValidationStatus.Invalid);        
+    });        
+    test('null parameter throws', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+
+        let testItem = setup.valueHost;
+        expect(() => testItem.setIssuesFound(null!, SetIssuesFoundErrorCodeMissingBehavior.Keep)).toThrow(/issuesFound/);
+    });
+    test('IssueFound with null or undefined errorCode parameter throws', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+
+        let testItem = setup.valueHost;
+        expect(() => testItem.setIssuesFound([{
+            errorCode: undefined!,
+            errorMessage: 'does not matter',
+            severity: ValidationSeverity.Error,
+            valueHostName: 'Field1'
+        }], SetIssuesFoundErrorCodeMissingBehavior.Keep)).toThrow(/needs an errorCode/);
+        expect(() => testItem.setIssuesFound([{
+            errorCode: null!,
+            errorMessage: 'does not matter',
+            severity: ValidationSeverity.Error,
+            valueHostName: 'Field1'
+        }], SetIssuesFoundErrorCodeMissingBehavior.Keep)).toThrow(/needs an errorCode/);        
+    });    
+    test('IssueFound with unsupported valueHostName makes no changes', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let setup = setupForSetIssuesFound([vhConfig]);
+
+        let testItem = setup.valueHost;
+        expect(testItem.setIssuesFound([{
+            errorCode: 'EC',
+            errorMessage: 'does not matter',
+            severity: ValidationSeverity.Error,
+            valueHostName: 'unknown'
+        }], SetIssuesFoundErrorCodeMissingBehavior.Keep)).toBe(false);
+ 
+    });        
+    test('onValueHostValidationStateChanged called when IssueFound was applied', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let count = 0;
+        let setup = setupForSetIssuesFound([vhConfig], (vh) => {
+            count++;
+        });
+        setup.valueHost.validate();
+        expect(count).toBe(1);
+        
+        let issuesFound = generateIssuesFound([ValidationSeverity.Error]);
+        let testItem = setup.valueHost;
+        testItem.setIssuesFound(issuesFound, SetIssuesFoundErrorCodeMissingBehavior.Keep);
+        expect(count).toBe(2);
+    });    
+    test('onValueHostValidationStateChanged not when IssueFound was not applied', () => {
+        let vhConfig = generateVHConfig([NeverMatchesConditionType]);
+        let count = 0;
+        let setup = setupForSetIssuesFound([vhConfig], (vh) => {
+            count++;
+        });
+        setup.valueHost.validate();
+        expect(count).toBe(1);
+        
+        let issuesFound = generateIssuesFound([ValidationSeverity.Error], 'Different Field');
+        let testItem = setup.valueHost;
+        testItem.setIssuesFound(issuesFound, SetIssuesFoundErrorCodeMissingBehavior.Keep);
+        expect(count).toBe(1);
+    });        
+});
+
 
 describe('addValidator function', () => {
     test('Confirm add with not previously added condition type gets used during validate', () => {
@@ -2484,6 +2758,81 @@ describe('addValidator function', () => {
         });
 
     });
+    test('Add where the conditionConfig is undefined throws', () => {
+        let services = createValidationServicesForTesting();
+        addGeneratorToServices(services);
+        services.autoGenerateDataTypeCheckService.enabled = false;
+        let vm = new ValidationManager({
+            services: services,
+            valueHostConfigs: [
+                {
+                    valueHostType: TestValueHostType,
+                    name: 'Field1'
+                }
+            ]
+        });
+        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
+        expect(()=> vh.addValidator({
+            conditionConfig: undefined!,
+            errorMessage: 'Error'
+        })).toThrow(/conditionConfig/);
+    });    
+    test('Add where the conditionConfig is null throws', () => {
+        let services = createValidationServicesForTesting();
+        addGeneratorToServices(services);
+        services.autoGenerateDataTypeCheckService.enabled = false;
+        let vm = new ValidationManager({
+            services: services,
+            valueHostConfigs: [
+                {
+                    valueHostType: TestValueHostType,
+                    name: 'Field1'
+                }
+            ]
+        });
+        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
+        expect(()=> vh.addValidator({
+            conditionConfig: null!,
+            errorMessage: 'Error'
+        })).toThrow(/conditionConfig/);
+    });        
+    test('Add where the conditionConfig.conditionType is undefined throws', () => {
+        let services = createValidationServicesForTesting();
+        addGeneratorToServices(services);
+        services.autoGenerateDataTypeCheckService.enabled = false;
+        let vm = new ValidationManager({
+            services: services,
+            valueHostConfigs: [
+                {
+                    valueHostType: TestValueHostType,
+                    name: 'Field1'
+                }
+            ]
+        });
+        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
+        expect(()=> vh.addValidator({
+            conditionConfig: {
+                conditionType: undefined!
+            },
+            errorMessage: 'Error'
+        })).toThrow(/conditionType/);
+    });        
+    test('Add where the parameter is null throws', () => {
+        let services = createValidationServicesForTesting();
+        addGeneratorToServices(services);
+        services.autoGenerateDataTypeCheckService.enabled = false;
+        let vm = new ValidationManager({
+            services: services,
+            valueHostConfigs: [
+                {
+                    valueHostType: TestValueHostType,
+                    name: 'Field1'
+                }
+            ]
+        });
+        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
+        expect(()=> vh.addValidator(null!)).toThrow(/config/);
+    });        
     test('Confirm add with previously added condition type gets used during validate, and the other is abandoned', () => {
         let services = createValidationServicesForTesting();
         addGeneratorToServices(services);
@@ -2853,6 +3202,7 @@ describe('toIValidatorsValueHostBase function', () => {
         expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
     });
     class TestIValidatorsValueHostBaseImplementation implements IValidatorsValueHostBase {
+
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");
@@ -2897,6 +3247,10 @@ describe('toIValidatorsValueHostBase function', () => {
         getIssuesFound(group?: string | undefined): IssueFound[] {
             throw new Error("Method not implemented.");
         }
+        setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean
+        {
+            throw new Error('Function not implemented.');
+        }        
         getConversionErrorMessage(): string | null {
             throw new Error("Method not implemented.");
         }
@@ -2922,7 +3276,9 @@ describe('toIValidatorsValueHostBase function', () => {
         getDataType(): string | null {
             throw new Error("Method not implemented.");
         }
-
+        getDataTypeLabel(): string {
+            throw new Error("Method not implemented.");
+        }
         isChanged: boolean = false;
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
             throw new Error("Method not implemented.");
@@ -3383,8 +3739,17 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
 describe('dispose', () => {
 
     test('dispose kills many references including state and config', () => {
-        let setup = setupValidatorsValueHostBase();
+        let setup = setupValidatorsValueHostBase({
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: ConditionType.RequireText
+                    }
+                }
+            ]
+        });
         let vhConfig = setup.config;
+        setup.valueHost.validate(); // ensure validators and conditions are created, so we can test disposing them
         setup.valueHost.dispose();
         expect(setup.valueHost.exposeValidators).toBeUndefined();
         expect(setup.valueHost.exposeState).toBeUndefined();
@@ -3404,6 +3769,7 @@ describe('dispose', () => {
         let setup = setupValidatorsValueHostBase();
         let vhConfig = setup.config as X;
         vhConfig.x = {};
+        setup.valueHost.validate();         
         vhConfig.dispose = () => { (vhConfig.x as any) = undefined };
         setup.valueHost.dispose();
 

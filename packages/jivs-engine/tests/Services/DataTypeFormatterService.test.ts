@@ -336,3 +336,81 @@ describe('DataTypeFormatterServices register, unregister, and find', () => {
         expect(formatter.services).toBe(services);
     });    
 });
+
+describe('lazyLoad', () => {
+    class NormalFormatter implements IDataTypeFormatter
+    {
+        supports(dataTypeLookupKey: string, cultureId: string): boolean {
+            return dataTypeLookupKey === 'Normal';
+        }
+        format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+            throw new Error("Method not implemented.");
+        }
+
+        
+    }
+    class LazyLoadFormatter implements IDataTypeFormatter
+    {
+        supports(dataTypeLookupKey: string, cultureId: string): boolean {
+            return dataTypeLookupKey === 'LazyLoad';
+        }
+        format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
+            throw new Error("Method not implemented.");
+        }
+    }    
+    test('Call to register does not lazy load', () => {
+        let testItem = new DataTypeFormatterService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register(new LazyLoadFormatter());
+            loaded = true;
+        };
+        testItem.register(new NormalFormatter());
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for already registered does not lazy load', () => {
+        let testItem = new DataTypeFormatterService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register(new LazyLoadFormatter());
+            loaded = true;
+        };
+        testItem.register(new NormalFormatter());
+        expect(loaded).toBe(false);
+        expect(testItem.find('Normal', 'en')).toBeInstanceOf(NormalFormatter);
+        expect(loaded).toBe(false);
+ 
+    });
+    test('Call to find for unregistered does load but later find does not load for unregistered', () => {
+        let testItem = new DataTypeFormatterService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register(new LazyLoadFormatter());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(testItem.find('LazyLoad', 'en')).toBeInstanceOf(LazyLoadFormatter);
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(testItem.find('Normal', 'en')).toBeNull();      //  not registered
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for unregistered does load but fails to load what it needs but has loaded one we use later', () => {
+        let testItem = new DataTypeFormatterService();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register(new LazyLoadFormatter());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(testItem.find('Normal', 'en')).toBeNull();      // not registered
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(testItem.find('LazyLoad', 'en')).toBeInstanceOf(LazyLoadFormatter);
+        expect(loaded).toBe(false);
+    });    
+});

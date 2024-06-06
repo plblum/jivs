@@ -51,7 +51,15 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         this._validators?.forEach((validator) => validator.dispose());
         (this._validators as any) = undefined;
     }
-
+    /**
+     * Determines if this ValueHost handles validation for a specific error code.
+     * @param errorCode 
+     */
+    protected handlesErrorCode(errorCode: string): boolean
+    {
+        return this.getValidator(errorCode) !== null;
+    }
+    
     /**
      * Runs validation against some of all validators.
      * If at least one validator was NoMatch, it returns ValueHostValidateResult
@@ -413,15 +421,17 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * @param config 
      */
     public addValidator(config: ValidatorConfig): void {
+        assertNotNull(config, 'config');
+        assertNotNull(config.conditionConfig, 'conditionConfig');
+        assertNotNull(config.conditionConfig!.conditionType, 'conditionType');
         this._validators = null;    // force recreation
         if (!this.config.validatorConfigs)
             this.config.validatorConfigs = [];
-        let knownConditionType: string | null =
-            config.conditionConfig ? config.conditionConfig.conditionType : null;
-        if (knownConditionType) {
+        let conditionType = config!.conditionConfig!.conditionType;
+        if (conditionType) {
             let index = this.config.validatorConfigs.findIndex((ivd) =>
                 (ivd.conditionConfig ? ivd.conditionConfig.conditionType : '') ===
-                knownConditionType
+                conditionType
             );
             if (index > -1) {
                 this.config.validatorConfigs[index] = config;

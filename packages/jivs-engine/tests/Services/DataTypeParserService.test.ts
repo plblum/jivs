@@ -270,3 +270,79 @@ describe('DataTypeParserServices register and find', () => {
         expect(() => testItem.register(null!)).toThrow(/item/);
     });    
 });
+
+describe('lazyLoad', () => {
+    class NormalParser implements IDataTypeParser<any>
+    {
+        supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+            return dataTypeLookupKey === 'Normal';
+        }
+        parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<any> {
+            throw new Error("Method not implemented.");
+        }
+    }
+    class LazyLoadParser implements IDataTypeParser<any>
+    {
+        supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
+            return dataTypeLookupKey === 'LazyLoad';
+        }
+        parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<any> {
+            throw new Error("Method not implemented.");
+        }
+    }    
+    test('Call to register does not lazy load', () => {
+        let tls = new DataTypeParserService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadParser());
+            loaded = true;
+        };
+        tls.register(new NormalParser());
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for already registered does not lazy load', () => {
+        let tls = new DataTypeParserService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadParser());
+            loaded = true;
+        };
+        tls.register(new NormalParser());
+        expect(loaded).toBe(false);
+        expect(tls.find('Normal', 'en', '')).toBeInstanceOf(NormalParser);
+        expect(loaded).toBe(false);
+ 
+    });
+    test('Call to find for unregistered does load but later find does not load for unregistered', () => {
+        let tls = new DataTypeParserService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadParser());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(tls.find('LazyLoad', 'en', '')).toBeInstanceOf(LazyLoadParser);
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(tls.find('Normal', 'en', '')).toBeNull();      // not registered
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for unregistered does load but fails to load what it needs but has loaded one we use later', () => {
+        let tls = new DataTypeParserService();
+        let loaded = false;
+        tls.lazyLoad = (service) => {
+            service.register(new LazyLoadParser());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(tls.find('Normal', 'en', '')).toBeNull();      // not registered
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(tls.find('LazyLoad', 'en', '')).toBeInstanceOf(LazyLoadParser);
+        expect(loaded).toBe(false);
+    });    
+});

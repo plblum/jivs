@@ -182,6 +182,22 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     {
         return this.config.dataType ?? null;
     }
+    /**
+     * Provides a localized name for the data type when it needs to be shown to the user.
+     * Since the ValueHostConfig.dataType is optional, this will end up returning the empty string,
+     * unless the native value has been assigned and the DataTypeIdentifierService can figure out its lookupKey.
+     */
+    public getDataTypeLabel(): string
+    {
+        let dt = this.getDataType();
+        if (!dt) {
+            let value = this.getValue();
+            if (value != null)  { // null or undefined
+                dt = this.services.dataTypeIdentifierService.identify(value);
+            }
+        }
+        return dt ? (this.services.textLocalizerService.getDataTypeLabel(this.services.cultureService.activeCultureId, dt) ?? '') : '';
+    }
 
     /**
      * Determines how the validation system sees the Value in terms of editing.

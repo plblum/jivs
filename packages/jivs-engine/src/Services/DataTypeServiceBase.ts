@@ -15,7 +15,7 @@ import { toIDisposable } from '../Interfaces/General_Purpose';
  * Abstract base class for Services that maintain a registered list of classes
  * that all implement T.
  */
-export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase implements IDataTypeService
+export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase implements IDataTypeService<T>
 {
     /**
      * Participates in releasing memory.
@@ -31,6 +31,7 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
         });
         (this._registeredClasses as any) = undefined;
     }    
+    
     /**
      * Changes the services on all implementations of IServicesAccessor
      * @param services 
@@ -98,4 +99,31 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
      * All registered T.
      */
     private readonly _registeredClasses: Array<T> = [];
+
+
+    /**
+     * Sets up a function to lazy load the configuration when any of the other
+     * functions are called.
+     */
+    public set lazyLoad(fn: (service: IDataTypeService<T>) => void)
+    {
+        this._lazyLoader = fn;
+    }
+    private _lazyLoader: null | ((service: IDataTypeService<T>) => void) = null;
+
+    /**
+     * Runs the lazyload function if setup and returns true if run.
+     * @returns 
+     */
+    protected ensureLazyLoaded(): boolean
+    {
+        if (this._lazyLoader) {
+            // prevent recursion by disabling the feature right away
+            let fn = this._lazyLoader;
+            this._lazyLoader = null;
+            fn(this);
+            return true;
+        }
+        return false;
+    }        
 }

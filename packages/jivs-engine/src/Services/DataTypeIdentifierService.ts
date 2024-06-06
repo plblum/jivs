@@ -49,14 +49,19 @@ implements IDataTypeIdentifierService
         return result;
     }
 
+
     /**
      * Finds the matching DataType LookupKey for the given value or 
      * null if not supported.
+     * Runs the lazyloader if setup and the first search fails.
      * @param value 
      * @returns 
      */
     public find(value: any): IDataTypeIdentifier | null {
-        return this.getAll().find((idt) => idt.supportsValue(value)) ?? null;
+        let result = this.getAll().find((idt) => idt.supportsValue(value)) ?? null;
+        if (result === null && this.ensureLazyLoaded())
+            result = this.find(value);
+        return result;        
     }
 
 }
