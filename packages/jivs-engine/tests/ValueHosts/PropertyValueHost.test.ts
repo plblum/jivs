@@ -397,6 +397,10 @@ describe('toIPropertyValueHost function', () => {
         getDataType(): string | null {
             throw new Error("Method not implemented.");
         }
+        getDataTypeLabel(): string {
+            throw new Error("Method not implemented.");
+        }
+    
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
             throw new Error("Method not implemented.");
         }

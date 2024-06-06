@@ -3202,6 +3202,7 @@ describe('toIValidatorsValueHostBase function', () => {
         expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
     });
     class TestIValidatorsValueHostBaseImplementation implements IValidatorsValueHostBase {
+
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");
@@ -3275,7 +3276,9 @@ describe('toIValidatorsValueHostBase function', () => {
         getDataType(): string | null {
             throw new Error("Method not implemented.");
         }
-
+        getDataTypeLabel(): string {
+            throw new Error("Method not implemented.");
+        }
         isChanged: boolean = false;
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
             throw new Error("Method not implemented.");

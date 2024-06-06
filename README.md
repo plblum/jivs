@@ -1372,8 +1372,9 @@ Any text displayed to the user and any input supplied from them is subject to lo
 
 ### Localizing strings
 Here are a few places you provide user-facing strings into Jivs:
-- ValueHostConfig.label
+- ValueHostConfig.label for {Label} and {SecondLabel} tokens
 - ValidatorConfig.errorMessage and summaryMessage
+- ValueHostConfig.dataType for {DataType} token
 
 Each of those properties have a companion that ends in "l10n" (industry term for localization), such as labell10n. Use the l10n properties to supply a Localization Key that will be sent to Jivs `TextLocalizationService`. If that service has the appropriate data, it will be used instead of the usual property.
 
@@ -1381,7 +1382,7 @@ Each of those properties have a companion that ends in "l10n" (industry term for
 
 To replace it with a third party text localization tool, implement `ITextLocalizationService` and assign it in the `createTextLocalizerService() function`.
 
-#### Setup for a label
+#### Setup for ValueHostConfig.label
 Let's suppose that you have a label "First Name" which you want in several languages.
 1. Create a unique Localization Key for it. We'll use "FirstName".
 2. Assign both label and labell10n properties during configuration.
@@ -1393,7 +1394,7 @@ Let's suppose that you have a label "First Name" which you want in several langu
 	  labell10n: 'FirstName'
 	}
 	... or using fluent syntax ...
-	config().input('FirstName', null, { label: 'First Name', 'labell10n': 'FirstName' })
+	config().input('FirstName', null, { label: 'First Name', 'labell10n': 'FirstName' });
 	```
 3. Add an entry to the `createTextLocalizerService() function` like this:
 	```ts
@@ -1409,8 +1410,8 @@ Let's suppose that you have a label "First Name" which you want in several langu
 	    });
 	}
 	```
-	
-#### Setup for errorMessage and summaryMessage properties
+
+#### Setup for ValidatorConfig.errorMessage and summaryMessage properties
 Jivs generates specific Localization Keys based on the ConditionType.
 For error message, "EM-*ConditionType*-*DataTypeLookupKey*" and a fallback "EM-*ConditionType*". Example using RangeCondition for an Integer Lookup Key: "EM-Range-Integer" and "EM-Range".
 For summary message, "SEM-*ConditionType*-*DataTypeLookupKey*" and a fallback "SEM-*ConditionType*".
@@ -1419,27 +1420,57 @@ When using the supplied TextLocalizerService, you won't need to know those Looku
 
 The existing `createTextLocalizerService() function` already has numerous examples. For example:
 ```ts
-    service.registerErrorMessage(ConditionType.RequireText, null, {
-        '*': 'Requires a value.'
-    });
-    service.registerSummaryMessage(ConditionType.RequireText, null, {
-        '*': '{Label} requires a value.'
-    });    
-    service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
-        '*': 'Invalid value. Enter a date.',
-        'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
-        'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
-    });
-    service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
-        '*': '{Label} has an invalid value. Enter a date.',
-        'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
-        'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
-    });        
+service.registerErrorMessage(ConditionType.RequireText, null, {
+    '*': 'Requires a value.'
+});
+service.registerSummaryMessage(ConditionType.RequireText, null, {
+    '*': '{Label} requires a value.'
+});    
+service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
+    '*': 'Invalid value. Enter a date.',
+    'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
+    'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
+});
+service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
+    '*': '{Label} has an invalid value. Enter a date.',
+    'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
+    'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
+});        
 ```
 So review and edit the `createTextLocalizerService() function`.
+#### Setup for ValueHostConfig.dataType
+The {DataType} token is useful in making the error message for a Data Type Check validator cover multiple data types. Instead of "Enter a date." and "Enter a number.", one error message can say "Enter a {DataType}.".
+1. Assign the dataType property during configuration.
+	```ts
+	{
+	  valueHostType: ValueHostType.Input, // = 'Input'
+	  name: 'Age',
+	  dataType: LookupKey.Integer, // 'Integer'
+	}
+	... or using fluent syntax ...
+	config().input('Age', LookupKey.Integer);
+	```
+2. Add an entry to the `createTextLocalizerService() function` like this:
+	```ts
+	export function createTextLocalizerService(): ITextLocalizerService
+	{
+	    let service = new TextLocalizerService();
+	    ...
+	    service.registerDataTypeLabel(LookupKey.Integer, {
+	        '*': 'an integer number', // fallback
+	        'en': 'an integer number',
+	        'es': 'un número entero',
+	        'fr': 'un nombre entier'
+	    });
+	}
+	```
 
-### Localizing error message tokens
-Error messages use tokens to insert values at runtime. When the value is a number, date or boolean, those must be localized. Jivs already does this within its <a href="#datatypeformatter">DataTypeFormatter classes</a>.
+### Localizing error message "value" tokens
+Error messages use tokens to insert values at runtime. {Value}, {SecondValue}, {Minimum}, {Maximum}, and {CompareTo} are all examples.
+
+`Enter a value between {Minimum} and {Maximum}.`
+
+When the value is a number, date or boolean, those must be localized. Jivs already does this within its <a href="#datatypeformatter">DataTypeFormatter classes</a>.
 
 The supplied classes use [JavaScript's own Intl class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl) to handle dates, times, and numbers. It uses [toLocaleLowerCase](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLocaleLowerCase) and [toLocaleUpperCase](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLocaleUpperCase) for those situations. These classes are adequate but you may prefer using a richer third party library.
 

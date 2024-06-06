@@ -641,17 +641,17 @@ export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 
         '*': '{Label} requires a value.'
     });    
     service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
-        '*': 'Invalid value.'   // this is a fallback for when all datatypelookup keys have failed. Its a terrible error message, very unhelpful. That's why we need data type specific versions.
+        '*': 'Invalid value. Expects {DataType}.'   // this is a fallback for when all datatypelookup keys have failed. Its very unhelpful for dates and other culture specific strong patterns. That's why we need data type specific versions.
     });
     service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
-        '*': '{Label} has an invalid value.'
+        '*': '{Label} has an invalid value. Expects {DataType}.'
     });    
 /* If you use the setValueOption.conversionErrorTokenValue in setValue, these are better than the last two    
     service.registerErrorMessage(ConditionType.DataTypeCheck, null, {
-        '*': 'Input error: {ConversionError}.' 
+        '*': 'Invalid value. Expects {DataType}. {ConversionError}.' 
     });
     service.registerSummaryMessage(ConditionType.DataTypeCheck, null, {
-        '*': '{Label} has this error: {ConversionError}.'
+        '*': '{Label} has an invalid value. Expects {DataType}. {ConversionError}.'
     });    
 */
 
@@ -697,6 +697,36 @@ export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 
         'en-US': '{Label} has an invalid value. Enter a date in this format: Month DD, YYYY where month names are 3 letters',
         'en-GB': '{Label} has an invalid value. Enter a date in this format: DD Month YYYY where month names are 3 letters'
     });    
+
+    // --- for the {DataType} token in error messages
+    // Currently formatted so it works in "Enter {DataType}", by including a leading word, like "a date", "an integer", etc.
+    service.registerDataTypeLabel(LookupKey.String, {
+        '*': 'text',
+        'en': 'text',
+        'es': 'uno texto'
+    });
+    service.registerDataTypeLabel(LookupKey.Date,  {
+        '*': 'a date',
+        'en': 'a date',
+        'es': 'una fecha'
+    });    
+    service.registerDataTypeLabel(LookupKey.DateTime,  {
+        '*': 'a date and time',
+        'en': 'a date and time',
+        'es': 'una fecha y una hora'
+    });    
+    service.registerDataTypeLabel(LookupKey.Number, {
+        '*': 'a number',
+        'en': 'a number',
+        'es': 'un número'
+    });
+    service.registerDataTypeLabel(LookupKey.Integer, {
+        '*': 'an integer number',
+        'en': 'an integer number',
+        'es': 'un número entero'      
+     });
+
+
 
     return service;
     

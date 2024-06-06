@@ -984,6 +984,10 @@ describe('toIValidatableValueHostBase', () => {
             getDataType: function (): string | null {
                 throw new Error('Function not implemented.');
             },
+            getDataTypeLabel(): string {
+                throw new Error("Method not implemented.");
+            },
+        
             saveIntoInstanceState: function (key: string, value: any): void {
                 throw new Error('Function not implemented.');
             },
@@ -1107,7 +1111,10 @@ describe('toIValidatableValueHostBase function', () => {
         getDataType(): string | null {
             throw new Error("Method not implemented.");
         }
-
+        getDataTypeLabel(): string {
+            throw new Error("Method not implemented.");
+        }
+    
         isChanged: boolean = false;
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
             throw new Error("Method not implemented.");

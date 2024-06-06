@@ -103,6 +103,9 @@ export class MockValueHost implements IValueHost
     getDataType(): string | null {
         return this._dataTypeLookupKey;
     }
+    getDataTypeLabel(): string {
+        return this.getDataType() ?? ''; 
+    }
 
     saveIntoInstanceState(key: string, value: any): void
     {

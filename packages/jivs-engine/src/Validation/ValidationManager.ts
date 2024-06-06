@@ -346,7 +346,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      * 
      * Use case: client-side getting server-side Jivs-generated IssuesFound,
      * so the UI can incorporate it.
-     * @param issueFound 
+     * @param issuesFound 
      * @param behavior - keep or omit an issueFound that does not have a matching validator
      * based on the errorCode. Defaults to Keep
      */

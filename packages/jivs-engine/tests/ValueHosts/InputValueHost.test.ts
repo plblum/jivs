@@ -1293,6 +1293,9 @@ describe('toIInputValueHost function', () => {
         getDataType(): string | null {
             throw new Error("Method not implemented.");
         }
+        getDataTypeLabel(): string {
+            throw new Error("Method not implemented.");
+        }
 
         isChanged: boolean = false;
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {

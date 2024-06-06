@@ -614,6 +614,7 @@ export class Validator implements IValidator {
      * {Label} - the Config.label property verbatim
      * {Value} - the native value in instanceState.Value. If null/undefined, the value in instanceState.LastRawValue.
      * Plus any from the Condition in use.     
+     * {DataType} - the name of the data type. Uses values registered with TextLocalizerService and LookupKey enum's strings as a fallback.
      */
     public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let tlv: Array<TokenLabelAndValue> = [
@@ -626,6 +627,11 @@ export class Validator implements IValidator {
                 tokenLabel: 'Value',
                 associatedValue: valueHost.getValue(),
                 purpose: 'value'
+            },
+            {
+                tokenLabel: 'DataType',
+                associatedValue: valueHost.getDataTypeLabel(),
+                purpose: 'message'
             }
         ];
         if (tlv[1].associatedValue === undefined)   // fallback to input value if available

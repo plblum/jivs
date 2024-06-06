@@ -174,6 +174,54 @@ describe('getSummaryMessage', () => {
         expect(testItem.getSummaryMessage('fr', 'Code4', null)).toBeNull();     
     });    
 });
+describe('getDataTypeName', () => {
+    function createTextLocalizerService(): TextLocalizerService
+    {
+        let tls = new TextLocalizerService();
+        tls.registerDataTypeLabel('Code1', {
+            '*': 'Code1-datatypename'
+        });
+        tls.registerDataTypeLabel('Code2', {
+            '*': 'Code2-datatypename',
+            'en': 'en-Code2-datatypename'
+        });        
+        return tls;
+    }
+    test('Requested value exists and is returned', () => {
+        let testItem = createTextLocalizerService();
+        expect(testItem.getDataTypeLabel('en', 'Code1')).toBe('Code1-datatypename');
+        expect(testItem.getDataTypeLabel('en', 'Code2')).toBe('en-Code2-datatypename');
+        expect(testItem.getDataTypeLabel('fr', 'Code2')).toBe('Code2-datatypename');        
+    });
+    test('Requested value does not exist and original data type is returned', () => {
+        let testItem = createTextLocalizerService();
+        expect(testItem.getDataTypeLabel('en', 'X1')).toBe('X1');
+        expect(testItem.getDataTypeLabel('fr', 'X1')).toBe('X1');
+    });    
+    test('Pass in null returns null', () => {
+        let testItem = createTextLocalizerService();
+        expect(testItem.getDataTypeLabel('en', null!)).toBeNull();
+    });        
+    test('With fallbackService containing an override to Code1 and a new value, Code3, requested value exists and is returned. Requested value does not exist, returns null.', () => {
+        let testItem = new TextLocalizerService();
+        let fallbackService = createTextLocalizerService();
+        testItem.fallbackService = fallbackService;
+        fallbackService.registerDataTypeLabel('Code1', {
+            '*': 'Code1-datatypename-topLevel'
+        });
+        fallbackService.registerDataTypeLabel('Code3', {
+            '*': 'Code3-datatypename-topLevel',
+            'en': 'en-Code3-datatypename-topLevel'
+        });
+        expect(testItem.getDataTypeLabel('en', 'Code1')).toBe('Code1-datatypename-topLevel');
+        expect(testItem.getDataTypeLabel('en', 'Code2')).toBe('en-Code2-datatypename');
+        expect(testItem.getDataTypeLabel('fr', 'Code2')).toBe('Code2-datatypename');        
+        expect(testItem.getDataTypeLabel('en', 'Code3')).toBe('en-Code3-datatypename-topLevel');
+        expect(testItem.getDataTypeLabel('fr', 'Code3')).toBe('Code3-datatypename-topLevel');       
+        expect(testItem.getDataTypeLabel('fr', 'Code4')).toBe('Code4');     
+    });    
+});
+
 describe('dispose', () => {
     test('With fallbackService setup, request a value that exists on the top level, and that value is returned.', () => {
         let testItem = new TextLocalizerService();

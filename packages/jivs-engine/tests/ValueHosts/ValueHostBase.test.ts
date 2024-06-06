@@ -9,6 +9,9 @@ import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
+import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
+import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
+import { ValidationManager } from "../../src/Validation/ValidationManager";
 
 
 interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
@@ -41,7 +44,7 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
  */
 class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
     public canCreate(config: ValueHostConfig): boolean {
-        return config.valueHostType === 'PublicifyValueHostBase';
+        return config.valueHostType === testValueHostType;
     }
     public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost {
         return new PublicifiedValueHostBase(valueHostsManager, config, state);
@@ -60,13 +63,15 @@ class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
 
 }
 
+const testValueHostType = 'PublicifyValueHostBase';
+
 /**
  * Returns an ValueHost (PublicifiedValueHost subclass) ready for testing.
  * @param config - Provide just the properties that you want to test.
  * Any not supplied but are required will be assigned using these rules:
  * name: 'Field1',
  * Label: 'Label1',
- * Type: 'PublicifyValueHostBase',
+ * Type: testValueHostType,
  * DataType: LookupKey.String,
  * InitialValue: 'DATA'
  * @returns An object with all of the parts that were setup including 
@@ -89,7 +94,7 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
     let defaultConfig: ValueHostConfig = {
         name: 'Field1',
         label: 'Label1',
-        valueHostType: 'PublicifyValueHostBase',
+        valueHostType: testValueHostType,
         dataType: LookupKey.String,
         initialValue: 'DATA'
     };
@@ -183,7 +188,7 @@ describe('constructor and resulting property values', () => {
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
-            valueHostType: 'PublicifyValueHostBase',
+            valueHostType: testValueHostType,
             dataType: LookupKey.String,
             initialValue: 'DATA'
         };
@@ -616,6 +621,66 @@ describe('toIValueHostCallbacks function', () => {
     test('Non-object returns null.', () => {
         expect(toIValueHostCallbacks(100)).toBeNull();
     });        
+});
+describe('getDataTypeLabel', () => {
+    // Planned data type is "Integer". If it does not have datatype assigned, a datatypeIdentifierService will
+    // resolve a number to "Number". 
+    function testGetDataTypeLabel(hasDataType: boolean, hasValue: boolean, hasLocalization: boolean, expectedDataTypeLabel: string): void
+    {
+        let services = createValidationServicesForTesting();
+        let factory = new ValueHostFactory();
+        factory.register(new PublicifiedValueHostBaseGenerator());
+        services.valueHostFactory = factory;
+        
+        let tls = new TextLocalizerService();
+        services.textLocalizerService = tls; // ensures its inited as empty
+        if (hasLocalization) {
+            services.cultureService.activeCultureId = 'en';
+            tls.registerDataTypeLabel(LookupKey.Number, {
+                'en': 'Localized Number'
+            });            
+            tls.registerDataTypeLabel(LookupKey.Integer, {
+                'en': 'Localized Integer'
+            });
+        }
+        // note: dataTypeIdentifierService is used when value!=undefined. It is preconfigured to detect typeof value == 'number'
+        services.dataTypeIdentifierService = new DataTypeIdentifierService();
+        let vhConfig: ValueHostConfig = {
+            name: 'Field1',
+            valueHostType: testValueHostType
+        }
+        if (hasDataType)
+            vhConfig.dataType = LookupKey.Integer;
+        if (hasValue)
+            vhConfig.initialValue = 10;
+        let vm = new ValidationManager({
+            services: services,
+            valueHostConfigs: [vhConfig]
+        });
+        let vh = vm.getValueHost('Field1') as PublicifiedValueHostBase;
+        expect(vh.getDataTypeLabel()).toBe(expectedDataTypeLabel);
+
+    }
+    test('Without localization, no datatype assigned nor value to identify returns empty string', () => {
+        testGetDataTypeLabel(false, false, false, '');
+    });
+    test('With localization setup, no datatype assigned nor value to identify returns empty string', () => {
+        testGetDataTypeLabel(false, false, true, '');
+    });
+    test('Without localization, no datatype assigned but has number to identify returns "Number" from the lookup key', () => {
+        testGetDataTypeLabel(false, true, false, LookupKey.Number);
+    });
+    test('With matching localization, no datatype assigned but has number to identify returns the localized name for number.', () => {
+        testGetDataTypeLabel(false, true, true, 'Localized Number');
+    });
+    test('Without localization, datatype assigned returns "Integer" from the lookup key', () => {
+        testGetDataTypeLabel(true, false, false, LookupKey.Integer);
+        testGetDataTypeLabel(true, true, false, LookupKey.Integer); // value does not matter
+    });
+    test('With matching localization, datatype assigned returns the localized name for integer.', () => {
+        testGetDataTypeLabel(true, false, true, 'Localized Integer');
+        testGetDataTypeLabel(true, true, true, 'Localized Integer'); // value does not matter
+    });    
 });
 
 describe('dispose', () => {

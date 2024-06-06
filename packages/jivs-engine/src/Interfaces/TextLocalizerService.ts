@@ -51,6 +51,56 @@ export interface ITextLocalizerService extends IServiceWithFallback<ITextLocaliz
      * @returns The Summary error message or null if not available.
      */
     getSummaryMessage(cultureIdToMatch: string, errorCode: string, dataTypeLookupKey: string | null): string | null;
+
+    /**
+     * Attempts to get the localized label for a data type lookup key to be used in {DataType} token of error messages.
+     * @param dataTypeLookupKey 
+     * @returns The name or null if not available.
+     */
+    getDataTypeLabel(cultureIdToMatch: string, dataTypeLookupKey: string): string | null;
+
+    /**
+     * Registers a lookup key with the culture specific text.
+     * Replaces an already registered entry with the same l10nKey.
+     * @param l10nKey - Localization key, which is the text that identifies which word,
+     * phrase, or other block of text is requested.
+     * @param cultureToText - keys are language codes from cultureId, like 'en'.
+     * values are the actual text to output.
+     */
+    register(l10nKey: string, cultureToText: CultureToText): void;
+
+    /**
+     * Utility to add an error message for a validator.
+     * The localization key (l10ntext) will use this pattern:
+     * 'EM-' + ErrorCode + '-' + DataTypeLookupKey
+     * 'EM-' + ErrorCode   // this is a fallback
+     * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property
+     * @param dataTypeLookupKey - optional. 
+     * @param cultureToText 
+     */
+    registerErrorMessage(errorCode: string, dataTypeLookupKey: string | null, cultureToText: CultureToText): void;
+    
+    /**
+     * Utility to add a summary error message for a validator
+     * The localization key (l10ntext) will use this pattern:
+     * 'SEM-' + ErrorCode + '-' + DataTypeLookupKey
+     * 'SEM-' + ErrorCode   // this is a fallback
+     * @param errorCode - same as ConditionType unless you set the ValidatorConfig.errorCode property
+     * @param dataTypeLookupKey - optional. 
+     * @param cultureToText 
+     */
+    registerSummaryMessage(errorCode: string, dataTypeLookupKey: string | null, cultureToText: CultureToText): void;
+
+    /**
+     * Utility to add text representation of a data type associating it with its 
+     * dataTypeLookupKey. The text is used with the {DataType} token in error messages.
+     * The localization key (l10ntext) will use this pattern:
+     * 'DTLK-' + DataTypeLookupKey
+     * @param dataTypeLookupKey
+     * @param cultureToText 
+     */
+    registerDataTypeLabel(dataTypeLookupKey: string, cultureToText: CultureToText): void;    
+
 }
 
 
