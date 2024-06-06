@@ -257,3 +257,22 @@ export interface ValidationState
      */
     asyncProcessing: boolean;    
 }
+
+
+/**
+ * setIssuesFound parameter value to determine how to handle when the supplied IssueFound
+ * does not match a validator on the ValueHost based on IssueFound.errorCode.
+ */
+export enum SetIssuesFoundErrorCodeMissingBehavior
+{
+    /**
+     * Add the IssueFound. It will be available for the UI, both on the ValueHost and ValidationSummary.
+     * However, the next time you validate or clear validation, its removed.
+     */
+    Keep,    
+    /**
+     * Do not use the IssueFound. Use this when you do not want errors that are not supported
+     * through local validators.
+     */
+    Omit
+}

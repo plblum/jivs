@@ -561,6 +561,12 @@ export interface NumberCultureInfo extends Omit<DataTypeParserOptions<number>, '
      * transfer its value into the NumberParserBase.stripTheseStrings.
      */
     percentSymbol: string;        
+
+    /**
+     * When true, the user can input parenthesis to indicate a negative value.
+     * Typically true for currency.
+     */
+    parenthesisAsNegative?: boolean;
 }
 
 /**
@@ -633,8 +639,10 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
             sts = [sts];
 
         sts.push(this.options.negativeSymbol);
-        sts.push('(');
-        sts.push(')');
+        if (this.options.parenthesisAsNegative) {
+            sts.push('(');
+            sts.push(')');
+        }
         
         if (this.options.thousandsSeparator != null)    // null or undefined
             sts.push(this.options.thousandsSeparator);
@@ -696,7 +704,7 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
     }
     protected isNegative(text: string): boolean
     {
-        return text.includes(this.options.negativeSymbol) || /\(.+\)/.test(text);
+        return text.includes(this.options.negativeSymbol) || (this.options.parenthesisAsNegative ? /\(.+\)/.test(text) : false);
     }
 
     /**
@@ -732,10 +740,14 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
      */
     protected cannotBeNumber(text: string): boolean
     {
+        // must have at least one digit
+        if (!/\d/.test(text))
+            return true;
         if (hasLetters(text))   // its possible to have currency in letters like $1.00USD. This isn't supported
             return true;
-        const onlyOnceChars = (this.options.decimalSeparator ?? '') +
-            (this.options.negativeSymbol ?? '') + '()';
+        const negativeSymbols = this.options.negativeSymbol + (this.options.parenthesisAsNegative ? '()' : '');
+        const onlyOnceChars = this.options.decimalSeparator +
+            negativeSymbols;
         const alwaysLegalChars = onlyOnceChars +
             (this.options.thousandsSeparator ?? '') +
             ' ';    // spaces are always legal at this point
@@ -746,10 +758,19 @@ export abstract class NumberParserBase<TOptions extends NumberCultureInfo>
             return true;
         if (hasMultipleOccurances(text, onlyOnceChars))
             return true;
-        const notBetweenDigits = (this.options.negativeSymbol ?? '') +
-            '()';
+        const notBetweenDigits = negativeSymbols;
         if (new RegExp('\\d[' + escapeRegExp(notBetweenDigits) + ']+\\d').test(text))
             return true;
+        if (this.options.parenthesisAsNegative)
+        {
+            let leftPos = text.indexOf('(');
+            let rightPos = text.indexOf(')');
+            if (leftPos !== rightPos)   // we have at least one. If none, -1 === -1
+                if (leftPos === -1 ||
+                    rightPos === -1 || // only 1 
+                    leftPos > rightPos) // left after right
+                    return true;
+        }
         return false;
     }
     /**

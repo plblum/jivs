@@ -107,10 +107,15 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
     /**
      * Finds the {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter}
      * associated with the lookup key and this class's own CultureID.
+     * Runs the lazyloader if setup and the first search fails.
      * @param lookupKey
      * @returns A matching IDataTypeFormatter or null if none match.
      */
     public find(lookupKey: string, cultureId: string): IDataTypeFormatter | null {
-        return this.getAll().find((dtlf) => dtlf.supports(lookupKey, cultureId)) ?? null;
+        let result = this.getAll().find((dtlf) => dtlf.supports(lookupKey, cultureId)) ?? null;
+        if (result === null && this.ensureLazyLoaded())
+            result = this.find(lookupKey, cultureId);
+        return result;        
     }
+
 }

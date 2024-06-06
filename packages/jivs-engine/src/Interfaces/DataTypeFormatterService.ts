@@ -11,7 +11,7 @@ import { IServicesAccessor } from "./Services";
  * Service for formatting data types used within tokens of error messages
  * using {@link DataTypes/Types/IDataTypeFormatter!IDataTypeFormatter | IDataTypeFormatter} instances.
  */
-export interface IDataTypeFormatterService extends IDataTypeService, IServicesAccessor {
+export interface IDataTypeFormatterService extends IDataTypeService<IDataTypeFormatter>, IServicesAccessor {
 
     /**
      * Converts the native value to a string that can be shown to the user.

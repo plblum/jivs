@@ -352,12 +352,12 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * This goes through those ValueHosts and notifies them.
      */
     public notifyOtherValueHostsOfValueChange(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void {
-        for (let ivh of this.inputValueHost())
+        for (let ivh of this.validatableValueHost())
             if (ivh.getName() !== valueHostIdThatChanged)
                 ivh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
     }
 
-    protected * inputValueHost(): Generator<IValidatableValueHostBase> {
+    protected * validatableValueHost(): Generator<IValidatableValueHostBase> {
         for (let key in this._valueHosts) {
             let vh = this._valueHosts[key];
             if (vh instanceof ValidatableValueHostBase)

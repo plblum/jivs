@@ -3,10 +3,12 @@ import {
     type RequireTextConditionConfig,
     RequireTextCondition
 } from "../../src/Conditions/ConcreteConditions";
-import type { IConditionCore, ConditionConfig } from "../../src/Interfaces/Conditions";
+import { IConditionCore, ConditionConfig, ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { FluentConditionCollector } from "../../src/ValueHosts/Fluent";
 import { enableFluentConditions } from "../../src/Conditions/FluentConditionCollectorExtensions";
+import { IValueHost } from "../../src/Interfaces/ValueHost";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 
 describe('ConditionFactory.create', () => {
     test('create with registered Condition creates the correct instance', () => {
@@ -71,3 +73,82 @@ describe('dispose()', () => {
         expect(() => factory.register<RequireTextConditionConfig>(ConditionType.RequireText, (config) => new RequireTextCondition(config))).toThrow(TypeError);
     });
 });
+
+
+describe('lazyLoad', () => {
+    class NormalCondition implements IConditionCore<ConditionConfig>
+    {
+        config: ConditionConfig = { conditionType: 'Normal'};
+        conditionType: string = 'Normal';
+        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            throw new Error("Method not implemented.");
+        }
+        category: ConditionCategory = ConditionCategory.Undetermined;
+    }
+    class LazyLoadCondition implements IConditionCore<ConditionConfig>
+    {
+        config: ConditionConfig = { conditionType: 'LazyLoad'};
+        conditionType: string = 'LazyLoad';
+        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            throw new Error("Method not implemented.");
+        }
+        category: ConditionCategory = ConditionCategory.Undetermined;
+    }    
+    test('Call to register does not lazy load', () => {
+        let testItem = new ConditionFactory();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register<ConditionConfig>('LazyLoad', (config)=> new LazyLoadCondition());
+            loaded = true;
+        };
+        testItem.register<ConditionConfig>('Normal', (config)=> new NormalCondition());
+        expect(loaded).toBe(false);
+    });
+    test('Call to create for already registered does not lazy load', () => {
+        let testItem = new ConditionFactory();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register<ConditionConfig>('LazyLoad', (config)=> new LazyLoadCondition());
+            loaded = true;
+        };
+        testItem.register<ConditionConfig>('Normal', (config)=> new NormalCondition());
+        expect(loaded).toBe(false);
+        expect(testItem.create({ conditionType: 'Normal' })).toBeInstanceOf(NormalCondition);
+        expect(loaded).toBe(false);
+ 
+    });
+    test('Call to find for unregistered does load but later find does not load for unregistered', () => {
+        let testItem = new ConditionFactory();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register<ConditionConfig>('LazyLoad', (config)=> new LazyLoadCondition());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(testItem.create({ conditionType: 'LazyLoad' })).toBeInstanceOf(LazyLoadCondition);
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(()=> testItem.create({ conditionType: 'Normal' })).toThrow();   //  not registered
+        expect(loaded).toBe(false);
+    });
+    test('Call to find for unregistered does load but fails to load what it needs but has loaded one we use later', () => {
+        let testItem = new ConditionFactory();
+        let loaded = false;
+        testItem.lazyLoad = (service) => {
+            service.register<ConditionConfig>('LazyLoad', (config)=> new LazyLoadCondition());
+            loaded = true;
+        };
+
+        expect(loaded).toBe(false);
+        expect(()=> testItem.create({ conditionType: 'Normal' })).toThrow();     // not registered
+        expect(loaded).toBe(true);
+        // at this point, lazyLoad should be discarded. So another request should not load
+        loaded = false;
+        expect(testItem.create({ conditionType: 'LazyLoad' })).toBeInstanceOf(LazyLoadCondition);
+
+        expect(loaded).toBe(false);
+    });    
+ });
+ 

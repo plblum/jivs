@@ -101,12 +101,17 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
 
     /**
      * Return a matching DataTypeParser or null.
+     * Runs the lazyloader if setup and the first search fails.
      * @param lookupKey 
      * @param cultureId 
      * @param text
      */
     public find(lookupKey: string, cultureId: string, text: string): IDataTypeParser<any> | null {
-        return this.getAll().find((dtp) => dtp.supports(lookupKey, cultureId, text)) ?? null;
+        let result = this.getAll().find((dtp) => dtp.supports(lookupKey, cultureId, text)) ?? null;
+        if (result === null && this.ensureLazyLoaded())
+            result = this.find(lookupKey, cultureId, text);
+        return result;        
     }
+
 
 }

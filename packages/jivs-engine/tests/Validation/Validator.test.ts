@@ -1160,7 +1160,7 @@ describe('Validator.gatherValueHostNames', () => {
 });
 
 describe('getValuesForTokens', () => {
-    test('RequireTextCondition returns 2 tokens: Label and Value', () => {
+    test('RequireTextCondition returns 3 tokens: Label, Value, and DataType', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
@@ -1181,10 +1181,15 @@ describe('getValuesForTokens', () => {
                 tokenLabel: 'Value',
                 associatedValue: 'Value1',
                 purpose: 'value'
+            },
+            {
+                tokenLabel: 'DataType',
+                associatedValue: 'String',
+                purpose: 'message'
             }
         ]);
     });
-    test('RangeCondition returns 4 tokens: Label, Value, Minimum, Maximum', () => {
+    test('RangeCondition returns 5 tokens: Label, Value, DataType, Minimum, Maximum', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range, valueHostName: null,
@@ -1208,6 +1213,11 @@ describe('getValuesForTokens', () => {
                 tokenLabel: 'Value',
                 associatedValue: 'C',
                 purpose: 'value'
+            },
+            {
+                tokenLabel: 'DataType',
+                associatedValue: 'String',
+                purpose: 'message'
             },
             {
                 tokenLabel: 'Minimum',

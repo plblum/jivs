@@ -52,7 +52,7 @@ libraries of many types, including other schema validation services and internat
     - **Converting input values:** Jivs provides parsers to convert the textual input into the native value needed by the model. 
 	- **Managing save attempts:** Jivs aids in handling errors, whether from UI or business logic, facilitating the delivery of additional messages and error handling
 -  **Coding Style:** Jivs is built using modern OOP patterns. Expect TypeScript interfaces, single responsibility objects, dependency injection, and strong separation of concerns.
-	- Most aspects of Jivs is expandable due to use of interfaces and dependency injection.
+	- Most aspects of Jivs are expandable due to use of interfaces and dependency injection.
 	- Easy to extend the existing business rule objects ("Conditions") to work with special cases, like comparing two Date objects but only by their day of week.
 	- UI development is mostly unaware of the validation rules supplied by business logic. It just knows that it is managing a field that may be validated, and provides the UI for the elements that report validation. Jivs supplies it with the validation status and error messages.
 
@@ -134,7 +134,7 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 * Use the onchange event to tell the ValidationManager about the data change and run validation. 
 	* You will need to have two values, the raw value from the Input (called the "Input Value") and the resulting value that is compatible with the property on your Model ("Native Value").
 	* Jivs lets you assign a parser to each InputValueHost. Just use: `validationManager.vh.input('name').setInputValue(inputValue, { validate: true });`
-	* If you want to handle parsing elsewhere, use `validationManager.vh.input('name').setValues(native, input, { validate: true });`
+	* If you want to handle parsing elsewhere, use: `validationManager.vh.input('name').setValues(nativeValue, inputValue, { validate: true });`
 * The ValidationManager will notify you about a validation state change through its `onValueHostValidationStateChanged callback`. Implement that callback to update your user interface.
 
 Suppose that you have this HTML:
@@ -202,8 +202,8 @@ This code sets up the onchange event with your own parsing:
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=>{
   let inputValue = evt.target.value;
-  let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
-  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true });
+  let { nativeValue, errorMessage } = myParser(inputValue);	// return nativeValue=undefined when there is an error
+  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true, conversionErrorTokenValue: errorMessage });
 });
 ```
 
@@ -251,7 +251,7 @@ Jivs can assist when you have Node.js on the server. Otherwise, the work is up t
 <a name="submitstep3"></a>
 **Step 3** has a server and client side implementation.
 
-On the server side, create a JSON representation of the issues found. If you use Jivs own `BusinessLogicError interface`, you will reduce the work on the client side.
+On the server side, create a JSON representation of the business logic errors found. If you use Jivs own `BusinessLogicError interface`, you will reduce the work on the client side.
 ```ts
 interface BusinessLogicError {
     errorMessage: string;
@@ -260,15 +260,26 @@ interface BusinessLogicError {
     errorCode?: string;
 }
 ```
-On the client side, gather the data, an make sure it is an array of BusinessLogicError objects. Call `ValidationManager.setBusinessLogicErrors()`.
+If you use Jivs on the server side, also create JSON from the results of `ValidationManager.getIssuesFound()`. This is an array of IssueFound objects.
 
+Let's suppose you generated the following script for the client side:
+```ts
+var businessLogicErrors = [
+  { ... error 1 ... },
+  { ... error 2 ... }
+];
+var jivsIssuesFound = [
+  { ... issue 1 ... },
+  { ... issue 2 ... }
+];
+```
+On the client side, convert *businessLogicErrors* into an array of BusinessLogicError objects as shown here.
 ```ts
 // this converts from a different data format into BusinessLogicError objects
-let errors = myServerSideErrors();	// your code
 let blErrors: Array<BusinessLogicError> = [];
-for (let i = 0; i < errors.length; i++)
+for (let i = 0; i < businessLogicErrors.length; i++)
 {
-  let error = errors[i];
+  let error = businessLogicErrors[i];
   let blError: BusinessLogicError = {
     errorMessage: error.myErrorMessage,
     errorCode: myMapToErrorCode(error), // optional. Try to match up to a known client-side error code or Condition Type to get the UI's error messages
@@ -276,9 +287,14 @@ for (let i = 0; i < errors.length; i++)
    };
    blErrors.push(blError);
 }
-	
-vm.setBusinessLogicErrors(blErrors);	// will notify the UI's validation elements
 ```
+Finally call `ValidationManager.setBusinessLogicErrors()` with the business logic errors array and `ValidationManager.setIssuesFound()` with the Jivs issues found.
+```ts
+vm.setBusinessLogicErrors(blErrors);	// will notify the UI's validation elements
+vm.setIssuesFound(jivsIssuesFound);		// also will notify UI's validation elements
+```
+> `setIssuesFound()` has an optional second parameter. Suppose your server side code actually has a validator not setup on the client, and it is part of Issues Found. Use the second parameter to determine whether to keep it or omit it. By default, it is kept.
+
 <a name="nodejsserver"></a>
 ### Using Jivs on a Node.js server
 #### Data is from an HTML \<form>
@@ -324,12 +340,14 @@ There remain several cases that involve parsing, and for those, use the instruct
 * Validate using `validationManager.validate()`. Capture any errors it finds from `validationManager.getIssuesFound()`.
 * Also run your business logic validation against the model for cases not covered by input level validators. Capture any errors it finds.
 * If there are no errors, save the data.
-* With errors, do not save. Instead, supply the captured errors to the client-side to report to the user through Jivs. See <a href="#nodejsvalidate">above, step 3</a>.
+* With errors, do not save. Instead, supply the captured errors to the client-side to report to the user through Jivs. See <a href="#submitstep3">above, step 3</a>.
 ```ts
 let status = vm.validate();
 let businessLogicErrors = myBusinessLogicValidation();	// you write this.
 if (status.doNotSave || businessLogicErrors) {
   // Gather the issues found and deliver them to the client-side
+  // This should send back up to 2 lists: IssuesFound from Jivs and those from your code.
+  // On the client-side, we'll each list into Jivs differently, keep the lists separate.
   sendErrorsBack(vm.getIssuesFound(), businessLogicErrors); // you write sendErrorsBack()
 }
 else {
@@ -1072,6 +1090,24 @@ You *must* assign dataType to the name of a data type when the data is not a str
 
 We use the term "Lookup Key" when specifying the name of a data type. Please [see this page](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all supplied with Jivs and how they are used.
 
+Here are some use cases for creating your own Lookup Key:
+- Enumerated types, where the user sees text but the value is stored as a number. Check out [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts) to get supporting code and see how to use it.
+	+ Parsing, from string to number
+	+ Formatting, from number to string in an error message
+- String values that have a strong pattern, like a phone number.
+	+ Parsing, to clean up the user's input into the text that you want to store
+	+ Formatting, to format the text you have stored
+	+ Validating, using a Regular Expression. 
+	+ Auto generating data type check validators
+- Extracting some data from the native value, like the day of week from a Date object.
+	+ Converting, to get the Date.day property.
+- A class that you store as a single entity, like class NumberWithUnits { value: number, units: string }
+	+ Identifing, to recognize your class
+	+ Converting, to get a value you can use in comparing, such as the NumberWithUnits.value.
+	+ Comparing, to compare two instances of the same class
+	+ Formatting, to show the current value in an error message
+	+ Parsing, to convert user input into your class.
+
 A Lookup Key is very powerful! It connects up with these behaviors:
 - <a href="#datatypeidentifier">Identifiers</a>
 - <a href="#datatypeconverter">Converters</a>
@@ -1336,8 +1372,9 @@ Any text displayed to the user and any input supplied from them is subject to lo
 
 ### Localizing strings
 Here are a few places you provide user-facing strings into Jivs:
-- ValueHostConfig.label
+- ValueHostConfig.label for {Label} and {SecondLabel} tokens
 - ValidatorConfig.errorMessage and summaryMessage
+- ValueHostConfig.dataType for {DataType} token
 
 Each of those properties have a companion that ends in "l10n" (industry term for localization), such as labell10n. Use the l10n properties to supply a Localization Key that will be sent to Jivs `TextLocalizationService`. If that service has the appropriate data, it will be used instead of the usual property.
 
@@ -1345,7 +1382,7 @@ Each of those properties have a companion that ends in "l10n" (industry term for
 
 To replace it with a third party text localization tool, implement `ITextLocalizationService` and assign it in the `createTextLocalizerService() function`.
 
-#### Setup for a label
+#### Setup for ValueHostConfig.label
 Let's suppose that you have a label "First Name" which you want in several languages.
 1. Create a unique Localization Key for it. We'll use "FirstName".
 2. Assign both label and labell10n properties during configuration.
@@ -1357,7 +1394,7 @@ Let's suppose that you have a label "First Name" which you want in several langu
 	  labell10n: 'FirstName'
 	}
 	... or using fluent syntax ...
-	config().input('FirstName', null, { label: 'First Name', 'labell10n': 'FirstName' })
+	config().input('FirstName', null, { label: 'First Name', 'labell10n': 'FirstName' });
 	```
 3. Add an entry to the `createTextLocalizerService() function` like this:
 	```ts
@@ -1373,8 +1410,8 @@ Let's suppose that you have a label "First Name" which you want in several langu
 	    });
 	}
 	```
-	
-#### Setup for errorMessage and summaryMessage properties
+
+#### Setup for ValidatorConfig.errorMessage and summaryMessage properties
 Jivs generates specific Localization Keys based on the ConditionType.
 For error message, "EM-*ConditionType*-*DataTypeLookupKey*" and a fallback "EM-*ConditionType*". Example using RangeCondition for an Integer Lookup Key: "EM-Range-Integer" and "EM-Range".
 For summary message, "SEM-*ConditionType*-*DataTypeLookupKey*" and a fallback "SEM-*ConditionType*".
@@ -1383,27 +1420,57 @@ When using the supplied TextLocalizerService, you won't need to know those Looku
 
 The existing `createTextLocalizerService() function` already has numerous examples. For example:
 ```ts
-    service.registerErrorMessage(ConditionType.RequireText, null, {
-        '*': 'Requires a value.'
-    });
-    service.registerSummaryMessage(ConditionType.RequireText, null, {
-        '*': '{Label} requires a value.'
-    });    
-    service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
-        '*': 'Invalid value. Enter a date.',
-        'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
-        'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
-    });
-    service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
-        '*': '{Label} has an invalid value. Enter a date.',
-        'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
-        'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
-    });        
+service.registerErrorMessage(ConditionType.RequireText, null, {
+    '*': 'Requires a value.'
+});
+service.registerSummaryMessage(ConditionType.RequireText, null, {
+    '*': '{Label} requires a value.'
+});    
+service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
+    '*': 'Invalid value. Enter a date.',
+    'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
+    'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
+});
+service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
+    '*': '{Label} has an invalid value. Enter a date.',
+    'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
+    'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
+});        
 ```
 So review and edit the `createTextLocalizerService() function`.
+#### Setup for ValueHostConfig.dataType
+The {DataType} token is useful in making the error message for a Data Type Check validator cover multiple data types. Instead of "Enter a date." and "Enter a number.", one error message can say "Enter a {DataType}.".
+1. Assign the dataType property during configuration.
+	```ts
+	{
+	  valueHostType: ValueHostType.Input, // = 'Input'
+	  name: 'Age',
+	  dataType: LookupKey.Integer, // 'Integer'
+	}
+	... or using fluent syntax ...
+	config().input('Age', LookupKey.Integer);
+	```
+2. Add an entry to the `createTextLocalizerService() function` like this:
+	```ts
+	export function createTextLocalizerService(): ITextLocalizerService
+	{
+	    let service = new TextLocalizerService();
+	    ...
+	    service.registerDataTypeLabel(LookupKey.Integer, {
+	        '*': 'an integer number', // fallback
+	        'en': 'an integer number',
+	        'es': 'un número entero',
+	        'fr': 'un nombre entier'
+	    });
+	}
+	```
 
-### Localizing error message tokens
-Error messages use tokens to insert values at runtime. When the value is a number, date or boolean, those must be localized. Jivs already does this within its <a href="#datatypeformatter">DataTypeFormatter classes</a>.
+### Localizing error message "value" tokens
+Error messages use tokens to insert values at runtime. {Value}, {SecondValue}, {Minimum}, {Maximum}, and {CompareTo} are all examples.
+
+`Enter a value between {Minimum} and {Maximum}.`
+
+When the value is a number, date or boolean, those must be localized. Jivs already does this within its <a href="#datatypeformatter">DataTypeFormatter classes</a>.
 
 The supplied classes use [JavaScript's own Intl class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl) to handle dates, times, and numbers. It uses [toLocaleLowerCase](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLocaleLowerCase) and [toLocaleUpperCase](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLocaleUpperCase) for those situations. These classes are adequate but you may prefer using a richer third party library.
 
@@ -1450,7 +1517,7 @@ When a ValueHosts' value changed, call its `validate()` function or pass the `{ 
 
 ```ts
 let firstNameFld = document.getElementById('FirstName');
-firstNameFld.attachEventListener('onchanged', (evt)=>{
+firstNameFld.attachEventListener('onchange', (evt)=>{
   let inputValue = evt.target.value;
   let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
   let valueHost = vm.vh.input('FirstName');	// or vm.getInputValueHost('FirstName')
@@ -1480,7 +1547,7 @@ The `setValue()`, `setValues()`, `setInputValue()`, and `setValueToUndefined()` 
 
 ```ts
 let firstNameFld = document.getElementById('FirstName');
-firstNameFld.attachEventListener('onchanged', (evt)=>{
+firstNameFld.attachEventListener('onchange', (evt)=>{
   let inputValue = evt.target.value;
   let nativeValue = YourConvertToNativeCode(inputValue);  // return undefined if cannot convert
   vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true });
@@ -1505,7 +1572,7 @@ These properties are all related to validation:
 - conversionErrorTokenValue - Provide an error message related to parsing from the Input Value into native value. This message can be shown when using DataTypeCheckCondition, by using the {ConversionError} token in its error message:
 	```ts
 	let firstNameFld = document.getElementById('FirstName');
-	firstNameFld.attachEventListener('onchanged', (evt)=>{
+	firstNameFld.attachEventListener('onchange', (evt)=>{
 	  let inputValue = evt.target.value;
 	  let [nativeValue, errorMessage] = YourConvertToNativeCode(inputValue);  
 	  vm.vh.input('FirstName').setValues(nativeValue, inputValue, { validate: true, conversionErrorTokenValue: errorMessage });

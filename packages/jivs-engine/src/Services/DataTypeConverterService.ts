@@ -96,12 +96,16 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
     /**
      * Gets the first {@link DataTypes/Types/IDataTypeConverter!IDataTypeConverter | IDataTypeConverter}
      *  that supports the value, or null if none are found.
+     * Runs the lazyloader if setup and the first search fails.
      * @param value 
      * @param dataTypeLookupKey 
      * @returns 
      */
     public find(value: any, dataTypeLookupKey: string | null): IDataTypeConverter | null {
-        return this.getAll().find((dtc) => dtc.supportsValue(value, dataTypeLookupKey)) ?? null;
+        let result = this.getAll().find((dtc) => dtc.supportsValue(value, dataTypeLookupKey)) ?? null;
+        if (result === null && this.ensureLazyLoaded())
+            result = this.find(value, dataTypeLookupKey);
+        return result;        
     }
 
 }

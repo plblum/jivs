@@ -199,7 +199,7 @@ export function hasLetters(source: string): boolean {
 }
 export function onlyTheseCharacters(source: string, validChars: string, validRegExpSymbols: string): boolean {
     const escapedValidChars = escapeRegExp(validChars);
-    return new RegExp(`[${escapedValidChars + validRegExpSymbols}]`).test(source);
+    return new RegExp(`^[${escapedValidChars + validRegExpSymbols}]*$`).test(source);
 }
 export function hasMultipleOccurances(source: string, singleOccuranceChars: string): boolean {
     const escapedChars = escapeRegExp(singleOccuranceChars);

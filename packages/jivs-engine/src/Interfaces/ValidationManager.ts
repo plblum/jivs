@@ -26,7 +26,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostsManager, IValueHostsManagerCallbacks, ValueHostsManagerConfig, toIValueHostsManager } from './ValueHostsManager';
-import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState } from './Validation';
+import { ValidateOptions, BusinessLogicError, IssueFound, ValidationState, SetIssuesFoundErrorCodeMissingBehavior } from './Validation';
 import { ValueHostInstanceState } from './ValueHost';
 import { ValueHostsManagerInstanceState } from './ValueHostsManager';
 import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidatorsValueHostBaseCallbacks } from './ValidatorsValueHostBase';
@@ -151,6 +151,18 @@ export interface IValidationManager extends IValueHostsManager {
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
     getIssuesFound(group?: string): Array<IssueFound> | null;
+
+    /**
+     * Adds or replaces all IssueFound items to the appropriate ValueHosts.
+     * Each ValueHost will invoke the onValueHostValidationStateChanged callback if needed.
+     * 
+     * Use case: client-side getting server-side Jivs-generated IssuesFound,
+     * so the UI can incorporate it.
+     * @param issuesFound 
+     * @param behavior - keep or omit an issueFound that does not have a matching validator
+     * based on the errorCode.
+     */
+    setIssuesFound(issuesFound: Array<IssueFound>, behavior: SetIssuesFoundErrorCodeMissingBehavior): boolean;    
 
     /**
      * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 

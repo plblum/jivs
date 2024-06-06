@@ -97,6 +97,11 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
             if (text !== undefined)
                 return text;
         }
+        else if (this.ensureLazyLoaded())
+        {
+            // try again now that we've lazy loaded
+            return this.localize(cultureIdToMatch, l10nKey, fallback);  //! recursion
+        }
         if (this.fallbackService !== null)
             return this.fallbackService.localize(cultureIdToMatch, l10nKey, fallback);
         return fallback;
@@ -163,6 +168,26 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
     }
 
     /**
+     * Attempts to get the localized name for a data type lookup key to be used in {DataType} token of error messages.
+     * @param dataTypeLookupKey 
+     * @returns The name or null if not available.
+     */
+    public getDataTypeLabel(cultureIdToMatch: string, dataTypeLookupKey: string): string | null
+    {
+        let text = this.localize(cultureIdToMatch, this.getDataTypeNamel10nText(dataTypeLookupKey), null);
+        if (text === null && this.fallbackService !== null)
+            return this.fallbackService.getDataTypeLabel(cultureIdToMatch, dataTypeLookupKey);  
+        if (text === null && dataTypeLookupKey)
+            return dataTypeLookupKey;
+        return text;
+    }    
+
+    protected getDataTypeNamel10nText(dataTypeLookupKey: string): string
+    {
+        return 'DTLK-' + dataTypeLookupKey;
+    }    
+
+    /**
      * Registers a lookup key with the culture specific text.
      * Replaces an already registered entry with the same l10nKey.
      * @param l10nKey - Localization key, which is the text that identifies which word,
@@ -203,6 +228,20 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
     }    
 
     /**
+     * Utility to add text representation of a data type associating it with its 
+     * dataTypeLookupKey. The text is used with the {DataType} token in error messages.
+     * The localization key (l10ntext) will use this pattern:
+     * 'DTLK-' + DataTypeLookupKey
+     * @param dataTypeLookupKey
+     * @param cultureToText 
+     */
+    public registerDataTypeLabel(dataTypeLookupKey: string, cultureToText: CultureToText): void
+    {
+        this.register(this.getDataTypeNamel10nText(dataTypeLookupKey), cultureToText);
+    }
+
+
+    /**
      * Data is stored here, where the key is the l10nKey and the value
      * is the object that maps cultureId to its text.
      * {
@@ -221,4 +260,33 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      * }
      */
     private readonly _l10nKeyMap: Map<string, CultureToText> = new Map<string, CultureToText>();
+
+
+    /**
+     * Sets up a function to lazy load the configuration when the localize() function 
+     * tries and fails to match a request.
+     */
+    public set lazyLoad(fn: (service: TextLocalizerService) => void)
+    {
+        this._lazyLoader = fn;
+    }
+
+    private _lazyLoader: null | ((service: TextLocalizerService) => void) = null;
+
+    /**
+     * Runs the lazyload function if setup and returns true if run.
+     * @returns 
+     */
+    protected ensureLazyLoaded(): boolean
+    {
+        if (this._lazyLoader) {
+            // prevent recursion by disabling the feature right away
+            let fn = this._lazyLoader;
+            this._lazyLoader = null;
+            fn(this);
+            return true;
+        }
+        return false;
+    }
+
 }
