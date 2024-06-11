@@ -1,21 +1,23 @@
 /**
  * 
- * @module ValueHosts/Types/ConfigConflictResolver
+ * @module Services/Types/ConfigMergeService
  */
-import { ILoggerService } from '../Interfaces/LoggerService';
-import { ConditionConfig } from '../Interfaces/Conditions';
+import { ILoggerService } from './LoggerService';
+import { ConditionConfig } from './Conditions';
 import { ValidatorConfig } from './Validator';
 import { ValueHostConfig } from './ValueHost';
 import { ValidatorsValueHostBaseConfig } from './ValidatorsValueHostBase';
+import { IServiceWithAccessor } from './Services';
 
 /**
- * @inheritdoc ValueHosts/ConcreteClasses/ConfigConflictResolver!ConfigConflictResolverBase:class
+ * @inheritdoc Services/ConcreteClasses/ConfigMergeService!ConfigMergeServiceBase:class
  */
-export interface IConfigConflictResolverBase<TConfig> {
+export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
 
     /**
      * Assigns the rule for a property on any Config and subclass.
      * Once assigned, some rules allow change and others, like 'locked' cannot be changed and throw an error.
+     * If no rule has been assigned to a property, merge() assumes "replace" for that property.
      * @param propertyName 
      * @param rule 
      */
@@ -28,42 +30,35 @@ export interface IConfigConflictResolverBase<TConfig> {
      * @param containingPropertyName 
      * @param resolver 
      */
-    setConditionConflictRule(containingPropertyName: string, resolver: ConditionConflictResolverHandler): void;    
+    setConditionConflictRule(containingPropertyName: string, resolver: ConditionConfigMergeServiceHandler): void;    
 
     /**
-     * Available to report details of merging. Preventing replacement is generally a warning
-     * because the user might expect their supplied value to be overwriting the destination.
-     * Expected to be assigned by ValueHostBuilder.
-     * Call log() to use it with null taken into account.
-     */
-    logger: ILoggerService | null;
-
-    /**
-     * PropertyConflictResolverHandler for properties that host a ConditionConfig object.
+     * PropertyConfigMergeServiceHandler for properties that host a ConditionConfig object.
      * This call expects the property to be defined in both source and destination.
      * @param propertyName 
      * @param source 
      * @param destination 
      * @param identity 
      */
-    handleConditionConfigProperty(source: TConfig, destination: TConfig, propertyName: string, identity: MergeIdentity): PropertyConflictResolverHandlerResult;
+    handleConditionConfigProperty(source: TConfig, destination: TConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult;
 }
 
 /**
- * Interface for all ConfigConflictResolvers built for the ValueHostConfig and its subclasses.
+ * Interface for all ConfigMergeServices built for the ValueHostConfig and its subclasses.
  */
-export interface IValueHostConflictResolver extends IConfigConflictResolverBase<ValueHostConfig> {
+export interface IValueHostConfigMergeService extends IConfigMergeServiceBase<ValueHostConfig> {
     /**
-     * Entrypoint to resolve ValueHostConfig whose valueHostName matches.
-     * As it arrives here, it already has valueHostName and errorCode assigned.
+     * Attempts to merge the source's properties into the destination.
+     * It only makes changes to the destination based on the rules
+     * of setPropertyConfigRule()
      */    
-    resolve(source: ValueHostConfig, destination: ValueHostConfig): void;
+    merge(source: ValueHostConfig, destination: ValueHostConfig): void;
 }
 
 /**
- * Interface for all ConfigConflictResolvers built for the ValidatorConfig.
+ * Interface for all ConfigMergeServices built for the ValidatorConfig.
  */
-export interface IValidatorConflictResolver extends IConfigConflictResolverBase<ValidatorConfig> {
+export interface IValidatorConfigMergeService extends IConfigMergeServiceBase<ValidatorConfig> {
     /**
      * Handles merging and conflict resolution for the validatorConfigs in
      * both source and destination.
@@ -72,7 +67,7 @@ export interface IValidatorConflictResolver extends IConfigConflictResolverBase<
      * @param destination 
      * @returns 
      */
-    resolve(source: ValidatorsValueHostBaseConfig, destination: ValidatorsValueHostBaseConfig): void;
+    merge(source: ValidatorsValueHostBaseConfig, destination: ValidatorsValueHostBaseConfig): void;
 
     /**
      * Provides a function to determine if the validatorSrc is in conflict with
@@ -97,7 +92,7 @@ export interface IValidatorConflictResolver extends IConfigConflictResolverBase<
 /**
  * Possible actions to take to resolve a property found in both configs.
  */
-export type PropertyConflictResolverAction =
+export type PropertyConfigMergeServiceAction =
     /**
      * Copy the value overwriting phase 1
      */
@@ -124,11 +119,11 @@ export type PropertyConflictResolverAction =
 /**
  * Settings (aside from an event handler) that are permitted in PropertyConflictRules. 
  */
-export type PropertyConflictResolverSetting =
+export type PropertyConfigMergeServiceSetting =
     /**
      * For values not locked, these are the actions that can be taken.
      */
-    PropertyConflictResolverAction |
+    PropertyConfigMergeServiceAction |
     /**
      * The user cannot change this property. It is always 'nochange' behavior.
      * Applied automatically to validatorConfigs and conditionConfig.
@@ -136,23 +131,23 @@ export type PropertyConflictResolverSetting =
     'locked';
 
 /**
- * This handler is an alternative to PropertyConflictResolverAction, allowing you to deal with the issue
+ * This handler is an alternative to PropertyConfigMergeServiceAction, allowing you to deal with the issue
  * in your own way. You can return either useAction with an Action or useValue with the replacement value.
  * @param identify - Identifies either the ValueHostName or ErrorCode of the containing Config object.
  */
-export type PropertyConflictResolverHandler<T> = (source: T, destination: T, propertyName: string, identity: MergeIdentity) => PropertyConflictResolverHandlerResult;
+export type PropertyConfigMergeServiceHandler<T> = (source: T, destination: T, propertyName: string, identity: MergeIdentity) => PropertyConfigMergeServiceHandlerResult;
 
 /**
- * The result for a PropertyConflictResolverHandler. It should return one of the two properties,
+ * The result for a PropertyConfigMergeServiceHandler. It should return one of the two properties,
  * leaving the other undefined.
  */
-export interface PropertyConflictResolverHandlerResult
+export interface PropertyConfigMergeServiceHandlerResult
 {
     /**
      * Provide the action to take and the caller will follow it.
      * Use 'nochange' to prevent any changes.
      */
-    useAction?: PropertyConflictResolverAction,
+    useAction?: PropertyConfigMergeServiceAction,
     /**
      * Provide the value to set to the destination property.
      */
@@ -161,9 +156,9 @@ export interface PropertyConflictResolverHandlerResult
 /**
  * PropertiesConflictRules uses this as the values.
  */
-export type PropertyConflictRule<T> = PropertyConflictResolverSetting | PropertyConflictResolverHandler<T>;
+export type PropertyConflictRule<T> = PropertyConfigMergeServiceSetting | PropertyConfigMergeServiceHandler<T>;
 
-export type ConditionConflictResolverAction =
+export type ConditionConfigMergeServiceAction =
     /**
      * Leave the destination condition unchanged
      */
@@ -184,23 +179,23 @@ export type ConditionConflictResolverAction =
     'any';
     
 /**
- * This handler is an alternative to ConditionConflictResolverAction, allowing you to deal with the issue
+ * This handler is an alternative to ConditionConfigMergeServiceAction, allowing you to deal with the issue
  * in your own way. You can return either useAction with an Action or useValue with the replacement value.
  * @param identify - Identifies either the ValueHostName or ErrorCode of the containing Config object.
  */
-export type ConditionConflictResolverHandler = (source: ConditionConfig, destination: ConditionConfig, identity: MergeIdentity) => ConditionConflictResolverHandlerResult;
+export type ConditionConfigMergeServiceHandler = (source: ConditionConfig, destination: ConditionConfig, identity: MergeIdentity) => ConditionConfigMergeServiceHandlerResult;
 
 /**
- * The result for a PropertyConflictResolverHandler. It should return one of the two properties,
+ * The result for a PropertyConfigMergeServiceHandler. It should return one of the two properties,
  * leaving the other undefined.
  */
-export interface ConditionConflictResolverHandlerResult
+export interface ConditionConfigMergeServiceHandlerResult
 {
     /**
      * Provide the action to take and the caller will follow it.
      * Use 'nochange' to prevent any changes.
      */
-    useAction?: ConditionConflictResolverAction,
+    useAction?: ConditionConfigMergeServiceAction,
     /**
      * Provide the value to set to the destination property.
      */
@@ -208,7 +203,7 @@ export interface ConditionConflictResolverHandlerResult
 }
 
 /**
- * Used by your PropertyConflictResolverHandler function to know what specifically is being resolved.
+ * Used by your PropertyConfigMergeServiceHandler function to know what specifically is being resolved.
  */
 export interface MergeIdentity
 {
@@ -218,9 +213,9 @@ export interface MergeIdentity
 }
 
 /**
- * Used by ValidatorConflictResolver to identify if the source ValidatorConfig
+ * Used by ValidatorConfigMergeService to identify if the source ValidatorConfig
  * is in conflict with a destination ValidatorConfig. If one is identified,
- * it is returned and the caller should use ValidatorConflictResolver.resolve
+ * it is returned and the caller should use ValidatorConfigMergeService.resolve
  * to determine how to handle the conflict.
  */
 export type ConditionConflictIdentifierHandler = (validatorSrc: ValidatorConfig,

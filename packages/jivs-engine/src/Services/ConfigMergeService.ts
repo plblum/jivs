@@ -1,5 +1,5 @@
 /**
- * @module ValueHosts/ConcreteClasses/ConfigConflictResolver
+ * @module Services/ConcreteClasses/ConfigMergeService
  */
 
 import { CodingError } from '../Utilities/ErrorHandling';
@@ -13,23 +13,25 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import {
-    PropertyConflictRule, MergeIdentity, PropertyConflictResolverHandlerResult,
-    IConfigConflictResolverBase, IValueHostConflictResolver, IValidatorConflictResolver,
-    ConditionConflictResolverHandler,
-    ConditionConflictResolverAction,
+    PropertyConflictRule, MergeIdentity, PropertyConfigMergeServiceHandlerResult,
+    IConfigMergeServiceBase, IValueHostConfigMergeService, IValidatorConfigMergeService,
+    ConditionConfigMergeServiceHandler,
+    ConditionConfigMergeServiceAction,
     ConditionConflictIdentifierHandler
-} from '../Interfaces/ConfigConflictResolver';
+} from '../Interfaces/ConfigMergeService';
 import { deepEquals } from '../Utilities/Utilities';
+import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 
 /**
- * The user is expected to have two phases to finish creating the ValidationManagerConfig file.
+ * The ValidationManagerConfig file may be populated in 2 phases:
  * - Phase 1: Business Logic provides its ValueHosts and validators. Many aspects of this is 
  *   not ideal for the UI, including anything localizable, additional validators, and additional enabler conditions.
  * - Phase 2: UI updates what the Business Logic created, and adds its own ValueHosts and validators.
  *   The UI developer will use the ValueHostBuilder and fluent syntax to describe their changes.
- * The IConfigConflictResolver interface and its class are used by Phase 2. It allows the UI developer
+ * 
+ * The IConfigMergeService interface and its class are used by Phase 2. It allows the UI developer
  * to effectively create the same named ValueHosts, but with different characteristics.
- * ConfigConflictResolver will merge the business logic's configuration but only where it does not lose
+ * ConfigMergeService will merge the business logic's configuration but only where it does not lose
  * the goals established, especially in validation rules.
  * 
  * Suppose that Phase 1 creates this (with services passed to it from the UI):
@@ -53,7 +55,7 @@ import { deepEquals } from '../Utilities/Utilities';
  *   ]
  * }
  * ```
- * The UI can use the ConfigConflictResolver by installing it with the builder.clientImplementation() function.
+ * The UI can use the ConfigMergeService by installing it with the builder.clientImplementation() function.
  * From that point on, builder will make it available to the fluent syntax system and fluent will
  * call upon it to address conflicts.
  * 
@@ -82,7 +84,7 @@ import { deepEquals } from '../Utilities/Utilities';
  * ```
  * 
  * 
- * ConfigConflictResolver has to deal with several types of Config objects:
+ * ConfigMergeService has to deal with several types of Config objects:
  * - ValueHost (including all subclasses)
  * - Validator
  * - Condition
@@ -92,7 +94,7 @@ import { deepEquals } from '../Utilities/Utilities';
  * When phase1 and phase2 both have that property (not assigned to undefined), we have to resolve the conflict.
  * The user controls some of those properties, providing rules of: replace, nochange, delete, and a callback.
  * 
- * There are some properties that are strictly controlled by ConfigConflictResolver like ValueHostName (cannot change it)
+ * There are some properties that are strictly controlled by ConfigMergeService like ValueHostName (cannot change it)
  * and ValueHostType (changes automatically for upscaling Property to Input). Also ValidationConfig, ConditionConfig cannot be 
  * specified for replacement. But their children can. 
  * 
@@ -100,12 +102,18 @@ import { deepEquals } from '../Utilities/Utilities';
  * You must supply a function that determines how you want the destination's condition to change.
  * 
  */
-export abstract class ConfigConflictResolverBase<TConfig>
-    implements IConfigConflictResolverBase<TConfig> {
+export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccessorBase
+    implements IConfigMergeServiceBase<TConfig> {
 
+    public dispose(): void {
+        super.dispose();
+        this._configConditions = undefined!;
+        this._configProperties = undefined!;
+    }
     /**
      * Assigns the rule for a property on any Config and subclass.
      * Once assigned, some rules allow change and others, like 'locked' cannot be changed and throw an error.
+     * If no rule has been assigned, merge() assumes "replace".
      * @param propertyName 
      * @param rule 
      */
@@ -148,61 +156,51 @@ export abstract class ConfigConflictResolverBase<TConfig>
      * @param containingPropertyName
      * @param resolver
      */
-    public setConditionConflictRule(containingPropertyName: string, resolver: ConditionConflictResolverHandler): void {
+    public setConditionConflictRule(containingPropertyName: string, resolver: ConditionConfigMergeServiceHandler): void {
         let existing = this.configConditions.get(containingPropertyName);
         if (typeof existing === 'function')
             throw new CodingError('Cannot change');
         this.configConditions.set(containingPropertyName, resolver);
     }
     /**
-     * The ConditionConflictResolverHandler assigned to the property or undefined if not assigned.
+     * The ConditionConfigMergeServiceHandler assigned to the property or undefined if not assigned.
      * @param containingPropertyName 
      * @returns 
      */
-    public getConditionConflictRule(containingPropertyName: string): ConditionConflictResolverHandler | undefined {
+    public getConditionConflictRule(containingPropertyName: string): ConditionConfigMergeServiceHandler | undefined {
         return this.configConditions.get(containingPropertyName);
     }
 
     // Key is the containingPropertyName
-    protected get configConditions(): Map<string, ConditionConflictResolverHandler> {
+    protected get configConditions(): Map<string, ConditionConfigMergeServiceHandler> {
         return this._configConditions;
     }
-    private _configConditions: Map<string, ConditionConflictResolverHandler> = new Map<string, ConditionConflictResolverHandler>();
-
-    /**
-     * Available to report details of merging. Preventing replacement is generally a warning
-     * because the user might expect their supplied value to be overwriting the destination.
-     * Expected to be assigned by ValueHostBuilder.
-     * Call log() to use it with null taken into account.
-     */
-    public get logger(): ILoggerService | null {
-        return this._logger;
-    }
-    public set logger(service: ILoggerService) {
-        this._logger = service;
-    }
-    private _logger: ILoggerService | null = null;
+    private _configConditions: Map<string, ConditionConfigMergeServiceHandler> = new Map<string, ConditionConfigMergeServiceHandler>();
 
     protected log(message: (() => string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void {
-        if (this.logger)
-            if (this.logger.minLevel <= logLevel) {
-                this.logger.log((typeof message === 'function') ? message() : message,
+        if (this.hasServices()) {
+            let logger = this.services.loggerService;
+            if (logger.minLevel <= logLevel) {
+                logger.log((typeof message === 'function') ? message() : message,
                     logLevel, logCategory ?? LoggingCategory.Configuration, this.constructor.name);
             }
+        }
     }
 
     /**
-     * Applies the ConflictResolver rules to all properties found in the source.
+     * Applies the ConfigMergeService rules to all properties found in the source config.
      * If the destination does not have the same property, it is copied.
-     * Otherwise, we use the ConflictResolver rule.
-     * If there is no ConflictResolver rule for a property found on source, 
+     * Otherwise, we use the ConfigMergeService rule.
+     * If there is no ConfigMergeService rule for a property found on source, 
      * it is always copied.
      * The result is changes made to destination.
+     * If the rule is 'delete', then it checks for the property in the destination config
+     * and deletes that, without regard to the property being present in the source.
      * @param source 
      * @param destination 
-     * @param identity - Used by your PropertyConflictResolverHandler function to know what specifically is being resolved.
+     * @param identity - Used by your PropertyConfigMergeServiceHandler function to know what specifically is being resolved.
      */
-    protected merge(source: TConfig, destination: TConfig, identity: MergeIdentity): void {
+    protected mergeConfigs(source: TConfig, destination: TConfig, identity: MergeIdentity): void {
         for (let propertyName in source) {
             if (destination[propertyName] === undefined) {
                 destination[propertyName] = source[propertyName];
@@ -269,14 +267,14 @@ export abstract class ConfigConflictResolverBase<TConfig>
     }
 
     /**
-     * PropertyConflictResolverHandler for properties that host a ConditionConfig object.
+     * PropertyConfigMergeServiceHandler for properties that host a ConditionConfig object.
      * This call expects the property to be defined in both source and destination.
      * @param propertyName 
      * @param source 
      * @param destination 
      * @param identity 
      */
-    public handleConditionConfigProperty(source: TConfig, destination: TConfig, propertyName: string, identity: MergeIdentity): PropertyConflictResolverHandlerResult {
+    public handleConditionConfigProperty(source: TConfig, destination: TConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult {
         let sourceCond = (source as any)[propertyName];
         if (sourceCond === null)
             return { useAction: 'nochange' };
@@ -314,7 +312,7 @@ export abstract class ConfigConflictResolverBase<TConfig>
      * @param identity 
      * @param action
      */
-    protected replaceCondition(source: ConditionConfig, destination: ConditionConfig, identity: MergeIdentity, action: ConditionConflictResolverAction): ConditionConfig | 'delete' | 'nochange' {
+    protected replaceCondition(source: ConditionConfig, destination: ConditionConfig, identity: MergeIdentity, action: ConditionConfigMergeServiceAction): ConditionConfig | 'delete' | 'nochange' {
         switch (action) {
             case 'all':
                 {
@@ -345,22 +343,17 @@ export abstract class ConfigConflictResolverBase<TConfig>
 }
 
 /**
- * Default ConflictResolver for ValueHosts. Automatically used if none is supplied to the ValueHostBuilder.
+ * Default ConfigMergeService for ValueHosts. Automatically used if none is supplied to the ValueHostBuilder.
  * It locks only the valueHostName and validatorConfigs.
  * It upscales ValueHostType from Property to Input (but not anything else).
  * It uses the ValidatorConfigResolver to handle all validatorConfigs.
  */
-export class ValueHostConflictResolver extends ConfigConflictResolverBase<ValueHostConfig>
-    implements IValueHostConflictResolver {
-    /**
-     * 
-     * @param validatorConflictResolver - When null, the ValidatorConflictResolver class is created.
-     */
-    constructor(validatorConflictResolver?: ValidatorConflictResolver) {
+export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHostConfig>
+    implements IValueHostConfigMergeService {
+
+    constructor() {
         super();
-        if (!validatorConflictResolver)
-            validatorConflictResolver = new ValidatorConflictResolver();
-        this._validatorConflictResolver = validatorConflictResolver;
+
         this.setPropertyConflictRule('name', 'locked');
         this.setPropertyConflictRule('validatorConfigs', 'locked');
         this.setPropertyConflictRule('valueHostType', this.updateValueHostType);
@@ -369,24 +362,16 @@ export class ValueHostConflictResolver extends ConfigConflictResolverBase<ValueH
         // everything else has no initial value which means 'replace'
     }
 
-    public get logger(): ILoggerService | null {
-        return super.logger;
-    }
-    public set logger(service: ILoggerService) {
-        super.logger = service;
-        this.validatorConflictResolver.logger = service;
-    }
-
     /**
      * Handling upscaling for the valueHostType property, which switching from Property to Input
      * when the source is Input. No change otherwise.
      * @param source 
      * @param destination 
-     * @param identity - Used by your PropertyConflictResolverHandler function to know what specifically is being resolved.
+     * @param identity - Used by your PropertyConfigMergeServiceHandler function to know what specifically is being resolved.
      * @param propertyName 
      * @returns 
      */
-    protected updateValueHostType(source: ValueHostConfig, destination: ValueHostConfig, propertyName: string, identity: MergeIdentity): PropertyConflictResolverHandlerResult {
+    protected updateValueHostType(source: ValueHostConfig, destination: ValueHostConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult {
         if (source.valueHostType === ValueHostType.Input && destination.valueHostType === ValueHostType.Property)
             return { useValue: ValueHostType.Input };
         if (source.valueHostType !== destination.valueHostType)
@@ -394,29 +379,24 @@ export class ValueHostConflictResolver extends ConfigConflictResolverBase<ValueH
         return { useAction: 'nochange' };
     }
 
-    protected get validatorConflictResolver(): ValidatorConflictResolver {
-        return this._validatorConflictResolver;
-    }
-    private _validatorConflictResolver: ValidatorConflictResolver;
-
-    public resolve(source: ValueHostConfig, destination: ValueHostConfig): void {
+    public merge(source: ValueHostConfig, destination: ValueHostConfig): void {
         if (source.name !== destination.name)
             return;
-        this.merge(source, destination, { valueHostName: destination.name });
-        this.validatorConflictResolver.resolve(source as ValidatorsValueHostBaseConfig,
+        this.mergeConfigs(source, destination, { valueHostName: destination.name });
+        this.services?.validatorConfigMergeService.merge(source as ValidatorsValueHostBaseConfig,
             destination as ValidatorsValueHostBaseConfig
         );
     }
 }
 
 /**
- * Default ConflictResolver for Validators. Automatically used if none is supplied to the default ValueHostConflictResolver.
+ * Default ConfigMergeService for Validators. Automatically used if none is supplied to the default ValueHostConfigMergeService.
  * It copies all properties except: errorCode, conditionConfig, enablerConfig, conditionCreator, enablerCreator.
  * It uses the conditionConfigResolver rules to handle any conditionConfig. It defaults the Creators to 'nochange',
  * meaning you could attach a function to it to handle it yourself.
  */
-export class ValidatorConflictResolver extends ConfigConflictResolverBase<ValidatorConfig>
-    implements IValidatorConflictResolver {
+export class ValidatorConfigMergeService extends ConfigMergeServiceBase<ValidatorConfig>
+    implements IValidatorConfigMergeService {
     constructor() {
         super();
         this.setPropertyConflictRule('errorCode', 'nochange');
@@ -428,23 +408,28 @@ export class ValidatorConflictResolver extends ConfigConflictResolverBase<Valida
         // everything else has no initial value which means 'replace'
     }
 
+    public dispose(): void {
+        super.dispose();
+        this._identifyHandler = undefined!;
+    }
+
     /**
      * Provides a function to determine if the validatorSrc is in conflict with
      * one in the destination. It must always be set, and defaults to
      * identifyValidatorConflict().
      */
     public get identifyHandler(): ConditionConflictIdentifierHandler {
-        return this._identify ?? this.identifyValidatorConflict;
+        return this._identifyHandler ?? this.identifyValidatorConflict;
     }
     public set identifyHandler(value: ConditionConflictIdentifierHandler) {
-        this._identify = value;
+        this._identifyHandler = value;
     }
-    private _identify: ConditionConflictIdentifierHandler | null = null;
+    private _identifyHandler: ConditionConflictIdentifierHandler | null = null;
 
     /**
      * Determines if validatorSrc is in conflict with an existing ValidatorConfig
      * in destination.validatorConfigs. Returns the destination in conflict,
-     * ready to be passed to validatorConflictResolver.resolve.
+     * ready to be passed to validatorConfigMergeService.resolve.
      * @param validatorSrc 
      * @param validatorsInDest
      * @param identity 
@@ -464,7 +449,7 @@ export class ValidatorConflictResolver extends ConfigConflictResolverBase<Valida
      * @param destination 
      * @returns 
      */
-    public resolve(source: ValidatorsValueHostBaseConfig, destination: ValidatorsValueHostBaseConfig): void {
+    public merge(source: ValidatorsValueHostBaseConfig, destination: ValidatorsValueHostBaseConfig): void {
 
         if (!source.validatorConfigs)
             return;
@@ -476,7 +461,7 @@ export class ValidatorConflictResolver extends ConfigConflictResolverBase<Valida
             let identity: MergeIdentity = { valueHostName: destination.name, errorCode: resolveErrorCode(validatorSrc) };
             let validatorDest = this.identifyHandler.call(this, validatorSrc, destination.validatorConfigs, identity)
             if (validatorDest) {
-                this.merge(validatorSrc, validatorDest, identity);
+                this.mergeConfigs(validatorSrc, validatorDest, identity);
             }
             else {
                 destination.validatorConfigs.push(validatorSrc);

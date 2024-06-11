@@ -1,9 +1,9 @@
-import { ConsoleLoggerService } from './../../src/Services/ConsoleLoggerService';
-import { ConditionConflictIdentifierHandler, ConditionConflictResolverHandler, PropertyConflictResolverHandlerResult } from './../../src/Interfaces/ConfigConflictResolver';
-import { MergeIdentity, PropertyConflictRule } from '../../src/Interfaces/ConfigConflictResolver';
+import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
+import { ConditionConflictIdentifierHandler, ConditionConfigMergeServiceHandler, IConfigMergeServiceBase, PropertyConfigMergeServiceHandlerResult } from '../../src/Interfaces/ConfigMergeService';
+import { MergeIdentity, PropertyConflictRule } from '../../src/Interfaces/ConfigMergeService';
 import { ILoggerService, LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggerService';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
-import { ConfigConflictResolverBase, ValidatorConflictResolver, ValueHostConflictResolver } from '../../src/ValueHosts/ConfigConflictResolver';
+import { ConfigMergeServiceBase, ValidatorConfigMergeService, ValueHostConfigMergeService } from '../../src/Services/ConfigMergeService';
 import { CapturingLogger } from '../TestSupport/CapturingLogger';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
@@ -14,28 +14,36 @@ import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
 import { AllMatchConditionConfig, LessThanValueConditionConfig, RegExpConditionConfig } from '../../src/Conditions/ConcreteConditions';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
+import { MockValidationServices } from '../TestSupport/mocks';
+import { IValidationServices } from '../../src/Interfaces/ValidationServices';
+import { createValidationServicesForTesting } from '../TestSupport/createValidationServices';
 
-describe('ConfigConflictResolverBase using a subclass to expose protected members', () => {
-    class Publicify_ConfigConflictResolverBase extends
-        ConfigConflictResolverBase<object> {
+function createServices(): { logger: CapturingLogger, services: IValidationServices }
+{
+    let services = createValidationServicesForTesting();    // has both resolvers created
+    return { logger: setupLogger(services, LoggingLevel.Error), services: services };
+}
+function setupLogger(services: IValidationServices, level: LoggingLevel): CapturingLogger
+{
+    let logger = new CapturingLogger();
+    logger.extraLogger = new ConsoleLoggerService();
+    services.loggerService = logger;
+    return logger;
+}
+describe('ConfigMergeServiceBase using a subclass to expose protected members', () => {
+    class Publicify_ConfigMergeServiceBase extends
+        ConfigMergeServiceBase<object> {
         constructor() {
             super();
-            let logger = super.logger = new CapturingLogger();
-            logger.extraLogger = new ConsoleLoggerService();
-        }
-        public get logger(): CapturingLogger | null {
-            return super.logger as CapturingLogger;
-        }
-        public set logger(service: ILoggerService) {
-            super.logger = service;
+
         }
 
         public publicify_log(message: (() => string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void {
             this.log(message, logLevel, logCategory);
         }
 
-        public publicify_merge(source: object, destination: object, identity: MergeIdentity): void {
-            super.merge(source, destination, identity);
+        public publicify_mergeConfigs(source: object, destination: object, identity: MergeIdentity): void {
+            super.mergeConfigs(source, destination, identity);
         }
         public publicify_mergeProperty(propertyName: string, rule: PropertyConflictRule<object>,
             source: object, destination: object, identity: MergeIdentity): void {
@@ -44,55 +52,56 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
 
     }
 
+
+
     describe('constructor', () => {
         test('create without exception and have assigned the logger to CapturingLogger ', () => {
-            let testItem: Publicify_ConfigConflictResolverBase;
-            expect(() => testItem = new Publicify_ConfigConflictResolverBase()).not.toThrow();
-            expect(testItem!.logger).toBeInstanceOf(CapturingLogger);
+            let testItem: Publicify_ConfigMergeServiceBase;
+            expect(() => testItem = new Publicify_ConfigMergeServiceBase()).not.toThrow();
         });
     });
     describe('setPropertyConflictRule', () => {
         test('Set property as locked once allowed and saved but throws on a second attempt', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             expect(() => testItem.setPropertyConflictRule('A', 'locked')).not.toThrow();
             expect(testItem.getPropertyConflictRule('A')).toBe('locked');
             expect(() => testItem.setPropertyConflictRule('A', 'locked')).toThrow(CodingError);
         });
         test('Set property as nochange allowed on multiple attempts', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             expect(() => testItem.setPropertyConflictRule('A', 'nochange')).not.toThrow();
             expect(testItem.getPropertyConflictRule('A')).toBe('nochange');
             expect(() => testItem.setPropertyConflictRule('A', 'nochange')).not.toThrow();
         });
         test('Set property as replace allowed on multiple attempts', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             expect(() => testItem.setPropertyConflictRule('A', 'replace')).not.toThrow();
             expect(testItem.getPropertyConflictRule('A')).toBe('replace');
             expect(() => testItem.setPropertyConflictRule('A', 'replace')).not.toThrow();
         });
         test('Set property as replaceExceptNull allowed on multiple attempts', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             expect(() => testItem.setPropertyConflictRule('A', 'replaceExceptNull')).not.toThrow();
             expect(testItem.getPropertyConflictRule('A')).toBe('replaceExceptNull');
             expect(() => testItem.setPropertyConflictRule('A', 'replaceExceptNull')).not.toThrow();
         });
         test('Set property as delete allowed on multiple attempts', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             expect(() => testItem.setPropertyConflictRule('A', 'delete')).not.toThrow();
             expect(testItem.getPropertyConflictRule('A')).toBe('delete');
             expect(() => testItem.setPropertyConflictRule('A', 'delete')).not.toThrow();
         });
         test('Set property as replaceOrDelete allowed on multiple attempts', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             expect(() => testItem.setPropertyConflictRule('A', 'replaceOrDelete')).not.toThrow();
             expect(testItem.getPropertyConflictRule('A')).toBe('replaceOrDelete');
             expect(() => testItem.setPropertyConflictRule('A', 'replaceOrDelete')).not.toThrow();
         });
         test('Set property as a function allowed only once no matter the next rule value', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             let fn = () => { return { useValue: 'first' } };
             expect(() => testItem.setPropertyConflictRule('A', fn)).not.toThrow();
-            let result = testItem.getPropertyConflictRule('A') as () => PropertyConflictResolverHandlerResult;
+            let result = testItem.getPropertyConflictRule('A') as () => PropertyConfigMergeServiceHandlerResult;
             expect(typeof result).toBe('function');
             expect(result()).toEqual({ useValue: 'first' });
             let fn2 = () => { return { useValue: 'second' } };
@@ -106,7 +115,7 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
 
         });
         test('Set several properties once and all are saved', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             testItem.setPropertyConflictRule('A', 'locked');
             testItem.setPropertyConflictRule('B', 'nochange');
             testItem.setPropertyConflictRule('C', 'replace');
@@ -121,15 +130,15 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             expect(testItem.getPropertyConflictRule('D')).toBe('replaceOrDelete');
             expect(testItem.getPropertyConflictRule('E')).toBe('delete');
             expect(testItem.getPropertyConflictRule('F')).toBe('replaceExceptNull');
-            let result = testItem.getPropertyConflictRule('G') as () => PropertyConflictResolverHandlerResult;
+            let result = testItem.getPropertyConflictRule('G') as () => PropertyConfigMergeServiceHandlerResult;
             expect(typeof result).toBe('function');
             expect(result()).toEqual({ useValue: 'result' });
         });
     });
     describe('setConditionConflictRule', () => {
         test('Set works, get returns the function. Second call throws', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
-            let fn: ConditionConflictResolverHandler =
+            let testItem = new Publicify_ConfigMergeServiceBase();
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'nochange' } };
             expect(() => testItem.setConditionConflictRule('A', fn)).not.toThrow();
             let result = testItem.getConditionConflictRule('A');
@@ -140,33 +149,52 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
     });
 
     describe('log', () => {
-        test('No logger, does nothing even with MinLevel=Debug', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
-            testItem.logger = null!;
+        test('No services, does nothing even with MinLevel=Debug', () => {
+            let testItem = new Publicify_ConfigMergeServiceBase();
             expect(() => testItem.publicify_log('test', LoggingLevel.Error)).not.toThrow();
         });
         test('Logger MinLevel is higher than supplied log level never calls the message function or logs', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
-            testItem.logger!.minLevel = LoggingLevel.Error;
+            let testItem = new Publicify_ConfigMergeServiceBase();
+            let setup = createServices();
+            testItem.services = setup.services;
+            setup.logger.minLevel = LoggingLevel.Error;
             let called = false;
             testItem.publicify_log(() => {
                 called = true;
                 return 'abc';
             }, LoggingLevel.Warn);
             expect(called).toBe(false);
-            expect(testItem.logger?.entryCount()).toBe(0);
+            expect(setup.logger.entryCount()).toBe(0);
         });
         test('Logger MinLevel is lower than supplied log level calls the message function and logs', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
-            testItem.logger!.minLevel = LoggingLevel.Warn;
+            let testItem = new Publicify_ConfigMergeServiceBase();
+            let setup = createServices();
+            testItem.services = setup.services;
+            setup.logger.minLevel = LoggingLevel.Warn;
             let called = false;
             testItem.publicify_log(() => {
                 called = true;
                 return 'abc';
             }, LoggingLevel.Error);
             expect(called).toBe(true);
-            expect(testItem.logger?.entryCount()).toBe(1);
+            expect(setup.logger.entryCount()).toBe(1);
         });
+        test('Message is a string, not a function and gets logged', () => {
+            let testItem = new Publicify_ConfigMergeServiceBase();
+            let setup = createServices();
+            testItem.services = setup.services;
+            testItem.publicify_log('abc', LoggingLevel.Error);
+            expect(setup.logger.findMessage('abc', null, null, null)).not.toBeNull();
+            expect(setup.logger.findMessage(null, LoggingLevel.Error, null, null)).not.toBeNull();
+            expect(setup.logger.findMessage(null, null, LoggingCategory.Configuration, null)).not.toBeNull();
+        });        
+        test('config parameter assigned', () => {
+            let testItem = new Publicify_ConfigMergeServiceBase();
+            let setup = createServices();
+            testItem.services = setup.services;
+            testItem.publicify_log('abc', LoggingLevel.Error, LoggingCategory.Debug);
+            expect(setup.logger.findMessage(null, null, LoggingCategory.Debug, null)).not.toBeNull();
+        });           
     });
     describe('mergeProperty', () => {
         function testMergeProperty(rule: PropertyConflictRule<object>,
@@ -174,8 +202,11 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             logContains?: string
         ) {
             let expectedSource = { ...source };
-            let testItem = new Publicify_ConfigConflictResolverBase();
-            testItem.logger!.minLevel = LoggingLevel.Debug;
+            
+            let testItem = new Publicify_ConfigMergeServiceBase();
+            let setup = createServices();
+            testItem.services = setup.services;
+            setup.logger.minLevel = LoggingLevel.Debug;
             const propertyName = 'A';
             expect(() => testItem.publicify_mergeProperty(propertyName, rule,
                 source, destination, { valueHostName: 'X' }
@@ -183,9 +214,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             expect(destination).toEqual(expected);
             expect(source).toEqual(expectedSource);
             if (logContains)
-                expect(testItem.logger!.findMessage(logContains, null, null, null)).not.toBeNull();
+                expect(setup.logger.findMessage(logContains, null, null, null)).not.toBeNull();
             else
-                expect(testItem.logger!.entryCount()).toBe(0);
+                expect(setup.logger.entryCount()).toBe(0);
         }
         test('nochange keeps destination intact', () => {
             testMergeProperty('nochange', { A: 'ABC' }, { A: 'XYZ' }, { A: 'XYZ' }, 'Rule prevents changes');
@@ -196,6 +227,10 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
         test('replace updates the property in the destination with that of the source', () => {
             testMergeProperty('replace', { A: 'ABC' }, { A: 'XYZ' }, { A: 'ABC' }, 'replaced');
         });
+        test('replace does not change destination if values are the same. No logging for "replaced".', () => {
+            testMergeProperty('replace', { A: 'XYZ' }, { A: 'XYZ' }, { A: 'XYZ' });
+        });
+
         test('replaceExceptNull updates the property in the destination with that of the source while the source is not null or undefined', () => {
             testMergeProperty('replaceExceptNull', { A: 'ABC' }, { A: 'XYZ' }, { A: 'ABC' }, 'replaced');
             testMergeProperty('replaceExceptNull', { A: null }, { A: 'XYZ' }, { A: 'XYZ' });
@@ -250,39 +285,41 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 { A: 'ABC' }, { A: 'XYZ' }, { A: 'DEF' }, 'replaced');
         });
         test('unknown command throws', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             expect(() => testItem.publicify_mergeProperty('A', 'UNKNOWN' as any,
                 { A: 'ABC' }, { A: 'XYZ' }, { valueHostName: '!' })).toThrow(/Unknown rule/);
         })
     });
 
-    describe('merge', () => {
-        function testMerge(testItem: Publicify_ConfigConflictResolverBase,
+    describe('mergeConfigs', () => {
+        function testMerge(testItem: Publicify_ConfigMergeServiceBase,
             source: object, destination: object, expected: object
         ) {
             let expectedSource = { ...source };
-            testItem.logger!.minLevel = LoggingLevel.Debug;
+            let setup = createServices();
+            testItem.services = setup.services;
+            setup.logger.minLevel = LoggingLevel.Debug;
 
-            expect(() => testItem.publicify_merge(
+            expect(() => testItem.publicify_mergeConfigs(
                 source, destination, { valueHostName: 'X' }
             )).not.toThrow();
             expect(destination).toEqual(expected);
             expect(source).toEqual(expectedSource);
         }
         test('Assign all properties to empty destination from those found in source when no rules applied', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             testMerge(testItem, { 'A': 1, 'B': false, 'C': null },
                 {},
                 { 'A': 1, 'B': false, 'C': null });
         });
         test('Replace all properties in destination from those found in source when no rules applied', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             testMerge(testItem, { 'A': 1, 'B': false, 'C': null },
                 { 'A': 0, 'B': true, 'C': 'test' },
                 { 'A': 1, 'B': false, 'C': null });
         });
         test('With B=nochange, Replace all properties except B in destination from those found in source when no rules applied', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             testItem.setPropertyConflictRule('B', 'nochange');
             testMerge(testItem, { 'A': 1, 'B': false, 'C': null },
                 { 'A': 0, 'B': true, 'C': 'test' },
@@ -290,33 +327,33 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
         });
 
         test('With empty source, no change to destination', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             testMerge(testItem, {},
                 { 'A': 0, 'B': true, 'C': 'test' },
                 { 'A': 0, 'B': true, 'C': 'test' });
         });
         test('With different properties on both source and destination, effectively merge into destination', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             testMerge(testItem, { 'A1': 1, 'B1': false, 'C1': null },
                 { 'A2': 0, 'B2': true, 'C2': 'test' },
                 { 'A1': 1, 'B1': false, 'C1': null, 'A2': 0, 'B2': true, 'C2': 'test' });
         });
         test('delete rule on "B" applied when "B" is only found on the destination', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             testItem.setPropertyConflictRule('B', 'delete');
             testMerge(testItem, { 'A': 1, 'C': null },
                 { 'A': 0, 'B': true, 'C': 'test' },
                 { 'A': 1, 'C': null });
         });
         test('delete rule on "B" applied when "B" is only found in both source and destination', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             testItem.setPropertyConflictRule('B', 'delete');
             testMerge(testItem, { 'A': 1, 'B': false, 'C': null },
                 { 'A': 0, 'B': true, 'C': 'test' },
                 { 'A': 1, 'C': null });
         });       
         test('delete rule has no effect when "B" is only found in source ', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             testItem.setPropertyConflictRule('B', 'delete');
             testMerge(testItem, { 'A': 1, 'B': false, 'C': null },
                 { 'A': 0, 'C': 'test' },
@@ -325,13 +362,16 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
     });
 
     describe('handleConditionConfigProperty', () => {
-        function testCondition(testItem: Publicify_ConfigConflictResolverBase,
+        function testCondition(testItem: Publicify_ConfigMergeServiceBase,
             source: object, destination: object, propertyName: string,
-            expected: PropertyConflictResolverHandlerResult
+            expected: PropertyConfigMergeServiceHandlerResult
         ) {
-            testItem.logger!.minLevel = LoggingLevel.Debug;
+            let setup = createServices();
+            testItem.services = setup.services;
 
-            let result: PropertyConflictResolverHandlerResult;
+            setup.logger.minLevel = LoggingLevel.Debug;
+
+            let result: PropertyConfigMergeServiceHandlerResult;
             expect(() => result = testItem.handleConditionConfigProperty(
                 source, destination, propertyName, { valueHostName: 'X' }
             )).not.toThrow();
@@ -339,7 +379,7 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
         }
 
         test('With no changes to rules, returns nochange', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const propertyName = 'cond';
             testCondition(testItem,
                 { [propertyName]: { conditionType: 'X', prop1: 'A', prop2: 0 } },
@@ -349,9 +389,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             );
         });
         test('With rule=nochange, returns nochange', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const propertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'nochange' } };
 
             testItem.setConditionConflictRule(propertyName, fn);
@@ -363,9 +403,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             );
         });
         test('With rule=delete, returns delete', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const propertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'delete' } };
             testItem.setConditionConflictRule(propertyName, fn);
             testCondition(testItem,
@@ -376,9 +416,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             );
         });
         test('With rule=all, returns { useValue: with allMatch condition with children [destination, source] }', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const propertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'all' } };
             testItem.setConditionConflictRule(propertyName, fn);
             testCondition(testItem,
@@ -397,9 +437,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             );
         });
         test('With rule=any, returns { useValue: with allMatch condition with children [destination, source] }', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const propertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'any' } };
             testItem.setConditionConflictRule(propertyName, fn);
             testCondition(testItem,
@@ -418,9 +458,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             );
         });
         test('With function returning a conditionConfig, returns the same', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const propertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useValue: { conditionType: 'Y' } } };
             testItem.setConditionConflictRule(propertyName, fn);
             testCondition(testItem,
@@ -431,9 +471,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             );
         });
         test('With function returning nulls, throws', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const propertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useValue: null!, useAction: null! } };
             testItem.setConditionConflictRule(propertyName, fn);
             expect(() => testItem.handleConditionConfigProperty(
@@ -443,25 +483,28 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             )).toThrow(CodingError);
         });
     });
-    describe('merge using handleConditionConfigProperty', () => {
-        function testMerge(testItem: Publicify_ConfigConflictResolverBase,
+    describe('mergeConfigs using handleConditionConfigProperty', () => {
+        function testMerge(testItem: Publicify_ConfigMergeServiceBase,
             source: object, destination: object, condPropertyName: string, expected: object
         ) {
+            let setup = createServices();
+            testItem.services = setup.services;
+
             testItem.setPropertyConflictRule(condPropertyName, testItem.handleConditionConfigProperty);
 
             let expectedSource = { ...source };
-            testItem.logger!.minLevel = LoggingLevel.Debug;
+            setup.logger.minLevel = LoggingLevel.Debug;
 
-            expect(() => testItem.publicify_merge(
+            expect(() => testItem.publicify_mergeConfigs(
                 source, destination, { valueHostName: 'X' }
             )).not.toThrow();
             expect(destination).toEqual(expected);
             expect(source).toEqual(expectedSource);
         }
         test('Assign all properties to empty destination from those found in source when no rules applied', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'nochange' } };
             testItem.setConditionConflictRule(condPropertyName, fn);
             testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
@@ -470,9 +513,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } });
         });
         test('With rule=all, combine the two conditions under All condition', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'all' } };
             testItem.setConditionConflictRule(condPropertyName, fn);
             testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
@@ -491,9 +534,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 });
         });
         test('With rule=all, combine the two conditions under All condition and transfer category', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'all' } };
             testItem.setConditionConflictRule(condPropertyName, fn);
             testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
@@ -513,9 +556,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 });
         });
         test('With rule=any, combine the two conditions under All condition', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'any' } };
             testItem.setConditionConflictRule(condPropertyName, fn);
             testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
@@ -535,9 +578,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 });
         });
         test('With rule=any, combine the two conditions under All condition and transfer category', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'any' } };
             testItem.setConditionConflictRule(condPropertyName, fn);
             testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
@@ -558,9 +601,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 });
         });
         test('With rule=delete and a source condition is supplied, the condition property is deleted in destination', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'delete' } };
             testItem.setConditionConflictRule(condPropertyName, fn);
             testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
@@ -571,7 +614,7 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 });
         });
         test('With source condition is null and rule is not setup, no change', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
             testMerge(testItem, { 'A': 1, [condPropertyName]: null },
                 { 'A': 2, [condPropertyName]: { conditionType: 'Y', prop1: '2' } },
@@ -581,9 +624,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 });
         });
         test('With source condition is null and rule is setup, no change', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'all' } };        // action will be ignored
             testItem.setConditionConflictRule(condPropertyName, fn);
             testMerge(testItem, { 'A': 1, [condPropertyName]: null },
@@ -594,7 +637,7 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 });
         });
         test('With dest condition is null and rule is not defined, assign it to sourcecond', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
             testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
                 { 'A': 2, [condPropertyName]: null },
@@ -605,9 +648,9 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
         });
 
         test('With dest condition is null and rule is nochange, dest does not change', () => {
-            let testItem = new Publicify_ConfigConflictResolverBase();
+            let testItem = new Publicify_ConfigMergeServiceBase();
             const condPropertyName = 'cond';
-            let fn: ConditionConflictResolverHandler =
+            let fn: ConditionConfigMergeServiceHandler =
                 (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'nochange' } };
             testItem.setConditionConflictRule(condPropertyName, fn);
             testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
@@ -620,57 +663,43 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
     });
 });
 
-describe('ValueHostConflictResolver', () => {
+describe('ValueHostConfigMergeService', () => {
     describe('constructor and setting up', () => {
-        class Publicify_ValueHostConflictResolver extends ValueHostConflictResolver {
-            public get publicify_validatorConflictResolver(): ValidatorConflictResolver {
-                return super.validatorConflictResolver;
-            }
-        }
-        test('constructor sets default propertyConflictRules and with null parameter, uses ValidatorConflictResolver', () => {
-            let testItem = new Publicify_ValueHostConflictResolver();
-            expect(testItem.publicify_validatorConflictResolver).toBeInstanceOf(ValidatorConflictResolver);
-            expect(testItem.getPropertyConflictRule('name')).toBe('locked');
-            expect(testItem.getPropertyConflictRule('validatorConfigs')).toBe('locked');
-            expect(typeof testItem.getPropertyConflictRule('valueHostType')).toBe('function');
-            expect(testItem.getPropertyConflictRule('dataType')).toBe('replaceExceptNull');
-            expect(testItem.getPropertyConflictRule('label')).toBeUndefined();
-        });
-        test('constructor sets default propertyConflictRules and with null parameter, uses ValidatorConflictResolver', () => {
-            class SubclassValidatorConflictResolver extends ValidatorConflictResolver {
+        class Publicify_ValueHostConfigMergeService extends ValueHostConfigMergeService {
 
-            }
-            let testItem = new Publicify_ValueHostConflictResolver(new SubclassValidatorConflictResolver());
-            expect(testItem.publicify_validatorConflictResolver).toBeInstanceOf(SubclassValidatorConflictResolver);
+        }
+        test('constructor sets default propertyConflictRules and with null parameter, uses ValidatorConfigMergeService', () => {
+            let testItem = new Publicify_ValueHostConfigMergeService();
             expect(testItem.getPropertyConflictRule('name')).toBe('locked');
             expect(testItem.getPropertyConflictRule('validatorConfigs')).toBe('locked');
             expect(typeof testItem.getPropertyConflictRule('valueHostType')).toBe('function');
             expect(testItem.getPropertyConflictRule('dataType')).toBe('replaceExceptNull');
             expect(testItem.getPropertyConflictRule('label')).toBeUndefined();
         });
-        test('set logger service updates both self and ValidatorConflictResolver', () => {
-            let testItem = new Publicify_ValueHostConflictResolver();
-            let logger = new ConsoleLoggerService();
-            testItem.logger = logger;
-            expect(testItem.logger).toBe(logger);
-            expect(testItem.publicify_validatorConflictResolver.logger).toBe(logger);
+        test('constructor sets default propertyConflictRules and with null parameter, uses ValidatorConfigMergeService', () => {
+            let testItem = new Publicify_ValueHostConfigMergeService();
+            expect(testItem.getPropertyConflictRule('name')).toBe('locked');
+            expect(testItem.getPropertyConflictRule('validatorConfigs')).toBe('locked');
+            expect(typeof testItem.getPropertyConflictRule('valueHostType')).toBe('function');
+            expect(testItem.getPropertyConflictRule('dataType')).toBe('replaceExceptNull');
+            expect(testItem.getPropertyConflictRule('label')).toBeUndefined();
         });
+
     });
     describe('resolve', () => {
         function testResolve(source: ValueHostConfig, destination: ValueHostConfig,
             expectedDestionation: ValueHostConfig,
             logContains?: string) {
-            let testItem = new ValueHostConflictResolver();
-            let logger = new CapturingLogger();
-            logger.extraLogger = new ConsoleLoggerService();            
-            logger.minLevel = LoggingLevel.Debug;
-            testItem.logger = logger;
+            let setup = createServices();
+            let testItem = setup.services.valueHostConfigMergeService;
+            setup.logger.minLevel = LoggingLevel.Debug;
+
             let expectedSource = { ...source };
-            testItem.resolve(source, destination);
+            testItem.merge(source, destination);
             expect(destination).toEqual(expectedDestionation);
             expect(source).toEqual(expectedSource);
             if (logContains)
-                expect(logger!.findMessage(logContains, null, null, null)).not.toBeNull();
+                expect(setup.logger.findMessage(logContains, null, null, null)).not.toBeNull();
         }
         test('Same valueHostName, no validatorConfigs, no custom rules. Copies everything except valueHostType and valueHostName', () => {
             testResolve({
@@ -817,8 +846,8 @@ describe('ValueHostConflictResolver', () => {
                     initialValue: 'not in source'
                 });
         });                
-        //NOTE: Most of the testing of validatorConfigs is deferred to ValidatorConflictResolver tests
-        // This mostly demonstrates the interchange between ValueHostConflictResolver and ValidatorConflictResolver
+        //NOTE: Most of the testing of validatorConfigs is deferred to ValidatorConfigMergeService tests
+        // This mostly demonstrates the interchange between ValueHostConfigMergeService and ValidatorConfigMergeService
         test('No conflicting validators. Copies everything except valueHostType and valueHostName', () => {
             testResolve(<InputValueHostConfig>{
                 valueHostType: ValueHostType.Input,
@@ -876,11 +905,11 @@ describe('ValueHostConflictResolver', () => {
         });        
     });
 });
-describe('ValidatorConflictResolver', () => {
+describe('ValidatorConfigMergeService', () => {
     describe('constructor and setting up', () => {
 
         test('constructor sets default propertyConflictRules', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             expect(testItem.getPropertyConflictRule('conditionConfig')).toBe(testItem.handleConditionConfigProperty);
             expect(testItem.getPropertyConflictRule('enablerConfig')).toBe(testItem.handleConditionConfigProperty);
             expect(testItem.getPropertyConflictRule('conditionCreator')).toBe('nochange');
@@ -891,7 +920,7 @@ describe('ValidatorConflictResolver', () => {
         });
 
         test('identityHandler set should be returned on get', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             let handler: ConditionConflictIdentifierHandler = (validatorSrc, validatorsInDest, identity) => { return undefined; }
             testItem.identifyHandler = handler;
             expect(testItem.identifyHandler).toBe(handler);
@@ -899,7 +928,7 @@ describe('ValidatorConflictResolver', () => {
     });
     describe('identifyValidatorConflict', () => {
         test('source.errorCode not found in empty destination array returns undefined', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             expect(testItem.identifyValidatorConflict({
                 errorCode: '1',
                 conditionConfig: null,
@@ -908,7 +937,7 @@ describe('ValidatorConflictResolver', () => {
                 { valueHostName: 'Field1' })).toBeUndefined();
         });
         test('source.errorCode not found in populated destination array returns undefined', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             expect(testItem.identifyValidatorConflict({
                 errorCode: '1',
                 conditionConfig: null,
@@ -924,7 +953,7 @@ describe('ValidatorConflictResolver', () => {
                 { valueHostName: 'Field1' })).toBeUndefined();
         });
         test('source.errorCode found in populated destination array returns the instance from the destination', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             let dest1: ValidatorConfig = {
                 errorCode: '1', // will match
                 conditionConfig: null
@@ -947,7 +976,7 @@ describe('ValidatorConflictResolver', () => {
                 { valueHostName: 'Field1' })).toBe(dest2);
         });
         test('with no errorcode, but conditionTypes instead, source found in populated destination array returns the instance from the destination', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             let dest1: ValidatorConfig = {
                 conditionConfig: {
                     conditionType: '1'  // will match
@@ -974,20 +1003,20 @@ describe('ValidatorConflictResolver', () => {
         });
     });
     describe('resolve', () => {
-        function testResolve(testItem: ValidatorConflictResolver,
+        function testResolve(testItem: ValidatorConfigMergeService,
             source: ValidatorsValueHostBaseConfig, destination: ValidatorsValueHostBaseConfig,
             expectedDestination: ValidatorsValueHostBaseConfig
         ) {
-            let logger = new CapturingLogger();
-            logger.extraLogger = new ConsoleLoggerService();            
-            logger.minLevel = LoggingLevel.Debug;
-            testItem.logger = logger;
+            let setup = createServices();
+            testItem.services = setup.services;
+            setup.services.validatorConfigMergeService = testItem;
+            setup.logger.minLevel = LoggingLevel.Debug;
 
-            testItem.resolve(source, destination);
+            testItem.merge(source, destination);
             expect(destination).toEqual(expectedDestination);
         }
         test('Neither source or destination has ValidatorConfigs leaves destination unchanged', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
@@ -1007,7 +1036,7 @@ describe('ValidatorConflictResolver', () => {
                 });
         });
         test('Source and destination has ValidatorConfigs=null leaves destination unchanged', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
@@ -1027,7 +1056,7 @@ describe('ValidatorConflictResolver', () => {
                 });
         });
         test('Source and destination has ValidatorConfigs=[] leaves destination unchanged', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
@@ -1047,7 +1076,7 @@ describe('ValidatorConflictResolver', () => {
                 });
         });
         test('Source has 2 and destination has ValidatorConfigs=null creates validatorConfigs with the 1 item in destination', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
@@ -1086,7 +1115,7 @@ describe('ValidatorConflictResolver', () => {
                 });
         });
         test('Source and destination non-conflicting Validators adds the source into destination', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
@@ -1126,7 +1155,7 @@ describe('ValidatorConflictResolver', () => {
                 });
         });
         test('Source and destination conflicting Validators merges validatorConfigs except nochange for conditionConfig', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             testResolve(testItem, {
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
@@ -1164,7 +1193,7 @@ describe('ValidatorConflictResolver', () => {
                 });
         });
         test('Source and destination conflicting Validators merges validatorConfigs and conditionConfig is modified using the "all" rule', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             testItem.setConditionConflictRule('conditionConfig',
                 (source, destination, identity) => { return { useAction: 'all' } });
             testResolve(testItem, {
@@ -1212,7 +1241,7 @@ describe('ValidatorConflictResolver', () => {
                 });
         });
         test('Source and destination conflicting Validators merges validatorConfigs and conditionConfig is replaced by ConditionConflictRule', () => {
-            let testItem = new ValidatorConflictResolver();
+            let testItem = new ValidatorConfigMergeService();
             testItem.setConditionConflictRule('conditionConfig',
                 (source, destination, identity) => {
                     return {
