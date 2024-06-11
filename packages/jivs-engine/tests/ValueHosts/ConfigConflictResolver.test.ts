@@ -12,7 +12,8 @@ import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
-import { AllMatchConditionConfig, RegExpConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { AllMatchConditionConfig, LessThanValueConditionConfig, RegExpConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 
 describe('ConfigConflictResolverBase using a subclass to expose protected members', () => {
     class Publicify_ConfigConflictResolverBase extends
@@ -69,6 +70,12 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             expect(testItem.getPropertyConflictRule('A')).toBe('replace');
             expect(() => testItem.setPropertyConflictRule('A', 'replace')).not.toThrow();
         });
+        test('Set property as replaceExceptNull allowed on multiple attempts', () => {
+            let testItem = new Publicify_ConfigConflictResolverBase();
+            expect(() => testItem.setPropertyConflictRule('A', 'replaceExceptNull')).not.toThrow();
+            expect(testItem.getPropertyConflictRule('A')).toBe('replaceExceptNull');
+            expect(() => testItem.setPropertyConflictRule('A', 'replaceExceptNull')).not.toThrow();
+        });
         test('Set property as delete allowed on multiple attempts', () => {
             let testItem = new Publicify_ConfigConflictResolverBase();
             expect(() => testItem.setPropertyConflictRule('A', 'delete')).not.toThrow();
@@ -95,6 +102,7 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             expect(() => testItem.setPropertyConflictRule('A', 'locked')).toThrow(CodingError);
             expect(() => testItem.setPropertyConflictRule('A', 'replace')).toThrow(CodingError);
             expect(() => testItem.setPropertyConflictRule('A', 'replaceOrDelete')).toThrow(CodingError);
+            expect(() => testItem.setPropertyConflictRule('A', 'replaceExceptNull')).toThrow(CodingError);
 
         });
         test('Set several properties once and all are saved', () => {
@@ -104,14 +112,16 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             testItem.setPropertyConflictRule('C', 'replace');
             testItem.setPropertyConflictRule('D', 'replaceOrDelete');
             testItem.setPropertyConflictRule('E', 'delete');
-            testItem.setPropertyConflictRule('F', () => { return { useValue: 'result' } });
+            testItem.setPropertyConflictRule('F', 'replaceExceptNull');
+            testItem.setPropertyConflictRule('G', () => { return { useValue: 'result' } });
 
             expect(testItem.getPropertyConflictRule('A')).toBe('locked');
             expect(testItem.getPropertyConflictRule('B')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('C')).toBe('replace');
             expect(testItem.getPropertyConflictRule('D')).toBe('replaceOrDelete');
             expect(testItem.getPropertyConflictRule('E')).toBe('delete');
-            let result = testItem.getPropertyConflictRule('F') as () => PropertyConflictResolverHandlerResult;
+            expect(testItem.getPropertyConflictRule('F')).toBe('replaceExceptNull');
+            let result = testItem.getPropertyConflictRule('G') as () => PropertyConflictResolverHandlerResult;
             expect(typeof result).toBe('function');
             expect(result()).toEqual({ useValue: 'result' });
         });
@@ -178,13 +188,18 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 expect(testItem.logger!.entryCount()).toBe(0);
         }
         test('nochange keeps destination intact', () => {
-            testMergeProperty('nochange', { A: 'ABC' }, { A: 'XYZ' }, { A: 'XYZ' }, 'not changed');
+            testMergeProperty('nochange', { A: 'ABC' }, { A: 'XYZ' }, { A: 'XYZ' }, 'Rule prevents changes');
         });
         test('locked keeps destination intact', () => {
-            testMergeProperty('locked', { A: 'ABC' }, { A: 'XYZ' }, { A: 'XYZ' }, 'not changed');
+            testMergeProperty('locked', { A: 'ABC' }, { A: 'XYZ' }, { A: 'XYZ' }, 'Rule prevents changes');
         });
         test('replace updates the property in the destination with that of the source', () => {
             testMergeProperty('replace', { A: 'ABC' }, { A: 'XYZ' }, { A: 'ABC' }, 'replaced');
+        });
+        test('replaceExceptNull updates the property in the destination with that of the source while the source is not null or undefined', () => {
+            testMergeProperty('replaceExceptNull', { A: 'ABC' }, { A: 'XYZ' }, { A: 'ABC' }, 'replaced');
+            testMergeProperty('replaceExceptNull', { A: null }, { A: 'XYZ' }, { A: 'XYZ' });
+            testMergeProperty('replaceExceptNull', { A: undefined }, { A: 'XYZ' }, { A: 'XYZ' });
         });
         test('delete updates the property in the destination', () => {
             testMergeProperty('delete', { A: 'ABC' }, { A: 'XYZ' }, {}, 'deleted');
@@ -201,7 +216,7 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
             testMergeProperty((source, destination, identity) => {
                 return { useAction: 'nochange' };
             },
-                { A: 'ABC' }, { A: 'XYZ' }, { A: 'XYZ' }, 'nochange');
+                { A: 'ABC' }, { A: 'XYZ' }, { A: 'XYZ' }, 'Rule prevents changes');
         });
         test('function returns replace changes the property in the destination', () => {
             testMergeProperty((source, destination, identity) => {
@@ -286,7 +301,27 @@ describe('ConfigConflictResolverBase using a subclass to expose protected member
                 { 'A2': 0, 'B2': true, 'C2': 'test' },
                 { 'A1': 1, 'B1': false, 'C1': null, 'A2': 0, 'B2': true, 'C2': 'test' });
         });
-
+        test('delete rule on "B" applied when "B" is only found on the destination', () => {
+            let testItem = new Publicify_ConfigConflictResolverBase();
+            testItem.setPropertyConflictRule('B', 'delete');
+            testMerge(testItem, { 'A': 1, 'C': null },
+                { 'A': 0, 'B': true, 'C': 'test' },
+                { 'A': 1, 'C': null });
+        });
+        test('delete rule on "B" applied when "B" is only found in both source and destination', () => {
+            let testItem = new Publicify_ConfigConflictResolverBase();
+            testItem.setPropertyConflictRule('B', 'delete');
+            testMerge(testItem, { 'A': 1, 'B': false, 'C': null },
+                { 'A': 0, 'B': true, 'C': 'test' },
+                { 'A': 1, 'C': null });
+        });       
+        test('delete rule has no effect when "B" is only found in source ', () => {
+            let testItem = new Publicify_ConfigConflictResolverBase();
+            testItem.setPropertyConflictRule('B', 'delete');
+            testMerge(testItem, { 'A': 1, 'B': false, 'C': null },
+                { 'A': 0, 'C': 'test' },
+                { 'A': 1, 'C': null });
+        });                
     });
 
     describe('handleConditionConfigProperty', () => {
@@ -598,7 +633,8 @@ describe('ValueHostConflictResolver', () => {
             expect(testItem.getPropertyConflictRule('name')).toBe('locked');
             expect(testItem.getPropertyConflictRule('validatorConfigs')).toBe('locked');
             expect(typeof testItem.getPropertyConflictRule('valueHostType')).toBe('function');
-            expect(testItem.getPropertyConflictRule('dataType')).toBeUndefined();
+            expect(testItem.getPropertyConflictRule('dataType')).toBe('replaceExceptNull');
+            expect(testItem.getPropertyConflictRule('label')).toBeUndefined();
         });
         test('constructor sets default propertyConflictRules and with null parameter, uses ValidatorConflictResolver', () => {
             class SubclassValidatorConflictResolver extends ValidatorConflictResolver {
@@ -609,7 +645,8 @@ describe('ValueHostConflictResolver', () => {
             expect(testItem.getPropertyConflictRule('name')).toBe('locked');
             expect(testItem.getPropertyConflictRule('validatorConfigs')).toBe('locked');
             expect(typeof testItem.getPropertyConflictRule('valueHostType')).toBe('function');
-            expect(testItem.getPropertyConflictRule('dataType')).toBeUndefined();
+            expect(testItem.getPropertyConflictRule('dataType')).toBe('replaceExceptNull');
+            expect(testItem.getPropertyConflictRule('label')).toBeUndefined();
         });
         test('set logger service updates both self and ValidatorConflictResolver', () => {
             let testItem = new Publicify_ValueHostConflictResolver();
@@ -732,6 +769,111 @@ describe('ValueHostConflictResolver', () => {
                 },
                 'Will not change ValueHostType from Static to Input.');
         });
+        test('dataType of source is null. No change to the destination datatype', () => {
+            testResolve({
+                valueHostType: ValueHostType.Static,
+                name: 'Field1',
+                dataType: null!,
+                label: 'Birthdate',
+                labell10n: 'BD'
+            },
+                {
+                    valueHostType: ValueHostType.Static,
+                    name: 'Field1',
+                    dataType: LookupKey.DateTime,
+                    label: 'Field 1',
+                    initialValue: 'not in source'
+                },
+                {
+                    valueHostType: ValueHostType.Static,
+                    name: 'Field1',
+                    dataType: LookupKey.DateTime,
+                    label: 'Birthdate',
+                    labell10n: 'BD',
+                    initialValue: 'not in source'
+                });
+        });        
+        test('dataType of source is undefined. No change to the destination datatype', () => {
+            testResolve({
+                valueHostType: ValueHostType.Static,
+                name: 'Field1',
+                dataType: undefined,
+                label: 'Birthdate',
+                labell10n: 'BD'
+            },
+                {
+                    valueHostType: ValueHostType.Static,
+                    name: 'Field1',
+                    dataType: LookupKey.DateTime,
+                    label: 'Field 1',
+                    initialValue: 'not in source'
+                },
+                {
+                    valueHostType: ValueHostType.Static,
+                    name: 'Field1',
+                    dataType: LookupKey.DateTime,
+                    label: 'Birthdate',
+                    labell10n: 'BD',
+                    initialValue: 'not in source'
+                });
+        });                
+        //NOTE: Most of the testing of validatorConfigs is deferred to ValidatorConflictResolver tests
+        // This mostly demonstrates the interchange between ValueHostConflictResolver and ValidatorConflictResolver
+        test('No conflicting validators. Copies everything except valueHostType and valueHostName', () => {
+            testResolve(<InputValueHostConfig>{
+                valueHostType: ValueHostType.Input,
+                name: 'Field1',
+                dataType: LookupKey.Date,
+                label: 'Birthdate',
+                labell10n: 'BD',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <LessThanValueConditionConfig>{
+                            conditionType: ConditionType.LessThanValue,
+                            value: new Date(),
+                            valueHostName: null
+                        }
+                    }
+                ]
+            },
+                <InputValueHostConfig>{
+                    valueHostType: ValueHostType.Input,
+                    name: 'Field1',
+                    dataType: LookupKey.DateTime,
+                    label: 'Field 1',
+                    initialValue: 'not in source',
+                    validatorConfigs: [
+                        {
+                            conditionConfig: {
+                                conditionType: ConditionType.NotNull
+                            }
+                        }
+                    ]
+                },
+                <InputValueHostConfig>{
+                    valueHostType: ValueHostType.Input,
+                    name: 'Field1',
+                    dataType: LookupKey.Date,
+                    label: 'Birthdate',
+                    labell10n: 'BD',
+                    initialValue: 'not in source',
+                    validatorConfigs: [
+                        {
+                            conditionConfig: {
+                                conditionType: ConditionType.NotNull
+                            }
+                        },
+                        {
+                            conditionConfig: <LessThanValueConditionConfig>{
+                                conditionType: ConditionType.LessThanValue,
+                                value: new Date(),
+                                valueHostName: null
+                            }
+                        }
+    
+                    ]                    
+                });
+        });        
     });
 });
 describe('ValidatorConflictResolver', () => {

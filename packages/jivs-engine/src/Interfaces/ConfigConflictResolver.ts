@@ -103,12 +103,16 @@ export type PropertyConflictResolverAction =
      */
     'replace' |
     /**
+     * Copy the value assigned in phase 1 if the phase 2 value is not null
+     */
+    'replaceExceptNull' |
+    /**
      * No change allowed to phase 1 property value
      */
     'nochange' |
 
     /**
-     * delete the property
+     * delete the property from phase 1
      */
     'delete' |
 

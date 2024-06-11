@@ -19,6 +19,7 @@ import {
     ConditionConflictResolverAction,
     ConditionConflictIdentifierHandler
 } from '../Interfaces/ConfigConflictResolver';
+import { deepEquals } from '../Utilities/Utilities';
 
 /**
  * The user is expected to have two phases to finish creating the ValidationManagerConfig file.
@@ -205,11 +206,17 @@ export abstract class ConfigConflictResolverBase<TConfig>
         for (let propertyName in source) {
             if (destination[propertyName] === undefined) {
                 destination[propertyName] = source[propertyName];
+                this.log(() => `${logLabel(identity, propertyName)} assigned`, LoggingLevel.Info);
                 continue;
             }
             let rule = this.configProperties.get(propertyName);
             this.mergeProperty(propertyName, rule ?? 'replace', source, destination, identity);
         }
+        // delete action determined by property on the destination
+        this.configProperties.forEach((rule, propertyName) => {
+            if (rule === 'delete')
+                this.mergeProperty(propertyName, rule, source, destination, identity);
+        });
     }
     /**
      * Handle one property based on the rule.
@@ -220,15 +227,26 @@ export abstract class ConfigConflictResolverBase<TConfig>
         switch (rule) {
             case 'nochange':
             case 'locked':
-                this.log(() => `${logLabel(identity, propertyName)} was not changed due to rule ${rule}`, LoggingLevel.Warn);
+                this.log(() => `${logLabel(identity, propertyName)}. Rule prevents changes.`, LoggingLevel.Debug);
                 break;  // no change for all of these
             case 'replace':
-                (destination as any)[propertyName] = (source as any)[propertyName];
-                this.log(() => `${logLabel(identity, propertyName)} replaced`, LoggingLevel.Debug);
+            case 'replaceExceptNull':
+                let sourceVal = (source as any)[propertyName];
+                if (sourceVal === undefined)
+                    break;
+                if (rule === 'replaceExceptNull' && sourceVal === null)
+                    break;
+                let destVal = (destination as any)[propertyName];
+                if (deepEquals(sourceVal, destVal))
+                    break;
+                (destination as any)[propertyName] = sourceVal;
+                this.log(() => `${logLabel(identity, propertyName)} replaced`, LoggingLevel.Info);
                 break;
             case 'delete':
-                delete (destination as any)[propertyName];
-                this.log(() => `${logLabel(identity, propertyName)} deleted`, LoggingLevel.Debug);
+                if ((destination as any)[propertyName] !== undefined) {
+                    delete (destination as any)[propertyName];
+                    this.log(() => `${logLabel(identity, propertyName)} deleted`, LoggingLevel.Info);
+                }
                 break;
             case 'replaceOrDelete':
                 let sourceValue = (source as any)[propertyName];
@@ -346,6 +364,7 @@ export class ValueHostConflictResolver extends ConfigConflictResolverBase<ValueH
         this.setPropertyConflictRule('name', 'locked');
         this.setPropertyConflictRule('validatorConfigs', 'locked');
         this.setPropertyConflictRule('valueHostType', this.updateValueHostType);
+        this.setPropertyConflictRule('dataType', 'replaceExceptNull');
 
         // everything else has no initial value which means 'replace'
     }
@@ -459,8 +478,10 @@ export class ValidatorConflictResolver extends ConfigConflictResolverBase<Valida
             if (validatorDest) {
                 this.merge(validatorSrc, validatorDest, identity);
             }
-            else
+            else {
                 destination.validatorConfigs.push(validatorSrc);
+                this.log(() => `Validator ${identity.errorCode} added to ${logLabel({ valueHostName: destination.name, containingProperty: 'validatorConfigs' }, null)}`, LoggingLevel.Debug);
+            }
         }
     }
 }
@@ -471,12 +492,13 @@ export class ValidatorConflictResolver extends ConfigConflictResolverBase<Valida
  * @param propertyName 
  * @returns 
  */
-function logLabel(identity: MergeIdentity, propertyName: string): string {
+function logLabel(identity: MergeIdentity, propertyName: string | null): string {
     let label = `${identity.valueHostName}.`;   // assumes valueHostName is always defined
     if (identity.errorCode)
         label += `${identity.errorCode}.`;
     if (identity.containingProperty)
         label += `${identity.containingProperty}`;
-    label += propertyName;
+    if (propertyName)
+        label += propertyName;
     return label;
 }
