@@ -379,6 +379,11 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
         return { useAction: 'nochange' };
     }
 
+    /**
+     * Attempts to merge the source's properties into the destination.
+     * It only makes changes to the destination based on the rules
+     * of setPropertyConfigRule()
+     */    
     public merge(source: ValueHostConfig, destination: ValueHostConfig): void {
         if (source.name !== destination.name)
             return;
@@ -386,6 +391,20 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
         this.services?.validatorConfigMergeService.merge(source as ValidatorsValueHostBaseConfig,
             destination as ValidatorsValueHostBaseConfig
         );
+    }
+
+    /**
+     * Identifies a ValueHostConfig in the destination that should be merged
+     * with the source. If none need to be merged, it returns null
+     * and the caller should add their ValueHostConfig to ValidationManagerConfig.ValueHostConfigs.
+     * @param source 
+     * @param destinations 
+     */
+    public identifyValueHostConflict(source: ValueHostConfig,
+        destinations: Array<ValueHostConfig>):
+        ValueHostConfig | undefined
+    {
+        return destinations.find((item) => item.name === source.name);
     }
 }
 
@@ -427,18 +446,18 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
     private _identifyHandler: ConditionConflictIdentifierHandler | null = null;
 
     /**
-     * Determines if validatorSrc is in conflict with an existing ValidatorConfig
-     * in destination.validatorConfigs. Returns the destination in conflict,
+     * Determines if source is in conflict with an existing ValidatorConfig
+     * in destinations. Returns the destination in conflict,
      * ready to be passed to validatorConfigMergeService.resolve.
-     * @param validatorSrc 
-     * @param validatorsInDest
+     * @param source 
+     * @param destinations
      * @param identity 
      */
-    public identifyValidatorConflict(validatorSrc: ValidatorConfig,
-        validatorsInDest: Array<ValidatorConfig>, identity: MergeIdentity):
+    public identifyValidatorConflict(source: ValidatorConfig,
+        destinations: Array<ValidatorConfig>, identity: MergeIdentity):
         ValidatorConfig | undefined {
-        let srcErrorCode = identity.errorCode ?? resolveErrorCode(validatorSrc);
-        return validatorsInDest.find((item) => resolveErrorCode(item) === srcErrorCode);
+        let srcErrorCode = identity.errorCode ?? resolveErrorCode(source);
+        return destinations.find((item) => resolveErrorCode(item) === srcErrorCode);
     }
 
     /**
