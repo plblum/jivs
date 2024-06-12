@@ -241,8 +241,9 @@ The overall steps are:
 3. If there were issues, do not save. Instead, pass the issues back to the client so Jivs can show them.
 
 **Step 1** is where we find different implementations.
-- Data is from an HTML \<form> - Form data is all strings. They need to be converted to the native values that you save. Conversion may identify errors. If no errors there, then apply validation.
-- Data is from JSON - A JSON string converter can convert some data to its native values. Where it cannot, provide a converter. 
+- Data is from an HTML \<form> - Form data is all strings. They need to be parsed to the native values that you save. Parsing may identify errors. If no errors are found, then apply validation. Parsing errors themselves represent a kind of validation response, and will be sent back to Jivs.
+- Data is from JSON - A JSON string parser can convert some data to its native values. Where it cannot, provide a parser. 
+- Data is from another source - As you may have picked up, the key concept is to ensure that everything not in its native form has a parser or conversion code.
 
 Jivs can assist when you have Node.js on the server. Otherwise, the work is up to you.
 

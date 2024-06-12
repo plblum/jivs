@@ -65,8 +65,12 @@ import { LookupKeyFallbackService } from "@plblum/jivs-engine/build/Services/Loo
 import { IntegerDataTypeCheckGenerator } from '@plblum/jivs-engine/build/DataTypes/DataTypeCheckGenerators';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { CultureIdFallback } from '@plblum/jivs-engine/build/Interfaces/CultureService';
-import { BooleanParser, CleanUpStringParser, CurrencyParser, EmptyStringIsFalseParser, NumberParser, Percentage100Parser, PercentageParser, ShortDatePatternParser } from '@plblum/jivs-engine/src/DataTypes/DataTypeParsers';
-import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/src/DataTypes/DataTypeParserBase';
+import {
+    BooleanParser, CleanUpStringParser, CurrencyParser, EmptyStringIsFalseParser,
+    NumberParser, Percentage100Parser, PercentageParser, ShortDatePatternParser
+} from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
+import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
+import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
 
 
 /**
@@ -174,6 +178,9 @@ export function createValidationServices(activeCultureId: string,
     // --- MessageTokenResolverService ----------------------
     // Generally you don't have to modify this.
     vs.messageTokenResolverService = new MessageTokenResolverService();
+
+    // --- ConfigMergeServices for ValueHostConfig and ValidatorConfig -------
+    createConfigMergeServices(vs);
 
     // --- LookupKeyFallbackService -------------------------
     // Modify this only when you introduce new lookup keys for data types
@@ -796,4 +803,69 @@ export function createLookupKeyFallbackService(): ILookupKeyFallbackService
     service.register('PositiveInteger', LookupKey.Integer);
 */
     return service;
+}
+
+export function createConfigMergeServices(vs: ValidationServices): void {
+    
+    // --- ValueHostConfigMergeService ----------------------
+    // Customize the process that merges the ValueHostConfig created by the business logic layer
+    // with the one from the UI layer. Keeps the UI from overwriting properties that the business logic layer dictates.
+    vs.valueHostConfigMergeService = new ValueHostConfigMergeService();
+
+    // Each property of a ValueHostConfig and its subclass will get replaced
+    // except name, valueHostType, and validatorConfigs (the array object itself, not the objects within)
+    // If you feel that business logic should retain control over a property,
+    // do this:
+    // vs.valueHostConfigMergeService.setPropertyConflictRule('propertyName', 'rule');
+
+    // The rule can be one of these, or a function to let you handle it: 
+    // 'nochange', 'replace', 'replaceExceptNull', 'replaceOrDelete', 'delete'.
+    
+    // That function can return one of those rule strings or an actual value.
+    // Here's how we used the function to change the value of 'valueHostType' from
+    // 'Property' to 'Input' in the default configuration:
+    // vs.valueHostConfigMergeService.setPropertyConflictRule('valueHostType', 
+    //     (source: ValueHostConfig, destination: ValueHostConfig, propertyName: string, identity: MergeIdentity) => {
+    //         if (source.valueHostType === ValueHostType.Input && destination.valueHostType === ValueHostType.Property)
+    //             return { useValue: ValueHostType.Input };
+    //         return { useAction: 'nochange' };
+    //     });
+
+
+    // --- ValidatorConfigMergeService ----------------------
+    // Customize the process that merges the ValidatorConfig created by the business logic layer
+    // with the one from the UI layer. Keeps the UI from overwriting business logic conditions
+    // and other properties that the business logic layer dictates.
+    vs.validatorConfigMergeService = new ValidatorConfigMergeService();
+    
+    // The setPropertyConfigRule feature is also available here and works the same.
+    // Its pre-configured to block direct easily replacing the conditionConfig property,
+    // because that is considered the domain of the business logic.
+    // However, it is common to want to combine the business logic condition with one for the UI.
+    // Configure it with a function by calling setConditionConflictRule().
+
+    // Here it converts NotNullCondition to RequiredTextCondition (which has built-in NotNull features),
+    // Makes all RegExpConditions from the business logic become children of AllCondition,
+    // together with the source Condition.
+    // Leaves all of the rest unchanged.
+    // vs.validatorConfigMergeService.setConditionConflictRule('conditionConfig',
+    //     (source: ValidatorConfig, destination: ValidatorConfig, identity: MergeIdentity) => {
+    //         // upscale NotNull to RequireText
+    //         if (identity.errorCode === ConditionType.NotNull)
+    //             return { useValue: { ...destination, conditionType: ConditionType.RequireText } };
+    //         if (identity.errorCode === ConditionType.RegExp)
+    //             return { useAction: 'all' }; // AllCondition with source and destination as children
+    //         return { useAction: 'nochange' };
+    // });
+
+    // One final tool is the identifyHandler property. It runs a function that decides of the source ValidatorConfig
+    // is a match to on in the destination. The default function matches the errorCode property.
+    // You may have a special case and can set it up like this:
+    // vs.validatorConfigMergeService.identifyHandler = (validatorSrc: ValidatorConfig,
+    //     validatorsInDest: Array<ValidatorConfig>, identity: MergeIdentity) => {
+    //     // take some action to match validatorSrc against the array, returning the destination ValidatorConfig
+    //     // or null if not found.  
+    //     // Otherwise, call our default handler:
+    //     return vs.validatorConfigMergeService.identifyValidatorConflict(validatorSrc, validatorsInDest, identity);
+    // };
 }

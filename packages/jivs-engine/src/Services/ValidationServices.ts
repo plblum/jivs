@@ -18,6 +18,7 @@ import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterServic
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { ValueHostsServices } from './ValueHostsServices';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
+import { IValidatorConfigMergeService, IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
 
 /**
  * Supplies services and tools to be used as dependency injection
@@ -88,6 +89,35 @@ export class ValidationServices extends ValueHostsServices implements IValidatio
     public set messageTokenResolverService(service: IMessageTokenResolverService) {
         this.setService(ServiceName.messageTokenResolver, service);
     }
+
+    /**
+     * Service to get the IValueHostConfigMergeService instance that 
+     * determines how to merge ValueHost configurations from business logic and UI.
+     */
+    public get valueHostConfigMergeService(): IValueHostConfigMergeService {
+        let service = this.getService<IValueHostConfigMergeService>(ServiceName.valueHostConfigMerge);
+        if (!service)
+            throw new CodingError('Must assign ValidationServices.valueHostConfigMergeService.');
+
+        return service;
+    }
+    public set valueHostConfigMergeService(service: IValueHostConfigMergeService) {
+        this.setService(ServiceName.valueHostConfigMerge, service);
+    }    
+    /**
+     * Service to get the IValidatorConfigMergeService instance that 
+     * determines how to merge ValueHost configurations from business logic and UI.
+     */
+    public get validatorConfigMergeService(): IValidatorConfigMergeService {
+        let service = this.getService<IValidatorConfigMergeService>(ServiceName.validatorConfigMerge);
+        if (!service)
+            throw new CodingError('Must assign ValidationServices.validatorConfigMergeService.');
+
+        return service;
+    }
+    public set validatorConfigMergeService(service: IValidatorConfigMergeService) {
+        this.setService(ServiceName.validatorConfigMerge, service);
+    }        
 
     //#region ValidatorFactory    
     /**

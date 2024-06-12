@@ -5,7 +5,6 @@
 import type { DataTypeResolution } from '../Interfaces/DataTypes';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { assertNotNull, CodingError, SevereErrorBase } from '../Utilities/ErrorHandling';
-import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
