@@ -55,6 +55,7 @@ import { CultureService } from "../../src/Services/CultureService";
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 import { CleanUpStringParser, NumberParser } from "../../src/DataTypes/DataTypeParsers";
 import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserService";
+import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
 
 
 export function createValidationServicesForTesting(): ValidationServices {
@@ -93,6 +94,8 @@ export function createValidationServicesForTesting(): ValidationServices {
     vs.textLocalizerService = createTextLocalizerService();
     vs.loggerService = new ConsoleLoggerService(LoggingLevel.Error);
     vs.messageTokenResolverService = new MessageTokenResolverService();
+    vs.valueHostConfigMergeService = new ValueHostConfigMergeService();
+    vs.validatorConfigMergeService = new ValidatorConfigMergeService();
 
     return vs;
 }

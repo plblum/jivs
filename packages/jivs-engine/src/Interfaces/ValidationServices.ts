@@ -9,6 +9,7 @@ import { IValidatorFactory } from './Validator';
 import { IMessageTokenResolverService } from './MessageTokenResolverService';
 import { IValueHostsServices } from './ValueHostsManager';
 import { IDataTypeParserService } from './DataTypeParserService';
+import { IValidatorConfigMergeService, IValueHostConfigMergeService } from './ConfigMergeService';
 
 /**
  * Full interface representation of ValidationServices.
@@ -39,6 +40,18 @@ export interface IValidationServices extends IValueHostsServices {
      * tokens in messages.
      */
     messageTokenResolverService: IMessageTokenResolverService;
+
+    /**
+     * Service to get the IValueHostConfigMergeService instance that 
+     * determines how to merge ValueHost configurations from business logic and UI.
+     */
+    valueHostConfigMergeService: IValueHostConfigMergeService;
+    
+    /**
+     * Service to get the IValidatorConfigMergeService instance that 
+     * determines how to merge Validator configurations from business logic and UI.
+     */
+    validatorConfigMergeService: IValidatorConfigMergeService;
 
     /**
      * Factory for generating Validator.
@@ -103,6 +116,16 @@ export enum ServiceName {
      * IMessageTokenResolver
      */
     messageTokenResolver = 'MessageTokenResolver',
+
+    /**
+     * IValueHostConfigMergeService
+     */
+    valueHostConfigMerge = 'valueHostConfigMerge',
+
+    /**
+     * IValidatorConfigMergeService
+     */
+    validatorConfigMerge = 'validatorConfigMerge',    
     /**
      * IValueHostFactory
      */
