@@ -214,7 +214,7 @@ export interface ValidationManagerConfig extends ValueHostsManagerConfig, IValid
      * It will supply you with the changes to states through the OnValueHostInstanceStateChanged property.
      * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
      * the correct state. You can also supply the state of an individual ValueHost when using
-     * the addValueHost or updateValueHost methods.
+     * the addValueHost or addOrUpdateValueHost methods.
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */

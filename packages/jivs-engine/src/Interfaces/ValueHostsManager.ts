@@ -122,7 +122,8 @@ export interface IValueHostsManager extends IValueHostResolver, IDisposable
     addValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;    
     
     /**
-     * Replaces a ValueHostConfig for an already added ValueHost. 
+     * Replaces a ValueHostConfig for an already added ValueHost. It does not merge.
+     * If merging is required, use addOrMergeValueHost().
      * Does not trigger any notifications.
      * If the name isn't found, it will be added.
      * @param config 
@@ -130,7 +131,21 @@ export interface IValueHostsManager extends IValueHostResolver, IDisposable
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
      */
-    updateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;
+    addOrUpdateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;
+
+    /**
+     * Replaces a ValueHostConfig for an already added ValueHost.
+     * It merges the new config with the existing one using the ValueHostConfigMergeService.
+     * The goal is to protect important business logic settings while allowing the UI
+     * to inject new property values where appropriate.
+     * Does not trigger any notifications.
+     * If the name isn't found, it will be added.
+     * @param config 
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValueHostsManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     */
+    addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost;    
 
     /**
      * Discards a ValueHost. 
@@ -141,7 +156,7 @@ export interface IValueHostsManager extends IValueHostResolver, IDisposable
 
     /**
      * Provide fluent syntax to add or replace a ValueHost.
-     * Alternative to using addValueHost() and updateValueHost().
+     * Alternative to using addValueHost() and addOrUpdateValueHost().
      */
     build(): ValueHostsInstanceBuilder;
     
@@ -197,7 +212,7 @@ export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
      * Each ValueHostConfig describes one ValueHost (which is info about one value in your app),
      * plus its validation rules.
      * If rules need to be changed later, either create a new instance of ValueHostsManager
-     * or use its addValueHost, updateValueHost, discardValueHost methods.
+     * or use its addValueHost, addOrUpdateValueHost, discardValueHost methods.
      */
     valueHostConfigs: Array<ValueHostConfig>;
 
@@ -219,7 +234,7 @@ export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
      * It will supply you with the changes to states through the OnValueHostInstanceStateChanged property.
      * Whatever it gives you, you supply here to rehydrate the ValueHostsManager with 
      * the correct state. You can also supply the state of an individual ValueHost when using
-     * the addValueHost or updateValueHost methods.
+     * the addValueHost or addOrUpdateValueHost methods.
      * If you don't have any state, leave this null or undefined and ValueHostsManager will
      * initialize its state.
      */
@@ -272,7 +287,7 @@ export function toIValueHostsManager(source: any): IValueHostsManager | null
         let test = source as IValueHostsManager;    
         if (test.notifyOtherValueHostsOfValueChange !== undefined &&
             test.addValueHost !== undefined &&
-            test.updateValueHost !== undefined &&
+            test.addOrUpdateValueHost !== undefined &&
             test.discardValueHost !== undefined
         )
             return test;

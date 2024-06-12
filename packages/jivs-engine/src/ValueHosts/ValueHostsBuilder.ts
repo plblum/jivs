@@ -15,6 +15,7 @@ import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { EvaluateChildConditionResultsBaseConfig } from "../Conditions/EvaluateChildConditionResultsBase";
 import { resolveErrorCode } from '../Utilities/Validation';
 import { ValueHostsBuilderBase } from "./ValueHostsBuilderBase";
+import { deepClone } from "../Utilities/Utilities";
 
 
 /**
@@ -93,11 +94,23 @@ export class ValueHostsBuilder extends ValueHostsBuilderBase
 /**
  * The config is a complete representation of the ValueHost.
  * Now just need to put it somewhere...
+ * This uses the ValueHostConfigMergeServce to handle where the new entry 
+ * has the same valuehostname as the existing. This is a strategy 
+ * for setting up business logic configs followed by UI configs that override
+ * some of the business logic properties.
  * @param config 
  */    
     protected applyConfig(config: ValueHostConfig): void
     {
-        this.vmConfig.valueHostConfigs.push(config);
+        let vhcms = this.vmConfig.services.valueHostConfigMergeService;
+        let destinationToMerge = vhcms.identifyValueHostConflict(config, this.vmConfig.valueHostConfigs);
+        if (destinationToMerge)
+        {
+            destinationToMerge = deepClone(destinationToMerge) as ValueHostConfig; // don't want to let merge change the config already in use.
+            vhcms.merge(config, destinationToMerge);
+        }
+        else
+            this.vmConfig.valueHostConfigs.push(config);
     }
 
 /**

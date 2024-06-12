@@ -226,7 +226,8 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         throw new CodingError(`Property ${config.name} already assigned.`);
     }
     /**
-     * Replaces a ValueHostConfig for an already added ValueHost. 
+     * Replaces a ValueHostConfig for an already added ValueHost. It does not merge.
+     * If merging is required, use the ValueHostConfigMergeService first.
      * Does not trigger any notifications.
      * If the name isn't found, it will be added.
      * @param config 
@@ -234,12 +235,45 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
      */
-    public updateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+    public addOrUpdateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
         assertNotNull(config, 'config');
 
         if (this._valueHostConfigs[config.name])
             return this.applyConfig(config, initialState);
 
+        return this.addValueHost(config, initialState);
+    }
+    /**
+     * Replaces a ValueHostConfig for an already added ValueHost.
+     * It merges the new config with the existing one using the ValueHostConfigMergeService.
+     * The goal is to protect important business logic settings while allowing the UI
+     * to inject new property values where appropriate.
+     * Does not trigger any notifications.
+     * If the name isn't found, it will be added.
+     * @param config 
+     * @param initialState - When not null, this state object is used instead of an initial state.
+     * It overrides any state supplied by the ValueHostsManager constructor.
+     * It will be run through ValueHostFactory.cleanupInstanceState() first.
+     */
+    public addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost
+    {
+        assertNotNull(config, 'config');
+
+        if (this._valueHostConfigs[config.name]) {
+            let destinations: Array<ValueHostConfig> = [];
+            for (let name in this._valueHostConfigs)
+                destinations.push(this._valueHostConfigs[name]);
+            let vhcms = this.services.valueHostConfigMergeService;
+            let destinationToMerge = vhcms.identifyValueHostConflict(config, destinations);
+            if (destinationToMerge)
+            {
+                destinationToMerge = deepClone(destinationToMerge) as ValueHostConfig; // don't want to let merge change the config already in use.
+                vhcms.merge(config, destinationToMerge);
+                return this.applyConfig(destinationToMerge, initialState);
+            }
+            else
+                return this.applyConfig(config, initialState);
+        }
         return this.addValueHost(config, initialState);
     }
     /**
@@ -298,7 +332,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
 
     /**
      * Provide fluent syntax to add or replace a ValueHost.
-     * Alternative to using addValueHost() and updateValueHost().
+     * Alternative to using addValueHost() and addOrUpdateValueHost().
      */
     public build(): ValueHostsInstanceBuilder
     {

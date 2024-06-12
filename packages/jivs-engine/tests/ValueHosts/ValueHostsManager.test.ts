@@ -338,8 +338,8 @@ describe('ValueHostsManager.addValueHost', () => {
     });    
 });
 
-// updateValueHost(config: ValueHostConfig): void
-describe('ValueHostsManager.updateValueHost completely replaces the ValueHost instance', () => {
+// addOrUpdateValueHost(config: ValueHostConfig): void
+describe('ValueHostsManager.addOrUpdateValueHost completely replaces the ValueHost instance', () => {
     test('Replace the config to install a validator', () => {
         let testItem = new PublicifiedValueHostsManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: StaticValueHostConfig = {
@@ -354,7 +354,7 @@ describe('ValueHostsManager.updateValueHost completely replaces the ValueHost in
         replacementConfig.label = 'ALT Label';
 
         let replacementValueHost: IValueHost | null = null;
-        expect(() => replacementValueHost = testItem.updateValueHost(replacementConfig, null)).not.toThrow();
+        expect(() => replacementValueHost = testItem.addOrUpdateValueHost(replacementConfig, null)).not.toThrow();
         expect(replacementValueHost).not.toBeNull();
         expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
 
@@ -375,14 +375,14 @@ describe('ValueHostsManager.updateValueHost completely replaces the ValueHost in
         // ensure ValueHost is StaticValueHost and has an initial state
         testStaticValueHostInstanceState(testItem, 'Field1', null);
     });
-    test('updateValueHost works like addValueHost with unknown ValueHostConfig', () => {
+    test('addOrUpdateValueHost works like addValueHost with unknown ValueHostConfig', () => {
         let testItem = new PublicifiedValueHostsManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: ValueHostConfig = {
             name: 'Field1',
             valueHostType: ValueHostType.Static,
             label: 'Field 1'
         };
-        expect(() => testItem.updateValueHost(config, null)).not.toThrow();
+        expect(() => testItem.addOrUpdateValueHost(config, null)).not.toThrow();
 
         expect(testItem.exposedValueHosts).not.toBeNull();
         expect(Object.keys(testItem.exposedValueHosts).length).toBe(1);
@@ -411,7 +411,7 @@ describe('ValueHostsManager.updateValueHost completely replaces the ValueHost in
             value: 40
         };
         let replacementValueHost: IValueHost | null = null;
-        expect(() => replacementValueHost = testItem.updateValueHost(config, updateState)).not.toThrow();
+        expect(() => replacementValueHost = testItem.addOrUpdateValueHost(config, updateState)).not.toThrow();
         expect(replacementValueHost).not.toBeNull();
         expect(replacementValueHost).not.toBe(initialValueHost);   // completely replaced
 
@@ -421,7 +421,7 @@ describe('ValueHostsManager.updateValueHost completely replaces the ValueHost in
         // ensure ValueHost is StaticValueHost and has an initial state
         testStaticValueHostInstanceState(testItem, 'Field1', updateState);
     });    
-    test('Edit state instance after updateValueHost has no impact on state in ValueHost', () => {
+    test('Edit state instance after addOrUpdateValueHost has no impact on state in ValueHost', () => {
         let testItem = new PublicifiedValueHostsManager({ services: new MockValidationServices(false, false), valueHostConfigs: [] });
         let config: StaticValueHostConfig = {
             name: 'Field1',
@@ -434,7 +434,7 @@ describe('ValueHostsManager.updateValueHost completely replaces the ValueHost in
             name: 'Field1',
             value: 40
         };
-        testItem.updateValueHost(config, updateState);
+        testItem.addOrUpdateValueHost(config, updateState);
 
         let savedState = deepClone(updateState);
         updateState.value = 100;
@@ -890,8 +890,13 @@ describe('toIValueHostsManager function', () => {
             addValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
                 throw new Error("Function not implemented.");
             },
-            updateValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+            addOrUpdateValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
                 throw new Error("Function not implemented.");
+            },
+            addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost
+            {
+                throw new Error("Function not implemented.");
+
             },
             discardValueHost: function (valueHostName: string): void {
                 throw new Error("Function not implemented.");
@@ -937,7 +942,11 @@ describe('toIValueHostsManagerAccessor function', () => {
                 addValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
                     throw new Error("Function not implemented.");
                 },
-                updateValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+                addOrUpdateValueHost: function (config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+                    throw new Error("Function not implemented.");
+                },
+                addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost
+                {
                     throw new Error("Function not implemented.");
                 },
                 discardValueHost: function (valueHostName: string): void {

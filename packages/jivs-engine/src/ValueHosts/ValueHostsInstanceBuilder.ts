@@ -29,7 +29,7 @@ export class ValueHostsInstanceBuilder extends ValueHostsBuilderBase
     }
 
     protected applyConfig(config: ValueHostConfig): void {
-        this.valueHostManager.updateValueHost(config, null);    // supports both add and replace
+        this.valueHostManager.addOrUpdateValueHost(config, null);    // supports both add and replace
     }
     protected createFluent(): StartFluent {
         return new StartFluent(null);

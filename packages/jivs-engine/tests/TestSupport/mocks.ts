@@ -273,8 +273,8 @@ export class MockValidationServices implements IValidationServices
 
         this.textLocalizerService = new TextLocalizerService();
         this.messageTokenResolverService = new MessageTokenResolverService();
-        this._valueHostConfigMergeService = new ValueHostConfigMergeService();
-        this._validatorConfigMergeService = new ValidatorConfigMergeService();
+        this.valueHostConfigMergeService = new ValueHostConfigMergeService();
+        this.validatorConfigMergeService = new ValidatorConfigMergeService();
 
         this.loggerService = new CapturingLogger();
 
@@ -419,18 +419,26 @@ export class MockValidationServices implements IValidationServices
         service.services = this;
     }    
     private _messageTokenResolverService!: IMessageTokenResolverService;
+    public get valueHostConfigMergeService(): IValueHostConfigMergeService
+    {
+        return this._valueHostConfigMergeService
+    }        
     public set valueHostConfigMergeService(service: IValueHostConfigMergeService)
     {
         this._valueHostConfigMergeService = service;
         service.services = this;
     }    
-    private _valueHostConfigMergeService: IValueHostConfigMergeService;
+    private _valueHostConfigMergeService!: IValueHostConfigMergeService;
+    public get validatorConfigMergeService(): IValidatorConfigMergeService
+    {
+        return this._validatorConfigMergeService;
+    }    
     public set validatorConfigMergeService(service: IValidatorConfigMergeService)
     {
         this._validatorConfigMergeService = service;
         service.services = this;
     }    
-    private _validatorConfigMergeService: IValidatorConfigMergeService;    
+    private _validatorConfigMergeService!: IValidatorConfigMergeService;    
 
     public get loggerService(): ILoggerService {
         return this._loggerService;
@@ -480,15 +488,19 @@ export class MockValidationManager implements IValidationManager, IValidationMan
         this._valueHosts.set(config.name, vh);    
         return vh;
     }
-    updateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+    addOrUpdateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
         throw new Error("Method not implemented.");
+    }
+    addOrMergeValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost{
+        throw new Error("Method not implemented.");
+        
     }
     discardValueHost(valueHostName: string): void {
         throw new Error("Method not implemented.");
     }
     /**
      * Provide fluent syntax to add or replace a ValueHost.
-     * Alternative to using addValueHost() and updateValueHost().
+     * Alternative to using addValueHost() and addOrUpdateValueHost().
      */
     public build(): ValueHostsInstanceBuilder
     {

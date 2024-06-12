@@ -45,7 +45,7 @@ import { assertNotNull } from '../Utilities/ErrorHandling';
  * Try to keep validation rules separate from your UI's code.
  * 
  * All Configs are considered immutable. If you need to make a change, you can
- * create a new instance of ValidationManager, or call its addValueHost, updateValueHost,
+ * create a new instance of ValidationManager, or call its addValueHost, addOrUpdateValueHost,
  * or discardValueHost methods to keep the existing instance.
  * 
  * ValidationManager's job is:
