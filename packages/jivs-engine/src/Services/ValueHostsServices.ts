@@ -11,7 +11,7 @@ import { ServiceName } from '../Interfaces/ValidationServices';
 import { IValueHostFactory } from '../Interfaces/ValueHost';
 import { ValueHostFactory, registerStandardValueHostGenerators } from '../ValueHosts/ValueHostFactory';
 import { ConsoleLoggerService } from './ConsoleLoggerService';
-import { IValueHostsServices } from '../Interfaces/ValueHostsManager';
+import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { Services } from './Services';
 import { ICultureService } from '../Interfaces/CultureService';
 import { CultureService } from './CultureService';
@@ -24,6 +24,7 @@ import { IDataTypeIdentifierService } from '../Interfaces/DataTypeIdentifierServ
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IDataTypeComparerService } from '../Interfaces/DataTypeComparerService';
 import { IConditionFactory } from '../Interfaces/Conditions';
+import { IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
 
 /**
  * Supplies services and factories to be used as dependency injection
@@ -150,6 +151,20 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
     }
 
 
+    /**
+     * Service to get the IValueHostConfigMergeService instance that 
+     * determines how to merge ValueHost configurations from business logic and UI.
+     */
+    public get valueHostConfigMergeService(): IValueHostConfigMergeService {
+        let service = this.getService<IValueHostConfigMergeService>(ServiceName.valueHostConfigMerge);
+        if (!service)
+            throw new CodingError('Must assign ValidationServices.valueHostConfigMergeService.');
+
+        return service;
+    }
+    public set valueHostConfigMergeService(service: IValueHostConfigMergeService) {
+        this.setService(ServiceName.valueHostConfigMerge, service);
+    }    
     /**
      * Service to text localization specific, effectively mapping
      * a text key to a language specific version of that text.

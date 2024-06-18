@@ -6,7 +6,8 @@ import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone } from '../Utilities/Utilities';
 import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
-import type { IValueHostsManager, IValueHostsManagerAccessor, IValueHostsServices } from '../Interfaces/ValueHostsManager';
+import type { IValueHostsManager, IValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
+import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
@@ -58,8 +59,8 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     {
         toIDisposable(this._config)?.dispose();
         (this._config as any) = undefined;
-        (this._instanceState as any) = undefined;
-        (this._valueHostsManager as any) = undefined;
+        this._instanceState = undefined!;
+        (this._valueHostsManager as any) = undefined!;
     }
 
     //#region IValueHost
@@ -76,31 +77,13 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * A user friendly name for this ValueHost, to be shown in tooltips, error messages,
      * etc found in this ValueHostConfig that have the {Label} token.
      * Localization should occur when setting up the ValueHostConfig.
-     * Use setLabel to override the ValueHostConfig value.
      */
     public getLabel(): string {
-        let label = (this.getFromInstanceState('_label') ?? (this.config.label ?? '')) as string;
-        let labell10n: string | null = (this.getFromInstanceState('_labell10n') ?? this.config.labell10n ?? null) as string | null;
+        let label = (this.config.label ?? '') as string;
+        let labell10n: string | null = (this.config.labell10n ?? null) as string | null;
         if (labell10n)
             return this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId, labell10n, label) ?? '';
         return label;
-    }
-    /**
-     * Use to change the label and/or labell10n values. 
-     * It overrides the values from ValueHostConfig.label and labell10n.
-     * Use case: Business logic supplies a default values for label and labell10n which the UI needs to change.
-     * The value is stored with the state.
-     * @param label - If undefined, reverts to ValueHostConfig.label.
-     * If null, does not make any changes.
-     * @param labell10n - If undefined, reverts to ValueHostConfig.labell10n.
-     * If null, does not make any changes.
-     */
-    public setLabel(label: string | null | undefined, labell10n?: string | null | undefined): void
-    {
-        if (label !== null)
-            this.saveIntoInstanceState('_label', label);
-        if (labell10n !== null)
-            this.saveIntoInstanceState('_labell10n', labell10n);
     }
 
     /**
@@ -248,7 +231,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         let updated = updater(toUpdate);
         if (!deepEquals(this.instanceState, updated)) {
             this._instanceState = updated;
-            toIValueHostCallbacks(this.valueHostsManager)?.onValueHostInstanceStateChanged?.(source, updated);
+            this.valueHostsManager.notifyValueHostInstanceStateChanged(source, updated);
             return true;
         }
         return false;

@@ -291,4 +291,13 @@ export interface IConditionFactory {
      * @returns 
      */
     create(config: ConditionConfig): ICondition;
+
+    /**
+     * Add or replace a function to create an instance of the Condition
+     * given a ConditionConfig.
+     * @param conditionType - Unique way to select the function. Uses ConditionConfig.conditionType.
+     * @param fn - Expected to create an instance of a Condition.
+     */
+    register<TConfig extends ConditionConfig>(conditionType: string,
+        fn: (config: TConfig) => IConditionCore<TConfig>): void
 }

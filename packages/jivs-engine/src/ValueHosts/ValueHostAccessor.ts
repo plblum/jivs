@@ -50,7 +50,7 @@ export class ValueHostAccessor implements IValueHostAccessor
      */
     public dispose(): void
     {
-        (this._valueHostsResolver as any) = undefined;
+        this._valueHostsResolver = undefined!;
     }    
 
     protected get valueHostResolver(): IValueHostResolver

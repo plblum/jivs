@@ -45,17 +45,6 @@ export interface IValueHost extends IDisposable {
     getLabel(): string;
 
     /**
-     * Use to change the label and/or labell10n values. 
-     * It overrides the values from ValueHostConfig.label and labell10n.
-     * Use case: Business logic supplies a default values for label and labell10n which the UI needs to change.
-     * @param label - If undefined, reverts to ValueHostConfig.label.
-     * If null, does not make any changes.
-     * @param labell10n - If undefined, reverts to ValueHostConfig.labell10n.
-     * If null, does not make any changes.
-     */
-    setLabel(label: string, labell10n?: string): void;
-
-    /**
      * Gets the value. It is expected to be in its native data type,
      * capable of being stored or used without conversion by the caller.
      * For example, a Date object or Number type.
@@ -222,7 +211,7 @@ export interface ValueHostInstanceState {
     items?: CustomItems;
 }
 
-interface CustomItems {
+export interface CustomItems {
     [key: string]: ValidTypesForInstanceStateStorage;
 }
 
@@ -270,8 +259,6 @@ export interface ValueHostConfig {
     /**
      * The UI-ready label for this value, to be shown in error messages
      * that have the {Label} token.
-     * This value can be overriden via ValueHost.setLabel, so the UI can apply
-     * a better label.
      */
     label?: string;
 
@@ -280,8 +267,6 @@ export interface ValueHostConfig {
      * made to ValidationServices.TextLocalizerService, specific to the active culture.
      * If setup and no entry was found in TextLocalizerService,
      * the value from the errorMessage property is used.
-     * This value can be overriden via ValueHost.setLabel, so the UI can apply
-     * a better label.
      */
     labell10n?: string | null | undefined;
 

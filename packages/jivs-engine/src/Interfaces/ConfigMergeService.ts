@@ -2,7 +2,6 @@
  * 
  * @module Services/Types/ConfigMergeService
  */
-import { ILoggerService } from './LoggerService';
 import { ConditionConfig } from './Conditions';
 import { ValidatorConfig } from './Validator';
 import { ValueHostConfig } from './ValueHost';
@@ -41,6 +40,15 @@ export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
      * @param identity 
      */
     handleConditionConfigProperty(source: TConfig, destination: TConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult;
+
+    /**
+     * Exposes property names that are not expected to be changed by the rules.
+     * Ignores rules with functions. 
+     * Intent is to allow ValueHostsManagerConfigModifier to know of properties
+     * to strip out instead of allowing them to make it into the merge code.
+     * @returns 
+     */
+    getNoChangePropertyNames(): Array<string>;    
 }
 
 /**

@@ -8,6 +8,7 @@ import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
+import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 
 describe('constructor', () => {
     test('Valid parameter does not throw', () => {
@@ -25,7 +26,7 @@ describe('constructor', () => {
 });
 describe('input', () => {
     test('Existing InputValueHost', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Input,
@@ -40,7 +41,7 @@ describe('input', () => {
         expect(result.getName()).toBe('Field1');
     });
     test('Matches CalcValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Calc,
@@ -53,7 +54,7 @@ describe('input', () => {
         expect(() => result = testItem.input('Field1')).toThrow(/InputValueHost/);
     });    
     test('Matches PropertyValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Property,
@@ -66,7 +67,7 @@ describe('input', () => {
         expect(() => result = testItem.input('Field1')).toThrow(/InputValueHost/);
     });    
     test('Matches StaticValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Static,
@@ -79,7 +80,7 @@ describe('input', () => {
         expect(() => result = testItem.input('Field1')).toThrow(/InputValueHost/);
     });
     test('Unknown valueHostName', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: []
         };
@@ -92,7 +93,7 @@ describe('input', () => {
 
 describe('property', () => {
     test('Existing PropertyValueHost', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Property,
@@ -107,7 +108,7 @@ describe('property', () => {
         expect(result.getName()).toBe('Field1');
     });
     test('Matches CalcValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Calc,
@@ -120,7 +121,7 @@ describe('property', () => {
         expect(() => result = testItem.property('Field1')).toThrow(/PropertyValueHost/);
     });    
     test('Matches StaticValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Static,
@@ -133,7 +134,7 @@ describe('property', () => {
         expect(() => result = testItem.property('Field1')).toThrow(/PropertyValueHost/);
     });    
     test('Matches InputValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Input,
@@ -146,7 +147,7 @@ describe('property', () => {
         expect(() => result = testItem.property('Field1')).toThrow(/PropertyValueHost/);
     });        
     test('Unknown valueHostName', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: []
         };
@@ -187,7 +188,7 @@ describe('static', () => {
         expect(() => result = testItem.static('Field1')).toThrow(/StaticValueHost/);
     });    
     test('Matches InputValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Input,
@@ -200,7 +201,7 @@ describe('static', () => {
         expect(() => result = testItem.static('Field1')).toThrow(/StaticValueHost/);
     });    
     test('Matches PropertyValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Property,
@@ -253,7 +254,7 @@ describe('calc', () => {
         expect(() => result = testItem.calc('Field1')).toThrow(/CalcValueHost/);
     });    
     test('Matches InputValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Input,
@@ -266,7 +267,7 @@ describe('calc', () => {
         expect(() => result = testItem.calc('Field1')).toThrow(/CalcValueHost/);
     });    
     test('Matches PropertyValueHost throws', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Property,
@@ -291,7 +292,7 @@ describe('calc', () => {
 });
 describe('any', () => {
     test('Existing InputValueHost', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Input,
@@ -306,7 +307,7 @@ describe('any', () => {
         expect(result.getName()).toBe('Field1');
     });
     test('Existing PropertyValueHost', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Property,
@@ -364,7 +365,7 @@ describe('any', () => {
 
 describe('validators', () => {
     test('Existing InputValueHost', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Input,
@@ -379,7 +380,7 @@ describe('validators', () => {
         expect(result.getName()).toBe('Field1');
     });
     test('Existing PropertyValueHost', () => {
-        let vhConfig: ValueHostsManagerConfig = {
+        let vhConfig: ValidationManagerConfig = {
             services: createValidationServicesForTesting(),
             valueHostConfigs: [{
                 valueHostType: ValueHostType.Property,

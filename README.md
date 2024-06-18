@@ -452,13 +452,13 @@ let vmConfig: ValidationManagerConfig = {
 // Let the UI update vmConfig with its own textual values and validation rules
 let builder = build(vmConfig);
 builder.favorUIMessages();
-builder.updateInput('StartDate', { label: 'Start date'});
+builder.input('StartDate', null, { label: 'Start date'});
 builder.updateValidator('StartDate', ConditionType.LessThan, {
   errorMessage: 'The two dates must be less than {CompareTo} days apart.',
   summaryMessage: 'The Start and End dates must be less than {CompareTo} days apart.'
 });
 
-builder.addValidator('EndDate').requireText();
+builder.addValidatorsTo('EndDate').requireText();
 let vm = new ValidationManager(vmConfig);
 ```
 ### When UI creates everything (not business logic driven)
@@ -486,7 +486,7 @@ let vm = new ValidationManager(vmConfig);
 
 // if you want to modify the configuration after creation, there are plenty of tools
 // for example, add another validator:
-vm.vh.input('EndDate').addValidator(fluent().conditions().greaterThanOrEqualValue(new Date()); // must be greater than today
+vm.vh.input('EndDate').addValidatorsTo(fluent().conditions().greaterThanOrEqualValue(new Date()); // must be greater than today
 // add another input:
 vm.build().input('TimeZone', LookupKey.String).requireText();
 ```
@@ -854,9 +854,6 @@ interface IValidator {
   conditionType: string;
   validate(options): ValidatorValidateResult | Promise<ValidatorValidateResult>;
   setEnabled(enabled): void;
-  setErrorMessage(errorMessage, errorMessagel10n?): void;
-  setSummaryMessage(summaryMessage, summaryMessagel10n?): void;
-  setSeverity(severity): void;
 }
 ```
 <a name="configuringvalidators"></a>

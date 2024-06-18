@@ -4,7 +4,8 @@ import {
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
-import { IValueHostsManager, IValueHostsServices } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
@@ -481,47 +482,7 @@ describe('setValueToUndefined', () => {
 
     });    
 });
-describe('ValueHostBase.setLabel', () => {
-    test('Override label without intl', () => {
-        let setup = setupValueHost({
-            label: 'Label-original'
-        });
-        let testItem = setup.valueHost;
-        expect(() => testItem.setLabel('Label-replaced')).not.toThrow();
-        expect(testItem.getLabel()).toBe('Label-replaced');
-    });
-    test('Override label and labell10n', () => {
-        let setup = setupValueHost({
-            label: 'Label-original',
-            labell10n: 'Label-original-key'
-        });
-        let tls = setup.services.textLocalizerService as TextLocalizerService;
-        tls.register('Label-original-key', {
-            '*': '*-Label-original'
-        });
-        tls.register('Label-replaced-key', {
-            '*': '*-Label-replaced'
-        });        
-        let testItem = setup.valueHost;
 
-        expect(() => testItem.setLabel('Label-replaced', 'Label-replaced-key')).not.toThrow();
-
-        expect(testItem.getLabel()).toBe('*-Label-replaced');
-
-        // then remove the overriden key only and see impact
-        testItem.setLabel(null, undefined); // label parameter no change, labell10n parameter delete current state
-        expect(testItem.getLabel()).toBe('*-Label-original');
-
-        // remove the overridden label and see impact
-        testItem.setLabel(undefined, undefined); // label parameter delete current state, labell10n parameter delete current state
-        expect(testItem.getLabel()).toBe('*-Label-original');
-
-        // last case restores both overrides then demonstrates that setLabel(undefined, null) only impacts overridden label
-        expect(() => testItem.setLabel('Label-replaced-secondtry', 'Label-replaced-key')).not.toThrow();
-        testItem.setLabel(undefined, null); // label parameter delete current state, labell10n parameter no change
-        expect(testItem.getLabel()).toBe('*-Label-replaced'); 
-    }); 
-});
 describe('ValueHostBase.saveIntoStore and getFromStore', () => {
     test('Save 10 and get it back.', () => {
 

@@ -124,6 +124,22 @@ describe('FluentValidatorCollector', () => {
             summaryMessage: 'Summary'
         });
     });
+    test('add() that defines same errorCode twice throws on the second definition', () => {
+        let vhConfig: InputValueHostConfig = {
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            label: 'Field 1',
+            dataType: LookupKey.Currency,
+            validatorConfigs: []
+        }
+        let testItem = new FluentValidatorCollector(vhConfig);
+        let validatorConfig: FluentValidatorConfig = {
+            summaryMessage: 'Summary'
+        };
+        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', validatorConfig)).not.toThrow();
+        expect(() => testItem.add(ConditionType.RequireText, {}, 'Error', validatorConfig)).toThrow('ValueHost name "Field1" with errorCode RequireText already defined.');     
+        
+    });    
 });
 
 describe('FluentConditionCollector', () => {

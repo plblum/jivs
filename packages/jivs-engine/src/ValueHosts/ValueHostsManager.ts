@@ -15,10 +15,9 @@ import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanc
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
-import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsManagerConfig, IValueHostsManagerCallbacks, ValueHostsManagerInstanceStateChangedHandler } from '../Interfaces/ValueHostsManager';
+import type { ValueHostsManagerInstanceState, IValueHostsManager, ValueHostsManagerConfig, IValueHostsManagerCallbacks, ValueHostsManagerInstanceStateChangedHandler, ValueHostsManagerConfigChangedHandler } from '../Interfaces/ValueHostsManager';
 import { InputValueChangedHandler } from '../Interfaces/InputValueHost';
 import { ValidatableValueHostBase } from './ValidatableValueHostBase';
-import { ValueHostsInstanceBuilder } from './ValueHostsInstanceBuilder';
 import { ValueHostAccessor } from './ValueHostAccessor';
 import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
 import { ICalcValueHost } from '../Interfaces/CalcValueHost';
@@ -26,6 +25,10 @@ import { IStaticValueHost } from '../Interfaces/StaticValueHost';
 import { toICalcValueHost } from './CalcValueHost';
 import { toIStaticValueHost } from './StaticValueHost';
 import { toIDisposable } from '../Interfaces/General_Purpose';
+import { ValueHostsManagerConfigModifier } from './ValueHostsManagerConfigModifier';
+import { ValueHostsManagerConfigBuilder } from './ValueHostsManagerConfigBuilder';
+import { ValueHostsManagerConfigBuilderBase } from './ValueHostsManagerConfigBuilderBase';
+import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 
 
 /**
@@ -64,11 +67,19 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      *   onValueHostInstanceStateChanged: (valueHost, state) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
      *   onInputValueChanged: (valueHost, oldValue) => { }
+     *   onConfigChanged: (valueHost, valueHostConfig) => { }
      * }
      * ```
      */
-    constructor(config: ValueHostsManagerConfig) {
-        assertNotNull(config, 'config');
+    constructor(config: ValueHostsManagerConfig)
+    constructor(builder: ValueHostsManagerConfigBuilder)
+    constructor(args1: ValueHostsManagerConfig | ValueHostsManagerConfigBuilderBase<any>){
+        assertNotNull(args1, 'args1');
+        let config: ValueHostsManagerConfig;
+        if (args1 instanceof ValueHostsManagerConfigBuilderBase)
+            config = args1.complete();
+        else
+            config = args1 as ValueHostsManagerConfig;
         assertNotNull(config.services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         let savedServices = config.services;
@@ -78,16 +89,25 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         internalConfig.services = savedServices;
 
         this._config = internalConfig;
-        this._valueHostConfigs = {};
-        this._valueHosts = {};
+
         this._instanceState = internalConfig.savedInstanceState ?? {};
         if (typeof this._instanceState.stateChangeCounter !== 'number')
             this._instanceState.stateChangeCounter = 0;
-        this._lastValueHostInstanceStates = internalConfig.savedValueHostInstanceStates ?? [];
+        // There may be valuehostinstancesstates that do not have an associated ValueHostConfig.
+        // This allows for calling addValueHost manually later and the new ValueHost will
+        // get attached to its instance state.
+        if (internalConfig.savedValueHostInstanceStates)
+            internalConfig.savedValueHostInstanceStates.forEach((instanceState) =>
+                this._lastValueHostInstanceStates.set(instanceState.name, instanceState));
+
         let configs = internalConfig.valueHostConfigs ?? [];
+        
+        let saveOnChangeConfig = this.onConfigChanged;
+        this._config.onConfigChanged = null;
         for (let item of configs) {
-            this.addValueHost(item as ValueHostConfig, null);
+            this.addValueHost(item as ValueHostConfig, null);   // will get its instance state from _lastValueHostInstanceStates
         }
+        this._config.onConfigChanged = saveOnChangeConfig;
     }
     /**
      * If the user needs to abandon this instance, they should use this to 
@@ -96,23 +116,18 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      */
     public dispose(): void
     {
-        for (let name in this._valueHosts)
-        {
-            this._valueHosts[name].dispose();
-            delete this._valueHosts[name];
-        }
+        this.valueHosts.forEach((vh) => vh.dispose());
+        this.valueHosts.clear();
         (this._valueHosts as any) = undefined;
-        for (let name in this._valueHostConfigs)
-        {
-            toIDisposable(this._valueHostConfigs[name])?.dispose();
-            delete this._valueHostConfigs[name];
-        }
+
+        this.valueHostConfigs.forEach((vhConfig) => toIDisposable(vhConfig)?.dispose());
+        this.valueHostConfigs.clear();
         (this._valueHostConfigs as any) = undefined;
 
         toIDisposable(this._config)?.dispose();        
         (this._config as any) = undefined;
 
-        (this._instanceState as any) = undefined;
+        this._instanceState = undefined!;
         (this._lastValueHostInstanceStates as any) = undefined;
 
         this._vh?.dispose();
@@ -127,7 +142,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     /**
      * Access to the ValidationServices.
      */
-    public get services(): IValidationServices {
+    public get services(): IValueHostsServices {
         return this._config.services!;
     }
 
@@ -135,22 +150,21 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * ValueHosts for all ValueHostConfigs.
      * Always replace a ValueHost when the associated Config or InstanceState are changed.
      */
-    protected get valueHosts(): IValueHostsMap {
+    protected get valueHosts(): Map<string, IValueHost> {
         return this._valueHosts;
     }
     /**
      * This is the only place we expect to find strong references to ValueHosts
      * within a Manager. Use WeakRef elsewhere to point to the same instances.
      */
-    private readonly _valueHosts: IValueHostsMap = {};
+    private readonly _valueHosts: Map<string, IValueHost> = new Map<string, IValueHost>();
 
     /**
      * Provides a way to enumerate through existing ValueHosts.
      * @returns A generator that yields a tuple of [valueHostName, IValueHost]
      */
     public *enumerateValueHosts(filter?: (valueHost: IValueHost) => boolean): Generator<IValueHost> {
-        for (let key in this.valueHosts) {
-            let vh = this.valueHosts[key];
+        for (let [name, vh] of this.valueHosts) {
             if (filter && !filter(vh))
                 continue;
             yield vh;
@@ -161,10 +175,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * ValueHostConfigs supplied by the caller (business logic).
      * Always replace a ValueHost when its Config changes.
      */
-    protected get valueHostConfigs(): IValueHostConfigsMap {
+    protected get valueHostConfigs(): Map<string, ValueHostConfig> {
         return this._valueHostConfigs;
     }
-    private readonly _valueHostConfigs: IValueHostConfigsMap = {};
+    private readonly _valueHostConfigs: Map<string, ValueHostConfig> = new Map<string, ValueHostConfig>();
 
     /**
      * ValueHostInstanceStates and more.
@@ -179,8 +193,11 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     /**
      * Value retained from the constructor to share with calls to addValueHost,
      * giving new ValueHost instances their last state.
+     * Updated by onValueHostInstanceStateChanged so that calls to updateValueHost
+     * and mergeValueHost will start with the last state, because both
+     * calls discard the value host info for that name before creating it fresh.
      */
-    private readonly _lastValueHostInstanceStates: Array<ValueHostInstanceState>;
+    private readonly _lastValueHostInstanceStates: Map<string, ValueHostInstanceState> = new Map<string, ValueHostInstanceState>();
 
     /**
      * Use to change anything in ValueHostsManagerInstanceState without impacting the immutability 
@@ -208,7 +225,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * Adds a ValueHostConfig for a ValueHost not previously added. 
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
-     * @param config 
+     * @param config - a clone of this instance will be retained
      * Can use fluent().static() or any ValueConfigHost.
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
@@ -220,8 +237,11 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         initialState: ValueHostInstanceState | null): IValueHost {
         assertNotNull(config, 'config');
 
-        if (!this._valueHostConfigs[config.name])
+        if (!this.valueHostConfigs.has(config.name)) {
+            if (initialState) // need to lock in the initial state for a later update
+                this._lastValueHostInstanceStates.set(initialState.name, initialState);
             return this.applyConfig(config, initialState);
+        }
 
         throw new CodingError(`Property ${config.name} already assigned.`);
     }
@@ -230,7 +250,9 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * If merging is required, use the ValueHostConfigMergeService first.
      * Does not trigger any notifications.
      * If the name isn't found, it will be added.
-     * @param config 
+     * Any previous ValueHost and its config will be disposed.
+     * Be sure to discard any reference to the ValueHost instance that you have.
+     * @param config - a clone of this instance will be retained
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
@@ -238,7 +260,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     public addOrUpdateValueHost(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
         assertNotNull(config, 'config');
 
-        if (this._valueHostConfigs[config.name])
+        if (this.valueHostConfigs.has(config.name))
             return this.applyConfig(config, initialState);
 
         return this.addValueHost(config, initialState);
@@ -250,7 +272,9 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * to inject new property values where appropriate.
      * Does not trigger any notifications.
      * If the name isn't found, it will be added.
-     * @param config 
+     * Any previous ValueHost and its config will be disposed.
+     * Be sure to discard any reference to the ValueHost instance that you have.
+     * @param config - a clone of this instance will be retained
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
@@ -259,10 +283,9 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
     {
         assertNotNull(config, 'config');
 
-        if (this._valueHostConfigs[config.name]) {
+        if (this.valueHostConfigs.has(config.name)) {
             let destinations: Array<ValueHostConfig> = [];
-            for (let name in this._valueHostConfigs)
-                destinations.push(this._valueHostConfigs[name]);
+            this.valueHostConfigs.forEach((vhConfig) => destinations.push(vhConfig));
             let vhcms = this.services.valueHostConfigMergeService;
             let destinationToMerge = vhcms.identifyValueHostConflict(config, destinations);
             if (destinationToMerge)
@@ -271,7 +294,8 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
                 vhcms.merge(config, destinationToMerge);
                 return this.applyConfig(destinationToMerge, initialState);
             }
-            else
+            else // defensive. Should always find destinationToMerge if it was in _valueHostConfigs
+                /* istanbul ignore next */
                 return this.applyConfig(config, initialState);
         }
         return this.addValueHost(config, initialState);
@@ -283,35 +307,38 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      */
     public discardValueHost(valueHostName: ValueHostName): void {
         assertNotNull(valueHostName, 'valueHostName');
-        if (this._valueHostConfigs[valueHostName]) {
-            delete this._valueHosts[valueHostName];
-            delete this._valueHostConfigs[valueHostName];
-            if (this._lastValueHostInstanceStates)
-            {
-                let pos = this._lastValueHostInstanceStates.findIndex((state) => state.name === valueHostName);
-                if (pos > -1)
-                    this._lastValueHostInstanceStates.splice(pos, 1);
-            }
+        if (this.valueHostConfigs.has(valueHostName)) {
+            this.valueHosts.get(valueHostName)!.dispose();  // this also calls valueHostConfigs.dispose if setup
+            this.valueHosts.delete(valueHostName);
+
+            toIDisposable(this.valueHostConfigs.get(valueHostName))?.dispose();
+            this.valueHostConfigs.delete(valueHostName);
+
+            this._lastValueHostInstanceStates.delete(valueHostName);
+
+            this.invokeOnConfigChanged();
         }
     }
     /**
      * Creates the IValueHost based on the config and ensures
      * ValueHostsManager has correct and corresponding instances of ValueHost,
      * ValueHostConfig and ValueHostInstanceState.
-     * @param config 
+     * Any previous ValueHost and its config will be disposed.
+     * @param config - a clone of this instance will be retained
      * @param initialState - When not null, this ValueHost state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
      * @returns 
      */
     protected applyConfig(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+        config = deepClone(config); // our own private copy
         let factory = this.services.valueHostFactory; // functions in here throw exceptions if config is unsupported
         let state: ValueHostInstanceState | undefined = undefined;
         let existingState = initialState;
         let defaultState = factory.createInstanceState(config);
 
-        if (!existingState && this._lastValueHostInstanceStates)
-            existingState = this._lastValueHostInstanceStates.find((state) => state.name === config.name) ?? null;
+        if (!existingState)
+            existingState = this._lastValueHostInstanceStates.get(config.name) ?? null;
         if (existingState) {
             let cleanedState = deepClone(existingState) as ValueHostInstanceState;  // clone to allow changes during Cleanup
             factory.cleanupInstanceState(cleanedState, config);
@@ -323,20 +350,51 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         }
         else
             state = defaultState;
+        this.discardValueHost(config.name);
+        
         let vh = factory.create(this, config, state);
 
-        this._valueHosts[config.name] = vh;
-        this._valueHostConfigs[config.name] = config;
+        this.valueHosts.set(config.name, vh);
+        this.valueHostConfigs.set(config.name, config);
+        this.invokeOnConfigChanged();
         return vh;
+    }
+/**
+ * Executes the onConfigChanged callback if it is setup.
+ * Sends cloned copies of all ValueHostConfigs.
+ */
+    protected invokeOnConfigChanged(): void
+    {
+        if (this.onConfigChanged)
+        {
+            let valueHostConfigs: Array<ValueHostConfig> = [];
+            this.valueHostConfigs.forEach((vhConfig) => valueHostConfigs.push(deepClone(vhConfig)));
+
+            this.onConfigChanged(this, valueHostConfigs);
+        }
     }
 
     /**
-     * Provide fluent syntax to add or replace a ValueHost.
-     * Alternative to using addValueHost() and addOrUpdateValueHost().
+     * Easier way to add or modify a ValueHostConfig than using
+     * addValueHost(), addOrUpdateValueHost(), or addOrMergeValueHost().
+     * It returns an object whose methods allow adding ValueHosts
+     * and their validators. Upon calling its apply() method,
+     * your changes will be applied through the addOrMergeValueHost() function.
+     * ```ts
+     * let vm = new ValueHostManager(config);
+     * // later when you need to modify vm:
+     * let modifier = vm.startModifying();
+     * // supply changes to the ValueHostConfigs
+     * modifier.input('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
+     * // merge those changes into the ValueHostManager
+     * modifier.apply(); // consider modifier disposed at this point 
+     * ```
+     * Any ValueHost that gets updated will have its original instance disposed.
+     * Be sure to discard any reference to the ValueHost instance that you have.
      */
-    public build(): ValueHostsInstanceBuilder
+    public startModifying(): ValueHostsManagerConfigModifier<ValueHostsManagerConfig>
     {
-        return new ValueHostsInstanceBuilder(this);
+        return new ValueHostsManagerConfigModifier<ValueHostsManagerConfig>(this, this.valueHostConfigs);
     }
 
     /**
@@ -345,7 +403,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * Returns the instance or null if not found.
      */
     public getValueHost(valueHostName: ValueHostName): IValueHost | null {
-        return this._valueHosts[valueHostName] ?? null;
+        return this.valueHosts.get(valueHostName) ?? null;
     }
 
     /**
@@ -391,15 +449,40 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
                 ivh.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
     }
 
+    /**
+     * Report that a ValueHost had its instance state changed.
+     * Invokes onValueHostInstanceStateChanged if setup.
+     * @param valueHost 
+     * @param instanceState 
+     */
+    public notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void
+    {
+        this._lastValueHostInstanceStates.set(instanceState.name, instanceState);
+        this.onValueHostInstanceStateChanged?.(valueHost, instanceState);
+    }
+
     protected * validatableValueHost(): Generator<IValidatableValueHostBase> {
-        for (let key in this._valueHosts) {
-            let vh = this._valueHosts[key];
+        for (let [name, vh] of this.valueHosts) {
             if (vh instanceof ValidatableValueHostBase)
                 yield vh;
         }
     }
 
     //#region IValueHostsManagerCallbacks
+
+    /**
+     * Use this when caching the configuration for a later creation of ValueHostsManager.
+     * 
+     * Called when the configuration of ValueHosts has been changed, usually
+     * through the ValueHostsManagerConfigModifier.apply, or these members
+     * of ValueHostsManager: addValueHost, addOrUpdateValueHost, addOrMergeValueHost,
+     * discardValueHost.
+     * The supplied object is a clone so modifications will not impact the ValueHostsManager.
+     */    
+    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
+        return this.config.onConfigChanged ?? null;
+    }
+
     /**
      * Called when the ValueHostsManager's state has changed.
      * React example: React component useState feature retains this value
@@ -441,25 +524,5 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
         return this.config.onInputValueChanged ?? null;
     }
     //#endregion IValueHostsManagerCallbacks
-}
-
-/**
- * All ValueHostConfigs for this ValueHostsManager.
- * Caller may pass this in via the ValueHostsManager constructor
- * or build it out via ValueHostsManager.addValueHost.
- * Each entry must have a companion in ValueHost and ValueHostInstanceState in
- * this ValueHostsManager.
- */
-interface IValueHostConfigsMap {
-    [valueHostName: ValueHostName]: ValueHostConfig;
-}
-
-/**
- * All InputValueHosts for the Model.
- * Each entry must have a companion in InputValueConfigs and ValueHostInstanceState
- * in this ValueHostsManager.
- */
-interface IValueHostsMap {
-    [valueHostName: ValueHostName]: IValueHost;
 }
 

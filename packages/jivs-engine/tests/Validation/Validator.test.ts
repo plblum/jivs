@@ -425,24 +425,7 @@ describe('Validator.severity', () => {
         });
 
         expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
-    });
-    test('Config.severity = Error but setSeverity sets it to Severe, severity = Severe', () => {
-        let setup = setupWithField1AndField2({
-            severity: ValidationSeverity.Error
-        });
-
-        setup.validator.setSeverity(ValidationSeverity.Severe);
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
-        setup.validator.setSeverity(ValidationSeverity.Error);
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Error);
-    });      
-    test('Config.severity unassigned and setSeverity sets it to Severe, severity = Severe', () => {
-        let setup = setupWithField1AndField2({
-        });
-
-        setup.validator.setSeverity(ValidationSeverity.Severe);
-        expect(setup.validator.ExposeSeverity()).toBe(ValidationSeverity.Severe);
-    });           
+    });  
     test('Conditions that use severity=Severe when Config.severity = undefined', () => {
         function checkDefaultSeverity(conditionType: string, ) {
             let setup = setupWithField1AndField2({
@@ -655,26 +638,6 @@ describe('Validator.getErrorMessageTemplate', () => {
     
         expect(testItem.ExposeGetErrorMessageTemplate()).toBe('Default Error Message');
     }); 
-    test('Config.errorMessage = string and setErrorMessage overrides without l10n, return the override', () => {
-        let setup = setupWithField1AndField2({
-            errorMessage: 'Test',
-        });
-        setup.validator.setErrorMessage('Test-Override');
-        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Test-Override');
-    });    
-    test('Config.errorMessage = string and setErrorMessage overrides without l10n, return the override', () => {
-        let setup = setupWithField1AndField2({
-            errorMessage: 'Test',
-        });
-        let tls = setup.services.textLocalizerService as TextLocalizerService;
-        tls.register('Testl10n',
-            {
-                '*': 'Localized Test'
-            });        
-    
-        setup.validator.setErrorMessage('Test-Override', 'Testl10n');
-        expect(setup.validator.ExposeGetErrorMessageTemplate()).toBe('Localized Test');
-    });
 });
 describe('Validator.GetSummaryMessageTemplate', () => {
     test('Config.summaryMessage = string, return the same string', () => {
@@ -812,26 +775,6 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         expect(testItem.ExposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     }); 
 
-    test('Config.summaryMessage = string and setSummaryMessage overrides without l10n, return the override', () => {
-        let setup = setupWithField1AndField2({
-            summaryMessage: 'Test',
-        });
-        setup.validator.setSummaryMessage('Test-Override');
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Test-Override');
-    });    
-    test('Config.summaryMessage = string and setSummaryMessage overrides without l10n, return the override', () => {
-        let setup = setupWithField1AndField2({
-            summaryMessage: 'Test',
-        });
-        let tls = setup.services.textLocalizerService as TextLocalizerService;
-        tls.register('Testl10n',
-            {
-                '*': 'Localized Test'
-            });        
-    
-        setup.validator.setSummaryMessage('Test-Override', 'Testl10n');
-        expect(setup.validator.ExposeGetSummaryMessageTemplate()).toBe('Localized Test');
-    });    
 });
 // validate(group?: string): IssueFound | null
 describe('Validator.validate', () => {

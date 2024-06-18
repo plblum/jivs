@@ -1,0 +1,436 @@
+import { RequireTextConditionConfig, RegExpConditionConfig, RequireTextCondition } from "../../src/Conditions/ConcreteConditions";
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { EvaluateChildConditionResultsBaseConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { ConditionConfig } from "../../src/Interfaces/Conditions";
+import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
+import { ValidationSeverity } from "../../src/Interfaces/Validation";
+import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
+import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
+import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
+import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
+import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
+import { CodingError } from "../../src/Utilities/ErrorHandling";
+import {
+    FluentValidatorCollector, FluentConditionCollector, FluentValidatorConfig,
+    finishFluentValidatorCollector, finishFluentConditionCollector, customRule,
+    ValidationManagerStartFluent,
+    ValueHostsManagerStartFluent
+} from "../../src/ValueHosts/Fluent";
+import { ValueHostsManagerConfigBuilderBase } from "../../src/ValueHosts/ValueHostsManagerConfigBuilderBase";
+import { MockValidationServices } from "../TestSupport/mocks";
+
+function createVMConfig(): ValidationManagerConfig {
+    let vmConfig: ValidationManagerConfig = {
+        services: new MockValidationServices(false, true),
+        valueHostConfigs: []
+    };
+    return vmConfig;
+}
+
+class TestValueHostsManagerConfigBuilderBase extends ValueHostsManagerConfigBuilderBase<ValueHostsManagerConfig>
+{
+    protected createFluent(): ValueHostsManagerStartFluent {
+        return new ValueHostsManagerStartFluent<ValueHostsManagerConfig>(this.destinationConfig());
+    }
+
+    public publicify_destinationConfig(): ValueHostsManagerConfig
+    {
+        return super.destinationConfig();
+    }
+
+    public get publicify_baseConfig(): ValueHostsManagerConfig
+    {
+        return super.baseConfig;
+    }
+    public get publicify_overrideConfigs(): Array<ValueHostsManagerConfig>
+    {
+        return super.overrideConfigs;
+    }
+
+    public publicify_addOverride(): void
+    {
+        super.addOverride();
+    }
+    
+}
+
+describe('ValueHostsManagerConfigBuilderBase constructor', () => {
+    test('Initial setup with vmConfig successful', () => {
+        let testItem = createVMConfig();
+        let builder = new TestValueHostsManagerConfigBuilderBase(testItem);
+        expect(builder.publicify_baseConfig).toBe(testItem);
+        expect(builder.publicify_overrideConfigs).toEqual([]);
+        expect(builder.publicify_destinationConfig()).toBe(testItem);
+    });
+    test('Initial setup with services successful', () => {
+        let services = new MockValidationServices(false, false);
+        let builder = new TestValueHostsManagerConfigBuilderBase(services);
+        expect(builder.publicify_baseConfig).not.toBeUndefined();
+        expect(builder.publicify_baseConfig.services).toBe(services);
+        expect(builder.publicify_overrideConfigs).toEqual([]);
+        expect(builder.publicify_destinationConfig()).toBe(builder.publicify_baseConfig);
+    });
+    test('vmConfig with valueHostConfigs = null gets reassigned to []', () => {
+        let testItem = createVMConfig();
+        testItem.valueHostConfigs = null as any;
+        let builder = new TestValueHostsManagerConfigBuilderBase(testItem);
+        expect(testItem.valueHostConfigs).toEqual([]);
+    });
+    test('vmConfig with valueHostConfigs that contains 1 InputValueHost retains that value', () => {
+        let testItem = createVMConfig();
+        let valueHostsConfigs: Array<ValueHostConfig> = [
+            {
+                valueHostType: ValueHostType.Input,
+                name: 'Field1'
+            }
+        ];
+        testItem.valueHostConfigs.push(valueHostsConfigs[0]);
+        let builder = new TestValueHostsManagerConfigBuilderBase(testItem);
+        expect(testItem.valueHostConfigs).toEqual(valueHostsConfigs);
+    });
+    test('services supplied as parameter creates a vmConfig with services', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestValueHostsManagerConfigBuilderBase(services);
+        expect(testItem.publicify_destinationConfig()).not.toBeNull();
+        expect(testItem.publicify_destinationConfig().services).toBe(services);
+        expect(testItem.publicify_destinationConfig().valueHostConfigs).toEqual([]);
+    });    
+    test('null parameter throws', () => {
+        expect(() => new TestValueHostsManagerConfigBuilderBase(null!)).toThrow(CodingError); 
+    });
+    test('Invalid value in parameter throws', () => {
+        expect(() => new TestValueHostsManagerConfigBuilderBase('abc' as any)).toThrow('parameter value'); 
+    });
+});
+describe('dispose', () => {
+    test('With no overrides', () => {
+        let vmConfig = createVMConfig();
+        let valueHostsConfigs: Array<ValueHostConfig> = [
+            {
+                valueHostType: ValueHostType.Input,
+                name: 'Field1'
+            }
+        ];
+        vmConfig.valueHostConfigs.push(valueHostsConfigs[0]);
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.dispose();
+        expect(testItem.publicify_baseConfig).toBeUndefined();
+    });    
+    test('With an override', () => {
+        let vmConfig = createVMConfig();
+        let valueHostsConfigs: Array<ValueHostConfig> = [
+            {
+                valueHostType: ValueHostType.Input,
+                name: 'Field1'
+            }
+        ];
+        vmConfig.valueHostConfigs.push(valueHostsConfigs[0]);
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.publicify_addOverride();
+        testItem.dispose();
+        expect(testItem.publicify_baseConfig).toBeUndefined();
+    });        
+});
+describe('addOverride', () => {
+    test('One call adds one and destinationConfig points to it', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.publicify_addOverride();
+        expect(testItem.publicify_baseConfig).toBe(vmConfig);
+        expect(testItem.publicify_overrideConfigs.length).toBe(1);
+        expect(testItem.publicify_destinationConfig()).toBe(testItem.publicify_overrideConfigs[0]);
+    });
+    test('Twos call adds two and destinationConfig points to the last', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.publicify_addOverride();
+        testItem.publicify_addOverride();
+        expect(testItem.publicify_baseConfig).toBe(vmConfig);
+        expect(testItem.publicify_overrideConfigs.length).toBe(2);
+        expect(testItem.publicify_destinationConfig()).toBe(testItem.publicify_overrideConfigs[1]);
+    });    
+});
+describe('complete', () => {
+    test('Using service, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestValueHostsManagerConfigBuilderBase(services);
+        let result = testItem.complete();
+        expect(result.services).toBe(services);
+        expect(result.valueHostConfigs).toEqual([]);
+        expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
+    });
+    test('Using VMConfig, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
+        let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());
+        let result = testItem.complete();
+        expect(result.services).not.toBeNull();
+        expect(result.valueHostConfigs).toEqual([]);
+        expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
+    });    
+    test('Using service, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestValueHostsManagerConfigBuilderBase(services);
+        testItem.static('Field1');
+        let result = testItem.complete();
+        expect(result.services).toBe(services);
+        expect(result.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        }]);
+        expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
+    });    
+    test('Using VMConfig, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
+        let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());
+        testItem.static('Field1');
+        let result = testItem.complete();
+        expect(result.services).not.toBeNull();
+        expect(result.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        }]);
+        expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
+    }); 
+    test('Using VMConfig that already has 1 value, add 0 valueHosts but no overrides returns vmConfig with 1 valueHostConfigs', () => {
+        let vmConfig = createVMConfig();
+        vmConfig.valueHostConfigs.push({
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        });
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let result = testItem.complete();
+        expect(result.services).not.toBeNull();
+        expect(result.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        }]);
+        expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
+    });   
+    test('Using VMConfig that already has 1 value, add 1 valueHosts but no overrides returns vmConfig with 1 valueHostConfigs', () => {
+        let vmConfig = createVMConfig();
+        vmConfig.valueHostConfigs.push({
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        });
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.static('Field2');
+        let result = testItem.complete();
+        expect(result.services).not.toBeNull();
+        expect(result.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        },
+        {
+            valueHostType: ValueHostType.Static,
+            name: 'Field2'
+        }]);
+        expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
+    });       
+});
+
+describe('build(vmConfig).static()', () => {
+    test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.static('Field1', null, { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(vmConfig.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            label: 'Field 1'
+        }]);
+    });
+
+    test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.static('Field1', 'Test');
+        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(vmConfig.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            dataType: 'Test'
+        }]);
+    });
+
+    test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.static('Field1');
+        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(vmConfig.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+        }]);
+    });
+
+    test('Pass in a StaticValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(vmConfig.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            dataType: 'Test',
+            label: 'Field 1'
+        }]);
+    });
+
+    test('Add two differently named StaticValueHostConfigs creates two entries in vmConfig', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.static('Field1').static('Field2');
+        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(vmConfig.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+        },
+        {
+            valueHostType: ValueHostType.Static,
+            name: 'Field2',
+        }]);
+    });
+
+    test('Valid name but added twice throws', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        testItem.static('Field1');
+        expect(() => testItem.static('Field1')).toThrow(/already defined/);
+    });
+
+
+    test('Null name throws', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        expect(() => testItem.static(null!)).toThrow('arg1');
+
+    });
+    test('First parameter is not compatible with overload throws', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+                
+        expect(() => testItem.static(100 as any)).toThrow('pass');
+    });
+});
+describe('build(vmConfig).calc', () => {
+    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
+        return 1;
+    }
+    test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = builder.calc('Field1', null, calcFnForTests);
+        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(vmConfig.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Calc,
+            name: 'Field1',
+            calcFn: calcFnForTests
+        }]);
+    });
+    test('Valid name, data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = builder.calc('Field1', 'Test', calcFnForTests);
+        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(vmConfig.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Calc,
+            name: 'Field1',
+            dataType: 'Test',
+            calcFn: calcFnForTests
+        }]);
+    });
+    test('Null function throws', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        
+        expect(() => testItem.calc('Field1', 'Test', null!)).toThrow();
+
+    });
+    test('Pass in a CalcValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+                
+        let testItem = builder.calc({ name: 'Field1', dataType: 'Test', label: 'Field 1', calcFn: calcFnForTests });
+        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(vmConfig.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Calc,
+            name: 'Field1',
+            dataType: 'Test',
+            label: 'Field 1',
+            calcFn: calcFnForTests
+        }]);
+    });
+    test('Null name throws', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+                
+        expect(() => testItem.calc(null!)).toThrow('arg1');
+
+    });
+    test('First parameter is not compatible with overload throws', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+                
+        expect(() => testItem.calc(100 as any)).toThrow('pass');
+    });
+});
+
+
+// Test cases for creating fluent functions...
+function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
+    errorMessage?: string | null,
+    validatorParameters?: FluentValidatorConfig
+): FluentValidatorCollector {
+    return finishFluentValidatorCollector(this, ConditionType.RequireText, conditionConfig, errorMessage, validatorParameters);
+}
+function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
+): FluentConditionCollector {
+    return finishFluentConditionCollector(this, ConditionType.RequireText, conditionConfig, 'valueHostName');
+
+}
+
+function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
+    errorMessage?: string | null,
+    validatorParameters?: FluentValidatorConfig
+): FluentValidatorCollector {
+
+    return finishFluentValidatorCollector(this, ConditionType.RegExp, conditionConfig,
+        errorMessage, validatorParameters);
+}
+function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>): FluentConditionCollector {
+
+    return finishFluentConditionCollector(this, ConditionType.RegExp, conditionConfig, 'valueHostName');
+}
+// interface that extends the class FluentValidatorCollector
+declare module './../../src/ValueHosts/Fluent'
+{
+    export interface FluentValidatorCollector {
+        testChainRequireText(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig
+        ): FluentValidatorCollector;
+        testChainRegExp(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig
+        ): FluentValidatorCollector;
+    }
+    export interface FluentConditionCollector {
+        testChainRequireText(conditionConfig:
+            Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
+        ): FluentConditionCollector;
+        testChainRegExp(conditionConfig:
+            Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>
+        ): FluentConditionCollector;
+    }
+}
+
+export function ensureFluentTestConditions(): void {
+    //  Make JavaScript associate the function with the class.
+    FluentValidatorCollector.prototype.testChainRequireText = testChainRequireText_Val;
+    FluentValidatorCollector.prototype.testChainRegExp = testChainRegExp_Val;
+    FluentConditionCollector.prototype.testChainRequireText = testChainRequireText_Cond;
+    FluentConditionCollector.prototype.testChainRegExp = testChainRegExp_Cond;
+}

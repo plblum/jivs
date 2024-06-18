@@ -46,7 +46,7 @@
  * class appear to be part of FluentValidatorCollector and FluentConditionCollector, classes that connect
  * the conditions to the InputValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
- * - StartFluent - Class that starts a fluent chain. Its methods start InputValueHost (input()),
+ * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start InputValueHost (input()),
  *   StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  * 
  * - FluentValidatorCollector - Class that supplies Conditions and Validators
@@ -137,13 +137,152 @@ import { ValidationManagerConfig } from '../Interfaces/ValidationManager';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { PropertyValueHostConfig } from '../Interfaces/PropertyValueHost';
+import { ValueHostsManagerConfig } from '../Interfaces/ValueHostsManager';
+
+/**
+ * Starts a fluent chain for ValueHostsManager. Its methods start CalcValueHost (calc()),
+ * and StaticValueHost (static())
+ */
+export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfig = ValueHostsManagerConfig>
+{
+    /**
+     * 
+     * @param vmConfig When assigned, we can check for naming conflicts.
+     */
+    constructor(vmConfig: TConfig | null)
+    {
+        this._vmConfig = vmConfig;
+        enableFluent();
+    }
+    private _vmConfig: TConfig | null;
+
+    protected get vmConfig(): TConfig | null
+    {
+        return this._vmConfig;
+    }
+
+    /**
+     * Fluent format to create a StaticValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param valueHostName - the ValueHost name
+     * @param dataType - optional and can be null. The value for ValueHost.dataType.
+     * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
+     */
+    public static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig;
+    /**
+     * Fluent format to create a StaticValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
+     * You can omit the valueHostType property.
+     */
+    public static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
+    // overload resolution
+    public static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
+    {
+        this.assertFirstParameterValid(arg1);
+        if (typeof arg1 === 'object')
+            return { ...arg1 as StaticValueHostConfig, valueHostType: ValueHostType.Static };
+        if (typeof arg1 === 'string') {
+
+            let config: StaticValueHostConfig = { valueHostType: ValueHostType.Static, name: arg1 };
+            if (dataType)
+                config.dataType = dataType;
+            if (parameters)
+                config = { ...parameters, ...config };
+        
+            return config;
+        }
+        /* istanbul ignore next */
+        throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
+    }
+
+    /**
+     * Fluent format to create a CalcValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param valueHostName - the ValueHost name
+     * @param dataType - can be null. The value for ValueHost.dataType.
+     * @param calcFn - required. Function callback.
+     */
+    public calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
+    /**
+     * Fluent format to create a CalcValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
+     * You can omit the valueHostType property.
+     */
+    public calc(config: Omit<CalcValueHostConfig, 'conditionType'>): CalcValueHostConfig;
+    // overload resolution
+    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
+    {
+        this.assertFirstParameterValid(arg1);
+        if (typeof arg1 === 'object')
+            return { ...arg1 as CalcValueHostConfig, valueHostType: ValueHostType.Calc };
+        if (typeof arg1 === 'string') {
+            if (typeof calcFn !== 'function')
+                throw new CodingError('Must supply a calculation function');
+            let config: CalcValueHostConfig = { valueHostType: ValueHostType.Calc, name: arg1, calcFn: calcFn };
+            if (dataType)
+                config.dataType = dataType;
+        
+            return config;
+        }
+        /* istanbul ignore next */
+        throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
+    }    
+
+    /**
+     * Start of a series to collect ConditionConfigs into any condition that
+     * implements EvaluateChildConditionResultsConfig.
+     * For example, fluent().input('Field1').all(fluent().conditions().required('Field2').required('Field3'))
+     * The fluent function for all (and others that support EvaluateChildConditionResultsConfig)
+     * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
+    * @param config - When null/undefined, the instance is created and the caller is expected
+    * to retrieve its conditionConfigs from the config property.
+    * When assigned, that instance gets conditionConfigs populated and 
+    * there is no need to get a value from configs property.
+    */
+    public conditions(config?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
+    {
+        let collector = new FluentConditionCollector(config ?? null);
+        return collector;
+    }   
+    
+    /**
+     * Helper for fluent starting nodes to ensure the first parameter supplies
+     * a name and that name is not previously defined.
+     * @param arg 
+     */
+    protected assertFirstParameterValid(arg: ValueHostName | ValueHostConfig): void
+    {
+        assertNotNull(arg, 'arg1');
+        
+        if (typeof arg === 'object') {
+            assertNotNull(arg.name, 'config.name');
+            this.assertNameNotDefined(arg.name);
+        }
+        else if (typeof arg === 'string') {
+            assertNotNull(arg, 'valueHostName');
+            this.assertNameNotDefined(arg);
+        }
+        else
+            throw new TypeError('Must pass valuehost name or InputValueHostConfig');
+    }        
+
+    protected assertNameNotDefined(valueHostName: ValueHostName): void
+    {
+        if (this.vmConfig && this.vmConfig.valueHostConfigs.find((item) => item.name === valueHostName))
+            throw new CodingError(`ValueHostName ${valueHostName} is already defined.`);        
+    }
+
+}
+
 
 /**
  * Starts a fluent chain. Its methods start InputValueHost (input()),
  * StaticValueHost (static()), and a collection of Conditions (conditions()).
  * You access it through the global fluent() function
  */
-export class StartFluent
+export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent<ValidationManagerConfig>
 {
     /**
      * 
@@ -151,10 +290,9 @@ export class StartFluent
      */
     constructor(vmConfig: ValidationManagerConfig | null)
     {
-        this._vmConfig = vmConfig;
-        enableFluent();
+        super(vmConfig);
     }
-    private _vmConfig: ValidationManagerConfig | null;
+
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "require()".
@@ -243,129 +381,17 @@ export class StartFluent
         }
         /* istanbul ignore next */
         throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
-    }        
-    /**
-     * Fluent format to create a StaticValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param valueHostName - the ValueHost name
-     * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
-     */
-    public static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig;
-    /**
-     * Fluent format to create a StaticValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
-     * You can omit the valueHostType property.
-     */
-    public static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
-    // overload resolution
-    public static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
-    {
-        this.assertFirstParameterValid(arg1);
-        if (typeof arg1 === 'object')
-            return { ...arg1 as StaticValueHostConfig, valueHostType: ValueHostType.Static };
-        if (typeof arg1 === 'string') {
-
-            let config: StaticValueHostConfig = { valueHostType: ValueHostType.Static, name: arg1 };
-            if (dataType)
-                config.dataType = dataType;
-            if (parameters)
-                config = { ...parameters, ...config };
-        
-            return config;
-        }
-        /* istanbul ignore next */
-        throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
-    }
-
-    /**
-     * Fluent format to create a CalcValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param valueHostName - the ValueHost name
-     * @param dataType - can be null. The value for ValueHost.dataType.
-     * @param calcFn - required. Function callback.
-     */
-    public calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
-    /**
-     * Fluent format to create a CalcValueHostConfig.
-     * This is the start of a fluent series. However, at this time, there are no further items in the series.
-     * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
-     * You can omit the valueHostType property.
-     */
-    public calc(config: Omit<CalcValueHostConfig, 'conditionType'>): CalcValueHostConfig;
-    // overload resolution
-    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
-    {
-        this.assertFirstParameterValid(arg1);
-        if (typeof arg1 === 'object')
-            return { ...arg1 as CalcValueHostConfig, valueHostType: ValueHostType.Calc };
-        if (typeof arg1 === 'string') {
-            if (typeof calcFn !== 'function')
-                throw new CodingError('Must supply a calculation function');
-            let config: CalcValueHostConfig = { valueHostType: ValueHostType.Calc, name: arg1, calcFn: calcFn };
-            if (dataType)
-                config.dataType = dataType;
-        
-            return config;
-        }
-        /* istanbul ignore next */
-        throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
-    }    
-
-    /**
-     * Start of a series to collect ConditionConfigs into any condition that
-     * implements EvaluateChildConditionResultsConfig.
-     * For example, fluent().input('Field1').all(fluent().conditions().required('Field2').required('Field3'))
-     * The fluent function for all (and others that support EvaluateChildConditionResultsConfig)
-     * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
-    * @param config - When null/undefined, the instance is created and the caller is expected
-    * to retrieve its conditionConfigs from the config property.
-    * When assigned, that instance gets conditionConfigs populated and 
-    * there is no need to get a value from configs property.
-    */
-    public conditions(config?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
-    {
-        let collector = new FluentConditionCollector(config ?? null);
-        return collector;
-    }    
-
-    /**
-     * Helper for fluent starting nodes to ensure the first parameter supplies
-     * a name and that name is not previously defined.
-     * @param arg 
-     */
-    protected assertFirstParameterValid(arg: ValueHostName | ValueHostConfig): void
-    {
-        assertNotNull(arg, 'arg1');
-        
-        if (typeof arg === 'object') {
-            assertNotNull(arg.name, 'config.name');
-            this.assertNameNotDefined(arg.name);
-        }
-        else if (typeof arg === 'string') {
-            assertNotNull(arg, 'valueHostName');
-            this.assertNameNotDefined(arg);
-        }
-        else
-            throw new TypeError('Must pass valuehost name or InputValueHostConfig');
-    }        
-
-    protected assertNameNotDefined(valueHostName: ValueHostName): void
-    {
-        if (this._vmConfig && this._vmConfig.valueHostConfigs.find((item) => item.name === valueHostName))
-            throw new CodingError(`ValueHostName ${valueHostName} is already defined.`);        
-    }
+    }     
 
 }
 
 /**
- * Access point for starting a fluent syntax chain
+ * Access point for starting a fluent syntax chain for ValidationManager
  * @returns 
  */
-export function fluent(): StartFluent
+export function fluent(): ValidationManagerStartFluent
 {
-    return new StartFluent(null);
+    return new ValidationManagerStartFluent(null);
 }
 
 
@@ -501,7 +527,7 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
         // prevent duplicate errorcodes
         let errorCode = resolveErrorCode(ivDesc);
         if (this.parentConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode))
-            throw new CodingError(`ValueHost name ${this._parentConfig.name} with errorCode ${errorCode} already defined.`);
+            throw new CodingError(`ValueHost name "${this._parentConfig.name}" with errorCode ${errorCode} already defined.`);
 
         this.parentConfig.validatorConfigs!.push(ivDesc as ValidatorConfig);
     }

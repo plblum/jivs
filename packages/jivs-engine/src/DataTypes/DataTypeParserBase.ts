@@ -84,7 +84,7 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
 
     public dispose(): void
     {
-        (this._services as any) = undefined;
+        this._services = undefined!;
     }        
     /**
      * Services accessor.

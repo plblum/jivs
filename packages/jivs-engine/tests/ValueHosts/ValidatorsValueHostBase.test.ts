@@ -26,12 +26,12 @@ import { Validator } from "../../src/Validation/Validator";
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
-import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType, UserSuppliedResultConditionConfig, registerTestingOnlyConditions, NeverMatchesCondition, ThrowsSevereExceptionConditionType, AlwaysMatchesCondition } from "../TestSupport/conditionsForTesting";
+import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType, UserSuppliedResultConditionConfig, registerTestingOnlyConditions, NeverMatchesCondition, ThrowsSevereExceptionConditionType } from "../TestSupport/conditionsForTesting";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
-import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
-import { IValueHostsServices } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
+
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 
 
@@ -777,21 +777,24 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
 
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state, valueHostGroup);
+        let modifier = setup.validationManager.startModifying();
+        modifier.input('Field1', null, { group: overriddenGroup });
+        modifier.apply();
+        setup.valueHost = setup.validationManager.getValueHost('Field1') as TestValidatorsValueHost;    // because apply discards the previous instance
 
-        setup.valueHost.setGroup(overriddenGroup);
         let result = setup.valueHost.validate({ group: validateGroup });
         if (expectedResult === null)
             expect(result).toBeNull();
         else
             expect(result!.status).toBe(expectedResult);
     }
-    test('Group test where setGroup overrides and is a match to the supplied group and original group. ValidatorsValueHostBase has Group name but validate has a different group name. Validation occurs', () => {
+    test('Group test where group is modified and is a match to the supplied group and original group. ValidatorsValueHostBase has Group name but validate has a different group name. Validation occurs', () => {
         TestGroupUsingOverride('GROUPA', 'GROUPA', 'GROUPA', ValidationStatus.Invalid)
     });
-    test('Group test where setGroup overrides and is a match to the supplied group but not the original. ValidatorsValueHostBase has Group name but validate has a different group name. Validation occurs', () => {
+    test('Group test where group is modified and is a match to the supplied group but not the original. ValidatorsValueHostBase has Group name but validate has a different group name. Validation occurs', () => {
         TestGroupUsingOverride('GROUPB', 'GROUPA', 'GROUPA', ValidationStatus.Invalid)
     });
-    test('Group test where setGroup overrides and is not a match to the supplied group. ValidatorsValueHostBase has Group name but validate has a different group name. ValidationStatus = undetermined', () => {
+    test('Group test where group is modified and is not a match to the supplied group. ValidatorsValueHostBase has Group name but validate has a different group name. ValidationStatus = undetermined', () => {
         TestGroupUsingOverride('GROUPA', 'GROUPB', 'GROUPA', null)
     });
     test('validate one ValueHost with validators that results in Valid. onValueHostValidationStateChanged called.', () => {
@@ -1995,7 +1998,10 @@ describe('clearValidation', () => {
         state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
 
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        setup.valueHost.setGroup('GROUPA');
+        let modifier = setup.validationManager.startModifying();
+        modifier.input('Field1', null, { group: 'GROUPA' });
+        modifier.apply();
+        setup.valueHost = setup.validationManager.getValueHost('Field1') as TestValidatorsValueHost;    // because apply discards the previous instance
 
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearValidation({ group: 'GROUPA'})).not.toThrow();
@@ -2020,7 +2026,10 @@ describe('clearValidation', () => {
         state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
 
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        setup.valueHost.setGroup('GROUPA');
+        let modifier = setup.validationManager.startModifying();
+        modifier.input('Field1', null, { group: 'GROUPA' });
+        modifier.apply();
+        setup.valueHost = setup.validationManager.getValueHost('Field1') as TestValidatorsValueHost;   // because modifier has clobbered the existing instance
 
         let result: boolean | null = null;
         expect(() => result = setup.valueHost.clearValidation({ group: 'GROUPB'})).not.toThrow();
@@ -2718,258 +2727,6 @@ describe('setIssuesFound', () => {
     });        
 });
 
-
-describe('addValidator function', () => {
-    test('Confirm add with not previously added condition type gets used during validate', () => {
-        let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
-        services.autoGenerateDataTypeCheckService.enabled = false;
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: [
-                {
-                    valueHostType: TestValueHostType,
-                    name: 'Field1'
-                }
-            ]
-        });
-        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
-        vh.addValidator({
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            },
-            errorMessage: 'Error'
-        });
-        vh.setValue('');
-        let expectedIssueFound: IssueFound = {
-            errorCode: ConditionType.RequireText,
-            valueHostName: 'Field1',
-            errorMessage: 'Error',
-            summaryMessage: 'Error',
-            severity: ValidationSeverity.Severe // due to RequireText
-        };
-
-        let validationState = vm.validate();
-        expect(validationState).toEqual(<ValidationState>{
-            isValid: false,
-            doNotSave: true,
-            issuesFound: [expectedIssueFound],
-            asyncProcessing: false
-        });
-
-    });
-    test('Add where the conditionConfig is undefined throws', () => {
-        let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
-        services.autoGenerateDataTypeCheckService.enabled = false;
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: [
-                {
-                    valueHostType: TestValueHostType,
-                    name: 'Field1'
-                }
-            ]
-        });
-        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
-        expect(()=> vh.addValidator({
-            conditionConfig: undefined!,
-            errorMessage: 'Error'
-        })).toThrow(/conditionConfig/);
-    });    
-    test('Add where the conditionConfig is null throws', () => {
-        let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
-        services.autoGenerateDataTypeCheckService.enabled = false;
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: [
-                {
-                    valueHostType: TestValueHostType,
-                    name: 'Field1'
-                }
-            ]
-        });
-        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
-        expect(()=> vh.addValidator({
-            conditionConfig: null!,
-            errorMessage: 'Error'
-        })).toThrow(/conditionConfig/);
-    });        
-    test('Add where the conditionConfig.conditionType is undefined throws', () => {
-        let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
-        services.autoGenerateDataTypeCheckService.enabled = false;
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: [
-                {
-                    valueHostType: TestValueHostType,
-                    name: 'Field1'
-                }
-            ]
-        });
-        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
-        expect(()=> vh.addValidator({
-            conditionConfig: {
-                conditionType: undefined!
-            },
-            errorMessage: 'Error'
-        })).toThrow(/conditionType/);
-    });        
-    test('Add where the parameter is null throws', () => {
-        let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
-        services.autoGenerateDataTypeCheckService.enabled = false;
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: [
-                {
-                    valueHostType: TestValueHostType,
-                    name: 'Field1'
-                }
-            ]
-        });
-        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
-        expect(()=> vh.addValidator(null!)).toThrow(/config/);
-    });        
-    test('Confirm add with previously added condition type gets used during validate, and the other is abandoned', () => {
-        let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
-        (services.conditionFactory as ConditionFactory).register<RegExpConditionConfig>(
-            ConditionType.RegExp, (config) => new RegExpCondition(config));
-        //    services.autoGenerateDataTypeCheckService.enabled = false;
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: [
-                <ValidatorsValueHostBaseConfig>{
-                    valueHostType: TestValueHostType,
-                    name: 'Field1',
-                    validatorConfigs: [
-                        {
-                            conditionConfig: <RegExpConditionConfig>{
-                                conditionType: ConditionType.RegExp,
-                                expressionAsString: '^\\d\\d$',   // 2 digits
-                                valueHostName: 'Field1'
-                            }
-                        }
-                    ]
-                }
-            ]
-        });
-        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
-        vh.addValidator({
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expressionAsString: '^\\d\\d\\d$', // 3 digits
-                valueHostName: 'Field1'
-            },
-            errorMessage: 'Error'
-        });
-        vh.setValue('11');  // this should be valid based on the first expression, but not the second
-
-        let expectedIssueFound: IssueFound = {
-            errorCode: ConditionType.RegExp,
-            valueHostName: 'Field1',
-            errorMessage: 'Error',
-            summaryMessage: 'Error',
-            severity: ValidationSeverity.Severe // defaul to RegExp
-        };
-
-        let validationState = vm.validate();
-        expect(validationState).toEqual(<ValidationState>{
-            isValid: false,
-            doNotSave: true,
-            issuesFound: [expectedIssueFound],
-            asyncProcessing: false
-        });
-    });
-    test('Confirm add with previously added condition whose type differs, both validators are used', () => {
-        let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
-        (services.conditionFactory as ConditionFactory).register<RegExpConditionConfig>(
-            ConditionType.RegExp, (config) => new RegExpCondition(config));
-        services.autoGenerateDataTypeCheckService.enabled = false;
-        let logger = new CapturingLogger();
-        services.loggerService = logger;
-        services.loggerService.minLevel = LoggingLevel.Info;
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: [
-                <ValidatorsValueHostBaseConfig>{
-                    valueHostType: TestValueHostType,
-                    name: 'Field1',
-                    validatorConfigs: [
-                        {
-                            conditionConfig: <RegExpConditionConfig>{
-                                conditionType: ConditionType.RegExp,
-                                expressionAsString: '^\\d\\d$',   // 2 digits
-                                valueHostName: 'Field1'
-                            },
-                            errorMessage: 'Regexp message'
-                        }
-                    ]
-                }
-            ]
-        });
-        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
-        vh.addValidator({
-            conditionConfig: {
-                conditionType: ConditionType.RequireText
-            },
-            errorMessage: 'Require'
-        });
-        vh.setValue('11');  // this should be valid for both conditions
-
-        let validationState = vm.validate();
-        expect(validationState).toEqual(<ValidationState>{
-            isValid: true,
-            doNotSave: false,
-            issuesFound: null,
-            asyncProcessing: false
-        });
-                    
-    });
-});
-
-
-describe('configValidators function', () => {
-    test('Confirm add with not previously added condition type gets used during validate', () => {
-        let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
-        services.autoGenerateDataTypeCheckService.enabled = false;
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: [
-                {
-                    valueHostType: TestValueHostType,
-                    name: 'Field1'
-                }
-            ]
-        });
-        let vh = vm.getValueHost('Field1') as TestValidatorsValueHost;
-        vh.configValidators().requireText(null, 'Error');
-
-        vh.setValue('');
-
-        let expectedIssueFound: IssueFound = {
-            errorCode: ConditionType.RequireText,
-            valueHostName: 'Field1',
-            errorMessage: 'Error',
-            summaryMessage: 'Error',
-            severity: ValidationSeverity.Severe // the default for RequireText
-        };
-
-        let validationState = vm.validate();
-        expect(validationState).toEqual(<ValidationState>{
-            isValid: false,
-            doNotSave: true,
-            issuesFound: [expectedIssueFound],
-            asyncProcessing: false
-        });
-    });
-});
-
 describe('ValidatorsValueHostBase.gatherValueHostNames', () => {
     test('Gets two ValueHostNames', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -3207,9 +2964,7 @@ describe('toIValidatorsValueHostBase function', () => {
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");
         }
-        configValidators(): FluentValidatorCollector {
-            throw new Error("Method not implemented.");
-        }
+
 
         getInputValue() {
             throw new Error("Method not implemented.");
@@ -3261,9 +3016,7 @@ describe('toIValidatorsValueHostBase function', () => {
         getLabel(): string {
             throw new Error("Method not implemented.");
         }
-        setLabel(label: string, labell10n?: string | undefined): void {
-            throw new Error("Method not implemented.");
-        }
+
         getValue() {
             throw new Error("Method not implemented.");
         }
@@ -3290,12 +3043,6 @@ describe('toIValidatorsValueHostBase function', () => {
             throw new Error("Method not implemented.");
         }
 
-        addValidator(config: ValidatorConfig): void {
-            throw new Error("Method not implemented.");
-        }
-        setGroup(group: string): void {
-            throw new Error("Method not implemented.");
-        }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIValidatorsValueHostBaseImplementation();
@@ -3754,7 +3501,6 @@ describe('dispose', () => {
         expect(setup.valueHost.exposeValidators).toBeUndefined();
         expect(setup.valueHost.exposeState).toBeUndefined();
         expect(setup.valueHost.exposeConfig).toBeUndefined();            
-        expect(vhConfig.validatorConfigs).toBeUndefined();
         expect(() => setup.valueHost.getValue()).toThrow(TypeError);  // value is from config which is undefined
         expect(() => setup.valueHost.exposeServices).toThrow(TypeError);
 
@@ -3767,10 +3513,16 @@ describe('dispose', () => {
         }
 
         let setup = setupValidatorsValueHostBase();
-        let vhConfig = setup.config as X;
-        vhConfig.x = {};
+        let vhConfig: X = {
+            ...setup.config,
+            x: {},
+            dispose: () => { (vhConfig.x as any) = undefined }
+        };
+        let newVH = setup.validationManager.addOrUpdateValueHost(vhConfig, null);
+        setup.valueHost = newVH as TestValidatorsValueHost;
+
         setup.valueHost.validate();         
-        vhConfig.dispose = () => { (vhConfig.x as any) = undefined };
+
         setup.valueHost.dispose();
 
         expect(vhConfig.x).toBeUndefined();

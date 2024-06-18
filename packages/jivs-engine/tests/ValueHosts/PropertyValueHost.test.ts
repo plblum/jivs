@@ -337,15 +337,7 @@ describe('toIPropertyValueHost function', () => {
         getValidator(errorCode: string): IValidator | null {
             throw new Error("Method not implemented.");
         }
-        addValidator(config: ValidatorConfig): void {
-            throw new Error("Method not implemented.");
-        }
-        configValidators(): FluentValidatorCollector {
-            throw new Error("Method not implemented.");
-        }
-        setGroup(group: string): void {
-            throw new Error("Method not implemented.");
-        }
+
         otherValueHostChangedNotification(valueHostIdThatChanged: string, revalidate: boolean): void {
             throw new Error("Method not implemented.");
         }
@@ -382,9 +374,7 @@ describe('toIPropertyValueHost function', () => {
         getLabel(): string {
             throw new Error("Method not implemented.");
         }
-        setLabel(label: string, labell10n?: string | undefined): void {
-            throw new Error("Method not implemented.");
-        }
+
         getValue() {
             throw new Error("Method not implemented.");
         }

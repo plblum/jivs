@@ -55,7 +55,7 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
      */
     public dispose(): void
     {
-        (this._services as any) = undefined;
+        this._services = undefined!;
     }    
     /**
      * Wrapper around logging that takes no action if logLevel is below min,
