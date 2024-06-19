@@ -6,11 +6,11 @@
 import { FluentConditionCollector, ValueHostsManagerStartFluent } from "./Fluent";
 import { InputValueChangedHandler } from "../Interfaces/InputValueHost";
 import { EvaluateChildConditionResultsBaseConfig } from "../Conditions/EvaluateChildConditionResultsBase";
-import { ValueHostsManagerConfigBuilderBase } from "./ValueHostsManagerConfigBuilderBase";
-import { IValueHostsManagerCallbacks, ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
+import { ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
+import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from "../Interfaces/ValueHost";
-
+import { IValueHostsManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
 
 /**
  * For populating the ValueHostsManagerConfig and ValidationManagerConfig's ValueHostsConfig
@@ -43,8 +43,8 @@ import { ValueChangedHandler, ValueHostInstanceState, ValueHostInstanceStateChan
  * let vm = new ValidationManager(vmConfig);
  * ```
  */
-export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = ValueHostsManagerConfig> extends ValueHostsManagerConfigBuilderBase<T>
-    implements IValueHostsManagerCallbacks
+export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = ValueHostsManagerConfig> extends ManagerConfigBuilderBase<T>
+    implements IValueHostsManagerConfigBuilder<T>
 {
 /**
  * If the business logic provides ValueHostConfigs, they should already
@@ -64,8 +64,8 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     /**
      * @inheritDoc ValueHosts/Types/ValueHostsManager!ValueHostsManagerConfig.savedInstanceState
      */
-    public get savedInstanceState(): ValueHostsManagerInstanceState | null | undefined {
-        return this.baseConfig.savedInstanceState;
+    public get savedInstanceState(): ValueHostsManagerInstanceState | null {
+        return this.baseConfig.savedInstanceState ?? null;
     }
     public set savedInstanceState(value: ValueHostsManagerInstanceState | null) {
         this.baseConfig.savedInstanceState = value;
@@ -73,8 +73,8 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     /**
      * @inheritDoc ValueHosts/Types/ValueHostsManager!ValueHostsManagerConfig.savedValueHostInstanceStates
      */
-    public get savedValueHostInstanceStates(): Array<ValueHostInstanceState> | null | undefined {
-        return this.baseConfig.savedValueHostInstanceStates;
+    public get savedValueHostInstanceStates(): Array<ValueHostInstanceState> | null {
+        return this.baseConfig.savedValueHostInstanceStates ?? null;
     }
     public set savedValueHostInstanceStates(value: Array<ValueHostInstanceState> | null) {
         this.baseConfig.savedValueHostInstanceStates = value;
@@ -96,8 +96,8 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     /**
      * @inheritDoc ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueChanged
      */
-    public get onValueChanged(): ValueChangedHandler | null | undefined {
-        return this.baseConfig.onValueChanged;
+    public get onValueChanged(): ValueChangedHandler | null {
+        return this.baseConfig.onValueChanged ?? null;
     }
     public set onValueChanged(value: ValueChangedHandler | null) {
         this.baseConfig.onValueChanged = value;
@@ -106,8 +106,8 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     /**
      * @inheritDoc ValueHosts/Types/InputValueHost!IInputValueHostChangedCallback.onInputValueChanged
      */
-    public get onInputValueChanged(): InputValueChangedHandler | null | undefined {
-        return this.baseConfig.onInputValueChanged;
+    public get onInputValueChanged(): InputValueChangedHandler | null {
+        return this.baseConfig.onInputValueChanged ?? null;
     }
     public set onInputValueChanged(value: InputValueChangedHandler | null) {
         this.baseConfig.onInputValueChanged = value;
@@ -117,8 +117,8 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
      * @inheritDoc ValueHosts/Types/ValueHostsManager!IValueHostsManagerCallbacks.onInstanceStateChanged
      */
 
-    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null | undefined {
-        return this.baseConfig.onInstanceStateChanged;
+    public get onInstanceStateChanged(): ValueHostsManagerInstanceStateChangedHandler | null {
+        return this.baseConfig.onInstanceStateChanged ?? null;
     }
     public set onInstanceStateChanged(value: ValueHostsManagerInstanceStateChangedHandler | null) {
         this.baseConfig.onInstanceStateChanged = value;
@@ -127,8 +127,8 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     /**
      * @inheritDoc ValueHosts/Types/ValueHostsManager!IValueHostsManagerCallbacks.onConfigChanged
      */
-    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null | undefined {
-        return this.baseConfig.onConfigChanged;
+    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
+        return this.baseConfig.onConfigChanged ?? null;
     }
     public set onConfigChanged(value: ValueHostsManagerConfigChangedHandler | null) {
         this.baseConfig.onConfigChanged = value;

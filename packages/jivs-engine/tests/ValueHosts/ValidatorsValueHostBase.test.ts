@@ -33,6 +33,14 @@ import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
+import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
+import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
+import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { IManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
+import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
+import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
+import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { IManagerConfigModifier } from "../../src/Interfaces/ManagerConfigModifier";
 
 
 /**
@@ -81,11 +89,45 @@ class TestValidatorsValueHostGenerator extends ValidatorsValueHostBaseGenerator 
     // }
 
 }
-function addGeneratorToServices(services: IValidationServices): void
+class TestValueHostForValidationManagerConfigBuilder extends ValidationManagerConfigBuilder {
+    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;
+    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;    
+    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;
+    // overload resolution
+    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector {
+        return this.addValidatorsValueHost<ValidatorsValueHostBaseConfig>(TestValueHostType, arg1, arg2, arg3);
+    }
+
+}
+class TestManagerConfigBuilderFactory extends ManagerConfigBuilderFactory {
+    public create(configToExtend?: ValueHostsManagerConfig | undefined): IManagerConfigBuilder<ValidationManagerConfig> {
+        return new TestValueHostForValidationManagerConfigBuilder(configToExtend as ValidationManagerConfig ?? this.services);
+    }
+}
+class TestValueHostForValidationManagerConfigModifier extends ValidationManagerConfigModifier {
+
+    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;
+    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;    
+    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;
+    // overload resolution
+    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector {
+        return this.addValidatorsValueHost<ValidatorsValueHostBaseConfig>(TestValueHostType, arg1, arg2, arg3);
+    }
+
+}
+class TestManagerConfigModifierFactory extends ManagerConfigModifierFactory {
+    public create(manager: IValidationManager, existingValueHostConfigs: Map<string, ValueHostConfig>): IManagerConfigModifier<ValueHostsManagerConfig> {
+        return new TestValueHostForValidationManagerConfigModifier(manager, existingValueHostConfigs);
+    }
+}
+
+function supportTestValueHostInServices(services: IValidationServices): void
 {
     let factory = new ValueHostFactory();
     factory.register(new TestValidatorsValueHostGenerator());
     services.valueHostFactory = factory;
+    services.managerConfigBuilderFactory = new TestManagerConfigBuilderFactory();
+    services.managerConfigModifierFactory = new TestManagerConfigModifierFactory();
 }
 
 interface ITestSetupConfigWithMocks {
@@ -210,7 +252,7 @@ function setupValidatorsValueHostBase(
     partialIVHConfig?: Partial<ValidatorsValueHostBaseConfig> | null,
     partialState?: Partial<ValidatorsValueHostBaseInstanceState> | null): ITestSetupConfigWithMocks {
     let services = new MockValidationServices(true, true);
-    addGeneratorToServices(services);
+    supportTestValueHostInServices(services);
 
     let vm = new MockValidationManager(services);
     let updatedConfig = finishPartialValidatorsValueHostBaseConfig(partialIVHConfig ?? null);
@@ -777,8 +819,8 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
 
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state, valueHostGroup);
-        let modifier = setup.validationManager.startModifying();
-        modifier.input('Field1', null, { group: overriddenGroup });
+        let modifier = setup.validationManager.startModifying() as TestValueHostForValidationManagerConfigModifier;
+        modifier.testValueHost('Field1', null, { group: overriddenGroup});
         modifier.apply();
         setup.valueHost = setup.validationManager.getValueHost('Field1') as TestValidatorsValueHost;    // because apply discards the previous instance
 
@@ -1032,7 +1074,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
                 onValidateResult = vr;
             }
         };
-        addGeneratorToServices(vmConfig.services);
+        supportTestValueHostInServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
@@ -1076,7 +1118,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
                 onValidateResult = vr;
             }
         };
-        addGeneratorToServices(vmConfig.services);
+        supportTestValueHostInServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
@@ -1348,7 +1390,7 @@ describe('corrected property', () => {
                 onValidateResult = vr;
             }
         };
-        addGeneratorToServices(vmConfig.services);
+        supportTestValueHostInServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
@@ -1481,7 +1523,7 @@ function testValidateFunctionWithPromise(
         validatorConfigs: finishPartialValidatorConfigs(validatorConfigs ?? null)
     };
     let services = new ValidationServices();
-    addGeneratorToServices(services);
+    supportTestValueHostInServices(services);
     services.cultureService.activeCultureId = 'en';
     services.conditionFactory = new ConditionFactory();
     services.loggerService = new CapturingLogger();
@@ -1998,8 +2040,8 @@ describe('clearValidation', () => {
         state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
 
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        let modifier = setup.validationManager.startModifying();
-        modifier.input('Field1', null, { group: 'GROUPA' });
+        let modifier = setup.validationManager.startModifying() as TestValueHostForValidationManagerConfigModifier;
+        modifier.testValueHost('Field1', null, { group: 'GROUPA' });
         modifier.apply();
         setup.valueHost = setup.validationManager.getValueHost('Field1') as TestValidatorsValueHost;    // because apply discards the previous instance
 
@@ -2026,8 +2068,8 @@ describe('clearValidation', () => {
         state.issuesFound!.push(createIssueFound(NeverMatchesConditionType));
 
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        let modifier = setup.validationManager.startModifying();
-        modifier.input('Field1', null, { group: 'GROUPA' });
+        let modifier = setup.validationManager.startModifying() as TestValueHostForValidationManagerConfigModifier;
+        modifier.testValueHost('Field1', null, { group: 'GROUPA' });
         modifier.apply();
         setup.valueHost = setup.validationManager.getValueHost('Field1') as TestValidatorsValueHost;   // because modifier has clobbered the existing instance
 
@@ -2084,7 +2126,7 @@ describe('clearValidation', () => {
                 onValidateResult = vr;
             }
         };
-        addGeneratorToServices(vmConfig.services);
+        supportTestValueHostInServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
@@ -2138,7 +2180,7 @@ describe('clearValidation', () => {
                 onValidateResult = vr;
             }
         };
-        addGeneratorToServices(vmConfig.services);
+        supportTestValueHostInServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
@@ -2189,7 +2231,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
                 onValidateResult = vr;
             }
         };
-        addGeneratorToServices(vmConfig.services);
+        supportTestValueHostInServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
@@ -2259,7 +2301,7 @@ describe('ValidatorsValueHostBase.clearBusinessLogicErrors', () => {
                 onValidateResult = vr;
             }
         };
-        addGeneratorToServices(vmConfig.services);
+        supportTestValueHostInServices(vmConfig.services);
         let vm = new ValidationManager(vmConfig);
         let vh = vm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
@@ -2514,7 +2556,7 @@ describe('setIssuesFound', () => {
     function setupForSetIssuesFound(vhConfig: Array<ValidatorsValueHostBaseConfig>, onValidatedCallback?: ValueHostValidationStateChangedHandler): ITestSetupConfig
     {
         let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
+        supportTestValueHostInServices(services);
         services.autoGenerateDataTypeCheckService.enabled = false;
 
         let vmConfig: ValidationManagerConfig = {
@@ -2816,7 +2858,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
             }
         ];
         let services = createValidationServicesForTesting();
-        addGeneratorToServices(services);
+        supportTestValueHostInServices(services);
         let cf = services.conditionFactory as ConditionFactory;
         cf.register<EqualToConditionConfig>(
             ConditionType.EqualTo, (config) => new EqualToCondition(config));

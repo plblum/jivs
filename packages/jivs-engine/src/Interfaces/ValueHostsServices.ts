@@ -14,6 +14,8 @@ import { IDataTypeIdentifierService } from './DataTypeIdentifierService';
 import { IDataTypeComparerService } from './DataTypeComparerService';
 import { IConditionFactory } from './Conditions';
 import { IValueHostConfigMergeService } from './ConfigMergeService';
+import { IManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
+import { IManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
 
 /**
  * Services that are needed by ValueHostsManager
@@ -90,4 +92,14 @@ export interface IValueHostsServices extends IServices
      * determines how to merge ValueHost configurations from business logic and UI.
      */
     valueHostConfigMergeService: IValueHostConfigMergeService;
+
+    /**
+     * Creates the ManagerConfigBuilder instances.
+     */
+    managerConfigBuilderFactory: IManagerConfigBuilderFactory;
+
+    /**
+     * Creates the ManagerConfigModifier instances.
+     */
+    managerConfigModifierFactory: IManagerConfigModifierFactory;
 }

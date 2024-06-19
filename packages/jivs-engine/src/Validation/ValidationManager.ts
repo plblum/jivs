@@ -18,7 +18,7 @@ import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfa
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { toIPropertyValueHost } from '../ValueHosts/PropertyValueHost';
 import { assertNotNull } from '../Utilities/ErrorHandling';
-import { ValueHostsManagerConfigBuilderBase } from '../ValueHosts/ValueHostsManagerConfigBuilderBase';
+import { ManagerConfigBuilderBase } from '../ValueHosts/ManagerConfigBuilderBase';
 import { ValidationManagerConfigModifier } from './ValidationManagerConfigModifier';
 import { IValidationServices } from '../Interfaces/ValidationServices';
 
@@ -98,9 +98,9 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * ```
      */
     constructor(config: ValidationManagerConfig)
-    constructor(builder: ValueHostsManagerConfigBuilderBase<any>)
-    constructor(args1: ValidationManagerConfig | ValueHostsManagerConfigBuilderBase<any>){
-        super(args1 as any);
+    constructor(builder: ManagerConfigBuilderBase<any>)
+    constructor(arg1: ValidationManagerConfig | ManagerConfigBuilderBase<any>){
+        super(arg1 as any);
     }
     /**
      * If the user needs to abandon this instance, they should use this to 
@@ -141,7 +141,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      */
     public startModifying(): ValidationManagerConfigModifier
     {
-        return new ValidationManagerConfigModifier(this, this.valueHostConfigs);
+        return super.startModifying() as ValidationManagerConfigModifier;
     }
     
     /**

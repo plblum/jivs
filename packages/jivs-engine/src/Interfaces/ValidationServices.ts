@@ -128,6 +128,17 @@ export enum ServiceName {
      * IValidatorFactory
      */
     validatorFactory = 'ValidatorFactory',
+
+    /**
+     * IManagerConfigBuilderFactory
+     */
+    managerConfigBuilder = 'managerConfigBuilder',
+
+    /**
+     * IManagerConfigModifierFactory
+     */
+    managerConfigModifier = 'managerConfigModifier',
+
     /**
      * IModelToValuesFactory - in jivs-model
      */

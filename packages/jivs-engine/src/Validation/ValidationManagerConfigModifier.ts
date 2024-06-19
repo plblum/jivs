@@ -8,22 +8,25 @@
 import { IValidationManager, ValidationManagerConfig } from "../Interfaces/ValidationManager";
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
-import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import { FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentValidatorCollector, ValidationManagerStartFluent } from '../ValueHosts/Fluent';
 import { ValueHostsManagerConfigModifier } from "../ValueHosts/ValueHostsManagerConfigModifier";
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { InputValueHostConfig } from '../Interfaces/InputValueHost';
-import { PropertyValueHostConfig } from '../Interfaces/PropertyValueHost';
 import { resolveErrorCode } from "../Utilities/Validation";
 import { IValidationServices } from "../Interfaces/ValidationServices";
+import { IValidationManagerConfigModifier } from "../Interfaces/ManagerConfigModifier";
+import { ValueHostType } from "../Interfaces/ValueHostFactory";
+import { InputValueHostConfig } from "../Interfaces/InputValueHost";
+import { PropertyValueHostConfig } from "../Interfaces/PropertyValueHost";
+
 /**
  * Used by ValidationManager.startModifying() function to modify the ValidationManagerConfig.valueHostConfigs array.
  * It does not change the original until you call its apply() function.
  * It makes changes through ValidationManager.addOrMergeValueHost().
  */
 export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModifier<ValidationManagerConfig>
+    implements IValidationManagerConfigModifier<ValidationManagerConfig>
 {
     /**
      * Expected to be called internally by ValueHostsManager/ValidationManager, which supplies
@@ -50,6 +53,15 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
      * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
      */
     public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
+
+    /**
+     * Fluent format to create a InputValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param valueHostName - the ValueHost name
+     * @param parameters - optional. Any additional properties of a InputValueHostConfig.
+     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
+     */
+    public input(valueHostName: ValueHostName, parameters: FluentInputParameters): FluentValidatorCollector;    
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
@@ -59,8 +71,9 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
      */
     public input(config: FluentInputValueConfig): FluentValidatorCollector;
     // overload resolution
-    public input(arg1: ValueHostName | FluentInputValueConfig, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector {
-        return this.addInputValueHost(this.createFluent(), arg1, dataType, parameters);
+    public input(arg1: ValueHostName | FluentInputValueConfig, arg2?: FluentInputParameters | string | null, arg3?: FluentInputParameters): FluentValidatorCollector {
+        let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Input, arg1, arg2, arg3);        
+        return this.addValidatorsValueHost<InputValueHostConfig>(ValueHostType.Input, valueHostName, dataType, propsToUpdate);
     }
 
     /**
@@ -75,44 +88,25 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
     /**
      * Fluent format to create a PropertyValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param valueHostName - the ValueHost name
+     * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
+     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     */
+    public property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorCollector;    
+    /**
+     * Fluent format to create a PropertyValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
      */
     public property(config: FluentPropertyValueConfig): FluentValidatorCollector;
     // overload resolution
-    public property(arg1: ValueHostName | FluentPropertyValueConfig, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector {
-        return this.addPropertyValueHost(this.createFluent(), arg1, dataType, parameters);
+    public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector {
+        let { valueHostName, dataType, propsToUpdate } = this.prepUpdateValueHostParameters(ValueHostType.Property, arg1, arg2, parameters);        
+        return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, valueHostName, dataType, propsToUpdate);
     }
     //#endregion validation oriented ValueHost support
-    
-    /**
-     * Update an InputValueHost with the InputValueHostConfig properties supplied.
-     * Not supported: 'valueHostType', 'name', 'validatorConfigs'
-     * @param valueHostName 
-     * @param propsToUpdate 
-     * @returns Same instance for chaining.
-     */
-    public updateInput(valueHostName: string, propsToUpdate: Partial<Omit<InputValueHostConfig, 'valueHostType' | 'name' | 'validatorConfigs'>>):
-        ValidationManagerConfigModifier
-    {
-        this.updateValueHost<InputValueHostConfig>(ValueHostType.Input, valueHostName, propsToUpdate);
-        return this;
-    }
-
-    /**
-     * Update an PropertyValueHost with the PropertyValueHostConfig properties supplied.
-     * Not supported: 'valueHostType', 'name', 'validatorConfigs'
-     * @param valueHostName 
-     * @param propsToUpdate 
-     * @returns Same instance for chaining.
-     */
-    public updateProperty(valueHostName: string, propsToUpdate: Partial<Omit<PropertyValueHostConfig, 'valueHostType' | 'name' | 'validatorConfigs'>>):
-        ValidationManagerConfigModifier
-    {
-        this.updateValueHost<PropertyValueHostConfig>(ValueHostType.Property, valueHostName, propsToUpdate);
-        return this;
-    }
 
     /**
      * Replace any of the ValidatorConfig properties supported by UI (most are).
@@ -137,7 +131,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
         let replacementVHConfig: ValidatorsValueHostBaseConfig = {
             // enough for merge to know what to merge with
             valueHostType: existingVHConfig.valueHostType,
-            name: existingVHConfig?.name,
+            name: existingVHConfig.name,
             validatorConfigs: []
         };        
         let ivConfig = existingVHConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode) ?? null;
@@ -178,7 +172,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
 
         let replacementVHConfig: ValidatorsValueHostBaseConfig = {
             valueHostType: existingVHConfig.valueHostType,
-            name: existingVHConfig?.name,
+            name: existingVHConfig.name,
             validatorConfigs: []
         };
         this.applyConfig(replacementVHConfig);

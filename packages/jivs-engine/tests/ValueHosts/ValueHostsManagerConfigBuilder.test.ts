@@ -14,7 +14,7 @@ import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { FluentConditionCollector } from "../../src/ValueHosts/Fluent";
 import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
 import { MockValidationServices } from "../TestSupport/mocks";
-import { ensureFluentTestConditions } from "./ValueHostsManagerConfigBuilderBase.test";
+import { ensureFluentTestConditions } from "./ManagerConfigBuilderBase.test";
 import { ValidationSeverity } from "../../src/Interfaces/Validation";
 
 

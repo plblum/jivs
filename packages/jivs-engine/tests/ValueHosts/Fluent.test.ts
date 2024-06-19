@@ -200,7 +200,7 @@ describe('FluentConditionCollector', () => {
     });
 });
 
-describe('fluent(vmConfig).static()', () => {
+describe('fluent().static()', () => {
     test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = fluent().static('Field1', null, { label: 'Field 1' });
         expect(testItem).toEqual({
@@ -239,9 +239,79 @@ describe('fluent(vmConfig).static()', () => {
         expect(() => fluent().static(null!)).toThrow('arg1');
 
     });
+    test('Pass in a StaticValueHostConfig with null name throws', () => {
+        expect(()=> fluent().static({ name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
+
+    });    
     test('First parameter is not compatible with overload throws', () => {
         expect(() => fluent().static(100 as any)).toThrow('pass');
+        expect(() => fluent().static(false as any)).toThrow('pass');
+        expect(() => fluent().static([] as any)).toThrow('argument is not a supported object');
+        expect(() => fluent().static(new Date() as any)).toThrow('argument is not a supported object');
     });
+    test('Second arg is not compatible with overload throws', () => {
+        expect(() => fluent().static('Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => fluent().static('Field1', false as any)).toThrow('Second parameter invalid type');        
+        expect(() => fluent().static('Field1', [] as any)).toThrow('argument is not a supported object');        
+        expect(() => fluent().static('Field1', new Date() as any)).toThrow('argument is not a supported object');        
+    });        
+});
+describe('fluent().withoutValidators()', () => {
+    test('Valid name, null data type and defined vhConfig. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().withoutValidators('TestType', 'Field1', null, { label: 'Field 1' });
+        expect(testItem).toEqual({
+            valueHostType: 'TestType', 
+            name: 'Field1',
+            label: 'Field 1'
+        });
+    });
+    test('Valid name, data type assigned. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().withoutValidators('TestType', 'Field1', 'Test');
+        expect(testItem).toEqual({
+            valueHostType: 'TestType', 
+            name: 'Field1',
+            dataType: 'Test'
+        });
+    });
+
+    test('Valid name. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().withoutValidators('TestType', 'Field1');
+        expect(testItem).toEqual({
+            valueHostType: 'TestType', 
+            name: 'Field1',
+        });
+    });
+
+    test('Pass in a ValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().withoutValidators('TestType', { name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        expect(testItem).toEqual({
+            valueHostType: 'TestType', 
+            name: 'Field1',
+            dataType: 'Test',
+            label: 'Field 1'
+        });        
+    });
+    test('Null name throws', () => {
+        expect(() => fluent().withoutValidators('TestType', null!)).toThrow('arg1');
+
+    });
+    test('Pass in a ValueHostConfig with null name throws', () => {
+        expect(()=> fluent().withoutValidators('TestType', { name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
+
+    });    
+    test('First arg is not compatible with overload throws', () => {
+        expect(() => fluent().withoutValidators('TestType', 100 as any)).toThrow('pass');
+        expect(() => fluent().withoutValidators('TestType', false as any)).toThrow('pass');
+        expect(() => fluent().withoutValidators('TestType', [] as any)).toThrow('argument is not a supported object');
+        expect(() => fluent().withoutValidators('TestType', new Date() as any)).toThrow('argument is not a supported object');
+    });
+
+    test('Second arg is not compatible with overload throws', () => {
+        expect(() => fluent().withoutValidators('TestType', 'Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => fluent().withoutValidators('TestType', 'Field1', false as any)).toThrow('Second parameter invalid type');       
+        expect(() => fluent().withoutValidators('TestType', 'Field1', [] as any)).toThrow('argument is not a supported object');             
+        expect(() => fluent().withoutValidators('TestType', 'Field1', new Date() as any)).toThrow('argument is not a supported object');             
+    });    
 });
 describe('fluent().input()', () => {
     test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
@@ -294,7 +364,16 @@ describe('fluent().input()', () => {
     });
     test('First parameter is not compatible with overload throws', () => {
         expect(() => fluent().input(100 as any)).toThrow('pass');
+        expect(() => fluent().input(false as any)).toThrow('pass');
+        expect(() => fluent().input([] as any)).toThrow('argument is not a supported object');
+        expect(() => fluent().input(new Date() as any)).toThrow('argument is not a supported object');
     });
+    test('Second arg is not compatible with overload throws', () => {
+        expect(() => fluent().input('Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => fluent().input('Field1', false as any)).toThrow('Second parameter invalid type');        
+        expect(() => fluent().input('Field1', [] as any)).toThrow('argument is not a supported object');        
+        expect(() => fluent().input('Field1', new Date() as any)).toThrow('argument is not a supported object');        
+    });      
 });
 
 describe('fluent().property()', () => {
@@ -346,10 +425,86 @@ describe('fluent().property()', () => {
         expect(() => fluent().property(null!)).toThrow('arg1');
 
     });
+    test('Pass in a ValueHostConfig with null name throws', () => {
+        expect(()=> fluent().property({ name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
+
+    });        
     test('First parameter is not compatible with overload throws', () => {
         expect(() => fluent().property(100 as any)).toThrow('pass');
+        expect(() => fluent().property(false as any)).toThrow('pass');
+        expect(() => fluent().property([] as any)).toThrow('argument is not a supported object');
+        expect(() => fluent().property(new Date() as any)).toThrow('argument is not a supported object');
     });
+    test('Second arg is not compatible with overload throws', () => {
+        expect(() => fluent().property('Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => fluent().property('Field1', false as any)).toThrow('Second parameter invalid type');        
+        expect(() => fluent().property('Field1', [] as any)).toThrow('argument is not a supported object');        
+        expect(() => fluent().property('Field1', new Date() as any)).toThrow('argument is not a supported object');        
+    });      
 });
+describe('fluent().withValidators()', () => {
+    test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().withValidators(ValueHostType.Input, 'Field1', null, { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem.parentConfig).toEqual({
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            label: 'Field 1',
+            validatorConfigs: []
+        });
+    });
+    test('Name, data type supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().withValidators(ValueHostType.Input, 'Field1', 'Test');
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let expected = {
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            dataType: 'Test',
+            validatorConfigs: []
+        };
+        expect(testItem.parentConfig).toEqual(expected);
+        
+    });
+    test('Name supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().withValidators(ValueHostType.Input, 'Field1');
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let expected = {
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: []
+        };
+        expect(testItem.parentConfig).toEqual(expected);
+    });
+    test('Pass in a InputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
+        let testItem = fluent().withValidators(ValueHostType.Input, { name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        let expected = {
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            dataType: 'Test',
+            label: 'Field 1',
+            validatorConfigs: []
+        };
+        expect(testItem.parentConfig).toEqual(expected);
+    });
+    test('Null name throws', () => {
+        expect(() => fluent().withValidators(ValueHostType.Input, null!)).toThrow('arg1');
+
+    });
+    test('Arg1 is not compatible with overload throws', () => {
+        expect(() => fluent().withValidators(ValueHostType.Input, 100 as any)).toThrow('pass');
+        expect(() => fluent().withValidators(ValueHostType.Input, false as any)).toThrow('pass');
+        expect(() => fluent().withValidators(ValueHostType.Input, [] as any)).toThrow('argument is not a supported object');
+        expect(() => fluent().withValidators(ValueHostType.Input, new Date() as any)).toThrow('argument is not a supported object');
+    });
+    test('Second arg is not compatible with overload throws', () => {
+        expect(() => fluent().withValidators(ValueHostType.Input, 'Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => fluent().withValidators(ValueHostType.Input, 'Field1', false as any)).toThrow('Second parameter invalid type');        
+        expect(() => fluent().withValidators(ValueHostType.Input, 'Field1', [] as any)).toThrow('argument is not a supported object');        
+        expect(() => fluent().withValidators(ValueHostType.Input, 'Field1', new Date() as any)).toThrow('argument is not a supported object');        
+    });      
+});
+
 
 describe('fluent(vmConfig).conditions', () => {
     test('Undefined parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
@@ -437,6 +592,10 @@ describe('configCalc', () => {
         expect(() => fluent().calc(null!)).toThrow('arg1');
 
     });
+    test('Pass in a ValueHostConfig with null name throws', () => {
+        expect(()=> fluent().calc({ name: null!, dataType: 'Test', calcFn: ()=>0 })).toThrow('config.name required');
+
+    });            
     test('First parameter is not compatible with overload throws', () => {
         expect(() => fluent().calc(100 as any)).toThrow('pass');
     });

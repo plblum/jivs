@@ -10,7 +10,6 @@
  * @module ValueHosts/ConcreteClasses/ValueHostsManager
  */
 import { deepClone, deepEquals } from '../Utilities/Utilities';
-import type { IValidationServices } from '../Interfaces/ValidationServices';
 import type { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState, ValueHostInstanceStateChangedHandler } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import type { IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
@@ -27,7 +26,7 @@ import { toIStaticValueHost } from './StaticValueHost';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { ValueHostsManagerConfigModifier } from './ValueHostsManagerConfigModifier';
 import { ValueHostsManagerConfigBuilder } from './ValueHostsManagerConfigBuilder';
-import { ValueHostsManagerConfigBuilderBase } from './ValueHostsManagerConfigBuilderBase';
+import { ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 
 
@@ -73,13 +72,13 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      */
     constructor(config: ValueHostsManagerConfig)
     constructor(builder: ValueHostsManagerConfigBuilder)
-    constructor(args1: ValueHostsManagerConfig | ValueHostsManagerConfigBuilderBase<any>){
-        assertNotNull(args1, 'args1');
+    constructor(arg1: ValueHostsManagerConfig | ManagerConfigBuilderBase<any>){
+        assertNotNull(arg1, 'arg1');
         let config: ValueHostsManagerConfig;
-        if (args1 instanceof ValueHostsManagerConfigBuilderBase)
-            config = args1.complete();
+        if (arg1 instanceof ManagerConfigBuilderBase)
+            config = arg1.complete();
         else
-            config = args1 as ValueHostsManagerConfig;
+            config = arg1 as ValueHostsManagerConfig;
         assertNotNull(config.services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
         let savedServices = config.services;
@@ -394,7 +393,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      */
     public startModifying(): ValueHostsManagerConfigModifier<ValueHostsManagerConfig>
     {
-        return new ValueHostsManagerConfigModifier<ValueHostsManagerConfig>(this, this.valueHostConfigs);
+        return this.services.managerConfigModifierFactory.create(this, this.valueHostConfigs) as ValueHostsManagerConfigModifier<ValueHostsManagerConfig>;
     }
 
     /**

@@ -1,11 +1,8 @@
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { CalcValueHostConfig, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
+import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
-import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
-import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
 import { ValueHostsManagerConfigModifier } from "../../src/ValueHosts/ValueHostsManagerConfigModifier";
 import { Publicify_ValueHostsManager } from "../TestSupport/Publicify_classes";
@@ -40,6 +37,46 @@ class Publicify_ValueHostsManagerConfigModifier extends ValueHostsManagerConfigM
 
 }
 describe('static()', () => {
+    test('Existing Field1 of static gets updated', () => {
+        let vmConfig = createVMConfig();
+        vmConfig.valueHostConfigs.push({
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            dataType: LookupKey.Integer
+        });
+        let vm = new Publicify_ValueHostsManager(vmConfig);
+
+        let modifier = new Publicify_ValueHostsManagerConfigModifier(vm);
+        let testItem = modifier.static('Field1', null, { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(Publicify_ValueHostsManagerConfigModifier);
+        modifier.apply();
+        expect(vm.getValueHostConfig('Field1')).toEqual({
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            label: 'Field 1',
+            dataType: LookupKey.Integer
+        });
+    });    
+    test('Existing Field1 of type static gets updated by single config object call to static', () => {
+        let vmConfig = createVMConfig();
+        vmConfig.valueHostConfigs.push({
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            dataType: LookupKey.Integer
+        });
+        let vm = new Publicify_ValueHostsManager(vmConfig);
+
+        let modifier = new Publicify_ValueHostsManagerConfigModifier(vm);
+        let testItem = modifier.static({ name: 'Field1', label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(Publicify_ValueHostsManagerConfigModifier);
+        modifier.apply();
+        expect(vm.getValueHostConfig('Field1')).toEqual({
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            label: 'Field 1',
+            dataType: LookupKey.Integer
+        });
+    });        
     test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all inputs plus type to ValueHostsManagerConfig', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValueHostsManager(vmConfig);
@@ -148,8 +185,16 @@ describe('static()', () => {
     test('First parameter is not compatible with overload throws', () => {
         let vm = new Publicify_ValueHostsManager(createVMConfig());
         let testItem = new Publicify_ValueHostsManagerConfigModifier(vm);
-        expect(() => testItem.static(100 as any)).toThrow('pass');
+        expect(() => testItem.static(100 as any)).toThrow('name could not be identified.');
     });
+    test('With name assigned to another type of valueHost, throws.', () => {
+        let vmConfig = createVMConfig();
+        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
+        builder.calc('Field1', LookupKey.Integer, ()=> 1);
+        let vm = new Publicify_ValueHostsManager(builder);
+        let modifier = vm.startModifying();
+        expect(() => modifier.static('Field1', { label: 'UpdatedLabel' })).toThrow(/not type/);
+    });    
 });
 
 describe('calc()', () => {
@@ -259,122 +304,5 @@ describe('calc()', () => {
         let vm = new Publicify_ValueHostsManager(createVMConfig());
         let testItem = new Publicify_ValueHostsManagerConfigModifier(vm);
         expect(() => testItem.calc(100 as any, null, calcFnForTests)).toThrow('pass');
-    });
-});
-describe('updateCalc', () => {
-    function calcFnForTests(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
-        return 1;
-    }
-
-    test('With existing CalcValueHost, all values supplied are updated', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        builder.calc('Field1', LookupKey.Integer, calcFnForTests);
-        let vm = new Publicify_ValueHostsManager(builder);
-        let modifier = vm.startModifying();
-
-        let testItem = modifier.updateCalc('Field1', { dataType: 'TEST', initialValue: '1', label: 'UpdatedLabel', labell10n: 'ULl10n' });
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigModifier);
-        modifier.apply();
-        expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Calc,
-            name: 'Field1',
-            dataType: 'TEST',
-            calcFn: calcFnForTests,
-            initialValue: '1',
-            label: 'UpdatedLabel',
-            labell10n: 'ULl10n'
-        });
-    });
-    test('With existing CalcValueHost, supply unwanted properties. They are not applied, but valid ones are.', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        builder.calc('Field1', LookupKey.Integer, calcFnForTests);
-        let vm = new Publicify_ValueHostsManager(builder);
-        let modifier = vm.startModifying();
-        modifier.updateCalc('Field1', <any>{
-            name: 'ToIgnore', valueHostType: 'IgnoreType',
-            label: 'UpdatedLabel'
-        });
-        modifier.apply();
-        expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Calc,
-            name: 'Field1',
-            dataType: LookupKey.Integer,
-            label: 'UpdatedLabel',
-            calcFn: calcFnForTests
-        });
-    });
-    test('With name assigned to another type of valueHost, throws.', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        builder.static('Field1', LookupKey.Integer);
-        let vm = new Publicify_ValueHostsManager(builder);
-        let modifier = vm.startModifying();
-        expect(() => modifier.updateCalc('Field1', { label: 'UpdatedLabel' })).toThrow(/not type/);
-    });
-    test('With no matching ValueHostName, throws', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let vm = new Publicify_ValueHostsManager(builder);
-        let modifier = vm.startModifying();
-
-        expect(() => modifier.updateCalc('Field1', { label: 'UpdatedLabel' })).toThrow(/not defined/);
-    });
-});
-
-describe('updateStatic', () => {
-    test('With existing StaticValueHost, all values supplied are updated', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        builder.static('Field1', LookupKey.Integer, { label: 'Field 1' });
-        let vm = new Publicify_ValueHostsManager(builder);
-        let modifier = vm.startModifying();
-
-        let testItem = modifier.updateStatic('Field1', { dataType: 'TEST', initialValue: '1', label: 'UpdatedLabel', labell10n: 'ULl10n' });
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigModifier);
-        modifier.apply();
-        expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Static,
-            name: 'Field1',
-            dataType: 'TEST',
-            initialValue: '1',
-            label: 'UpdatedLabel',
-            labell10n: 'ULl10n'
-        });
-    });
-    test('With existing StaticValueHost, supply unwanted properties. They are not applied, but valid ones are.', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        builder.static('Field1', LookupKey.Integer, { label: 'Field 1' });
-        let vm = new Publicify_ValueHostsManager(builder);
-        let modifier = vm.startModifying();
-        modifier.updateStatic('Field1', <any>{
-            name: 'ToIgnore', valueHostType: 'IgnoreType',
-            label: 'UpdatedLabel'
-        });
-        modifier.apply();
-        expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Static,
-            name: 'Field1',
-            dataType: LookupKey.Integer,
-            label: 'UpdatedLabel'
-        });
-    });
-    test('With name assigned to another type of valueHost, throws.', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        builder.calc('Field1', LookupKey.Integer, ()=> 1);
-        let vm = new Publicify_ValueHostsManager(builder);
-        let modifier = vm.startModifying();
-        expect(() => modifier.updateStatic('Field1', { label: 'UpdatedLabel' })).toThrow(/not type/);
-    });
-    test('With no matching ValueHostName, throws', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let vm = new Publicify_ValueHostsManager(builder);
-        let modifier = vm.startModifying();
-
-        expect(() => modifier.updateStatic('Field1', { label: 'UpdatedLabel' })).toThrow(/not defined/);
     });
 });

@@ -25,6 +25,10 @@ import { CodingError } from '../Utilities/ErrorHandling';
 import { IDataTypeComparerService } from '../Interfaces/DataTypeComparerService';
 import { IConditionFactory } from '../Interfaces/Conditions';
 import { IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
+import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilderFactory';
+import { IManagerConfigModifierFactory } from '../Interfaces/ManagerConfigModifierFactory';
+import { ManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
+import { ManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
 
 /**
  * Supplies services and factories to be used as dependency injection
@@ -207,6 +211,39 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
     }
 
     //#endregion ValueHostFactory
+    /**
+     * Creates the ManagerConfigBuilder instances.
+     * Defaults to using ManagerConfigBuilderFactory.
+     */
+    public get managerConfigBuilderFactory(): IManagerConfigBuilderFactory {
+        let service = this.getService<IManagerConfigBuilderFactory>(ServiceName.managerConfigBuilder);
+        if (!service) {
+            let factory = service = new ManagerConfigBuilderFactory();
+            this.setService(ServiceName.managerConfigBuilder, factory);
+        }
+        return service;
+    }
+    public set managerConfigBuilderFactory(factory: IManagerConfigBuilderFactory) {
+        this.setService(ServiceName.managerConfigBuilder, factory);
+    }
+
+    /**
+     * Creates the ManagerConfigModifier instances.
+     * Defaults to using ManagerConfigModifierFactory.
+     */
+    public get managerConfigModifierFactory(): IManagerConfigModifierFactory {
+        let service = this.getService<IManagerConfigModifierFactory>(ServiceName.managerConfigModifier);
+        if (!service) {
+            let factory = service = new ManagerConfigModifierFactory();
+            this.setService(ServiceName.managerConfigModifier, factory);
+        }
+        return service;
+    }
+    public set managerConfigModifierFactory(factory: IManagerConfigModifierFactory) {
+        this.setService(ServiceName.managerConfigModifier, factory);
+    }
+
+  
 
 }
 

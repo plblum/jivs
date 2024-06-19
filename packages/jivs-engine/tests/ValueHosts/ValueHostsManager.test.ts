@@ -69,7 +69,7 @@ describe('constructor and initial property values', () => {
     test('null setup parameter throws', () => {
         let testItem: PublicifiedValueHostsManager | null = null;
 
-        expect(() => testItem = new PublicifiedValueHostsManager(null!)).toThrow(/args1/);
+        expect(() => testItem = new PublicifiedValueHostsManager(null!)).toThrow(/arg1/);
 
     });
     test('Using Builder, no configs (empty array), an empty state and no callback', () => {

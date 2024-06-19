@@ -3,7 +3,7 @@
  * @module ValidationManager/ConcreteClasses/ValidationManagerConfigBuilder
  */
 
-import { IValidationManagerCallbacks, ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../Interfaces/ValidationManager";
+import { ValidationManagerConfig, ValidationManagerInstanceState, ValidationStateChangedHandler } from "../Interfaces/ValidationManager";
 import { ValueHostsManagerConfigBuilder } from "../ValueHosts/ValueHostsManagerConfigBuilder";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ValueHostValidationStateChangedHandler } from "../Interfaces/ValidatableValueHostBase";
@@ -12,6 +12,9 @@ import { FluentInputParameters, FluentValidatorCollector, FluentInputValueConfig
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { resolveErrorCode } from "../Utilities/Validation";
+import { BuilderOverrideOptions, IValidationManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
+import {  toIServicesAccessor } from "../Interfaces/Services";
+import { PropertyValueHostConfig } from "../Interfaces/PropertyValueHost";
 
 
 /**
@@ -21,7 +24,13 @@ import { resolveErrorCode } from "../Utilities/Validation";
  */
 export function build(arg1: IValidationServices | ValidationManagerConfig): ValidationManagerConfigBuilder
 {
-    return new ValidationManagerConfigBuilder(arg1 as any);
+    if (toIServicesAccessor(arg1))
+    {
+        let services = (arg1 as ValidationManagerConfig).services;
+        return services.managerConfigBuilderFactory.create(arg1 as ValidationManagerConfig) as ValidationManagerConfigBuilder;  
+    }
+    let services = arg1 as IValidationServices;
+    return services.managerConfigBuilderFactory.create() as ValidationManagerConfigBuilder;
 }
 
 /**
@@ -30,7 +39,7 @@ export function build(arg1: IValidationServices | ValidationManagerConfig): Vali
  */
 
 export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuilder<ValidationManagerConfig>
-    implements IValidationManagerCallbacks
+    implements IValidationManagerConfigBuilder<ValidationManagerConfig>
 {
     constructor(services: IValidationServices)
     constructor(config: ValidationManagerConfig)
@@ -59,14 +68,24 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param valueHostName - the ValueHost name
+     * @param parameters - optional. Any additional properties of a InputValueHostConfig.
+     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
+     */
+    public input(valueHostName: ValueHostName, parameters: FluentInputParameters): FluentValidatorCollector;    
+    /**
+     * Fluent format to create a InputValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param config - Supply the entire InputValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
      */
     public input(config: FluentInputValueConfig): FluentValidatorCollector;
     // overload resolution
-    public input(arg1: ValueHostName | FluentInputValueConfig, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector {
-        return this.addInputValueHost(this.createFluent(), arg1, dataType, parameters);
+    public input(arg1: ValueHostName | FluentInputValueConfig,
+        arg2?: FluentInputParameters | string | null,
+        arg3?: FluentInputParameters): FluentValidatorCollector {
+        return this.addValidatorsValueHost<InputValueHostConfig>(ValueHostType.Input, arg1, arg2, arg3);
     }
 
     /**
@@ -81,14 +100,22 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     /**
      * Fluent format to create a PropertyValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * @param valueHostName - the ValueHost name
+     * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
+     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     */
+    public property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorCollector;    
+    /**
+     * Fluent format to create a PropertyValueHostConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
      */
     public property(config: FluentPropertyValueConfig): FluentValidatorCollector;
     // overload resolution
-    public property(arg1: ValueHostName | FluentPropertyValueConfig, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector {
-        return this.addPropertyValueHost(this.createFluent(), arg1, dataType, parameters);
+    public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, arg3?: FluentPropertyParameters): FluentValidatorCollector {
+        return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, arg1, arg2, arg3);
     }
     //#endregion validation oriented ValueHost support
 
@@ -172,7 +199,7 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
 
 
     //#region InstanceState
-    public get savedInstanceState(): ValidationManagerInstanceState | null | undefined {
+    public get savedInstanceState(): ValidationManagerInstanceState | null {
         return super.savedInstanceState;
     }
     public set savedInstanceState(value: ValidationManagerInstanceState | null) {
@@ -184,8 +211,8 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     /**
      * @inheritDoc ValueHosts/Types/ValidatableValueHostBase!IValidatableValueHostBaseCallbacks.onValueHostValidationStateChanged
      */
-    public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null | undefined {
-        return this.baseConfig.onValueHostValidationStateChanged;
+    public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
+        return this.baseConfig.onValueHostValidationStateChanged ?? null;
     }
     public set onValueHostValidationStateChanged(value: ValueHostValidationStateChangedHandler | null) {
         this.baseConfig.onValueHostValidationStateChanged = value;
@@ -194,8 +221,8 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     /**
      * @inheritDoc ValidationManager/Types!IValidationManagerCallbacks.onValidationStateChanged
      */
-    public get onValidationStateChanged(): ValidationStateChangedHandler | null | undefined {
-        return this.baseConfig.onValidationStateChanged;
+    public get onValidationStateChanged(): ValidationStateChangedHandler | null {
+        return this.baseConfig.onValidationStateChanged ?? null;
     }
     public set onValidationStateChanged(value: ValidationStateChangedHandler | null) {
         this.baseConfig.onValidationStateChanged = value;
@@ -204,8 +231,8 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     /**
      * @inheritDoc ValidationManager/Types!IValidationManagerCallbacks.notifyValidationStateChangedDelay
      */
-    public get notifyValidationStateChangedDelay(): number | undefined {
-        return this.baseConfig.notifyValidationStateChangedDelay;
+    public get notifyValidationStateChangedDelay(): number {
+        return this.baseConfig.notifyValidationStateChangedDelay ?? 0;
     }
     public set notifyValidationStateChangedDelay(value: number) {
         this.baseConfig.notifyValidationStateChangedDelay = value;
@@ -214,24 +241,3 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
 }
 
 
-/**
- * Parameter for the overrides function to supply its options.
- */
-export interface BuilderOverrideOptions
-{
-    /**
-     * When true, use the favorUIMessages() function to delete
-     * any error messages supplied by business logic for which
-     * you have a replacement in TextLocalizationService.
-     * If undefined, it defaults to true.
-     */
-    favorUIMessages?: boolean,
-    /**
-     * When true, use the convertPropertyToInput() function to
-     * replace the valueHostType property value, from 'Property'
-     * to 'Input' (no changes to any other case).
-     * This allows business logic to output in its preferred ValueHostType
-     * and UI to upscale it to InputValueHost.
-     */
-    convertPropertyToInput?: boolean
-}

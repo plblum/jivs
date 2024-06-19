@@ -10,7 +10,7 @@ import { FluentValidatorCollector, customRule } from '../../src/ValueHosts/Fluen
 import { RegExpConditionConfig, RequireTextCondition } from '../../src/Conditions/ConcreteConditions';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { ensureFluentTestConditions } from '../ValueHosts/ValueHostsManagerConfigBuilderBase.test';
+import { ensureFluentTestConditions } from '../ValueHosts/ManagerConfigBuilderBase.test';
 import { ICalcValueHost, CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
@@ -51,6 +51,38 @@ class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBu
     }
     
 }
+describe('constructor', () => {
+    test('Creates a ValidationManagerConfigBuilder with the supplied ValidationServices', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new ValidationManagerConfigBuilder(services);
+        expect(testItem.onConfigChanged).toBeNull();
+        expect(testItem.notifyValidationStateChangedDelay).toBe(0);
+        expect(testItem.savedInstanceState).toBeNull();
+        expect(testItem.savedValueHostInstanceStates).toBeNull();
+        expect(testItem.onInputValueChanged).toBeNull();
+        expect(testItem.onValueHostValidationStateChanged).toBeNull();
+        expect(testItem.onValidationStateChanged).toBeNull();
+        expect(testItem.onValueChanged).toBeNull();
+        expect(testItem.onValueHostValidationStateChanged).toBeNull();
+    });
+    test('Creates a ValidationManagerConfigBuilder with the supplied ValidationManagerConfig', () => {
+        let services = new MockValidationServices(false, false);
+        let vmConfig: ValidationManagerConfig = {
+            services: services,
+            valueHostConfigs: []
+        };
+        let testItem = new ValidationManagerConfigBuilder(vmConfig);
+        expect(testItem.onConfigChanged).toBeNull();
+        expect(testItem.notifyValidationStateChangedDelay).toBe(0);
+        expect(testItem.savedInstanceState).toBeNull();
+        expect(testItem.savedValueHostInstanceStates).toBeNull();
+        expect(testItem.onInputValueChanged).toBeNull();
+        expect(testItem.onValueHostValidationStateChanged).toBeNull();
+        expect(testItem.onValidationStateChanged).toBeNull();
+        expect(testItem.onValueChanged).toBeNull();
+        expect(testItem.onValueHostValidationStateChanged).toBeNull();
+    });    
+});
 
 describe('function build()', () => {
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationServices', () => {
@@ -60,6 +92,17 @@ describe('function build()', () => {
         expect(testItem!).toBeInstanceOf(ValidationManagerConfigBuilder);
         let result = testItem!.complete();
         expect(result.services).toBe(services);
+        expect(result.valueHostConfigs).toEqual([]);
+
+        expect(result.onConfigChanged).toBeUndefined();
+        expect(result.notifyValidationStateChangedDelay).toBeUndefined();
+        expect(result.savedInstanceState).toBeUndefined();
+        expect(result.savedValueHostInstanceStates).toBeUndefined();
+        expect(result.onInputValueChanged).toBeUndefined();
+        expect(result.onValueHostValidationStateChanged).toBeUndefined();
+        expect(result.onValidationStateChanged).toBeUndefined();
+        expect(result.onValueChanged).toBeUndefined();
+        expect(result.onValueHostValidationStateChanged).toBeUndefined();        
     });
     test('Creates a ValidationManagerConfigBuilder with the supplied ValidationManagerConfig', () => {
         let services = new MockValidationServices(false, false);
@@ -68,11 +111,20 @@ describe('function build()', () => {
             valueHostConfigs: []
         };
         let testItem: ValidationManagerConfigBuilder;
-        expect(() => testItem = build(services)).not.toThrow();
+        expect(() => testItem = build(vmConfig)).not.toThrow();
         expect(testItem!).toBeInstanceOf(ValidationManagerConfigBuilder);
         let result = testItem!.complete();
         expect(result.services).toBe(services);   
         expect(result.valueHostConfigs).toEqual([]);
+        expect(result.onConfigChanged).toBeUndefined();
+        expect(result.notifyValidationStateChangedDelay).toBeUndefined();
+        expect(result.savedInstanceState).toBeUndefined();
+        expect(result.savedValueHostInstanceStates).toBeUndefined();
+        expect(result.onInputValueChanged).toBeUndefined();
+        expect(result.onValueHostValidationStateChanged).toBeUndefined();
+        expect(result.onValidationStateChanged).toBeUndefined();
+        expect(result.onValueChanged).toBeUndefined();
+        expect(result.onValueHostValidationStateChanged).toBeUndefined();               
     });
 });
 describe('instance state properties', () => {

@@ -1,13 +1,15 @@
 /**
- * @inheritDoc ValueHosts/AbstractClasses/ValueHostsManagerConfigBuilderBase!ValueHostsManagerConfigBuilderBase:class
- * @module ValueHosts/AbstractClasses/ValueHostsManagerConfigBuilderBase
+ * @inheritDoc ValueHosts/AbstractClasses/ManagerConfigBuilderBase!ManagerConfigBuilderBase:class
+ * @module ValueHosts/AbstractClasses/ManagerConfigBuilderBase
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import {
+    FluentAnyValueHostConfig,
+    FluentAnyValueHostParameters,
     FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig,
-    FluentStaticParameters, FluentValidatorCollector, ValidationManagerStartFluent, ValueHostsManagerStartFluent
+    FluentStaticParameters, FluentValidatorCollector, FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters, ValidationManagerStartFluent, ValueHostsManagerStartFluent
 } from './Fluent';
 import { StaticValueHostConfig } from '../Interfaces/StaticValueHost';
 import { CalcValueHostConfig, CalculationHandler } from '../Interfaces/CalcValueHost';
@@ -16,8 +18,12 @@ import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { ValueHostsManagerConfig } from '../Interfaces/ValueHostsManager';
 import { toIServices, toIServicesAccessor } from '../Interfaces/Services';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
-import { IDisposable } from '../Interfaces/General_Purpose';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
+import { isPlainObject, isSupportedAsValue } from '../Utilities/Utilities';
+import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
+import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
+import { InputValueHostConfig } from '../Interfaces/InputValueHost';
+import { PropertyValueHostConfig } from '../Interfaces/PropertyValueHost';
 
 
 /**
@@ -26,7 +32,7 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
  * (although its great if you have to write conversion between your own business logic
  * and Jivs).
  * 
- * The ValueHostsManagerConfigBuilderBase provides a way to configure through meaningful code.
+ * The ManagerConfigBuilderBase provides a way to configure through meaningful code.
  * There are actually 2 of these, the builder and the modifier. ValueHostsManagerConfigBuilder is used for
  * the initial configuration passed into ValueHostManager/ValidationManager.
  * ValueHostsManagerConfigModifier is used to modify the configuration in an existing ValueHostManager.
@@ -88,7 +94,8 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
  * modifier.apply(); // consider modifier disposed at this point
  * ```
  */
-export abstract class ValueHostsManagerConfigBuilderBase<T extends ValueHostsManagerConfig> implements IDisposable {
+export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig>
+    implements IManagerConfigBuilder<T> {
 
     constructor(services: IValueHostsServices)
     constructor(config: T)
@@ -209,52 +216,55 @@ export abstract class ValueHostsManagerConfigBuilderBase<T extends ValueHostsMan
 
     //#region fluent for creating ValueHosts
     /**
-     * Fluent format to create a InputValueHostConfig.
+     * Utility to use the Fluent system to add a ValueHostConfig to the ValueHostsManagerConfig.
+     * @param valueHostType 
+     * @param arg1 
+     * @param arg2 
+     * @param arg3 
+     * @returns 
+     */
+    protected addValueHost<TVHConfig extends ValueHostConfig>(
+        valueHostType: ValueHostType,
+        arg1: ValueHostName | Partial<TVHConfig>,
+        arg2?: Partial<TVHConfig> | string | null,
+        arg3?: Partial<TVHConfig>): ManagerConfigBuilderBase<T> {
+        assertNotNull(arg1, 'arg1');
+        let fluent = this.createFluent();
+        let vhConfig = fluent.withoutValidators<TVHConfig>(valueHostType, 
+            arg1 as FluentAnyValueHostConfig<TVHConfig> | ValueHostName,
+            arg2 as FluentAnyValueHostParameters<TVHConfig> | string | null,
+            arg3 as FluentAnyValueHostParameters<TVHConfig>);            
+        this.applyConfig(vhConfig);
+        return this;
+    }
+
+    /**
+     * Fluent format to create any ValueHostConfig based upon ValidatorsValueHostBaseConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * Protected because ValueHostManager does not support InputValueHost. 
      * ValidationManager offers a public interface.
+     * @param valueHostType - the ValueHostType to configure
      * @param arg1 - either the ValueHost name for a multiparameter use or InputValueConfig for a single parameter use.
-     * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a InputValueHostConfig.
+     * @param arg2 - optional and can be null. The value for ValueHost.dataType or InputValueHostConfig.
+     * @param arg3 - optional. Any additional properties of a InputValueHostConfig.
      * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
      */
-    protected addInputValueHost(fluent: ValidationManagerStartFluent, arg1: ValueHostName | FluentInputValueConfig, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector {
+    protected addValidatorsValueHost<TVHConfig extends ValidatorsValueHostBaseConfig>(
+        valueHostType: ValueHostType | string,
+        arg1: Partial<TVHConfig> | ValueHostName,
+        arg2?: Partial<TVHConfig> | string | null,
+        arg3?: Partial<TVHConfig>): FluentValidatorCollector {
 
-        let collector: FluentValidatorCollector;
-        if (typeof arg1 === 'object') {
-            collector = fluent.input(arg1);
-        }
-        else if (typeof arg1 === 'string') {
-            collector = fluent.input(arg1, dataType, parameters);
-        }
-        else
-            throw new TypeError('Must pass valuehost name or InputValueHostConfig');
+        assertNotNull(arg1, 'arg1');
+        let fluent = this.createFluent() as ValidationManagerStartFluent;
+        let collector = fluent.withValidators(valueHostType,
+            arg1 as FluentValidatorsValueHostConfig<TVHConfig> | ValueHostName,
+            arg2 as FluentValidatorsValueHostParameters<TVHConfig> | string | null,
+            arg3 as FluentValidatorsValueHostParameters<TVHConfig>);
+
         this.applyConfig(collector.parentConfig);
         return collector;
-    }
-    /**
-     * Fluent format to create a PropertyValueHostConfig.
-     * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * Protected because ValueHostManager does not support PropertyValueHost. 
-     * ValidationManager offers a public interface.
-     * @param arg1 - either the ValueHost name for a multiparameter use or PropertyValueConfig for a single parameter use.
-     * @param dataType - optional and can be null. The value for ValueHost.dataType.
-     * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
-     */
-    public addPropertyValueHost(fluent: ValidationManagerStartFluent, arg1: ValueHostName | FluentPropertyValueConfig, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector {
-        let collector: FluentValidatorCollector;
-        if (typeof arg1 === 'object') {
-            collector = fluent.property(arg1);
-        }
-        else if (typeof arg1 === 'string') {
-            collector = fluent.property(arg1, dataType, parameters);
-        }
-        else
-            throw new TypeError('Must pass valuehost name or PropertyValueHostConfig');
-        this.applyConfig(collector.parentConfig);
-        return collector;
-    }
+    }    
 
     /**
      * Fluent format to create a StaticValueHostConfig.
@@ -264,7 +274,16 @@ export abstract class ValueHostsManagerConfigBuilderBase<T extends ValueHostsMan
      * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
      * @returns Same instance for chaining.
      */
-    static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): ValueHostsManagerConfigBuilderBase<T>;
+    public static(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentStaticParameters): ManagerConfigBuilderBase<T>;
+
+    /**
+     * Fluent format to create a StaticValueHostConfig.
+     * This is the start of a fluent series. However, at this time, there are no further items in the series.
+     * @param valueHostName - the ValueHost name
+     * @param parameters - optional. Any additional properties of a StaticValueHostConfig.
+     * @returns Same instance for chaining.
+     */
+    public static(valueHostName: ValueHostName, parameters: FluentStaticParameters): ManagerConfigBuilderBase<T>;    
     /**
      * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -272,21 +291,11 @@ export abstract class ValueHostsManagerConfigBuilderBase<T extends ValueHostsMan
      * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
-    static(config: Omit<StaticValueHostConfig, 'valueHostType'>): ValueHostsManagerConfigBuilderBase<T>;
+    public static(config: Omit<StaticValueHostConfig, 'valueHostType'>): ManagerConfigBuilderBase<T>;
     // overload resolution
-    static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): ValueHostsManagerConfigBuilderBase<T> {
-        let fluent = this.createFluent();
-        let vhConfig: StaticValueHostConfig;
-        if (typeof arg1 === 'object') {
-            vhConfig = fluent.static(arg1);
-        }
-        else if (typeof arg1 === 'string') {
-            vhConfig = fluent.static(arg1, dataType, parameters);
-        }
-        else
-            throw new TypeError('Must pass valuehost name or StaticValueHostConfig');
-        this.applyConfig(vhConfig);
-        return this;
+    public static(arg1: ValueHostName | StaticValueHostConfig, arg2?: FluentStaticParameters | string | null, arg3?: FluentStaticParameters): ManagerConfigBuilderBase<T> {
+        assertNotNull(arg1, 'arg1');
+        return this.addValueHost<StaticValueHostConfig>(ValueHostType.Static, arg1, arg2, arg3);
     }
 
     /**
@@ -297,7 +306,7 @@ export abstract class ValueHostsManagerConfigBuilderBase<T extends ValueHostsMan
      * @param calcFn - required. Function callback.
      * @returns Same instance for chaining.
      */
-    calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): ValueHostsManagerConfigBuilderBase<T>;
+    public calc(valueHostName: ValueHostName, dataType: string | null | undefined, calcFn: CalculationHandler): ManagerConfigBuilderBase<T>;
     /**
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -305,14 +314,15 @@ export abstract class ValueHostsManagerConfigBuilderBase<T extends ValueHostsMan
      * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
-    calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): ValueHostsManagerConfigBuilderBase<T>;
+    public calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): ManagerConfigBuilderBase<T>;
     // overload resolution
-    calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): ValueHostsManagerConfigBuilderBase<T> {
+    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): ManagerConfigBuilderBase<T> {
+        assertNotNull(arg1, 'arg1');
         let fluent = this.createFluent();
         let vhConfig: CalcValueHostConfig;
 
-        if (typeof arg1 === 'object') {
-            vhConfig = fluent.calc(arg1);
+        if (isPlainObject(arg1)) {
+            vhConfig = fluent.calc(arg1 as CalcValueHostConfig);
         }
         else if (typeof arg1 === 'string') {
             vhConfig = fluent.calc(arg1, dataType ?? null, calcFn!);
@@ -326,7 +336,15 @@ export abstract class ValueHostsManagerConfigBuilderBase<T extends ValueHostsMan
     //#endregion fluent for creating ValueHosts
     protected assertValueHostType(valueHostConfig: ValueHostConfig | null, expectedType: ValueHostType): void {
         assertNotNull(valueHostConfig, 'valueHostConfig');
-        if (valueHostConfig!.valueHostType !== expectedType)
+        let valueHostType = valueHostConfig!.valueHostType;
+        // istanbul ignore next  // currently not possible to test valueHostType === null
+        if (valueHostType == null) // null or undefined
+            if ((valueHostConfig! as ValidatorsValueHostBaseConfig).validatorConfigs == null) // null or undefined
+                valueHostType = ValueHostType.Static;
+            else
+                valueHostType = ValueHostType.Input;
+                
+        if (valueHostType !== expectedType)
             throw new CodingError(`ValueHost name "${valueHostConfig!.name}" is not type=${expectedType}.`);
 
     }

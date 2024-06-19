@@ -138,6 +138,9 @@ import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { PropertyValueHostConfig } from '../Interfaces/PropertyValueHost';
 import { ValueHostsManagerConfig } from '../Interfaces/ValueHostsManager';
+import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
+import { isPlainObject, isSupportedAsValue } from '../Utilities/Utilities';
+
 
 /**
  * Starts a fluent chain for ValueHostsManager. Its methods start CalcValueHost (calc()),
@@ -162,6 +165,71 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
     }
 
     /**
+     * Add Value Host that does not have direct supporting functions here.
+     * This targets ValueHosts without validators. Use the withValidators() function for those.
+     * @param valueHostType
+     * @param arg1 - either the ValueHost name or a ValueHostConfig. When ValueHostConfig, omit the remaining parameters.
+     * @param arg2 - optional and can be null. The value for ValueHost.dataType or any additional properties of ValueHostConfig.
+     * @param arg3 - optional. Any additional properties of a ValueHostConfig.
+     * @returns Completed ValueHostConfig of type T
+     */
+    public withoutValidators<T extends ValueHostConfig>(valueHostType: ValueHostType | string, arg1: ValueHostName | FluentAnyValueHostConfig<T>,
+        arg2?: FluentAnyValueHostParameters<T> | string | null, arg3?: FluentAnyValueHostParameters<T>): T
+    {
+        assertNotNull(valueHostType, 'valueHostType');
+        this.assertFirstParameterValid(arg1);   // includes a check for config.name not already defined
+    // just the first parameter is used when its a ValueHostConfig.
+        if (this.isConfigObject(arg1)) {
+             return { ...arg1 as T, valueHostType: valueHostType };
+        }
+        // first parameter is expected to be a string with ValueHostName
+        // second parameter is ValueHostConfig, which we'll modify to assign ValueHostType and ValueHostName
+        // third parameter is ignored
+        if (this.isConfigObject(arg2)) {
+            return { ...arg2 as T, name: arg1 as string, valueHostType: valueHostType };
+        }
+
+        // first parameter is expected to be a string with ValueHostName
+        // second parameter is data type (or null/undefined)
+        // third parameter is ValueHostConfig, which we'll modify to assign ValueHostType, ValueHostName and DataType
+        if (this.isConfigObject(arg3)) {
+            let config = { ...arg3 as T, name: arg1 as string, valueHostType: valueHostType };
+            if (arg2)
+                config.dataType = arg2 as string;
+            return config;
+        }        
+        // no configs supplied.
+        // first parameter must be a string with ValueHostName
+        // second parameter is data type (or null/undefined)
+        // third parameter is ignored
+        if (typeof arg1 === 'string' && (typeof arg2 === 'string' || arg2 == null)) {   // null or undefined
+
+            let config = { valueHostType: valueHostType, name: arg1 } as T;
+            if (arg2)
+                config.dataType = arg2;
+        
+            return config;
+        }
+        throw new TypeError('Second parameter invalid type');
+    }
+
+    /**
+     * Returns true if the arg is a plain Javascript Object.
+     * Returns false if not any type of object.
+     * Throws an error it is an object but not a plain one.
+     * @param arg 
+     */
+    protected isConfigObject(arg: any): boolean
+    {
+        if (isPlainObject(arg))
+            return true;
+        if (arg != null)    // null or undefined
+            if (typeof arg === 'object') {
+                throw new TypeError('argument is not a supported object');
+            }
+        return false;
+    }
+    /**
      * Fluent format to create a StaticValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param valueHostName - the ValueHost name
@@ -177,23 +245,9 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
      */
     public static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
     // overload resolution
-    public static(arg1: ValueHostName | StaticValueHostConfig, dataType?: string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
+    public static(arg1: ValueHostName | FluentStaticValueConfig, arg2?: FluentStaticParameters | string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
     {
-        this.assertFirstParameterValid(arg1);
-        if (typeof arg1 === 'object')
-            return { ...arg1 as StaticValueHostConfig, valueHostType: ValueHostType.Static };
-        if (typeof arg1 === 'string') {
-
-            let config: StaticValueHostConfig = { valueHostType: ValueHostType.Static, name: arg1 };
-            if (dataType)
-                config.dataType = dataType;
-            if (parameters)
-                config = { ...parameters, ...config };
-        
-            return config;
-        }
-        /* istanbul ignore next */
-        throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
+        return this.withoutValidators<StaticValueHostConfig>(ValueHostType.Static, arg1, arg2, parameters);
     }
 
     /**
@@ -215,8 +269,9 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
     public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
     {
         this.assertFirstParameterValid(arg1);
-        if (typeof arg1 === 'object')
+        if (this.isConfigObject(arg1)) {
             return { ...arg1 as CalcValueHostConfig, valueHostType: ValueHostType.Calc };
+        }
         if (typeof arg1 === 'string') {
             if (typeof calcFn !== 'function')
                 throw new CodingError('Must supply a calculation function');
@@ -256,9 +311,9 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
     {
         assertNotNull(arg, 'arg1');
         
-        if (typeof arg === 'object') {
-            assertNotNull(arg.name, 'config.name');
-            this.assertNameNotDefined(arg.name);
+        if (this.isConfigObject(arg)) {
+            assertNotNull((arg as ValueHostConfig).name, 'config.name');
+            this.assertNameNotDefined((arg as ValueHostConfig).name);
         }
         else if (typeof arg === 'string') {
             assertNotNull(arg, 'valueHostName');
@@ -294,6 +349,26 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent<V
     }
 
     /**
+     * Use with any ValueHost with Validators that is does not have direct supporting functions here.
+     * @param valueHostType 
+     * @param arg1 - ValueHostname or a ValueHostConfig. When ValueHostConfig, omit the remaining parameters.
+     * @param arg2 - optional and can be null. The value for ValueHost.dataType or any additional properties of ValueHostConfig.
+     * @param arg3 - optional. Any additional properties of a ValueHostConfig.
+     * @returns 
+     */
+    public withValidators<T extends ValidatorsValueHostBaseConfig>(valueHostType: ValueHostType | string, 
+        arg1: FluentValidatorsValueHostConfig<T> | ValueHostName,
+        arg2?: FluentValidatorsValueHostParameters<T> | string | null,
+        arg3?: FluentValidatorsValueHostParameters<T>): FluentValidatorCollector
+    {
+        let config = this.withoutValidators<T>(valueHostType, arg1, arg2, arg3);
+        if (!config.validatorConfigs)
+            config.validatorConfigs = [];
+        return new FluentValidatorCollector(config);
+    }    
+
+
+    /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "require()".
      * @param valueHostName - the ValueHost name
@@ -309,33 +384,9 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent<V
      */
     public input(config: FluentInputValueConfig): FluentValidatorCollector;
     // overload resolution
-    public input(arg1: ValueHostName | FluentInputValueConfig, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector
+    public input(arg1: ValueHostName | FluentInputValueConfig, arg2?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector
     {
-        this.assertFirstParameterValid(arg1);
-        
-        if (typeof arg1 === 'object') {
-            let config: InputValueHostConfig =
-                { ...arg1 as InputValueHostConfig, valueHostType: ValueHostType.Input };
-            if (!config.validatorConfigs)
-                config.validatorConfigs = [];
-
-            return new FluentValidatorCollector(config);
-        }
-        if (typeof arg1 === 'string') {
-
-            let config: InputValueHostConfig =
-                { valueHostType: ValueHostType.Input, name: arg1 } as InputValueHostConfig;
-            if (dataType)
-                config.dataType = dataType;
-            if (parameters)
-                config = { ...parameters, ...config };
-            if (!config.validatorConfigs)
-                config.validatorConfigs = [];
-
-            return new FluentValidatorCollector(config);;
-        }
-        /* istanbul ignore next */
-        throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
+        return this.withValidators<InputValueHostConfig>(ValueHostType.Input, arg1, arg2, parameters);
     }    
 
     /**
@@ -354,33 +405,9 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent<V
      */
     public property(config: FluentPropertyValueConfig): FluentValidatorCollector;
     // overload resolution
-    public property(arg1: ValueHostName | FluentPropertyValueConfig, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector
+    public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: string | null, arg3?: FluentPropertyParameters): FluentValidatorCollector
     {
-        this.assertFirstParameterValid(arg1);
-        
-        if (typeof arg1 === 'object') {
-            let config: PropertyValueHostConfig =
-                { ...arg1 as PropertyValueHostConfig, valueHostType: ValueHostType.Property };
-            if (!config.validatorConfigs)
-                config.validatorConfigs = [];
-
-            return new FluentValidatorCollector(config);
-        }
-        if (typeof arg1 === 'string') {
-
-            let config: PropertyValueHostConfig =
-                { valueHostType: ValueHostType.Property, name: arg1 } as PropertyValueHostConfig;
-            if (dataType)
-                config.dataType = dataType;
-            if (parameters)
-                config = { ...parameters, ...config };
-            if (!config.validatorConfigs)
-                config.validatorConfigs = [];
-
-            return new FluentValidatorCollector(config);;
-        }
-        /* istanbul ignore next */
-        throw new Error('Should never get here');   // because assertFirstParameterValid will catch it
+        return this.withValidators<PropertyValueHostConfig>(ValueHostType.Property, arg1, arg2, arg3);
     }     
 
 }
@@ -398,20 +425,33 @@ export function fluent(): ValidationManagerStartFluent
 /**
  * For fluent configStatic function.
  */
-export type FluentStaticParameters = Omit<StaticValueHostConfig, 'conditionType' | 'name' | 'dataType'>;
+export type FluentStaticValueConfig = Omit<StaticValueHostConfig, 'valueHostType' | 'conditionType' >;
+export type FluentStaticParameters = Omit<FluentStaticValueConfig, 'name' | 'dataType'>;
 
 /**
  * For fluent input() function.
  */
-export type FluentInputValueConfig = Omit<InputValueHostConfig, 'conditionType' | 'validatorConfigs'>;
+export type FluentInputValueConfig = Omit<InputValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs'>;
 export type FluentInputParameters = Omit<FluentInputValueConfig, 'name' | 'dataType'>;
 
 
 /**
  * For fluent property() function.
  */
-export type FluentPropertyValueConfig = Omit<PropertyValueHostConfig, 'conditionType' | 'validatorConfigs'>;
+export type FluentPropertyValueConfig = Omit<PropertyValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs'>;
 export type FluentPropertyParameters = Omit<FluentPropertyValueConfig, 'name' | 'dataType'>;
+
+/**
+ * For fluent withoutValidators() function.
+ */
+export type FluentAnyValueHostConfig<T extends ValueHostConfig> = Omit<T, 'valueHostType' | 'conditionType' | 'validatorConfigs'>;
+export type FluentAnyValueHostParameters<T extends ValueHostConfig> = Omit<FluentAnyValueHostConfig<T>, 'name' | 'dataType' >;
+
+/**
+ * for fluent withValidators() function.
+ */
+export type FluentValidatorsValueHostConfig<T extends ValidatorsValueHostBaseConfig> = Omit<T, 'valueHostType' | 'conditionType' | 'validatorConfigs'>;
+export type FluentValidatorsValueHostParameters<T extends ValidatorsValueHostBaseConfig> = Omit<FluentValidatorsValueHostConfig<T>, 'name' | 'dataType'>;
 
 /**
  * Targets fluent functions for conditions as their second parameter, hosting most of the 
@@ -452,7 +492,7 @@ export interface IFluentValidatorCollector
      * For any implementation of a fluent function that works with FluentValidatorCollector.
      * It takes the parameters passed into that function (conditionConfig and validatorconfig)
      * and assemble the final ValidatorConfig, which it adds to the InputValueHostConfig.
-     * @oaram conditionType - When not null, this will be assigned to conditionConfig for you.
+     * @param conditionType - When not null, this will be assigned to conditionConfig for you.
      * @param conditionConfig - if null, expects validatorConfig to supply either conditionConfig
      * or conditionCreator. If your fluent function supplies stand-alone parameters that belong
      * in conditionConfig, assign them to conditionConfig.
@@ -500,7 +540,7 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
      * For any implementation of a fluent function that works with FluentValidationRule.
      * It takes the parameters passed into that function (conditionConfig and validatorConfig)
      * and assemble the final ValidatorConfig, which it adds to the InputValueHostConfig.
-     * @oaram conditionType - When not null, this will be assigned to conditionConfig for you.
+     * @param conditionType - When not null, this will be assigned to conditionConfig for you.
      * @param conditionConfig - if null, expects validatorConfig to supply either conditionConfig
      * or conditionCreator. If your fluent function supplies stand-alone parameters that belong
      * in conditionConfig, assign them to conditionConfig.
@@ -553,7 +593,7 @@ export interface IFluentConditionCollector
      * For any implementation of a fluent function that works with FluentConditionCollector.
      * It takes the parameters passed into that function
      * and assemble the final conditionConfig.
-     * @oaram conditionType - When not null, this will be assigned to conditionConfig for you.
+     * @param conditionType - When not null, this will be assigned to conditionConfig for you.
      * @param conditionConfig - If your fluent function supplies stand-alone parameters that belong
      * in conditionConfig, assign them to conditionConfig.
      */
@@ -603,7 +643,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
      * For any implementation of a fluent function that works with FluentConditionCollector.
      * It takes the parameters passed into that function
      * and assemble the final conditionConfig.
-     * @oaram conditionType - When not null, this will be assigned to conditionConfig for you.
+     * @param conditionType - When not null, this will be assigned to conditionConfig for you.
      * @param conditionConfig - If your fluent function supplies stand-alone parameters that belong
      * in conditionConfig, assign them to conditionConfig.
      */

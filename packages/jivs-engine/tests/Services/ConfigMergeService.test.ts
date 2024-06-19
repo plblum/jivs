@@ -1032,8 +1032,9 @@ describe('ValidatorConfigMergeService', () => {
     describe('merge', () => {
         function testResolve(testItem: ValidatorConfigMergeService,
             source: ValidatorsValueHostBaseConfig, destination: ValidatorsValueHostBaseConfig,
-            expectedDestination: ValidatorsValueHostBaseConfig
-        ) {
+            expectedDestination: ValidatorsValueHostBaseConfig,
+            logContains?: string, logLevel?: LoggingLevel)
+        {
             let setup = createServices();
             testItem.services = setup.services;
             setup.services.validatorConfigMergeService = testItem;
@@ -1041,6 +1042,8 @@ describe('ValidatorConfigMergeService', () => {
 
             testItem.merge(source, destination);
             expect(destination).toEqual(expectedDestination);
+            if (logContains)
+                expect(setup.logger.findMessage(logContains, logLevel ?? null, null, null)).toBeTruthy();
         }
         test('Neither source or destination has ValidatorConfigs leaves destination unchanged', () => {
             let testItem = new ValidatorConfigMergeService();
@@ -1193,7 +1196,7 @@ describe('ValidatorConfigMergeService', () => {
                         },
                         summaryMessage: 'From Source'
                     }]
-            },
+                },
                 {
                     valueHostType: ValueHostType.Input,
                     name: 'Field1',
@@ -1217,7 +1220,8 @@ describe('ValidatorConfigMergeService', () => {
                             conditionConfig: { conditionType: 'Require' }
                         }
                     ]
-                });
+                },
+            'ConditionType mismatch for', LoggingLevel.Warn);
         });
         test('Source and destination conflicting Validators merges validatorConfigs and conditionConfig is modified using the "all" rule', () => {
             let testItem = new ValidatorConfigMergeService();

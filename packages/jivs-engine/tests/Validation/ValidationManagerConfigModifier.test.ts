@@ -46,6 +46,27 @@ class Publicify_ValidationManagerConfigModifier extends ValidationManagerConfigM
 
 }
 describe('input()', () => {
+    test('Existing Field1 of input gets updated', () => {
+        let vmConfig = createVMConfig();
+        vmConfig.valueHostConfigs.push({
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            dataType: LookupKey.Integer
+        });
+        let vm = new Publicify_ValidationManager(vmConfig);
+
+        let modifier = new Publicify_ValidationManagerConfigModifier(vm);
+        let testItem = modifier.input('Field1', null, { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        modifier.apply();
+        expect(vm.getValueHostConfig('Field1')).toEqual({
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            label: 'Field 1',
+            dataType: LookupKey.Integer,
+            validatorConfigs: []
+        });
+    });        
     test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValidationManager(vmConfig);
@@ -112,6 +133,30 @@ describe('input()', () => {
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual(expected);
     });
+    test('Use the 2 parameter API: name + config. Adds it plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+        let vm = new Publicify_ValidationManager(vmConfig);
+
+        let modifier = new Publicify_ValidationManagerConfigModifier(vm);
+        let testItem = modifier.input('Field1', { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        modifier.apply();
+        expect(vm.getValueHostConfig('Field1')).toEqual({
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            label: 'Field 1',
+            validatorConfigs: []
+        });
+    });
+    test('Use the 2 parameter API: name + config, except pass something other than a string or object into the second parameter. Throws', () => {
+        let vmConfig = createVMConfig();
+        let vm = new Publicify_ValidationManager(vmConfig);
+
+        let modifier = new Publicify_ValidationManagerConfigModifier(vm);
+        expect(() => modifier.input('Field1', false as any)).toThrow(/Second parameter/);
+        expect(() => modifier.input('Field1', 10 as any)).toThrow(/Second parameter/);
+        expect(() => modifier.input('Field1', false as any)).toThrow(/Second parameter/);        
+    });        
     test('Add same name twice throws', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValidationManager(vmConfig);
@@ -164,12 +209,33 @@ describe('input()', () => {
     test('First parameter is not compatible with overload throws', () => {
         let vm = new Publicify_ValidationManager(createVMConfig());
         let testItem = new Publicify_ValidationManagerConfigModifier(vm);
-        expect(() => testItem.input(100 as any)).toThrow('pass');
+        expect(() => testItem.input(100 as any)).toThrow('name could not be identified.');
     });
 });
 
 
 describe('property()', () => {
+    test('Existing Field1 of property gets updated', () => {
+        let vmConfig = createVMConfig();
+        vmConfig.valueHostConfigs.push({
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            dataType: LookupKey.Integer
+        });
+        let vm = new Publicify_ValidationManager(vmConfig);
+
+        let modifier = new Publicify_ValidationManagerConfigModifier(vm);
+        let testItem = modifier.property('Field1', null, { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        modifier.apply();
+        expect(vm.getValueHostConfig('Field1')).toEqual({
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            label: 'Field 1',
+            dataType: LookupKey.Integer,
+            validatorConfigs: []
+        });
+    });            
     test('Valid name, null data type and defined vhConfig. Adds PropertyValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
 
@@ -238,6 +304,31 @@ describe('property()', () => {
         expect(vm.getValueHostConfig('Field1')).toEqual(expected);
 
     });
+
+    test('Use the 2 parameter API: name + config. Adds it plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+        let vm = new Publicify_ValidationManager(vmConfig);
+
+        let modifier = new Publicify_ValidationManagerConfigModifier(vm);
+        let testItem = modifier.property('Field1', { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        modifier.apply();
+        expect(vm.getValueHostConfig('Field1')).toEqual({
+            valueHostType: ValueHostType.Property,
+            name: 'Field1',
+            label: 'Field 1',
+            validatorConfigs: []
+        });
+    });    
+    test('Use the 2 parameter API: name + config, except pass something other than a string or object into the second parameter. Throws', () => {
+        let vmConfig = createVMConfig();
+        let vm = new Publicify_ValidationManager(vmConfig);
+
+        let modifier = new Publicify_ValidationManagerConfigModifier(vm);
+        expect(() => modifier.property('Field1', false as any)).toThrow(/Second parameter/);
+        expect(() => modifier.property('Field1', 10 as any)).toThrow(/Second parameter/);
+        expect(() => modifier.property('Field1', false as any)).toThrow(/Second parameter/);        
+    });         
     test('Add same name twice throws', () => {
         let vmConfig = createVMConfig();
         let vm = new Publicify_ValidationManager(vmConfig);
@@ -292,137 +383,9 @@ describe('property()', () => {
         let vm = new Publicify_ValidationManager(createVMConfig());
 
         let testItem = new Publicify_ValidationManagerConfigModifier(vm);
-        expect(() => testItem.property(100 as any)).toThrow('pass');
+        expect(() => testItem.property(100 as any)).toThrow('name could not be identified');
     });
 });
-
-describe('updateInput', () => {
-    test('With existing InputValueHost, all values supplied are updated', () => {
-        let vmConfig = createVMConfig();
-
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1', LookupKey.Integer, { label: 'Field 1' });
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
-        let testItem = modifier.updateInput('Field1', { dataType: 'TEST', group: 'GROUP', initialValue: '1', label: 'UpdatedLabel', labell10n: 'ULl10n' });
-        expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-        modifier.apply();
-
-        expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
-            name: 'Field1',
-            dataType: 'TEST',
-            group: 'GROUP',
-            initialValue: '1',
-            label: 'UpdatedLabel',
-            labell10n: 'ULl10n',
-            validatorConfigs: []
-        });
-    });
-    test('With existing InputValueHost, supply unwanted properties. They are not applied, but valid ones are.', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.input('Field1', LookupKey.Integer, { label: 'Field 1' });
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
-        let testItem = modifier.updateInput('Field1',
-            <any>{
-                name: 'ToIgnore', valueHostType: 'IgnoreType',
-                validatorConfigs: [{}], label: 'UpdatedLabel'
-            }
-        );
-        expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-        modifier.apply();
-
-        expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Input,
-            name: 'Field1',
-            dataType: LookupKey.Integer,
-            label: 'UpdatedLabel',
-            validatorConfigs: []
-        });
-    });
-    test('With name assigned to another type of valueHost, throws.', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.static('Field1', LookupKey.Integer, { label: 'Field 1' });
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
-
-        expect(() => modifier.updateInput('Field1', { label: 'UpdatedLabel' })).toThrow(/not type/);
-    });
-    test('With no matching ValueHostName, throws', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
-        expect(() => modifier.updateInput('Field1', { label: 'UpdatedLabel' })).toThrow(/not defined/);
-    });
-});
-describe('updateProperty', () => {
-    test('With existing PropertyValueHost, all values supplied are updated', () => {
-        let vmConfig = createVMConfig();
-
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.property('Field1', LookupKey.Integer, { label: 'Field 1' });
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
-        let testItem = modifier.updateProperty('Field1', { dataType: 'TEST', group: 'GROUP', initialValue: '1', label: 'UpdatedLabel', labell10n: 'ULl10n' });
-        expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-        modifier.apply();
-
-        expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Property,
-            name: 'Field1',
-            dataType: 'TEST',
-            group: 'GROUP',
-            initialValue: '1',
-            label: 'UpdatedLabel',
-            labell10n: 'ULl10n',
-            validatorConfigs: []
-        });
-    });
-    test('With existing PropertyValueHost, supply unwanted properties. They are not applied, but valid ones are.', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.property('Field1', LookupKey.Integer, { label: 'Field 1' });
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
-        let testItem = modifier.updateProperty('Field1',
-            <any>{
-                name: 'ToIgnore', valueHostType: 'IgnoreType',
-                validatorConfigs: [{}], label: 'UpdatedLabel'
-            }
-        );
-        expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
-        modifier.apply();
-
-        expect(vm.getValueHostConfig('Field1')).toEqual({
-            valueHostType: ValueHostType.Property,
-            name: 'Field1',
-            dataType: LookupKey.Integer,
-            label: 'UpdatedLabel',
-            validatorConfigs: []
-        });
-    });
-    test('With name assigned to another type of valueHost, throws.', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        builder.static('Field1', LookupKey.Integer, { label: 'Field 1' });
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
-
-        expect(() => modifier.updateProperty('Field1', { label: 'UpdatedLabel' })).toThrow(/not type/);
-    });
-    test('With no matching ValueHostName, throws', () => {
-        let vmConfig = createVMConfig();
-        let builder = new ValidationManagerConfigBuilder(vmConfig);
-        let vm = new Publicify_ValidationManager(builder);
-        let modifier = vm.startModifying();
-        expect(() => modifier.updateProperty('Field1', { label: 'UpdatedLabel' })).toThrow(/not defined/);
-    });
-});
-
 
 describe('updateValidator', () => {
     test('With existing Validator, all values supplied are updated', () => {

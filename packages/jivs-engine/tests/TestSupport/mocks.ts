@@ -58,6 +58,10 @@ import { ValueHostsManagerConfigModifier } from "../../src/ValueHosts/ValueHosts
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
+import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
+import { IManagerConfigModifierFactory } from "../../src/Interfaces/ManagerConfigModifierFactory";
+import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -280,6 +284,8 @@ export class MockValidationServices implements IValidationServices
         this.messageTokenResolverService = new MessageTokenResolverService();
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
+        this.managerConfigBuilderFactory = new ManagerConfigBuilderFactory();
+        this.managerConfigModifierFactory = new ManagerConfigModifierFactory();
 
         this.loggerService = new CapturingLogger();
 
@@ -471,6 +477,28 @@ export class MockValidationServices implements IValidationServices
         this._validatorFactory = factory;
     }
     private _validatorFactory: IValidatorFactory;
+
+    public get managerConfigBuilderFactory(): IManagerConfigBuilderFactory
+    {
+        return this._managerConfigBuilderFactory;
+    }
+    public set managerConfigBuilderFactory(factory: IManagerConfigBuilderFactory)
+    {
+        this._managerConfigBuilderFactory = factory;
+        factory.services = this;
+    }
+    private _managerConfigBuilderFactory!: IManagerConfigBuilderFactory; 
+    
+    public get managerConfigModifierFactory(): IManagerConfigModifierFactory
+    {
+        return this._managerConfigModifierFactory;
+    }
+    public set managerConfigModifierFactory(factory: IManagerConfigModifierFactory)
+    {
+        this._managerConfigModifierFactory = factory;
+        factory.services = this;
+    }
+    private _managerConfigModifierFactory!: IManagerConfigModifierFactory;
 }
 
 /**
@@ -496,7 +524,7 @@ export class MockValidationManager extends ValueHostsManager<ValidationManagerIn
     }
 
     public startModifying(): ValidationManagerConfigModifier {
-        return new ValidationManagerConfigModifier(this, this.valueHostConfigs);
+        return this.services.managerConfigModifierFactory.create(this, this.valueHostConfigs) as ValidationManagerConfigModifier
     }
 
     public getValidatorsValueHost(valueHostName: string): IValidatorsValueHostBase | null {

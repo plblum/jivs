@@ -18,7 +18,7 @@ import {
     ValidationManagerStartFluent,
     ValueHostsManagerStartFluent
 } from "../../src/ValueHosts/Fluent";
-import { ValueHostsManagerConfigBuilderBase } from "../../src/ValueHosts/ValueHostsManagerConfigBuilderBase";
+import { ManagerConfigBuilderBase } from "../../src/ValueHosts/ManagerConfigBuilderBase";
 import { MockValidationServices } from "../TestSupport/mocks";
 
 function createVMConfig(): ValidationManagerConfig {
@@ -29,7 +29,7 @@ function createVMConfig(): ValidationManagerConfig {
     return vmConfig;
 }
 
-class TestValueHostsManagerConfigBuilderBase extends ValueHostsManagerConfigBuilderBase<ValueHostsManagerConfig>
+class TestManagerConfigBuilderBase extends ManagerConfigBuilderBase<ValueHostsManagerConfig>
 {
     protected createFluent(): ValueHostsManagerStartFluent {
         return new ValueHostsManagerStartFluent<ValueHostsManagerConfig>(this.destinationConfig());
@@ -56,17 +56,17 @@ class TestValueHostsManagerConfigBuilderBase extends ValueHostsManagerConfigBuil
     
 }
 
-describe('ValueHostsManagerConfigBuilderBase constructor', () => {
+describe('ManagerConfigBuilderBase constructor', () => {
     test('Initial setup with vmConfig successful', () => {
         let testItem = createVMConfig();
-        let builder = new TestValueHostsManagerConfigBuilderBase(testItem);
+        let builder = new TestManagerConfigBuilderBase(testItem);
         expect(builder.publicify_baseConfig).toBe(testItem);
         expect(builder.publicify_overrideConfigs).toEqual([]);
         expect(builder.publicify_destinationConfig()).toBe(testItem);
     });
     test('Initial setup with services successful', () => {
         let services = new MockValidationServices(false, false);
-        let builder = new TestValueHostsManagerConfigBuilderBase(services);
+        let builder = new TestManagerConfigBuilderBase(services);
         expect(builder.publicify_baseConfig).not.toBeUndefined();
         expect(builder.publicify_baseConfig.services).toBe(services);
         expect(builder.publicify_overrideConfigs).toEqual([]);
@@ -75,7 +75,7 @@ describe('ValueHostsManagerConfigBuilderBase constructor', () => {
     test('vmConfig with valueHostConfigs = null gets reassigned to []', () => {
         let testItem = createVMConfig();
         testItem.valueHostConfigs = null as any;
-        let builder = new TestValueHostsManagerConfigBuilderBase(testItem);
+        let builder = new TestManagerConfigBuilderBase(testItem);
         expect(testItem.valueHostConfigs).toEqual([]);
     });
     test('vmConfig with valueHostConfigs that contains 1 InputValueHost retains that value', () => {
@@ -87,21 +87,21 @@ describe('ValueHostsManagerConfigBuilderBase constructor', () => {
             }
         ];
         testItem.valueHostConfigs.push(valueHostsConfigs[0]);
-        let builder = new TestValueHostsManagerConfigBuilderBase(testItem);
+        let builder = new TestManagerConfigBuilderBase(testItem);
         expect(testItem.valueHostConfigs).toEqual(valueHostsConfigs);
     });
     test('services supplied as parameter creates a vmConfig with services', () => {
         let services = new MockValidationServices(false, false);
-        let testItem = new TestValueHostsManagerConfigBuilderBase(services);
+        let testItem = new TestManagerConfigBuilderBase(services);
         expect(testItem.publicify_destinationConfig()).not.toBeNull();
         expect(testItem.publicify_destinationConfig().services).toBe(services);
         expect(testItem.publicify_destinationConfig().valueHostConfigs).toEqual([]);
     });    
     test('null parameter throws', () => {
-        expect(() => new TestValueHostsManagerConfigBuilderBase(null!)).toThrow(CodingError); 
+        expect(() => new TestManagerConfigBuilderBase(null!)).toThrow(CodingError); 
     });
     test('Invalid value in parameter throws', () => {
-        expect(() => new TestValueHostsManagerConfigBuilderBase('abc' as any)).toThrow('parameter value'); 
+        expect(() => new TestManagerConfigBuilderBase('abc' as any)).toThrow('parameter value'); 
     });
 });
 describe('dispose', () => {
@@ -114,7 +114,7 @@ describe('dispose', () => {
             }
         ];
         vmConfig.valueHostConfigs.push(valueHostsConfigs[0]);
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.dispose();
         expect(testItem.publicify_baseConfig).toBeUndefined();
     });    
@@ -127,7 +127,7 @@ describe('dispose', () => {
             }
         ];
         vmConfig.valueHostConfigs.push(valueHostsConfigs[0]);
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.publicify_addOverride();
         testItem.dispose();
         expect(testItem.publicify_baseConfig).toBeUndefined();
@@ -136,7 +136,7 @@ describe('dispose', () => {
 describe('addOverride', () => {
     test('One call adds one and destinationConfig points to it', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.publicify_addOverride();
         expect(testItem.publicify_baseConfig).toBe(vmConfig);
         expect(testItem.publicify_overrideConfigs.length).toBe(1);
@@ -144,7 +144,7 @@ describe('addOverride', () => {
     });
     test('Twos call adds two and destinationConfig points to the last', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.publicify_addOverride();
         testItem.publicify_addOverride();
         expect(testItem.publicify_baseConfig).toBe(vmConfig);
@@ -155,14 +155,14 @@ describe('addOverride', () => {
 describe('complete', () => {
     test('Using service, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
         let services = new MockValidationServices(false, false);
-        let testItem = new TestValueHostsManagerConfigBuilderBase(services);
+        let testItem = new TestManagerConfigBuilderBase(services);
         let result = testItem.complete();
         expect(result.services).toBe(services);
         expect(result.valueHostConfigs).toEqual([]);
         expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
     });
     test('Using VMConfig, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
-        let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());
+        let testItem = new TestManagerConfigBuilderBase(createVMConfig());
         let result = testItem.complete();
         expect(result.services).not.toBeNull();
         expect(result.valueHostConfigs).toEqual([]);
@@ -170,7 +170,7 @@ describe('complete', () => {
     });    
     test('Using service, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
         let services = new MockValidationServices(false, false);
-        let testItem = new TestValueHostsManagerConfigBuilderBase(services);
+        let testItem = new TestManagerConfigBuilderBase(services);
         testItem.static('Field1');
         let result = testItem.complete();
         expect(result.services).toBe(services);
@@ -181,7 +181,7 @@ describe('complete', () => {
         expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
     });    
     test('Using VMConfig, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
-        let testItem = new TestValueHostsManagerConfigBuilderBase(createVMConfig());
+        let testItem = new TestManagerConfigBuilderBase(createVMConfig());
         testItem.static('Field1');
         let result = testItem.complete();
         expect(result.services).not.toBeNull();
@@ -197,7 +197,7 @@ describe('complete', () => {
             valueHostType: ValueHostType.Static,
             name: 'Field1'
         });
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         let result = testItem.complete();
         expect(result.services).not.toBeNull();
         expect(result.valueHostConfigs).toEqual([{
@@ -212,7 +212,7 @@ describe('complete', () => {
             valueHostType: ValueHostType.Static,
             name: 'Field1'
         });
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.static('Field2');
         let result = testItem.complete();
         expect(result.services).not.toBeNull();
@@ -231,9 +231,9 @@ describe('complete', () => {
 describe('build(vmConfig).static()', () => {
     test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.static('Field1', null, { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(testItem).toBeInstanceOf(ManagerConfigBuilderBase);
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -243,9 +243,9 @@ describe('build(vmConfig).static()', () => {
 
     test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.static('Field1', 'Test');
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(testItem).toBeInstanceOf(ManagerConfigBuilderBase);
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -255,9 +255,9 @@ describe('build(vmConfig).static()', () => {
 
     test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.static('Field1');
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(testItem).toBeInstanceOf(ManagerConfigBuilderBase);
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -266,9 +266,9 @@ describe('build(vmConfig).static()', () => {
 
     test('Pass in a StaticValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(testItem).toBeInstanceOf(ManagerConfigBuilderBase);
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -277,11 +277,29 @@ describe('build(vmConfig).static()', () => {
         }]);
     });
 
+    test('Use the 2 parameter API: name + config. Adds it plus type to ValidationManagerConfig', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
+        testItem.static('Field1', { label: 'Field 1' });
+        expect(testItem).toBeInstanceOf(ManagerConfigBuilderBase);
+        expect(vmConfig.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1',
+            label: 'Field 1'
+        }]);
+    });
+    test('Use the 2 parameter API: name + config, except pass something other than a string or object into the second parameter. Throws', () => {
+        let vmConfig = createVMConfig();
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
+        expect(() => testItem.static('Field1', false as any)).toThrow(/Second parameter/);
+        expect(() => testItem.static('Field1', 10 as any)).toThrow(/Second parameter/);
+        expect(() => testItem.static('Field1', false as any)).toThrow(/Second parameter/);        
+    });    
     test('Add two differently named StaticValueHostConfigs creates two entries in vmConfig', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.static('Field1').static('Field2');
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(testItem).toBeInstanceOf(ManagerConfigBuilderBase);
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -294,7 +312,7 @@ describe('build(vmConfig).static()', () => {
 
     test('Valid name but added twice throws', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.static('Field1');
         expect(() => testItem.static('Field1')).toThrow(/already defined/);
     });
@@ -302,13 +320,13 @@ describe('build(vmConfig).static()', () => {
 
     test('Null name throws', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         expect(() => testItem.static(null!)).toThrow('arg1');
 
     });
     test('First parameter is not compatible with overload throws', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
                 
         expect(() => testItem.static(100 as any)).toThrow('pass');
     });
@@ -320,9 +338,9 @@ describe('build(vmConfig).calc', () => {
     test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
 
-        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let builder = new TestManagerConfigBuilderBase(vmConfig);
         let testItem = builder.calc('Field1', null, calcFnForTests);
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(testItem).toBeInstanceOf(ManagerConfigBuilderBase);
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Calc,
             name: 'Field1',
@@ -332,9 +350,9 @@ describe('build(vmConfig).calc', () => {
     test('Valid name, data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
 
-        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let builder = new TestManagerConfigBuilderBase(vmConfig);
         let testItem = builder.calc('Field1', 'Test', calcFnForTests);
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(testItem).toBeInstanceOf(ManagerConfigBuilderBase);
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Calc,
             name: 'Field1',
@@ -344,17 +362,17 @@ describe('build(vmConfig).calc', () => {
     });
     test('Null function throws', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
         
         expect(() => testItem.calc('Field1', 'Test', null!)).toThrow();
 
     });
     test('Pass in a CalcValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let vmConfig = createVMConfig();
-        let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let builder = new TestManagerConfigBuilderBase(vmConfig);
                 
         let testItem = builder.calc({ name: 'Field1', dataType: 'Test', label: 'Field 1', calcFn: calcFnForTests });
-        expect(testItem).toBeInstanceOf(ValueHostsManagerConfigBuilderBase);
+        expect(testItem).toBeInstanceOf(ManagerConfigBuilderBase);
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Calc,
             name: 'Field1',
@@ -365,14 +383,14 @@ describe('build(vmConfig).calc', () => {
     });
     test('Null name throws', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
                 
         expect(() => testItem.calc(null!)).toThrow('arg1');
 
     });
     test('First parameter is not compatible with overload throws', () => {
         let vmConfig = createVMConfig();
-        let testItem = new TestValueHostsManagerConfigBuilderBase(vmConfig);
+        let testItem = new TestManagerConfigBuilderBase(vmConfig);
                 
         expect(() => testItem.calc(100 as any)).toThrow('pass');
     });

@@ -56,6 +56,8 @@ import { DataTypeParserService } from "../../src/Services/DataTypeParserService"
 import { CleanUpStringParser, NumberParser } from "../../src/DataTypes/DataTypeParsers";
 import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserService";
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
+import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 
 
 export function createValidationServicesForTesting(): ValidationServices {
@@ -96,6 +98,8 @@ export function createValidationServicesForTesting(): ValidationServices {
     vs.messageTokenResolverService = new MessageTokenResolverService();
     vs.valueHostConfigMergeService = new ValueHostConfigMergeService();
     vs.validatorConfigMergeService = new ValidatorConfigMergeService();
+    vs.managerConfigBuilderFactory = new ManagerConfigBuilderFactory();
+    vs.managerConfigModifierFactory = new ManagerConfigModifierFactory();
 
     return vs;
 }
