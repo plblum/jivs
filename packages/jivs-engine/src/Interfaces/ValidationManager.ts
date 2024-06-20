@@ -197,6 +197,12 @@ export interface ValidationManagerConfig extends ValueHostsManagerConfig, IValid
 {
 
     /**
+     * (An override)
+     * Services that are needed by ValidationManager
+     */
+    services: IValidationServices;
+
+    /**
      * The InstanceState for the ValidationManager itself.
      * Its up to you to retain stateful information so that the service works statelessly.
      * It will supply you with the changes to states through the OnInstanceStateChanged property.
@@ -214,7 +220,7 @@ export interface ValidationManagerConfig extends ValueHostsManagerConfig, IValid
      * It will supply you with the changes to states through the OnValueHostInstanceStateChanged property.
      * Whatever it gives you, you supply here to rehydrate the ValidationManager with 
      * the correct state. You can also supply the state of an individual ValueHost when using
-     * the addValueHost or updateValueHost methods.
+     * the addValueHost or addOrUpdateValueHost methods.
      * If you don't have any state, leave this null or undefined and ValidationManager will
      * initialize its state.
      */
@@ -294,7 +300,8 @@ export function toIValidationManagerCallbacks(source: any): IValidationManagerCa
     {
         let test = source as IValidationManagerCallbacks;     
         if (test.onInstanceStateChanged !== undefined &&
-            test.onValidationStateChanged !== undefined)
+            test.onValidationStateChanged !== undefined &&
+            test.onConfigChanged !== undefined)
             return test;
     }
     return null;

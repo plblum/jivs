@@ -1,3 +1,8 @@
+## 0.18.0
+- **Breaking API change** - Reworked how you create the ValidationManagerConfig object by improving the Builder class, ValidationManagerConfigBuilder (also renamed it)
+  and adding a Modifier class, ValidationManagerConfigModifier to handle changes to config after creating ValidationManager. Several functions used to change
+  config were removed to let Modifier take over.
+- Extensive examples for configuration are now in jivs-examples.
 ## 0.17.1
 - Added setIssuesFound() method on ValidationManager and ValidatableValueHostBase. Simplifies how to send Jivs errors found by the server and sent up to the client.
 - Added {DataType} token to error messages, with localization using TextLocalizerService.

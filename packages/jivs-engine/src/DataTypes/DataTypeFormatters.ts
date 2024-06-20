@@ -29,7 +29,7 @@ export abstract class DataTypeFormatterBase implements IDataTypeFormatter, IServ
      */
     public dispose(): void
     {
-        (this._services as any) = undefined;
+        this._services = undefined!;
     }        
     /**
      * Services accessor.

@@ -1,4 +1,4 @@
-import { build } from '@plblum/jivs-engine/build/ValueHosts/ValueHostsBuilder';
+import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
 import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";

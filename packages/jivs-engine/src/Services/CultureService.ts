@@ -26,7 +26,7 @@ export class CultureService extends ServiceBase implements ICultureService {
     public dispose(): void
     {
         super.dispose();
-        (this._cultureConfig as any) = undefined;
+        this._cultureConfig = undefined!;
     }    
     /**
      * The culture shown to the user in the app. Its the ISO language-region format.

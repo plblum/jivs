@@ -7,7 +7,7 @@ import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { ILoggerService, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { AllMatchConditionConfig } from '../Conditions/ConcreteConditions';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { ConditionConfig } from '../Interfaces/Conditions';
@@ -109,6 +109,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
         super.dispose();
         this._configConditions = undefined!;
         this._configProperties = undefined!;
+        this._cacheNoChangePropertyNames = undefined;
     }
     /**
      * Assigns the rule for a property on any Config and subclass.
@@ -129,6 +130,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
         }
 
         this.configProperties.set(propertyName, rule);
+        this._cacheNoChangePropertyNames = undefined;
     }
     /**
      * The rule assigned to the property or undefined if not assigned.
@@ -201,10 +203,15 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
      * @param identity - Used by your PropertyConfigMergeServiceHandler function to know what specifically is being resolved.
      */
     protected mergeConfigs(source: TConfig, destination: TConfig, identity: MergeIdentity): void {
+        let noChangeNames = this.getNoChangePropertyNames();
         for (let propertyName in source) {
             if (destination[propertyName] === undefined) {
-                destination[propertyName] = source[propertyName];
-                this.log(() => `${logLabel(identity, propertyName)} assigned`, LoggingLevel.Info);
+                if (noChangeNames.includes(propertyName))
+                    this.log(() => `${logLabel(identity, propertyName)}. Rule prevents changes.`, LoggingLevel.Info);
+                else {
+                    destination[propertyName] = source[propertyName];
+                    this.log(() => `${logLabel(identity, propertyName)} assigned`, LoggingLevel.Info);
+                }
                 continue;
             }
             let rule = this.configProperties.get(propertyName);
@@ -340,6 +347,26 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
                 return action;
         }
     }
+    /**
+     * Exposes property names that are not expected to be changed by the rules.
+     * Ignores rules with functions. 
+     * Intent is to allow ValueHostsManagerConfigModifier to know of properties
+     * to strip out instead of allowing them to make it into the merge code.
+     * Value is cached upon first request. Cache is cleared if rules are changed.
+     * @returns 
+     */
+    public getNoChangePropertyNames(): Array<string>
+    {
+        if (!this._cacheNoChangePropertyNames) {
+            let namesFound: Array<string> = [];
+            for (let [name, rule] of this.configProperties)
+                if (rule === 'nochange' || rule === 'locked' || rule === 'delete')
+                    namesFound.push(name);
+            this._cacheNoChangePropertyNames = namesFound;
+        }
+        return this._cacheNoChangePropertyNames;
+    }
+    private _cacheNoChangePropertyNames: Array<string> | undefined = undefined;    
 }
 
 /**
@@ -379,13 +406,35 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
         return { useAction: 'nochange' };
     }
 
+    /**
+     * Attempts to merge the source's properties into the destination.
+     * It only makes changes to the destination based on the rules
+     * of setPropertyConfigRule()
+     */    
     public merge(source: ValueHostConfig, destination: ValueHostConfig): void {
         if (source.name !== destination.name)
             return;
         this.mergeConfigs(source, destination, { valueHostName: destination.name });
-        this.services?.validatorConfigMergeService.merge(source as ValidatorsValueHostBaseConfig,
-            destination as ValidatorsValueHostBaseConfig
-        );
+        if (this.hasServices()) {
+            let vcms = this.services.validatorConfigMergeService;  // may be undefined if services is ValueHostsServices
+            if (vcms)
+                vcms.merge(source as ValidatorsValueHostBaseConfig,
+                    destination as ValidatorsValueHostBaseConfig);
+        }
+    }
+
+    /**
+     * Identifies a ValueHostConfig in the destination that should be merged
+     * with the source. If none need to be merged, it returns null
+     * and the caller should add their ValueHostConfig to ValidationManagerConfig.ValueHostConfigs.
+     * @param source 
+     * @param destinations 
+     */
+    public identifyValueHostConflict(source: ValueHostConfig,
+        destinations: Array<ValueHostConfig>):
+        ValueHostConfig | undefined
+    {
+        return destinations.find((item) => item.name === source.name);
     }
 }
 
@@ -399,6 +448,7 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
     implements IValidatorConfigMergeService {
     constructor() {
         super();
+        this.setPropertyConflictRule('validatorType', 'locked');
         this.setPropertyConflictRule('errorCode', 'nochange');
         this.setPropertyConflictRule('conditionConfig', this.handleConditionConfigProperty);
         this.setPropertyConflictRule('enablerConfig', this.handleConditionConfigProperty);
@@ -427,18 +477,18 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
     private _identifyHandler: ConditionConflictIdentifierHandler | null = null;
 
     /**
-     * Determines if validatorSrc is in conflict with an existing ValidatorConfig
-     * in destination.validatorConfigs. Returns the destination in conflict,
+     * Determines if source is in conflict with an existing ValidatorConfig
+     * in destinations. Returns the destination in conflict,
      * ready to be passed to validatorConfigMergeService.resolve.
-     * @param validatorSrc 
-     * @param validatorsInDest
+     * @param source 
+     * @param destinations
      * @param identity 
      */
-    public identifyValidatorConflict(validatorSrc: ValidatorConfig,
-        validatorsInDest: Array<ValidatorConfig>, identity: MergeIdentity):
+    public identifyValidatorConflict(source: ValidatorConfig,
+        destinations: Array<ValidatorConfig>, identity: MergeIdentity):
         ValidatorConfig | undefined {
-        let srcErrorCode = identity.errorCode ?? resolveErrorCode(validatorSrc);
-        return validatorsInDest.find((item) => resolveErrorCode(item) === srcErrorCode);
+        let srcErrorCode = identity.errorCode ?? resolveErrorCode(source);
+        return destinations.find((item) => resolveErrorCode(item) === srcErrorCode);
     }
 
     /**
@@ -461,6 +511,11 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
             let identity: MergeIdentity = { valueHostName: destination.name, errorCode: resolveErrorCode(validatorSrc) };
             let validatorDest = this.identifyHandler.call(this, validatorSrc, destination.validatorConfigs, identity)
             if (validatorDest) {
+                if (validatorSrc.conditionConfig && validatorDest.conditionConfig)
+                    if (validatorSrc.conditionConfig.conditionType !==
+                        validatorDest.conditionConfig.conditionType)
+                        this.log(() => `ConditionType mismatch for ${identity.errorCode}`, LoggingLevel.Warn);
+
                 this.mergeConfigs(validatorSrc, validatorDest, identity);
             }
             else {

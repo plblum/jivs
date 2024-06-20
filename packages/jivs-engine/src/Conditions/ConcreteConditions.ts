@@ -242,7 +242,7 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
     public dispose(): void
     {
         super.dispose();
-        (this._savedRE as any) = undefined;
+        this._savedRE = undefined!;
     }        
     public static get DefaultConditionType(): ConditionType { return ConditionType.RegExp; }
     

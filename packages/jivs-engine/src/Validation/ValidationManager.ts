@@ -18,6 +18,9 @@ import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfa
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { toIPropertyValueHost } from '../ValueHosts/PropertyValueHost';
 import { assertNotNull } from '../Utilities/ErrorHandling';
+import { ManagerConfigBuilderBase } from '../ValueHosts/ManagerConfigBuilderBase';
+import { ValidationManagerConfigModifier } from './ValidationManagerConfigModifier';
+import { IValidationServices } from '../Interfaces/ValidationServices';
 
 
 /**
@@ -45,7 +48,7 @@ import { assertNotNull } from '../Utilities/ErrorHandling';
  * Try to keep validation rules separate from your UI's code.
  * 
  * All Configs are considered immutable. If you need to make a change, you can
- * create a new instance of ValidationManager, or call its addValueHost, updateValueHost,
+ * create a new instance of ValidationManager, or call its addValueHost, addOrUpdateValueHost,
  * or discardValueHost methods to keep the existing instance.
  * 
  * ValidationManager's job is:
@@ -67,7 +70,7 @@ import { assertNotNull } from '../Utilities/ErrorHandling';
  * the UI and the ValueHosts. Auxillary Jivs libraries may handle this.
  */
 
-export class ValidationManager<TState extends ValidationManagerInstanceState> extends ValueHostsManager<TState>
+export class ValidationManager<TState extends ValidationManagerInstanceState = ValidationManagerInstanceState> extends ValueHostsManager<TState>
     implements IValidationManager, IValidationManagerCallbacks {
     /**
      * Constructor
@@ -90,11 +93,14 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
      *   onValueHostValidationStateChanged: (valueHost, valueHostValidationState) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
      *   onInputValueChanged: (valueHost, oldValue) => { }
+     *   onConfigChanged: (valueHost, valueHostConfig) => { }
      * }
      * ```
      */
-    constructor(config: ValidationManagerConfig) {
-        super(config);
+    constructor(config: ValidationManagerConfig)
+    constructor(builder: ManagerConfigBuilderBase<any>)
+    constructor(arg1: ValidationManagerConfig | ManagerConfigBuilderBase<any>){
+        super(arg1 as any);
     }
     /**
      * If the user needs to abandon this instance, they should use this to 
@@ -110,7 +116,32 @@ export class ValidationManager<TState extends ValidationManagerInstanceState> ex
     
     protected get config(): ValidationManagerConfig // just strongly typing
     {
-        return super.config;
+        return super.config as ValidationManagerConfig;
+    }
+
+    public get services(): IValidationServices {// just strongly typing
+        return super.services as IValidationServices;
+    }
+
+    /**
+     * Easier way to add or modify a ValueHostConfig than using
+     * addValueHost(), addOrUpdateValueHost(), or addOrMergeValueHost().
+     * It returns an object whose methods allow adding ValueHosts
+     * and their validators. Upon calling its apply() method,
+     * your changes will be applied through the addOrMergeValueHost() function.
+     * ```ts
+     * let vm = new ValidationManager(config);
+     * // later when you need to modify vm:
+     * let modifier = vm.startModifying();
+     * // supply changes to the ValueHostConfigs
+     * modifier.input('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
+     * // merge those changes into the ValidationManager
+     * modifier.apply(); // consider modifier disposed at this point 
+     * ```
+     */
+    public startModifying(): ValidationManagerConfigModifier
+    {
+        return super.startModifying() as ValidationManagerConfigModifier;
     }
     
     /**

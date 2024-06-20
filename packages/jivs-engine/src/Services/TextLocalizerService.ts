@@ -43,7 +43,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
     {
         super.dispose();
         toIDisposable(this._fallbackService)?.dispose();
-        (this._fallbackService as any) = undefined;
+        this._fallbackService = undefined!;
         (this._l10nKeyMap as any) = undefined;
     }        
     /**

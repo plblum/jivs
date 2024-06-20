@@ -106,16 +106,16 @@ export class Validator implements IValidator {
         function disposeStandardConfigItems(config: ValidatorConfig)
         {
             toIDisposable(config.conditionConfig)?.dispose();
-            (config.conditionConfig as any) = undefined;
+            config.conditionConfig = undefined!;
             config.conditionCreator = undefined;
             toIDisposable(config.enablerConfig)?.dispose();
             config.enablerConfig = undefined;
             config.enablerCreator = undefined;
         }
         toIDisposable(this._condition)?.dispose();
-        (this._condition as any) = undefined;
+        this._condition = undefined!;
         toIDisposable(this._enabler)?.dispose();
-        (this._enabler as any) = undefined;
+        this._enabler = undefined!;
         disposeStandardConfigItems(this._config);
         toIDisposable(this._config)?.dispose(); // handle anything introduced by alternative implementations if they add dispose()
         (this._config as any) = undefined;
@@ -214,7 +214,7 @@ export class Validator implements IValidator {
      * Determined from Config.severity.
      */
     protected get severity(): ValidationSeverity {
-        let value = this.getFromInstanceState('severity') ?? this.config.severity;
+        let value = this.config.severity;
         if (typeof value == 'function')
             value = value(this);
         if (value == null)  // null/undefined
@@ -239,13 +239,11 @@ export class Validator implements IValidator {
      * if ErrorMessagel10n is setup.
      */
     protected getErrorMessageTemplate(): string {
-        let direct = this.getFromInstanceState('errorMessage') ??
-                    this.config.errorMessage;
+        let direct = this.config.errorMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        let l10n = (this.getFromInstanceState('errorMessagel10n') ??
-                    this.config.errorMessagel10n) as string | null;
+        let l10n = this.config.errorMessagel10n as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId,
                 l10n, msg);
@@ -271,13 +269,11 @@ export class Validator implements IValidator {
      * if SummaryMessagel10n is setup.
      */
     protected getSummaryMessageTemplate(): string {
-        let direct = this.getFromInstanceState('summaryMessage') ??
-                    this.config.summaryMessage;
+        let direct = this.config.summaryMessage;
         if (typeof direct == 'function')
             direct = direct(this);
         let msg = direct as string | null;
-        let l10n = (this.getFromInstanceState('summaryMessagel10n') ??
-                    this.config.summaryMessagel10n) as string | null;
+        let l10n = this.config.summaryMessagel10n as string | null;
         if (l10n)
             msg = this.services.textLocalizerService.localize(this.services.cultureService.activeCultureId,
                 l10n, msg ?? '');
@@ -552,47 +548,6 @@ export class Validator implements IValidator {
      */
     public setEnabled(enabled: boolean): void {
         this.saveIntoInstanceState('enabled', enabled);
-    }
-
-    /**
-     * Use to change the errorMessage and/or errorMessagel10n values. 
-     * It overrides the values from ValidatorConfig.errorMessage and errorMessagel10n.
-     * Use case: Business logic supplies a default values for errorMessage and errorMessagel10n which the UI needs to change.
-     * @param errorMessage  - If undefined, reverts to ValidatorConfig.errorMessage.
-     * If null, does not make any changes.
-     * @param errorMessagel10n  - If undefined, reverts to ValidatorConfig.errorMessagel10n.
-     * If null, does not make any changes.
-     */
-    public setErrorMessage(errorMessage: string | undefined, errorMessagel10n?: string | undefined): void {
-        if (errorMessage !== null)
-            this.saveIntoInstanceState('errorMessage', errorMessage);
-        if (errorMessagel10n !== null)
-            this.saveIntoInstanceState('errorMessagel10n', errorMessagel10n);
-    }
-
-    /**
-     * Use to change the summaryMessage and/or summaryMessagel10n values. 
-     * It overrides the values from ValidatorConfig.summaryMessage and summaryMessagel10n.
-     * Use case: Business logic supplies a default values for summaryMessage and summaryMessagel10n which the UI needs to change.
-     * @param summaryMessage  - If undefined, reverts to ValidatorConfig.summaryMessage.
-     * If null, does not make any changes.
-     * @param summaryMessagel10n  - If undefined, reverts to ValidatorConfig.summaryMessagel10n.
-     * If null, does not make any changes.
-     */
-    public setSummaryMessage(summaryMessage: string | undefined, summaryMessagel10n?: string | undefined): void {
-        if (summaryMessage !== null)
-            this.saveIntoInstanceState('summaryMessage', summaryMessage);
-        if (summaryMessagel10n !== null)
-            this.saveIntoInstanceState('summaryMessagel10n', summaryMessagel10n);
-    }
-
-    /**
-     * Use to change the severity option. It overrides the value from ValidatorConfig.severity.
-     * Use case: Business logic supplies a default value for severity which the UI needs to change.
-     * @param severity 
-     */
-    public setSeverity(severity: ValidationSeverity): void {
-        this.saveIntoInstanceState('severity', severity);
     }
 
     //#endregion config overrides
