@@ -243,7 +243,7 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
      * @param config - Supply the entire StaticValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
-    public static(config: Omit<StaticValueHostConfig, 'conditionType'>): StaticValueHostConfig;
+    public static(config: FluentStaticValueConfig): StaticValueHostConfig;
     // overload resolution
     public static(arg1: ValueHostName | FluentStaticValueConfig, arg2?: FluentStaticParameters | string | null, parameters?: FluentStaticParameters): StaticValueHostConfig
     {
@@ -264,9 +264,9 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
      * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
-    public calc(config: Omit<CalcValueHostConfig, 'conditionType'>): CalcValueHostConfig;
+    public calc(config: FluentCalcValueConfig): CalcValueHostConfig;
     // overload resolution
-    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
+    public calc(arg1: ValueHostName | FluentCalcValueConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
     {
         this.assertFirstParameterValid(arg1);
         if (this.isConfigObject(arg1)) {
@@ -442,6 +442,11 @@ export type FluentPropertyValueConfig = Omit<PropertyValueHostConfig, 'valueHost
 export type FluentPropertyParameters = Omit<FluentPropertyValueConfig, 'name' | 'dataType'>;
 
 /**
+ * For fluent calc() function.
+ */
+export type FluentCalcValueConfig = Omit<CalcValueHostConfig, 'valueHostType' | 'conditionType' | 'initialValue' | 'label' | 'labell10n'>;
+
+/**
  * For fluent withoutValidators() function.
  */
 export type FluentAnyValueHostConfig<T extends ValueHostConfig> = Omit<T, 'valueHostType' | 'conditionType' | 'validatorConfigs'>;
@@ -457,7 +462,7 @@ export type FluentValidatorsValueHostParameters<T extends ValidatorsValueHostBas
  * Targets fluent functions for conditions as their second parameter, hosting most of the 
  * properties needed for ValidatorConfig
  */
-export type FluentValidatorConfig = Omit<ValidatorConfig, 'conditionConfig'>;
+export type FluentValidatorConfig = Omit<ValidatorConfig, 'conditionConfig' | 'conditionCreator'>;
 
 
 /**

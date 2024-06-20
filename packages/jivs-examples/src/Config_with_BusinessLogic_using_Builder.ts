@@ -2,7 +2,7 @@
   Example of using the Builder API to create a ValidationManager configuration from business logic.
   
   When working with business logic, you want to ensure that what you supply to Jivs always matches
-  the business rules.
+  the business rules. There are two approaches.
   
   1. Write a code generator that takes your business logic rules as input and generates the Config objects
      used by Jivs.

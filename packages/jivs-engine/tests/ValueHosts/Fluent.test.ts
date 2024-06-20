@@ -572,12 +572,11 @@ describe('configCalc', () => {
     });
 
     test('Pass in a CalcValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().calc({ name: 'Field1', dataType: 'Test', label: 'Field 1', calcFn: calcFnForTests });
+        let testItem = fluent().calc({ name: 'Field1', dataType: 'Test', calcFn: calcFnForTests });
         expect(testItem).toEqual({
             valueHostType: ValueHostType.Calc,
             name: 'Field1',
             dataType: 'Test',
-            label: 'Field 1',
             calcFn: calcFnForTests
         });
     });

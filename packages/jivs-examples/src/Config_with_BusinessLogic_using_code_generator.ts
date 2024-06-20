@@ -2,7 +2,7 @@
   Example of configuring Jivs using a code generator with business logic.
  
   When working with business logic, you want to ensure that what you supply to Jivs always matches
-  the business rules.
+  the business rules. There are two approaches.
   
   1. Write a code generator that takes your business logic rules as input and generates the Config objects
      used by Jivs. That's the approach of this example.

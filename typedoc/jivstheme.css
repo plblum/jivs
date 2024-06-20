@@ -150,6 +150,15 @@ body{
     background-color: var(--color-code-background);
     border-radius: var(--radius-code);
     font-size: var(--typography-font-size);
+    line-height: 1.5;
+}
+.tsd-typography.tsd-panel pre+pre
+{
+    margin-top: 0.5rem;
+}
+.tsd-panel > h1 {
+    background-color: #becfee;
+    padding-top: 0.5rem;
 }
 
 .tsd-panel h2
@@ -157,6 +166,34 @@ body{
     border-block-start: 5px solid var(--color-h2-line);
     margin: 3rem 0 0 0;
     padding: 5px 0 0 0;
+}
+.tsd-typography.tsd-panel h1+p+a+h2,
+.tsd-typography.tsd-panel h2+p+a+h3,
+.tsd-typography.tsd-panel h3+p+a+h4,
+.tsd-typography.tsd-panel h1+a+h2,
+.tsd-typography.tsd-panel h2+a+h3,
+.tsd-typography.tsd-panel h3+a+h4 {
+    margin-top: 0 !important;
+}
+.tsd-typography.tsd-panel>h2>a {
+    color: #315273;
+}
+.tsd-typography.tsd-panel>h3 {
+    font-size: calc(1.25rem + 2px);
+}
+.tsd-typography.tsd-panel>h3>a {
+    color: #315273;
+    font-weight: 500;
+}
+.tsd-typography.tsd-panel>h4 {
+    font-size: 1.25rem;
+}
+
+.tsd-typography.tsd-panel>h4>a {
+    color: #315273;
+    /* color: #267f99; */
+   /* font-style: italic; */
+    font-weight: 400;
 }
 .tsd-panel.tsd-typography li:not(:last-child)
 {
@@ -167,6 +204,7 @@ body{
     margin-bottom: 0;
     padding-bottom: 0;
 }
+
 .tsd-page-navigation .tsd-accordion-details a
 {
     color: var(--color-page-title);
