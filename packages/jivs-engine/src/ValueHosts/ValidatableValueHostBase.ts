@@ -58,7 +58,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     public dispose(): void
     {
         super.dispose();
-        (this._associatedValueHostNames as any) = undefined;
+        this._associatedValueHostNames = undefined!;
     }
     //#region IValidatableValueHostBase
     /**
@@ -257,7 +257,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         if (fromLastValidation)
             expectedGroup = this.instanceState.group;
         if (expectedGroup === undefined)
-            expectedGroup = (this.getFromInstanceState('_group') as string | null) ?? this.config.group;    // may still be undefined
+            expectedGroup = this.config.group;    // may still be undefined
 
         return groupsMatch(requestedGroup, expectedGroup);
     }

@@ -2,7 +2,6 @@
  * 
  * @module Services/Types/ConfigMergeService
  */
-import { ILoggerService } from './LoggerService';
 import { ConditionConfig } from './Conditions';
 import { ValidatorConfig } from './Validator';
 import { ValueHostConfig } from './ValueHost';
@@ -41,6 +40,15 @@ export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
      * @param identity 
      */
     handleConditionConfigProperty(source: TConfig, destination: TConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult;
+
+    /**
+     * Exposes property names that are not expected to be changed by the rules.
+     * Ignores rules with functions. 
+     * Intent is to allow ValueHostsManagerConfigModifier to know of properties
+     * to strip out instead of allowing them to make it into the merge code.
+     * @returns 
+     */
+    getNoChangePropertyNames(): Array<string>;    
 }
 
 /**
@@ -53,6 +61,17 @@ export interface IValueHostConfigMergeService extends IConfigMergeServiceBase<Va
      * of setPropertyConfigRule()
      */    
     merge(source: ValueHostConfig, destination: ValueHostConfig): void;
+
+    /**
+     * Identifies a ValueHostConfig in the destination that should be merged
+     * with the source. If none need to be merged, it returns null
+     * and the caller should add their ValueHostConfig to ValidationManagerConfig.ValueHostConfigs.
+     * @param source 
+     * @param destinations 
+     */
+    identifyValueHostConflict(source: ValueHostConfig,
+        destinations: Array<ValueHostConfig>):
+        ValueHostConfig | undefined;    
 }
 
 /**
@@ -80,13 +99,13 @@ export interface IValidatorConfigMergeService extends IConfigMergeServiceBase<Va
      * Default conflict handler function for identifyHandler property.
      * This determines a conflict when the destination validatorConfig
      * has the same errorCode as the validatorSrc.
-     * @param validatorSrc 
-     * @param validatorsInDest 
+     * @param source 
+     * @param destinations 
      * @param identity 
      */
-    identifyValidatorConflict(validatorSrc: ValidatorConfig,
-        validatorsInDest: Array<ValidatorConfig>, identity: MergeIdentity):
-        ValidatorConfig | undefined
+    identifyValidatorConflict(source: ValidatorConfig,
+        destinations: Array<ValidatorConfig>, identity: MergeIdentity):
+        ValidatorConfig | undefined;
 }
 
 /**

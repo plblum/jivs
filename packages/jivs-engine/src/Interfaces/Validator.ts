@@ -59,35 +59,6 @@ export interface IValidator extends IDisposable, IMessageTokenSource, IGatherVal
     setEnabled(enabled: boolean): void;    
 
     /**
-     * Use to change the errorMessage and/or errorMessagel10n values. 
-     * It overrides the values from ValidatorConfig.errorMessage and errorMessagel10n.
-     * Use case: Business logic supplies a default values for errorMessage and errorMessagel10n which the UI needs to change.
-     * @param errorMessage  - If undefined, reverts to ValidatorConfig.errorMessage.
-     * If null, does not make any changes.
-     * @param errorMessagel10n  - If undefined, reverts to ValidatorConfig.errorMessagel10n.
-     * If null, does not make any changes.
-     */
-    setErrorMessage(errorMessage: string | undefined, errorMessagel10n?: string | undefined): void;
-
-    /**
-     * Use to change the summaryMessage and/or summaryMessagel10n values. 
-     * It overrides the values from ValidatorConfig.summaryMessage and summaryMessagel10n.
-     * Use case: Business logic supplies a default values for summaryMessage and summaryMessagel10n which the UI needs to change.
-     * @param summaryMessage  - If undefined, reverts to ValidatorConfig.summaryMessage.
-     * If null, does not make any changes.
-     * @param summaryMessagel10n  - If undefined, reverts to ValidatorConfig.summaryMessagel10n.
-     * If null, does not make any changes.
-     */
-    setSummaryMessage(summaryMessage: string | undefined, summaryMessagel10n?: string | undefined): void;    
-
-    /**
-     * Use to change the severity option. It overrides the value from ValidatorConfig.severity.
-     * Use case: Business logic supplies a default value for severity which the UI needs to change.
-     * @param severity 
-     */
-    setSeverity(severity: ValidationSeverity): void;    
-
-    /**
      * When ValueHost.setBusinessLogicError is called, it provides each entry to the existing
      * list of Validators through this. This function determines if the businessLogicError is
      * actually for the same error code as itself, and returns a ValidatorValidateResult, just

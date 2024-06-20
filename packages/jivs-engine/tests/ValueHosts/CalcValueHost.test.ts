@@ -342,9 +342,6 @@ describe('toICalcValueHost function', () => {
         getLabel(): string {
             throw new Error("Method not implemented.");
         }
-        setLabel(label: string, labell10n?: string | undefined): void {
-            throw new Error("Method not implemented.");
-        }
         getValue() {
             throw new Error("Method not implemented.");
         }

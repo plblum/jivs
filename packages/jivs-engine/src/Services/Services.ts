@@ -55,7 +55,7 @@ export class Services implements IServices, IDisposable {
      * This should be the only strong reference to a service instance owned by
      * the IServices object.
      */
-    private _services: { [serviceName: string]: any } = {};
+    private readonly _services: { [serviceName: string]: any } = {};
     //#endregion IServices
 
     public dispose(): void {

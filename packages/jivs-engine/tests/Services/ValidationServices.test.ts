@@ -18,6 +18,8 @@ import { CultureService } from "../../src/Services/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
+import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
     test('Has parameters', () => {
@@ -41,6 +43,8 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(testItem.textLocalizerService).toBeInstanceOf(TextLocalizerService);
         expect(testItem.cultureService).toBeInstanceOf(CultureService);    
         expect(testItem.lookupKeyFallbackService).toBeInstanceOf(LookupKeyFallbackService);            
+        expect(testItem.managerConfigBuilderFactory).toBeInstanceOf(ManagerConfigBuilderFactory);
+        expect(testItem.managerConfigModifierFactory).toBeInstanceOf(ManagerConfigModifierFactory);  
     });
 });
 describe('Replace factories and services', () => {
@@ -147,7 +151,20 @@ describe('Replace factories and services', () => {
         testItem.validatorFactory = replacement;
         expect(testItem.validatorFactory).toBe(replacement);
     });    
-
+    test('Replace managerConfigBuilderFactory', () => {
+        let replacement = new ManagerConfigBuilderFactory();
+        let testItem = new ValidationServices();
+        testItem.managerConfigBuilderFactory = replacement;
+        expect(testItem.managerConfigBuilderFactory).toBe(replacement);
+        expect(replacement.services).toBe(testItem);
+    });    
+    test('Replace managerConfigModifierFactory', () => {
+        let replacement = new ManagerConfigModifierFactory();
+        let testItem = new ValidationServices();
+        testItem.managerConfigModifierFactory = replacement;
+        expect(testItem.managerConfigModifierFactory).toBe(replacement);
+        expect(replacement.services).toBe(testItem);
+    });        
 });
 describe('valueHostFactory property', () => {
     test('Set and Get', () => {

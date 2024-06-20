@@ -9,7 +9,7 @@ import { ValidationManager } from '@plblum/jivs-engine/build/Validation/Validati
 import { EmailAddressCondition, EmailAddressDataTypeCheckGenerator, emailAddressConditionType, emailAddressLookupKey, registerEmailAddress } from '../src/EmailAddressDataType';
 import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { build } from '@plblum/jivs-engine/build/ValueHosts/ValueHostsBuilder';
+import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { createMinimalValidationServices } from '../src/support';
 
 describe('EmailAddressCondition tests', () => {

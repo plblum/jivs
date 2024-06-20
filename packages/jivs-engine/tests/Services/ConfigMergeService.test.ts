@@ -686,7 +686,7 @@ describe('ValueHostConfigMergeService', () => {
         });
 
     });
-    describe('resolve', () => {
+    describe('merge', () => {
         function testResolve(source: ValueHostConfig, destination: ValueHostConfig,
             expectedDestionation: ValueHostConfig,
             logContains?: string) {
@@ -859,7 +859,7 @@ describe('ValueHostConfigMergeService', () => {
                     {
                         conditionConfig: <LessThanValueConditionConfig>{
                             conditionType: ConditionType.LessThanValue,
-                            value: new Date(),
+                            value: new Date(2000, 0, 1),
                             valueHostName: null
                         }
                     }
@@ -895,7 +895,7 @@ describe('ValueHostConfigMergeService', () => {
                         {
                             conditionConfig: <LessThanValueConditionConfig>{
                                 conditionType: ConditionType.LessThanValue,
-                                value: new Date(),
+                                value: new Date(2000, 0, 1),
                                 valueHostName: null
                             }
                         }
@@ -904,12 +904,39 @@ describe('ValueHostConfigMergeService', () => {
                 });
         });        
     });
+    describe('identifyValueHostConflict', () => {
+        test('Matches based on the field name. Matches return the actual instance found. Non-matches return undefined.', () => {
+            let testItem = new ValueHostConfigMergeService();
+            const source: InputValueHostConfig = {
+                name: 'Field1',
+                dataType: 'String',
+                validatorConfigs: null
+            };
+            const dest1: InputValueHostConfig = {
+                name: 'Field1',
+                dataType: 'Number', // intentionally different from source
+                validatorConfigs: []
+            };
+            const dest2: InputValueHostConfig = {
+                name: 'Field2',
+                dataType: 'Number', 
+                validatorConfigs: []
+            };            
+            const destinations: Array<InputValueHostConfig> = [
+                dest1, dest2
+            ];
+            expect(testItem.identifyValueHostConflict(source, destinations)).toBe(dest1);
+            expect(testItem.identifyValueHostConflict({ ...source, name: 'Field2' }, destinations)).toBe(dest2);
+            expect(testItem.identifyValueHostConflict({ ...source, name: 'Field3' }, destinations)).toBeUndefined();
+        });
+    });
 });
 describe('ValidatorConfigMergeService', () => {
     describe('constructor and setting up', () => {
 
         test('constructor sets default propertyConflictRules', () => {
             let testItem = new ValidatorConfigMergeService();
+            expect(testItem.getPropertyConflictRule('validatorType')).toBe('locked');
             expect(testItem.getPropertyConflictRule('conditionConfig')).toBe(testItem.handleConditionConfigProperty);
             expect(testItem.getPropertyConflictRule('enablerConfig')).toBe(testItem.handleConditionConfigProperty);
             expect(testItem.getPropertyConflictRule('conditionCreator')).toBe('nochange');
@@ -1002,11 +1029,12 @@ describe('ValidatorConfigMergeService', () => {
                 { valueHostName: 'Field1' })).toBe(dest2);
         });
     });
-    describe('resolve', () => {
+    describe('merge', () => {
         function testResolve(testItem: ValidatorConfigMergeService,
             source: ValidatorsValueHostBaseConfig, destination: ValidatorsValueHostBaseConfig,
-            expectedDestination: ValidatorsValueHostBaseConfig
-        ) {
+            expectedDestination: ValidatorsValueHostBaseConfig,
+            logContains?: string, logLevel?: LoggingLevel)
+        {
             let setup = createServices();
             testItem.services = setup.services;
             setup.services.validatorConfigMergeService = testItem;
@@ -1014,6 +1042,8 @@ describe('ValidatorConfigMergeService', () => {
 
             testItem.merge(source, destination);
             expect(destination).toEqual(expectedDestination);
+            if (logContains)
+                expect(setup.logger.findMessage(logContains, logLevel ?? null, null, null)).toBeTruthy();
         }
         test('Neither source or destination has ValidatorConfigs leaves destination unchanged', () => {
             let testItem = new ValidatorConfigMergeService();
@@ -1166,7 +1196,7 @@ describe('ValidatorConfigMergeService', () => {
                         },
                         summaryMessage: 'From Source'
                     }]
-            },
+                },
                 {
                     valueHostType: ValueHostType.Input,
                     name: 'Field1',
@@ -1190,7 +1220,8 @@ describe('ValidatorConfigMergeService', () => {
                             conditionConfig: { conditionType: 'Require' }
                         }
                     ]
-                });
+                },
+            'ConditionType mismatch for', LoggingLevel.Warn);
         });
         test('Source and destination conflicting Validators merges validatorConfigs and conditionConfig is modified using the "all" rule', () => {
             let testItem = new ValidatorConfigMergeService();

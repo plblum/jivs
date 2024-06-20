@@ -70,6 +70,22 @@ export function toIServicesAccessor(source: any): IServicesAccessor | null {
 }
 
 /**
+ * Determines if the source implements IServices, and returns it typecasted.
+ * If not, it returns null.
+ * @param source 
+ */
+export function toIServices(source: any): IServices | null {
+    if (source && typeof source === 'object') {
+        let test = source as IServices;       
+        if ('getService' in test &&
+            'setService' in test)
+            return test;
+    }
+    return null;
+}
+
+
+/**
  * Assign to services that support a fallback version of itself,
  * so the user can override the service with a special case,
  * and the fallback handles the rest.

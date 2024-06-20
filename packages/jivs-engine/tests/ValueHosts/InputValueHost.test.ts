@@ -1217,9 +1217,7 @@ describe('toIInputValueHost function', () => {
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");
         }
-        configValidators(): FluentValidatorCollector {
-            throw new Error("Method not implemented.");
-        }
+
 
         getInputValue() {
             throw new Error("Method not implemented.");
@@ -1278,9 +1276,7 @@ describe('toIInputValueHost function', () => {
         getLabel(): string {
             throw new Error("Method not implemented.");
         }
-        setLabel(label: string, labell10n?: string | undefined): void {
-            throw new Error("Method not implemented.");
-        }
+
         getValue() {
             throw new Error("Method not implemented.");
         }
@@ -1308,12 +1304,6 @@ describe('toIInputValueHost function', () => {
             throw new Error("Method not implemented.");
         }
 
-        addValidator(config: ValidatorConfig): void {
-            throw new Error("Method not implemented.");
-        }
-        setGroup(group: string): void {
-            throw new Error("Method not implemented.");
-        }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIInputValueHostImplementation();

@@ -91,20 +91,6 @@ export class ValidationServices extends ValueHostsServices implements IValidatio
     }
 
     /**
-     * Service to get the IValueHostConfigMergeService instance that 
-     * determines how to merge ValueHost configurations from business logic and UI.
-     */
-    public get valueHostConfigMergeService(): IValueHostConfigMergeService {
-        let service = this.getService<IValueHostConfigMergeService>(ServiceName.valueHostConfigMerge);
-        if (!service)
-            throw new CodingError('Must assign ValidationServices.valueHostConfigMergeService.');
-
-        return service;
-    }
-    public set valueHostConfigMergeService(service: IValueHostConfigMergeService) {
-        this.setService(ServiceName.valueHostConfigMerge, service);
-    }    
-    /**
      * Service to get the IValidatorConfigMergeService instance that 
      * determines how to merge ValueHost configurations from business logic and UI.
      */

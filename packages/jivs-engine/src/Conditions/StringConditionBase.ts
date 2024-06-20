@@ -5,7 +5,7 @@
 
 import { IInputValueHost } from '../Interfaces/InputValueHost';
 import { ConditionEvaluateResult, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
-import { IValueHostsServices } from '../Interfaces/ValueHostsManager';
+import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';

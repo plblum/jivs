@@ -182,8 +182,6 @@ export interface ValidatableValueHostBaseConfig extends ValueHostConfig {
      *   Case insensitive matching.
      * * string[] - a list of group names. If none match the requested group
      *   in the validate() function, the validator is treated as disabled.
-     * This value can be overriden via Validatable ValueHost.setGroup, so the UI can assign
-     * a better group.
      */
     group?: undefined | null | string | Array<string>;
 }

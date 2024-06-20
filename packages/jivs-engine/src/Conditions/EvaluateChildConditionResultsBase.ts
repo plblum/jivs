@@ -52,7 +52,7 @@ export abstract class EvaluateChildConditionResultsBase<TConfig extends Evaluate
     {
         super.dispose();
         this._conditions?.forEach((cond)=>  toIDisposable(cond)?.dispose());
-        (this._conditions as any) = undefined;
+        this._conditions = undefined!;
     }    
     /**
      * 
