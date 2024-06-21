@@ -1472,7 +1472,7 @@ describe('notNull with ValidationManagerStartFluent', () => {
 describe('all with ValidationManagerStartFluent', () => {
     test('With empty conditions, creates ValidatorConfig with AllMatchCondition with type=AllMatch and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').all(new ValidationManagerStartFluent(null).conditions());
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').all((children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -1482,7 +1482,8 @@ describe('all with ValidationManagerStartFluent', () => {
     });
     test('With conditions setup with requireText and regExp, creates ValidatorConfig with AllMatchCondition with type=AllMatch and conditionConfigs populated with both conditions', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').all(new ValidationManagerStartFluent(null).conditions().requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+            .all((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -1500,7 +1501,8 @@ describe('all with ValidationManagerStartFluent', () => {
 
     test('With conditions setup with requireText and regExp, and errorMessage assigned creates ValidatorConfig with AllMatchCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').all(new ValidationManagerStartFluent(null).conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error');
+        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+            .all((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -1518,7 +1520,8 @@ describe('all with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').all(new ValidationManagerStartFluent(null).conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
+        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+            .all((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -1537,7 +1540,7 @@ describe('all with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').all(new ValidationManagerStartFluent(null).conditions(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').all((children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -1549,7 +1552,7 @@ describe('all with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with AllMatchCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').all(new ValidationManagerStartFluent(null).conditions(), 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').all((children) => children, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -1558,11 +1561,19 @@ describe('all with ValidationManagerStartFluent', () => {
             errorMessage: 'FirstError'
         });
     });
+    test('Null as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(()=> fluent.input('Field1').all(null!, 'Error')).toThrow(/conditions/);
+    });
+    test('Non-function as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(() => fluent.input('Field1').all({} as any, 'Error')).toThrow(/Function expected/);
+    });    
 });
 describe('any with ValidationManagerStartFluent', () => {
     test('With empty conditions, creates ValidatorConfig with AnyMatchCondition with type=AnyMatch and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any(new ValidationManagerStartFluent(null).conditions());
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1572,7 +1583,7 @@ describe('any with ValidationManagerStartFluent', () => {
     });
     test('With conditions setup with requireText and regExp, creates ValidatorConfig with AnyMatchCondition with type=AnyMatch and conditionConfigs populated with both conditions', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any(new ValidationManagerStartFluent(null).conditions().requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1590,7 +1601,7 @@ describe('any with ValidationManagerStartFluent', () => {
 
     test('With conditions setup with requireText and regExp, and errorMessage assigned creates ValidatorConfig with AnyMatchCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any(new ValidationManagerStartFluent(null).conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error');
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1608,7 +1619,7 @@ describe('any with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any(new ValidationManagerStartFluent(null).conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1627,7 +1638,7 @@ describe('any with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any(new ValidationManagerStartFluent(null).conditions(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1639,7 +1650,7 @@ describe('any with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with AnyMatchCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any(new ValidationManagerStartFluent(null).conditions(), 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1648,12 +1659,20 @@ describe('any with ValidationManagerStartFluent', () => {
             errorMessage: 'FirstError'
         });
     });
+    test('Null as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(()=> fluent.input('Field1').any(null!, 'Error')).toThrow(/conditions/);
+    });
+    test('Non-function as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(() => fluent.input('Field1').any({} as any, 'Error')).toThrow(/Function expected/);
+    });        
 });
 
 describe('countMatches with ValidationManagerStartFluent', () => {
     test('With minimum and maximum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, maximum, and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, 2, new ValidationManagerStartFluent(null).conditions());
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, 2, (children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1665,7 +1684,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With minimum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, null, new ValidationManagerStartFluent(null).conditions());
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, null, (children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1676,7 +1695,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With maximum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, maximum, and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(null, 2, new ValidationManagerStartFluent(null).conditions());
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(null, 2, (children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1687,7 +1706,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });    
     test('With conditions setup with requireText and regExp, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch and conditionConfigs populated with both conditions', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(0, 2, new ValidationManagerStartFluent(null).conditions().requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(0, 2, (children) => children.requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1707,7 +1726,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
 
     test('With conditions setup with requireText and regExp, and errorMessage assigned creates ValidatorConfig with CountMatchesMatchCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, 4, new ValidationManagerStartFluent(null).conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error');
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, 4, (children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1727,7 +1746,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, 2, new ValidationManagerStartFluent(null).conditions().requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, 2, (children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1748,7 +1767,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(null, null, new ValidationManagerStartFluent(null).conditions(), null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(null, null, (children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1760,7 +1779,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with CountMatchesMatchCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(null, null, new ValidationManagerStartFluent(null).conditions(), 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(null, null, (children) => children, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1769,6 +1788,14 @@ describe('countMatches with ValidationManagerStartFluent', () => {
             errorMessage: 'FirstError'
         });
     });
+    test('Null as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(()=> fluent.input('Field1').countMatches(0, 1, null!, 'Error')).toThrow(/conditions/);
+    });
+    test('Non-function as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(() => fluent.input('Field1').countMatches(0, 1, {} as any, 'Error')).toThrow(/Function expected/);
+    });        
 });
 
 describe('positive with ValidationManagerStartFluent', () => {

@@ -960,7 +960,7 @@ describe('all on conditions', () => {
     test('With empty conditions, creates ValidatorConfig with AllMatchCondition with type=AllMatch and conditionConfigs=[]', () => {
         let fluent = new ValidationManagerStartFluent(null)
 
-        let testItem = fluent.conditions().all(fluent.conditions());
+        let testItem = fluent.conditions().all((children) => children);
         TestFluentConditionCollector(testItem, <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: []
@@ -969,7 +969,7 @@ describe('all on conditions', () => {
     test('With conditions setup with requireText and regExp, creates ValidatorConfig with AllMatchCondition with type=AllMatch and conditionConfigs populated with both conditions', () => {
         let fluent = new ValidationManagerStartFluent(null)
 
-        let testItem = fluent.conditions().all(fluent.conditions().requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = fluent.conditions().all((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentConditionCollector(testItem, <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
@@ -987,7 +987,7 @@ describe('any on conditions', () => {
     test('With empty conditions, creates ValidatorConfig with AnyMatchCondition with type=AnyMatch and conditionConfigs=[]', () => {
         let fluent = new ValidationManagerStartFluent(null)
 
-        let testItem = fluent.conditions().any(fluent.conditions());
+        let testItem = fluent.conditions().any((children) => children);
         TestFluentConditionCollector(testItem, <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: []
@@ -996,7 +996,7 @@ describe('any on conditions', () => {
     test('With conditions setup with requireText and regExp, creates ValidatorConfig with AnyMatchCondition with type=AnyMatch and conditionConfigs populated with both conditions', () => {
         let fluent = new ValidationManagerStartFluent(null)
 
-        let testItem = fluent.conditions().any(fluent.conditions().requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = fluent.conditions().any((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentConditionCollector(testItem, <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
@@ -1015,7 +1015,7 @@ describe('countMatches on conditions', () => {
     test('With minimum and maximum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, maximum, and conditionConfigs=[]', () => {
         let fluent = new ValidationManagerStartFluent(null)
 
-        let testItem = fluent.conditions().countMatches(1, 2, fluent.conditions());
+        let testItem = fluent.conditions().countMatches(1, 2, (children) => children);
         TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -1026,7 +1026,7 @@ describe('countMatches on conditions', () => {
     test('With minimum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, and conditionConfigs=[]', () => {
         let fluent = new ValidationManagerStartFluent(null)
 
-        let testItem = fluent.conditions().countMatches(1, null, fluent.conditions());
+        let testItem = fluent.conditions().countMatches(1, null, (children) => children);
         TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -1036,7 +1036,7 @@ describe('countMatches on conditions', () => {
     test('With maximum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, maximum, and conditionConfigs=[]', () => {
         let fluent = new ValidationManagerStartFluent(null)
 
-        let testItem = fluent.conditions().countMatches(null, 2, fluent.conditions());
+        let testItem = fluent.conditions().countMatches(null, 2, (children) => children);
         TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 maximum: 2,
@@ -1046,7 +1046,7 @@ describe('countMatches on conditions', () => {
     test('With conditions setup with requireText and regExp, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch and conditionConfigs populated with both conditions', () => {
         let fluent = new ValidationManagerStartFluent(null)
 
-        let testItem = fluent.conditions().countMatches(0, 2, fluent.conditions().requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = fluent.conditions().countMatches(0, 2, (children) => children.requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 0,

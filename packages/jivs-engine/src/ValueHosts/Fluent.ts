@@ -668,6 +668,16 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
 }
 
 /**
+ * Callback used by conditions that take an array of child conditions. 
+ * Expected to be used like this:
+ * ```ts
+ * builder.all((conditions)=>conditions.required('Field1').required('Field2'), 'error message', { validator parameters });
+ * ```
+ * Designed to get intellisense assistance as the user sets up the child conditions.
+ */
+export type FluentConditionCollectorHandler = (conditionsCollector: FluentConditionCollector) => FluentConditionCollector;
+
+/**
  * Call from within a fluent function once you have all parameters fully setup.
  * It will complete the setup.
  * @param thisFromCaller 

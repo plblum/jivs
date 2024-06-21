@@ -1,3 +1,4 @@
+
 /**
  * Implements a fluent syntax to chain together conditions quickly.
  * Each condition gets its own function that expects to have
@@ -7,9 +8,10 @@
  */
 
 import {
-    FluentValidatorCollector, FluentValidatorConfig, FluentConditionCollector, finishFluentValidatorCollector
+    FluentValidatorCollector, FluentValidatorConfig, finishFluentValidatorCollector
 } from "../ValueHosts/Fluent";
 import { ConditionType } from "./ConditionTypes";
+import { FluentConditionCollectorHandler } from './../ValueHosts/Fluent';
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import {
     FluentEqualToConditionConfig,
@@ -138,16 +140,16 @@ declare module "./../ValueHosts/Fluent"
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
         all(
-            collector: FluentConditionCollector,
+            conditions: FluentConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
         any(
-            collector: FluentConditionCollector,
+            conditions: FluentConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;        
         countMatches(
             minimum: number | null, maximum: number | null,
-            collector: FluentConditionCollector,
+            conditions: FluentConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;      
         positive(
@@ -429,31 +431,31 @@ function stringLength(
 }
 
 function all(
-    collector: FluentConditionCollector,
+    conditions: FluentConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.All, _genDCAll(collector),
+        ConditionType.All, _genDCAll(conditions),
         errorMessage, validatorParameters);
 }
 
 function any(
-    collector: FluentConditionCollector,
+    conditions: FluentConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.Any, _genDCAny(collector),
+        ConditionType.Any, _genDCAny(conditions),
         errorMessage, validatorParameters);
 }
 
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    collector: FluentConditionCollector,
+    conditions: FluentConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, collector),
+        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, conditions),
         errorMessage, validatorParameters);
 }
 function positive(

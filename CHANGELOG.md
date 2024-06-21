@@ -3,6 +3,7 @@
   and adding a Modifier class, ValidationManagerConfigModifier to handle changes to config after creating ValidationManager. Several functions used to change
   config were removed to let Modifier take over.
 - Extensive examples for configuration are now in jivs-examples.
+- **Breaking API change** Fluent syntax for all, any, and countMatches revised to take a function instead of a FluentConditionCollector
 ## 0.17.1
 - Added setIssuesFound() method on ValidationManager and ValidatableValueHostBase. Simplifies how to send Jivs errors found by the server and sent up to the client.
 - Added {DataType} token to error messages, with localization using TextLocalizerService.

@@ -800,49 +800,50 @@ Here are the conditions in Builder/Modifier API format:
      supportsDuringEdit?: boolean;
   }
   ```
-- all(*children chaining*, errorMessage?, {*validator parameters*}?)
+- all(*children builder function*, errorMessage?, {*validator parameters*}?)
 
-  For *children chaining*, pass `builder.conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
+  For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
  
   ```ts
   builder.input('fieldname').all(
-     builder.conditions()
+     (children) => children
        .requireText(null, 'fieldname2')
        .requireText(null, 'fieldname3'));
   builder.input('fieldname').all(
-     builder.conditions()
+     (children) => children
+        .requireText(null, 'fieldname2')
+        .requireText(null, 'fieldname3'), 
+        'At least one is required', { severity: ValidatorSeverity.Severe });
+  ```
+- any(*children builder function*, errorMessage?, {*validator parameters*}?)
+
+  For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
+ 
+  ```ts
+  builder.input('fieldname').any(
+     (children) => children
+       .requireText(null, 'fieldname2')
+       .requireText(null, 'fieldname3'));
+  builder.input('fieldname').any(
+     (children) => children
         .requireText(null, 'fieldname2')
         .requireText(null, 'fieldname3'), 
         'At least one is required', { severity: ValidatorSeverity.Severe });
   ```
 
-  For *children chaining*, pass `builder.conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
- 
-  ```ts
-  builder.input('fieldname').any(
-     builder.conditions()
-       .requireText(null, 'fieldname2')
-       .requireText(null, 'fieldname3'));
-  builder.input('fieldname').any(
-     builder.conditions()
-        .requireText(null, 'fieldname2')
-        .requireText(null, 'fieldname3'), 
-        'At least one is required', { severity: ValidatorSeverity.Severe });
-  ```
+- countMatches(minimum, maximum, *children builder function*, errorMessage?, {*validator parameters*}?)
 
-- countMatches(minimum, maximum, *children chaining*, errorMessage?, {*validator parameters*}?)
-
-  For *children chaining*, pass `builder.conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
+  For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
   ```ts
   builder.input('fieldname').countMatches(
       1, 2, 
-      builder.conditions()
+      (children) => children
          .requireText(null, 'fieldname2')
          .requireText(null, 'fieldname3')
          .requireText(null, 'fieldname4'));
   builder.input('fieldname').any(
       2, 4, 
-      builder.conditions()
+      (children) => children
          .requireText(null, 'fieldname2')
          .requireText(null, 'fieldname3')
          .requireText(null, 'fieldname4')

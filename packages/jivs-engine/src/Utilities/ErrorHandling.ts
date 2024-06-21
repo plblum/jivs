@@ -80,3 +80,13 @@ export function assertWeakRefExists(ref: WeakRef<any> | null | undefined, messag
     if (!ref || ref.deref() === undefined)
         throw new TypeError(message);
 }
+
+/**
+ * Ensures the value is a function.
+ * @param value 
+ */
+export function assertFunction(value: any): void
+{
+    if (typeof value !== 'function')
+        throw new CodingError(`Function expected, but received ${valueForLog(value)}`);
+}
