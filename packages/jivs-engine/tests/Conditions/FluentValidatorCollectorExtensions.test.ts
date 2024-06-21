@@ -6,7 +6,7 @@ import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
     EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
     RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
 } from '../../src/Conditions/ConcreteConditions';
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
@@ -117,17 +117,6 @@ describe('regExp with ValidationManagerStartFluent', () => {
                 conditionType: ConditionType.RegExp,
                 expressionAsString: '\\d',
                 ignoreCase: false
-            }
-        });
-    });
-    test('With expression as text, ignoreCase=null, and ivParam with not=true, creates ValidatorConfig with RegExpCondition with type=RegExp, expressionAsString, and not=true assigned', () => {
-
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').regExp('\\d', null, { not: true });
-        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
-            conditionConfig: <RegExpConditionConfig>{
-                conditionType: ConditionType.RegExp,
-                expressionAsString: '\\d',
-                not: true
             }
         });
     });
@@ -1965,4 +1954,83 @@ describe('maxDecimals with ValidationManagerStartFluent', () => {
             errorMessage: 'FirstError'
         });
     });
+});
+
+describe('not with ValidationManagerStartFluent', () => {
+    test('With empty condition, creates ValidatorConfig with NotCondition with type=Not and childConditionConfig={}', () => {
+
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').not((children) => children);
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <NotConditionConfig>{
+                conditionType: ConditionType.Not,
+                childConditionConfig: {}
+            }
+        });
+    });
+    test('With condition setup with requireText, creates ValidatorConfig with NotCondition with type=Not and conditionConfigs populated', () => {
+
+        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+            .not((children) => children.requireText(null, 'F1'));
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <NotConditionConfig>{
+                conditionType: ConditionType.Not,
+                childConditionConfig: <any>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                }
+            }
+        });
+    });
+    test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with NotCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+
+        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+            .not((children) => children.requireText(null, 'F1'), 'Error', { summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <NotConditionConfig>{
+                conditionType: ConditionType.Not,
+                childConditionConfig: <any>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                }
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
+
+        let testItem = new ValidationManagerStartFluent(null)
+            .input('Field1').not((children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <NotConditionConfig>{
+                conditionType: ConditionType.Not,
+                childConditionConfig: {}
+            },
+            errorMessage: 'Error',
+            summaryMessage: 'Summary'
+        });
+    });
+    test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
+
+        let testItem = new ValidationManagerStartFluent(null).input('Field1').not((children) => children, 'FirstError', { errorMessage: 'SecondError' });
+        TestFluentValidatorCollector(testItem, <ValidatorConfig>{
+            conditionConfig: <NotConditionConfig>{
+                conditionType: ConditionType.Not,
+                childConditionConfig: {}
+            },
+            errorMessage: 'FirstError'
+        });
+    });
+    test('When there are 2 child conditions, throws', () => {
+        expect(() => new ValidationManagerStartFluent(null).input('Field1')
+            .not((children) => children.requireText(null, 'F1').requireText(null, 'F2'))).toThrow();
+    });    
+    test('Null as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(()=> fluent.input('Field1').not(null!, 'Error')).toThrow(/condition/);
+    });
+    test('Non-function as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(() => fluent.input('Field1').not({} as any, 'Error')).toThrow(/Function expected/);
+    });    
 });

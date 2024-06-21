@@ -8,6 +8,7 @@
  */
 
 import {
+    FluentOneConditionCollectorHandler,
     FluentValidatorCollector, FluentValidatorConfig, finishFluentValidatorCollector
 } from "../ValueHosts/Fluent";
 import { ConditionType } from "./ConditionTypes";
@@ -35,6 +36,7 @@ import {
     _genDCInteger,
     _genDCLessThan, _genDCLessThanOrEqual, _genDCLessThanOrEqualValue, _genDCLessThanValue,
     _genDCMaxDecimals,
+    _genDCNot,
     _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCPositive, _genDCRequireText,
     _genDCStringLength, enableFluentConditions
 } from "./FluentConditionCollectorExtensions";
@@ -162,7 +164,11 @@ declare module "./../ValueHosts/Fluent"
             maxDecimals: number,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;               
-        
+        not(
+            condition: FluentOneConditionCollectorHandler,
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
+
     //#region shorter names for some
         ltValue(
             secondValue: any,
@@ -243,6 +249,7 @@ export function enableFluent(): void {
     FluentValidatorCollector.prototype.positive = positive;
     FluentValidatorCollector.prototype.integer = integer;
     FluentValidatorCollector.prototype.maxDecimals = maxDecimals;
+    FluentValidatorCollector.prototype.not = not;
 
 
     //#region shorter names for some
@@ -483,5 +490,14 @@ function maxDecimals(
     // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty        
     return finishFluentValidatorCollector(this,
         ConditionType.MaxDecimals, _genDCMaxDecimals(maxDecimals),
+        errorMessage, validatorParameters);
+}
+
+function not(
+    condition: FluentOneConditionCollectorHandler,
+    errorMessage?: string | null,
+    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
+    return finishFluentValidatorCollector(this,
+        ConditionType.Not, _genDCNot(condition),
         errorMessage, validatorParameters);
 }

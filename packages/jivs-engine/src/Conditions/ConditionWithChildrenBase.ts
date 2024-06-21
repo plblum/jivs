@@ -40,7 +40,7 @@ export abstract class ConditionWithChildrenBase<TConfig extends ConditionWithChi
     public dispose(): void
     {
         super.dispose();
-        this._conditions?.forEach((cond)=>  toIDisposable(cond)?.dispose());
+        this._conditions?.forEach((cond)=> toIDisposable(cond)?.dispose());
         this._conditions = undefined!;
     }    
 
@@ -53,8 +53,7 @@ export abstract class ConditionWithChildrenBase<TConfig extends ConditionWithChi
     protected generateConditions(valueHostsManager: IValueHostsManager): Array<ICondition> {
         let conditions: Array<ICondition> = [];
         for (let condConfig of this.config.conditionConfigs) {
-            // expect exceptions here for invalid Configs
-            let condition = valueHostsManager.services.conditionFactory.create(condConfig);
+            let condition = this.generateCondition(condConfig, valueHostsManager.services);
             conditions.push(condition);
         }
         return conditions;

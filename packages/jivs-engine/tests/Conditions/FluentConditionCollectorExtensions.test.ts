@@ -4,7 +4,7 @@ import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
     EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
     RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
 } from '../../src/Conditions/ConcreteConditions';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
@@ -96,16 +96,6 @@ describe('regExp on conditions', () => {
             conditionType: ConditionType.RegExp,
             expressionAsString: '\\d',
             ignoreCase: false
-        });
-    });
-    test('With expression as text, ignoreCase=null, and ivParam with not=true, creates ValidatorConfig with RegExpCondition with type=RegExp, expressionAsString, and not=true assigned', () => {
-        let fluent = new ValidationManagerStartFluent(null)
-
-        let testItem = fluent.conditions().regExp('\\d', null, { not: true });
-        TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
-            conditionType: ConditionType.RegExp,
-            expressionAsString: '\\d',
-            not: true
         });
     });
 });
@@ -1124,4 +1114,40 @@ describe('maxDecimals on conditions', () => {
         });
     });
 
+});
+
+describe('not on conditions', () => {
+    test('With empty condition, creates ValidatorConfig with NotCondition with type=Not and childConditionConfig={}', () => {
+        let fluent = new ValidationManagerStartFluent(null)
+
+        let testItem = fluent.conditions().not((child) => child);
+        TestFluentConditionCollector(testItem, <NotConditionConfig>{
+                conditionType: ConditionType.Not,
+            childConditionConfig: {}
+           });
+    });
+    test('With condition setup with requireText, creates ValidatorConfig with NotCondition with type=Not and conditionConfigs populatedn', () => {
+
+        let testItem = new ValidationManagerStartFluent(null).conditions()
+            .not((child) => child.requireText(null, 'F1'));
+            TestFluentConditionCollector(testItem, <NotConditionConfig>{
+                conditionType: ConditionType.Not,
+                childConditionConfig: <any>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                }
+        });
+    });    
+    test('When there are 2 child conditions, throws', () => {
+        expect(() => new ValidationManagerStartFluent(null).conditions()
+            .not((child) => child.requireText(null, 'F1').requireText(null, 'F2'))).toThrow();
+    });    
+    test('Null as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(()=> fluent.conditions().not(null!)).toThrow(/condition/);
+    });
+    test('Non-function as the function parameter throws', () => {
+        let fluent = new ValidationManagerStartFluent(null);
+        expect(() => fluent.conditions().not({} as any)).toThrow(/Function expected/);
+    });    
 });

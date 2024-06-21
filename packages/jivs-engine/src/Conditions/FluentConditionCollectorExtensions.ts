@@ -6,8 +6,16 @@
  * @module Conditions/Fluent
  */
 
-import { FluentConditionCollector, FluentConditionCollectorHandler, finishFluentConditionCollector } from "../ValueHosts/Fluent";
-import { AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig, EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig, LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig } from "./ConcreteConditions";
+import { FluentConditionCollector, FluentConditionCollectorHandler, FluentOneConditionCollector, FluentOneConditionCollectorHandler, finishFluentConditionCollector } from "../ValueHosts/Fluent";
+import {
+    AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
+    EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
+    GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
+    MaxDecimalsConditionConfig, NotConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig,
+    NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig,
+    RequireTextConditionConfig, StringLengthConditionConfig
+} from "./ConcreteConditions";
 import { ConditionType } from "./ConditionTypes";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
@@ -95,6 +103,8 @@ declare module "./../ValueHosts/Fluent"
             valueHostName?: ValueHostName): FluentConditionCollector;
         maxDecimals(maxDecimals: number,
             valueHostName?: ValueHostName): FluentConditionCollector;        
+        not(
+            conditions: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
 
         //#region shorter names for some
         ltValue(
@@ -168,6 +178,7 @@ export function enableFluentConditions(): void {
     FluentConditionCollector.prototype.positive = positive;
     FluentConditionCollector.prototype.integer = integer;
     FluentConditionCollector.prototype.maxDecimals = maxDecimals;
+    FluentConditionCollector.prototype.not = not;
 
 
     //#region shorter names for some
@@ -705,3 +716,23 @@ function maxDecimals(maxDecimals: number,
         ConditionType.MaxDecimals, _genDCMaxDecimals(maxDecimals), valueHostName);
 }
 
+/**
+ * Common code to setup NotConditionConfig for support within
+ * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * @internal
+ */
+export function _genDCNot(
+    condition: FluentOneConditionCollectorHandler): NotConditionConfig {
+    assertNotNull(condition, 'condition');
+    assertFunction(condition);
+    
+    let fluent = new FluentOneConditionCollector(null);
+    condition(fluent);
+    let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
+    return { childConditionConfig: conditionConfig } as NotConditionConfig;
+}
+function not(
+    condition: FluentOneConditionCollectorHandler): FluentConditionCollector {
+    return finishFluentConditionCollector(this,
+        ConditionType.Not, _genDCNot(condition));
+}

@@ -747,13 +747,23 @@ Here are the conditions in Builder/Modifier API format:
      trim?: boolean;
      valueHostName: null | string;
      supportsDuringEdit?: boolean;
-     not?: boolean;
   }
   ```
 
 - range(minimum, maximum, errorMessage?, {*validator parameters*}?)
   ```ts
   builder.input('fieldname').range(5, 100);
+  ```
+- not(*child builder function*, errorMessage?, {*validator parameters*}?)
+
+  For *child builder function*, pass a function that uses its one parameter to attach the child condition.
+ 
+  ```ts
+  builder.input('fieldname').not(
+     (child) => child.regExp(/[ABC]/);
+  builder.input('fieldname').not(
+     (child) => child.regExp(/[ABC]/, 
+        'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
   ```
 
 - equalToValue(secondValue, {*condition parameters*}?, errorMessage?, {*validator parameters*}?)

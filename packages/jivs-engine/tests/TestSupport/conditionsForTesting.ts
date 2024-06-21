@@ -105,7 +105,17 @@ export class UserSuppliedResultConditionWithDuringEdit extends UserSuppliedResul
         return this.config.result;
     }
 }
+export const EvaluatesAsPromiseConditionType = "EvaluatesAsPromise";
 
+export class EvaluatesAsPromiseCondition extends MockConditionBase<ConditionConfig>{
+ 
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        return new Promise((resolve) => {
+            resolve(ConditionEvaluateResult.Match);
+        });
+    }
+
+}
 
 export function registerTestingOnlyConditions(factory: ConditionFactory): void
 {
@@ -116,6 +126,7 @@ export function registerTestingOnlyConditions(factory: ConditionFactory): void
     factory.register(ThrowsSevereExceptionConditionType, (config) => new ThrowsSevereExceptionCondition(config));
     factory.register<UserSuppliedResultConditionConfig>(UserSuppliedResultConditionType, (config) => new UserSuppliedResultCondition(config));
     factory.register<UserSuppliedResultConditionConfig>(UserSuppliedResultConditionWithDuringEditType, (config) => new UserSuppliedResultConditionWithDuringEdit(config));
+    factory.register<ConditionConfig>(EvaluatesAsPromiseConditionType, (config) => new EvaluatesAsPromiseCondition(config));
     // yes, two conditions of the same class can be registered with different Type names.
     factory.register(NeverMatchesConditionType2, (config) => new NeverMatchesCondition(config));
 }

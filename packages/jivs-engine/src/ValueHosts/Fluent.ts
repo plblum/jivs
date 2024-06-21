@@ -612,9 +612,8 @@ export interface IFluentConditionCollector
 }
 
 /**
- * Supplies Conditions to Conditions that use EvaluateChildConditionResultsConfig:
- * AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. It is created 
- * by ValidationManagerConfigBuilder.conditions()
+ * Supplies Conditions to Conditions that use ConditionWithChildrenBaseConfig:
+ * AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. 
  * 
  * This class will dynamically get fluent functions for each condition
  * by using TypeScript's Declaration Merging:
@@ -668,7 +667,27 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
 }
 
 /**
- * Callback used by conditions that take an array of child conditions. 
+ * Supports the fluent syntax on conditions that have a single child condition.
+ * It isn't an ideal implementation. It is based on using FluentConditionCollector,
+ * which allows a list of conditions. It simply throws an exception if the user
+ * atttempts to add more than one condition.
+ * 
+ * The reason for this implementation is to avoid having the user to register
+ * new fluent condition functions in 3 places: FluentValidatorCollector, FluentConditionCollector,
+ * and FluentOneConditionCollector. Additionally, they would have to setup their function 
+ * to return void instead of a FluentConditionCollector. That is deemed too much work.
+ */
+export class FluentOneConditionCollector extends FluentConditionCollector
+{
+    public add(conditionType: string | null, conditionConfig: Partial<ConditionConfig>): void {
+        if (this.parentConfig.conditionConfigs!.length > 0)
+            throw new CodingError('Only one condition allowed');
+        super.add(conditionType, conditionConfig);
+    }
+}
+
+/**
+ * Callback used by conditions that take an array of child conditions (subclasses of ConditionWithChildrenBase).
  * Expected to be used like this:
  * ```ts
  * builder.all((conditions)=>conditions.required('Field1').required('Field2'), 'error message', { validator parameters });
@@ -676,6 +695,16 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
  * Designed to get intellisense assistance as the user sets up the child conditions.
  */
 export type FluentConditionCollectorHandler = (conditionsCollector: FluentConditionCollector) => FluentConditionCollector;
+
+/**
+ * Callback used by conditions that take an array of child conditions (subclasses of ConditionWithChildrenBase).
+ * Expected to be used like this:
+ * ```ts
+ * builder.all((conditions)=>conditions.required('Field1').required('Field2'), 'error message', { validator parameters });
+ * ```
+ * Designed to get intellisense assistance as the user sets up the child conditions.
+ */
+export type FluentOneConditionCollectorHandler = (conditionsCollector: FluentOneConditionCollector) => FluentOneConditionCollector;
 
 /**
  * Call from within a fluent function once you have all parameters fully setup.

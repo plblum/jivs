@@ -26,7 +26,9 @@ import {
     IntegerCondition,
     IntegerConditionConfig,
     MaxDecimalsCondition,
-    MaxDecimalsConditionConfig
+    MaxDecimalsConditionConfig,
+    NotCondition,
+    NotConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
@@ -149,6 +151,9 @@ export function registerConditions(cf: ConditionFactory): void
         (ConditionType.All, (config) => new AllMatchCondition(config));
     cf.register<AnyMatchConditionConfig>
         (ConditionType.Any, (config) => new AnyMatchCondition(config));
+    cf.register<NotConditionConfig>
+        (ConditionType.Not, (config) => new NotCondition(config));
+
 */    
 }
 export function registerAllConditions(cf: ConditionFactory): void
@@ -207,6 +212,8 @@ export function registerAllConditions(cf: ConditionFactory): void
         (ConditionType.Integer, (config) => new IntegerCondition(config));
     cf.register<MaxDecimalsConditionConfig>
         (ConditionType.MaxDecimals, (config) => new MaxDecimalsCondition(config));
+    cf.register<NotConditionConfig>
+        (ConditionType.Not, (config) => new NotCondition(config));
 
 }
 

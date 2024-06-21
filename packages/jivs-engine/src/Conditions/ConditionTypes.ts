@@ -34,6 +34,11 @@ export enum ConditionType
     Range = 'Range',
 
     /**
+     * Associated with NotCondition class.
+     */
+    Not = 'Not',
+
+    /**
      * Associated with EqualToCondition class.
      */
     EqualTo = 'EqualTo',
