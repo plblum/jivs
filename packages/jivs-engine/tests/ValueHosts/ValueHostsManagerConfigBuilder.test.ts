@@ -1,21 +1,14 @@
 import { RegExpConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { EvaluateChildConditionResultsBaseConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
-import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { CalcValueHostConfig, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
-import { InputValueHostConfig } from "../../src/Interfaces/InputValueHost";
-import { StaticValueHostConfig } from "../../src/Interfaces/StaticValueHost";
 import { ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
-import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
-import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { FluentConditionCollector } from "../../src/ValueHosts/Fluent";
 import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { ensureFluentTestConditions } from "./ManagerConfigBuilderBase.test";
-import { ValidationSeverity } from "../../src/Interfaces/Validation";
 
 
 ensureFluentTestConditions();

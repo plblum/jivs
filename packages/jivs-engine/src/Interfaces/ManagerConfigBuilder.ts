@@ -4,7 +4,7 @@
  */
 
 
-import { EvaluateChildConditionResultsBaseConfig } from "../Conditions/EvaluateChildConditionResultsBase";
+import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { FluentConditionCollector, FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentStaticParameters, FluentValidatorCollector } from "../ValueHosts/Fluent";
 import { ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
@@ -60,7 +60,7 @@ export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConf
     * there is no need to get a value from configs property.
      * @returns a FluentConditionCollector for chaining conditions.
     */
-    conditions(parentConfig?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector;
+    conditions(parentConfig?: ConditionWithChildrenBaseConfig): FluentConditionCollector;
 
 
 }

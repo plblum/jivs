@@ -5,7 +5,7 @@
 
 import { FluentConditionCollector, ValueHostsManagerStartFluent } from "./Fluent";
 import { InputValueChangedHandler } from "../Interfaces/InputValueHost";
-import { EvaluateChildConditionResultsBaseConfig } from "../Conditions/EvaluateChildConditionResultsBase";
+import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 import { ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
@@ -157,7 +157,7 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     * there is no need to get a value from configs property.
      * @returns a FluentConditionCollector for chaining conditions.
     */
-    public conditions(parentConfig?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
+    public conditions(parentConfig?: ConditionWithChildrenBaseConfig): FluentConditionCollector
     {
         let fluent = this.createFluent();
         return fluent.conditions(parentConfig);

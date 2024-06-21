@@ -139,7 +139,7 @@ import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
-import { EvaluateChildConditionResultsBaseConfig } from '../Conditions/EvaluateChildConditionResultsBase';
+import { ConditionWithChildrenBaseConfig } from '../Conditions/ConditionWithChildrenBase';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { OneValueConditionBaseConfig } from '../Conditions/OneValueConditionBase';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
@@ -312,7 +312,7 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
     * When assigned, that instance gets conditionConfigs populated and 
     * there is no need to get a value from configs property.
     */
-    public conditions(config?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
+    public conditions(config?: ConditionWithChildrenBaseConfig): FluentConditionCollector
     {
         let collector = new FluentConditionCollector(config ?? null);
         return collector;
@@ -597,7 +597,7 @@ export interface IFluentConditionCollector
     /**
      * The config that will collect the conditions.
      */
-    parentConfig: EvaluateChildConditionResultsBaseConfig;
+    parentConfig: ConditionWithChildrenBaseConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentConditionCollector.
@@ -631,7 +631,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
      * When assigned, that instance gets conditionConfigs populated and 
      * there is no need to get a value from configs property.
      */
-    constructor(parentConfig: EvaluateChildConditionResultsBaseConfig | null)
+    constructor(parentConfig: ConditionWithChildrenBaseConfig | null)
     {
         super();
         if (!parentConfig)
@@ -643,11 +643,11 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
     /**
      * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
      */
-    public get parentConfig(): EvaluateChildConditionResultsBaseConfig
+    public get parentConfig(): ConditionWithChildrenBaseConfig
     {
         return this._parentConfig;
     }
-    private readonly _parentConfig: EvaluateChildConditionResultsBaseConfig;
+    private readonly _parentConfig: ConditionWithChildrenBaseConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentConditionCollector.
@@ -746,7 +746,7 @@ export class FluentFactory
         this._validatorCollectorCreator =
             (vhConfig: InputValueHostConfig) => new FluentValidatorCollector(vhConfig);
         this._conditionCollectorCreator =
-            (vhConfig: EvaluateChildConditionResultsBaseConfig) => new FluentConditionCollector(vhConfig);
+            (vhConfig: ConditionWithChildrenBaseConfig) => new FluentConditionCollector(vhConfig);
     }
     public createValidatorCollector(vhConfig: InputValueHostConfig): IFluentValidatorCollector
     {
@@ -760,17 +760,17 @@ export class FluentFactory
     }
     private _validatorCollectorCreator: (vhConfig: InputValueHostConfig) => IFluentValidatorCollector;
 
-    public createConditionCollector(vhConfig: EvaluateChildConditionResultsBaseConfig): IFluentConditionCollector
+    public createConditionCollector(vhConfig: ConditionWithChildrenBaseConfig): IFluentConditionCollector
     {
         return this._conditionCollectorCreator(vhConfig);
     }
 
-    public registerConditionCollector(creator: (vhConfig: EvaluateChildConditionResultsBaseConfig) => IFluentConditionCollector): void
+    public registerConditionCollector(creator: (vhConfig: ConditionWithChildrenBaseConfig) => IFluentConditionCollector): void
     {
         assertNotNull(creator, 'creator');
         this._conditionCollectorCreator = creator;
     }
-    private _conditionCollectorCreator: (vhConfig: EvaluateChildConditionResultsBaseConfig) => IFluentConditionCollector;    
+    private _conditionCollectorCreator: (vhConfig: ConditionWithChildrenBaseConfig) => IFluentConditionCollector;    
 
     /**
      * Unlike other factories, which are on ValidationServices. We wanted to avoid

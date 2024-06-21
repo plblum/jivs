@@ -1,22 +1,15 @@
-import { RequireTextConditionConfig, RegExpConditionConfig, RequireTextCondition } from "../../src/Conditions/ConcreteConditions";
+import { RequireTextConditionConfig, RegExpConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { EvaluateChildConditionResultsBaseConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
-import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
-import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
-import { ValidationSeverity } from "../../src/Interfaces/Validation";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import {
     FluentValidatorCollector, FluentConditionCollector, FluentValidatorConfig,
-    finishFluentValidatorCollector, finishFluentConditionCollector, customRule,
-    ValidationManagerStartFluent,
-    ValueHostsManagerStartFluent
+    finishFluentValidatorCollector, finishFluentConditionCollector, ValueHostsManagerStartFluent
 } from "../../src/ValueHosts/Fluent";
 import { ManagerConfigBuilderBase } from "../../src/ValueHosts/ManagerConfigBuilderBase";
 import { MockValidationServices } from "../TestSupport/mocks";
