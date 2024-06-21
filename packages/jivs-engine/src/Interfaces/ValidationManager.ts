@@ -33,6 +33,7 @@ import { IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks, toIValidat
 import { IValidationServices } from './ValidationServices';
 import { IInputValueHost } from './InputValueHost';
 import { IPropertyValueHost } from './PropertyValueHost';
+import { ValidationManagerConfigModifier } from '../Validation/ValidationManagerConfigModifier';
 
 /**
  * Interface from which to implement a ValidationManager.
@@ -43,7 +44,7 @@ export interface IValidationManager extends IValueHostsManager {
      */
     services: IValidationServices; 
 
-
+    startModifying(): ValidationManagerConfigModifier;
     /**
      * Retrieves the IValidatorsValueHostBase of the identified by valueHostName
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property

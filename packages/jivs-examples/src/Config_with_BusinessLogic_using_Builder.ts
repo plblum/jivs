@@ -46,7 +46,7 @@
     The UI layer will define this ValueHost.
 */
 
-import { createValidationServices, differenceBetweenDates, timeZoneRegex } from "./Config_example_common_code";
+import { createValidationServices, differenceBetweenDates, onValueChangedUsingModifierAPI, timeZoneRegex } from "./Config_example_common_code";
 import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ValidationManagerConfigBuilder } from "@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder";
@@ -58,11 +58,12 @@ import { ValidationManager } from "@plblum/jivs-engine/build/Validation/Validati
  3. Back in the UI layer, use its override() method to indicate that the upcoming configuration must be merged carefully
     into the existing configuration, so that business logic rules are not overwritten.
  4. Use the builder API to add and modify ValueHosts and validators.
- 5. Create the ValidationManager, passing in the builder object.
- 6. Where you need to change the configuration, after this point, use the Modifier API.
+ 5. Attach callbacks to Builder object
+ 6. Create the ValidationManager, passing in the builder object.
+ 7. Where you need to change the configuration, after this point, use the Modifier API.
     Call the startModifier() method on the ValidationManager to get a Modifier object
     and use its API. Once done, call the apply() method to apply the changes.
-
+    In this demo, look for the Modifier API in the onValueChanged callback.
 */
 export function configExample(): ValidationManager
 {
@@ -97,39 +98,26 @@ export function configExample(): ValidationManager
     );
     builder.input('endDate', null, { label: 'End date' });
 
-    // Step 5: Create the ValidationManager, passing in the builder object.
+    // Step 5: Attach callbacks to the Builder object
+    // NOTE: Functions are declared in Config_example_common_code.ts
+    builder.onValueChanged = onValueChangedUsingModifierAPI;
+
+    // Step 6: Create the ValidationManager, passing in the builder object.
     // The builder object is now merged with the existing configuration.
     let vm = new ValidationManager(builder);
     // at this point, use the ValidationManager to validate your model.
 
-    // Step 6: We want to show the current time zone in the start date label.
+    // Step 7: This is where we use the Modifier API.
+    // We want to show the current time zone in the start date label.
+    // When timeZonePicker's change event fires, we'll pass the input value to the timeZone ValueHost,
+    // where the CleanUpStringParser will convert it into a native value.
+    // Then the ValueHost will trigger the onValueChanged callback, which will update the start date label.
+    // The parser is setup in the ValidationServices object and selected because of the LookupKey.String data type
+    // on the TimeZone ValueHost.
     let element: HTMLSelectElement = document.getElementById('timeZonePicker') as HTMLSelectElement;
-    if (element)    // since our demo doesn't actually have this element, we'll skip this step
-        element.addEventListener('change', () => {
-            vm.vh.any('timeZone').setValue(element.value);
-
-            let modifier = vm.startModifying();
-            modifier.input('startDate', null, { label: `Start date (${vm.getValueHost('timeZone')?.getValue()})` })
-            modifier.apply();
-        });
-/* --- this code doesn't belong here, it is showing some changes to the above    
-    // In Step 4, we could also have setup this code while working with the builder, above.
-    // A call to timeZone's setValue will trigger this.
-    builder.onValueChanged = (vh, oldValue) => {
-        if (vh.getName() === 'timeZone')
-        {
-            let modifier = vm.startModifying();
-            modifier.input('startDate', null, { label: `Start date (${vm.getValueHost('timeZone')?.getValue()})` })
-            modifier.apply();
-        }
-    }
-    // then our Step 6 would look like this:
-    let elementAlt: HTMLSelectElement = document.getElementById('timeZonePicker') as HTMLSelectElement;
-    if (elementAlt)    // since our demo doesn't actually have this element, we'll skip this step
-        elementAlt.addEventListener('changed', () => {
-            vm.vh.any('timeZone').setValue(elementAlt.value);  // invokes onValueChanged
-        });    
-    */
+    element.addEventListener('change', () => {
+        vm.vh.input('timeZone').setInputValue(element.value);
+    });
     
     return vm;
 }

@@ -15,6 +15,7 @@ import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -330,6 +331,7 @@ describe('toIPropertyValueHost function', () => {
         expect(toIPropertyValueHost(testItem)).toBe(testItem);
     });
     class TestIPropertyValueHostImplementation implements IPropertyValueHost {
+        valueHostsManager: IValueHostsManager = {} as IValueHostsManager;
         dispose(): void {}
         getPropertyName(): string {
             throw new Error("Method not implemented.");

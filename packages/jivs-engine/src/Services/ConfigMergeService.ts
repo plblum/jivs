@@ -27,7 +27,7 @@ import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
  * - Phase 1: Business Logic provides its ValueHosts and validators. Many aspects of this is 
  *   not ideal for the UI, including anything localizable, additional validators, and additional enabler conditions.
  * - Phase 2: UI updates what the Business Logic created, and adds its own ValueHosts and validators.
- *   The UI developer will use the ValueHostBuilder and fluent syntax to describe their changes.
+ *   The UI developer will use the ValidationManagerConfigBuilder and fluent syntax to describe their changes.
  * 
  * The IConfigMergeService interface and its class are used by Phase 2. It allows the UI developer
  * to effectively create the same named ValueHosts, but with different characteristics.
@@ -370,7 +370,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
 }
 
 /**
- * Default ConfigMergeService for ValueHosts. Automatically used if none is supplied to the ValueHostBuilder.
+ * Default ConfigMergeService for ValueHosts. Automatically used if none is supplied to the ValidationManagerConfigBuilder.
  * It locks only the valueHostName and validatorConfigs.
  * It upscales ValueHostType from Property to Input (but not anything else).
  * It uses the ValidatorConfigResolver to handle all validatorConfigs.

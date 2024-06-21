@@ -224,8 +224,9 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * Adds a ValueHostConfig for a ValueHost not previously added. 
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
-     * @param config - a clone of this instance will be retained
-     * Can use fluent().static() or any ValueConfigHost.
+     * @param config - a clone of this instance will be retained.
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
@@ -251,7 +252,9 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * If the name isn't found, it will be added.
      * Any previous ValueHost and its config will be disposed.
      * Be sure to discard any reference to the ValueHost instance that you have.
-     * @param config - a clone of this instance will be retained
+     * @param config - a clone of this instance will be retained.
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
@@ -273,7 +276,9 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
      * If the name isn't found, it will be added.
      * Any previous ValueHost and its config will be disposed.
      * Be sure to discard any reference to the ValueHost instance that you have.
-     * @param config - a clone of this instance will be retained
+     * @param config - a clone of this instance will be retained.
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.

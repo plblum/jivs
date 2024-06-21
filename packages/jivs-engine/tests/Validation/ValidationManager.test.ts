@@ -21,7 +21,6 @@ import {
     AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig,
     UserSuppliedResultCondition, UserSuppliedResultConditionType
 } from "../TestSupport/conditionsForTesting";
-import { fluent } from "../../src/ValueHosts/Fluent";
 import { IValueHostsManager, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
@@ -40,6 +39,7 @@ import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { CalcValueHost } from '../../src/ValueHosts/CalcValueHost';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidationManagerConfigBuilder, build } from '../../src/Validation/ValidationManagerConfigBuilder';
+import { ValidationManagerStartFluent } from '../../src/ValueHosts/Fluent';
 
 // Subclass of what we want to test to expose internals to tests
 class PublicifiedValidationManager extends ValidationManager<ValidationManagerInstanceState> {
@@ -1534,7 +1534,8 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
     test('With 2 inputValueHost where only one has validators, it should return {isValid:true, doNotSave: false, issuesFound: null}', () => {
 
         let config1 = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
-        let config2 = fluent().input('Field2');
+        let fluent = new ValidationManagerStartFluent(null);
+        let config2 = fluent.input('Field2');
 
         let setup = setupValidationManager([config1, config2.parentConfig]);
 

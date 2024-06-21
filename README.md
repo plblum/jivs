@@ -802,29 +802,29 @@ Here are the conditions in Builder/Modifier API format:
   ```
 - all(*children chaining*, errorMessage?, {*validator parameters*}?)
 
-  For *children chaining*, pass `fluent().conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
+  For *children chaining*, pass `builder.conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
  
   ```ts
   builder.input('fieldname').all(
-     fluent().conditions()
+     builder.conditions()
        .requireText(null, 'fieldname2')
        .requireText(null, 'fieldname3'));
   builder.input('fieldname').all(
-     fluent().conditions()
+     builder.conditions()
         .requireText(null, 'fieldname2')
         .requireText(null, 'fieldname3'), 
         'At least one is required', { severity: ValidatorSeverity.Severe });
   ```
 
-  For *children chaining*, pass `fluent().conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
+  For *children chaining*, pass `builder.conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
  
   ```ts
   builder.input('fieldname').any(
-     fluent().conditions()
+     builder.conditions()
        .requireText(null, 'fieldname2')
        .requireText(null, 'fieldname3'));
   builder.input('fieldname').any(
-     fluent().conditions()
+     builder.conditions()
         .requireText(null, 'fieldname2')
         .requireText(null, 'fieldname3'), 
         'At least one is required', { severity: ValidatorSeverity.Severe });
@@ -832,17 +832,17 @@ Here are the conditions in Builder/Modifier API format:
 
 - countMatches(minimum, maximum, *children chaining*, errorMessage?, {*validator parameters*}?)
 
-  For *children chaining*, pass `fluent().conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
+  For *children chaining*, pass `builder.conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
   ```ts
   builder.input('fieldname').countMatches(
       1, 2, 
-      fluent().conditions()
+      builder.conditions()
          .requireText(null, 'fieldname2')
          .requireText(null, 'fieldname3')
          .requireText(null, 'fieldname4'));
   builder.input('fieldname').any(
       2, 4, 
-      fluent().conditions()
+      builder.conditions()
          .requireText(null, 'fieldname2')
          .requireText(null, 'fieldname3')
          .requireText(null, 'fieldname4')

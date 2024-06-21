@@ -25,12 +25,12 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver } from './ValueHostResolver';
-import { IValueHostsManager } from './ValueHostsManager';
+import { IValueHostsManager, IValueHostsManagerAccessor } from './ValueHostsManager';
 import { IDisposable } from './General_Purpose';
 /**
  * Interface for creating ValueHosts.
  */
-export interface IValueHost extends IDisposable {
+export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
     /**
      * Provides a unique name for this ValueHost.
      * Consuming systems use this name to locate the ValueHost

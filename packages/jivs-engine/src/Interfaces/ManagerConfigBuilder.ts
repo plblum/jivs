@@ -51,7 +51,7 @@ export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConf
     /**
      * Start of a series to collect ConditionConfigs into any condition that
      * implements EvaluateChildConditionResultsConfig.
-     * For example, fluent().input('Field1').all(fluent().conditions().required('Field2').required('Field3'))
+     * For example, builder.input('Field1').all(builder.conditions().required('Field2').required('Field3'))
      * The fluent function for all (and others that support EvaluateChildConditionResultsConfig)
      * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
     * @param parentConfig - When null/undefined, the instance is created and the caller is expected

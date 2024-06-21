@@ -16,7 +16,7 @@ import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
  * Standard implementation of IValueHost
  */
 export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState extends ValueHostInstanceState>
-    implements IValueHost, IValueHostsManagerAccessor {
+    implements IValueHost {
     constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
         assertNotNull(valueHostsManager, 'valueHostsManager');
         assertNotNull(config, 'config');

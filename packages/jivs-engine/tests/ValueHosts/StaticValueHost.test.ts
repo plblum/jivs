@@ -2,6 +2,7 @@ import { StaticValueHostConfig, StaticValueHostInstanceState, IStaticValueHost }
 import { ValidationStatus } from "../../src/Interfaces/Validation";
 import { IGatherValueHostNames, SetValueOptions, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { PropertyValueHost } from "../../src/ValueHosts/PropertyValueHost";
@@ -193,6 +194,7 @@ describe('toIStaticValueHost function', () => {
         expect(toIStaticValueHost(testItem)).toBeNull();
     });        
     class TestIStaticValueHostImplementation implements IStaticValueHost {
+        valueHostsManager: IValueHostsManager = {} as IValueHostsManager;
         dispose(): void {}
         getName(): string {
             throw new Error("Method not implemented.");
