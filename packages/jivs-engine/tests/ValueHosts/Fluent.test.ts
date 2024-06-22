@@ -9,12 +9,25 @@ import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import {
     FluentValidatorConfig, FluentValidatorCollector, FluentFactory, IFluentValidatorCollector, FluentConditionCollector, IFluentConditionCollector,
     finishFluentValidatorCollector, finishFluentConditionCollector,
-    ValidationManagerStartFluent
+    ValidationManagerStartFluent,
+    ValueHostsManagerStartFluent
 } from './../../src/ValueHosts/Fluent';
 import { ValidationManagerConfig } from '../../src/Interfaces/ValidationManager';
 import { ICalcValueHost } from '../../src/Interfaces/CalcValueHost';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
+import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
+
+class Publicify_ValueHostsManagerStartFluent extends ValueHostsManagerStartFluent { 
+    public get publicify_existingValueHostConfigs() {
+        return this.existingValueHostConfigs;
+    }
+}
+class Publicify_ValidationManagerStartFluent extends ValidationManagerStartFluent { 
+    public get publicify_existingValueHostConfigs() {
+        return this.existingValueHostConfigs;
+    }
+}
 
 function createVMConfig(): ValidationManagerConfig
 {
@@ -25,10 +38,82 @@ function createVMConfig(): ValidationManagerConfig
     return vmConfig;
 }
 
-function createFluent(): ValidationManagerStartFluent
-{
-    return new ValidationManagerStartFluent(null);
+function createFluent(): ValidationManagerStartFluent {
+    return new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
 }
+describe('ValueHostsManagerStartFluent', () => {
+    describe('constructor', () => {
+        test('null first parameter sets up', () => {
+            let services = new MockValidationServices(true, true);
+            let testItem = new Publicify_ValueHostsManagerStartFluent(null, services);
+            expect(testItem.services).toBe(services);
+            expect(testItem.publicify_existingValueHostConfigs).toBeNull();
+        });
+        test('valueHostConfig array in first parameter sets up', () => {
+            let services = new MockValidationServices(true, true);
+            const valueHostConfigs: Array<ValueHostConfig> = [{
+                valueHostType: ValueHostType.Static,
+                name: 'Field1',
+                label: 'Field 1',
+                dataType: LookupKey.Currency
+            }];
+            
+            let testItem = new Publicify_ValueHostsManagerStartFluent(valueHostConfigs, services);
+            expect(testItem.services).toBe(services);
+            expect(testItem.publicify_existingValueHostConfigs).toEqual(valueHostConfigs);
+        });        
+        test('null second parameter throws', () => {
+            expect(() => new ValueHostsManagerStartFluent(null, null!)).toThrow('services');
+        });
+    });
+    describe('dispose', () => {
+        test('dispose sets services to undefined and later calls throw', () => {
+            let testItem = new Publicify_ValueHostsManagerStartFluent(null, new MockValidationServices(true, true));
+            testItem.dispose();
+            expect(() => testItem.services).toThrow();
+            expect(testItem.publicify_existingValueHostConfigs).toBeNull();
+        });
+        test('dispose sets services and existingValueHostConfig to undefined and later calls throw', () => {
+            const valueHostConfigs: Array<ValueHostConfig> = [{
+                valueHostType: ValueHostType.Static,
+                name: 'Field1',
+                label: 'Field 1',
+                dataType: LookupKey.Currency
+            }];
+
+            let testItem = new Publicify_ValueHostsManagerStartFluent(valueHostConfigs, new MockValidationServices(true, true));
+            testItem.dispose();
+            expect(() => testItem.services).toThrow();
+            expect(testItem.publicify_existingValueHostConfigs).toBeNull();
+        });        
+    });
+});
+describe('ValidationManagerStartFluent', () => {
+    describe('constructor', () => {
+        test('null first parameter sets up without overrides', () => {
+            let services = new MockValidationServices(true, true);
+            let testItem = new Publicify_ValidationManagerStartFluent(null, services);
+            expect(testItem.services).toBe(services);
+            expect(testItem.publicify_existingValueHostConfigs).toBeNull();
+        });
+        test('valueHostConfig array in first parameter sets up', () => {
+            let services = new MockValidationServices(true, true);
+            const valueHostConfigs: Array<ValueHostConfig> = [{
+                valueHostType: ValueHostType.Static,
+                name: 'Field1',
+                label: 'Field 1',
+                dataType: LookupKey.Currency
+            }];
+            
+            let testItem = new Publicify_ValidationManagerStartFluent(valueHostConfigs, services);
+            expect(testItem.services).toBe(services);
+            expect(testItem.publicify_existingValueHostConfigs).toEqual(valueHostConfigs);
+        });                
+        test('null second parameter throws', () => {
+            expect(() => new ValidationManagerStartFluent(null, null!)).toThrow('services');
+        });
+    });
+});
 
 describe('FluentValidatorCollector', () => {
     test('constructor with vhConfig sets up vhConfig property', () => {

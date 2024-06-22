@@ -1534,7 +1534,7 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
     test('With 2 inputValueHost where only one has validators, it should return {isValid:true, doNotSave: false, issuesFound: null}', () => {
 
         let config1 = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
-        let fluent = new ValidationManagerStartFluent(null);
+        let fluent = new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
         let config2 = fluent.input('Field2');
 
         let setup = setupValidationManager([config1, config2.parentConfig]);

@@ -134,6 +134,7 @@
  * Just register it with fluentFactory.singleton.register().
  */
 
+import { IDisposable } from './../Interfaces/General_Purpose';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
@@ -145,37 +146,50 @@ import { OneValueConditionBaseConfig } from '../Conditions/OneValueConditionBase
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
 import { CalculationHandler, CalcValueHostConfig } from '../Interfaces/CalcValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { ValidationManagerConfig } from '../Interfaces/ValidationManager';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { PropertyValueHostConfig } from '../Interfaces/PropertyValueHost';
-import { ValueHostsManagerConfig } from '../Interfaces/ValueHostsManager';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
-import { isPlainObject, isSupportedAsValue } from '../Utilities/Utilities';
+import { isPlainObject } from '../Utilities/Utilities';
+import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
+import { IServicesAccessor } from '../Interfaces/Services';
 
 
 /**
  * Starts a fluent chain for ValueHostsManager. Its methods start CalcValueHost (calc()),
  * and StaticValueHost (static())
  */
-export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfig = ValueHostsManagerConfig>
+export class ValueHostsManagerStartFluent implements IDisposable, IServicesAccessor
 {
     /**
      * 
-     * @param vmConfig When assigned, we can check for naming conflicts.
+     * @param existingValueHostConfigs When assigned, we can check for naming conflicts.
+     * @param services
      */
-    constructor(vmConfig: TConfig | null)
+    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValueHostsServices)
     {
-        this._vmConfig = vmConfig;
+        assertNotNull(services, 'services');
+        if (existingValueHostConfigs)
+            this._existingValueHostConfigs = new WeakRef(existingValueHostConfigs);
+        this._services = new WeakRef(services);
         enableFluent();
     }
-    private _vmConfig: TConfig | null;
+    private _existingValueHostConfigs: WeakRef<Array<ValueHostConfig>> | null = null;
 
-    protected get vmConfig(): TConfig | null
+    protected get existingValueHostConfigs(): Array<ValueHostConfig> | null
     {
-        return this._vmConfig;
+        return this._existingValueHostConfigs ? this._existingValueHostConfigs.deref() ?? null : null;
     }
+    public get services(): IValueHostsServices
+    {
+        return this._services.deref()!;
+    }
+    private _services: WeakRef<IValueHostsServices>;
 
+    dispose(): void {
+        this._services = undefined!;
+        this._existingValueHostConfigs = undefined!;
+    }
     /**
      * Add Value Host that does not have direct supporting functions here.
      * This targets ValueHosts without validators. Use the withValidators() function for those.
@@ -341,7 +355,7 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
 
     protected assertNameNotDefined(valueHostName: ValueHostName): void
     {
-        if (this.vmConfig && this.vmConfig.valueHostConfigs.find((item) => item.name === valueHostName))
+        if (this.existingValueHostConfigs && this.existingValueHostConfigs.find((item) => item.name === valueHostName))
             throw new CodingError(`ValueHostName ${valueHostName} is already defined.`);        
     }
 
@@ -352,15 +366,15 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
  * Starts a fluent chain. Its methods start InputValueHost (input()),
  * StaticValueHost (static()), and a collection of Conditions (conditions()).
  */
-export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent<ValidationManagerConfig>
+export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
 {
     /**
      * 
      * @param vmConfig When assigned, we can check for naming conflicts.
      */
-    constructor(vmConfig: ValidationManagerConfig | null)
+    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValueHostsServices)
     {
-        super(vmConfig);
+        super(existingValueHostConfigs, services);
     }
 
     /**

@@ -7,9 +7,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import {
     FluentAnyValueHostConfig,
-    FluentAnyValueHostParameters,
-    FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig,
-    FluentStaticParameters, FluentValidatorCollector, FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters, ValidationManagerStartFluent, ValueHostsManagerStartFluent
+    FluentAnyValueHostParameters, FluentStaticParameters, FluentValidatorCollector, FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters, ValidationManagerStartFluent, ValueHostsManagerStartFluent
 } from './Fluent';
 import { StaticValueHostConfig } from '../Interfaces/StaticValueHost';
 import { CalcValueHostConfig, CalculationHandler } from '../Interfaces/CalcValueHost';
@@ -19,11 +17,9 @@ import { ValueHostsManagerConfig } from '../Interfaces/ValueHostsManager';
 import { toIServices, toIServicesAccessor } from '../Interfaces/Services';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { isPlainObject, isSupportedAsValue } from '../Utilities/Utilities';
+import { isPlainObject } from '../Utilities/Utilities';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
-import { InputValueHostConfig } from '../Interfaces/InputValueHost';
-import { PropertyValueHostConfig } from '../Interfaces/PropertyValueHost';
 
 
 /**
@@ -118,11 +114,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             throw new CodingError('Unexpected parameter value');
     }
     public dispose(): void {
-        this.overrideConfigs.forEach((item) => {
-            item.services = undefined!;
-            // currently we don't dispose any ValueHostCOnfig that implements IDisposable because they may have been copied to the ValueHostManager
-        });
-        this._overrideConfigs = undefined!;
+        this._overridedValueHostConfigs = undefined!;
         this._baseConfig = undefined!;
     }
 
@@ -146,31 +138,28 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * Each are created by the override() function.
      * They retain a reference to services.
      */
-    protected get overrideConfigs(): Array<T> {
-        return this._overrideConfigs;
+    protected get overridenValueHostConfigs(): Array<Array<ValueHostConfig>> {
+        return this._overridedValueHostConfigs;
     }
-    private _overrideConfigs: Array<T> = [];
+    private _overridedValueHostConfigs: Array<Array<ValueHostConfig>> = [];
 
     /**
      * Starts a new ValueHostsConfig to collect ValueHostConfigs.
      * They will be merged into baseConfig at getValueHostsConfig();
      */
     protected addOverride(): void {
-        let o = {
-            services: this.services,
-            valueHostConfigs: []
-        } as unknown as T;
-        this.overrideConfigs.push(o);
+        let valueHostConfigs: Array<ValueHostConfig> = [];
+        this.overridenValueHostConfigs.push(valueHostConfigs);
     }
 
     /**
      * Exposes the ValueHostsConfig currently capturing content.
      * @returns 
      */
-    protected destinationConfig(): T {
-        if (this.overrideConfigs.length)
-            return this.overrideConfigs[this.overrideConfigs.length - 1];
-        return this.baseConfig;
+    protected destinationValueHostConfigs(): Array<ValueHostConfig> {
+        if (this.overridenValueHostConfigs.length)
+            return this.overridenValueHostConfigs[this.overridenValueHostConfigs.length - 1];
+        return this.baseConfig.valueHostConfigs;
     }
 
     /**
@@ -183,8 +172,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
         // merge overrides into baseConfig
         let destination = this.baseConfig;
-        this.overrideConfigs.forEach((o) => {
-            o.valueHostConfigs.forEach((sourceConfig) => {
+        this.overridenValueHostConfigs.forEach((o) => {
+            o.forEach((sourceConfig) => {
                 let destinationConfig = vhms.identifyValueHostConflict(sourceConfig, destination.valueHostConfigs);
                 if (destinationConfig) {
                     vhms.merge(sourceConfig, destinationConfig);    // changes destinationConfig directly
@@ -204,15 +193,15 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @param config 
      */
     protected applyConfig(config: ValueHostConfig): void {
-        if (this.destinationConfig().valueHostConfigs.find((item) => item.name === config.name))
+        if (this.destinationValueHostConfigs().find((item) => item.name === config.name))
             throw new CodingError(`ValueHost name "${config.name}" already defined`);
-        this.destinationConfig().valueHostConfigs.push(config);
+        this.destinationValueHostConfigs().push(config);
     }
 
     /**
      * Supplies the ValidationManagerStartFluent object, already setup
      */
-    protected abstract createFluent(): ValueHostsManagerStartFluent<T>;
+    protected abstract createFluent(): ValueHostsManagerStartFluent;
 
     //#region fluent for creating ValueHosts
     /**
@@ -348,5 +337,4 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             throw new CodingError(`ValueHost name "${valueHostConfig!.name}" is not type=${expectedType}.`);
 
     }
-
 }

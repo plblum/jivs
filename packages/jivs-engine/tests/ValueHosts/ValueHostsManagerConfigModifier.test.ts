@@ -1,6 +1,7 @@
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
+import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
@@ -20,15 +21,15 @@ class Publicify_ValueHostsManagerConfigModifier extends ValueHostsManagerConfigM
     constructor(manager: Publicify_ValueHostsManager) {
         super(manager, manager.publicify_valueHostConfigs);
     }
-    public publicify_destinationConfig(): ValueHostsManagerConfig {
-        return super.destinationConfig();
+    public publicify_destinationValueHostConfigs(): Array<ValueHostConfig> {
+        return super.destinationValueHostConfigs();
     }
 
     public get publicify_baseConfig(): ValueHostsManagerConfig {
         return super.baseConfig;
     }
-    public get publicify_overrideConfigs(): Array<ValueHostsManagerConfig> {
-        return super.overrideConfigs;
+    public get publicify_overrideValueHostConfigs(): Array<Array<ValueHostConfig>> {
+        return super.overridenValueHostConfigs;
     }
 
     public publicify_addOverride(): void {

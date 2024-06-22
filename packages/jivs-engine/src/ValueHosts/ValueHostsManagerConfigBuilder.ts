@@ -139,9 +139,9 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
 /**
  * Supplies the ValidationManagerStartFluent object, already setup
  */
-    protected createFluent(): ValueHostsManagerStartFluent<T>
+    protected createFluent(): ValueHostsManagerStartFluent
     {
-        return new ValueHostsManagerStartFluent<T>(this.destinationConfig());
+        return new ValueHostsManagerStartFluent(this.destinationValueHostConfigs(), this.services);
     }
 
 

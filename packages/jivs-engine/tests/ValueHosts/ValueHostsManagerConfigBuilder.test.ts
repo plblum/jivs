@@ -27,8 +27,8 @@ class Publicify_ValueHostsManagerConfigBuilder extends ValueHostsManagerConfigBu
         return super.baseConfig;
     }
 
-    public get publicify_overrideConfigs(): ValueHostsManagerConfig[] {
-        return super.overrideConfigs;
+    public get publicify_overridenValueHostConfigs(): Array<Array<ValueHostConfig>> {
+        return super.overridenValueHostConfigs;
     }
 }
 describe('instance state properties', () => {

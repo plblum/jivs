@@ -10,7 +10,11 @@ import {
     RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
 } from '../../src/Conditions/ConcreteConditions';
 import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
+import { MockValidationServices } from '../TestSupport/mocks';
 
+function createFluent(): ValidationManagerStartFluent {
+    return new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+}
 function TestFluentValidatorCollector(testItem: FluentCollectorBase,
     expectedValConfig: ValidatorConfig) {
 
@@ -26,7 +30,7 @@ function TestFluentValidatorCollector(testItem: FluentCollectorBase,
 describe('dataTypeCheck with ValidationManagerStartFluent', () => {
     test('With no parameters creates ValidatorConfig with DataTypeCheckCondition with only type assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').dataTypeCheck();
+        let testItem = createFluent().input('Field1').dataTypeCheck();
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
@@ -35,7 +39,7 @@ describe('dataTypeCheck with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').dataTypeCheck('Error');
+        let testItem = createFluent().input('Field1').dataTypeCheck('Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
@@ -45,7 +49,7 @@ describe('dataTypeCheck with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').dataTypeCheck('Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').dataTypeCheck('Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
@@ -56,7 +60,7 @@ describe('dataTypeCheck with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').dataTypeCheck(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').dataTypeCheck(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
@@ -67,7 +71,7 @@ describe('dataTypeCheck with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').dataTypeCheck('FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').dataTypeCheck('FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
@@ -80,7 +84,7 @@ describe('dataTypeCheck with ValidationManagerStartFluent', () => {
 describe('regExp with ValidationManagerStartFluent', () => {
     test('With expression assigned to a string, creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').regExp('\\d');
+        let testItem = createFluent().input('Field1').regExp('\\d');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
                 conditionType: ConditionType.RegExp,
@@ -90,7 +94,7 @@ describe('regExp with ValidationManagerStartFluent', () => {
     });
     test('With expression assigned to a RegExp, creates ValidatorConfig with RegExpCondition with type=RegExp and expression assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').regExp(/\d/i);
+        let testItem = createFluent().input('Field1').regExp(/\d/i);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
                 conditionType: ConditionType.RegExp,
@@ -100,7 +104,7 @@ describe('regExp with ValidationManagerStartFluent', () => {
     });
     test('With expression and ignoreCase=true creates ValidatorConfig with RegExpCondition with type=RegExp, expressionAsString, and ignoreCase=true assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').regExp('\\d', true);
+        let testItem = createFluent().input('Field1').regExp('\\d', true);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
                 conditionType: ConditionType.RegExp,
@@ -111,7 +115,7 @@ describe('regExp with ValidationManagerStartFluent', () => {
     });
     test('With expression and ignoreCase=false creates ValidatorConfig with RegExpCondition with type=RegExp, expressionAsString, and ignoreCase=false assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').regExp('\\d', false);
+        let testItem = createFluent().input('Field1').regExp('\\d', false);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
                 conditionType: ConditionType.RegExp,
@@ -122,7 +126,7 @@ describe('regExp with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with RegExpCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').regExp(null, null, null, 'Error');
+        let testItem = createFluent().input('Field1').regExp(null, null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
                 conditionType: ConditionType.RegExp
@@ -132,7 +136,7 @@ describe('regExp with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with RegExpCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').regExp(null, null, null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').regExp(null, null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
                 conditionType: ConditionType.RegExp
@@ -143,7 +147,7 @@ describe('regExp with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RegExpCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').regExp(null, null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').regExp(null, null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
                 conditionType: ConditionType.RegExp
@@ -154,7 +158,7 @@ describe('regExp with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RegExpCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').regExp(null, null, null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').regExp(null, null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RegExpConditionConfig>{
                 conditionType: ConditionType.RegExp
@@ -167,7 +171,7 @@ describe('regExp with ValidationManagerStartFluent', () => {
 describe('range with ValidationManagerStartFluent', () => {
     test('With minimum and maximum, creates ValidatorConfig with RangeCondition with type=Range and minimum assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).range(1, 4);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).range(1, 4);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
@@ -179,7 +183,7 @@ describe('range with ValidationManagerStartFluent', () => {
 
     test('With minimum assigned and maximum=null, creates ValidatorConfig with RangeCondition with type=Range, minimum assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').range(1, null);
+        let testItem = createFluent().input('Field1').range(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
@@ -189,7 +193,7 @@ describe('range with ValidationManagerStartFluent', () => {
     });
     test('With maximum assigned and minimum=null, creates ValidatorConfig with RangeCondition with type=Range, maximum assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').range(null, 4);
+        let testItem = createFluent().input('Field1').range(null, 4);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
@@ -200,7 +204,7 @@ describe('range with ValidationManagerStartFluent', () => {
 
     test('With only errorMessage creates ValidatorConfig with RangeCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').range(null, null, 'Error');
+        let testItem = createFluent().input('Field1').range(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range
@@ -210,7 +214,7 @@ describe('range with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with RangeCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').range(null, null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').range(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range
@@ -221,7 +225,7 @@ describe('range with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RangeCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').range(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').range(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range
@@ -232,7 +236,7 @@ describe('range with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RangeCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').range(null, null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').range(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range
@@ -245,7 +249,7 @@ describe('range with ValidationManagerStartFluent', () => {
 describe('equalToValue with ValidationManagerStartFluent', () => {
     test('With secondValue, creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).equalToValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).equalToValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
@@ -255,7 +259,7 @@ describe('equalToValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue assigned and condDesc=null, creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).equalToValue(1, null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).equalToValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
@@ -265,7 +269,7 @@ describe('equalToValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue and secondConversionLookupKey assigned, creates ValidatorConfig with EqualToValueCondition with type=EqualToValue, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).equalToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).equalToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue,
@@ -277,7 +281,7 @@ describe('equalToValue with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with EqualToValueCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').equalToValue(null, null, 'Error');
+        let testItem = createFluent().input('Field1').equalToValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue
@@ -287,7 +291,7 @@ describe('equalToValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with EqualToValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').equalToValue(null, null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').equalToValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue
@@ -298,7 +302,7 @@ describe('equalToValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with EqualToValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').equalToValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').equalToValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue
@@ -309,7 +313,7 @@ describe('equalToValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with EqualToValueCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').equalToValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').equalToValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToValueConditionConfig>{
                 conditionType: ConditionType.EqualToValue
@@ -321,7 +325,7 @@ describe('equalToValue with ValidationManagerStartFluent', () => {
 describe('equalTo with ValidationManagerStartFluent', () => {
     test('With secondValueHostName, creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').equalTo('Field2');
+        let testItem = createFluent().input('Field1').equalTo('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
@@ -332,7 +336,7 @@ describe('equalTo with ValidationManagerStartFluent', () => {
 
     test('With secondValueHostName assigned and condDesc=null, creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).equalTo('Field2', null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).equalTo('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
@@ -342,7 +346,7 @@ describe('equalTo with ValidationManagerStartFluent', () => {
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates ValidatorConfig with EqualToCondition with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).equalTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).equalTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
@@ -354,7 +358,7 @@ describe('equalTo with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with EqualToCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').equalTo('Field2', null, 'Error');
+        let testItem = createFluent().input('Field1').equalTo('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
@@ -365,7 +369,7 @@ describe('equalTo with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with EqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').equalTo('Field2', null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').equalTo('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
@@ -377,7 +381,7 @@ describe('equalTo with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with EqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').equalTo('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').equalTo('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
@@ -389,7 +393,7 @@ describe('equalTo with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with EqualToCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').equalTo('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').equalTo('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <EqualToConditionConfig>{
                 conditionType: ConditionType.EqualTo,
@@ -403,7 +407,7 @@ describe('equalTo with ValidationManagerStartFluent', () => {
 describe('notEqualToValue with ValidationManagerStartFluent', () => {
     test('With secondValue, creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).notEqualToValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).notEqualToValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
@@ -413,7 +417,7 @@ describe('notEqualToValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue assigned and condDesc=null, creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).notEqualToValue(1, null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).notEqualToValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
@@ -423,7 +427,7 @@ describe('notEqualToValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue and secondConversionLookupKey assigned, creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).notEqualToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).notEqualToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue,
@@ -435,7 +439,7 @@ describe('notEqualToValue with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with NotEqualToValueCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notEqualToValue(null, null, 'Error');
+        let testItem = createFluent().input('Field1').notEqualToValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue
@@ -445,7 +449,7 @@ describe('notEqualToValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with NotEqualToValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notEqualToValue(null, null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').notEqualToValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue
@@ -456,7 +460,7 @@ describe('notEqualToValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotEqualToValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notEqualToValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').notEqualToValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue
@@ -467,7 +471,7 @@ describe('notEqualToValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotEqualToValueCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notEqualToValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').notEqualToValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToValueConditionConfig>{
                 conditionType: ConditionType.NotEqualToValue
@@ -479,7 +483,7 @@ describe('notEqualToValue with ValidationManagerStartFluent', () => {
 describe('notEqualTo with ValidationManagerStartFluent', () => {
     test('With secondValueHostName, creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notEqualTo('Field2');
+        let testItem = createFluent().input('Field1').notEqualTo('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
@@ -490,7 +494,7 @@ describe('notEqualTo with ValidationManagerStartFluent', () => {
 
     test('With secondValueHostName assigned and condDesc=null, creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).notEqualTo('Field2', null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).notEqualTo('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
@@ -500,7 +504,7 @@ describe('notEqualTo with ValidationManagerStartFluent', () => {
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).notEqualTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).notEqualTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
@@ -512,7 +516,7 @@ describe('notEqualTo with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with NotEqualToCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notEqualTo('Field2', null, 'Error');
+        let testItem = createFluent().input('Field1').notEqualTo('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
@@ -523,7 +527,7 @@ describe('notEqualTo with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with NotEqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notEqualTo('Field2', null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').notEqualTo('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
@@ -535,7 +539,7 @@ describe('notEqualTo with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotEqualToCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notEqualTo('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').notEqualTo('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
@@ -547,7 +551,7 @@ describe('notEqualTo with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotEqualToCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notEqualTo('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').notEqualTo('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotEqualToConditionConfig>{
                 conditionType: ConditionType.NotEqualTo,
@@ -560,7 +564,7 @@ describe('notEqualTo with ValidationManagerStartFluent', () => {
 describe('lessThanValue with ValidationManagerStartFluent', () => {
     test('With secondValue, creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThanValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThanValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
@@ -570,7 +574,7 @@ describe('lessThanValue with ValidationManagerStartFluent', () => {
     });
     test('Shorthand version "ltValue" With secondValue, creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).ltValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).ltValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
@@ -581,7 +585,7 @@ describe('lessThanValue with ValidationManagerStartFluent', () => {
 
     test('With secondValue assigned and condDesc=null, creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThanValue(1, null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThanValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
@@ -591,7 +595,7 @@ describe('lessThanValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue and secondConversionLookupKey assigned, creates ValidatorConfig with LessThanValueCondition with type=LessThanValue, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue,
@@ -603,7 +607,7 @@ describe('lessThanValue with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with LessThanValueCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanValue(null, null, 'Error');
+        let testItem = createFluent().input('Field1').lessThanValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue
@@ -613,7 +617,7 @@ describe('lessThanValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanValue(null, null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').lessThanValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue
@@ -624,7 +628,7 @@ describe('lessThanValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').lessThanValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue
@@ -635,7 +639,7 @@ describe('lessThanValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanValueCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').lessThanValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanValueConditionConfig>{
                 conditionType: ConditionType.LessThanValue
@@ -647,7 +651,7 @@ describe('lessThanValue with ValidationManagerStartFluent', () => {
 describe('lessThan with ValidationManagerStartFluent', () => {
     test('With secondValueHostName, creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThan('Field2');
+        let testItem = createFluent().input('Field1').lessThan('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
@@ -657,7 +661,7 @@ describe('lessThan with ValidationManagerStartFluent', () => {
     });
     test('SShorthand version "lt" With secondValueHostName, creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lt('Field2');
+        let testItem = createFluent().input('Field1').lt('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
@@ -667,7 +671,7 @@ describe('lessThan with ValidationManagerStartFluent', () => {
     });
     test('With secondValueHostName assigned and condDesc=null, creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThan('Field2', null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThan('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
@@ -677,7 +681,7 @@ describe('lessThan with ValidationManagerStartFluent', () => {
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates ValidatorConfig with LessThanCondition with type=LessThan, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
@@ -689,7 +693,7 @@ describe('lessThan with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with LessThanCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThan('Field2', null, 'Error');
+        let testItem = createFluent().input('Field1').lessThan('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
@@ -700,7 +704,7 @@ describe('lessThan with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThan('Field2', null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').lessThan('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
@@ -712,7 +716,7 @@ describe('lessThan with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThan('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').lessThan('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
@@ -724,7 +728,7 @@ describe('lessThan with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThan('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').lessThan('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanConditionConfig>{
                 conditionType: ConditionType.LessThan,
@@ -737,7 +741,7 @@ describe('lessThan with ValidationManagerStartFluent', () => {
 describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
     test('With secondValue, creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThanOrEqualValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThanOrEqualValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
@@ -747,7 +751,7 @@ describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('Shorthand version, "lteValue", With secondValue, creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lteValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lteValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
@@ -757,7 +761,7 @@ describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue assigned and condDesc=null, creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
@@ -767,7 +771,7 @@ describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue and secondConversionLookupKey assigned, creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue,
@@ -779,7 +783,7 @@ describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with LessThanOrEqualValueCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanOrEqualValue(null, null, 'Error');
+        let testItem = createFluent().input('Field1').lessThanOrEqualValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue
@@ -789,7 +793,7 @@ describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanOrEqualValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanOrEqualValue(null, null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').lessThanOrEqualValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue
@@ -800,7 +804,7 @@ describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanOrEqualValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanOrEqualValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').lessThanOrEqualValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue
@@ -811,7 +815,7 @@ describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanOrEqualValueCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanOrEqualValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').lessThanOrEqualValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqualValue
@@ -823,7 +827,7 @@ describe('lessThanOrEqualValue with ValidationManagerStartFluent', () => {
 describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
     test('With secondValueHostName, creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanOrEqual('Field2');
+        let testItem = createFluent().input('Field1').lessThanOrEqual('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
@@ -833,7 +837,7 @@ describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('Shorthand version "lte" With secondValueHostName, creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lte('Field2');
+        let testItem = createFluent().input('Field1').lte('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
@@ -845,7 +849,7 @@ describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
 
     test('With secondValueHostName assigned and condDesc=null, creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThanOrEqual('Field2', null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThanOrEqual('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
@@ -855,7 +859,7 @@ describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).lessThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).lessThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
@@ -867,7 +871,7 @@ describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with LessThanOrEqualCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanOrEqual('Field2', null, 'Error');
+        let testItem = createFluent().input('Field1').lessThanOrEqual('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
@@ -878,7 +882,7 @@ describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanOrEqual('Field2', null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').lessThanOrEqual('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
@@ -890,7 +894,7 @@ describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanOrEqual('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').lessThanOrEqual('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
@@ -902,7 +906,7 @@ describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with LessThanOrEqualCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').lessThanOrEqual('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').lessThanOrEqual('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <LessThanOrEqualConditionConfig>{
                 conditionType: ConditionType.LessThanOrEqual,
@@ -917,7 +921,7 @@ describe('lessThanOrEqual with ValidationManagerStartFluent', () => {
 describe('greaterThanValue with ValidationManagerStartFluent', () => {
     test('With secondValue, creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThanValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThanValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
@@ -927,7 +931,7 @@ describe('greaterThanValue with ValidationManagerStartFluent', () => {
     });
     test('Shorthand version "gtValue" With secondValue, creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).gtValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).gtValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
@@ -938,7 +942,7 @@ describe('greaterThanValue with ValidationManagerStartFluent', () => {
 
     test('With secondValue assigned and condDesc=null, creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThanValue(1, null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThanValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
@@ -948,7 +952,7 @@ describe('greaterThanValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue and secondConversionLookupKey assigned, creates ValidatorConfig with GreaterThanValueCondition with type=GreaterThanValue, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue,
@@ -960,7 +964,7 @@ describe('greaterThanValue with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with GreaterThanValueCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanValue(null, null, 'Error');
+        let testItem = createFluent().input('Field1').greaterThanValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue
@@ -970,7 +974,7 @@ describe('greaterThanValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanValue(null, null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').greaterThanValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue
@@ -981,7 +985,7 @@ describe('greaterThanValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').greaterThanValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue
@@ -992,7 +996,7 @@ describe('greaterThanValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanValueCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').greaterThanValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanValue
@@ -1004,7 +1008,7 @@ describe('greaterThanValue with ValidationManagerStartFluent', () => {
 describe('greaterThan with ValidationManagerStartFluent', () => {
     test('With secondValueHostName, creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThan('Field2');
+        let testItem = createFluent().input('Field1').greaterThan('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
@@ -1014,7 +1018,7 @@ describe('greaterThan with ValidationManagerStartFluent', () => {
     });
     test('Shorthand version "gt" with secondValueHostName, creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').gt('Field2');
+        let testItem = createFluent().input('Field1').gt('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
@@ -1025,7 +1029,7 @@ describe('greaterThan with ValidationManagerStartFluent', () => {
 
     test('With secondValueHostName assigned and condDesc=null, creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThan('Field2', null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThan('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
@@ -1035,7 +1039,7 @@ describe('greaterThan with ValidationManagerStartFluent', () => {
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates ValidatorConfig with GreaterThanCondition with type=GreaterThan, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
@@ -1047,7 +1051,7 @@ describe('greaterThan with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with GreaterThanCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThan('Field2', null, 'Error');
+        let testItem = createFluent().input('Field1').greaterThan('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
@@ -1058,7 +1062,7 @@ describe('greaterThan with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThan('Field2', null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').greaterThan('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
@@ -1070,7 +1074,7 @@ describe('greaterThan with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThan('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').greaterThan('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
@@ -1082,7 +1086,7 @@ describe('greaterThan with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThan('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').greaterThan('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanConditionConfig>{
                 conditionType: ConditionType.GreaterThan,
@@ -1095,7 +1099,7 @@ describe('greaterThan with ValidationManagerStartFluent', () => {
 describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
     test('With secondValue, creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThanOrEqualValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThanOrEqualValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -1105,7 +1109,7 @@ describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('Shorthand version "gteValue" With secondValue, creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).gteValue(1);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).gteValue(1);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -1115,7 +1119,7 @@ describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue assigned and condDesc=null, creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -1125,7 +1129,7 @@ describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With secondValue and secondConversionLookupKey assigned, creates ValidatorConfig with GreaterThanOrEqualValueCondition with type=GreaterThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue,
@@ -1137,7 +1141,7 @@ describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with GreaterThanOrEqualValueCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqualValue(null, null, 'Error');
+        let testItem = createFluent().input('Field1').greaterThanOrEqualValue(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue
@@ -1147,7 +1151,7 @@ describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanOrEqualValueCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqualValue(null, null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').greaterThanOrEqualValue(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue
@@ -1158,7 +1162,7 @@ describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqualValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').greaterThanOrEqualValue(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue
@@ -1169,7 +1173,7 @@ describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanOrEqualValueCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqualValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').greaterThanOrEqualValue(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualValueConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqualValue
@@ -1181,7 +1185,7 @@ describe('greaterThanOrEqualValue with ValidationManagerStartFluent', () => {
 describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
     test('With secondValueHostName, creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqual('Field2');
+        let testItem = createFluent().input('Field1').greaterThanOrEqual('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
@@ -1191,7 +1195,7 @@ describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('Shorthand version "gte" with secondValueHostName, creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqual('Field2');
+        let testItem = createFluent().input('Field1').greaterThanOrEqual('Field2');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
@@ -1202,7 +1206,7 @@ describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
 
     test('With secondValueHostName assigned and condDesc=null, creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThanOrEqual('Field2', null);
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThanOrEqual('Field2', null);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
@@ -1212,7 +1216,7 @@ describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With secondValueHostName and secondConversionLookupKey assigned, creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1', LookupKey.Integer).greaterThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
+        let testItem = createFluent().input('Field1', LookupKey.Integer).greaterThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
@@ -1224,7 +1228,7 @@ describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With only errorMessage creates ValidatorConfig with GreaterThanOrEqualCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqual('Field2', null, 'Error');
+        let testItem = createFluent().input('Field1').greaterThanOrEqual('Field2', null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
@@ -1235,7 +1239,7 @@ describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqual('Field2', null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').greaterThanOrEqual('Field2', null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
@@ -1247,7 +1251,7 @@ describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanOrEqualCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqual('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').greaterThanOrEqual('Field2', null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
@@ -1259,7 +1263,7 @@ describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with GreaterThanOrEqualCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').greaterThanOrEqual('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').greaterThanOrEqual('Field2', null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <GreaterThanOrEqualConditionConfig>{
                 conditionType: ConditionType.GreaterThanOrEqual,
@@ -1273,7 +1277,7 @@ describe('greaterThanOrEqual with ValidationManagerStartFluent', () => {
 describe('stringLength with ValidationManagerStartFluent', () => {
     test('With maximum, creates ValidatorConfig with StringLengthCondition with type=StringLength and maximum assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').stringLength(4);
+        let testItem = createFluent().input('Field1').stringLength(4);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
@@ -1284,7 +1288,7 @@ describe('stringLength with ValidationManagerStartFluent', () => {
 
     test('With minimum and maximum assigned, creates ValidatorConfig with StringLengthCondition with type=StringLength, minimum assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').stringLength(4, { minimum: 1 });
+        let testItem = createFluent().input('Field1').stringLength(4, { minimum: 1 });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
@@ -1296,7 +1300,7 @@ describe('stringLength with ValidationManagerStartFluent', () => {
 
     test('With only errorMessage creates ValidatorConfig with StringLengthCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').stringLength(null, null, 'Error');
+        let testItem = createFluent().input('Field1').stringLength(null, null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
@@ -1306,7 +1310,7 @@ describe('stringLength with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with StringLengthCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').stringLength(null, null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').stringLength(null, null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
@@ -1317,7 +1321,7 @@ describe('stringLength with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with StringLengthCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').stringLength(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').stringLength(null, null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
@@ -1328,7 +1332,7 @@ describe('stringLength with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with StringLengthCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').stringLength(null, null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').stringLength(null, null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
@@ -1341,7 +1345,7 @@ describe('stringLength with ValidationManagerStartFluent', () => {
 describe('requireText with ValidationManagerStartFluent', () => {
     test('With no parameters, creates ValidatorConfig with RequireTextCondition with type=RequireText', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').requireText();
+        let testItem = createFluent().input('Field1').requireText();
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
@@ -1351,7 +1355,7 @@ describe('requireText with ValidationManagerStartFluent', () => {
 
     test('With nullValueResult=NoMatch assigned, creates ValidatorConfig with RequireTextCondition with type=RequireText, nullValueResult=NoMatch', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').requireText({ nullValueResult: ConditionEvaluateResult.NoMatch });
+        let testItem = createFluent().input('Field1').requireText({ nullValueResult: ConditionEvaluateResult.NoMatch });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
@@ -1362,7 +1366,7 @@ describe('requireText with ValidationManagerStartFluent', () => {
 
     test('With only errorMessage creates ValidatorConfig with RequireTextCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').requireText(null, 'Error');
+        let testItem = createFluent().input('Field1').requireText(null, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
@@ -1372,7 +1376,7 @@ describe('requireText with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with RequireTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').requireText(null, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').requireText(null, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
@@ -1383,7 +1387,7 @@ describe('requireText with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RequireTextCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').requireText(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').requireText(null, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
@@ -1394,7 +1398,7 @@ describe('requireText with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with RequireTextCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').requireText(null, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').requireText(null, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
@@ -1406,7 +1410,7 @@ describe('requireText with ValidationManagerStartFluent', () => {
 describe('notNull with ValidationManagerStartFluent', () => {
     test('With no parameters, creates ValidatorConfig with NotNullCondition with type=NotNull', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notNull();
+        let testItem = createFluent().input('Field1').notNull();
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
@@ -1416,7 +1420,7 @@ describe('notNull with ValidationManagerStartFluent', () => {
 
     test('With only errorMessage creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notNull('Error');
+        let testItem = createFluent().input('Field1').notNull('Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
@@ -1426,7 +1430,7 @@ describe('notNull with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notNull('Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').notNull('Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
@@ -1437,7 +1441,7 @@ describe('notNull with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notNull(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').notNull(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
@@ -1448,7 +1452,7 @@ describe('notNull with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotNullCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').notNull('FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').notNull('FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
@@ -1461,7 +1465,7 @@ describe('notNull with ValidationManagerStartFluent', () => {
 describe('all with ValidationManagerStartFluent', () => {
     test('With empty conditions, creates ValidatorConfig with AllMatchCondition with type=AllMatch and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').all((children) => children);
+        let testItem = createFluent().input('Field1').all((children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -1471,7 +1475,7 @@ describe('all with ValidationManagerStartFluent', () => {
     });
     test('With conditions setup with requireText and regExp, creates ValidatorConfig with AllMatchCondition with type=AllMatch and conditionConfigs populated with both conditions', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+        let testItem = createFluent().input('Field1')
             .all((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
@@ -1490,7 +1494,7 @@ describe('all with ValidationManagerStartFluent', () => {
 
     test('With conditions setup with requireText and regExp, and errorMessage assigned creates ValidatorConfig with AllMatchCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+        let testItem = createFluent().input('Field1')
             .all((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
@@ -1509,7 +1513,7 @@ describe('all with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+        let testItem = createFluent().input('Field1')
             .all((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
@@ -1529,7 +1533,7 @@ describe('all with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with AllMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').all((children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').all((children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -1541,7 +1545,7 @@ describe('all with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with AllMatchCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').all((children) => children, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').all((children) => children, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
@@ -1551,18 +1555,18 @@ describe('all with ValidationManagerStartFluent', () => {
         });
     });
     test('Null as the function parameter throws', () => {
-        let fluent = new ValidationManagerStartFluent(null);
+        let fluent = createFluent();
         expect(()=> fluent.input('Field1').all(null!, 'Error')).toThrow(/conditions/);
     });
     test('Non-function as the function parameter throws', () => {
-        let fluent = new ValidationManagerStartFluent(null);
+        let fluent = createFluent();
         expect(() => fluent.input('Field1').all({} as any, 'Error')).toThrow(/Function expected/);
     });    
 });
 describe('any with ValidationManagerStartFluent', () => {
     test('With empty conditions, creates ValidatorConfig with AnyMatchCondition with type=AnyMatch and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children);
+        let testItem = createFluent().input('Field1').any((children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1572,7 +1576,7 @@ describe('any with ValidationManagerStartFluent', () => {
     });
     test('With conditions setup with requireText and regExp, creates ValidatorConfig with AnyMatchCondition with type=AnyMatch and conditionConfigs populated with both conditions', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = createFluent().input('Field1').any((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1590,7 +1594,7 @@ describe('any with ValidationManagerStartFluent', () => {
 
     test('With conditions setup with requireText and regExp, and errorMessage assigned creates ValidatorConfig with AnyMatchCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error');
+        let testItem = createFluent().input('Field1').any((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1608,7 +1612,7 @@ describe('any with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
+        let testItem = createFluent().input('Field1').any((children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1627,7 +1631,7 @@ describe('any with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with AnyMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').any((children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1639,7 +1643,7 @@ describe('any with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with AnyMatchCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').any((children) => children, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').any((children) => children, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
@@ -1649,11 +1653,11 @@ describe('any with ValidationManagerStartFluent', () => {
         });
     });
     test('Null as the function parameter throws', () => {
-        let fluent = new ValidationManagerStartFluent(null);
+        let fluent = createFluent();
         expect(()=> fluent.input('Field1').any(null!, 'Error')).toThrow(/conditions/);
     });
     test('Non-function as the function parameter throws', () => {
-        let fluent = new ValidationManagerStartFluent(null);
+        let fluent = createFluent();
         expect(() => fluent.input('Field1').any({} as any, 'Error')).toThrow(/Function expected/);
     });        
 });
@@ -1661,7 +1665,7 @@ describe('any with ValidationManagerStartFluent', () => {
 describe('countMatches with ValidationManagerStartFluent', () => {
     test('With minimum and maximum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, maximum, and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, 2, (children) => children);
+        let testItem = createFluent().input('Field1').countMatches(1, 2, (children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1673,7 +1677,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With minimum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, minimum, and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, null, (children) => children);
+        let testItem = createFluent().input('Field1').countMatches(1, null, (children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1684,7 +1688,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With maximum assigned and empty conditions, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch, maximum, and conditionConfigs=[]', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(null, 2, (children) => children);
+        let testItem = createFluent().input('Field1').countMatches(null, 2, (children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1695,7 +1699,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });    
     test('With conditions setup with requireText and regExp, creates ValidatorConfig with CountMatchesMatchCondition with type=CountMatchesMatch and conditionConfigs populated with both conditions', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(0, 2, (children) => children.requireText(null, 'F1').requireText(null, 'F2'));
+        let testItem = createFluent().input('Field1').countMatches(0, 2, (children) => children.requireText(null, 'F1').requireText(null, 'F2'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1715,7 +1719,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
 
     test('With conditions setup with requireText and regExp, and errorMessage assigned creates ValidatorConfig with CountMatchesMatchCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, 4, (children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error');
+        let testItem = createFluent().input('Field1').countMatches(1, 4, (children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1735,7 +1739,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(1, 2, (children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
+        let testItem = createFluent().input('Field1').countMatches(1, 2, (children) => children.requireText(null, 'F1').requireText(null, 'F2'), 'Error', { summaryMessage: 'Summary'});
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1756,7 +1760,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with CountMatchesMatchCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(null, null, (children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').countMatches(null, null, (children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1768,7 +1772,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with CountMatchesMatchCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').countMatches(null, null, (children) => children, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').countMatches(null, null, (children) => children, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
@@ -1778,11 +1782,11 @@ describe('countMatches with ValidationManagerStartFluent', () => {
         });
     });
     test('Null as the function parameter throws', () => {
-        let fluent = new ValidationManagerStartFluent(null);
+        let fluent = createFluent();
         expect(()=> fluent.input('Field1').countMatches(0, 1, null!, 'Error')).toThrow(/conditions/);
     });
     test('Non-function as the function parameter throws', () => {
-        let fluent = new ValidationManagerStartFluent(null);
+        let fluent = createFluent();
         expect(() => fluent.input('Field1').countMatches(0, 1, {} as any, 'Error')).toThrow(/Function expected/);
     });        
 });
@@ -1790,7 +1794,7 @@ describe('countMatches with ValidationManagerStartFluent', () => {
 describe('positive with ValidationManagerStartFluent', () => {
     test('With no parameters, creates ValidatorConfig with PositiveCondition with type=Positive', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').positive();
+        let testItem = createFluent().input('Field1').positive();
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
@@ -1800,7 +1804,7 @@ describe('positive with ValidationManagerStartFluent', () => {
 
     test('With only errorMessage creates ValidatorConfig with PositiveCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').positive('Error');
+        let testItem = createFluent().input('Field1').positive('Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
@@ -1810,7 +1814,7 @@ describe('positive with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with PositiveCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').positive('Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').positive('Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
@@ -1821,7 +1825,7 @@ describe('positive with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with PositiveCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').positive(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').positive(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
@@ -1832,7 +1836,7 @@ describe('positive with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with PositiveCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').positive('FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').positive('FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
@@ -1844,7 +1848,7 @@ describe('positive with ValidationManagerStartFluent', () => {
 describe('integer with ValidationManagerStartFluent', () => {
     test('With no parameters, creates ValidatorConfig with IntegerCondition with type=Integer', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').integer();
+        let testItem = createFluent().input('Field1').integer();
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
@@ -1854,7 +1858,7 @@ describe('integer with ValidationManagerStartFluent', () => {
 
     test('With only errorMessage creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').integer('Error');
+        let testItem = createFluent().input('Field1').integer('Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
@@ -1864,7 +1868,7 @@ describe('integer with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').integer('Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').integer('Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
@@ -1875,7 +1879,7 @@ describe('integer with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').integer(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').integer(null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
@@ -1886,7 +1890,7 @@ describe('integer with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with IntegerCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').integer('FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').integer('FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
@@ -1899,7 +1903,7 @@ describe('integer with ValidationManagerStartFluent', () => {
 describe('maxDecimals with ValidationManagerStartFluent', () => {
     test('With no parameters, creates ValidatorConfig with MaxDecimalsCondition with type=MaxDecimals', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').maxDecimals(2);
+        let testItem = createFluent().input('Field1').maxDecimals(2);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
@@ -1910,7 +1914,7 @@ describe('maxDecimals with ValidationManagerStartFluent', () => {
 
     test('With only errorMessage creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').maxDecimals(1, 'Error');
+        let testItem = createFluent().input('Field1').maxDecimals(1, 'Error');
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
@@ -1921,7 +1925,7 @@ describe('maxDecimals with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').maxDecimals(2, 'Error', { summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').maxDecimals(2, 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
@@ -1933,7 +1937,7 @@ describe('maxDecimals with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').maxDecimals(2, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+        let testItem = createFluent().input('Field1').maxDecimals(2, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
@@ -1945,7 +1949,7 @@ describe('maxDecimals with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with MaxDecimalsCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').maxDecimals(2, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').maxDecimals(2, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
@@ -1959,7 +1963,7 @@ describe('maxDecimals with ValidationManagerStartFluent', () => {
 describe('not with ValidationManagerStartFluent', () => {
     test('With empty condition, creates ValidatorConfig with NotCondition with type=Not and childConditionConfig={}', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').not((children) => children);
+        let testItem = createFluent().input('Field1').not((children) => children);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
@@ -1969,7 +1973,7 @@ describe('not with ValidationManagerStartFluent', () => {
     });
     test('With condition setup with requireText, creates ValidatorConfig with NotCondition with type=Not and conditionConfigs populated', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+        let testItem = createFluent().input('Field1')
             .not((children) => children.requireText(null, 'F1'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
@@ -1983,7 +1987,7 @@ describe('not with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with NotCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1')
+        let testItem = createFluent().input('Field1')
             .not((children) => children.requireText(null, 'F1'), 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
@@ -1999,7 +2003,7 @@ describe('not with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null)
+        let testItem = createFluent()
             .input('Field1').not((children) => children, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
@@ -2012,7 +2016,7 @@ describe('not with ValidationManagerStartFluent', () => {
     });
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with NotCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
 
-        let testItem = new ValidationManagerStartFluent(null).input('Field1').not((children) => children, 'FirstError', { errorMessage: 'SecondError' });
+        let testItem = createFluent().input('Field1').not((children) => children, 'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
@@ -2022,15 +2026,15 @@ describe('not with ValidationManagerStartFluent', () => {
         });
     });
     test('When there are 2 child conditions, throws', () => {
-        expect(() => new ValidationManagerStartFluent(null).input('Field1')
+        expect(() => createFluent().input('Field1')
             .not((children) => children.requireText(null, 'F1').requireText(null, 'F2'))).toThrow();
     });    
     test('Null as the function parameter throws', () => {
-        let fluent = new ValidationManagerStartFluent(null);
+        let fluent = createFluent();
         expect(()=> fluent.input('Field1').not(null!, 'Error')).toThrow(/condition/);
     });
     test('Non-function as the function parameter throws', () => {
-        let fluent = new ValidationManagerStartFluent(null);
+        let fluent = createFluent();
         expect(() => fluent.input('Field1').not({} as any, 'Error')).toThrow(/Function expected/);
     });    
 });
