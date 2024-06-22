@@ -706,9 +706,6 @@ Each condition function has a *validator parameters* argument that takes this ob
     summaryMessagel10n?: null | string;
     
     severity?: ValidationSeverity | ((host) => ValidationSeverity);
-    
-    enablerConfig?: null | ConditionConfig;
-    enablerCreator?: ConditionCreatorHandler;
     enabled?: boolean | ((host) => boolean);
 }
 ```
@@ -1226,8 +1223,6 @@ interface ValidatorConfig {
     severity?: ValidationSeverity | ((host) => ValidationSeverity);
     
     enabled?: boolean | ((host) => boolean);
-    enablerConfig?: null | ConditionConfig;
-    enablerCreator?: ConditionCreatorHandler;
 }
 ```
 
@@ -1262,12 +1257,7 @@ Let’s go through each property.
 	- `Error` – Error but continue evaluating the remaining validation rules. The default when `severity` is omitted.
 	- `Severe` – Error and do not evaluate any more validation rules for this ValueHost until the error is fixed.
 	- `Warning` – Want to give the user some direction, but not prevent saving the data.
-- `enabled` – A way to quickly disable the Validator.
-- `enablerConfig` and `enablerCreator` – The *Enabler* determines if the `Validator` is enabled, using a <a name="#conditions">`Condition`</a>.  Often validation rules depend on other information for that. For example, you have a checkbox associated with a text box. Any validation rule on the text box isn’t used unless the checkbox is marked. You would assign a `Condition` to evaluate the value of the checkbox to the Enabler.
-    The enablerCreator property's function has this format:
-    ```ts
-    (requester: ValidatorConfig) => ICondition | null;
-    ```
+- `enabled` – A way to quickly disable the Validator. Alternatively use the WhenCondition to control the enabled state based on a condition. See <a href="#whencondition">Using the WhenCondition</a>.
 
 #### Example with inline error messages
 Now let’s add validators to our previous example using a Model with FirstName and LastName.

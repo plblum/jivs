@@ -440,7 +440,7 @@ export class ValueHostConfigMergeService extends ConfigMergeServiceBase<ValueHos
 
 /**
  * Default ConfigMergeService for Validators. Automatically used if none is supplied to the default ValueHostConfigMergeService.
- * It copies all properties except: errorCode, conditionConfig, enablerConfig, conditionCreator, enablerCreator.
+ * It copies all properties except: errorCode, conditionConfig, conditionCreator.
  * It uses the conditionConfigResolver rules to handle any conditionConfig. It defaults the Creators to 'nochange',
  * meaning you could attach a function to it to handle it yourself.
  */
@@ -451,9 +451,7 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
         this.setPropertyConflictRule('validatorType', 'locked');
         this.setPropertyConflictRule('errorCode', 'nochange');
         this.setPropertyConflictRule('conditionConfig', this.handleConditionConfigProperty);
-        this.setPropertyConflictRule('enablerConfig', this.handleConditionConfigProperty);
         this.setPropertyConflictRule('conditionCreator', 'nochange');   //!!! haven't worked on a solution for the creator callback functions
-        this.setPropertyConflictRule('enablerCreator', 'nochange');
 
         // everything else has no initial value which means 'replace'
     }

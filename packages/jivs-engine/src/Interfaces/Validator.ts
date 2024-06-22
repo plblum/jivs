@@ -127,30 +127,7 @@ export interface ValidatorConfig {
      * @returns 
      */
     conditionCreator?: ConditionCreatorHandler;
-    /* eslint-enable @typescript-eslint/naming-convention */
 
-    /**
-     * The ConditionConfig to create an Enabler Condition.
-     * An Enabler is a Condition used to determine if validation is enabled.
-     * For example, evaluate the state of a checkbox before
-     * reporting an error in a textbox associated with that checkbox
-     * being checked.
-     * Leave it null if not needed.
-     * An EnablerConfig instance should be considered immutable once assigned here.
-     * Use this when the Condition extends IConditionCore<ConditionConfig>.
-     * Leave null if EnablerCreator is asssigned.
-     */
-    enablerConfig?: ConditionConfig | null | undefined;
-
-    /* eslint-disable @typescript-eslint/naming-convention */
-    /**
-     * Use to create the Condition instance yourself, especially to support
-     * implementations of ICondition that don't implement IConditionCore<ConditionConfig>.
-     * Only use this when EnablerConfig is null.
-     * @param requester
-     * @returns 
-     */
-    enablerCreator?: ConditionCreatorHandler;
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /**
@@ -240,7 +217,7 @@ export interface ValidatorConfig {
 }
 
 /**
- * Function definition used with ValidatorConfig.conditionCreator and enablerCreator.
+ * Function definition used with ValidatorConfig.conditionCreator.
  */
 export type ConditionCreatorHandler = (requester: ValidatorConfig) => ICondition | null;
 

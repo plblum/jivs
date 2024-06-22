@@ -214,8 +214,7 @@ export interface IValueHostsManagerCallbacks extends IValueHostCallbacks, IInput
      * 
      * Note that where a ValueHostConfig has a property that references a function,
      * you will have to retain that reference in some way to reuse it.
-     * ValidatorConfig.conditionCreator and ValidatorConfig.enablerCreator
-     * are examples.
+     * In particular, ValidatorConfig.conditionCreator.
      */
     onConfigChanged?: ValueHostsManagerConfigChangedHandler | null;
 

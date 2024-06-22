@@ -22,13 +22,17 @@ import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { registerAllConditions } from "../TestSupport/createValidationServices";
+import { createValidationServicesForTesting, registerAllConditions } from "../TestSupport/createValidationServices";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
+import { AlwaysMatchesCondition, AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValidationManager } from "../../src/Interfaces/ValidationManager";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
+import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
+import { ErrorResponseCondition } from "../../src/Conditions/ConditionBase";
+import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
+import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
 
 // subclass of Validator to expose many of its protected members so they
 // can be individually tested
@@ -156,6 +160,15 @@ describe('Validator.constructor and initial property values', () => {
         expect(setup.validator.ExposeValidationManager()).toBe(setup.vm);
         expect(()=>setup.validator.errorCode).toThrow();   // because errorCode is undefined and type=''
     });
+    test('ValueHostsManager used with Validator throws when trying to access ValidationManager or Services', () => {
+        let services = createValidationServicesForTesting();
+        let builder = new ValueHostsManagerConfigBuilder(services);
+        let vm = new ValueHostsManager(builder);
+        let vh = new MockInputValueHost(vm, '', '',);
+        let testItem = new PublicifiedValidator(vh, { conditionConfig: { conditionType: 'Test' } });
+
+        expect(()=> testItem.ExposeValidationManager()).toThrow('ValueHost.services must contain IValidationManager');
+    });    
 });
 describe('errorCode', () => {
     test('Value assigned is returned regardless of ConditionType', () => {
@@ -272,6 +285,7 @@ describe('Validator.condition', () => {
     });
 });
 describe('Validator.enabler', () => {
+//NOTE: Enabler is setup by using WhenCondition as the top level condition.    
     test('ValidatorConfig has no Enabler assigned sets Enabler to null', () => {
         let setup = setupWithField1AndField2({});
 
@@ -281,10 +295,18 @@ describe('Validator.enabler', () => {
     });
     test('Successful creation of EqualToCondition', () => {
         let setup = setupWithField1AndField2({
-            enablerConfig: <EqualToConditionConfig>{
-                conditionType: ConditionType.EqualTo,
-                valueHostName: null
-            }
+            conditionConfig: <WhenConditionConfig>{
+                conditionType: ConditionType.When,
+                enablerConfig: <EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
+                    valueHostName: null
+                },
+                childConditionConfig: {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'Field1'
+                }
+            }            
+
         });
 
         let enabler: ICondition | null = null;
@@ -292,69 +314,56 @@ describe('Validator.enabler', () => {
         expect(enabler).not.toBeNull();
         expect(enabler).toBeInstanceOf(EqualToCondition);
     });
-    test('Attempt to create Enabler with invalid type throws', () => {
+    test('Attempt to create Enabler with invalid type logs and replaces the condition with ErrorResponseCondition', () => {
         let setup = setupWithField1AndField2({
-            enablerConfig: {
-                conditionType: 'UnknownType'
-            }
-        });
-
-        let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).toThrow(/not registered/);
-    });
-    test('Successful creation using EnablerCreator', () => {
-        let setup = setupWithField1AndField2({
-            enablerCreator: (requestor) => {
-                return {
-                    conditionType: 'TEST',
-                    evaluate: (valueHost, validationManager) => {
-                        return ConditionEvaluateResult.Match;
-                    },
-                    category: ConditionCategory.Undetermined
-                };
-            }
+            conditionConfig: <WhenConditionConfig>{
+                conditionType: ConditionType.When,
+                enablerConfig: {
+                    conditionType: 'UnknownType'
+                },
+                childConditionConfig: {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'Field1'
+                }
+            }            
         });
 
         let enabler: ICondition | null = null;
         expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
-        expect(enabler).not.toBeNull();
-        expect(enabler!.conditionType).toBe('TEST');
-        expect(enabler!.category).toBe(ConditionCategory.Undetermined);
-        expect(enabler!.evaluate(null, setup.vm)).toBe(ConditionEvaluateResult.Match);
+        expect(enabler).toBeInstanceOf(ErrorResponseCondition);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('UnknownType', LoggingLevel.Error, null, null)).toBeTruthy();
     });
-    test('Neither Config or Creator returns null', () => {
+    test('Attempt to create WhenCondition child condition with invalid type logs and replaces the condition with ErrorResponseCondition', () => {
+        let setup = setupWithField1AndField2({
+            conditionConfig: <WhenConditionConfig>{
+                conditionType: ConditionType.When,
+                enablerConfig: {
+                    conditionType: AlwaysMatchesConditionType
+                },
+                childConditionConfig: {
+                    conditionType:  'UnknownType'
+                }
+            }            
+        });
+        let child: ICondition | null = null;
+        expect(() => child = setup.validator.condition).not.toThrow();
+        expect(child).toBeInstanceOf(ErrorResponseCondition);
+
+        let enabler: ICondition | null = null;
+        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
+        expect(enabler).toBeInstanceOf(AlwaysMatchesCondition);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('UnknownType', LoggingLevel.Error, null, null)).toBeTruthy();
+    });    
+
+    test('Not using WhenCondition sets enabler to null', () => {
         let setup = setupWithField1AndField2({
         });
 
         let enabler: ICondition | null = null;
         expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
-    });
-    test('Both Config and Creator setup throws', () => {
-        let setup = setupWithField1AndField2({
-            enablerConfig: { conditionType: ConditionType.RequireText },
-            enablerCreator: (requestor) => {
-                return {
-                    conditionType: 'TEST',
-                    evaluate: (valueHost, services) => {
-                        return ConditionEvaluateResult.Match;
-                    },
-                    category: ConditionCategory.Undetermined
-                };
-            }
-        });
-
-        let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).toThrow(/both/);
-    });
-    test('EnablerCreator returns null throws', () => {
-        let setup = setupWithField1AndField2({
-            enablerConfig: null,
-            enablerCreator: (requestor) => null
-        });
-
-        let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).toThrow(/instance/);
     });
 });
 describe('Validator.enabled', () => {
@@ -869,17 +878,31 @@ describe('Validator.validate', () => {
     });
     test('Issue exists. Enabler = NoMatch. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
-            enablerConfig: <RequireTextConditionConfig>{
-                conditionType: ConditionType.RequireText,
-                valueHostName: 'Field2'
+            conditionConfig: <WhenConditionConfig>{
+                conditionType: ConditionType.When,
+                enablerConfig: <RequireTextConditionConfig>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'Field2'
+                },
+                childConditionConfig: {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'Field1'
+                }
             }
         }, 'Enabler using', LoggingLevel.Info);
     });
     test('Issue exists. Enabler = Undetermined. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
-            enablerConfig: <ConditionConfig>{
-                // the input value is '', which causes this condition to return Undetermined
-                conditionType: IsUndeterminedConditionType, valueHostName: 'Field2'
+            conditionConfig: <WhenConditionConfig>{
+                conditionType: ConditionType.When,
+                enablerConfig: <RequireTextConditionConfig>{
+                    conditionType: IsUndeterminedConditionType,
+                    valueHostName: 'Field2'
+                },
+                childConditionConfig: {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'Field1'
+                }
             }
         }, 'Enabler using', LoggingLevel.Info);
     });
@@ -910,10 +933,18 @@ describe('Validator.validate', () => {
 
     test('Issue exists. Enabler = Match. Returns Issue with correct error messages', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
-            enablerConfig: <RequireTextConditionConfig>{
+            conditionConfig: <WhenConditionConfig>{
+                conditionType: ConditionType.When,
+                enablerConfig: <RequireTextConditionConfig>{
                 // the input value is 'ABC', which causes this condition to return Match
-                conditionType: ConditionType.RequireText, valueHostName: 'Field2'
-            }
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'Field2'
+                },
+                childConditionConfig: {
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'Field1'
+                }
+            }            
         }, {}, null, null);
     });
     test('Issue exists but Require is skipped because IValidateOption.Preliminary = true.', () => {
@@ -1277,8 +1308,6 @@ describe('dispose', () => {
         // config items locally can be checked
         expect(setup.config.conditionConfig).toBeUndefined();
         expect(setup.config.conditionCreator).toBeUndefined();
-        expect(setup.config.enablerConfig).toBeUndefined();
-        expect(setup.config.enablerCreator).toBeUndefined();
     });   
     
     test('dispose with validatorConfig having its own dispose kills what the config.dispose expects', () => {

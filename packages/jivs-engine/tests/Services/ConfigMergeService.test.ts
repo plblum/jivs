@@ -938,9 +938,7 @@ describe('ValidatorConfigMergeService', () => {
             let testItem = new ValidatorConfigMergeService();
             expect(testItem.getPropertyConflictRule('validatorType')).toBe('locked');
             expect(testItem.getPropertyConflictRule('conditionConfig')).toBe(testItem.handleConditionConfigProperty);
-            expect(testItem.getPropertyConflictRule('enablerConfig')).toBe(testItem.handleConditionConfigProperty);
             expect(testItem.getPropertyConflictRule('conditionCreator')).toBe('nochange');
-            expect(testItem.getPropertyConflictRule('enablerCreator')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorCode')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorMessage')).toBeUndefined();
             expect(testItem.identifyHandler).toBe(testItem.identifyValidatorConflict);
