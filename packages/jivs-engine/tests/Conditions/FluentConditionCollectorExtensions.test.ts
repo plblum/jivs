@@ -5,9 +5,11 @@ import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
     EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
+    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig, MaxDecimalsConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig, NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig,
     RegExpConditionConfig, RequireTextConditionConfig, StringLengthConditionConfig
 } from '../../src/Conditions/ConcreteConditions';
+import { NotConditionConfig } from '../../src/Conditions/NotCondition';
+import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { ConditionWithChildrenBaseConfig } from '../../src/Conditions/ConditionWithChildrenBase';
 
@@ -1149,10 +1151,70 @@ describe('not on conditions', () => {
     });    
     test('Null as the function parameter throws', () => {
         let fluent = createFluent();;
-        expect(()=> fluent.conditions().not(null!)).toThrow(/condition/);
+        expect(()=> fluent.conditions().not(null!)).toThrow(/childConfig/);
     });
     test('Non-function as the function parameter throws', () => {
         let fluent = createFluent();
         expect(() => fluent.conditions().not({} as any)).toThrow(/Function expected/);
     });    
+});
+
+
+describe('when on conditions', () => {
+    test('With empty enabler and child conditions, creates ValidatorConfig with WhenCondition with type=When, enablerConfig={} and childConditionConfig={}', () => {
+        let fluent = createFluent();
+
+        let testItem = fluent.conditions().when(
+            (enabler) => enabler,
+            (child) => child);
+        TestFluentConditionCollector(testItem, <WhenConditionConfig>{
+            conditionType: ConditionType.When,
+            enablerConfig: {},
+            childConditionConfig: {}
+           });
+    });
+    test('With child condition setup with requireText and enabler with regexp, creates ValidatorConfig with WhenCondition with type=When and conditionConfigs populated', () => {
+
+        let testItem = createFluent().conditions()
+            .when((enabler)=> enabler.regExp(/abc/, null, null, 'F2'),
+                (child) => child.requireText(null, 'F1'));
+            TestFluentConditionCollector(testItem, <WhenConditionConfig>{
+                conditionType: ConditionType.When,
+                enablerConfig: <any>{
+                    conditionType: ConditionType.RegExp,
+                    expression: /abc/,
+                    valueHostName: 'F2'
+                },
+                childConditionConfig: <any>{
+                    conditionType: ConditionType.RequireText,
+                    valueHostName: 'F1'
+                }
+        });
+    });    
+    test('When there are 2 child conditions, throws', () => {
+        expect(() => createFluent().conditions()
+            .when((enabler)=>enabler,
+                (child) => child.requireText(null, 'F1').requireText(null, 'F2'))).toThrow();
+    });    
+    test('When there are 2 enabler conditions, throws', () => {
+        expect(() => createFluent().conditions()
+            .when((enabler)=>enabler.requireText(null, 'F1').requireText(null, 'F2'),
+                (child) => child)).toThrow();
+    });        
+    test('Null as the child condition function parameter throws', () => {
+        let fluent = createFluent();
+        expect(()=> fluent.conditions().when((enabler)=>enabler, null!)).toThrow(/childConfig/);
+    });
+    test('Null as the enabler condition function parameter throws', () => {
+        let fluent = createFluent();
+        expect(()=> fluent.conditions().when(null!, (child)=>child)).toThrow(/enabler/);
+    });    
+    test('Non-function as the child function parameter throws', () => {
+        let fluent = createFluent();
+        expect(() => fluent.conditions().when((enabler)=>enabler, {} as any)).toThrow(/Function expected/);
+    });    
+    test('Non-function as the enabler function parameter throws', () => {
+        let fluent = createFluent();
+        expect(() => fluent.conditions().when({} as any, (child)=>child)).toThrow(/Function expected/);
+    });        
 });

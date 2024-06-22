@@ -370,7 +370,8 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
 {
     /**
      * 
-     * @param vmConfig When assigned, we can check for naming conflicts.
+     * @param existingValueHostConfigs When assigned, we can check for naming conflicts.
+     * @param services
      */
     constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValueHostsServices)
     {

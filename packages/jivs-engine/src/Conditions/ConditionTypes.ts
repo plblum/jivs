@@ -37,6 +37,10 @@ export enum ConditionType
      * Associated with NotCondition class.
      */
     Not = 'Not',
+    /**
+     * Associated with the WhenCondition class.
+     */
+    When = 'When',
 
     /**
      * Associated with EqualToCondition class.

@@ -194,8 +194,8 @@ export enum ConditionCategory {
      */
     Contents,
     /**
-     * Evaluation is based on the evaluation results of Child conditions: 
-     * AllMatchCondition/EveryCondition, AnyMatchCondition/AnyCondition, CountMatchesCondition
+     * Evaluation is based on the evaluation results of Child conditions.
+     * Generally these inherit from ConditionWithChildrenBase or ConditionWithOneChildBase
      */
     Children,
     /**

@@ -8,7 +8,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { type ConditionConfig, type IConditionCore, ConditionEvaluateResult, ConditionCategory, ICondition } from '../Interfaces/Conditions';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
@@ -149,6 +149,12 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
             return new ErrorResponseCondition();
         }
             // expect exceptions here for invalid Configs
+    }
+
+    protected ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
+        if (result instanceof Promise)
+            throw new CodingError('Promises are not supported for child conditions at this time.');
+        return result;
     }
 }
 

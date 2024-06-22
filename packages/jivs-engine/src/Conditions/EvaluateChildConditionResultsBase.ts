@@ -56,11 +56,9 @@ export abstract class EvaluateChildConditionResultsBase<TConfig extends Evaluate
      * @returns 
      */
     protected cleanupChildResult(childResult: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
-        if (childResult instanceof Promise)
-            /* istanbul ignore next */
-            throw new CodingError('Promises are not supported for child conditions at this time.');
+        this.ensureNoPromise(childResult);
         if (childResult === ConditionEvaluateResult.Undetermined)
             return this.config.treatUndeterminedAs ?? ConditionEvaluateResult.Undetermined;
-        return childResult;
+        return childResult as ConditionEvaluateResult;
     }
 }

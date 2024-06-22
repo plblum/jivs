@@ -5,7 +5,7 @@ import {
     RequireTextConditionConfig, RequireTextCondition,
     RegExpConditionConfig, RegExpCondition,
     RangeConditionConfig, RangeCondition,
-    NotCondition, NotConditionConfig,
+    
     EqualToCondition, EqualToConditionConfig,
     NotEqualToCondition, NotEqualToConditionConfig,
     GreaterThanCondition, GreaterThanConditionConfig,
@@ -27,6 +27,8 @@ import {
     IntegerCondition, IntegerConditionConfig,
     MaxDecimalsCondition, MaxDecimalsConditionConfig
 }  from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+import { NotCondition, NotConditionConfig }  from "@plblum/jivs-engine/build/Conditions/NotCondition";
+import { WhenCondition, WhenConditionConfig }  from "@plblum/jivs-engine/build/Conditions/WhenCondition";
 import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import {
@@ -199,6 +201,8 @@ export function registerConditions(cf: ConditionFactory): void
         ConditionType.RegExp, (config) => new RegExpCondition(config));
     cf.register<RangeConditionConfig>(
         ConditionType.Range, (config) => new RangeCondition(config));
+    cf.register<WhenConditionConfig>(
+        ConditionType.When, (config) => new WhenCondition(config));
     cf.register<EqualToConditionConfig>(
         ConditionType.EqualTo, (config) => new EqualToCondition(config));
     cf.register<NotEqualToConditionConfig>

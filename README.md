@@ -765,6 +765,19 @@ Here are the conditions in Builder/Modifier API format:
      (child) => child.regExp(/[ABC]/, 
         'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
   ```
+- when(*enabler builder function*, *child builder function*, errorMessage?, {*validator parameters*}?)
+
+  For both *enabler builder function* and *child builder function*, pass a function that uses its one parameter to attach the child condition.
+ 
+  ```ts
+  builder.input('fieldname').when(
+     (enabler) => enabler.equalTo(true, null, 'anotherFieldName'),
+     (child) => child.regExp(/[ABC]/);
+  builder.input('fieldname').when(
+     (enabler) => enabler.equalTo(true, null, 'anotherFieldName'),
+     (child) => child.regExp(/[ABC]/, 
+        'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
+  ```
 
 - equalToValue(secondValue, {*condition parameters*}?, errorMessage?, {*validator parameters*}?)
 	- same for `notEqualToValue`, `lessThanValue`, `lessThanOrEqualValue`, `greaterThanValue`, `greaterThanOrEqualValue`

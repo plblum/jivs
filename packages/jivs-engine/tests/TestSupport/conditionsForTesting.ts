@@ -1,5 +1,6 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionConfig, IConditionCore, ConditionEvaluateResult, ConditionCategory, IEvaluateConditionDuringEdits } from "../../src/Interfaces/Conditions";
+import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { IInputValueHost } from "../../src/Interfaces/InputValueHost";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
@@ -117,6 +118,22 @@ export class EvaluatesAsPromiseCondition extends MockConditionBase<ConditionConf
 
 }
 
+export const DisposableConditionType = 'Disposable';
+
+export interface DisposableConditionConfig extends ConditionConfig
+{
+    result: ConditionEvaluateResult;
+}
+export class DisposableCondition extends MockConditionBase<DisposableConditionConfig> implements IDisposable
+{
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        return this.config.result;
+    }
+
+    dispose(): void {
+    }
+
+}
 export function registerTestingOnlyConditions(factory: ConditionFactory): void
 {
     factory.register(AlwaysMatchesConditionType, (config) => new AlwaysMatchesCondition(config));
@@ -127,6 +144,35 @@ export function registerTestingOnlyConditions(factory: ConditionFactory): void
     factory.register<UserSuppliedResultConditionConfig>(UserSuppliedResultConditionType, (config) => new UserSuppliedResultCondition(config));
     factory.register<UserSuppliedResultConditionConfig>(UserSuppliedResultConditionWithDuringEditType, (config) => new UserSuppliedResultConditionWithDuringEdit(config));
     factory.register<ConditionConfig>(EvaluatesAsPromiseConditionType, (config) => new EvaluatesAsPromiseCondition(config));
+    factory.register<DisposableConditionConfig>(DisposableConditionType, (config) => new DisposableCondition(config));
     // yes, two conditions of the same class can be registered with different Type names.
     factory.register(NeverMatchesConditionType2, (config) => new NeverMatchesCondition(config));
+}
+
+/**
+ * Utility to convert a ConditionEvaluateResult to a ConditionType string.
+ * @param result 
+ * @returns 
+ */
+export function resultTypeToConditionType(result: ConditionEvaluateResult): string
+{
+    switch (result)
+    {
+        case ConditionEvaluateResult.Match:
+            return AlwaysMatchesConditionType;
+        case ConditionEvaluateResult.NoMatch:
+            return NeverMatchesConditionType;
+        case ConditionEvaluateResult.Undetermined:
+            return IsUndeterminedConditionType;
+    }
+    throw new Error("Unknown ConditionEvaluateResult");
+}
+
+export interface IDisposableConfig extends AlwaysMatchesCondition, IDisposable {
+}
+export function makeDisposable<T extends ConditionConfig = ConditionConfig> (config: T): T {
+    return {
+        ... config,
+        dispose: () => { }
+    } as unknown as T;
 }

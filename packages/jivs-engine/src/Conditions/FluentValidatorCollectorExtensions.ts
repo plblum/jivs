@@ -38,7 +38,7 @@ import {
     _genDCMaxDecimals,
     _genDCNot,
     _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCPositive, _genDCRequireText,
-    _genDCStringLength, enableFluentConditions
+    _genDCStringLength, _genDCWhen, enableFluentConditions
 } from "./FluentConditionCollectorExtensions";
 
 // How TypeScript merges functions with the FluentValidatorCollector class
@@ -75,6 +75,15 @@ declare module "./../ValueHosts/Fluent"
             minimum: any, maximum: any,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
+        not(
+            childConfig: FluentOneConditionCollectorHandler,
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
+        when(
+            enablerConfig: FluentOneConditionCollectorHandler,
+            childConfig: FluentOneConditionCollectorHandler,
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;        
         equalToValue(
             secondValue: any,
             conditionConfig?: FluentEqualToValueConditionConfig | null,
@@ -164,10 +173,7 @@ declare module "./../ValueHosts/Fluent"
             maxDecimals: number,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;               
-        not(
-            condition: FluentOneConditionCollectorHandler,
-            errorMessage?: string | null,
-            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
+
 
     //#region shorter names for some
         ltValue(
@@ -250,6 +256,7 @@ export function enableFluent(): void {
     FluentValidatorCollector.prototype.integer = integer;
     FluentValidatorCollector.prototype.maxDecimals = maxDecimals;
     FluentValidatorCollector.prototype.not = not;
+    FluentValidatorCollector.prototype.when = when;
 
 
     //#region shorter names for some
@@ -494,10 +501,20 @@ function maxDecimals(
 }
 
 function not(
-    condition: FluentOneConditionCollectorHandler,
+    childConfig: FluentOneConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.Not, _genDCNot(condition),
+        ConditionType.Not, _genDCNot(childConfig),
+        errorMessage, validatorParameters);
+}
+
+function when(
+    enablerConfig: FluentOneConditionCollectorHandler,
+    childConfig: FluentOneConditionCollectorHandler,
+    errorMessage?: string | null,
+    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
+    return finishFluentValidatorCollector(this,
+        ConditionType.When, _genDCWhen(enablerConfig, childConfig),
         errorMessage, validatorParameters);
 }

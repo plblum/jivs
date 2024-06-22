@@ -12,10 +12,12 @@ import {
     EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
     GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig, IntegerConditionConfig, LessThanConditionConfig,
     LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
-    MaxDecimalsConditionConfig, NotConditionConfig, NotEqualToConditionConfig, NotEqualToValueConditionConfig,
+    MaxDecimalsConditionConfig, NotEqualToValueConditionConfig, NotEqualToConditionConfig,
     NotNullConditionConfig, PositiveConditionConfig, RangeConditionConfig, RegExpConditionConfig,
     RequireTextConditionConfig, StringLengthConditionConfig
 } from "./ConcreteConditions";
+import { NotConditionConfig, } from "./NotCondition";
+import { WhenConditionConfig,  } from "./WhenCondition";
 import { ConditionType } from "./ConditionTypes";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
@@ -36,6 +38,12 @@ declare module "./../ValueHosts/Fluent"
         range(
             minimum: any, maximum: any,
             valueHostName?: ValueHostName): FluentConditionCollector;
+        not(
+            childConfig: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
+        when(
+            enablerConfig: FluentOneConditionCollectorHandler,
+            childConfig: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
+        
         equalToValue(
             secondValue: any,
             conditionConfig?: FluentEqualToValueConditionConfig | null,
@@ -103,8 +111,6 @@ declare module "./../ValueHosts/Fluent"
             valueHostName?: ValueHostName): FluentConditionCollector;
         maxDecimals(maxDecimals: number,
             valueHostName?: ValueHostName): FluentConditionCollector;        
-        not(
-            conditions: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
 
         //#region shorter names for some
         ltValue(
@@ -159,6 +165,8 @@ export function enableFluentConditions(): void {
     FluentConditionCollector.prototype.notNull = notNull;
     FluentConditionCollector.prototype.regExp = regExp;
     FluentConditionCollector.prototype.range = range;
+    FluentConditionCollector.prototype.not = not;
+    FluentConditionCollector.prototype.when = when;
     FluentConditionCollector.prototype.equalToValue = equalToValue;
     FluentConditionCollector.prototype.equalTo = equalTo;
     FluentConditionCollector.prototype.notEqualToValue = notEqualToValue;
@@ -178,7 +186,6 @@ export function enableFluentConditions(): void {
     FluentConditionCollector.prototype.positive = positive;
     FluentConditionCollector.prototype.integer = integer;
     FluentConditionCollector.prototype.maxDecimals = maxDecimals;
-    FluentConditionCollector.prototype.not = not;
 
 
     //#region shorter names for some
@@ -722,17 +729,46 @@ function maxDecimals(maxDecimals: number,
  * @internal
  */
 export function _genDCNot(
-    condition: FluentOneConditionCollectorHandler): NotConditionConfig {
-    assertNotNull(condition, 'condition');
-    assertFunction(condition);
+    childConfig: FluentOneConditionCollectorHandler): NotConditionConfig {
+    assertNotNull(childConfig, 'childConfig');
+    assertFunction(childConfig);
     
     let fluent = new FluentOneConditionCollector(null);
-    condition(fluent);
+    childConfig(fluent);
     let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
     return { childConditionConfig: conditionConfig } as NotConditionConfig;
 }
 function not(
-    condition: FluentOneConditionCollectorHandler): FluentConditionCollector {
+    childConfig: FluentOneConditionCollectorHandler): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.Not, _genDCNot(condition));
+        ConditionType.Not, _genDCNot(childConfig));
+}
+
+/**
+ * Common code to setup WhenConditionConfig for support within
+ * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * @internal
+ */
+export function _genDCWhen(
+    enablerConfig: FluentOneConditionCollectorHandler,
+    childConfig: FluentOneConditionCollectorHandler): WhenConditionConfig {
+    assertNotNull(enablerConfig, 'enablerConfig');
+    assertFunction(enablerConfig);
+    assertNotNull(childConfig, 'childConfig');
+    assertFunction(childConfig);
+
+    let fluentEnabler = new FluentOneConditionCollector(null);
+    enablerConfig(fluentEnabler);
+    let enablerConditionConfig = fluentEnabler.parentConfig.conditionConfigs[0] ?? {};
+
+    let fluent = new FluentOneConditionCollector(null);
+    childConfig(fluent);
+    let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
+    return { enablerConfig: enablerConditionConfig, childConditionConfig: conditionConfig } as WhenConditionConfig;
+}
+function when(
+    enablerConfig: FluentOneConditionCollectorHandler,
+    childConfig: FluentOneConditionCollectorHandler): FluentConditionCollector {
+    return finishFluentConditionCollector(this,
+        ConditionType.When, _genDCWhen(enablerConfig, childConfig));
 }

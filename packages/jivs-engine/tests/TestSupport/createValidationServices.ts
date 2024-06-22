@@ -26,10 +26,12 @@ import {
     IntegerCondition,
     IntegerConditionConfig,
     MaxDecimalsCondition,
-    MaxDecimalsConditionConfig,
-    NotCondition,
-    NotConditionConfig
+    MaxDecimalsConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
+
+import { NotCondition, NotConditionConfig } from "../../src/Conditions/NotCondition";
+import { WhenCondition, WhenConditionConfig } from "../../src/Conditions/WhenCondition";
+
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import {
@@ -153,6 +155,8 @@ export function registerConditions(cf: ConditionFactory): void
         (ConditionType.Any, (config) => new AnyMatchCondition(config));
     cf.register<NotConditionConfig>
         (ConditionType.Not, (config) => new NotCondition(config));
+    cf.register<WhenConditionConfig>
+        (ConditionType.When, (config) => new WhenCondition(config));
 
 */    
 }
@@ -214,6 +218,8 @@ export function registerAllConditions(cf: ConditionFactory): void
         (ConditionType.MaxDecimals, (config) => new MaxDecimalsCondition(config));
     cf.register<NotConditionConfig>
         (ConditionType.Not, (config) => new NotCondition(config));
+    cf.register<WhenConditionConfig>
+        (ConditionType.When, (config) => new WhenCondition(config));
 
 }
 
