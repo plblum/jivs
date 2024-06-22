@@ -31,35 +31,12 @@
  * }
  * 
  * // create the CalcValueHostConfig to supply to the ValidationManager
- * let diffDaysConfig: CalcValueHostConfig = {
- *   valueHostType: ValueHostType.Calc,
- *   name: 'DiffDays',
- *   dataType: LookupKey.Integer,
- *   calcFn: differenceBetweenDates
- * };
- * // fluent: 
- * //   fluent().calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
+ * let builder = build(services);
+ * builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);
  * 
  * // create the 'StartDate' input with a LessThanCondition
- * let startDateConfig: InputValueHostConfig = {
- *   valueHostType: ValueHostType.Input,
- *   name: 'StartDate',
- *   dataType: 'Date',
- *   label: 'Start date',
- *   validatorConfigs: [
- *      {
- *          conditionConfig: {
- *              conditionType: ConditionType.LessThan,
- *              valueHostName: 'DiffDays',  // source is our CalcValueHost
- *              secondValue: 10,    // must be less than 10 days
- *          },
- *          errorMessage: 'The two dates must be less than {CompareTo} days.'
- *      }
- *   ]
- * };
- * // fluent: 
- * // fluent().input('StartDate', 'Date', { label: 'Start date' })
- * //                .lessThan(10, { valueHostName: 'DiffDays' });
+ * builder.input('StartDate', 'Date', { label: 'Start date' })
+ *  .lessThan(10, { valueHostName: 'DiffDays' });
  * ```
  * Your function can also save stateful information with the valueHost.saveIntoInstanceState.
 * @module ValueHosts/Types/CalcValueHost

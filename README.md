@@ -706,9 +706,6 @@ Each condition function has a *validator parameters* argument that takes this ob
     summaryMessagel10n?: null | string;
     
     severity?: ValidationSeverity | ((host) => ValidationSeverity);
-    
-    enablerConfig?: null | ConditionConfig;
-    enablerCreator?: ConditionCreatorHandler;
     enabled?: boolean | ((host) => boolean);
 }
 ```
@@ -747,7 +744,6 @@ Here are the conditions in Builder/Modifier API format:
      trim?: boolean;
      valueHostName: null | string;
      supportsDuringEdit?: boolean;
-     not?: boolean;
   }
   ```
 
@@ -755,7 +751,33 @@ Here are the conditions in Builder/Modifier API format:
   ```ts
   builder.input('fieldname').range(5, 100);
   ```
+- when(*enabler builder function*, *child builder function*, errorMessage?, {*validator parameters*}?)
 
+  For both *enabler builder function* and *child builder function*, pass a function that uses its one parameter to attach the child condition.
+ 
+  ```ts
+  builder.input('fieldname').when(
+     (enabler) => enabler.equalTo(true, null, 'anotherFieldName'),
+     (child) => child.regExp(/[ABC]/);
+  builder.input('fieldname').when(
+     (enabler) => enabler.equalTo(true, null, 'anotherFieldName'),
+     (child) => child.regExp(/[ABC]/, 
+        'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
+  ```
+  For more, see <a href="#whencondition">Using the WhenCondition</a>.
+
+- not(*child builder function*, errorMessage?, {*validator parameters*}?)
+
+  For *child builder function*, pass a function that uses its one parameter to attach the child condition.
+ 
+  ```ts
+  builder.input('fieldname').not(
+     (child) => child.regExp(/[ABC]/);
+  builder.input('fieldname').not(
+     (child) => child.regExp(/[ABC]/, 
+        'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
+  ```
+  For more, see <a href="#notcondition">Using the NotCondition</a>.
 - equalToValue(secondValue, {*condition parameters*}?, errorMessage?, {*validator parameters*}?)
 	- same for `notEqualToValue`, `lessThanValue`, `lessThanOrEqualValue`, `greaterThanValue`, `greaterThanOrEqualValue`
 	- also can use these aliases: `ltValue`, `lteValue`, `gtValue`, `gteValue`
@@ -800,49 +822,50 @@ Here are the conditions in Builder/Modifier API format:
      supportsDuringEdit?: boolean;
   }
   ```
-- all(*children chaining*, errorMessage?, {*validator parameters*}?)
+- all(*children builder function*, errorMessage?, {*validator parameters*}?)
 
-  For *children chaining*, pass `fluent().conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
+  For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
  
   ```ts
   builder.input('fieldname').all(
-     fluent().conditions()
+     (children) => children
        .requireText(null, 'fieldname2')
        .requireText(null, 'fieldname3'));
   builder.input('fieldname').all(
-     fluent().conditions()
+     (children) => children
+        .requireText(null, 'fieldname2')
+        .requireText(null, 'fieldname3'), 
+        'At least one is required', { severity: ValidatorSeverity.Severe });
+  ```
+- any(*children builder function*, errorMessage?, {*validator parameters*}?)
+
+  For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
+ 
+  ```ts
+  builder.input('fieldname').any(
+     (children) => children
+       .requireText(null, 'fieldname2')
+       .requireText(null, 'fieldname3'));
+  builder.input('fieldname').any(
+     (children) => children
         .requireText(null, 'fieldname2')
         .requireText(null, 'fieldname3'), 
         'At least one is required', { severity: ValidatorSeverity.Severe });
   ```
 
-  For *children chaining*, pass `fluent().conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
- 
-  ```ts
-  builder.input('fieldname').any(
-     fluent().conditions()
-       .requireText(null, 'fieldname2')
-       .requireText(null, 'fieldname3'));
-  builder.input('fieldname').any(
-     fluent().conditions()
-        .requireText(null, 'fieldname2')
-        .requireText(null, 'fieldname3'), 
-        'At least one is required', { severity: ValidatorSeverity.Severe });
-  ```
+- countMatches(minimum, maximum, *children builder function*, errorMessage?, {*validator parameters*}?)
 
-- countMatches(minimum, maximum, *children chaining*, errorMessage?, {*validator parameters*}?)
-
-  For *children chaining*, pass `fluent().conditions()` and chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
+  For *children builder function*, pass a function that uses its one parameter to chain the child conditions, usually specifying the valueHostName property as these children may reference other value hosts to evaluate.
   ```ts
   builder.input('fieldname').countMatches(
       1, 2, 
-      fluent().conditions()
+      (children) => children
          .requireText(null, 'fieldname2')
          .requireText(null, 'fieldname3')
          .requireText(null, 'fieldname4'));
   builder.input('fieldname').any(
       2, 4, 
-      fluent().conditions()
+      (children) => children
          .requireText(null, 'fieldname2')
          .requireText(null, 'fieldname3')
          .requireText(null, 'fieldname4')
@@ -879,6 +902,37 @@ Here are the conditions in Builder/Modifier API format:
  For more on customRule, see <a href="#customconditions">Custom conditions</a>.
 
 **See also: <a href="#createconditions">Creating your own Conditions</a>**
+<a name="whencondition"></a>
+### Using the WhenCondition to enable another condition
+The WhenCondition makes a decision on whether another condition can evaluate or not. Use it to enable or disable a condition based on a condition.
+
+Example: RequireText is only enabled if 'CheckBox1' has a value
+```ts
+<input type='checkbox' name='CheckBox1' value='marked' />
+<input type='text' name='TextBox1' />
+...
+builder.input('CheckBox1', LookupKey.String);
+builder.input('TextBox1', LookupKey.String)
+   .when((enabler)=>enabler.requireText(null, 'CheckBox1'),
+         (child)=>child.requireText());
+```
+Example: Regular expression for postal code depends on culture ID
+```ts
+builder.static('countryCode', LookupKey.String, { initialValue: 'US' });
+builder.input('PostalCode')
+   .when((enabler)=> enabler.equalTo('US'), (child)=>child.regExp(/^\d{5}(\s\d{4})?$/))
+   .when((enabler)=> enabler.equalTo('CA'), (child)=>child.regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
+   .when((enabler)=> enabler.equalTo('MX'), (child)=>child.regExp(/^\d{5}$/));
+
+```
+<a name="notcondition"></a>
+### Using the NotCondition to reverse the result of another condition
+The NotCondition hosts another condition and reverses its evaluation result, from Match to NoMatch and NoMatch to Match. If the child condition results in Undetermined, so does NotCondition.
+
+Example: Illegal characters in a string using RegExpCondition
+```ts
+builder.input('password').not((child)=> child.regExp(/[:|'_]/));
+```
 
 <a name="valuehosts"></a>
 ## ValueHosts
@@ -1169,8 +1223,6 @@ interface ValidatorConfig {
     severity?: ValidationSeverity | ((host) => ValidationSeverity);
     
     enabled?: boolean | ((host) => boolean);
-    enablerConfig?: null | ConditionConfig;
-    enablerCreator?: ConditionCreatorHandler;
 }
 ```
 
@@ -1205,12 +1257,7 @@ Let’s go through each property.
 	- `Error` – Error but continue evaluating the remaining validation rules. The default when `severity` is omitted.
 	- `Severe` – Error and do not evaluate any more validation rules for this ValueHost until the error is fixed.
 	- `Warning` – Want to give the user some direction, but not prevent saving the data.
-- `enabled` – A way to quickly disable the Validator.
-- `enablerConfig` and `enablerCreator` – The *Enabler* determines if the `Validator` is enabled, using a <a name="#conditions">`Condition`</a>.  Often validation rules depend on other information for that. For example, you have a checkbox associated with a text box. Any validation rule on the text box isn’t used unless the checkbox is marked. You would assign a `Condition` to evaluate the value of the checkbox to the Enabler.
-    The enablerCreator property's function has this format:
-    ```ts
-    (requester: ValidatorConfig) => ICondition | null;
-    ```
+- `enabled` – A way to quickly disable the Validator. Alternatively use the WhenCondition to control the enabled state based on a condition. See <a href="#whencondition">Using the WhenCondition</a>.
 
 #### Example with inline error messages
 Now let’s add validators to our previous example using a Model with FirstName and LastName.

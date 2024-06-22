@@ -3001,7 +3001,7 @@ describe('toIValidatorsValueHostBase function', () => {
         expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
     });
     class TestIValidatorsValueHostBaseImplementation implements IValidatorsValueHostBase {
-
+        valueHostsManager: IValidationManager = {} as IValidationManager;
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");

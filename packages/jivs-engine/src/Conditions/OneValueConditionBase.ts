@@ -26,7 +26,7 @@ export interface OneValueConditionBaseConfig extends ConditionConfig {
      * Typically leave Validator.ConditionConfig.valueHostName null
      * because Condition.evaluate() is passed the correct valueHost.
      * However, Validator.EnablerConfig needs it assigned.
-     * Same with any Condition that is a child of another, like in EvaluateChildConditionResultsBase.
+     * Same with any Condition that is a child of another, like in ConditionWithChildrenBase.
      * 
      * Many conditions need two or more sources for values.
      * They are expected to create more ValueHostName properties in their 

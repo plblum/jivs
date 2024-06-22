@@ -1,4 +1,4 @@
-import { CodingError, InvalidTypeError, assertNotEmptyString, assertNotNull, ensureError } from "../../src/Utilities/ErrorHandling";
+import { CodingError, InvalidTypeError, assertFunction, assertNotEmptyString, assertNotNull, ensureError } from "../../src/Utilities/ErrorHandling";
 
 // function assertNotNull(valueToCheck: any, memberName: string = 'parameter'): void
 describe("Utilities.assertNotNull tests", () => {
@@ -26,6 +26,23 @@ describe("Utilities.assertNotEmptyString tests", () => {
         expect(() => assertNotEmptyString('abc', 'parm')).not.toThrow();
         expect(() => assertNotEmptyString('  ', 'parm')).not.toThrow();
    }); 
+});
+describe('assertFunction', () => {
+    test('With function, does not throw', () => {
+        function testFunction(): number
+        {
+            return 0;
+        }
+       expect(() => assertFunction(()=>0)).not.toThrow();
+       expect(() => assertFunction(testFunction)).not.toThrow();
+    });
+    test('With non-function, throws', () => {
+        expect(() => assertFunction(null)).toThrow('Function expected');
+        expect(() => assertFunction(undefined)).toThrow('Function expected');
+        expect(() => assertFunction(0)).toThrow('Function expected');
+        expect(() => assertFunction('')).toThrow('Function expected');
+        expect(() => assertFunction({})).toThrow('Function expected');
+    });
 });
 describe('InvalidTypeError', () => {
     test('create', () => {

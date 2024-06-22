@@ -9,7 +9,7 @@ import { IValidationManager, ValidationManagerConfig } from "../Interfaces/Valid
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
-import { FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentValidatorCollector, ValidationManagerStartFluent } from '../ValueHosts/Fluent';
+import { FluentInputParameters, FluentInputValueConfig, FluentOneConditionCollectorHandler, FluentPropertyParameters, FluentPropertyValueConfig, FluentValidatorCollector, ValidationManagerStartFluent } from '../ValueHosts/Fluent';
 import { ValueHostsManagerConfigModifier } from "../ValueHosts/ValueHostsManagerConfigModifier";
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostName } from '../DataTypes/BasicTypes';
@@ -19,6 +19,7 @@ import { IValidationManagerConfigModifier } from "../Interfaces/ManagerConfigMod
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { PropertyValueHostConfig } from "../Interfaces/PropertyValueHost";
+import { IValidationManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
 
 /**
  * Used by ValidationManager.startModifying() function to modify the ValidationManagerConfig.valueHostConfigs array.
@@ -41,7 +42,7 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
     }    
     protected createFluent(): ValidationManagerStartFluent
     {
-        return new ValidationManagerStartFluent(this.destinationConfig());
+        return new ValidationManagerStartFluent(this.destinationValueHostConfigs(), this.services);
     }        
     //#region validation oriented ValueHost support
     /**
@@ -107,6 +108,20 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
         return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, valueHostName, dataType, propsToUpdate);
     }
     //#endregion validation oriented ValueHost support
+    
+    // /**
+    //  * Setup the enablerConfig property for a ValidatorConfig.
+    //  * Expects valueHostName and errorCode to match an existing ValueHost and validator with that error code.
+    //  * Assigns or replaces the ValidatorConfig.enablerConfig property with the child condition supplied
+    //  * in the child handler function.
+    //  * @param valueHostName 
+    //  * @param errorCode 
+    //  * @param child 
+    //  */
+    // public enablerFor(valueHostName: ValueHostName, errorCode: string, child: FluentOneConditionCollectorHandler): IValidationManagerConfigBuilder<ValidationManagerConfig>
+    // {
+    //     return this.enablerForWork(valueHostName, errorCode, child);
+    // }
 
     /**
      * Replace any of the ValidatorConfig properties supported by UI (most are).

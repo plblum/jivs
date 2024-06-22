@@ -1,22 +1,17 @@
-import { RequireTextConditionConfig, RegExpConditionConfig, RequireTextCondition } from "../../src/Conditions/ConcreteConditions";
+import { RequireTextConditionConfig, RegExpConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { EvaluateChildConditionResultsBaseConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
-import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
-import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
-import { ValidationSeverity } from "../../src/Interfaces/Validation";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
+import { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
+import { IValueHostsServices } from "../../src/Interfaces/ValueHostsServices";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import {
     FluentValidatorCollector, FluentConditionCollector, FluentValidatorConfig,
-    finishFluentValidatorCollector, finishFluentConditionCollector, customRule,
-    ValidationManagerStartFluent,
-    ValueHostsManagerStartFluent
+    finishFluentValidatorCollector, finishFluentConditionCollector, ValueHostsManagerStartFluent
 } from "../../src/ValueHosts/Fluent";
 import { ManagerConfigBuilderBase } from "../../src/ValueHosts/ManagerConfigBuilderBase";
 import { MockValidationServices } from "../TestSupport/mocks";
@@ -32,21 +27,26 @@ function createVMConfig(): ValidationManagerConfig {
 class TestManagerConfigBuilderBase extends ManagerConfigBuilderBase<ValueHostsManagerConfig>
 {
     protected createFluent(): ValueHostsManagerStartFluent {
-        return new ValueHostsManagerStartFluent<ValueHostsManagerConfig>(this.destinationConfig());
+        return new ValueHostsManagerStartFluent(this.destinationValueHostConfigs(), this.services);
     }
 
-    public publicify_destinationConfig(): ValueHostsManagerConfig
+    public get publicify_services(): IValueHostsServices
+    {   
+        return super.services;
+    }
+
+    public publicify_destinationValueHostConfigs(): Array<ValueHostConfig>
     {
-        return super.destinationConfig();
+        return super.destinationValueHostConfigs();
     }
 
     public get publicify_baseConfig(): ValueHostsManagerConfig
     {
         return super.baseConfig;
     }
-    public get publicify_overrideConfigs(): Array<ValueHostsManagerConfig>
+    public get publicify_overrideValueHostConfigs(): Array<Array<ValueHostConfig>>
     {
-        return super.overrideConfigs;
+        return super.overridenValueHostConfigs;
     }
 
     public publicify_addOverride(): void
@@ -61,16 +61,16 @@ describe('ManagerConfigBuilderBase constructor', () => {
         let testItem = createVMConfig();
         let builder = new TestManagerConfigBuilderBase(testItem);
         expect(builder.publicify_baseConfig).toBe(testItem);
-        expect(builder.publicify_overrideConfigs).toEqual([]);
-        expect(builder.publicify_destinationConfig()).toBe(testItem);
+        expect(builder.publicify_overrideValueHostConfigs).toEqual([]);
+        expect(builder.publicify_destinationValueHostConfigs()).toBe(testItem.valueHostConfigs);
     });
     test('Initial setup with services successful', () => {
         let services = new MockValidationServices(false, false);
         let builder = new TestManagerConfigBuilderBase(services);
         expect(builder.publicify_baseConfig).not.toBeUndefined();
         expect(builder.publicify_baseConfig.services).toBe(services);
-        expect(builder.publicify_overrideConfigs).toEqual([]);
-        expect(builder.publicify_destinationConfig()).toBe(builder.publicify_baseConfig);
+        expect(builder.publicify_overrideValueHostConfigs).toEqual([]);
+        expect(builder.publicify_destinationValueHostConfigs()).toBe(builder.publicify_baseConfig.valueHostConfigs);
     });
     test('vmConfig with valueHostConfigs = null gets reassigned to []', () => {
         let testItem = createVMConfig();
@@ -93,9 +93,9 @@ describe('ManagerConfigBuilderBase constructor', () => {
     test('services supplied as parameter creates a vmConfig with services', () => {
         let services = new MockValidationServices(false, false);
         let testItem = new TestManagerConfigBuilderBase(services);
-        expect(testItem.publicify_destinationConfig()).not.toBeNull();
-        expect(testItem.publicify_destinationConfig().services).toBe(services);
-        expect(testItem.publicify_destinationConfig().valueHostConfigs).toEqual([]);
+        expect(testItem.publicify_destinationValueHostConfigs()).not.toBeNull();
+        expect(testItem.publicify_services).toBe(services);
+        expect(testItem.publicify_destinationValueHostConfigs()).toEqual([]);
     });    
     test('null parameter throws', () => {
         expect(() => new TestManagerConfigBuilderBase(null!)).toThrow(CodingError); 
@@ -139,8 +139,8 @@ describe('addOverride', () => {
         let testItem = new TestManagerConfigBuilderBase(vmConfig);
         testItem.publicify_addOverride();
         expect(testItem.publicify_baseConfig).toBe(vmConfig);
-        expect(testItem.publicify_overrideConfigs.length).toBe(1);
-        expect(testItem.publicify_destinationConfig()).toBe(testItem.publicify_overrideConfigs[0]);
+        expect(testItem.publicify_overrideValueHostConfigs.length).toBe(1);
+        expect(testItem.publicify_destinationValueHostConfigs()).toBe(testItem.publicify_overrideValueHostConfigs[0]);
     });
     test('Twos call adds two and destinationConfig points to the last', () => {
         let vmConfig = createVMConfig();
@@ -148,8 +148,8 @@ describe('addOverride', () => {
         testItem.publicify_addOverride();
         testItem.publicify_addOverride();
         expect(testItem.publicify_baseConfig).toBe(vmConfig);
-        expect(testItem.publicify_overrideConfigs.length).toBe(2);
-        expect(testItem.publicify_destinationConfig()).toBe(testItem.publicify_overrideConfigs[1]);
+        expect(testItem.publicify_overrideValueHostConfigs.length).toBe(2);
+        expect(testItem.publicify_destinationValueHostConfigs()).toBe(testItem.publicify_overrideValueHostConfigs[1]);
     });    
 });
 describe('complete', () => {

@@ -21,6 +21,7 @@ import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/Condition
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
+import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 
 // Here's our target function to use with a CalcValueHost. 
 // Assign CalcValueHostConfig.calcFn to it.
@@ -34,57 +35,7 @@ function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts
 
 // written so you can call this function and use the configured ValidationManager to see
 // what happens when you call validate with different inputs.
-export function configureVMForDifferentBetweenDate(): IValidationManager {
-    // create the CalcValueHostConfig to supply to the ValidationManager
-        // fluent: let diffDaysConfig = config().calc('DiffDays', LookupKey.Integer, differenceBetweenDates);    
-    let diffDaysConfig: CalcValueHostConfig = {
-        valueHostType: ValueHostType.Calc, // = 'Calc',
-        name: 'DiffDays',
-        dataType: LookupKey.Integer,
-        calcFn: differenceBetweenDates
-    };
-
-
-    // create the 'StartDate' input with two conditions:
-    // startDate <= endDate
-    // abs(endDate-startDate) < 10
-        // fluent: let startDateConfig = config().input('StartDate', 'Date', { label: 'Start date' })
-        //                .lessThanOrEqual('EndDate', 'Start date must be less than or equal to End date.', { severity: ValidationSeverity.Severe });
-        //                .lessThanValue(10, 'The two dates must be less than {CompareTo} days apart.', { valueHostName: 'DiffDays' });
-    let startDateConfig: InputValueHostConfig = {
-        valueHostType: ValueHostType.Input, // = 'Input'
-        name: 'StartDate',
-        dataType: 'Date',
-        label: 'Start date',
-        validatorConfigs: [
-            {
-                conditionConfig: <LessThanOrEqualConditionConfig>{
-                    conditionType: ConditionType.LessThanOrEqual,
-                    secondValueHostName: 'EndDate',
-                },
-                errorMessage: '{Label} must be less than or equal to {SecondLabel}.',
-                severity: ValidationSeverity.Severe // to avoid running the next validator when there is an error
-            },        
-            {
-                conditionConfig: <LessThanValueConditionConfig>{
-                    conditionType: ConditionType.LessThanValue,
-                    valueHostName: 'DiffDays',  // source is our CalcValueHost
-                    secondValue: 10,    // must be less than 10 days
-                },
-                errorMessage: 'The two dates must be less than {CompareTo} days apart.'
-            }
-        ]
-    };
-
-        // fluent: let endDateConfig = config().input('EndDate', 'Date', { label: 'End date' }); 
-    let endDateConfig: InputValueHostConfig = {
-        valueHostType: ValueHostType.Input, // = 'Input'
-        name: 'EndDate',
-        dataType: 'Date',
-        label: 'End date',
-        validatorConfigs: []
-    };
-
+export function configureVMForDifferenceBetweenDates(): IValidationManager {
     let services = createMinimalValidationServices('en');
     // let's add the supporting tools needed by this example
     // normally you call createValidationServices() which already has this stuff setup
@@ -104,21 +55,31 @@ export function configureVMForDifferentBetweenDate(): IValidationManager {
         (config) => new LessThanOrEqualCondition(config));
     services.loggerService.minLevel = LoggingLevel.Debug;
     
-    let vm = new ValidationManager({
-        services: services,
-        valueHostConfigs: [
-            startDateConfig,
-            endDateConfig,
-            diffDaysConfig
-        ]
-    });
+    // time to configure the ValidationManager
+    let builder = build(services);
 
-    return vm;
+    // create the CalcValueHostConfig to supply to the ValidationManager
+    builder.calc('DiffDays', LookupKey.Integer, differenceBetweenDates);    
+
+    // create the 'StartDate' input with two conditions:
+    // startDate <= endDate
+    // abs(endDate-startDate) < 10
+    builder.input('StartDate', LookupKey.Date, { label: 'Start date' })
+        .lessThanOrEqual('EndDate', null,
+            '{Label} must be less than or equal to {SecondLabel}.',
+            { severity: ValidationSeverity.Severe }) // to avoid running the next validator when there is an error
+        .lessThanValue(10, { valueHostName: 'DiffDays' },
+            'The two dates must be less than {CompareTo} days apart.');
+
+    // create the 'EndDate' input
+    builder.input('EndDate', LookupKey.Date, { label: 'End date' }); 
+
+    return new ValidationManager(builder);
 }
 // This shows it in action.
 // Even better, look at the unit tests in \tests folder as they run the same examples.
 function demoSeveralCases(): void {
-    let vm = configureVMForDifferentBetweenDate();
+    let vm = configureVMForDifferenceBetweenDates();
     vm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
     vm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
     let diffDays = vm.getValueHost('DiffDays')?.getValue();

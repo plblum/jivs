@@ -130,7 +130,7 @@ export class ValidationManager<TState extends ValidationManagerInstanceState = V
      * and their validators. Upon calling its apply() method,
      * your changes will be applied through the addOrMergeValueHost() function.
      * ```ts
-     * let vm = new ValidationManager(config);
+     * let vm = new ValidationManager(builder);
      * // later when you need to modify vm:
      * let modifier = vm.startModifying();
      * // supply changes to the ValueHostConfigs

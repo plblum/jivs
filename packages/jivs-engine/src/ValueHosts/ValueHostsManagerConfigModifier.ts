@@ -80,8 +80,8 @@ export class ValueHostsManagerConfigModifier<T extends ValueHostsManagerConfig>
         this.dispose();
     }
 
-    protected createFluent(): ValueHostsManagerStartFluent<T> {
-        return new ValueHostsManagerStartFluent<T>(null);
+    protected createFluent(): ValueHostsManagerStartFluent {
+        return new ValueHostsManagerStartFluent(null, this.services);
     }
     
 
