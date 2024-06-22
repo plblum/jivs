@@ -754,17 +754,6 @@ Here are the conditions in Builder/Modifier API format:
   ```ts
   builder.input('fieldname').range(5, 100);
   ```
-- not(*child builder function*, errorMessage?, {*validator parameters*}?)
-
-  For *child builder function*, pass a function that uses its one parameter to attach the child condition.
- 
-  ```ts
-  builder.input('fieldname').not(
-     (child) => child.regExp(/[ABC]/);
-  builder.input('fieldname').not(
-     (child) => child.regExp(/[ABC]/, 
-        'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
-  ```
 - when(*enabler builder function*, *child builder function*, errorMessage?, {*validator parameters*}?)
 
   For both *enabler builder function* and *child builder function*, pass a function that uses its one parameter to attach the child condition.
@@ -778,7 +767,20 @@ Here are the conditions in Builder/Modifier API format:
      (child) => child.regExp(/[ABC]/, 
         'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
   ```
+  For more, see <a href="#whencondition">Using the WhenCondition</a>.
 
+- not(*child builder function*, errorMessage?, {*validator parameters*}?)
+
+  For *child builder function*, pass a function that uses its one parameter to attach the child condition.
+ 
+  ```ts
+  builder.input('fieldname').not(
+     (child) => child.regExp(/[ABC]/);
+  builder.input('fieldname').not(
+     (child) => child.regExp(/[ABC]/, 
+        'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
+  ```
+  For more, see <a href="#notcondition">Using the NotCondition</a>.
 - equalToValue(secondValue, {*condition parameters*}?, errorMessage?, {*validator parameters*}?)
 	- same for `notEqualToValue`, `lessThanValue`, `lessThanOrEqualValue`, `greaterThanValue`, `greaterThanOrEqualValue`
 	- also can use these aliases: `ltValue`, `lteValue`, `gtValue`, `gteValue`
@@ -903,6 +905,37 @@ Here are the conditions in Builder/Modifier API format:
  For more on customRule, see <a href="#customconditions">Custom conditions</a>.
 
 **See also: <a href="#createconditions">Creating your own Conditions</a>**
+<a name="whencondition"></a>
+### Using the WhenCondition to enable another condition
+The WhenCondition makes a decision on whether another condition can evaluate or not. Use it to enable or disable a condition based on a condition.
+
+Example: RequireText is only enabled if 'CheckBox1' has a value
+```ts
+<input type='checkbox' name='CheckBox1' value='marked' />
+<input type='text' name='TextBox1' />
+...
+builder.input('CheckBox1', LookupKey.String);
+builder.input('TextBox1', LookupKey.String)
+   .when((enabler)=>enabler.requireText(null, 'CheckBox1'),
+         (child)=>child.requireText());
+```
+Example: Regular expression for postal code depends on culture ID
+```ts
+builder.static('countryCode', LookupKey.String, { initialValue: 'US' });
+builder.input('PostalCode')
+   .when((enabler)=> enabler.equalTo('US'), (child)=>child.regExp(/^\d{5}(\s\d{4})?$/))
+   .when((enabler)=> enabler.equalTo('CA'), (child)=>child.regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
+   .when((enabler)=> enabler.equalTo('MX'), (child)=>child.regExp(/^\d{5}$/));
+
+```
+<a name="notcondition"></a>
+### Using the NotCondition to reverse the result of another condition
+The NotCondition hosts another condition and reverses its evaluation result, from Match to NoMatch and NoMatch to Match. If the child condition results in Undetermined, so does NotCondition.
+
+Example: Illegal characters in a string using RegExpCondition
+```ts
+builder.input('password').not((child)=> child.regExp(/[:|'_]/));
+```
 
 <a name="valuehosts"></a>
 ## ValueHosts
