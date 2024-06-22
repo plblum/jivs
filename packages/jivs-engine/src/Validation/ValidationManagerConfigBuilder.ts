@@ -53,8 +53,8 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
 
     protected createFluent(): ValidationManagerStartFluent
     {
-        return new ValidationManagerStartFluent(this.destinationConfig());
-    }    
+        return new ValidationManagerStartFluent(this.destinationValueHostConfigs(), this.services);
+    }  
     //#region validation oriented ValueHost support
     /**
      * Fluent format to create a InputValueHostConfig.

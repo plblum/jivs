@@ -1,3 +1,4 @@
+
 /**
  * Implements a fluent syntax to chain together conditions quickly.
  * Each condition gets its own function that expects to have
@@ -7,9 +8,11 @@
  */
 
 import {
-    FluentValidatorCollector, FluentValidatorConfig, FluentConditionCollector, finishFluentValidatorCollector
+    FluentOneConditionCollectorHandler,
+    FluentValidatorCollector, FluentValidatorConfig, finishFluentValidatorCollector
 } from "../ValueHosts/Fluent";
 import { ConditionType } from "./ConditionTypes";
+import { FluentConditionCollectorHandler } from './../ValueHosts/Fluent';
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import {
     FluentEqualToConditionConfig,
@@ -33,8 +36,9 @@ import {
     _genDCInteger,
     _genDCLessThan, _genDCLessThanOrEqual, _genDCLessThanOrEqualValue, _genDCLessThanValue,
     _genDCMaxDecimals,
+    _genDCNot,
     _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCPositive, _genDCRequireText,
-    _genDCStringLength, enableFluentConditions
+    _genDCStringLength, _genDCWhen, enableFluentConditions
 } from "./FluentConditionCollectorExtensions";
 
 // How TypeScript merges functions with the FluentValidatorCollector class
@@ -71,6 +75,15 @@ declare module "./../ValueHosts/Fluent"
             minimum: any, maximum: any,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
+        not(
+            childConfig: FluentOneConditionCollectorHandler,
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
+        when(
+            enablerConfig: FluentOneConditionCollectorHandler,
+            childConfig: FluentOneConditionCollectorHandler,
+            errorMessage?: string | null,
+            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;        
         equalToValue(
             secondValue: any,
             conditionConfig?: FluentEqualToValueConditionConfig | null,
@@ -138,16 +151,16 @@ declare module "./../ValueHosts/Fluent"
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
         all(
-            collector: FluentConditionCollector,
+            conditions: FluentConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
         any(
-            collector: FluentConditionCollector,
+            conditions: FluentConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;        
         countMatches(
             minimum: number | null, maximum: number | null,
-            collector: FluentConditionCollector,
+            conditions: FluentConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;      
         positive(
@@ -160,7 +173,8 @@ declare module "./../ValueHosts/Fluent"
             maxDecimals: number,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;               
-        
+
+
     //#region shorter names for some
         ltValue(
             secondValue: any,
@@ -241,6 +255,8 @@ export function enableFluent(): void {
     FluentValidatorCollector.prototype.positive = positive;
     FluentValidatorCollector.prototype.integer = integer;
     FluentValidatorCollector.prototype.maxDecimals = maxDecimals;
+    FluentValidatorCollector.prototype.not = not;
+    FluentValidatorCollector.prototype.when = when;
 
 
     //#region shorter names for some
@@ -429,31 +445,31 @@ function stringLength(
 }
 
 function all(
-    collector: FluentConditionCollector,
+    conditions: FluentConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.All, _genDCAll(collector),
+        ConditionType.All, _genDCAll(conditions),
         errorMessage, validatorParameters);
 }
 
 function any(
-    collector: FluentConditionCollector,
+    conditions: FluentConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.Any, _genDCAny(collector),
+        ConditionType.Any, _genDCAny(conditions),
         errorMessage, validatorParameters);
 }
 
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    collector: FluentConditionCollector,
+    conditions: FluentConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, collector),
+        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, conditions),
         errorMessage, validatorParameters);
 }
 function positive(
@@ -481,5 +497,24 @@ function maxDecimals(
     // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty        
     return finishFluentValidatorCollector(this,
         ConditionType.MaxDecimals, _genDCMaxDecimals(maxDecimals),
+        errorMessage, validatorParameters);
+}
+
+function not(
+    childConfig: FluentOneConditionCollectorHandler,
+    errorMessage?: string | null,
+    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
+    return finishFluentValidatorCollector(this,
+        ConditionType.Not, _genDCNot(childConfig),
+        errorMessage, validatorParameters);
+}
+
+function when(
+    enablerConfig: FluentOneConditionCollectorHandler,
+    childConfig: FluentOneConditionCollectorHandler,
+    errorMessage?: string | null,
+    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
+    return finishFluentValidatorCollector(this,
+        ConditionType.When, _genDCWhen(enablerConfig, childConfig),
         errorMessage, validatorParameters);
 }

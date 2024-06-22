@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { PropertyValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/PropertyValueHost';
-import { MockDocument, MockHTMLSelectElement, createValidationServices, timeZoneRegex } from '../src/Config_example_common_code';
+import { createValidationServices, timeZoneRegex } from '../src/Config_example_common_code';
+import { MockDocument, MockHTMLSelectElement } from './Config_example_common_code.test';
 import {
     ReportingBusinessLogic, BusinessLogicCodeGen, 
     configExample

@@ -1,13 +1,14 @@
+
 import { IDataTypeIdentifier } from './../../src/Interfaces/DataTypeIdentifier';
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import {
-    type RequireTextConditionConfig, type RangeConditionConfig, 
+    type RequireTextConditionConfig, type RangeConditionConfig,
     RequireTextCondition,
-    RangeCondition, EqualToCondition, 
+    RangeCondition, EqualToCondition,
     NotEqualToCondition, GreaterThanCondition,
-    GreaterThanOrEqualCondition,  LessThanCondition, 
-    LessThanOrEqualCondition, StringLengthConditionConfig,  StringLengthCondition,
-    RegExpConditionConfig, RegExpCondition, 
+    GreaterThanOrEqualCondition, LessThanCondition,
+    LessThanOrEqualCondition, StringLengthConditionConfig, StringLengthCondition,
+    RegExpConditionConfig, RegExpCondition,
     AllMatchCondition, DataTypeCheckConditionConfig, DataTypeCheckCondition,
     AnyMatchCondition, CountMatchesCondition,
     CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig, NotNullCondition, NotNullConditionConfig,
@@ -36,7 +37,7 @@ import {
     MaxDecimalsCondition,
     MaxDecimalsConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
-
+import { NotCondition, NotConditionConfig } from "../../src/Conditions/NotCondition";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 
 import {
@@ -47,7 +48,7 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { IntegerConverter } from "../../src/DataTypes/DataTypeConverters";
-import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType } from "../TestSupport/conditionsForTesting";
+import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, registerTestingOnlyConditions, EvaluatesAsPromiseConditionType, makeDisposable, DisposableConditionType } from "../TestSupport/conditionsForTesting";
 import { CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
 import { CompareToValueConditionBaseConfig } from "../../src/Conditions/CompareToValueConditionBase";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
@@ -59,6 +60,7 @@ import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
 import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
 import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
+import { ConditionFactory } from '../../src/Conditions/ConditionFactory';
 
 
 describe('ConditionBase class additional cases', () => {
@@ -137,6 +139,20 @@ describe('ConditionBase class additional cases', () => {
         testItem.dispose();
         expect(()=> testItem.evaluate(null, vm)).toThrow(TypeError);
     });    
+    test('dispose with IDisposable on config ', () => {
+        let services = new MockValidationServices(false, false);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: RequireTextConditionConfig = makeDisposable({
+            conditionType: ConditionType.RequireText,
+            valueHostName: null,
+            trim: true
+        });
+        let testItem = new RequireTextCondition(config);
+        testItem.dispose();
+        expect(()=> testItem.evaluate(null, vm)).toThrow(TypeError);
+    });          
 });
 
 describe('class DataTypeCheckCondition', () => {
@@ -647,31 +663,6 @@ describe('class RegExpCondition', () => {
         vh.setValue('FirstLine\nABC\nLastLine');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });
-    test('Set Config.not = true. evaluate returns Match if no match and NoMatch if matching', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RegExpConditionConfig = {
-            conditionType: ConditionType.RegExp,
-            valueHostName: 'Property1',
-            expressionAsString: 'ABC',
-            not: true
-        };
-        let testItem = new RegExpCondition(config);
-        vh.setValue('ABC');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue('ABCDEF');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue('zABC');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue(' ABC ');   // trim
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValue('abc'); // case sensitive failure
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue('AB\nC');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-    });
     test('evaluate not influenced by Config.trim=true', () => {
         let services = new MockValidationServices(false, false);
         let vm = new MockValidationManager(services);
@@ -700,27 +691,6 @@ describe('class RegExpCondition', () => {
             conditionType: ConditionType.RegExp,
             valueHostName: 'Property1',
             expressionAsString: 'ABC'
-        };
-        let testItem = new RegExpCondition(config);
-        vh.setInputValue(null);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(undefined);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(10);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setInputValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-    });
-    test('With not=true, evaluate returns Undetermined for null, undefined, and non-string types', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RegExpConditionConfig = {
-            conditionType: ConditionType.RegExp,
-            valueHostName: 'Property1',
-            expressionAsString: 'ABC',
-            not: true
         };
         let testItem = new RegExpCondition(config);
         vh.setInputValue(null);
@@ -3878,6 +3848,38 @@ describe('class AllMatchCondition', () => {
         let testItem = new AllMatchCondition(config);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
     });    
+    test('With 1 child that has invalid conditionConfig that evaluates as Undetermined and logs an error', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: AllMatchConditionConfig = {
+            conditionType: ConditionType.All,
+            conditionConfigs: [{
+                conditionType: 'Unknown'
+            }]
+        };
+        let testItem = new AllMatchCondition(config);
+
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        let logger = services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Error creating condition', LoggingLevel.Error, null, null)).toBeTruthy();
+    });
+    test('With 1 child whose evaluate() function returns a Promise throws', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: AllMatchConditionConfig = {
+            conditionType: ConditionType.All,
+            conditionConfigs: [{
+                conditionType: EvaluatesAsPromiseConditionType
+            }]
+        };
+        let testItem = new AllMatchCondition(config);
+
+        expect(() => testItem.evaluate(vh, vm)).toThrow();
+    });
     test('category is Children', () => {
         let config: AllMatchConditionConfig = {
             conditionType: ConditionType.And,
@@ -3993,6 +3995,22 @@ describe('class AllMatchCondition', () => {
         expect(testItem.has('Field1')).toBe(true);
         expect(testItem.has('Field3')).toBe(true);
     });        
+    test('gatherValueHostNames where each child does not support gatherValueHostNames. No names returned', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+
+        let config: AllMatchConditionConfig = {
+            conditionType: ConditionType.And,
+            conditionConfigs: [
+                { conditionType: AlwaysMatchesConditionType },
+                { conditionType: NeverMatchesConditionType }
+            ]
+        };
+        let condition = new AllMatchCondition(config);
+        let testItem = new Set<ValueHostName>();
+        expect(() => condition.gatherValueHostNames(testItem, vm)).not.toThrow();
+        expect(testItem.size).toBe(0);
+    });        
     test('dispose followed by calls throws TypeErrors', () => {
         let services = new MockValidationServices(true, true);
         let vm = new MockValidationManager(services);
@@ -4009,6 +4027,23 @@ describe('class AllMatchCondition', () => {
         testItem.dispose();
         expect(() => testItem.evaluate(vh, vm)).toThrow(TypeError);
     });    
+    test('dispose with IDisposable on childConfigs', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: AllMatchConditionConfig = {
+            conditionType: ConditionType.And,
+            conditionConfigs: [{
+                conditionType: DisposableConditionType
+            }]
+        };
+        let testItem = new AllMatchCondition(config);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        testItem.dispose();
+        expect(() => testItem.evaluate(vh, vm)).toThrow(TypeError);
+    });
+
 });
 describe('class AnyMatchCondition', () => {
     test('DefaultConditionType', () => {
@@ -4231,6 +4266,23 @@ describe('class AnyMatchCondition', () => {
         };
         let testItem = new AnyMatchCondition(config);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+    });
+    test('With 1 child that has invalid conditionConfig that evaluates as Undetermined and logs an error', () => {
+        let services = new MockValidationServices(true, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: AnyMatchConditionConfig = {
+            conditionType: ConditionType.Any,
+            conditionConfigs: [{
+                conditionType: 'Unknown'
+            }]
+        };
+        let testItem = new AnyMatchCondition(config);
+
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        let logger = services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Error creating condition', LoggingLevel.Error, null, null)).toBeTruthy();
     });
     test('category is Children', () => {
         let config: AnyMatchConditionConfig = {

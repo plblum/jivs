@@ -5,14 +5,17 @@
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { type ConditionConfig, type IConditionCore, ConditionEvaluateResult, ConditionCategory } from '../Interfaces/Conditions';
+import { type ConditionConfig, type IConditionCore, ConditionEvaluateResult, ConditionCategory, ICondition } from '../Interfaces/Conditions';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull } from '../Utilities/ErrorHandling';
+import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
+import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
+import { ConditionType } from './ConditionTypes';
+import { valueForLog } from '../Utilities/Utilities';
 
 /**
  * Base implementation of ICondition.
@@ -125,4 +128,46 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         let fnName = this.constructor.name;
         valueHostsManager.services.loggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, LoggingCategory.Configuration, fnName);
     }
+
+    /**
+     * Utility to create a condition to use as a child condition.
+     * It uses the conditionFactory. If the factory throws an exception, it logs the error
+     * and returns a condition that always returns Undetermined to allow execution to continue.
+     * @param config 
+     * @param services 
+     * @returns 
+     */
+    protected generateCondition(config: ConditionConfig, services: IValueHostsServices): ICondition {
+
+        try
+        {
+            return services.conditionFactory.create(config);
+        }
+        catch (e)
+        {
+            services.loggerService.log(`Error creating condition: ${e}`, LoggingLevel.Error, LoggingCategory.Configuration, valueForLog(this));
+            return new ErrorResponseCondition();
+        }
+            // expect exceptions here for invalid Configs
+    }
+
+    protected ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
+        if (result instanceof Promise)
+            throw new CodingError('Promises are not supported for child conditions at this time.');
+        return result;
+    }
+}
+
+/** 
+ * Used internally to take the place of a Condition that failed to be created.
+ * Always evaluates as Undetermined.
+*/
+export class ErrorResponseCondition implements ICondition
+{
+    public readonly conditionType: string = ConditionType.Unknown;
+    public readonly category: ConditionCategory = ConditionCategory.Undetermined;
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        return ConditionEvaluateResult.Undetermined;
+    }
+
 }

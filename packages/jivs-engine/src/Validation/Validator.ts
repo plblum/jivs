@@ -31,6 +31,7 @@ import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { IValidationManager, toIValidationManager } from '../Interfaces/ValidationManager';
 import { ValidationManager } from './ValidationManager';
 import { toIDisposable } from '../Interfaces/General_Purpose';
+import { WhenCondition } from '../Conditions/WhenCondition';
 
 /**
  * An IValidator implementation that represents a single validator 
@@ -108,9 +109,6 @@ export class Validator implements IValidator {
             toIDisposable(config.conditionConfig)?.dispose();
             config.conditionConfig = undefined!;
             config.conditionCreator = undefined;
-            toIDisposable(config.enablerConfig)?.dispose();
-            config.enablerConfig = undefined;
-            config.enablerCreator = undefined;
         }
         toIDisposable(this._condition)?.dispose();
         this._condition = undefined!;
@@ -138,6 +136,8 @@ export class Validator implements IValidator {
      * Run by validate(), but only if the Validator is enabled (severity<>Off and Enabler == Match)
      * The actual Condition instance is created by the caller
      * and supplied in the ValidatorConfig.
+     * WhenCondition is a special case. When it is the condition returned, its child Condition is used here
+     * as the WhenCondition is more of a container to supply both condition and Enabler with conditions.
      */
     public get condition(): ICondition {
         if (!this._condition) {
@@ -159,6 +159,15 @@ export class Validator implements IValidator {
                     this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration, this.getLogSourceText());
                 throw e;
             }
+            if (this._condition instanceof WhenCondition)
+            {
+                // errors creating these conditions are handled internally
+                // and bad conditions get replaced by ErrorResponseCondition
+                // so we can continue to execute the validation.
+                let { enabler, child } = this._condition.extractConditions(this.validationManager);
+                this._condition = child;
+                this._enabler = enabler;
+            }
         }
         return this._condition!;
     }
@@ -173,21 +182,16 @@ export class Validator implements IValidator {
     /**
      * Condition used to enable or disable this validator based on rules.
      * severity = Off takes precedence.
+     * WhenCondition is a special case. When it is the condition returned, its child Condition is used here
+     * as the WhenCondition is more of a container to supply both condition and Enabler with conditions.
      */
     protected get enabler(): ICondition | null {
         if (!this._enabler)
             try {
-                if (this.config.enablerCreator) {
-                    if (this.config.enablerConfig)
-                        throw new CodingError('Cannot assign both EnablerConfig and EnablerCreator');
-                    this._enabler = this.config.enablerCreator(this.config);
-                    if (!this._enabler)
-                        throw new CodingError('EnablerCreator function must return an instance');
-                }
-                else if (this.config.enablerConfig)
-                    this._enabler = this.services.conditionFactory.create(this.config.enablerConfig);
+                let temp = this.condition;  // this will assign both _condition and _enabler if using WhenCondition 
             }
             catch (e) {
+                // istanbul ignore next // this.condition is usually called before enabler, leaving its errors handled elsewhere
                 if (e instanceof Error)
                     this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration, this.getLogSourceText());
                 throw e;

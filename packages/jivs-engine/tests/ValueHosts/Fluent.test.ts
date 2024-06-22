@@ -9,12 +9,25 @@ import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import {
     FluentValidatorConfig, FluentValidatorCollector, FluentFactory, IFluentValidatorCollector, FluentConditionCollector, IFluentConditionCollector,
     finishFluentValidatorCollector, finishFluentConditionCollector,
-    fluent
+    ValidationManagerStartFluent,
+    ValueHostsManagerStartFluent
 } from './../../src/ValueHosts/Fluent';
 import { ValidationManagerConfig } from '../../src/Interfaces/ValidationManager';
 import { ICalcValueHost } from '../../src/Interfaces/CalcValueHost';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
+import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
+
+class Publicify_ValueHostsManagerStartFluent extends ValueHostsManagerStartFluent { 
+    public get publicify_existingValueHostConfigs() {
+        return this.existingValueHostConfigs;
+    }
+}
+class Publicify_ValidationManagerStartFluent extends ValidationManagerStartFluent { 
+    public get publicify_existingValueHostConfigs() {
+        return this.existingValueHostConfigs;
+    }
+}
 
 function createVMConfig(): ValidationManagerConfig
 {
@@ -24,6 +37,83 @@ function createVMConfig(): ValidationManagerConfig
     };
     return vmConfig;
 }
+
+function createFluent(): ValidationManagerStartFluent {
+    return new ValidationManagerStartFluent(null, new MockValidationServices(true, true));
+}
+describe('ValueHostsManagerStartFluent', () => {
+    describe('constructor', () => {
+        test('null first parameter sets up', () => {
+            let services = new MockValidationServices(true, true);
+            let testItem = new Publicify_ValueHostsManagerStartFluent(null, services);
+            expect(testItem.services).toBe(services);
+            expect(testItem.publicify_existingValueHostConfigs).toBeNull();
+        });
+        test('valueHostConfig array in first parameter sets up', () => {
+            let services = new MockValidationServices(true, true);
+            const valueHostConfigs: Array<ValueHostConfig> = [{
+                valueHostType: ValueHostType.Static,
+                name: 'Field1',
+                label: 'Field 1',
+                dataType: LookupKey.Currency
+            }];
+            
+            let testItem = new Publicify_ValueHostsManagerStartFluent(valueHostConfigs, services);
+            expect(testItem.services).toBe(services);
+            expect(testItem.publicify_existingValueHostConfigs).toEqual(valueHostConfigs);
+        });        
+        test('null second parameter throws', () => {
+            expect(() => new ValueHostsManagerStartFluent(null, null!)).toThrow('services');
+        });
+    });
+    describe('dispose', () => {
+        test('dispose sets services to undefined and later calls throw', () => {
+            let testItem = new Publicify_ValueHostsManagerStartFluent(null, new MockValidationServices(true, true));
+            testItem.dispose();
+            expect(() => testItem.services).toThrow();
+            expect(testItem.publicify_existingValueHostConfigs).toBeNull();
+        });
+        test('dispose sets services and existingValueHostConfig to undefined and later calls throw', () => {
+            const valueHostConfigs: Array<ValueHostConfig> = [{
+                valueHostType: ValueHostType.Static,
+                name: 'Field1',
+                label: 'Field 1',
+                dataType: LookupKey.Currency
+            }];
+
+            let testItem = new Publicify_ValueHostsManagerStartFluent(valueHostConfigs, new MockValidationServices(true, true));
+            testItem.dispose();
+            expect(() => testItem.services).toThrow();
+            expect(testItem.publicify_existingValueHostConfigs).toBeNull();
+        });        
+    });
+});
+describe('ValidationManagerStartFluent', () => {
+    describe('constructor', () => {
+        test('null first parameter sets up without overrides', () => {
+            let services = new MockValidationServices(true, true);
+            let testItem = new Publicify_ValidationManagerStartFluent(null, services);
+            expect(testItem.services).toBe(services);
+            expect(testItem.publicify_existingValueHostConfigs).toBeNull();
+        });
+        test('valueHostConfig array in first parameter sets up', () => {
+            let services = new MockValidationServices(true, true);
+            const valueHostConfigs: Array<ValueHostConfig> = [{
+                valueHostType: ValueHostType.Static,
+                name: 'Field1',
+                label: 'Field 1',
+                dataType: LookupKey.Currency
+            }];
+            
+            let testItem = new Publicify_ValidationManagerStartFluent(valueHostConfigs, services);
+            expect(testItem.services).toBe(services);
+            expect(testItem.publicify_existingValueHostConfigs).toEqual(valueHostConfigs);
+        });                
+        test('null second parameter throws', () => {
+            expect(() => new ValidationManagerStartFluent(null, null!)).toThrow('services');
+        });
+    });
+});
 
 describe('FluentValidatorCollector', () => {
     test('constructor with vhConfig sets up vhConfig property', () => {
@@ -200,9 +290,9 @@ describe('FluentConditionCollector', () => {
     });
 });
 
-describe('fluent().static()', () => {
+describe('static()', () => {
     test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().static('Field1', null, { label: 'Field 1' });
+        let testItem = createFluent().static('Field1', null, { label: 'Field 1' });
         expect(testItem).toEqual({
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -210,7 +300,7 @@ describe('fluent().static()', () => {
         });
     });
     test('Valid name, data type assigned. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().static('Field1', 'Test');
+        let testItem = createFluent().static('Field1', 'Test');
         expect(testItem).toEqual({
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -219,7 +309,7 @@ describe('fluent().static()', () => {
     });
 
     test('Valid name. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().static('Field1');
+        let testItem = createFluent().static('Field1');
         expect(testItem).toEqual({
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -227,7 +317,7 @@ describe('fluent().static()', () => {
     });
 
     test('Pass in a StaticValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        let testItem = createFluent().static({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toEqual({
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -236,29 +326,29 @@ describe('fluent().static()', () => {
         });        
     });
     test('Null name throws', () => {
-        expect(() => fluent().static(null!)).toThrow('arg1');
+        expect(() => createFluent().static(null!)).toThrow('arg1');
 
     });
     test('Pass in a StaticValueHostConfig with null name throws', () => {
-        expect(()=> fluent().static({ name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
+        expect(()=> createFluent().static({ name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
 
     });    
     test('First parameter is not compatible with overload throws', () => {
-        expect(() => fluent().static(100 as any)).toThrow('pass');
-        expect(() => fluent().static(false as any)).toThrow('pass');
-        expect(() => fluent().static([] as any)).toThrow('argument is not a supported object');
-        expect(() => fluent().static(new Date() as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().static(100 as any)).toThrow('pass');
+        expect(() => createFluent().static(false as any)).toThrow('pass');
+        expect(() => createFluent().static([] as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().static(new Date() as any)).toThrow('argument is not a supported object');
     });
     test('Second arg is not compatible with overload throws', () => {
-        expect(() => fluent().static('Field1', 100 as any)).toThrow('Second parameter invalid type');
-        expect(() => fluent().static('Field1', false as any)).toThrow('Second parameter invalid type');        
-        expect(() => fluent().static('Field1', [] as any)).toThrow('argument is not a supported object');        
-        expect(() => fluent().static('Field1', new Date() as any)).toThrow('argument is not a supported object');        
+        expect(() => createFluent().static('Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => createFluent().static('Field1', false as any)).toThrow('Second parameter invalid type');        
+        expect(() => createFluent().static('Field1', [] as any)).toThrow('argument is not a supported object');        
+        expect(() => createFluent().static('Field1', new Date() as any)).toThrow('argument is not a supported object');        
     });        
 });
-describe('fluent().withoutValidators()', () => {
+describe('withoutValidators()', () => {
     test('Valid name, null data type and defined vhConfig. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().withoutValidators('TestType', 'Field1', null, { label: 'Field 1' });
+        let testItem = createFluent().withoutValidators('TestType', 'Field1', null, { label: 'Field 1' });
         expect(testItem).toEqual({
             valueHostType: 'TestType', 
             name: 'Field1',
@@ -266,7 +356,7 @@ describe('fluent().withoutValidators()', () => {
         });
     });
     test('Valid name, data type assigned. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().withoutValidators('TestType', 'Field1', 'Test');
+        let testItem = createFluent().withoutValidators('TestType', 'Field1', 'Test');
         expect(testItem).toEqual({
             valueHostType: 'TestType', 
             name: 'Field1',
@@ -275,7 +365,7 @@ describe('fluent().withoutValidators()', () => {
     });
 
     test('Valid name. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().withoutValidators('TestType', 'Field1');
+        let testItem = createFluent().withoutValidators('TestType', 'Field1');
         expect(testItem).toEqual({
             valueHostType: 'TestType', 
             name: 'Field1',
@@ -283,7 +373,7 @@ describe('fluent().withoutValidators()', () => {
     });
 
     test('Pass in a ValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().withoutValidators('TestType', { name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        let testItem = createFluent().withoutValidators('TestType', { name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toEqual({
             valueHostType: 'TestType', 
             name: 'Field1',
@@ -292,30 +382,30 @@ describe('fluent().withoutValidators()', () => {
         });        
     });
     test('Null name throws', () => {
-        expect(() => fluent().withoutValidators('TestType', null!)).toThrow('arg1');
+        expect(() => createFluent().withoutValidators('TestType', null!)).toThrow('arg1');
 
     });
     test('Pass in a ValueHostConfig with null name throws', () => {
-        expect(()=> fluent().withoutValidators('TestType', { name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
+        expect(()=> createFluent().withoutValidators('TestType', { name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
 
     });    
     test('First arg is not compatible with overload throws', () => {
-        expect(() => fluent().withoutValidators('TestType', 100 as any)).toThrow('pass');
-        expect(() => fluent().withoutValidators('TestType', false as any)).toThrow('pass');
-        expect(() => fluent().withoutValidators('TestType', [] as any)).toThrow('argument is not a supported object');
-        expect(() => fluent().withoutValidators('TestType', new Date() as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().withoutValidators('TestType', 100 as any)).toThrow('pass');
+        expect(() => createFluent().withoutValidators('TestType', false as any)).toThrow('pass');
+        expect(() => createFluent().withoutValidators('TestType', [] as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().withoutValidators('TestType', new Date() as any)).toThrow('argument is not a supported object');
     });
 
     test('Second arg is not compatible with overload throws', () => {
-        expect(() => fluent().withoutValidators('TestType', 'Field1', 100 as any)).toThrow('Second parameter invalid type');
-        expect(() => fluent().withoutValidators('TestType', 'Field1', false as any)).toThrow('Second parameter invalid type');       
-        expect(() => fluent().withoutValidators('TestType', 'Field1', [] as any)).toThrow('argument is not a supported object');             
-        expect(() => fluent().withoutValidators('TestType', 'Field1', new Date() as any)).toThrow('argument is not a supported object');             
+        expect(() => createFluent().withoutValidators('TestType', 'Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => createFluent().withoutValidators('TestType', 'Field1', false as any)).toThrow('Second parameter invalid type');       
+        expect(() => createFluent().withoutValidators('TestType', 'Field1', [] as any)).toThrow('argument is not a supported object');             
+        expect(() => createFluent().withoutValidators('TestType', 'Field1', new Date() as any)).toThrow('argument is not a supported object');             
     });    
 });
-describe('fluent().input()', () => {
+describe('input()', () => {
     test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().input('Field1', null, { label: 'Field 1' });
+        let testItem = createFluent().input('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
             valueHostType: ValueHostType.Input,
@@ -325,7 +415,7 @@ describe('fluent().input()', () => {
         });
     });
     test('Name, data type supplied. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().input('Field1', 'Test');
+        let testItem = createFluent().input('Field1', 'Test');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
             valueHostType: ValueHostType.Input,
@@ -337,7 +427,7 @@ describe('fluent().input()', () => {
         
     });
     test('Name supplied. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().input('Field1');
+        let testItem = createFluent().input('Field1');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
             valueHostType: ValueHostType.Input,
@@ -347,7 +437,7 @@ describe('fluent().input()', () => {
         expect(testItem.parentConfig).toEqual(expected);
     });
     test('Pass in a InputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().input({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        let testItem = createFluent().input({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
             valueHostType: ValueHostType.Input,
@@ -359,26 +449,26 @@ describe('fluent().input()', () => {
         expect(testItem.parentConfig).toEqual(expected);
     });
     test('Null name throws', () => {
-        expect(() => fluent().input(null!)).toThrow('arg1');
+        expect(() => createFluent().input(null!)).toThrow('arg1');
 
     });
     test('First parameter is not compatible with overload throws', () => {
-        expect(() => fluent().input(100 as any)).toThrow('pass');
-        expect(() => fluent().input(false as any)).toThrow('pass');
-        expect(() => fluent().input([] as any)).toThrow('argument is not a supported object');
-        expect(() => fluent().input(new Date() as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().input(100 as any)).toThrow('pass');
+        expect(() => createFluent().input(false as any)).toThrow('pass');
+        expect(() => createFluent().input([] as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().input(new Date() as any)).toThrow('argument is not a supported object');
     });
     test('Second arg is not compatible with overload throws', () => {
-        expect(() => fluent().input('Field1', 100 as any)).toThrow('Second parameter invalid type');
-        expect(() => fluent().input('Field1', false as any)).toThrow('Second parameter invalid type');        
-        expect(() => fluent().input('Field1', [] as any)).toThrow('argument is not a supported object');        
-        expect(() => fluent().input('Field1', new Date() as any)).toThrow('argument is not a supported object');        
+        expect(() => createFluent().input('Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => createFluent().input('Field1', false as any)).toThrow('Second parameter invalid type');        
+        expect(() => createFluent().input('Field1', [] as any)).toThrow('argument is not a supported object');        
+        expect(() => createFluent().input('Field1', new Date() as any)).toThrow('argument is not a supported object');        
     });      
 });
 
-describe('fluent().property()', () => {
+describe('property()', () => {
     test('Valid name, null data type and defined vhConfig. Adds PropertyValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().property('Field1', null, { label: 'Field 1' });
+        let testItem = createFluent().property('Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
             valueHostType: ValueHostType.Property,
@@ -388,7 +478,7 @@ describe('fluent().property()', () => {
         });
     });
     test('Name, data type supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().property('Field1', 'Test');
+        let testItem = createFluent().property('Field1', 'Test');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
             valueHostType: ValueHostType.Property,
@@ -400,7 +490,7 @@ describe('fluent().property()', () => {
         
     });
     test('Name supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().property('Field1');
+        let testItem = createFluent().property('Field1');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
             valueHostType: ValueHostType.Property,
@@ -410,7 +500,7 @@ describe('fluent().property()', () => {
         expect(testItem.parentConfig).toEqual(expected);
     });
     test('Pass in a PropertyValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().property({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        let testItem = createFluent().property({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
             valueHostType: ValueHostType.Property,
@@ -422,29 +512,29 @@ describe('fluent().property()', () => {
         expect(testItem.parentConfig).toEqual(expected);
     });
     test('Null name throws', () => {
-        expect(() => fluent().property(null!)).toThrow('arg1');
+        expect(() => createFluent().property(null!)).toThrow('arg1');
 
     });
     test('Pass in a ValueHostConfig with null name throws', () => {
-        expect(()=> fluent().property({ name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
+        expect(()=> createFluent().property({ name: null!, dataType: 'Test', label: 'Field 1' })).toThrow('config.name required');
 
     });        
     test('First parameter is not compatible with overload throws', () => {
-        expect(() => fluent().property(100 as any)).toThrow('pass');
-        expect(() => fluent().property(false as any)).toThrow('pass');
-        expect(() => fluent().property([] as any)).toThrow('argument is not a supported object');
-        expect(() => fluent().property(new Date() as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().property(100 as any)).toThrow('pass');
+        expect(() => createFluent().property(false as any)).toThrow('pass');
+        expect(() => createFluent().property([] as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().property(new Date() as any)).toThrow('argument is not a supported object');
     });
     test('Second arg is not compatible with overload throws', () => {
-        expect(() => fluent().property('Field1', 100 as any)).toThrow('Second parameter invalid type');
-        expect(() => fluent().property('Field1', false as any)).toThrow('Second parameter invalid type');        
-        expect(() => fluent().property('Field1', [] as any)).toThrow('argument is not a supported object');        
-        expect(() => fluent().property('Field1', new Date() as any)).toThrow('argument is not a supported object');        
+        expect(() => createFluent().property('Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => createFluent().property('Field1', false as any)).toThrow('Second parameter invalid type');        
+        expect(() => createFluent().property('Field1', [] as any)).toThrow('argument is not a supported object');        
+        expect(() => createFluent().property('Field1', new Date() as any)).toThrow('argument is not a supported object');        
     });      
 });
-describe('fluent().withValidators()', () => {
+describe('withValidators()', () => {
     test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().withValidators(ValueHostType.Input, 'Field1', null, { label: 'Field 1' });
+        let testItem = createFluent().withValidators(ValueHostType.Input, 'Field1', null, { label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         expect(testItem.parentConfig).toEqual({
             valueHostType: ValueHostType.Input,
@@ -454,7 +544,7 @@ describe('fluent().withValidators()', () => {
         });
     });
     test('Name, data type supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().withValidators(ValueHostType.Input, 'Field1', 'Test');
+        let testItem = createFluent().withValidators(ValueHostType.Input, 'Field1', 'Test');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
             valueHostType: ValueHostType.Input,
@@ -466,7 +556,7 @@ describe('fluent().withValidators()', () => {
         
     });
     test('Name supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().withValidators(ValueHostType.Input, 'Field1');
+        let testItem = createFluent().withValidators(ValueHostType.Input, 'Field1');
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
             valueHostType: ValueHostType.Input,
@@ -476,7 +566,7 @@ describe('fluent().withValidators()', () => {
         expect(testItem.parentConfig).toEqual(expected);
     });
     test('Pass in a InputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().withValidators(ValueHostType.Input, { name: 'Field1', dataType: 'Test', label: 'Field 1' });
+        let testItem = createFluent().withValidators(ValueHostType.Input, { name: 'Field1', dataType: 'Test', label: 'Field 1' });
         expect(testItem).toBeInstanceOf(FluentValidatorCollector);
         let expected = {
             valueHostType: ValueHostType.Input,
@@ -488,27 +578,27 @@ describe('fluent().withValidators()', () => {
         expect(testItem.parentConfig).toEqual(expected);
     });
     test('Null name throws', () => {
-        expect(() => fluent().withValidators(ValueHostType.Input, null!)).toThrow('arg1');
+        expect(() => createFluent().withValidators(ValueHostType.Input, null!)).toThrow('arg1');
 
     });
     test('Arg1 is not compatible with overload throws', () => {
-        expect(() => fluent().withValidators(ValueHostType.Input, 100 as any)).toThrow('pass');
-        expect(() => fluent().withValidators(ValueHostType.Input, false as any)).toThrow('pass');
-        expect(() => fluent().withValidators(ValueHostType.Input, [] as any)).toThrow('argument is not a supported object');
-        expect(() => fluent().withValidators(ValueHostType.Input, new Date() as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().withValidators(ValueHostType.Input, 100 as any)).toThrow('pass');
+        expect(() => createFluent().withValidators(ValueHostType.Input, false as any)).toThrow('pass');
+        expect(() => createFluent().withValidators(ValueHostType.Input, [] as any)).toThrow('argument is not a supported object');
+        expect(() => createFluent().withValidators(ValueHostType.Input, new Date() as any)).toThrow('argument is not a supported object');
     });
     test('Second arg is not compatible with overload throws', () => {
-        expect(() => fluent().withValidators(ValueHostType.Input, 'Field1', 100 as any)).toThrow('Second parameter invalid type');
-        expect(() => fluent().withValidators(ValueHostType.Input, 'Field1', false as any)).toThrow('Second parameter invalid type');        
-        expect(() => fluent().withValidators(ValueHostType.Input, 'Field1', [] as any)).toThrow('argument is not a supported object');        
-        expect(() => fluent().withValidators(ValueHostType.Input, 'Field1', new Date() as any)).toThrow('argument is not a supported object');        
+        expect(() => createFluent().withValidators(ValueHostType.Input, 'Field1', 100 as any)).toThrow('Second parameter invalid type');
+        expect(() => createFluent().withValidators(ValueHostType.Input, 'Field1', false as any)).toThrow('Second parameter invalid type');        
+        expect(() => createFluent().withValidators(ValueHostType.Input, 'Field1', [] as any)).toThrow('argument is not a supported object');        
+        expect(() => createFluent().withValidators(ValueHostType.Input, 'Field1', new Date() as any)).toThrow('argument is not a supported object');        
     });      
 });
 
 
-describe('fluent(vmConfig).conditions', () => {
+describe('conditions', () => {
     test('Undefined parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
-        let testItem = fluent().conditions();
+        let testItem = createFluent().conditions();
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
             conditionType: 'TBD',
@@ -516,7 +606,7 @@ describe('fluent(vmConfig).conditions', () => {
         });
     });
     test('null parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
-        let testItem = fluent().conditions(null!);
+        let testItem = createFluent().conditions(null!);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
             conditionType: 'TBD',
@@ -528,7 +618,7 @@ describe('fluent(vmConfig).conditions', () => {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
-        let testItem = fluent().conditions(parentConfig);
+        let testItem = createFluent().conditions(parentConfig);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
             conditionType: ConditionType.All,
@@ -540,7 +630,7 @@ describe('fluent(vmConfig).conditions', () => {
             conditionType: ConditionType.All,
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
-        let testItem = fluent().conditions(parentConfig);
+        let testItem = createFluent().conditions(parentConfig);
         expect(testItem).toBeInstanceOf(FluentConditionCollector);
         expect(testItem.parentConfig).toEqual({
             conditionType: ConditionType.All,
@@ -554,7 +644,7 @@ describe('configCalc', () => {
         return 1;
     }
     test('Valid name, null data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().calc('Field1', null, calcFnForTests);
+        let testItem = createFluent().calc('Field1', null, calcFnForTests);
         expect(testItem).toEqual({
             valueHostType: ValueHostType.Calc,
             name: 'Field1',
@@ -562,7 +652,7 @@ describe('configCalc', () => {
         });
     });
     test('Valid name, data type and calcFn. Adds CalcValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().calc('Field1', 'Test', calcFnForTests);
+        let testItem = createFluent().calc('Field1', 'Test', calcFnForTests);
         expect(testItem).toEqual({
             valueHostType: ValueHostType.Calc,
             name: 'Field1',
@@ -572,7 +662,7 @@ describe('configCalc', () => {
     });
 
     test('Pass in a CalcValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
-        let testItem = fluent().calc({ name: 'Field1', dataType: 'Test', calcFn: calcFnForTests });
+        let testItem = createFluent().calc({ name: 'Field1', dataType: 'Test', calcFn: calcFnForTests });
         expect(testItem).toEqual({
             valueHostType: ValueHostType.Calc,
             name: 'Field1',
@@ -581,22 +671,22 @@ describe('configCalc', () => {
         });
     });
     test('calcFn is null throws', () => {
-        expect(() => fluent().calc('Field1', null, null!)).toThrow(/function/);
+        expect(() => createFluent().calc('Field1', null, null!)).toThrow(/function/);
     });    
     test('calcFn is not a function throws', () => {
-        expect(() => fluent().calc('Field1', null, 100 as any)).toThrow(/function/);
+        expect(() => createFluent().calc('Field1', null, 100 as any)).toThrow(/function/);
     });    
 
     test('Null name throws', () => {
-        expect(() => fluent().calc(null!)).toThrow('arg1');
+        expect(() => createFluent().calc(null!)).toThrow('arg1');
 
     });
     test('Pass in a ValueHostConfig with null name throws', () => {
-        expect(()=> fluent().calc({ name: null!, dataType: 'Test', calcFn: ()=>0 })).toThrow('config.name required');
+        expect(()=> createFluent().calc({ name: null!, dataType: 'Test', calcFn: ()=>0 })).toThrow('config.name required');
 
     });            
     test('First parameter is not compatible with overload throws', () => {
-        expect(() => fluent().calc(100 as any)).toThrow('pass');
+        expect(() => createFluent().calc(100 as any)).toThrow('pass');
     });
 });
 

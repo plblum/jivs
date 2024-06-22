@@ -20,7 +20,6 @@ import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../TestSupport/conditionsForTesting";
-import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ValueHostFactory } from '../../src/ValueHosts/ValueHostFactory';
@@ -933,6 +932,7 @@ describe('toIValidatableValueHostBase', () => {
     });
     test('Compatible object match', () => {
         let testItem: IValidatableValueHostBase = {
+            valueHostsManager: {} as IValidationManager,
             dispose(): void {},
             otherValueHostChangedNotification: function (valueHostIdThatChanged: string, revalidate: boolean): void {
                 throw new Error('Function not implemented.');
@@ -1035,6 +1035,7 @@ describe('toIValidatableValueHostBase function', () => {
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });
     class TestIValidatableValueHostBaseImplementation implements IValidatableValueHostBase {
+        valueHostsManager: IValueHostsManager = {} as IValidationManager;  
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");

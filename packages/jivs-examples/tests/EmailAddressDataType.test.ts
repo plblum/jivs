@@ -2,12 +2,8 @@
 import { RegExpConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { InputValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/InputValueHost';
-import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { InputValueHost } from '@plblum/jivs-engine/build/ValueHosts/InputValueHost';
 import { ValidationManager } from '@plblum/jivs-engine/build/Validation/ValidationManager';
 import { EmailAddressCondition, EmailAddressDataTypeCheckGenerator, emailAddressConditionType, emailAddressLookupKey, registerEmailAddress } from '../src/EmailAddressDataType';
-import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { createMinimalValidationServices } from '../src/support';
@@ -16,18 +12,12 @@ describe('EmailAddressCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);
+        let builder = build(services);
+        builder.input('Field1', emailAddressLookupKey);
 
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: []
-        });
-        let vhConfig: InputValueHostConfig = {
-            valueHostType: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
-            name: 'Field1',
-            dataType: emailAddressLookupKey,
-            validatorConfigs: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
-        };
-        let vh = vm.addValueHost(vhConfig, null);
+        let vm = new ValidationManager(builder);
+        let vh = vm.getInputValueHost('Field1')!;
+
         let config: RegExpConditionConfig = {
             conditionType: emailAddressConditionType,
             valueHostName: 'Field1',
@@ -56,17 +46,11 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
     test('createCondition() function (only supports EmailAddressLookupKey)', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);        
-        let vm = new ValidationManager({
-            services: services,
-            valueHostConfigs: []
-        });
-        let vhConfig: InputValueHostConfig = {
-            valueHostType: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
-            name: 'Field1',
-            dataType: emailAddressLookupKey,
-            validatorConfigs: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
-        };
-        let vh = vm.addValueHost(vhConfig, null) as InputValueHost;
+        let builder = build(services);
+        builder.input('Field1', emailAddressLookupKey);
+
+        let vm = new ValidationManager(builder);
+        let vh = vm.getInputValueHost('Field1')!;
 
         let testItem = new EmailAddressDataTypeCheckGenerator();
         let result = testItem.createConditions(vh, emailAddressLookupKey, services.conditionFactory);
@@ -76,13 +60,10 @@ describe('EmailAddressDataTypeCheckGenerator tests', () => {
     test('Using fluent syntax, demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
         registerEmailAddress(services);
-        let vmConfig: ValidationManagerConfig = {
-            services: services,
-            valueHostConfigs: []
-        };
-        build(vmConfig).input('Field1', emailAddressLookupKey).emailAddress();
-        
-        let vm = new ValidationManager(vmConfig);
+        let builder = build(services);
+        builder.input('Field1', emailAddressLookupKey).emailAddress();
+
+        let vm = new ValidationManager(builder);
         let vh = vm.getInputValueHost('Field1')!;
 
         vh.setValue('ABC@DEF.com');

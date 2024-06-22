@@ -31,18 +31,18 @@ class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBu
     {
         super(vmConfig);
     }
-    public publicify_destinationConfig(): ValidationManagerConfig
+    public publicify_destinationValueHostConfigs(): Array<ValueHostConfig>
     {
-        return super.destinationConfig();
+        return super.destinationValueHostConfigs();
     }
 
     public get publicify_baseConfig(): ValidationManagerConfig
     {
         return super.baseConfig;
     }
-    public get publicify_overrideConfigs(): Array<ValidationManagerConfig>
+    public get publicify_overridenValueHostConfigs(): Array<Array<ValueHostConfig>>
     {
-        return super.overrideConfigs;
+        return super.overridenValueHostConfigs;
     }
 
     public publicify_addOverride(): void
@@ -262,7 +262,7 @@ describe('complete', () => {
             }]
         }]);
         expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
-        expect(testItem.publicify_overrideConfigs).toBeUndefined();
+        expect(testItem.publicify_overridenValueHostConfigs).toBeUndefined();
     });        
 });
 ensureFluentTestConditions();
@@ -655,7 +655,7 @@ describe('convertPropertyToInput', () => {
         ];
         expect(builder.convertPropertyToInput()).toBe(true);
         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
-        expect(builder.publicify_overrideConfigs[0].valueHostConfigs).toEqual(expectedOverrideConfig);
+        expect(builder.publicify_overridenValueHostConfigs[0]).toEqual(expectedOverrideConfig);
     });       
     test('Using override({ convertPropertyToInput: true} ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
         let vmConfig = createVMConfig();

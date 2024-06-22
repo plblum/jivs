@@ -3,6 +3,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationSeverity } from "../../src/Interfaces/Validation";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
+import { ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
@@ -29,15 +30,15 @@ class Publicify_ValidationManagerConfigModifier extends ValidationManagerConfigM
     constructor(manager: Publicify_ValidationManager) {
         super(manager, manager.publicify_valueHostConfigs);
     }
-    public publicify_destinationConfig(): ValidationManagerConfig {
-        return super.destinationConfig();
+    public publicify_destinationValueHostConfigs(): Array<ValueHostConfig> {
+        return super.destinationValueHostConfigs();
     }
 
     public get publicify_baseConfig(): ValidationManagerConfig {
         return super.baseConfig;
     }
-    public get publicify_overrideConfigs(): Array<ValidationManagerConfig> {
-        return super.overrideConfigs;
+    public get publicify_overridenValueHostConfigs(): Array<Array<ValueHostConfig>> {
+        return super.overridenValueHostConfigs;
     }
 
     public publicify_addOverride(): void {

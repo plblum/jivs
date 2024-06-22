@@ -1,43 +1,55 @@
 /**
- * Fluent syntax for ValueHosts and associated validation rules
- * used to build the ValueHostConfig (with all of its children) quickly
- * and succinctly. 
- * These tools are applied to ValueHostBuilder class, which is what the developer
- * creates with the ValidatorManagerConfig that they are constructing.
- * With the following, assume 'let builder = new ValueHostsBuilder(vmConfig)'.
- * The user will start the fluent syntax with builder.input() or builder.static().
- * Those will setup the configs for InputValueHost or StaticValueHost
+ * This is the syntax to build the ValueHostConfig (with all of its children) quickly
+ * and succinctly. It is a fluent syntax that allows the developer to chain operations.
+ * 
+ * These tools are used in the Builder API (ValidationManagerConfigBuilder class), 
+ * which is what the developer creates with the ValidatorManagerConfig that they are constructing.
+ * Similarly, these tools are used in the Modifier API (ValidationManagerConfigModifier class), 
+ * which is what the developer uses to modify the configuration after ValidationManager is created.
+ * Effectively ValidationManagerConfigBuilder and ValidationManagerConfigModifier are wrapper classes
+ * around ValueHostsManagerStartFluent.
+ * 
+ * With the following, assume 'let builder = new ValidationManagerConfigBuilder(vmConfig)'.
+ * 
+ * The user will start the fluent syntax with builder.input(), builder.property(), 
+ * builder.static(), or builder.calc().
+ * Those will setup the configs for each type of ValueHost
  * taking advantage of intellisense to expose the available properties
  * of the config, which may be a subset of the original.
  * 
  * `builder.input('valueHostName').[chained validators]`
  * 
- * With optional parameters
+ * With optional parameters:
  * 
  * `builder.input('valueHostName', 'datatype lookup key', { label: 'label' }).[chained validators];`
  * 
+ * `builder.property('valueHostName').[chained validators]`
+ * 
+ * With optional parameters:
+ * 
+ * `builder.property('valueHostName', 'datatype lookup key', { label: 'label' }).[chained validators];`
+ * 
  * `builder.static('valueHostName').[chained functions]`
  * 
- *  With optional parameters
+ *  With optional parameters:
  * 
  * `builder.static('valueHostName', 'datatype lookup key', { label: 'label' }).[chained builder functions];`
  * 
- *  `builder.calc('valueHostName', 'datatype lookup key', function callback).[chained builder functions];`
+ * `builder.calc('valueHostName', 'datatype lookup key', function callback).[chained builder functions];`
  * 
  * For example:
  * ```ts
- * let valueHostConfigs = [
- *   builder.static('productVisible', LookupKey.Boolean),
- *   builder.input('productName', LookupKey.String, { label: 'Name' }).required().regExp('^\w[\s\w]*$')`,
- *   builder.input('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqual(0.0)`,
- *   builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice) // calcMaxPrice is a function declared elsewhere
- * ];
- * let vm = new ValidationManager({
- *   services: createValidationServices(),
- *   valueHostConfigs = valueHostConfigs;
- * });
+ * let builder = new ValidationManagerConfigBuilder(services);
+ * builder.static('productVisible', LookupKey.Boolean);
+ * builder.input('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$')`;
+ * builder.input('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0)`;
+ * builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice); // calcMaxPrice is a function declared elsewhere
+ * let vm = new ValidationManager(builder);
+ * 
+ * let modifier = vm.startModifying();
+ * modifier.input('price').requireText();   // add this validator
+ * modifier.apply();
  * ```
- * `builder.input('productName').required().regExp('^\\d$')`
  * 
  * ## How this system works
  * 
@@ -47,17 +59,17 @@
  * the conditions to the InputValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
  * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start InputValueHost (input()),
- *   StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
+ *   PropertyValueHost (property()), StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  * 
  * - FluentValidatorCollector - Class that supplies Conditions and Validators
- *   to the preceding InputValueHost. It is returned by builder.input() and each chained object that follows.
+ *   to the preceding InputValueHost. It is returned by builder.input() and property() and each chained object that follows.
  * 
  * - FluentConditionCollector - Class that supplies Conditions to Conditions based upon EvaluateChildConditionResultsConfig:
  *   AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. It is created 
  *   by builder.conditions()
  * 
- * ## Creating your own fluent functions
- * Create two functions to support chaining to builder.input() and builder.conditions().
+ * ## Extending this system with your own fluent functions
+ * Create two functions to support chaining to builder.input/property() and builder.conditions().
  * They are not exported, as they are used to modify the prototypes of other classes.
  * 
  * Fluent functions should look like this: 
@@ -77,7 +89,7 @@
  *         condConfig.ignoreCase = ignoreCase;
  *     return condConfig as RegExpConditionConfig;
  * }
- * function regExp_forInput(
+ * function regExp_forValidator(
  *     expression: RegExp | string, ignoreCase?: boolean | null,
  *     conditionConfig?: FluentRegExpConditionConfig | null,
  *     errorMessage?: string | null,
@@ -111,7 +123,7 @@
  *          conditionConfig?: FluentRegExpConditionConfig) : FluentConditionCollector
  *    } 
  * }
- * FluentValidatorCollector.prototype.regExp = regExp_forInput;
+ * FluentValidatorCollector.prototype.regExp = regExp_forValidator;
  * FluentConditionCollector.prototype.regExp = regExp_forConditions;
  * 
  * @module ValueHosts/Fluent
@@ -122,48 +134,62 @@
  * Just register it with fluentFactory.singleton.register().
  */
 
+import { IDisposable } from './../Interfaces/General_Purpose';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ConditionConfig, ICondition } from "../Interfaces/Conditions";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { StaticValueHostConfig } from "../Interfaces/StaticValueHost";
 import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
-import { EvaluateChildConditionResultsBaseConfig } from '../Conditions/EvaluateChildConditionResultsBase';
+import { ConditionWithChildrenBaseConfig } from '../Conditions/ConditionWithChildrenBase';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { OneValueConditionBaseConfig } from '../Conditions/OneValueConditionBase';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
 import { CalculationHandler, CalcValueHostConfig } from '../Interfaces/CalcValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
-import { ValidationManagerConfig } from '../Interfaces/ValidationManager';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { PropertyValueHostConfig } from '../Interfaces/PropertyValueHost';
-import { ValueHostsManagerConfig } from '../Interfaces/ValueHostsManager';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
-import { isPlainObject, isSupportedAsValue } from '../Utilities/Utilities';
+import { isPlainObject } from '../Utilities/Utilities';
+import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
+import { IServicesAccessor } from '../Interfaces/Services';
 
 
 /**
  * Starts a fluent chain for ValueHostsManager. Its methods start CalcValueHost (calc()),
  * and StaticValueHost (static())
  */
-export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfig = ValueHostsManagerConfig>
+export class ValueHostsManagerStartFluent implements IDisposable, IServicesAccessor
 {
     /**
      * 
-     * @param vmConfig When assigned, we can check for naming conflicts.
+     * @param existingValueHostConfigs When assigned, we can check for naming conflicts.
+     * @param services
      */
-    constructor(vmConfig: TConfig | null)
+    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValueHostsServices)
     {
-        this._vmConfig = vmConfig;
+        assertNotNull(services, 'services');
+        if (existingValueHostConfigs)
+            this._existingValueHostConfigs = new WeakRef(existingValueHostConfigs);
+        this._services = new WeakRef(services);
         enableFluent();
     }
-    private _vmConfig: TConfig | null;
+    private _existingValueHostConfigs: WeakRef<Array<ValueHostConfig>> | null = null;
 
-    protected get vmConfig(): TConfig | null
+    protected get existingValueHostConfigs(): Array<ValueHostConfig> | null
     {
-        return this._vmConfig;
+        return this._existingValueHostConfigs ? this._existingValueHostConfigs.deref() ?? null : null;
     }
+    public get services(): IValueHostsServices
+    {
+        return this._services.deref()!;
+    }
+    private _services: WeakRef<IValueHostsServices>;
 
+    dispose(): void {
+        this._services = undefined!;
+        this._existingValueHostConfigs = undefined!;
+    }
     /**
      * Add Value Host that does not have direct supporting functions here.
      * This targets ValueHosts without validators. Use the withValidators() function for those.
@@ -288,15 +314,19 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
     /**
      * Start of a series to collect ConditionConfigs into any condition that
      * implements EvaluateChildConditionResultsConfig.
-     * For example, fluent().input('Field1').all(fluent().conditions().required('Field2').required('Field3'))
-     * The fluent function for all (and others that support EvaluateChildConditionResultsConfig)
+     * For example:
+     * ```ts
+     * let fluent = new ValueHostsManagerStartFluent(null);
+     * fluent.input('Field1').all(fluent.conditions().required('Field2').required('Field3'));
+     * ```
+     * The fluent function for allCondition (and others that support EvaluateChildConditionResultsConfig)
      * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
     * @param config - When null/undefined, the instance is created and the caller is expected
     * to retrieve its conditionConfigs from the config property.
     * When assigned, that instance gets conditionConfigs populated and 
     * there is no need to get a value from configs property.
     */
-    public conditions(config?: EvaluateChildConditionResultsBaseConfig): FluentConditionCollector
+    public conditions(config?: ConditionWithChildrenBaseConfig): FluentConditionCollector
     {
         let collector = new FluentConditionCollector(config ?? null);
         return collector;
@@ -325,7 +355,7 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
 
     protected assertNameNotDefined(valueHostName: ValueHostName): void
     {
-        if (this.vmConfig && this.vmConfig.valueHostConfigs.find((item) => item.name === valueHostName))
+        if (this.existingValueHostConfigs && this.existingValueHostConfigs.find((item) => item.name === valueHostName))
             throw new CodingError(`ValueHostName ${valueHostName} is already defined.`);        
     }
 
@@ -335,17 +365,17 @@ export class ValueHostsManagerStartFluent<TConfig extends ValueHostsManagerConfi
 /**
  * Starts a fluent chain. Its methods start InputValueHost (input()),
  * StaticValueHost (static()), and a collection of Conditions (conditions()).
- * You access it through the global fluent() function
  */
-export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent<ValidationManagerConfig>
+export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
 {
     /**
      * 
-     * @param vmConfig When assigned, we can check for naming conflicts.
+     * @param existingValueHostConfigs When assigned, we can check for naming conflicts.
+     * @param services
      */
-    constructor(vmConfig: ValidationManagerConfig | null)
+    constructor(existingValueHostConfigs: Array<ValueHostConfig> | null, services: IValueHostsServices)
     {
-        super(vmConfig);
+        super(existingValueHostConfigs, services);
     }
 
     /**
@@ -411,16 +441,6 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent<V
     }     
 
 }
-
-/**
- * Access point for starting a fluent syntax chain for ValidationManager
- * @returns 
- */
-export function fluent(): ValidationManagerStartFluent
-{
-    return new ValidationManagerStartFluent(null);
-}
-
 
 /**
  * For fluent configStatic function.
@@ -514,7 +534,7 @@ export interface IFluentValidatorCollector
 
 /**
  * Supplies Conditions and Validators the preceding InputValueHost in a fluent chain. 
- * It is returned by ValueHostsBuilder.input() and each chained object that follows.
+ * It is returned by ValidationManagerConfigBuilder.input() and each chained object that follows.
  * 
  * This class will dynamically get fluent functions for each condition
  * by using TypeScript's Declaration Merging:
@@ -592,7 +612,7 @@ export interface IFluentConditionCollector
     /**
      * The config that will collect the conditions.
      */
-    parentConfig: EvaluateChildConditionResultsBaseConfig;
+    parentConfig: ConditionWithChildrenBaseConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentConditionCollector.
@@ -607,9 +627,8 @@ export interface IFluentConditionCollector
 }
 
 /**
- * Supplies Conditions to Conditions that use EvaluateChildConditionResultsConfig:
- * AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. It is created 
- * by ValueHostsBuilder.conditions()
+ * Supplies Conditions to Conditions that use ConditionWithChildrenBaseConfig:
+ * AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. 
  * 
  * This class will dynamically get fluent functions for each condition
  * by using TypeScript's Declaration Merging:
@@ -626,7 +645,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
      * When assigned, that instance gets conditionConfigs populated and 
      * there is no need to get a value from configs property.
      */
-    constructor(parentConfig: EvaluateChildConditionResultsBaseConfig | null)
+    constructor(parentConfig: ConditionWithChildrenBaseConfig | null)
     {
         super();
         if (!parentConfig)
@@ -638,11 +657,11 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
     /**
      * This is the value ultimately passed to the ValidationManager config.ValueHostConfigs.
      */
-    public get parentConfig(): EvaluateChildConditionResultsBaseConfig
+    public get parentConfig(): ConditionWithChildrenBaseConfig
     {
         return this._parentConfig;
     }
-    private readonly _parentConfig: EvaluateChildConditionResultsBaseConfig;
+    private readonly _parentConfig: ConditionWithChildrenBaseConfig;
 
     /**
      * For any implementation of a fluent function that works with FluentConditionCollector.
@@ -661,6 +680,46 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
         this.parentConfig.conditionConfigs!.push(conditionConfig as ConditionConfig);
     }
 }
+
+/**
+ * Supports the fluent syntax on conditions that have a single child condition.
+ * It isn't an ideal implementation. It is based on using FluentConditionCollector,
+ * which allows a list of conditions. It simply throws an exception if the user
+ * atttempts to add more than one condition.
+ * 
+ * The reason for this implementation is to avoid having the user to register
+ * new fluent condition functions in 3 places: FluentValidatorCollector, FluentConditionCollector,
+ * and FluentOneConditionCollector. Additionally, they would have to setup their function 
+ * to return void instead of a FluentConditionCollector. That is deemed too much work.
+ */
+export class FluentOneConditionCollector extends FluentConditionCollector
+{
+    public add(conditionType: string | null, conditionConfig: Partial<ConditionConfig>): void {
+        if (this.parentConfig.conditionConfigs!.length > 0)
+            throw new CodingError('Only one condition allowed');
+        super.add(conditionType, conditionConfig);
+    }
+}
+
+/**
+ * Callback used by conditions that take an array of child conditions (subclasses of ConditionWithChildrenBase).
+ * Expected to be used like this:
+ * ```ts
+ * builder.all((conditions)=>conditions.required('Field1').required('Field2'), 'error message', { validator parameters });
+ * ```
+ * Designed to get intellisense assistance as the user sets up the child conditions.
+ */
+export type FluentConditionCollectorHandler = (conditionsCollector: FluentConditionCollector) => FluentConditionCollector;
+
+/**
+ * Callback used by conditions that take an array of child conditions (subclasses of ConditionWithChildrenBase).
+ * Expected to be used like this:
+ * ```ts
+ * builder.all((conditions)=>conditions.required('Field1').required('Field2'), 'error message', { validator parameters });
+ * ```
+ * Designed to get intellisense assistance as the user sets up the child conditions.
+ */
+export type FluentOneConditionCollectorHandler = (conditionsCollector: FluentOneConditionCollector) => FluentOneConditionCollector;
 
 /**
  * Call from within a fluent function once you have all parameters fully setup.
@@ -696,7 +755,7 @@ export function finishFluentValidatorCollector(thisFromCaller: any,
  * We'll throw an exception here in that case.
  * @param conditionType 
  * @param valueHostName 
- * Overrides the default valueHostName, which comes from the ValueHostsBuilder.input().
+ * Overrides the default valueHostName, which comes from the ValidationManagerConfigBuilder.input().
  * Fluent function should supply this as a parameter
  * so long as its ConditionConfig implements OneValueConditionConfig.
  * Since these conditions are children of another, they are more likely to
@@ -731,7 +790,7 @@ export class FluentFactory
         this._validatorCollectorCreator =
             (vhConfig: InputValueHostConfig) => new FluentValidatorCollector(vhConfig);
         this._conditionCollectorCreator =
-            (vhConfig: EvaluateChildConditionResultsBaseConfig) => new FluentConditionCollector(vhConfig);
+            (vhConfig: ConditionWithChildrenBaseConfig) => new FluentConditionCollector(vhConfig);
     }
     public createValidatorCollector(vhConfig: InputValueHostConfig): IFluentValidatorCollector
     {
@@ -745,17 +804,17 @@ export class FluentFactory
     }
     private _validatorCollectorCreator: (vhConfig: InputValueHostConfig) => IFluentValidatorCollector;
 
-    public createConditionCollector(vhConfig: EvaluateChildConditionResultsBaseConfig): IFluentConditionCollector
+    public createConditionCollector(vhConfig: ConditionWithChildrenBaseConfig): IFluentConditionCollector
     {
         return this._conditionCollectorCreator(vhConfig);
     }
 
-    public registerConditionCollector(creator: (vhConfig: EvaluateChildConditionResultsBaseConfig) => IFluentConditionCollector): void
+    public registerConditionCollector(creator: (vhConfig: ConditionWithChildrenBaseConfig) => IFluentConditionCollector): void
     {
         assertNotNull(creator, 'creator');
         this._conditionCollectorCreator = creator;
     }
-    private _conditionCollectorCreator: (vhConfig: EvaluateChildConditionResultsBaseConfig) => IFluentConditionCollector;    
+    private _conditionCollectorCreator: (vhConfig: ConditionWithChildrenBaseConfig) => IFluentConditionCollector;    
 
     /**
      * Unlike other factories, which are on ValidationServices. We wanted to avoid
@@ -796,7 +855,7 @@ export function customRule(conditionCreator: (requester: ValidatorConfig) => ICo
 }
 export class FluentSyntaxRequiredError extends Error
 {
-    constructor(errorMessage: string = 'Call only when chaining with ValueHostBuilder.input().')
+    constructor(errorMessage: string = 'Call only when chaining with ValidationManagerConfigBuilder.input().')
     {
         super(errorMessage);
     }

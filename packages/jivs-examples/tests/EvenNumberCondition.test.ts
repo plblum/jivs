@@ -1,31 +1,20 @@
 import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerConfigBuilder';
 import { ConditionEvaluateResult } from "@plblum/jivs-engine/build/Interfaces/Conditions";
-import { InputValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/InputValueHost";
-import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
 import { ValidationManager } from "@plblum/jivs-engine/build/Validation/ValidationManager";
 import { createMinimalValidationServices } from "../src/support";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { EvenNumberCondition, EvenNumberConditionConfig, evenNumberConditionType, registerEvenNumberCondition } from "../src/EvenNumberCondition";
-import { ValidationManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 
 describe('EvenNumberCondition tests', () => {
     test('Demonstrate cases that correctly resolve to Match, Unmatch or Undefined', () => {
         let services = createMinimalValidationServices('en');
         registerEvenNumberCondition(services);
-        let vmConfig: ValidationManagerConfig = {
-            services: services,
-            valueHostConfigs: []
-        };
+        let builder = build(services);
+        builder.input('Field1', LookupKey.Number);
 
-        let vm = new ValidationManager(vmConfig);
-        let vhConfig: InputValueHostConfig = {
-            valueHostType: ValueHostType.Input,  //NOTE: optional so long as you have setup the validationConfigs property
-            name: 'Field1',
-            dataType: LookupKey.Number,
-            validatorConfigs: []    // normally our condition is declared here so its exposed to VM.validate(), but we want to test the class directly
-        };
-        let vh = vm.addValueHost(vhConfig, null);
+        let vm = new ValidationManager(builder);
+        let vh = vm.getInputValueHost('Field1')!;
         let config: EvenNumberConditionConfig = {
             conditionType: evenNumberConditionType,
             valueHostName: 'Field1',
@@ -55,13 +44,10 @@ describe('EvenNumberCondition tests', () => {
     test('Using Fluent Syntax, demonstrate validate() returns Valid and Invalid as expected', () => {
         let services = createMinimalValidationServices('en');
         registerEvenNumberCondition(services);
+        let builder = build(services);
+        builder.input('Field1', LookupKey.Number).evenNumber('Must be an even number.');
 
-        let vmConfig: ValidationManagerConfig = {
-            services: services,
-            valueHostConfigs: []
-        };
-        build(vmConfig).input('Field1', LookupKey.Number).evenNumber('Must be an even number.');
-        let vm = new ValidationManager(vmConfig);
+        let vm = new ValidationManager(builder);
         let vh = vm.getInputValueHost('Field1')!;
 
         vh.setValue(2);

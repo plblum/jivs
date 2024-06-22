@@ -12,7 +12,7 @@
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 
-import type { IValueHost } from '../Interfaces/ValueHost';
+import { type IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import {
     type ICondition,
@@ -34,6 +34,7 @@ import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from '
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { toIInputValueHost } from '../ValueHosts/InputValueHost';
 import { NumberConditionBase, NumberConditionBaseConfig } from './NumberConditionBase';
+import { ConditionWithOneChildBase, ConditionWithOneChildBaseConfig } from './ConditionWithOneChildBase';
 
 
 /**
@@ -210,17 +211,6 @@ export interface RegExpConditionConfig extends RegExpConditionBaseConfig {
      * It is an alternative to expressionAsString. If both are supplied, this takes precedence.
      */
     expression?: RegExp;
-
-    /**
-     * Use the expression to find something wrong with the string instead of proving it to be valid.
-     * For example, if you want to tell the user "The period character is not allowed" and similar
-     * for invalid characters, you could have separate Validators using a regexp to detect the illegal
-     * character.
-     * When true, a string that matches the expression
-     * returns NoMatch instead of Match.
-     * When undefined, the value is false.
-     */
-    not?: boolean;    
 }
 
 /**
@@ -267,8 +257,6 @@ export class RegExpCondition extends RegExpConditionBase<RegExpConditionConfig>
     }
     protected evaluateString(text: string, valueHost: IValueHost, services: IValidationServices): ConditionEvaluateResult {
         let found = this.getRegExp(services).test(text);
-        if (this.config.not)
-            found = !found;
         return found ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }    
 

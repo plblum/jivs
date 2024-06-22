@@ -10,7 +10,7 @@ import {
     SetIssuesFoundErrorCodeMissingBehavior
 } from "../../src/Interfaces/Validation";
 import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
-import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
+import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
 import { SetValueOptions, IValueHost, ValueHostInstanceState, ValidTypesForInstanceStateStorage, ValueHostConfig } from "../../src/Interfaces/ValueHost";
 import { ConditionCategory, ICondition, ConditionConfig, IConditionFactory } from "../../src/Interfaces/Conditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
@@ -1213,6 +1213,7 @@ describe('toIInputValueHost function', () => {
         expect(toIInputValueHost(testItem)).toBe(testItem);
     });
     class TestIInputValueHostImplementation implements IInputValueHost {
+        valueHostsManager: IValidationManager = {} as IValidationManager;       
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
             throw new Error("Method not implemented.");

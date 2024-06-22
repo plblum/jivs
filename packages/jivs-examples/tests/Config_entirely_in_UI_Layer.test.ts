@@ -1,4 +1,4 @@
-import { MockDocument, MockHTMLSelectElement } from '../src/Config_example_common_code';
+import { MockDocument, MockHTMLSelectElement } from './Config_example_common_code.test';
 import {
     configExample
 } from '../src/Config_with_BusinessLogic_using_Builder';

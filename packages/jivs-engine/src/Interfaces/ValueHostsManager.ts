@@ -34,7 +34,8 @@ export interface IValueHostsManager extends IValueHostResolver, IDisposable
      * Does not trigger any notifications.
      * Exception when the same ValueHostConfig.name already exists.
      * @param config 
-     * Can use fluent().static() or any ValueConfigHost.
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
@@ -51,6 +52,8 @@ export interface IValueHostsManager extends IValueHostResolver, IDisposable
      * Any previous ValueHost and its config will be disposed.
      * Be sure to discard any reference to the ValueHost instance that you have.
      * @param config 
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
@@ -67,6 +70,8 @@ export interface IValueHostsManager extends IValueHostResolver, IDisposable
      * Any previous ValueHost and its config will be disposed.
      * Be sure to discard any reference to the ValueHost instance that you have.
      * @param config 
+     * Can use builder.static(), builder.calc() or any ValueConfigHost. 
+     * (builder is the Builder API)
      * @param initialState - When not null, this state object is used instead of an initial state.
      * It overrides any state supplied by the ValueHostsManager constructor.
      * It will be run through ValueHostFactory.cleanupInstanceState() first.
@@ -209,8 +214,7 @@ export interface IValueHostsManagerCallbacks extends IValueHostCallbacks, IInput
      * 
      * Note that where a ValueHostConfig has a property that references a function,
      * you will have to retain that reference in some way to reuse it.
-     * ValidatorConfig.conditionCreator and ValidatorConfig.enablerCreator
-     * are examples.
+     * In particular, ValidatorConfig.conditionCreator.
      */
     onConfigChanged?: ValueHostsManagerConfigChangedHandler | null;
 
