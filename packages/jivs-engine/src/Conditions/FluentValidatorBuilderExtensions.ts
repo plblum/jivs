@@ -39,7 +39,7 @@ import {
     _genDCNot,
     _genDCNotEqualTo, _genDCNotEqualToValue, _genDCNotNull, _genDCPositive, _genDCRequireText,
     _genDCStringLength, _genDCWhen, enableFluentConditions
-} from "./FluentConditionCollectorExtensions";
+} from "./FluentConditionBuilderExtensions";
 
 // How TypeScript merges functions with the FluentValidatorBuilder class
 declare module "./../ValueHosts/Fluent"

@@ -143,7 +143,7 @@ import { CodingError, assertNotNull } from "../Utilities/ErrorHandling";
 import { ConditionWithChildrenBaseConfig } from '../Conditions/ConditionWithChildrenBase';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { OneValueConditionBaseConfig } from '../Conditions/OneValueConditionBase';
-import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
+import { enableFluent } from '../Conditions/FluentValidatorBuilderExtensions';
 import { CalculationHandler, CalcValueHostConfig } from '../Interfaces/CalcValueHost';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { ValueHostConfig } from '../Interfaces/ValueHost';

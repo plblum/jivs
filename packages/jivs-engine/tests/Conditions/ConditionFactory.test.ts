@@ -6,7 +6,7 @@ import {
 import { IConditionCore, ConditionConfig, ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { FluentConditionBuilder } from "../../src/ValueHosts/Fluent";
-import { enableFluentConditions } from "../../src/Conditions/FluentConditionCollectorExtensions";
+import { enableFluentConditions } from "../../src/Conditions/FluentConditionBuilderExtensions";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 
