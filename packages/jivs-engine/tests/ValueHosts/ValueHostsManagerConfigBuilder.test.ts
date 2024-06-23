@@ -5,7 +5,7 @@ import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
-import { FluentConditionCollector } from "../../src/ValueHosts/Fluent";
+import { FluentConditionBuilder } from "../../src/ValueHosts/Fluent";
 import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { ensureFluentTestConditions } from "./ManagerConfigBuilderBase.test";
@@ -187,29 +187,29 @@ describe('Callbacks get and set', () => {
     });    
 });
 describe('build(vmConfig).conditions', () => {
-    test('Undefined parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
+    test('Undefined parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.conditions();
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
         expect(testItem.parentConfig).toEqual({
             conditionType: 'TBD',
             conditionConfigs: []
         });
     });
-    test('null parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
+    test('null parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
         let vmConfig = createVMConfig();
 
         let builder = new ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.conditions(null!);
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
         expect(testItem.parentConfig).toEqual({
             conditionType: 'TBD',
             conditionConfigs: []
         });
     });
-    test('Supplied parameter creates a FluentConditionCollector with the same vhConfig', () => {
+    test('Supplied parameter creates a FluentConditionBuilder with the same vhConfig', () => {
         let vmConfig = createVMConfig();
 
         let parentConfig: EvaluateChildConditionResultsBaseConfig = {
@@ -218,13 +218,13 @@ describe('build(vmConfig).conditions', () => {
         }
         let builder = new ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.conditions(parentConfig);
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
         expect(testItem.parentConfig).toEqual({
             conditionType: ConditionType.All,
             conditionConfigs: []
         });
     });
-    test('Supplied parameter with conditionConfig=null creates a FluentValidatorCollector with the same vhConfig and conditionConfig=[]', () => {
+    test('Supplied parameter with conditionConfig=null creates a FluentValidatorBuilder with the same vhConfig and conditionConfig=[]', () => {
         let vmConfig = createVMConfig();
 
         let parentConfig: EvaluateChildConditionResultsBaseConfig = {
@@ -233,7 +233,7 @@ describe('build(vmConfig).conditions', () => {
         }
         let builder = new ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.conditions(parentConfig);
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
         expect(testItem.parentConfig).toEqual({
             conditionType: ConditionType.All,
             conditionConfigs: []
@@ -247,8 +247,8 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
 
         let builder = new ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.conditions().testChainRequireText({});
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        let parentConfig = (testItem as FluentConditionCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
         expect(parentConfig.conditionConfigs!.length).toBe(1);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
         expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
@@ -260,8 +260,8 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         let testItem = builder.conditions()
             .testChainRequireText({})
             .testChainRegExp({ expressionAsString: '\\d' });
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        let parentConfig = (testItem as FluentConditionCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
         expect(parentConfig.conditionConfigs!.length).toBe(2);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
         expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
@@ -278,8 +278,8 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         };
         let builder = new ValueHostsManagerConfigBuilder(vmConfig);
         let testItem = builder.conditions(eccrConfig).testChainRequireText({});
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        let parentConfig = (testItem as FluentConditionCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
         expect(parentConfig).toBe(eccrConfig);
         expect(parentConfig.conditionConfigs!.length).toBe(1);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();
@@ -296,8 +296,8 @@ describe('Fluent chaining on build(vmConfig).conditions', () => {
         let testItem = builder.conditions(eccrConfig)
             .testChainRequireText({})
             .testChainRegExp({ expressionAsString: '\\d' });
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        let parentConfig = (testItem as FluentConditionCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
         expect(parentConfig).toBe(eccrConfig);
         expect(parentConfig.conditionConfigs!.length).toBe(2);
         expect(parentConfig.conditionConfigs![0]).not.toBeNull();

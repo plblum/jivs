@@ -8,7 +8,7 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
 import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
-import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
+import { FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { Publicify_ValidationManager } from "../TestSupport/Publicify_classes";
 import { MockValidationServices } from "../TestSupport/mocks";
@@ -58,7 +58,7 @@ describe('input()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.input('Field1', null, { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
             valueHostType: ValueHostType.Input,
@@ -74,7 +74,7 @@ describe('input()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.input('Field1', null, { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
             valueHostType: ValueHostType.Input,
@@ -89,7 +89,7 @@ describe('input()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.input('Field1', 'Test');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -106,7 +106,7 @@ describe('input()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.input('Field1');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -122,7 +122,7 @@ describe('input()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.input({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -140,7 +140,7 @@ describe('input()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.input('Field1', { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
             valueHostType: ValueHostType.Input,
@@ -174,7 +174,7 @@ describe('input()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem1 = modifier.input('Field1');
-        expect(testItem1).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem1).toBeInstanceOf(FluentValidatorBuilder);
         let expected1 = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -182,7 +182,7 @@ describe('input()', () => {
         };
         expect(testItem1.parentConfig).toEqual(expected1);
         let testItem2 = modifier.input('Field2');
-        expect(testItem2).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem2).toBeInstanceOf(FluentValidatorBuilder);
         let expected2 = {
             valueHostType: ValueHostType.Input,
             name: 'Field2',
@@ -227,7 +227,7 @@ describe('property()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.property('Field1', null, { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
             valueHostType: ValueHostType.Property,
@@ -244,7 +244,7 @@ describe('property()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.property('Field1', null, { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         expect(testItem.parentConfig).toEqual({
             valueHostType: ValueHostType.Property,
             name: 'Field1',
@@ -258,7 +258,7 @@ describe('property()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.property('Field1', 'Test');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Property,
             name: 'Field1',
@@ -276,7 +276,7 @@ describe('property()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.property('Field1');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Property,
             name: 'Field1',
@@ -292,7 +292,7 @@ describe('property()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.property({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Property,
             name: 'Field1',
@@ -312,7 +312,7 @@ describe('property()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem = modifier.property('Field1', { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         modifier.apply();
         expect(vm.getValueHostConfig('Field1')).toEqual({
             valueHostType: ValueHostType.Property,
@@ -346,7 +346,7 @@ describe('property()', () => {
 
         let modifier = new Publicify_ValidationManagerConfigModifier(vm);
         let testItem1 = modifier.property('Field1');
-        expect(testItem1).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem1).toBeInstanceOf(FluentValidatorBuilder);
         let expected1 = {
             valueHostType: ValueHostType.Property,
             name: 'Field1',
@@ -354,7 +354,7 @@ describe('property()', () => {
         };
         expect(testItem1.parentConfig).toEqual(expected1);
         let testItem2 = modifier.property('Field2');
-        expect(testItem2).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem2).toBeInstanceOf(FluentValidatorBuilder);
         let expected2 = {
             valueHostType: ValueHostType.Property,
             name: 'Field2',

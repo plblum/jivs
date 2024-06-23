@@ -8,7 +8,7 @@ import { ValueHostsManagerConfigBuilder } from "../ValueHosts/ValueHostsManagerC
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ValueHostValidationStateChangedHandler } from "../Interfaces/ValidatableValueHostBase";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FluentInputParameters, FluentValidatorCollector, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, ValidationManagerStartFluent } from "../ValueHosts/Fluent";
+import { FluentInputParameters, FluentValidatorBuilder, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, ValidationManagerStartFluent } from "../ValueHosts/Fluent";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { resolveErrorCode } from "../Utilities/Validation";
@@ -62,29 +62,29 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
      */
-    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
+    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder;
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param valueHostName - the ValueHost name
      * @param parameters - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
      */
-    public input(valueHostName: ValueHostName, parameters: FluentInputParameters): FluentValidatorCollector;    
+    public input(valueHostName: ValueHostName, parameters: FluentInputParameters): FluentValidatorBuilder;    
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param config - Supply the entire InputValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
-     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
      */
-    public input(config: FluentInputValueConfig): FluentValidatorCollector;
+    public input(config: FluentInputValueConfig): FluentValidatorBuilder;
     // overload resolution
     public input(arg1: ValueHostName | FluentInputValueConfig,
         arg2?: FluentInputParameters | string | null,
-        arg3?: FluentInputParameters): FluentValidatorCollector {
+        arg3?: FluentInputParameters): FluentValidatorBuilder {
         return this.addValidatorsValueHost<InputValueHostConfig>(ValueHostType.Input, arg1, arg2, arg3);
     }
 
@@ -94,27 +94,27 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
      */
-    public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector;
+    public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
     /**
      * Fluent format to create a PropertyValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param valueHostName - the ValueHost name
      * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
      */
-    public property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorCollector;    
+    public property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorBuilder;    
     /**
      * Fluent format to create a PropertyValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
-     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
      */
-    public property(config: FluentPropertyValueConfig): FluentValidatorCollector;
+    public property(config: FluentPropertyValueConfig): FluentValidatorBuilder;
     // overload resolution
-    public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, arg3?: FluentPropertyParameters): FluentValidatorCollector {
+    public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, arg3?: FluentPropertyParameters): FluentValidatorBuilder {
         return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, arg1, arg2, arg3);
     }
     //#endregion validation oriented ValueHost support

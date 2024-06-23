@@ -34,7 +34,7 @@ import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
-import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
+import { FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
 import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { IManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
 import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
@@ -90,11 +90,11 @@ class TestValidatorsValueHostGenerator extends ValidatorsValueHostBaseGenerator 
 
 }
 class TestValueHostForValidationManagerConfigBuilder extends ValidationManagerConfigBuilder {
-    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;
-    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;    
-    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;
+    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorBuilder;
+    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorBuilder;    
+    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorBuilder;
     // overload resolution
-    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector {
+    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorBuilder {
         return this.addValidatorsValueHost<ValidatorsValueHostBaseConfig>(TestValueHostType, arg1, arg2, arg3);
     }
 
@@ -106,11 +106,11 @@ class TestManagerConfigBuilderFactory extends ManagerConfigBuilderFactory {
 }
 class TestValueHostForValidationManagerConfigModifier extends ValidationManagerConfigModifier {
 
-    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;
-    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;    
-    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector;
+    public testValueHost(valueHostName: ValueHostName, dataType?: string | null, parameters?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorBuilder;
+    public testValueHost(valueHostName: ValueHostName, parameters: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorBuilder;    
+    public testValueHost(config: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorBuilder;
     // overload resolution
-    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorCollector {
+    public testValueHost(arg1: ValueHostName | Partial<ValidatorsValueHostBaseConfig>, arg2?: Partial<ValidatorsValueHostBaseConfig> | string | null, arg3?: Partial<ValidatorsValueHostBaseConfig>): FluentValidatorBuilder {
         return this.addValidatorsValueHost<ValidatorsValueHostBaseConfig>(TestValueHostType, arg1, arg2, arg3);
     }
 

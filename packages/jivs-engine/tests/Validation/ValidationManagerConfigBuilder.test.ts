@@ -6,7 +6,7 @@ import { IValidatableValueHostBase, ValueHostValidationState } from '../../src/I
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ValidationState } from '../../src/Interfaces/Validation';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
-import { FluentValidatorCollector, customRule } from '../../src/ValueHosts/Fluent';
+import { FluentValidatorBuilder, customRule } from '../../src/ValueHosts/Fluent';
 import { RegExpConditionConfig, RequireTextCondition } from '../../src/Conditions/ConcreteConditions';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
@@ -271,8 +271,8 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.input('Field1').testChainRequireText({}, 'Error', {});
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
-        let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
@@ -283,8 +283,8 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         let testItem = builder.input('Field1')
             .testChainRequireText({}, 'Error', {})
             .testChainRegExp({ expressionAsString: '\\d' }, 'Error2');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
-        let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(2);
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
@@ -294,7 +294,7 @@ describe('Fluent chaining on build(vmConfig).input', () => {
     });
 });
 describe('customRule', () => {
-    test('Provide a valid function and get back a FluentValidatorCollector with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
+    test('Provide a valid function and get back a FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.input('Field1').customRule((requester) => {
@@ -304,22 +304,22 @@ describe('customRule', () => {
             {
                 summaryMessage: 'Summary'
             });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
-        let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
         expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].errorMessage).toBe('Error');
         expect(parentConfig.validatorConfigs![0].summaryMessage).toBe('Summary');
     });
-    test('Provide a valid function without errorMessage or validatorParameters and get back a FluentValidatorCollector with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
+    test('Provide a valid function without errorMessage or validatorParameters and get back a FluentValidatorBuilder with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.input('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
-        let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
         expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();

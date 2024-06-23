@@ -1,6 +1,6 @@
 import { MockValidationServices } from './../TestSupport/mocks';
 import { LookupKey } from './../../src/DataTypes/LookupKeys';
-import { FluentConditionCollector, ValidationManagerStartFluent } from "../../src/ValueHosts/Fluent";
+import { FluentConditionBuilder, ValidationManagerStartFluent } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
@@ -13,11 +13,11 @@ import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
 import { ConditionConfig, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { ConditionWithChildrenBaseConfig } from '../../src/Conditions/ConditionWithChildrenBase';
 
-function TestFluentConditionCollector(testItem: FluentConditionCollector,
+function TestFluentConditionBuilder(testItem: FluentConditionBuilder,
     expectedCondConfig: ConditionConfig) {
 
-    expect(testItem).toBeInstanceOf(FluentConditionCollector);
-    let typedTextItem = testItem as FluentConditionCollector;
+    expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+    let typedTextItem = testItem as FluentConditionBuilder;
     let parentConfig = typedTextItem.parentConfig as ConditionWithChildrenBaseConfig;
     expect(parentConfig.conditionConfigs).not.toBeNull();
     expect(parentConfig.conditionConfigs!.length).toBe(1);
@@ -37,7 +37,7 @@ describe('conditionConfig', () => {
         };
         let fluent = createFluent();
         let testItem = fluent.conditions().conditionConfig(conditionConfig);
-        TestFluentConditionCollector(testItem, conditionConfig);
+        TestFluentConditionBuilder(testItem, conditionConfig);
     });
     test('With no parameters creates DataTypeCheckConditionConfig with only type assigned', () => {
         const conditionConfig: AllMatchConditionConfig = {
@@ -55,7 +55,7 @@ describe('conditionConfig', () => {
         };
         let fluent = createFluent();
         let testItem = fluent.conditions().conditionConfig(conditionConfig);
-        TestFluentConditionCollector(testItem, conditionConfig);
+        TestFluentConditionBuilder(testItem, conditionConfig);
     });    
     test('With null parameter, throws error', () => {
         let fluent = createFluent();
@@ -71,7 +71,7 @@ describe('dataTypeCheck on conditions', () => {
     test('With no parameters creates DataTypeCheckConditionConfig with only type assigned', () => {
         let fluent = createFluent();
         let testItem = fluent.conditions().dataTypeCheck();
-        TestFluentConditionCollector(testItem, <DataTypeCheckConditionConfig>{
+        TestFluentConditionBuilder(testItem, <DataTypeCheckConditionConfig>{
             conditionType: ConditionType.DataTypeCheck
         });
     });
@@ -82,7 +82,7 @@ describe('regExp on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().regExp( '\\d');
-        TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RegExpConditionConfig>{
             conditionType: ConditionType.RegExp,
             expressionAsString: '\\d'
         });
@@ -91,7 +91,7 @@ describe('regExp on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().regExp('\\d', null, {});
-        TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RegExpConditionConfig>{
             conditionType: ConditionType.RegExp,
             expressionAsString: '\\d'
         });
@@ -100,7 +100,7 @@ describe('regExp on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().regExp('\\d', null, null, 'Field2');
-        TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RegExpConditionConfig>{
             conditionType: ConditionType.RegExp,
             expressionAsString: '\\d',
             valueHostName: 'Field2'
@@ -110,7 +110,7 @@ describe('regExp on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().regExp(/\d/i);
-        TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RegExpConditionConfig>{
             conditionType: ConditionType.RegExp,
             expression: /\d/i
         });
@@ -119,7 +119,7 @@ describe('regExp on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().regExp('\\d', true);
-        TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RegExpConditionConfig>{
             conditionType: ConditionType.RegExp,
             expressionAsString: '\\d',
             ignoreCase: true
@@ -129,7 +129,7 @@ describe('regExp on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().regExp('\\d', false);
-        TestFluentConditionCollector(testItem, <RegExpConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RegExpConditionConfig>{
             conditionType: ConditionType.RegExp,
             expressionAsString: '\\d',
             ignoreCase: false
@@ -142,7 +142,7 @@ describe('range on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().range(1, 4);
-        TestFluentConditionCollector(testItem, <RangeConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RangeConditionConfig>{
             conditionType: ConditionType.Range,
             minimum: 1,
             maximum: 4
@@ -152,7 +152,7 @@ describe('range on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().range(1, 4, 'Field2');
-        TestFluentConditionCollector(testItem, <RangeConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RangeConditionConfig>{
             conditionType: ConditionType.Range,
             valueHostName: 'Field2',
             minimum: 1,
@@ -165,7 +165,7 @@ describe('range on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().range(1, null);
-        TestFluentConditionCollector(testItem, <RangeConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RangeConditionConfig>{
             conditionType: ConditionType.Range,
             minimum: 1
         });
@@ -174,7 +174,7 @@ describe('range on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().range(null, 4);
-        TestFluentConditionCollector(testItem, <RangeConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RangeConditionConfig>{
             conditionType: ConditionType.Range,
             maximum: 4
         });
@@ -187,7 +187,7 @@ describe('equalToValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().equalToValue(1);
-        TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <EqualToValueConditionConfig>{
             conditionType: ConditionType.EqualToValue,
             secondValue: 1
         });
@@ -196,7 +196,7 @@ describe('equalToValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().equalToValue(1, {});
-        TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <EqualToValueConditionConfig>{
             conditionType: ConditionType.EqualToValue,
             secondValue: 1
         });
@@ -205,7 +205,7 @@ describe('equalToValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().equalToValue(1, null, 'Field2');
-        TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <EqualToValueConditionConfig>{
             conditionType: ConditionType.EqualToValue,
             valueHostName: 'Field2',
             secondValue: 1
@@ -217,7 +217,7 @@ describe('equalToValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().equalToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <EqualToValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <EqualToValueConditionConfig>{
             conditionType: ConditionType.EqualToValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
@@ -230,7 +230,7 @@ describe('equalTo on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().equalTo('Field2');
-        TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
+        TestFluentConditionBuilder(testItem, <EqualToConditionConfig>{
             conditionType: ConditionType.EqualTo,
             secondValueHostName: 'Field2'
         });
@@ -239,7 +239,7 @@ describe('equalTo on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().equalTo('Field2', {});
-        TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
+        TestFluentConditionBuilder(testItem, <EqualToConditionConfig>{
             conditionType: ConditionType.EqualTo,
             secondValueHostName: 'Field2'
         });
@@ -248,7 +248,7 @@ describe('equalTo on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().equalTo('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
+        TestFluentConditionBuilder(testItem, <EqualToConditionConfig>{
             conditionType: ConditionType.EqualTo,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -259,7 +259,7 @@ describe('equalTo on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().equalTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <EqualToConditionConfig>{
+        TestFluentConditionBuilder(testItem, <EqualToConditionConfig>{
             conditionType: ConditionType.EqualTo,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
@@ -273,7 +273,7 @@ describe('notEqualToValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notEqualToValue(1);
-        TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotEqualToValueConditionConfig>{
             conditionType: ConditionType.NotEqualToValue,
             secondValue: 1
         });
@@ -282,7 +282,7 @@ describe('notEqualToValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notEqualToValue(1, {});
-        TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotEqualToValueConditionConfig>{
             conditionType: ConditionType.NotEqualToValue,
             secondValue: 1
         });
@@ -291,7 +291,7 @@ describe('notEqualToValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notEqualToValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotEqualToValueConditionConfig>{
             conditionType: ConditionType.NotEqualToValue,
             valueHostName: 'Field1',
             secondValue: 1
@@ -302,7 +302,7 @@ describe('notEqualToValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notEqualToValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <NotEqualToValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotEqualToValueConditionConfig>{
             conditionType: ConditionType.NotEqualToValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
@@ -315,7 +315,7 @@ describe('notEqualTo on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notEqualTo('Field2');
-        TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotEqualToConditionConfig>{
             conditionType: ConditionType.NotEqualTo,
             secondValueHostName: 'Field2'
         });
@@ -324,7 +324,7 @@ describe('notEqualTo on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notEqualTo('Field2', {});
-        TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotEqualToConditionConfig>{
             conditionType: ConditionType.NotEqualTo,
             secondValueHostName: 'Field2'
         });
@@ -333,7 +333,7 @@ describe('notEqualTo on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notEqualTo('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotEqualToConditionConfig>{
             conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -344,7 +344,7 @@ describe('notEqualTo on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notEqualTo('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <NotEqualToConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotEqualToConditionConfig>{
             conditionType: ConditionType.NotEqualTo,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
@@ -358,7 +358,7 @@ describe('lessThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanValue(1);
-        TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanValueConditionConfig>{
             conditionType: ConditionType.LessThanValue,
             secondValue: 1
         });
@@ -368,7 +368,7 @@ describe('lessThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanValueConditionConfig>{
             conditionType: ConditionType.LessThanValue,
             valueHostName: 'Field1',
             secondValue: 1
@@ -378,7 +378,7 @@ describe('lessThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().ltValue(1);
-        TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanValueConditionConfig>{
             conditionType: ConditionType.LessThanValue,
             secondValue: 1
         });
@@ -388,7 +388,7 @@ describe('lessThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <LessThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanValueConditionConfig>{
             conditionType: ConditionType.LessThanValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
@@ -401,7 +401,7 @@ describe('lessThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThan('Field2');
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanConditionConfig>{
             conditionType: ConditionType.LessThan,
             secondValueHostName: 'Field2'
 
@@ -411,7 +411,7 @@ describe('lessThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThan('Field2', {});
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanConditionConfig>{
             conditionType: ConditionType.LessThan,
             secondValueHostName: 'Field2'
         });
@@ -420,7 +420,7 @@ describe('lessThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThan('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanConditionConfig>{
             conditionType: ConditionType.LessThan,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -431,7 +431,7 @@ describe('lessThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lt('Field2');
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanConditionConfig>{
             conditionType: ConditionType.LessThan,
             secondValueHostName: 'Field2'
         });
@@ -440,7 +440,7 @@ describe('lessThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lt('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanConditionConfig>{
             conditionType: ConditionType.LessThan,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -452,7 +452,7 @@ describe('lessThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThan( 'Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <LessThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanConditionConfig>{
             conditionType: ConditionType.LessThan,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
@@ -465,7 +465,7 @@ describe('lessThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanOrEqualValue(1);
-        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
@@ -474,7 +474,7 @@ describe('lessThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanOrEqualValue(1, {});
-        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
@@ -484,7 +484,7 @@ describe('lessThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanOrEqualValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
@@ -495,7 +495,7 @@ describe('lessThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lteValue(1);
-        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
@@ -505,7 +505,7 @@ describe('lessThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lteValue(1, {});
-        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1
         });
@@ -514,7 +514,7 @@ describe('lessThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lteValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.LessThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
@@ -525,7 +525,7 @@ describe('lessThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <LessThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.LessThanOrEqualValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
@@ -538,7 +538,7 @@ describe('lessThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanOrEqual('Field2');
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualConditionConfig>{
             conditionType: ConditionType.LessThanOrEqual,
             secondValueHostName: 'Field2'
         });
@@ -547,7 +547,7 @@ describe('lessThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanOrEqual('Field2', {});
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualConditionConfig>{
             conditionType: ConditionType.LessThanOrEqual,
             secondValueHostName: 'Field2'
         });
@@ -556,7 +556,7 @@ describe('lessThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanOrEqual('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualConditionConfig>{
             conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -567,7 +567,7 @@ describe('lessThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lte('Field2');
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualConditionConfig>{
             conditionType: ConditionType.LessThanOrEqual,
             secondValueHostName: 'Field2'
         });
@@ -576,7 +576,7 @@ describe('lessThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lte('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualConditionConfig>{
             conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -587,7 +587,7 @@ describe('lessThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().lessThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <LessThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <LessThanOrEqualConditionConfig>{
             conditionType: ConditionType.LessThanOrEqual,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
@@ -602,7 +602,7 @@ describe('greaterThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanValue(1);
-        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanValueConditionConfig>{
             conditionType: ConditionType.GreaterThanValue,
             secondValue: 1
         });
@@ -611,7 +611,7 @@ describe('greaterThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanValue(1, {});
-        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanValueConditionConfig>{
             conditionType: ConditionType.GreaterThanValue,
             secondValue: 1
         });
@@ -620,7 +620,7 @@ describe('greaterThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanValueConditionConfig>{
             conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Field1',
             secondValue: 1
@@ -631,7 +631,7 @@ describe('greaterThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gtValue(1);
-        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanValueConditionConfig>{
             conditionType: ConditionType.GreaterThanValue,
             secondValue: 1
         });
@@ -640,7 +640,7 @@ describe('greaterThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gtValue(1, {});
-        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanValueConditionConfig>{
             conditionType: ConditionType.GreaterThanValue,
             secondValue: 1
         });
@@ -649,7 +649,7 @@ describe('greaterThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gtValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanValueConditionConfig>{
             conditionType: ConditionType.GreaterThanValue,
             valueHostName: 'Field1',
             secondValue: 1
@@ -660,7 +660,7 @@ describe('greaterThanValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <GreaterThanValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanValueConditionConfig>{
             conditionType: ConditionType.GreaterThanValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
@@ -674,7 +674,7 @@ describe('greaterThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThan('Field2');
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanConditionConfig>{
             conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2'
         });
@@ -683,7 +683,7 @@ describe('greaterThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThan('Field2', {});
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanConditionConfig>{
             conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2'
         });
@@ -692,7 +692,7 @@ describe('greaterThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThan('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanConditionConfig>{
             conditionType: ConditionType.GreaterThan,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -702,7 +702,7 @@ describe('greaterThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gt('Field2');
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanConditionConfig>{
             conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2'
         });
@@ -711,7 +711,7 @@ describe('greaterThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gt('Field2', {});
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanConditionConfig>{
             conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2'
         });
@@ -720,7 +720,7 @@ describe('greaterThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gt('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanConditionConfig>{
             conditionType: ConditionType.GreaterThan,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -731,7 +731,7 @@ describe('greaterThan on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThan('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <GreaterThanConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanConditionConfig>{
             conditionType: ConditionType.GreaterThan,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
@@ -744,7 +744,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanOrEqualValue(1);
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
@@ -753,7 +753,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanOrEqualValue(1, {});
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
@@ -762,7 +762,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanOrEqualValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
@@ -772,7 +772,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gteValue(1);
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
@@ -781,7 +781,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gteValue(1, {});
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1
         });
@@ -790,7 +790,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gteValue(1, null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqualValue,
             valueHostName: 'Field1',
             secondValue: 1
@@ -801,7 +801,7 @@ describe('greaterThanOrEqualValue on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanOrEqualValue(1, { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualValueConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualValueConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqualValue,
             secondValue: 1,
             conversionLookupKey: LookupKey.Integer,
@@ -814,7 +814,7 @@ describe('greaterThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanOrEqual('Field2');
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2'
         });
@@ -823,7 +823,7 @@ describe('greaterThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanOrEqual('Field2', {});
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2'
         });
@@ -833,7 +833,7 @@ describe('greaterThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanOrEqual('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -844,7 +844,7 @@ describe('greaterThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gte('Field2');
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2'
         });
@@ -853,7 +853,7 @@ describe('greaterThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gte('Field2', {});
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2'
         });
@@ -862,7 +862,7 @@ describe('greaterThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().gte('Field2', null, 'Field1');
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqual,
             valueHostName: 'Field1',
             secondValueHostName: 'Field2'
@@ -873,7 +873,7 @@ describe('greaterThanOrEqual on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().greaterThanOrEqual('Field2', { conversionLookupKey: LookupKey.Integer, secondConversionLookupKey: LookupKey.Integer });
-        TestFluentConditionCollector(testItem, <GreaterThanOrEqualConditionConfig>{
+        TestFluentConditionBuilder(testItem, <GreaterThanOrEqualConditionConfig>{
             conditionType: ConditionType.GreaterThanOrEqual,
             secondValueHostName: 'Field2',
             conversionLookupKey: LookupKey.Integer,
@@ -887,7 +887,7 @@ describe('stringLength on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().stringLength(4);
-        TestFluentConditionCollector(testItem, <StringLengthConditionConfig>{
+        TestFluentConditionBuilder(testItem, <StringLengthConditionConfig>{
             conditionType: ConditionType.StringLength,
             maximum: 4
         });
@@ -896,7 +896,7 @@ describe('stringLength on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().stringLength(4, {});
-        TestFluentConditionCollector(testItem, <StringLengthConditionConfig>{
+        TestFluentConditionBuilder(testItem, <StringLengthConditionConfig>{
             conditionType: ConditionType.StringLength,
             maximum: 4
         });
@@ -905,7 +905,7 @@ describe('stringLength on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().stringLength(4, null, 'Field1');
-        TestFluentConditionCollector(testItem, <StringLengthConditionConfig>{
+        TestFluentConditionBuilder(testItem, <StringLengthConditionConfig>{
             conditionType: ConditionType.StringLength,
             valueHostName: 'Field1',
             maximum: 4
@@ -916,7 +916,7 @@ describe('stringLength on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().stringLength(4, { minimum: 1 });
-        TestFluentConditionCollector(testItem, <StringLengthConditionConfig>{
+        TestFluentConditionBuilder(testItem, <StringLengthConditionConfig>{
             conditionType: ConditionType.StringLength,
             maximum: 4,
             minimum: 1
@@ -929,7 +929,7 @@ describe('requireText on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().requireText();
-        TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RequireTextConditionConfig>{
             conditionType: ConditionType.RequireText
         });
     });
@@ -938,7 +938,7 @@ describe('requireText on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().requireText({});
-        TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RequireTextConditionConfig>{
             conditionType: ConditionType.RequireText
         });
     });
@@ -946,7 +946,7 @@ describe('requireText on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().requireText(null, 'Field1');
-        TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RequireTextConditionConfig>{
             conditionType: ConditionType.RequireText,
             valueHostName: 'Field1'
         });
@@ -956,7 +956,7 @@ describe('requireText on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().requireText({ nullValueResult: ConditionEvaluateResult.NoMatch });
-        TestFluentConditionCollector(testItem, <RequireTextConditionConfig>{
+        TestFluentConditionBuilder(testItem, <RequireTextConditionConfig>{
             conditionType: ConditionType.RequireText,
             nullValueResult: ConditionEvaluateResult.NoMatch
         });
@@ -967,7 +967,7 @@ describe('notNull on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notNull();
-        TestFluentConditionCollector(testItem, <NotNullConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotNullConditionConfig>{
             conditionType: ConditionType.NotNull
         });
     });
@@ -975,7 +975,7 @@ describe('notNull on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().notNull('Field1');
-        TestFluentConditionCollector(testItem, <NotNullConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotNullConditionConfig>{
             conditionType: ConditionType.NotNull,
             valueHostName: 'Field1'
         });
@@ -988,7 +988,7 @@ describe('all on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().all((children) => children);
-        TestFluentConditionCollector(testItem, <AllMatchConditionConfig>{
+        TestFluentConditionBuilder(testItem, <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: []
            });
@@ -997,7 +997,7 @@ describe('all on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().all((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
-        TestFluentConditionCollector(testItem, <AllMatchConditionConfig>{
+        TestFluentConditionBuilder(testItem, <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
                     conditionType: ConditionType.RequireText,
@@ -1015,7 +1015,7 @@ describe('any on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().any((children) => children);
-        TestFluentConditionCollector(testItem, <AnyMatchConditionConfig>{
+        TestFluentConditionBuilder(testItem, <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: []
             });
@@ -1024,7 +1024,7 @@ describe('any on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().any((children) => children.requireText(null, 'F1').requireText(null, 'F2'));
-        TestFluentConditionCollector(testItem, <AnyMatchConditionConfig>{
+        TestFluentConditionBuilder(testItem, <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
                     conditionType: ConditionType.RequireText,
@@ -1043,7 +1043,7 @@ describe('countMatches on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().countMatches(1, 2, (children) => children);
-        TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
+        TestFluentConditionBuilder(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
                 maximum: 2,
@@ -1054,7 +1054,7 @@ describe('countMatches on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().countMatches(1, null, (children) => children);
-        TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
+        TestFluentConditionBuilder(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
                 conditionConfigs: []
@@ -1064,7 +1064,7 @@ describe('countMatches on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().countMatches(null, 2, (children) => children);
-        TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
+        TestFluentConditionBuilder(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 maximum: 2,
                 conditionConfigs: []
@@ -1074,7 +1074,7 @@ describe('countMatches on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().countMatches(0, 2, (children) => children.requireText(null, 'F1').requireText(null, 'F2'));
-        TestFluentConditionCollector(testItem, <CountMatchesConditionConfig>{
+        TestFluentConditionBuilder(testItem, <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 0,
                 maximum: 2,
@@ -1095,7 +1095,7 @@ describe('positive on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().positive();
-        TestFluentConditionCollector(testItem, <PositiveConditionConfig>{
+        TestFluentConditionBuilder(testItem, <PositiveConditionConfig>{
             conditionType: ConditionType.Positive
         });
     });
@@ -1103,7 +1103,7 @@ describe('positive on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().positive('Field1');
-        TestFluentConditionCollector(testItem, <PositiveConditionConfig>{
+        TestFluentConditionBuilder(testItem, <PositiveConditionConfig>{
             conditionType: ConditionType.Positive,
             valueHostName: 'Field1'
         });
@@ -1115,7 +1115,7 @@ describe('integer on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().integer();
-        TestFluentConditionCollector(testItem, <IntegerConditionConfig>{
+        TestFluentConditionBuilder(testItem, <IntegerConditionConfig>{
             conditionType: ConditionType.Integer
         });
     });
@@ -1123,7 +1123,7 @@ describe('integer on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().integer('Field1');
-        TestFluentConditionCollector(testItem, <IntegerConditionConfig>{
+        TestFluentConditionBuilder(testItem, <IntegerConditionConfig>{
             conditionType: ConditionType.Integer,
             valueHostName: 'Field1'
         });
@@ -1135,7 +1135,7 @@ describe('maxDecimals on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().maxDecimals(2);
-        TestFluentConditionCollector(testItem, <MaxDecimalsConditionConfig>{
+        TestFluentConditionBuilder(testItem, <MaxDecimalsConditionConfig>{
             conditionType: ConditionType.MaxDecimals,
             maxDecimals: 2
         });
@@ -1144,7 +1144,7 @@ describe('maxDecimals on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().maxDecimals(1, 'Field1');
-        TestFluentConditionCollector(testItem, <MaxDecimalsConditionConfig>{
+        TestFluentConditionBuilder(testItem, <MaxDecimalsConditionConfig>{
             conditionType: ConditionType.MaxDecimals,
             valueHostName: 'Field1',
             maxDecimals: 1
@@ -1158,7 +1158,7 @@ describe('not on conditions', () => {
         let fluent = createFluent();
 
         let testItem = fluent.conditions().not((childBuilder) => childBuilder);
-        TestFluentConditionCollector(testItem, <NotConditionConfig>{
+        TestFluentConditionBuilder(testItem, <NotConditionConfig>{
                 conditionType: ConditionType.Not,
             childConditionConfig: {}
            });
@@ -1167,7 +1167,7 @@ describe('not on conditions', () => {
 
         let testItem = createFluent().conditions()
             .not((childBuilder) => childBuilder.requireText(null, 'F1'));
-            TestFluentConditionCollector(testItem, <NotConditionConfig>{
+            TestFluentConditionBuilder(testItem, <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
                     conditionType: ConditionType.RequireText,
@@ -1197,7 +1197,7 @@ describe('when on conditions', () => {
         let testItem = fluent.conditions().when(
             (enablerBuilder) => enablerBuilder,
             (childBuilder) => childBuilder);
-        TestFluentConditionCollector(testItem, <WhenConditionConfig>{
+        TestFluentConditionBuilder(testItem, <WhenConditionConfig>{
             conditionType: ConditionType.When,
             enablerConfig: {},
             childConditionConfig: {}
@@ -1208,7 +1208,7 @@ describe('when on conditions', () => {
         let testItem = createFluent().conditions()
             .when((enablerBuilder)=> enablerBuilder.regExp(/abc/, null, null, 'F2'),
                 (childBuilder) => childBuilder.requireText(null, 'F1'));
-            TestFluentConditionCollector(testItem, <WhenConditionConfig>{
+            TestFluentConditionBuilder(testItem, <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 enablerConfig: <any>{
                     conditionType: ConditionType.RegExp,

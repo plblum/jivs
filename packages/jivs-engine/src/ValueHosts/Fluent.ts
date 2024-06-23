@@ -55,16 +55,16 @@
  * 
  * Each condition class will define its fluent method based on its ConditionType name ("requireText", "regExp", etc).
  * They will use some TypeScript Declaration Merging magic to make their
- * class appear to be part of FluentValidatorCollector and FluentConditionCollector, classes that connect
+ * class appear to be part of FluentValidatorBuilder and FluentConditionBuilder, classes that connect
  * the conditions to the InputValueHostConfig or EvaluateChildConditionResultsConfig.
  * 
  * - ValidationManagerStartFluent - Class that starts a fluent chain. Its methods start InputValueHost (input()),
  *   PropertyValueHost (property()), StaticValueHost (static()), CalcValueHost (calc()) and a collection of Conditions (conditions()).
  * 
- * - FluentValidatorCollector - Class that supplies Conditions and Validators
+ * - FluentValidatorBuilder - Class that supplies Conditions and Validators
  *   to the preceding InputValueHost. It is returned by builder.input() and property() and each chained object that follows.
  * 
- * - FluentConditionCollector - Class that supplies Conditions to Conditions based upon EvaluateChildConditionResultsConfig:
+ * - FluentConditionBuilder - Class that supplies Conditions to Conditions based upon EvaluateChildConditionResultsConfig:
  *   AllMatchCondition, AnyMatchCondition, and CountMatchesCondition. It is created 
  *   by builder.conditions()
  * 
@@ -93,44 +93,44 @@
  *     expression: RegExp | string, ignoreCase?: boolean | null,
  *     conditionConfig?: FluentRegExpConditionConfig | null,
  *     errorMessage?: string | null,
- *     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
- *     return finishFluentValidatorCollector(this,
+ *     validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder {
+ *     return finishFluentValidatorBuilder(this,
  *         ConditionType.RegExp, _genCDRegExp(expression, ignoreCase, conditionConfig),
  *         errorMessage, validatorParameters);
  * }
  * function regExp_forConditions(
  *     valueHostName: ValueHostName | null,
  *     expression: RegExp | string, ignoreCase?: boolean | null,
- *     conditionConfig?: FluentRegExpConditionConfig | null): FluentConditionCollector {
- *     return finishFluentConditionCollector(this,
+ *     conditionConfig?: FluentRegExpConditionConfig | null): FluentConditionBuilder {
+ *     return finishFluentConditionBuilder(this,
  *         ConditionType.RegExp, valueHostName, _genCDRegExp(expression, ignoreCase, conditionConfig));
  * }
  * 
  * declare module "@plblum/jivs-engine/build/ValueHosts/fluent"
  * {
- *    export interface FluentValidatorCollector
+ *    export interface FluentValidatorBuilder
  *    {
  * // same definition as the actual function, except use the name the user should enter in chaining
  *       regExp(expression: RegExp | string, ignoreCase?: boolean | null,
  *          conditionConfig?: FluentRegExpConditionConfig | null, 
  *          errorMessage?: string | null, 
- *          validatorParameters : FluentRegExpConditionConfig) : FluentValidatorCollector
+ *          validatorParameters : FluentRegExpConditionConfig) : FluentValidatorBuilder
  *    }
- *    export interface FluentConditionCollector
+ *    export interface FluentConditionBuilder
  *    {
  * // same definition as the actual function, except use the name the user should enter in chaining
  *       regExp(expression: RegExp | string, ignoreCase?: boolean | null,
- *          conditionConfig?: FluentRegExpConditionConfig) : FluentConditionCollector
+ *          conditionConfig?: FluentRegExpConditionConfig) : FluentConditionBuilder
  *    } 
  * }
- * FluentValidatorCollector.prototype.regExp = regExp_forValidator;
- * FluentConditionCollector.prototype.regExp = regExp_forConditions;
+ * FluentValidatorBuilder.prototype.regExp = regExp_forValidator;
+ * FluentConditionBuilder.prototype.regExp = regExp_forConditions;
  * 
  * @module ValueHosts/Fluent
  * ## Switching to a different condition library
  *  
  * Jivs is designed to allow a replacement to its own conditions. Thus the fluent system
- * allows replacing the FluentValidatorCollector and FluentConditionCollector classes with your own.
+ * allows replacing the FluentValidatorBuilder and FluentConditionBuilder classes with your own.
  * Just register it with fluentFactory.singleton.register().
  */
 
@@ -320,16 +320,16 @@ export class ValueHostsManagerStartFluent implements IDisposable, IServicesAcces
      * fluent.input('Field1').all(fluent.conditions().required('Field2').required('Field3'));
      * ```
      * The fluent function for allCondition (and others that support EvaluateChildConditionResultsConfig)
-     * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
+     * will get a FluentConditionBuilder whose conditionConfigs collection is fully populated.
     * @param config - When null/undefined, the instance is created and the caller is expected
     * to retrieve its conditionConfigs from the config property.
     * When assigned, that instance gets conditionConfigs populated and 
     * there is no need to get a value from configs property.
     */
-    public conditions(config?: ConditionWithChildrenBaseConfig): FluentConditionCollector
+    public conditions(config?: ConditionWithChildrenBaseConfig): FluentConditionBuilder
     {
-        let collector = new FluentConditionCollector(config ?? null);
-        return collector;
+        let Builder = new FluentConditionBuilder(config ?? null);
+        return Builder;
     }   
     
     /**
@@ -389,12 +389,12 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
     public withValidators<T extends ValidatorsValueHostBaseConfig>(valueHostType: ValueHostType | string, 
         arg1: FluentValidatorsValueHostConfig<T> | ValueHostName,
         arg2?: FluentValidatorsValueHostParameters<T> | string | null,
-        arg3?: FluentValidatorsValueHostParameters<T>): FluentValidatorCollector
+        arg3?: FluentValidatorsValueHostParameters<T>): FluentValidatorBuilder
     {
         let config = this.withoutValidators<T>(valueHostType, arg1, arg2, arg3);
         if (!config.validatorConfigs)
             config.validatorConfigs = [];
-        return new FluentValidatorCollector(config);
+        return new FluentValidatorBuilder(config);
     }    
 
 
@@ -405,16 +405,16 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a InputValueHostConfig.
      */
-    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
+    public input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder;
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire InputValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
-    public input(config: FluentInputValueConfig): FluentValidatorCollector;
+    public input(config: FluentInputValueConfig): FluentValidatorBuilder;
     // overload resolution
-    public input(arg1: ValueHostName | FluentInputValueConfig, arg2?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector
+    public input(arg1: ValueHostName | FluentInputValueConfig, arg2?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder
     {
         return this.withValidators<InputValueHostConfig>(ValueHostType.Input, arg1, arg2, parameters);
     }    
@@ -426,16 +426,16 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
      */
-    public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector;
+    public property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
     /**
      * Fluent format to create a PropertyValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
      * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
      */
-    public property(config: FluentPropertyValueConfig): FluentValidatorCollector;
+    public property(config: FluentPropertyValueConfig): FluentValidatorBuilder;
     // overload resolution
-    public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: string | null, arg3?: FluentPropertyParameters): FluentValidatorCollector
+    public property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: string | null, arg3?: FluentPropertyParameters): FluentValidatorBuilder
     {
         return this.withValidators<PropertyValueHostConfig>(ValueHostType.Property, arg1, arg2, arg3);
     }     
@@ -490,12 +490,12 @@ export type FluentValidatorConfig = Omit<ValidatorConfig, 'conditionConfig' | 'c
  * by using TypeScript's Declaration Merging:
  * https://www.typescriptlang.org/docs/handbook/declaration-merging.html.
  * 
- * Those functions will treat their 'this' as FluentCollectorBase
- * and testing this for its subclasses, FluentValidatorCollector and FluentConditionCollector.
+ * Those functions will treat their 'this' as FluentBuilderBase
+ * and testing this for its subclasses, FluentValidatorBuilder and FluentConditionBuilder.
  * They will call the subclass's add() method to add to its collection.
  * See @link ValueHosts/Fluent
  */
-export abstract class FluentCollectorBase
+export abstract class FluentBuilderBase
 {
     constructor()
     {
@@ -507,14 +507,14 @@ export abstract class FluentCollectorBase
  * Use this when using alternative conditions, as you will need to provide substitutes
  * for each fluent function. Your class should be registered with FluentFactory.
  */
-export interface IFluentValidatorCollector
+export interface IFluentValidatorBuilder
 {
     /**
      * The InputValueHostConfig that is being constructed and will be supplied to ValidationManagerConfig.valueHostConfigs.
      */
     parentConfig: InputValueHostConfig;    
     /**
-     * For any implementation of a fluent function that works with FluentValidatorCollector.
+     * For any implementation of a fluent function that works with FluentValidatorBuilder.
      * It takes the parameters passed into that function (conditionConfig and validatorconfig)
      * and assemble the final ValidatorConfig, which it adds to the InputValueHostConfig.
      * @param conditionType - When not null, this will be assigned to conditionConfig for you.
@@ -542,7 +542,7 @@ export interface IFluentValidatorCollector
  * 
  * See {@link ValueHosts/Fluent | Fluent Overview}
  */
-export class FluentValidatorCollector extends FluentCollectorBase implements IFluentValidatorCollector
+export class FluentValidatorBuilder extends FluentBuilderBase implements IFluentValidatorBuilder
 {
     constructor(parentConfig: InputValueHostConfig)
     {
@@ -600,14 +600,14 @@ export class FluentValidatorCollector extends FluentCollectorBase implements IFl
 
 /**
  * Conditions that use EvaluateChildConditionResultsConfig (All, Any, CountMatches, etc)
- * use this to collect child conditions. This differs from FluentValidatorCollector
+ * use this to collect child conditions. This differs from FluentValidatorBuilder
  * as it does not deal with ValidatorConfigs.
- * Yet the same fluent functions are used for both this and FluentValidatorCollector.
+ * Yet the same fluent functions are used for both this and FluentValidatorBuilder.
  * As a result, any parameters associated with ValidatorConfig must be optional.
  * Use this when using alternative conditions, as you will need to provide substitutes
  * for each fluent function. Your class should be registered with FluentFactory.
  */
-export interface IFluentConditionCollector
+export interface IFluentConditionBuilder
 {
     /**
      * The config that will collect the conditions.
@@ -615,7 +615,7 @@ export interface IFluentConditionCollector
     parentConfig: ConditionWithChildrenBaseConfig;
 
     /**
-     * For any implementation of a fluent function that works with FluentConditionCollector.
+     * For any implementation of a fluent function that works with FluentConditionBuilder.
      * It takes the parameters passed into that function
      * and assemble the final conditionConfig.
      * @param conditionType - When not null, this will be assigned to conditionConfig for you.
@@ -636,7 +636,7 @@ export interface IFluentConditionCollector
  * 
  * See {@link ValueHosts/Fluent | Fluent Overview}
  */
-export class FluentConditionCollector extends FluentCollectorBase implements IFluentConditionCollector
+export class FluentConditionBuilder extends FluentBuilderBase implements IFluentConditionBuilder
 {
     /**
      * 
@@ -664,7 +664,7 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
     private readonly _parentConfig: ConditionWithChildrenBaseConfig;
 
     /**
-     * For any implementation of a fluent function that works with FluentConditionCollector.
+     * For any implementation of a fluent function that works with FluentConditionBuilder.
      * It takes the parameters passed into that function
      * and assemble the final conditionConfig.
      * @param conditionType - When not null, this will be assigned to conditionConfig for you.
@@ -683,16 +683,16 @@ export class FluentConditionCollector extends FluentCollectorBase implements IFl
 
 /**
  * Supports the fluent syntax on conditions that have a single child condition.
- * It isn't an ideal implementation. It is based on using FluentConditionCollector,
+ * It isn't an ideal implementation. It is based on using FluentConditionBuilder,
  * which allows a list of conditions. It simply throws an exception if the user
  * atttempts to add more than one condition.
  * 
  * The reason for this implementation is to avoid having the user to register
- * new fluent condition functions in 3 places: FluentValidatorCollector, FluentConditionCollector,
- * and FluentOneConditionCollector. Additionally, they would have to setup their function 
- * to return void instead of a FluentConditionCollector. That is deemed too much work.
+ * new fluent condition functions in 3 places: FluentValidatorBuilder, FluentConditionBuilder,
+ * and FluentOneConditionBuilder. Additionally, they would have to setup their function 
+ * to return void instead of a FluentConditionBuilder. That is deemed too much work.
  */
-export class FluentOneConditionCollector extends FluentConditionCollector
+export class FluentOneConditionBuilder extends FluentConditionBuilder
 {
     public add(conditionType: string | null, conditionConfig: Partial<ConditionConfig>): void {
         if (this.parentConfig.conditionConfigs!.length > 0)
@@ -709,7 +709,7 @@ export class FluentOneConditionCollector extends FluentConditionCollector
  * ```
  * Designed to get intellisense assistance as the user sets up the child conditions.
  */
-export type FluentConditionCollectorHandler = (conditionsCollector: FluentConditionCollector) => FluentConditionCollector;
+export type FluentConditionBuilderHandler = (conditionsBuilder: FluentConditionBuilder) => FluentConditionBuilder;
 
 /**
  * Callback used by conditions that take an array of child conditions (subclasses of ConditionWithChildrenBase).
@@ -719,14 +719,14 @@ export type FluentConditionCollectorHandler = (conditionsCollector: FluentCondit
  * ```
  * Designed to get intellisense assistance as the user sets up the child conditions.
  */
-export type FluentOneConditionCollectorHandler = (conditionsCollector: FluentOneConditionCollector) => FluentOneConditionCollector;
+export type FluentOneConditionBuilderHandler = (conditionsBuilder: FluentOneConditionBuilder) => FluentOneConditionBuilder;
 
 /**
  * Call from within a fluent function once you have all parameters fully setup.
  * It will complete the setup.
  * @param thisFromCaller 
- * Should be a FluentValidatorCollector. Fluent function expects to pass its value
- * of 'this' here. However, its possible self is not FluentValidatorCollector.
+ * Should be a FluentValidatorBuilder. Fluent function expects to pass its value
+ * of 'this' here. However, its possible self is not FluentValidatorBuilder.
  * We'll throw an exception here in that case.
  * @param conditionType 
  * @param conditionConfig 
@@ -734,13 +734,13 @@ export type FluentOneConditionCollectorHandler = (conditionsCollector: FluentOne
  * @param validatorParameters 
  * @returns The same instance passed into the first parameter to allow for chaining.
  */
-export function finishFluentValidatorCollector(thisFromCaller: any, 
+export function finishFluentValidatorBuilder(thisFromCaller: any, 
     conditionType: string | null,
     conditionConfig: Partial<ConditionConfig>,
     errorMessage: string | null | undefined,
-    validatorParameters: FluentValidatorConfig | undefined | null): FluentValidatorCollector
+    validatorParameters: FluentValidatorConfig | undefined | null): FluentValidatorBuilder
 {
-    if (thisFromCaller instanceof FluentValidatorCollector) {
+    if (thisFromCaller instanceof FluentValidatorBuilder) {
         thisFromCaller.add(conditionType, conditionConfig, errorMessage, validatorParameters);
         return thisFromCaller;
     }
@@ -750,8 +750,8 @@ export function finishFluentValidatorCollector(thisFromCaller: any,
  * Call from within a fluent function once you have all parameters fully setup.
  * It will complete the setup.
  * @param thisFromCaller 
- * Should be a FluentConditionCollector. Fluent function expects to pass its value
- * of 'this' here. However, its possible self is not FluentConditionCollector.
+ * Should be a FluentConditionBuilder. Fluent function expects to pass its value
+ * of 'this' here. However, its possible self is not FluentConditionBuilder.
  * We'll throw an exception here in that case.
  * @param conditionType 
  * @param valueHostName 
@@ -759,16 +759,16 @@ export function finishFluentValidatorCollector(thisFromCaller: any,
  * Fluent function should supply this as a parameter
  * so long as its ConditionConfig implements OneValueConditionConfig.
  * Since these conditions are children of another, they are more likely to
- * need the valueHostName than those in FluentValidatorCollectors.
+ * need the valueHostName than those in FluentValidatorBuilders.
  * @param conditionConfig 
  * @returns The same instance passed into the first parameter to allow for chaining.
  */
-export function finishFluentConditionCollector(thisFromCaller: any, 
+export function finishFluentConditionBuilder(thisFromCaller: any, 
     conditionType: string | null,
     conditionConfig: Partial<ConditionConfig>,
-    valueHostName?: ValueHostName): FluentConditionCollector
+    valueHostName?: ValueHostName): FluentConditionBuilder
 {
-    if (thisFromCaller instanceof FluentConditionCollector) {
+    if (thisFromCaller instanceof FluentConditionBuilder) {
         if (valueHostName)
             (conditionConfig as OneValueConditionBaseConfig).valueHostName = valueHostName;
 
@@ -778,43 +778,43 @@ export function finishFluentConditionCollector(thisFromCaller: any,
     throw new FluentSyntaxRequiredError();
 }
 /**
- * Factory that returns a new instance of IFluentValidatorCollector and IFluentConditionCollector.
- * By default, it supplies FluentValidatorCollector and FluentConditionCollector.
+ * Factory that returns a new instance of IFluentValidatorBuilder and IFluentConditionBuilder.
+ * By default, it supplies FluentValidatorBuilder and FluentConditionBuilder.
  * When you create alternative conditions, you will also reimplemnt 
- * IFluentValidatorCollector and IFluentConditionCollector and register them here.
+ * IFluentValidatorBuilder and IFluentConditionBuilder and register them here.
  */
 export class FluentFactory
 {
     constructor()
     {
-        this._validatorCollectorCreator =
-            (vhConfig: InputValueHostConfig) => new FluentValidatorCollector(vhConfig);
-        this._conditionCollectorCreator =
-            (vhConfig: ConditionWithChildrenBaseConfig) => new FluentConditionCollector(vhConfig);
+        this._validatorBuilderCreator =
+            (vhConfig: InputValueHostConfig) => new FluentValidatorBuilder(vhConfig);
+        this._conditionBuilderCreator =
+            (vhConfig: ConditionWithChildrenBaseConfig) => new FluentConditionBuilder(vhConfig);
     }
-    public createValidatorCollector(vhConfig: InputValueHostConfig): IFluentValidatorCollector
+    public createValidatorBuilder(vhConfig: InputValueHostConfig): IFluentValidatorBuilder
     {
-        return this._validatorCollectorCreator(vhConfig);
+        return this._validatorBuilderCreator(vhConfig);
     }
 
-    public registerValidatorCollector(creator: (vhConfig: InputValueHostConfig) => IFluentValidatorCollector): void
+    public registerValidatorBuilder(creator: (vhConfig: InputValueHostConfig) => IFluentValidatorBuilder): void
     {
         assertNotNull(creator, 'creator');
-        this._validatorCollectorCreator = creator;
+        this._validatorBuilderCreator = creator;
     }
-    private _validatorCollectorCreator: (vhConfig: InputValueHostConfig) => IFluentValidatorCollector;
+    private _validatorBuilderCreator: (vhConfig: InputValueHostConfig) => IFluentValidatorBuilder;
 
-    public createConditionCollector(vhConfig: ConditionWithChildrenBaseConfig): IFluentConditionCollector
+    public createConditionBuilder(vhConfig: ConditionWithChildrenBaseConfig): IFluentConditionBuilder
     {
-        return this._conditionCollectorCreator(vhConfig);
+        return this._conditionBuilderCreator(vhConfig);
     }
 
-    public registerConditionCollector(creator: (vhConfig: ConditionWithChildrenBaseConfig) => IFluentConditionCollector): void
+    public registerConditionBuilder(creator: (vhConfig: ConditionWithChildrenBaseConfig) => IFluentConditionBuilder): void
     {
         assertNotNull(creator, 'creator');
-        this._conditionCollectorCreator = creator;
+        this._conditionBuilderCreator = creator;
     }
-    private _conditionCollectorCreator: (vhConfig: ConditionWithChildrenBaseConfig) => IFluentConditionCollector;    
+    private _conditionBuilderCreator: (vhConfig: ConditionWithChildrenBaseConfig) => IFluentConditionBuilder;    
 
     /**
      * Unlike other factories, which are on ValidationServices. We wanted to avoid
@@ -826,28 +826,28 @@ export class FluentFactory
 
 
 //#region custom validation rule
-//!!!NOTE: Currently customRule does not support FluentConditionCollector.
+//!!!NOTE: Currently customRule does not support FluentConditionBuilder.
 
 /**
  * The fluent function that allows the user to supply a conditionCreator function
  * instead of setting up a condition through a config.
  * The actual code for our extension method. It will be associated with an interface declaration,
- * and assigned to the prototype of the FluentValidatorCollector class.
- * As an EXTENSION FUNCTION, it extends FluentValidatorCollector, and 
- * REQUIRES 'this' to be an instance of FluentValidatorCollector.
+ * and assigned to the prototype of the FluentValidatorBuilder class.
+ * As an EXTENSION FUNCTION, it extends FluentValidatorBuilder, and 
+ * REQUIRES 'this' to be an instance of FluentValidatorBuilder.
  * For more on setting up your own fluent function, see @link ValueHosts/Fluent|Fluent.
  */
 
 export function customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
     errorMessage?: string | null,
-    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector
+    validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder
 {
-    if (this instanceof FluentValidatorCollector) {
+    if (this instanceof FluentValidatorBuilder) {
         let ivConfig: ValidatorConfig = validatorParameters ?
             { ...validatorParameters as ValidatorConfig, conditionConfig: null } :
             { conditionConfig: null}; 
         ivConfig.conditionCreator = conditionCreator;
-        let self = this as FluentValidatorCollector;
+        let self = this as FluentValidatorBuilder;
         self.add(null, null, errorMessage, ivConfig);
         return self;
     }
@@ -866,16 +866,16 @@ export class FluentSyntaxRequiredError extends Error
  */
 
 // interface that extends the class FluentValidationRule
-export declare interface FluentValidatorCollector
+export declare interface FluentValidatorBuilder
 {
     customRule(conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         errorMessage?: string | null,
-        validatorParameters?: FluentValidatorConfig): FluentValidatorCollector | ValidatorConfig;
+        validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder | ValidatorConfig;
 }
 
 
 /**
  * Make JavaScript associate the function with the class.
  */
-FluentValidatorCollector.prototype.customRule = customRule;
+FluentValidatorBuilder.prototype.customRule = customRule;
 //#endregion custom validation rule

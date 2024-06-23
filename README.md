@@ -1024,9 +1024,9 @@ let vm = new ValidationManager(builder);
 The Builder object (`ValidationManagerConfigBuilder class`) has these functions to add ValueHosts by their type. (There are other functions in the <a href="#builder_and_vmconfig">Builder API</a>.)
 - `input()` adds or modifies an InputValueHost configuration. You can chain validator functions like requireText() and regExp() to it.
    
-   input(valueHostName, dataType?, *parameters*?): FluentValidatorCollector
+   input(valueHostName, dataType?, *parameters*?): FluentValidatorBuilder
    
-   input(valueHostName, *parameters*?): FluentValidatorCollector
+   input(valueHostName, *parameters*?): FluentValidatorBuilder
    ```ts
    builder.input('fieldname', LookupKey.Date);
    builder.input('fieldname', LookupKey.Integer, { label: 'Field name', labell10n: 'FNKey'});
@@ -1042,7 +1042,7 @@ The Builder object (`ValidationManagerConfigBuilder class`) has these functions 
       group?: null | string | string[];
    }
    ```
-   input(*config*): FluentValidatorCollector
+   input(*config*): FluentValidatorBuilder
    ```ts
    builder.input({ valueHostName: 'fieldname', dataType: LookupKey.Date,
       label: 'Field name', labell10n: 'FNKey' }).requireText();
@@ -1057,9 +1057,9 @@ The Builder object (`ValidationManagerConfigBuilder class`) has these functions 
 
 - `property()` adds or modifies a PropertyValueHost configuration. You can chain validator functions like requireText() and regExp() to it.
    
-   property(valueHostName, dataType?, *parameters*?): FluentValidatorCollector
+   property(valueHostName, dataType?, *parameters*?): FluentValidatorBuilder
    
-   property(valueHostName, *parameters*?): FluentValidatorCollector
+   property(valueHostName, *parameters*?): FluentValidatorBuilder
    ```ts
    builder.property('fieldname', LookupKey.Date);
    builder.property('fieldname', LookupKey.Integer, { label: 'Field name', labell10n: 'FNKey'});
@@ -1073,7 +1073,7 @@ The Builder object (`ValidationManagerConfigBuilder class`) has these functions 
       group?: null | string | string[];
    }
    ```
-   property(*config*): FluentValidatorCollector
+   property(*config*): FluentValidatorBuilder
    ```ts
    builder.property({ valueHostName: 'fieldname', dataType: LookupKey.Date,
       label: 'Field name', labell10n: 'FNKey' }).requireText();
@@ -1405,12 +1405,12 @@ class ValidationManagerConfigBuilder {
     notifyValidationStateChangedDelay?: number;
     
 // some of the functions to configure ValueHosts
-    input(valueHostName, dataType?, partial config?): FluentValidatorCollector;
-    input(valueHostName, partial config?): FluentValidatorCollector;
-    input(partial config?): FluentValidatorCollector;
-    property(valueHostName, dataType?, partial config?): FluentValidatorCollector;
-    property(valueHostName, partial config?): FluentValidatorCollector;
-    property(partial config?): FluentValidatorCollector;
+    input(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
+    input(valueHostName, partial config?): FluentValidatorBuilder;
+    input(partial config?): FluentValidatorBuilder;
+    property(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
+    property(valueHostName, partial config?): FluentValidatorBuilder;
+    property(partial config?): FluentValidatorBuilder;
     static(valueHostName, dataType?, partial config?): ValidationManagerConfigBuilder;
     static(valueHostName, partial config?): ValidationManagerConfigBuilder;
     static(partial config?): ValidationManagerConfigBuilder;
@@ -1449,7 +1449,7 @@ builder.input('StartDate').requireText().regExp(/expression/);
 All chained functions have parameters to supply key validator values like error message, error code and severity. Those that need it have parameters for configuring the Conditions too. Most parameters are optional, and many take `null` if you don't want to set them.
 ```ts
 builder.input('StartDate').requireText({condition parameters}, errorMessage, {validator parameters});
-builder.input('StartDate').regExp(expression, ignoreCase, {condition parameters}, errorMessage, {validator parameters}): FluentValidatorCollector
+builder.input('StartDate').regExp(expression, ignoreCase, {condition parameters}, errorMessage, {validator parameters}): FluentValidatorBuilder
 ```
 For details on all validators using the Builder API, see <a href="#allconditionconfigurations">All condition configurations</a>.
 
@@ -1461,19 +1461,19 @@ For an overview of using the Modifier API, see <a href="#usingmodifierapi">Chang
 Here's the Modifier API:
 ```ts
 class ValidationManagerConfigModifier {
-    input(valueHostName, dataType?, partial config?): FluentValidatorCollector;
-    input(valueHostName, partial config?): FluentValidatorCollector;
-    input(partial config?): FluentValidatorCollector;
-    property(valueHostName, dataType?, partial config?): FluentValidatorCollector;
-    property(valueHostName, partial config?): FluentValidatorCollector;
-    property(partial config?): FluentValidatorCollector;
+    input(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
+    input(valueHostName, partial config?): FluentValidatorBuilder;
+    input(partial config?): FluentValidatorBuilder;
+    property(valueHostName, dataType?, partial config?): FluentValidatorBuilder;
+    property(valueHostName, partial config?): FluentValidatorBuilder;
+    property(partial config?): FluentValidatorBuilder;
     static(valueHostName, dataType?, partial config?): ValidationManagerConfigBuilder;
     static(valueHostName, partial config?): ValidationManagerConfigBuilder;
     static(partial config?): ValidationManagerConfigBuilder;
     calc(valueHostName, dataType, calcFn): ValidationManagerConfigBuilder;    
     
     updateValidator(valueHostName, errorCode, { *validator parameters* }): ValidationManagerConfigModifier;
-    addValidatorsTo(valueHostName): FluentValidatorCollector;
+    addValidatorsTo(valueHostName): FluentValidatorBuilder;
 }
 ```
 Let's go through these members:

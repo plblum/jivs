@@ -10,7 +10,7 @@
 // 4. Create your class, inheriting from an existing Condition class.
 // 5. Write unit tests. See the companion file in the Tests folder.
 // 6. Extend the fluent syntax by using TypeScript Declaration Merging on types:
-//    FluentValidatorCollector, FluentConditionCollector.
+//    FluentValidatorBuilder, FluentConditionBuilder.
 
 import { OneValueConditionBase, OneValueConditionBaseConfig } from "@plblum/jivs-engine/build/Conditions/OneValueConditionBase";
 import { ValueHostName } from "@plblum/jivs-engine/build/DataTypes/BasicTypes";
@@ -20,8 +20,8 @@ import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/Valida
 import { IValueHost } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import {
-    FluentConditionCollector, FluentValidatorCollector, FluentValidatorConfig,
-    finishFluentConditionCollector, finishFluentValidatorCollector
+    FluentConditionBuilder, FluentValidatorBuilder, FluentValidatorConfig,
+    finishFluentConditionBuilder, finishFluentValidatorBuilder
 } from "@plblum/jivs-engine/build/ValueHosts/Fluent";
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 export const evenNumberConditionType = 'EvenNumber';    // we'll extend Jivs ConditionType enum with this
@@ -70,40 +70,40 @@ export function registerEvenNumberCondition(validationServices: IValidationServi
 
 //#region Fluent syntax
 
-// TypeScript Declaration Merging with FluentValidatorCollector and FluentConditionCollector
+// TypeScript Declaration Merging with FluentValidatorBuilder and FluentConditionBuilder
 declare module "@plblum/jivs-engine/build/ValueHosts/Fluent"
 {
-    export interface FluentValidatorCollector {
+    export interface FluentValidatorBuilder {
         evenNumber(
             errorMessage?: string | null,
-            validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
+            validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder;
     }
-    export interface FluentConditionCollector {
-        evenNumber(valueHostName?: ValueHostName): FluentConditionCollector;
+    export interface FluentConditionBuilder {
+        evenNumber(valueHostName?: ValueHostName): FluentConditionBuilder;
     }
 }
 
 /**
  * Common code to setup EvenNumberConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCEvenNumber(): EvenNumberConditionConfig {
     return {} as EvenNumberConditionConfig;
 }
 
-function evenNumberForCondition(valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+function evenNumberForCondition(valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         evenNumberConditionType, _genDCEvenNumber(), valueHostName);
 }
 function evenNumberForValidator(
     errorMessage?: string | null,
-    validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {    
-    return finishFluentValidatorCollector(this,
+    validatorParameters?: FluentValidatorConfig): FluentValidatorBuilder {    
+    return finishFluentValidatorBuilder(this,
         evenNumberConditionType, _genDCEvenNumber(),
         errorMessage, validatorParameters);
 }
 
-FluentValidatorCollector.prototype.evenNumber = evenNumberForValidator;
-FluentConditionCollector.prototype.evenNumber = evenNumberForCondition;
+FluentValidatorBuilder.prototype.evenNumber = evenNumberForValidator;
+FluentConditionBuilder.prototype.evenNumber = evenNumberForCondition;
 //#endregion fluent syntax

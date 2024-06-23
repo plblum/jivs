@@ -6,7 +6,7 @@
 
 import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FluentConditionCollector, FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentStaticParameters, FluentValidatorCollector } from "../ValueHosts/Fluent";
+import { FluentConditionBuilder, FluentInputParameters, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, FluentStaticParameters, FluentValidatorBuilder } from "../ValueHosts/Fluent";
 import { ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
 import { CalculationHandler, CalcValueHostConfig } from "./CalcValueHost";
 import { IDisposable } from "./General_Purpose";
@@ -53,14 +53,14 @@ export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConf
      * implements EvaluateChildConditionResultsConfig.
      * For example, builder.input('Field1').all(builder.conditions().required('Field2').required('Field3'))
      * The fluent function for all (and others that support EvaluateChildConditionResultsConfig)
-     * will get a FluentConditionCollector whose conditionConfigs collection is fully populated.
+     * will get a FluentConditionBuilder whose conditionConfigs collection is fully populated.
     * @param parentConfig - When null/undefined, the instance is created and the caller is expected
     * to retrieve its conditionConfigs from the config property.
     * When assigned, that instance gets conditionConfigs populated and 
     * there is no need to get a value from configs property.
-     * @returns a FluentConditionCollector for chaining conditions.
+     * @returns a FluentConditionBuilder for chaining conditions.
     */
-    conditions(parentConfig?: ConditionWithChildrenBaseConfig): FluentConditionCollector;
+    conditions(parentConfig?: ConditionWithChildrenBaseConfig): FluentConditionBuilder;
 
 
 }
@@ -171,27 +171,27 @@ export interface IValueHostsForValidatorManagerConfigBuilder<T extends Validatio
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
      */
-    input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
+    input(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentInputParameters): FluentValidatorBuilder;
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param valueHostName - the ValueHost name
      * @param parameters - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
      */
-    input(valueHostName: ValueHostName, parameters: FluentInputParameters): FluentValidatorCollector;    
+    input(valueHostName: ValueHostName, parameters: FluentInputParameters): FluentValidatorBuilder;    
     /**
      * Fluent format to create a InputValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param config - Supply the entire InputValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
-     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
      */
-    input(config: FluentInputValueConfig): FluentValidatorCollector;
+    input(config: FluentInputValueConfig): FluentValidatorBuilder;
     // overload resolution
-    input(arg1: ValueHostName | FluentInputValueConfig, arg2?: FluentInputParameters | string | null, parameters?: FluentInputParameters): FluentValidatorCollector;
+    input(arg1: ValueHostName | FluentInputValueConfig, arg2?: FluentInputParameters | string | null, parameters?: FluentInputParameters): FluentValidatorBuilder;
 
     /**
      * Fluent format to create a PropertyValueHostConfig.
@@ -199,26 +199,26 @@ export interface IValueHostsForValidatorManagerConfigBuilder<T extends Validatio
      * @param valueHostName - the ValueHost name
      * @param dataType - optional and can be null. The value for ValueHost.dataType.
      * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
      */
-    property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector;
+    property(valueHostName: ValueHostName, dataType?: string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
     /**
      * Fluent format to create a PropertyValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param valueHostName - the ValueHost name
      * @param parameters - optional. Any additional properties of a PropertyValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
      */
-    property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorCollector;    
+    property(valueHostName: ValueHostName, parameters: FluentPropertyParameters): FluentValidatorBuilder;    
     /**
      * Fluent format to create a PropertyValueHostConfig.
      * This is the start of a fluent series. Extend series with validation rules like "required()".
      * @param config - Supply the entire PropertyValueHostConfig. This is a special use case.
      * You can omit the valueHostType property.
-     * @returns FluentValidatorCollector for chaining validators to initial PropertyValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial PropertyValueHost
      */
-    property(config: FluentPropertyValueConfig): FluentValidatorCollector;
+    property(config: FluentPropertyValueConfig): FluentValidatorBuilder;
     // overload resolution
-    property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, parameters?: FluentPropertyParameters): FluentValidatorCollector;
+    property(arg1: ValueHostName | FluentPropertyValueConfig, arg2?: FluentPropertyParameters | string | null, parameters?: FluentPropertyParameters): FluentValidatorBuilder;
 
 }

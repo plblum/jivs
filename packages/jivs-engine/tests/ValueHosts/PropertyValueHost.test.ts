@@ -12,7 +12,7 @@ import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
-import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
+import { FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { CalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";

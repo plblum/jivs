@@ -12,7 +12,7 @@ import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfa
 import { SevereErrorBase, assertNotNull } from '../Utilities/ErrorHandling';
 import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
-import { FluentValidatorCollector } from './Fluent';
+import { FluentValidatorBuilder } from './Fluent';
 import { enableFluent } from '../Conditions/FluentValidatorCollectorExtensions';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { IValidationManager } from '../Interfaces/ValidationManager';

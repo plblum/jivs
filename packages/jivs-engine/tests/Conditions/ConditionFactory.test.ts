@@ -5,7 +5,7 @@ import {
 } from "../../src/Conditions/ConcreteConditions";
 import { IConditionCore, ConditionConfig, ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { FluentConditionCollector } from "../../src/ValueHosts/Fluent";
+import { FluentConditionBuilder } from "../../src/ValueHosts/Fluent";
 import { enableFluentConditions } from "../../src/Conditions/FluentConditionCollectorExtensions";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
@@ -57,11 +57,11 @@ describe('ConditionFactory.create', () => {
 });
 describe('enableFluentConditions', () => {
     test('First call works and second call does not throw', () => {
-        expect(FluentConditionCollector.prototype.dataTypeCheck).toBeUndefined();
+        expect(FluentConditionBuilder.prototype.dataTypeCheck).toBeUndefined();
         enableFluentConditions();
-        expect(FluentConditionCollector.prototype.dataTypeCheck).toBeDefined();
+        expect(FluentConditionBuilder.prototype.dataTypeCheck).toBeDefined();
         expect(() => enableFluentConditions()).not.toThrow();
-        expect(FluentConditionCollector.prototype.dataTypeCheck).toBeDefined();
+        expect(FluentConditionBuilder.prototype.dataTypeCheck).toBeDefined();
     });
 });
 describe('dispose()', () => {

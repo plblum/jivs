@@ -10,8 +10,8 @@ import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interface
 import { IValueHostsServices } from "../../src/Interfaces/ValueHostsServices";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import {
-    FluentValidatorCollector, FluentConditionCollector, FluentValidatorConfig,
-    finishFluentValidatorCollector, finishFluentConditionCollector, ValueHostsManagerStartFluent
+    FluentValidatorBuilder, FluentConditionBuilder, FluentValidatorConfig,
+    finishFluentValidatorBuilder, finishFluentConditionBuilder, ValueHostsManagerStartFluent
 } from "../../src/ValueHosts/Fluent";
 import { ManagerConfigBuilderBase } from "../../src/ValueHosts/ManagerConfigBuilderBase";
 import { MockValidationServices } from "../TestSupport/mocks";
@@ -401,54 +401,54 @@ describe('build(vmConfig).calc', () => {
 function testChainRequireText_Val(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig
-): FluentValidatorCollector {
-    return finishFluentValidatorCollector(this, ConditionType.RequireText, conditionConfig, errorMessage, validatorParameters);
+): FluentValidatorBuilder {
+    return finishFluentValidatorBuilder(this, ConditionType.RequireText, conditionConfig, errorMessage, validatorParameters);
 }
 function testChainRequireText_Cond(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
-): FluentConditionCollector {
-    return finishFluentConditionCollector(this, ConditionType.RequireText, conditionConfig, 'valueHostName');
+): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this, ConditionType.RequireText, conditionConfig, 'valueHostName');
 
 }
 
 function testChainRegExp_Val(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig
-): FluentValidatorCollector {
+): FluentValidatorBuilder {
 
-    return finishFluentValidatorCollector(this, ConditionType.RegExp, conditionConfig,
+    return finishFluentValidatorBuilder(this, ConditionType.RegExp, conditionConfig,
         errorMessage, validatorParameters);
 }
-function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>): FluentConditionCollector {
+function testChainRegExp_Cond(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>): FluentConditionBuilder {
 
-    return finishFluentConditionCollector(this, ConditionType.RegExp, conditionConfig, 'valueHostName');
+    return finishFluentConditionBuilder(this, ConditionType.RegExp, conditionConfig, 'valueHostName');
 }
-// interface that extends the class FluentValidatorCollector
+// interface that extends the class FluentValidatorBuilder
 declare module './../../src/ValueHosts/Fluent'
 {
-    export interface FluentValidatorCollector {
+    export interface FluentValidatorBuilder {
         testChainRequireText(conditionConfig: Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig
-        ): FluentValidatorCollector;
+        ): FluentValidatorBuilder;
         testChainRegExp(conditionConfig: Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig
-        ): FluentValidatorCollector;
+        ): FluentValidatorBuilder;
     }
-    export interface FluentConditionCollector {
+    export interface FluentConditionBuilder {
         testChainRequireText(conditionConfig:
             Omit<RequireTextConditionConfig, 'conditionType' | 'valueHostName'>
-        ): FluentConditionCollector;
+        ): FluentConditionBuilder;
         testChainRegExp(conditionConfig:
             Omit<RegExpConditionConfig, 'conditionType' | 'valueHostName'>
-        ): FluentConditionCollector;
+        ): FluentConditionBuilder;
     }
 }
 
 export function ensureFluentTestConditions(): void {
     //  Make JavaScript associate the function with the class.
-    FluentValidatorCollector.prototype.testChainRequireText = testChainRequireText_Val;
-    FluentValidatorCollector.prototype.testChainRegExp = testChainRegExp_Val;
-    FluentConditionCollector.prototype.testChainRequireText = testChainRequireText_Cond;
-    FluentConditionCollector.prototype.testChainRegExp = testChainRegExp_Cond;
+    FluentValidatorBuilder.prototype.testChainRequireText = testChainRequireText_Val;
+    FluentValidatorBuilder.prototype.testChainRegExp = testChainRegExp_Val;
+    FluentConditionBuilder.prototype.testChainRequireText = testChainRequireText_Cond;
+    FluentConditionBuilder.prototype.testChainRegExp = testChainRegExp_Cond;
 }

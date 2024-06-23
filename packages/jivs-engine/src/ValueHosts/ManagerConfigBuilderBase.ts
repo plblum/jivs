@@ -7,7 +7,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import {
     FluentAnyValueHostConfig,
-    FluentAnyValueHostParameters, FluentStaticParameters, FluentValidatorCollector, FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters, ValidationManagerStartFluent, ValueHostsManagerStartFluent
+    FluentAnyValueHostParameters, FluentStaticParameters, FluentValidatorBuilder, FluentValidatorsValueHostConfig, FluentValidatorsValueHostParameters, ValidationManagerStartFluent, ValueHostsManagerStartFluent
 } from './Fluent';
 import { StaticValueHostConfig } from '../Interfaces/StaticValueHost';
 import { CalcValueHostConfig, CalculationHandler } from '../Interfaces/CalcValueHost';
@@ -89,6 +89,45 @@ import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
  * modifier.input('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
  * modifier.apply(); // consider modifier disposed at this point
  * ```
+ * 
+ * ## Combining a condition from the UI with the conditions from the business logic
+ * This common use case is where the UI wants to add a condition to a Validator 
+ * that was created by the business logic. Use the combineConditionWith() function.
+ * 
+ * The goal is to preserve the condition from the business logic by using it together with 
+ * the UI's condition in one of these ways:
+ * - Make the business logic's condition optional by wrapping it in a WhenCondition.
+ *   ```ts
+ *   // business logic
+ *   builder.input('Field1', LookupKey.String).notNull();
+ *   // UI wants it to look like this:
+ *   builder.input('Field1', LookupKey.String)
+ *      .when(
+ *          (enabler)=> enabler.equalToValue('YES', 'Field2'),
+ *         (condition)=> condition.notNull()
+ *    );
+ *   // using the combineConditionWith() function
+ *   builder.input('Field1').combineConditionWith(
+ *      ConditionType.NotNull, // error code
+ *      ConditionType
+ *      (condition)=> condition.equalToValue('YES', 'Field2'));
+ *   ```
+ * - All conditions must evaluate as a match using the AllCondition
+ *   ```ts
+ *   // business logic
+ *   builder.input('Field1', LookupKey.String).regexp(/^[A-Z]+$/i);
+ *   // UI wants it to look like this:
+ *   builder.input('Field1', LookupKey.String)
+ *     .all((children)=> children.regexp(/^[A-Z]+$/i).stringLength(10));
+ *  ```
+ * - Either condition can evaluate as a match using the AnyCondition
+ * - The UI's condition is a complete replacement for the business logic's condition.
+ *   // business logic
+ *   builder.input('Field1', LookupKey.String).notNull();
+ *   // UI wants it to look like this:
+ *   builder.input('Field1', LookupKey.String)
+ *     .all((children)=> children.requireText());   // because requireText() includes notNull() 
+ *  ```
  */
 export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig>
     implements IManagerConfigBuilder<T> {
@@ -236,23 +275,23 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @param arg1 - either the ValueHost name for a multiparameter use or InputValueConfig for a single parameter use.
      * @param arg2 - optional and can be null. The value for ValueHost.dataType or InputValueHostConfig.
      * @param arg3 - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorCollector for chaining validators to initial InputValueHost
+     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
      */
     protected addValidatorsValueHost<TVHConfig extends ValidatorsValueHostBaseConfig>(
         valueHostType: ValueHostType | string,
         arg1: Partial<TVHConfig> | ValueHostName,
         arg2?: Partial<TVHConfig> | string | null,
-        arg3?: Partial<TVHConfig>): FluentValidatorCollector {
+        arg3?: Partial<TVHConfig>): FluentValidatorBuilder {
 
         assertNotNull(arg1, 'arg1');
         let fluent = this.createFluent() as ValidationManagerStartFluent;
-        let collector = fluent.withValidators(valueHostType,
+        let builder = fluent.withValidators(valueHostType,
             arg1 as FluentValidatorsValueHostConfig<TVHConfig> | ValueHostName,
             arg2 as FluentValidatorsValueHostParameters<TVHConfig> | string | null,
             arg3 as FluentValidatorsValueHostParameters<TVHConfig>);
 
-        this.applyConfig(collector.parentConfig);
-        return collector;
+        this.applyConfig(builder.parentConfig);
+        return builder;
     }    
 
     /**
