@@ -1,6 +1,6 @@
 /**
  * Interface for a ManagerConfigModifierFactory
- * @module ValueHost/Types/ManagerConfigModifierFactory
+ * @module ValueHosts/Types/ManagerConfigModifierFactory
  */
 
 import { IManagerConfigModifier } from "./ManagerConfigModifier";

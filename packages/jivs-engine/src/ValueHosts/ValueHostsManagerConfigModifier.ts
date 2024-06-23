@@ -21,6 +21,11 @@ import { IManagerConfigModifier } from "../Interfaces/ManagerConfigModifier";
  * Used by ValueHostManager.startModifying() function to modify the ValueHostsManagerConfig.valueHostConfigs array.
  * It does not change the original until you call its apply() function.
  * Apply() makes its updates through ValueHostsManager.addOrMergeValueHost().
+ * 
+ * @remarks
+ * The baseConfig object is setup with the existing ValueHostConfigs from the originating manager.
+ * Then an override is added to the overriddenValueHostConfigs, which will be modified as ValueHostConfigs are added.
+ * The existingValueHostConfigs are never modified directly. The overridden ones are used to replace them later.
  */
 export class ValueHostsManagerConfigModifier<T extends ValueHostsManagerConfig>
     extends ManagerConfigBuilderBase<T> implements IManagerConfigModifier<T> {
@@ -33,33 +38,32 @@ export class ValueHostsManagerConfigModifier<T extends ValueHostsManagerConfig>
         super(valueHostManager.services);
         assertNotNull(valueHostManager, 'valueHostManager');
         this._valueHostManager = new WeakRef<IValueHostsManager>(valueHostManager);
-        this._existingValueHostConfigs = new WeakRef(existingValueHostConfigs);
+        existingValueHostConfigs.forEach((vhConfig) => this.baseConfig.valueHostConfigs.push(deepClone(vhConfig))); // baseConfig will be existing history
+        this.addOverride(); // we'll be modifying the override as we add ValueHostConfigs
     }
 
     private _valueHostManager: WeakRef<IValueHostsManager>;
-    private _existingValueHostConfigs: WeakRef<Map<string, ValueHostConfig>>;
 
     public dispose(): void {
         super.dispose();
         this._valueHostManager = undefined!;
-        this._existingValueHostConfigs = undefined!;
     }
 
-    /**
-     * Gets the ValueHostConfig from the originating manager.
-     * @param valueHostName 
-     * @param throwWhenNotFound 
-     * @returns 
-     */
-    protected getExistingValueHostConfig(valueHostName: string, throwWhenNotFound: boolean): ValueHostConfig | null {
-        let result = this._existingValueHostConfigs.deref()?.get(valueHostName);
-        if (result)
-            return result;
-        if (throwWhenNotFound)
-            throw new CodingError(`ValueHost name "${valueHostName}" is not defined.`);
-        // istanbul ignore next   // currently no code passes in false for throwWhenNotFound
-        return null;
-    }
+    // /**
+    //  * Gets the ValueHostConfig from the originating manager.
+    //  * @param valueHostName 
+    //  * @param throwWhenNotFound 
+    //  * @returns 
+    //  */
+    // protected getExistingValueHostConfig(valueHostName: string, throwWhenNotFound: boolean): ValueHostConfig | null {
+    //     let result = this._existingValueHostConfigs.deref()?.get(valueHostName);
+    //     if (result)
+    //         return result;
+    //     if (throwWhenNotFound)
+    //         throw new CodingError(`ValueHost name "${valueHostName}" is not defined.`);
+    //     // istanbul ignore next   // currently no code passes in false for throwWhenNotFound
+    //     return null;
+    // }
 
     /**
      * Completes the process by using ValueHostManager.addOrMergeValueHost()
@@ -73,7 +77,7 @@ export class ValueHostsManagerConfigModifier<T extends ValueHostsManagerConfig>
     public apply(): void {
         let valueHostManager = this._valueHostManager.deref();;
         if (valueHostManager) {
-            this.baseConfig.valueHostConfigs.forEach((vhConfig) => {
+            this.overriddenValueHostConfigs[0].forEach((vhConfig) => {
                 valueHostManager.addOrMergeValueHost(vhConfig, null);
             });
         }

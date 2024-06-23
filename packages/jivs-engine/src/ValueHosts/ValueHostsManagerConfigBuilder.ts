@@ -144,25 +144,6 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
         return new ValueHostsManagerStartFluent(this.destinationValueHostConfigs(), this.services);
     }
 
-
-    /**
-     * Start of a series to collect ConditionConfigs into any condition that
-     * implements EvaluateChildConditionResultsConfig.
-     * For example, builder.input('Field1').all(builder.conditions().required('Field2').required('Field3'))
-     * The fluent function for allCondition (and others that support EvaluateChildConditionResultsConfig)
-     * will get a FluentConditionBuilder whose conditionConfigs collection is fully populated.
-    * @param parentConfig - When null/undefined, the instance is created and the caller is expected
-    * to retrieve its conditionConfigs from the config property.
-    * When assigned, that instance gets conditionConfigs populated and 
-    * there is no need to get a value from configs property.
-     * @returns a FluentConditionBuilder for chaining conditions.
-    */
-    public conditions(parentConfig?: ConditionWithChildrenBaseConfig): FluentConditionBuilder
-    {
-        let fluent = this.createFluent();
-        return fluent.conditions(parentConfig);
-    }    
-
     //#endregion fluent for creating ValueHosts
 
 }

@@ -1,5 +1,5 @@
-import { MockValidationServices } from './../TestSupport/mocks';
-import { LookupKey } from './../../src/DataTypes/LookupKeys';
+import { MockValidationServices } from '../TestSupport/mocks';
+import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { FluentConditionBuilder, ValidationManagerStartFluent } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import {

@@ -1,6 +1,6 @@
 /**
  * Interfaces for a ManagerConfigBuilders
- * @module ValueHost/Types/ManagerConfigBuilder
+ * @module ValueHosts/Types/ManagerConfigBuilder
  */
 
 
@@ -48,6 +48,27 @@ export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConf
      */
     savedValueHostInstanceStates: Array<ValueHostInstanceState> | null;
 
+}
+
+
+/**
+ * A builder for preparing ValidationManagerConfig.
+ */
+export interface IValidationManagerConfigBuilder<T extends ValidationManagerConfig>
+    extends IValueHostsManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder<T>,
+    IValidationManagerCallbacks, IValidationManagerConfigExtensions
+{
+
+    /**
+     * Expand the override behavior to support the options.
+     * @param options 
+     */
+    override(options?: BuilderOverrideOptions): void;
+}
+
+export interface IValidationManagerConfigExtensions
+{
+
     /**
      * Start of a series to collect ConditionConfigs into any condition that
      * implements EvaluateChildConditionResultsConfig.
@@ -61,23 +82,6 @@ export interface IValueHostsManagerConfigBuilder<T extends ValueHostsManagerConf
      * @returns a FluentConditionBuilder for chaining conditions.
     */
     conditions(parentConfig?: ConditionWithChildrenBaseConfig): FluentConditionBuilder;
-
-
-}
-
-
-/**
- * A builder for preparing ValidationManagerConfig.
- */
-export interface IValidationManagerConfigBuilder<T extends ValidationManagerConfig>
-    extends IValueHostsManagerConfigBuilder<T>, IValueHostsForValidatorManagerConfigBuilder<T>, IValidationManagerCallbacks
-{
-
-    /**
-     * Expand the override behavior to support the options.
-     * @param options 
-     */
-    override(options?: BuilderOverrideOptions): void;
 }
 
 /**

@@ -6,7 +6,7 @@ import { IValidatableValueHostBase, ValueHostValidationState } from '../../src/I
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ValidationState } from '../../src/Interfaces/Validation';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
-import { FluentValidatorBuilder, customRule } from '../../src/ValueHosts/Fluent';
+import { FluentConditionBuilder, FluentValidatorBuilder, customRule } from '../../src/ValueHosts/Fluent';
 import { RegExpConditionConfig, RequireTextCondition } from '../../src/Conditions/ConcreteConditions';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
@@ -15,6 +15,8 @@ import { ICalcValueHost, CalcValueHostConfig } from '../../src/Interfaces/CalcVa
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
+import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
+import { ConditionConfig } from '../../src/Interfaces/Conditions';
 
 
 function createVMConfig(): ValidationManagerConfig {
@@ -40,9 +42,9 @@ class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBu
     {
         return super.baseConfig;
     }
-    public get publicify_overridenValueHostConfigs(): Array<Array<ValueHostConfig>>
+    public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>>
     {
-        return super.overridenValueHostConfigs;
+        return super.overriddenValueHostConfigs;
     }
 
     public publicify_addOverride(): void
@@ -262,7 +264,7 @@ describe('complete', () => {
             }]
         }]);
         expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
-        expect(testItem.publicify_overridenValueHostConfigs).toBeUndefined();
+        expect(testItem.publicify_overriddenValueHostConfigs).toBeUndefined();
     });        
 });
 ensureFluentTestConditions();
@@ -655,7 +657,7 @@ describe('convertPropertyToInput', () => {
         ];
         expect(builder.convertPropertyToInput()).toBe(true);
         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
-        expect(builder.publicify_overridenValueHostConfigs[0]).toEqual(expectedOverrideConfig);
+        expect(builder.publicify_overriddenValueHostConfigs[0]).toEqual(expectedOverrideConfig);
     });       
     test('Using override({ convertPropertyToInput: true} ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
         let vmConfig = createVMConfig();
@@ -706,3 +708,122 @@ describe('convertPropertyToInput', () => {
         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
     });            
 });
+describe('conditions()', () => {
+    test('Undefined parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.conditions();
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        expect(testItem.parentConfig).toEqual({
+            conditionType: 'TBD',
+            conditionConfigs: []
+        });
+    });
+    test('null parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.conditions(null!);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        expect(testItem.parentConfig).toEqual({
+            conditionType: 'TBD',
+            conditionConfigs: []
+        });
+    });
+    test('Supplied parameter creates a FluentConditionBuilder with the same vhConfig', () => {
+        let vmConfig = createVMConfig();
+
+        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
+            conditionType: ConditionType.All,
+            conditionConfigs: []
+        }
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.conditions(parentConfig);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        expect(testItem.parentConfig).toEqual({
+            conditionType: ConditionType.All,
+            conditionConfigs: []
+        });
+    });
+    test('Supplied parameter with conditionConfig=null creates a FluentValidatorBuilder with the same vhConfig and conditionConfig=[]', () => {
+        let vmConfig = createVMConfig();
+
+        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
+            conditionType: ConditionType.All,
+            conditionConfigs: null as unknown as Array<ConditionConfig>
+        }
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.conditions(parentConfig);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        expect(testItem.parentConfig).toEqual({
+            conditionType: ConditionType.All,
+            conditionConfigs: []
+        });
+    });
+    test('Add RequireTest condition to InputValueHostConfig via chaining', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.conditions().testChainRequireText({});
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
+        expect(parentConfig.conditionConfigs!.length).toBe(1);
+        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
+    });
+    test('Add RequireTest and RegExp conditions to InputValueHostConfig via chaining', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.conditions()
+            .testChainRequireText({})
+            .testChainRegExp({ expressionAsString: '\\d' });
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
+        expect(parentConfig.conditionConfigs!.length).toBe(2);
+        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![1]).not.toBeNull();
+        expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
+        expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
+    });
+    test('With EvaluateChildConditionResultsBaseConfig parameter: Add RequireText condition to InputValueHostConfig via chaining', () => {
+        let vmConfig = createVMConfig();
+
+        let eccrConfig: EvaluateChildConditionResultsBaseConfig = {
+            conditionType: 'All',
+            conditionConfigs: []
+        };
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.conditions(eccrConfig).testChainRequireText({});
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
+        expect(parentConfig).toBe(eccrConfig);
+        expect(parentConfig.conditionConfigs!.length).toBe(1);
+        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
+    });
+    test('With EvaluateChildConditionResultsBaseConfig parameter: Add RequireText and RegExp conditions to InputValueHostConfig via chaining', () => {
+        let vmConfig = createVMConfig();
+
+        let eccrConfig: EvaluateChildConditionResultsBaseConfig = {
+            conditionType: 'All',
+            conditionConfigs: []
+        };
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        let testItem = builder.conditions(eccrConfig)
+            .testChainRequireText({})
+            .testChainRegExp({ expressionAsString: '\\d' });
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
+        expect(parentConfig).toBe(eccrConfig);
+        expect(parentConfig.conditionConfigs!.length).toBe(2);
+        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![1]).not.toBeNull();
+        expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
+        expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
+    });
+});
+

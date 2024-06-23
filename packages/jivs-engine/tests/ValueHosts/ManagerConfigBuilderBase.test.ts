@@ -46,7 +46,7 @@ class TestManagerConfigBuilderBase extends ManagerConfigBuilderBase<ValueHostsMa
     }
     public get publicify_overrideValueHostConfigs(): Array<Array<ValueHostConfig>>
     {
-        return super.overridenValueHostConfigs;
+        return super.overriddenValueHostConfigs;
     }
 
     public publicify_addOverride(): void

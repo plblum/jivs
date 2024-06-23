@@ -1,5 +1,8 @@
+import { RegExpConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
+import { EvaluateChildConditionResultsBaseConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValidationSeverity } from "../../src/Interfaces/Validation";
 import { ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -8,10 +11,13 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
 import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
-import { FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
+import { FluentConditionBuilder, FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { Publicify_ValidationManager } from "../TestSupport/Publicify_classes";
 import { MockValidationServices } from "../TestSupport/mocks";
+import { ensureFluentTestConditions } from "../ValueHosts/ManagerConfigBuilderBase.test";
+
+ensureFluentTestConditions();
 
 function createVMConfig(): ValidationManagerConfig {
     let vmConfig: ValidationManagerConfig = {
@@ -37,8 +43,8 @@ class Publicify_ValidationManagerConfigModifier extends ValidationManagerConfigM
     public get publicify_baseConfig(): ValidationManagerConfig {
         return super.baseConfig;
     }
-    public get publicify_overridenValueHostConfigs(): Array<Array<ValueHostConfig>> {
-        return super.overridenValueHostConfigs;
+    public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
+        return super.overriddenValueHostConfigs;
     }
 
     public publicify_addOverride(): void {
@@ -583,5 +589,110 @@ describe('addValidatorsTo', () => {
         });
         let logger = vmConfig.services.loggerService as CapturingLogger;
         expect(logger.findMessage('ConditionType mismatch', LoggingLevel.Warn, null, null)).toBeTruthy();
+    });
+});
+describe('conditions()', () => {
+    test('Undefined parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new ValidationManagerConfigBuilder(vmConfig);
+        let vm = new Publicify_ValidationManager(builder);
+        let modifier = vm.startModifying();
+        let testItem = modifier.conditions();
+        modifier.apply();
+
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        expect(testItem.parentConfig).toEqual({
+            conditionType: 'TBD',
+            conditionConfigs: []
+        });
+    });
+    test('null parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new ValidationManagerConfigBuilder(vmConfig);
+        let vm = new Publicify_ValidationManager(builder);
+        let modifier = vm.startModifying();
+        let testItem = modifier.conditions(null!);
+        modifier.apply();        
+
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        expect(testItem.parentConfig).toEqual({
+            conditionType: 'TBD',
+            conditionConfigs: []
+        });
+    });
+    test('Supplied parameter creates a FluentConditionBuilder with the same vhConfig', () => {
+        let vmConfig = createVMConfig();
+
+        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
+            conditionType: ConditionType.All,
+            conditionConfigs: []
+        }
+        let builder = new ValidationManagerConfigBuilder(vmConfig);
+        let vm = new Publicify_ValidationManager(builder);
+        let modifier = vm.startModifying();
+        let testItem = modifier.conditions(parentConfig);
+        modifier.apply();
+        
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        expect(testItem.parentConfig).toEqual({
+            conditionType: ConditionType.All,
+            conditionConfigs: []
+        });
+    });
+    test('Supplied parameter with conditionConfig=null creates a FluentValidatorBuilder with the same vhConfig and conditionConfig=[]', () => {
+        let vmConfig = createVMConfig();
+
+        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
+            conditionType: ConditionType.All,
+            conditionConfigs: null as unknown as Array<ConditionConfig>
+        }
+        let builder = new ValidationManagerConfigBuilder(vmConfig);
+        let vm = new Publicify_ValidationManager(builder);
+        let modifier = vm.startModifying();
+        let testItem = modifier.conditions(parentConfig);
+        modifier.apply();        
+
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        expect(testItem.parentConfig).toEqual({
+            conditionType: ConditionType.All,
+            conditionConfigs: []
+        });
+    });
+    test('Add RequireTest condition to InputValueHostConfig via chaining', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new ValidationManagerConfigBuilder(vmConfig);
+        let vm = new Publicify_ValidationManager(builder);
+        let modifier = vm.startModifying();
+        let testItem = modifier.conditions().testChainRequireText({});
+        modifier.apply();
+        
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
+        expect(parentConfig.conditionConfigs!.length).toBe(1);
+        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
+    });
+    test('Add RequireTest and RegExp conditions to InputValueHostConfig via chaining', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new ValidationManagerConfigBuilder(vmConfig);
+        let vm = new Publicify_ValidationManager(builder);
+        let modifier = vm.startModifying();
+        let testItem = modifier.conditions()
+            .testChainRequireText({})
+            .testChainRegExp({ expressionAsString: '\\d' });
+
+        modifier.apply();        
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
+        let parentConfig = (testItem as FluentConditionBuilder).parentConfig;
+        expect(parentConfig.conditionConfigs!.length).toBe(2);
+        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
+        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
+        expect(parentConfig.conditionConfigs![1]).not.toBeNull();
+        expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
+        expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
 });

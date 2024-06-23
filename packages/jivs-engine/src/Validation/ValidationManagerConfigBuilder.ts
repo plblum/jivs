@@ -8,13 +8,14 @@ import { ValueHostsManagerConfigBuilder } from "../ValueHosts/ValueHostsManagerC
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { ValueHostValidationStateChangedHandler } from "../Interfaces/ValidatableValueHostBase";
 import { ValueHostName } from "../DataTypes/BasicTypes";
-import { FluentInputParameters, FluentValidatorBuilder, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, ValidationManagerStartFluent } from "../ValueHosts/Fluent";
+import { FluentInputParameters, FluentValidatorBuilder, FluentInputValueConfig, FluentPropertyParameters, FluentPropertyValueConfig, ValidationManagerStartFluent, FluentConditionBuilder } from "../ValueHosts/Fluent";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { resolveErrorCode } from "../Utilities/Validation";
 import { BuilderOverrideOptions, IValidationManagerConfigBuilder } from "../Interfaces/ManagerConfigBuilder";
 import {  toIServicesAccessor } from "../Interfaces/Services";
 import { PropertyValueHostConfig } from "../Interfaces/PropertyValueHost";
+import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 
 
 /**
@@ -118,6 +119,16 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
         return this.addValidatorsValueHost<PropertyValueHostConfig>(ValueHostType.Property, arg1, arg2, arg3);
     }
     //#endregion validation oriented ValueHost support
+
+
+    /**
+     * @inheritdoc ValueHosts/Types/ManagerConfigBuilder!IValidationManagerConfigExtensions.conditions
+    */
+    public conditions(parentConfig?: ConditionWithChildrenBaseConfig): FluentConditionBuilder
+    {
+        let fluent = this.createFluent();
+        return fluent.conditions(parentConfig);
+    }    
 
     /**
      * Expand the override behavior to support the options.

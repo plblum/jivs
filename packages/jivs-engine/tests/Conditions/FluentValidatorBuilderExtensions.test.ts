@@ -1,4 +1,4 @@
-import { LookupKey } from './../../src/DataTypes/LookupKeys';
+import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 import { FluentBuilderBase, FluentValidatorBuilder, ValidationManagerStartFluent } from "../../src/ValueHosts/Fluent";
 import { ConditionType } from '../../src/Conditions/ConditionTypes';

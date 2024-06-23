@@ -89,10 +89,10 @@ import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
  * modifier.input('Field3').regExp(null, { enabled: false });   // let's disable the existing validator
  * modifier.apply(); // consider modifier disposed at this point
  * ```
- * 
  * ## Combining a condition from the UI with the conditions from the business logic
  * This common use case is where the UI wants to add a condition to a Validator 
- * that was created by the business logic. Use the combineConditionWith() function.
+ * that was created by the business logic. Use the combineConditionWith() 
+ * and replaceConditionWith() functions.
  * 
  * The goal is to preserve the condition from the business logic by using it together with 
  * the UI's condition in one of these ways:
@@ -103,14 +103,14 @@ import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
  *   // UI wants it to look like this:
  *   builder.input('Field1', LookupKey.String)
  *      .when(
- *          (enabler)=> enabler.equalToValue('YES', 'Field2'),
- *         (condition)=> condition.notNull()
+ *          (enablerBuilder)=> enablerBuilder.equalToValue('YES', 'Field2'),
+ *         (conditionBuilder)=> conditionBuilder.notNull()
  *    );
  *   // using the combineConditionWith() function
  *   builder.input('Field1').combineConditionWith(
  *      ConditionType.NotNull, // error code
- *      ConditionType
- *      (condition)=> condition.equalToValue('YES', 'Field2'));
+ *      CombineUsingCondition.When,
+ *      (conditionBuilder)=> conditionBuilder.equalToValue('YES', 'Field2'));
  *   ```
  * - All conditions must evaluate as a match using the AllCondition
  *   ```ts
@@ -118,15 +118,26 @@ import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
  *   builder.input('Field1', LookupKey.String).regexp(/^[A-Z]+$/i);
  *   // UI wants it to look like this:
  *   builder.input('Field1', LookupKey.String)
- *     .all((children)=> children.regexp(/^[A-Z]+$/i).stringLength(10));
- *  ```
+ *     .all((childrenBuilder)=> childrenBuilder.regexp(/^[A-Z]+$/i).stringLength(10));
+ * 
+ *   // using the combineConditionWith() function
+ *   builder.input('Field1').combineConditionWith(
+ *      ConditionType.NotNull, // error code
+ *      CombineUsingCondition.All,
+ *      (conditionBuilder)=> conditionBuilder.stringLength(10));
+ *   ```
  * - Either condition can evaluate as a match using the AnyCondition
  * - The UI's condition is a complete replacement for the business logic's condition.
  *   // business logic
  *   builder.input('Field1', LookupKey.String).notNull();
  *   // UI wants it to look like this:
  *   builder.input('Field1', LookupKey.String)
- *     .all((children)=> children.requireText());   // because requireText() includes notNull() 
+ *     .all((childrenBuilder)=> childrenBuilder.requireText());   // because requireText() includes notNull() 
+ * 
+ *   // using the replaceConditionWith() function
+ *   builder.input('Field1').replaceConditionWith(
+ *      ConditionType.NotNull, // error code
+ *      (conditionBuilder)=> conditionBuilder.requireText());
  *  ```
  */
 export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig>
@@ -153,7 +164,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             throw new CodingError('Unexpected parameter value');
     }
     public dispose(): void {
-        this._overridedValueHostConfigs = undefined!;
+        this._overriddedValueHostConfigs = undefined!;
         this._baseConfig = undefined!;
     }
 
@@ -177,10 +188,10 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * Each are created by the override() function.
      * They retain a reference to services.
      */
-    protected get overridenValueHostConfigs(): Array<Array<ValueHostConfig>> {
-        return this._overridedValueHostConfigs;
+    protected get overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
+        return this._overriddedValueHostConfigs;
     }
-    private _overridedValueHostConfigs: Array<Array<ValueHostConfig>> = [];
+    private _overriddedValueHostConfigs: Array<Array<ValueHostConfig>> = [];
 
     /**
      * Starts a new ValueHostsConfig to collect ValueHostConfigs.
@@ -188,7 +199,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      */
     protected addOverride(): void {
         let valueHostConfigs: Array<ValueHostConfig> = [];
-        this.overridenValueHostConfigs.push(valueHostConfigs);
+        this.overriddenValueHostConfigs.push(valueHostConfigs);
     }
 
     /**
@@ -196,8 +207,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @returns 
      */
     protected destinationValueHostConfigs(): Array<ValueHostConfig> {
-        if (this.overridenValueHostConfigs.length)
-            return this.overridenValueHostConfigs[this.overridenValueHostConfigs.length - 1];
+        if (this.overriddenValueHostConfigs.length)
+            return this.overriddenValueHostConfigs[this.overriddenValueHostConfigs.length - 1];
         return this.baseConfig.valueHostConfigs;
     }
 
@@ -211,7 +222,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
         // merge overrides into baseConfig
         let destination = this.baseConfig;
-        this.overridenValueHostConfigs.forEach((o) => {
+        this.overriddenValueHostConfigs.forEach((o) => {
             o.forEach((sourceConfig) => {
                 let destinationConfig = vhms.identifyValueHostConflict(sourceConfig, destination.valueHostConfigs);
                 if (destinationConfig) {
@@ -242,6 +253,37 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      */
     protected abstract createFluent(): ValueHostsManagerStartFluent;
 
+
+    /**
+     * Gets a ValueHostConfig with matching name by looking in previous overrides and the baseConfig.
+     * Goal is to find a ValueHostConfig that existed prior to creating the Modifier or using override().
+     * @param valueHostName 
+     * @param throwWhenNotFound 
+     * @returns 
+     */
+    protected getExistingValueHostConfig(valueHostName: string, throwWhenNotFound: boolean): ValueHostConfig | null {
+
+        let result: ValueHostConfig | null = null;
+
+        if (this.overriddenValueHostConfigs.length > 0) // don't search baseConfig unless it has been overridden
+        {
+            for (let i = this.overriddenValueHostConfigs.length - 1; i >= 0; i--) {
+                result = this.overriddenValueHostConfigs[i].find((item) => item.name === valueHostName) ?? null;
+                if (result)
+                    return result;
+            }
+            result = this.baseConfig.valueHostConfigs.find((item) => item.name === valueHostName) ?? null;
+            if (result)
+                return result;
+        }
+
+        if (throwWhenNotFound)
+            throw new CodingError(`ValueHost name "${valueHostName}" is not defined.`);
+        // istanbul ignore next   // currently no code passes in false for throwWhenNotFound
+        return null;
+    }
+
+
     //#region fluent for creating ValueHosts
     /**
      * Utility to use the Fluent system to add a ValueHostConfig to the ValueHostsManagerConfig.
@@ -265,34 +307,6 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         this.applyConfig(vhConfig);
         return this;
     }
-
-    /**
-     * Fluent format to create any ValueHostConfig based upon ValidatorsValueHostBaseConfig.
-     * This is the start of a fluent series. Extend series with validation rules like "required()".
-     * Protected because ValueHostManager does not support InputValueHost. 
-     * ValidationManager offers a public interface.
-     * @param valueHostType - the ValueHostType to configure
-     * @param arg1 - either the ValueHost name for a multiparameter use or InputValueConfig for a single parameter use.
-     * @param arg2 - optional and can be null. The value for ValueHost.dataType or InputValueHostConfig.
-     * @param arg3 - optional. Any additional properties of a InputValueHostConfig.
-     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
-     */
-    protected addValidatorsValueHost<TVHConfig extends ValidatorsValueHostBaseConfig>(
-        valueHostType: ValueHostType | string,
-        arg1: Partial<TVHConfig> | ValueHostName,
-        arg2?: Partial<TVHConfig> | string | null,
-        arg3?: Partial<TVHConfig>): FluentValidatorBuilder {
-
-        assertNotNull(arg1, 'arg1');
-        let fluent = this.createFluent() as ValidationManagerStartFluent;
-        let builder = fluent.withValidators(valueHostType,
-            arg1 as FluentValidatorsValueHostConfig<TVHConfig> | ValueHostName,
-            arg2 as FluentValidatorsValueHostParameters<TVHConfig> | string | null,
-            arg3 as FluentValidatorsValueHostParameters<TVHConfig>);
-
-        this.applyConfig(builder.parentConfig);
-        return builder;
-    }    
 
     /**
      * Fluent format to create a StaticValueHostConfig.
@@ -376,4 +390,35 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             throw new CodingError(`ValueHost name "${valueHostConfig!.name}" is not type=${expectedType}.`);
 
     }
+    //#region utilities for ValidationManager-based subclasses
+    // These utilities should all be protected. The ValidationManager subclass will create a public version of it.
+    /**
+     * Fluent format to create any ValueHostConfig based upon ValidatorsValueHostBaseConfig.
+     * This is the start of a fluent series. Extend series with validation rules like "required()".
+     * Protected because ValueHostManager does not support InputValueHost. 
+     * ValidationManager offers a public interface.
+     * @param valueHostType - the ValueHostType to configure
+     * @param arg1 - either the ValueHost name for a multiparameter use or InputValueConfig for a single parameter use.
+     * @param arg2 - optional and can be null. The value for ValueHost.dataType or InputValueHostConfig.
+     * @param arg3 - optional. Any additional properties of a InputValueHostConfig.
+     * @returns FluentValidatorBuilder for chaining validators to initial InputValueHost
+     */
+    protected addValidatorsValueHost<TVHConfig extends ValidatorsValueHostBaseConfig>(
+        valueHostType: ValueHostType | string,
+        arg1: Partial<TVHConfig> | ValueHostName,
+        arg2?: Partial<TVHConfig> | string | null,
+        arg3?: Partial<TVHConfig>): FluentValidatorBuilder {
+
+        assertNotNull(arg1, 'arg1');
+        let fluent = this.createFluent() as ValidationManagerStartFluent;
+        let builder = fluent.withValidators(valueHostType,
+            arg1 as FluentValidatorsValueHostConfig<TVHConfig> | ValueHostName,
+            arg2 as FluentValidatorsValueHostParameters<TVHConfig> | string | null,
+            arg3 as FluentValidatorsValueHostParameters<TVHConfig>);
+
+        this.applyConfig(builder.parentConfig);
+        return builder;
+    }    
+
+//#endregion utilities for ValidationManager-based subclasses
 }
