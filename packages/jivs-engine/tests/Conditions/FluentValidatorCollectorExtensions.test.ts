@@ -2035,7 +2035,7 @@ describe('not with ValidationManagerStartFluent', () => {
     });    
     test('Null as the function parameter throws', () => {
         let fluent = createFluent();
-        expect(()=> fluent.input('Field1').not(null!, 'Error')).toThrow(/childConfig/);
+        expect(()=> fluent.input('Field1').not(null!, 'Error')).toThrow(/childBuilder/);
     });
     test('Non-function as the function parameter throws', () => {
         let fluent = createFluent();
@@ -2047,8 +2047,8 @@ describe('when with ValidationManagerStartFluent', () => {
     test('With empty condition in both enabler and childCondition, creates ValidatorConfig with WhenCondition with type=When, enablerConfig={} and childConditionConfig={}', () => {
 
         let testItem = createFluent().input('Field1').when(
-            (enabler) => enabler,
-            (child) => child);
+            (enablerBuilder) => enablerBuilder,
+            (childBuilder) => childBuilder);
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
@@ -2061,7 +2061,7 @@ describe('when with ValidationManagerStartFluent', () => {
 
         let testItem = createFluent().input('Field1')
             .when((enabler)=> enabler.regExp(/abc/),
-                (child) => child.requireText(null, 'F1'));
+                (childBuilder) => childBuilder.requireText(null, 'F1'));
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
@@ -2081,7 +2081,7 @@ describe('when with ValidationManagerStartFluent', () => {
         let testItem = createFluent().input('Field1')
             .when(
                 (enabler)=> enabler.regExp(/abc/, null, null, 'F2'),
-                (child) => child.requireText(null, 'F1'),
+                (childBuilder) => childBuilder.requireText(null, 'F1'),
                 
                 'Error', { summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
@@ -2106,7 +2106,7 @@ describe('when with ValidationManagerStartFluent', () => {
         let testItem = createFluent()
             .input('Field1').when(
                 (enabler)=> enabler,    
-                (child) => child, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
+                (childBuilder) => childBuilder, null, { errorMessage: 'Error', summaryMessage: 'Summary' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
@@ -2120,8 +2120,8 @@ describe('when with ValidationManagerStartFluent', () => {
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with WhenCondition with only type assigned. ErrorMessage is from first parameter, when validatorConfig assigned', () => {
 
         let testItem = createFluent().input('Field1').when(
-            (enabler) => enabler,
-            (child) => child,
+            (enablerBuilder) => enablerBuilder,
+            (childBuilder) => childBuilder,
             'FirstError', { errorMessage: 'SecondError' });
         TestFluentValidatorCollector(testItem, <ValidatorConfig>{
             conditionConfig: <WhenConditionConfig>{
@@ -2135,22 +2135,22 @@ describe('when with ValidationManagerStartFluent', () => {
     test('When there are 2 child conditions, throws', () => {
         expect(() => createFluent().input('Field1')
             .when((enabler)=> enabler,
-                (child) => child.requireText(null, 'F1').requireText(null, 'F2'))).toThrow();
+                (childBuilder) => childBuilder.requireText(null, 'F1').requireText(null, 'F2'))).toThrow();
     });    
     test('When there are 2 enabler conditions, throws', () => {
         expect(() => createFluent().input('Field1')
             .when((enabler)=> enabler.requireText(null, 'F1').requireText(null, 'F2'),
-                (child) => child)).toThrow();
+                (childBuilder) => childBuilder)).toThrow();
     });        
     test('Null as the enabler function parameter throws', () => {
         let fluent = createFluent();
-        expect(() => fluent.input('Field1').when(null!, (child) => child,
-            'Error')).toThrow(/enabler/);
+        expect(() => fluent.input('Field1').when(null!, (childBuilder) => childBuilder,
+            'Error')).toThrow(/enablerBuilder/);
     });
     test('Null as the child condition function parameter throws', () => {
         let fluent = createFluent();
         expect(() => fluent.input('Field1').when((enabler)=> enabler, null!,
-            'Error')).toThrow(/childConfig/);
+            'Error')).toThrow(/childBuilder/);
     });    
     test('Non-function as the child function parameter throws', () => {
         let fluent = createFluent();
@@ -2158,6 +2158,6 @@ describe('when with ValidationManagerStartFluent', () => {
     });    
     test('Non-function as the enabler function parameter throws', () => {
         let fluent = createFluent();
-        expect(() => fluent.input('Field1').when({} as any, (child)=>child, 'Error')).toThrow(/Function expected/);
+        expect(() => fluent.input('Field1').when({} as any, (childBuilder) => childBuilder, 'Error')).toThrow(/Function expected/);
     });        
 });

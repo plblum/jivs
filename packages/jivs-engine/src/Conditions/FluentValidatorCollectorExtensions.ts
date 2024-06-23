@@ -76,12 +76,12 @@ declare module "./../ValueHosts/Fluent"
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
         not(
-            childConfig: FluentOneConditionCollectorHandler,
+            childBuilder: FluentOneConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
         when(
-            enablerConfig: FluentOneConditionCollectorHandler,
-            childConfig: FluentOneConditionCollectorHandler,
+            enablerBuilder: FluentOneConditionCollectorHandler,
+            childBuilder: FluentOneConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;        
         equalToValue(
@@ -151,16 +151,16 @@ declare module "./../ValueHosts/Fluent"
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
         all(
-            conditions: FluentConditionCollectorHandler,
+            conditionsBuilder: FluentConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;
         any(
-            conditions: FluentConditionCollectorHandler,
+            conditionsBuilder: FluentConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;        
         countMatches(
             minimum: number | null, maximum: number | null,
-            conditions: FluentConditionCollectorHandler,
+            conditionsBuilder: FluentConditionCollectorHandler,
             errorMessage?: string | null,
             validatorParameters?: FluentValidatorConfig): FluentValidatorCollector;      
         positive(
@@ -445,31 +445,31 @@ function stringLength(
 }
 
 function all(
-    conditions: FluentConditionCollectorHandler,
+    conditionsBuilder: FluentConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.All, _genDCAll(conditions),
+        ConditionType.All, _genDCAll(conditionsBuilder),
         errorMessage, validatorParameters);
 }
 
 function any(
-    conditions: FluentConditionCollectorHandler,
+    conditionsBuilder: FluentConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.Any, _genDCAny(conditions),
+        ConditionType.Any, _genDCAny(conditionsBuilder),
         errorMessage, validatorParameters);
 }
 
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    conditions: FluentConditionCollectorHandler,
+    conditionsBuilder: FluentConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, conditions),
+        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, conditionsBuilder),
         errorMessage, validatorParameters);
 }
 function positive(
@@ -501,20 +501,20 @@ function maxDecimals(
 }
 
 function not(
-    childConfig: FluentOneConditionCollectorHandler,
+    childBuilder: FluentOneConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.Not, _genDCNot(childConfig),
+        ConditionType.Not, _genDCNot(childBuilder),
         errorMessage, validatorParameters);
 }
 
 function when(
-    enablerConfig: FluentOneConditionCollectorHandler,
-    childConfig: FluentOneConditionCollectorHandler,
+    enablerBuilder: FluentOneConditionCollectorHandler,
+    childBuilder: FluentOneConditionCollectorHandler,
     errorMessage?: string | null,
     validatorParameters?: FluentValidatorConfig): FluentValidatorCollector {
     return finishFluentValidatorCollector(this,
-        ConditionType.When, _genDCWhen(enablerConfig, childConfig),
+        ConditionType.When, _genDCWhen(enablerBuilder, childBuilder),
         errorMessage, validatorParameters);
 }

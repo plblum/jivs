@@ -21,11 +21,13 @@ import { WhenConditionConfig,  } from "./WhenCondition";
 import { ConditionType } from "./ConditionTypes";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
+import { ConditionConfig } from "../Interfaces/Conditions";
 
 // How TypeScript merges functions with the FluentConditionCollector class
 declare module "./../ValueHosts/Fluent"
 {
     export interface FluentConditionCollector {
+        conditionConfig(conditionConfig: ConditionConfig): FluentConditionCollector;
         dataTypeCheck(): FluentConditionCollector;
         requireText(
             conditionConfig?: FluentRequireTextConditionConfig | null,
@@ -39,10 +41,10 @@ declare module "./../ValueHosts/Fluent"
             minimum: any, maximum: any,
             valueHostName?: ValueHostName): FluentConditionCollector;
         not(
-            childConfig: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
+            childBuilder: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
         when(
-            enablerConfig: FluentOneConditionCollectorHandler,
-            childConfig: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
+            enablerBuilder: FluentOneConditionCollectorHandler,
+            childBuilder: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
         
         equalToValue(
             secondValue: any,
@@ -98,12 +100,12 @@ declare module "./../ValueHosts/Fluent"
             conditionConfig?: FluentStringLengthConditionConfig | null,
             valueHostName?: ValueHostName): FluentConditionCollector;
         all(
-            conditions: FluentConditionCollectorHandler): FluentConditionCollector;
+            conditionsBuilder: FluentConditionCollectorHandler): FluentConditionCollector;
         any(
-            conditions: FluentConditionCollectorHandler): FluentConditionCollector;
+            conditionsBuilder: FluentConditionCollectorHandler): FluentConditionCollector;
         countMatches(
             minimum: number | null, maximum: number | null,
-            conditions: FluentConditionCollectorHandler): FluentConditionCollector;
+            conditionsBuilder: FluentConditionCollectorHandler): FluentConditionCollector;
         
         positive(
             valueHostName?: ValueHostName): FluentConditionCollector;
@@ -160,6 +162,7 @@ export function enableFluentConditions(): void {
     if (typeof FluentConditionCollector.prototype.dataTypeCheck === 'function')
         return;
     // How JavaScript sees the functions added to the FluentConditionCollector class
+    FluentConditionCollector.prototype.conditionConfig = conditionConfig;
     FluentConditionCollector.prototype.dataTypeCheck = dataTypeCheck;
     FluentConditionCollector.prototype.requireText = requireText;
     FluentConditionCollector.prototype.notNull = notNull;
@@ -201,6 +204,17 @@ export function enableFluentConditions(): void {
 }
 
 // --- Actual fluent functions -------
+
+/**
+ * Adds a condition to the collector based on a ConditionConfig.
+ * @param conditionConfig 
+ * @returns 
+ */
+function conditionConfig(conditionConfig: ConditionConfig): FluentConditionCollector {
+    assertNotNull(conditionConfig, 'conditionConfig');
+    assertNotNull(conditionConfig.conditionType, 'conditionConfig.conditionType');
+    return finishFluentConditionCollector(this, conditionConfig.conditionType, conditionConfig);
+}
 
 /**
  * Common code to setup DataTypeCheckConditionConfig for support within
@@ -614,19 +628,19 @@ function stringLength(
  * @internal
  */
 export function _genDCAll(
-    conditions: FluentConditionCollectorHandler): AllMatchConditionConfig {
-    assertNotNull(conditions, 'conditions');
-    assertFunction(conditions);
+    conditionsBuilder: FluentConditionCollectorHandler): AllMatchConditionConfig {
+    assertNotNull(conditionsBuilder, 'conditionsBuilder');
+    assertFunction(conditionsBuilder);
     
     let fluent = new FluentConditionCollector(null);
-    conditions(fluent);
+    conditionsBuilder(fluent);
     let conditionConfigs = fluent.parentConfig.conditionConfigs;
     return { conditionConfigs: conditionConfigs } as AllMatchConditionConfig;
 }
 function all(
-    conditions: FluentConditionCollectorHandler): FluentConditionCollector {
+    conditionsBuilder: FluentConditionCollectorHandler): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.All, _genDCAll(conditions));
+        ConditionType.All, _genDCAll(conditionsBuilder));
 }
 /**
  * Common code to setup AnyMatchConditionConfig for support within
@@ -634,19 +648,19 @@ function all(
  * @internal
  */
 export function _genDCAny(
-    conditions: FluentConditionCollectorHandler): AnyMatchConditionConfig {
-    assertNotNull(conditions, 'conditions');
-    assertFunction(conditions);
+    conditionsBuilder: FluentConditionCollectorHandler): AnyMatchConditionConfig {
+    assertNotNull(conditionsBuilder, 'conditionsBuilder');
+    assertFunction(conditionsBuilder);
     
     let fluent = new FluentConditionCollector(null);
-    conditions(fluent);
+    conditionsBuilder(fluent);
     let conditionConfigs = fluent.parentConfig.conditionConfigs;
     return { conditionConfigs: conditionConfigs } as AnyMatchConditionConfig;
 }
 function any(
-    conditions: FluentConditionCollectorHandler): FluentConditionCollector {
+    conditionsBuilder: FluentConditionCollectorHandler): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.Any,  _genDCAny(conditions));
+        ConditionType.Any,  _genDCAny(conditionsBuilder));
 }
 
 /**
@@ -657,12 +671,12 @@ function any(
 export function _genDCCountMatches(
     minimum: number | null,
     maximum: number | null,
-    conditions: FluentConditionCollectorHandler): CountMatchesConditionConfig {
-    assertNotNull(conditions, 'conditions');
-    assertFunction(conditions);
+    conditionsBuilder: FluentConditionCollectorHandler): CountMatchesConditionConfig {
+    assertNotNull(conditionsBuilder, 'conditionsBuilder');
+    assertFunction(conditionsBuilder);
     
     let fluent = new FluentConditionCollector(null);
-    conditions(fluent);
+    conditionsBuilder(fluent);
     let conditionConfigs = fluent.parentConfig.conditionConfigs;
 
     let condConfig: CountMatchesConditionConfig =
@@ -676,9 +690,9 @@ export function _genDCCountMatches(
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    conditions: FluentConditionCollectorHandler): FluentConditionCollector {
+    conditionsBuilder: FluentConditionCollectorHandler): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, conditions));
+        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, conditionsBuilder));
 }
 
 /**
@@ -729,19 +743,19 @@ function maxDecimals(maxDecimals: number,
  * @internal
  */
 export function _genDCNot(
-    childConfig: FluentOneConditionCollectorHandler): NotConditionConfig {
-    assertNotNull(childConfig, 'childConfig');
-    assertFunction(childConfig);
+    childBuilder: FluentOneConditionCollectorHandler): NotConditionConfig {
+    assertNotNull(childBuilder, 'childBuilder');
+    assertFunction(childBuilder);
     
     let fluent = new FluentOneConditionCollector(null);
-    childConfig(fluent);
+    childBuilder(fluent);
     let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
     return { childConditionConfig: conditionConfig } as NotConditionConfig;
 }
 function not(
-    childConfig: FluentOneConditionCollectorHandler): FluentConditionCollector {
+    childBuilder: FluentOneConditionCollectorHandler): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.Not, _genDCNot(childConfig));
+        ConditionType.Not, _genDCNot(childBuilder));
 }
 
 /**
@@ -750,25 +764,25 @@ function not(
  * @internal
  */
 export function _genDCWhen(
-    enablerConfig: FluentOneConditionCollectorHandler,
-    childConfig: FluentOneConditionCollectorHandler): WhenConditionConfig {
-    assertNotNull(enablerConfig, 'enablerConfig');
-    assertFunction(enablerConfig);
-    assertNotNull(childConfig, 'childConfig');
-    assertFunction(childConfig);
+    enablerBuilder: FluentOneConditionCollectorHandler,
+    childBuilder: FluentOneConditionCollectorHandler): WhenConditionConfig {
+    assertNotNull(enablerBuilder, 'enablerBuilder');
+    assertFunction(enablerBuilder);
+    assertNotNull(childBuilder, 'childBuilder');
+    assertFunction(childBuilder);
 
     let fluentEnabler = new FluentOneConditionCollector(null);
-    enablerConfig(fluentEnabler);
+    enablerBuilder(fluentEnabler);
     let enablerConditionConfig = fluentEnabler.parentConfig.conditionConfigs[0] ?? {};
 
     let fluent = new FluentOneConditionCollector(null);
-    childConfig(fluent);
+    childBuilder(fluent);
     let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
     return { enablerConfig: enablerConditionConfig, childConditionConfig: conditionConfig } as WhenConditionConfig;
 }
 function when(
-    enablerConfig: FluentOneConditionCollectorHandler,
-    childConfig: FluentOneConditionCollectorHandler): FluentConditionCollector {
+    enablerBuilder: FluentOneConditionCollectorHandler,
+    childBuilder: FluentOneConditionCollectorHandler): FluentConditionCollector {
     return finishFluentConditionCollector(this,
-        ConditionType.When, _genDCWhen(enablerConfig, childConfig));
+        ConditionType.When, _genDCWhen(enablerBuilder, childBuilder));
 }

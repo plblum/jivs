@@ -757,11 +757,11 @@ Here are the conditions in Builder/Modifier API format:
  
   ```ts
   builder.input('fieldname').when(
-     (enabler) => enabler.equalTo(true, null, 'anotherFieldName'),
-     (child) => child.regExp(/[ABC]/);
+     (enablerBuilder) => enablerBuilder.equalTo(true, null, 'anotherFieldName'),
+     (childBuilder) => childBuilder.regExp(/[ABC]/);
   builder.input('fieldname').when(
-     (enabler) => enabler.equalTo(true, null, 'anotherFieldName'),
-     (child) => child.regExp(/[ABC]/, 
+     (enablerBuilder) => enablerBuilder.equalTo(true, null, 'anotherFieldName'),
+     (childBuilder) => childBuilder.regExp(/[ABC]/, 
         'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
   ```
   For more, see <a href="#whencondition">Using the WhenCondition</a>.
@@ -772,9 +772,9 @@ Here are the conditions in Builder/Modifier API format:
  
   ```ts
   builder.input('fieldname').not(
-     (child) => child.regExp(/[ABC]/);
+     (childBuilder) => childBuilder.regExp(/[ABC]/);
   builder.input('fieldname').not(
-     (child) => child.regExp(/[ABC]/, 
+     (childBuilder) => childBuilder.regExp(/[ABC]/, 
         'Omit these letters: ABC', { severity: ValidatorSeverity.Severe });
   ```
   For more, see <a href="#notcondition">Using the NotCondition</a>.
@@ -828,11 +828,11 @@ Here are the conditions in Builder/Modifier API format:
  
   ```ts
   builder.input('fieldname').all(
-     (children) => children
+     (childrenBuilder) => childrenBuilder
        .requireText(null, 'fieldname2')
        .requireText(null, 'fieldname3'));
   builder.input('fieldname').all(
-     (children) => children
+     (childrenBuilder) => childrenBuilder
         .requireText(null, 'fieldname2')
         .requireText(null, 'fieldname3'), 
         'At least one is required', { severity: ValidatorSeverity.Severe });
@@ -843,11 +843,11 @@ Here are the conditions in Builder/Modifier API format:
  
   ```ts
   builder.input('fieldname').any(
-     (children) => children
+     (childrenBuilder) => childrenBuilder
        .requireText(null, 'fieldname2')
        .requireText(null, 'fieldname3'));
   builder.input('fieldname').any(
-     (children) => children
+     (childrenBuilder) => childrenBuilder
         .requireText(null, 'fieldname2')
         .requireText(null, 'fieldname3'), 
         'At least one is required', { severity: ValidatorSeverity.Severe });
@@ -859,13 +859,13 @@ Here are the conditions in Builder/Modifier API format:
   ```ts
   builder.input('fieldname').countMatches(
       1, 2, 
-      (children) => children
+      (childrenBuilder) => childrenBuilder
          .requireText(null, 'fieldname2')
          .requireText(null, 'fieldname3')
          .requireText(null, 'fieldname4'));
   builder.input('fieldname').any(
       2, 4, 
-      (children) => children
+      (childrenBuilder) => childrenBuilder
          .requireText(null, 'fieldname2')
          .requireText(null, 'fieldname3')
          .requireText(null, 'fieldname4')
@@ -913,16 +913,16 @@ Example: RequireText is only enabled if 'CheckBox1' has a value
 ...
 builder.input('CheckBox1', LookupKey.String);
 builder.input('TextBox1', LookupKey.String)
-   .when((enabler)=>enabler.requireText(null, 'CheckBox1'),
-         (child)=>child.requireText());
+   .when((enablerBuilder)=>enablerBuilder.requireText(null, 'CheckBox1'),
+         (childBuilder)=>childBuilder.requireText());
 ```
 Example: Regular expression for postal code depends on culture ID
 ```ts
 builder.static('countryCode', LookupKey.String, { initialValue: 'US' });
 builder.input('PostalCode')
-   .when((enabler)=> enabler.equalTo('US'), (child)=>child.regExp(/^\d{5}(\s\d{4})?$/))
-   .when((enabler)=> enabler.equalTo('CA'), (child)=>child.regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
-   .when((enabler)=> enabler.equalTo('MX'), (child)=>child.regExp(/^\d{5}$/));
+   .when((enablerBuilder)=> enablerBuilder.equalTo('US'), (childBuilder)=>childBuilder.regExp(/^\d{5}(\s\d{4})?$/))
+   .when((enablerBuilder)=> enablerBuilder.equalTo('CA'), (childBuilder)=>childBuilder.regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
+   .when((enablerBuilder)=> enablerBuilder.equalTo('MX'), (childBuilder)=>childBuilder.regExp(/^\d{5}$/));
 
 ```
 <a name="notcondition"></a>
@@ -931,7 +931,7 @@ The NotCondition hosts another condition and reverses its evaluation result, fro
 
 Example: Illegal characters in a string using RegExpCondition
 ```ts
-builder.input('password').not((child)=> child.regExp(/[:|'_]/));
+builder.input('password').not((childBuilder)=> childBuilder.regExp(/[:|'_]/));
 ```
 
 <a name="valuehosts"></a>
