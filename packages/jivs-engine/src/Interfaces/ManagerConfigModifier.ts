@@ -1,11 +1,14 @@
 /**
  * Interfaces for a ManagerConfigModifiers
- * @module ValueHost/Types/ManagerConfigModifier
+ * @module ValueHosts/Types/ManagerConfigModifier
  */
 
+import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
+import { FluentConditionBuilder } from "../ValueHosts/Fluent";
 import {
     IManagerConfigBuilder, IValueHostsForValueHostsManagerConfig,
-    IValueHostsForValidatorManagerConfigBuilder
+    IValueHostsForValidatorManagerConfigBuilder,
+    IValidationManagerConfigExtensions
 } from "./ManagerConfigBuilder";
 import { ValidationManagerConfig } from "./ValidationManager";
 import { ValueHostsManagerConfig } from "./ValueHostsManager";
@@ -35,7 +38,7 @@ export interface IManagerConfigModifier<T extends ValueHostsManagerConfig>
  * Specific to ValidationManager.
  */
 export interface IValidationManagerConfigModifier<T extends ValidationManagerConfig>
-    extends IManagerConfigModifier<T>, IValueHostsForValidatorManagerConfigBuilder<T>
+    extends IManagerConfigModifier<T>, IValueHostsForValidatorManagerConfigBuilder<T>, IValidationManagerConfigExtensions
 {
 
 }

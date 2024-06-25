@@ -6,7 +6,7 @@ import { IValidatableValueHostBase, ValueHostValidationState } from '../../src/I
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ValidationState } from '../../src/Interfaces/Validation';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
-import { FluentValidatorCollector, customRule } from '../../src/ValueHosts/Fluent';
+import { FluentConditionBuilder, FluentValidatorBuilder, customRule } from '../../src/ValueHosts/Fluent';
 import { RegExpConditionConfig, RequireTextCondition } from '../../src/Conditions/ConcreteConditions';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
@@ -15,6 +15,11 @@ import { ICalcValueHost, CalcValueHostConfig } from '../../src/Interfaces/CalcVa
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
+import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/EvaluateChildConditionResultsBase';
+import { ConditionConfig } from '../../src/Interfaces/Conditions';
+import { CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/ValueHosts/ManagerConfigBuilderBase';
+import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
+import { ValidationManagerConfigModifier } from '../../src/Validation/ValidationManagerConfigModifier';
 
 
 function createVMConfig(): ValidationManagerConfig {
@@ -40,9 +45,9 @@ class Publicify_ValidationManagerConfigBuilder extends ValidationManagerConfigBu
     {
         return super.baseConfig;
     }
-    public get publicify_overridenValueHostConfigs(): Array<Array<ValueHostConfig>>
+    public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>>
     {
-        return super.overridenValueHostConfigs;
+        return super.overriddenValueHostConfigs;
     }
 
     public publicify_addOverride(): void
@@ -262,7 +267,7 @@ describe('complete', () => {
             }]
         }]);
         expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
-        expect(testItem.publicify_overridenValueHostConfigs).toBeUndefined();
+        expect(testItem.publicify_overriddenValueHostConfigs).toBeUndefined();
     });        
 });
 ensureFluentTestConditions();
@@ -271,8 +276,8 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.input('Field1').testChainRequireText({}, 'Error', {});
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
-        let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
@@ -283,8 +288,8 @@ describe('Fluent chaining on build(vmConfig).input', () => {
         let testItem = builder.input('Field1')
             .testChainRequireText({}, 'Error', {})
             .testChainRegExp({ expressionAsString: '\\d' }, 'Error2');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
-        let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(2);
         expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
@@ -294,7 +299,7 @@ describe('Fluent chaining on build(vmConfig).input', () => {
     });
 });
 describe('customRule', () => {
-    test('Provide a valid function and get back a FluentValidatorCollector with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
+    test('Provide a valid function and get back a FluentValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.input('Field1').customRule((requester) => {
@@ -304,22 +309,22 @@ describe('customRule', () => {
             {
                 summaryMessage: 'Summary'
             });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
-        let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
         expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
         expect(parentConfig.validatorConfigs![0].errorMessage).toBe('Error');
         expect(parentConfig.validatorConfigs![0].summaryMessage).toBe('Summary');
     });
-    test('Provide a valid function without errorMessage or validatorParameters and get back a FluentValidatorCollector with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
+    test('Provide a valid function without errorMessage or validatorParameters and get back a FluentValidatorBuilder with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
         let vmConfig = createVMConfig();
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         let testItem = builder.input('Field1').customRule((requester) => {
             return new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: null });
         });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
-        let parentConfig = (testItem as FluentValidatorCollector).parentConfig;
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
+        let parentConfig = (testItem as FluentValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
         expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
         expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
@@ -469,7 +474,7 @@ describe('favorUIMessages', () => {
         }
         ]);
     });
-    test('Using override({favorUIMessages: true})', () => {
+    test('Using startUILayerConfig({favorUIMessages: true})', () => {
         let vmConfig = createVMConfig();
         let tls = new TextLocalizerService();
         vmConfig.services.textLocalizerService = tls;   // start fresh
@@ -484,7 +489,7 @@ describe('favorUIMessages', () => {
                 summaryMessagel10n: 'sml10n'
             }
         );
-        builder.override({ favorUIMessages: true});
+        builder.startUILayerConfig({ favorUIMessages: true});
 
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Input,
@@ -497,7 +502,7 @@ describe('favorUIMessages', () => {
         }
         ]);
     });    
-    test('Using override({favorUIMessages: undefined})', () => {
+    test('Using startUILayerConfig({favorUIMessages: undefined})', () => {
         let vmConfig = createVMConfig();
         let tls = new TextLocalizerService();
         vmConfig.services.textLocalizerService = tls;   // start fresh
@@ -512,7 +517,7 @@ describe('favorUIMessages', () => {
                 summaryMessagel10n: 'sml10n'
             }
         );
-        builder.override();
+        builder.startUILayerConfig();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Input,
@@ -525,7 +530,7 @@ describe('favorUIMessages', () => {
         }
         ]);
     });        
-    test('Using override({favorUIMessages: false}), no changes are made', () => {
+    test('Using startUILayerConfig({favorUIMessages: false}), no changes are made', () => {
         let vmConfig = createVMConfig();
         let tls = new TextLocalizerService();
         vmConfig.services.textLocalizerService = tls;   // start fresh
@@ -540,7 +545,7 @@ describe('favorUIMessages', () => {
                 summaryMessagel10n: 'sml10n'
             }
         );
-        builder.override({ favorUIMessages: false});
+        builder.startUILayerConfig({ favorUIMessages: false});
 
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Input,
@@ -629,7 +634,7 @@ describe('convertPropertyToInput', () => {
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         builder.property('Field1', LookupKey.Number);
         builder.property('Field2');
-        builder.override({ convertPropertyToInput: false, favorUIMessages: false });
+        builder.startUILayerConfig({ convertPropertyToInput: false, favorUIMessages: false });
         builder.property('Field3');
         let expectedBaseConfig: Array<ValueHostConfig> = [
             <InputValueHostConfig>{
@@ -655,15 +660,15 @@ describe('convertPropertyToInput', () => {
         ];
         expect(builder.convertPropertyToInput()).toBe(true);
         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
-        expect(builder.publicify_overridenValueHostConfigs[0]).toEqual(expectedOverrideConfig);
+        expect(builder.publicify_overriddenValueHostConfigs[0]).toEqual(expectedOverrideConfig);
     });       
-    test('Using override({ convertPropertyToInput: true} ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
+    test('Using startUILayerConfig({ convertPropertyToInput: true} ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
         let vmConfig = createVMConfig();
         
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         builder.property('Field1', LookupKey.Number);
         builder.property('Field2');
-        builder.override({ convertPropertyToInput: true, favorUIMessages: false });
+        builder.startUILayerConfig({ convertPropertyToInput: true, favorUIMessages: false });
         let expectedBaseConfig: Array<ValueHostConfig> = [
             <InputValueHostConfig>{
                 valueHostType: ValueHostType.Input,
@@ -681,13 +686,13 @@ describe('convertPropertyToInput', () => {
 
         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
     });        
-    test('Using override({ convertPropertyToInput: undefined } ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
+    test('Using startUILayerConfig({ convertPropertyToInput: undefined } ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
         let vmConfig = createVMConfig();
         
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         builder.property('Field1', LookupKey.Number);
         builder.property('Field2');
-        builder.override({ favorUIMessages: false });
+        builder.startUILayerConfig({ favorUIMessages: false });
         let expectedBaseConfig: Array<ValueHostConfig> = [
             <InputValueHostConfig>{
                 valueHostType: ValueHostType.Input,
@@ -705,4 +710,266 @@ describe('convertPropertyToInput', () => {
 
         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
     });            
+});
+
+describe('combineWithRule', () => {
+    describe('3 parameter overload', () => {
+        // NOTE: Error handling found in the underlying objects is not tested here. It is tested in the ManagerConfigBuilderBase tests.
+        test('Existing and new condition appear as the new value of ValidatorConfig within AllMatchCondition', () => {
+            let vmConfig = createVMConfig();
+
+            let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+            builder.input('Field1').requireText();
+            builder.startUILayerConfig();
+            let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
+                (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    combiningBuilder.all((childrenBuilder) =>
+                        childrenBuilder.conditionConfig(existingConditionConfig).regExp(/abc/));
+                }
+            );
+            expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
+            let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+            expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
+            deleteConditionReplacedSymbol(result.validatorConfigs![0]);
+
+            expect(result).toEqual({
+                valueHostType: ValueHostType.Input,
+                name: 'Field1',
+                validatorConfigs: [{
+                    errorCode: ConditionType.RequireText,
+                    conditionConfig: {
+                        conditionType: ConditionType.All,
+                        conditionConfigs: [
+                            {
+                                conditionType: ConditionType.RequireText
+                            },
+                            {
+                                conditionType: ConditionType.RegExp,
+                                expression: /abc/
+                            }
+                        ]
+                    }
+                }]
+            });
+        });
+
+        test('New condition replaces existing and errorCode is set to the original condition', () => {
+            let vmConfig = createVMConfig();
+
+            let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+            builder.input('Field1').requireText();
+            builder.startUILayerConfig();
+            builder.combineWithRule('Field1', ConditionType.RequireText,
+                (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    combiningBuilder.regExp(/abc/);
+                }
+            );
+            let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+            expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
+            deleteConditionReplacedSymbol(result.validatorConfigs![0]);
+
+            expect(result).toEqual({
+                valueHostType: ValueHostType.Input,
+                name: 'Field1',
+                validatorConfigs: [{
+                    errorCode: ConditionType.RequireText,
+                    conditionConfig: {
+                        conditionType: ConditionType.RegExp,
+                        expression: /abc/
+                    }
+                    
+                }]
+            });
+        });
+ 
+        test('No changes are made in the builder results in preserving original ValidatorConfig', () => {
+            let vmConfig = createVMConfig();
+
+            let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+            builder.input('Field1').requireText();
+            builder.startUILayerConfig();
+            builder.combineWithRule('Field1', ConditionType.RequireText,
+                (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
+                    ;
+                }
+            );
+            let overriddenValueHostConfigs = builder.publicify_destinationValueHostConfigs();
+            expect(overriddenValueHostConfigs.length).toBe(1);  // valueHostConfig was moved
+            expect(overriddenValueHostConfigs[0]).toEqual({
+                valueHostType: ValueHostType.Input,
+                name: 'Field1',
+                validatorConfigs: [{
+                    conditionConfig: {
+                        conditionType: ConditionType.RequireText
+                    }
+                }]
+            });
+        });
+    });
+    describe('4 parameter overload', () => {
+        // NOTE: Error handling found in the underlying objects is not tested here. It is tested in the ManagerConfigBuilderBase tests.
+        test('CombineUsingCondition.All', () => {
+            let vmConfig = createVMConfig();
+
+            let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+            builder.input('Field1').requireText();
+            builder.startUILayerConfig();
+            let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
+                CombineUsingCondition.All,
+                (combiningBuilder: FluentConditionBuilder) => {
+                    combiningBuilder.regExp(/abc/);
+                }
+            );
+            expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);   
+            let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+            expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
+            deleteConditionReplacedSymbol(result.validatorConfigs![0]);
+
+            expect(result).toEqual({
+                valueHostType: ValueHostType.Input,
+                name: 'Field1',
+                validatorConfigs: [{
+                    errorCode: ConditionType.RequireText,
+                    conditionConfig: {
+                        conditionType: ConditionType.All,
+                        conditionConfigs: [
+                            {
+                                conditionType: ConditionType.RequireText
+                            },
+                            {
+                                conditionType: ConditionType.RegExp,
+                                expression: /abc/
+                            }
+                        ]
+                    }
+                }]
+            });
+        });
+        test('CombineUsingCondition.When', () => {
+            let vmConfig = createVMConfig();
+
+            let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+            builder.input('Field1').requireText();
+            builder.startUILayerConfig();
+            let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
+                CombineUsingCondition.When,
+                (combiningBuilder: FluentConditionBuilder) => {
+                    combiningBuilder.regExp(/abc/);
+                }
+            );
+            expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
+            let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+            expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
+            deleteConditionReplacedSymbol(result.validatorConfigs![0]);
+
+            expect(result).toEqual({
+                valueHostType: ValueHostType.Input,
+                name: 'Field1',
+                validatorConfigs: [{
+                    errorCode: ConditionType.RequireText,
+                    conditionConfig: <WhenConditionConfig>{
+                        conditionType: ConditionType.When,
+                        enablerConfig: <RegExpConditionConfig>{
+                                conditionType: ConditionType.RegExp,
+                                expression: /abc/               
+                        },
+                        childConditionConfig : {
+                                conditionType: ConditionType.RequireText
+                            }
+                            
+                    }
+                }]
+            });
+        });        
+
+        test('No changes are made in the builder results in preserving original ValidatorConfig', () => {
+            let vmConfig = createVMConfig();
+
+            let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+            builder.input('Field1').requireText();
+            builder.startUILayerConfig();
+            builder.combineWithRule('Field1', ConditionType.RequireText,
+                CombineUsingCondition.All,
+                (combiningBuilder: FluentConditionBuilder) => {
+                    ;
+                }
+            );
+            let overriddenValueHostConfigs = builder.publicify_destinationValueHostConfigs();
+            expect(overriddenValueHostConfigs.length).toBe(1);  // valueHostConfig was moved
+            expect(overriddenValueHostConfigs[0]).toEqual({
+                valueHostType: ValueHostType.Input,
+                name: 'Field1',
+                validatorConfigs: [{
+                    conditionConfig: {
+                        conditionType: ConditionType.RequireText
+                    }
+                }]
+            });
+        });
+      });
+    
+});
+describe('replaceRule', () => {
+    // NOTE: Error handling found in the underlying objects is not tested here. It is tested in the ManagerConfigBuilderBase tests.
+
+    test('Using builder to create replacement replaces and errorCode is set to the original condition', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        builder.input('Field1').requireText();
+        builder.startUILayerConfig();
+        let testItem = builder.replaceRule('Field1', ConditionType.RequireText,
+            (replacementBuilder: FluentConditionBuilder) => {
+                replacementBuilder.regExp(/abc/);
+            }
+        );
+        expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
+
+        let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+        expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
+        deleteConditionReplacedSymbol(result.validatorConfigs![0]);
+
+        expect(result).toEqual({
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [{
+                errorCode: ConditionType.RequireText,
+                conditionConfig: {
+                    conditionType: ConditionType.RegExp,
+                    expression: /abc/
+                }
+                
+            }]
+        });
+    });
+    test('Using ConditionConfig as the replacement replaces and errorCode is set to the original condition', () => {
+        let vmConfig = createVMConfig();
+
+        let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
+        builder.input('Field1').requireText();
+        builder.startUILayerConfig();
+        builder.replaceRule('Field1', ConditionType.RequireText,
+            <RegExpConditionConfig>{
+                conditionType: ConditionType.RegExp,
+                expression: /abc/
+            }
+        );
+        let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
+        expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
+        deleteConditionReplacedSymbol(result.validatorConfigs![0]);
+
+        expect(result).toEqual({
+            valueHostType: ValueHostType.Input,
+            name: 'Field1',
+            validatorConfigs: [{
+                errorCode: ConditionType.RequireText,
+                conditionConfig: {
+                    conditionType: ConditionType.RegExp,
+                    expression: /abc/
+                }
+                
+            }]
+        });
+    });    
+ 
 });
