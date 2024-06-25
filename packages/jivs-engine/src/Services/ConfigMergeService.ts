@@ -110,7 +110,6 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
 
     public dispose(): void {
         super.dispose();
-        this._configConditions = undefined!;
         this._configProperties = undefined!;
         this._cacheNoChangePropertyNames = undefined;
     }
@@ -148,39 +147,6 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
         return this._configProperties;
     }
     private _configProperties: Map<string, PropertyConflictRule<TConfig>> = new Map<string, PropertyConflictRule<TConfig>>();
-
-    /**
-     * Assigns the resolver function for a condition, associated with the property containing
-     * that ConditionConfig.
-     * Any containingPropertyName unassigned is effectively 'nochange'.
-     * Your function can indicate nochange, delete (destination),
-     * all (combine under an AllMatchCondition), any (combine under an AnyMatchCondition),
-     * or it can supply any condition it wants, hopefully based on the source information.
-     * Your function should be very selective about making any changes the condition from phase 1.
-     * Take into consideration the ValueHostName which is available in the identifier property.
-     * @param containingPropertyName
-     * @param resolver
-     */
-    public setConditionConflictRule(containingPropertyName: string, resolver: ConditionConfigMergeServiceHandler): void {
-        let existing = this.configConditions.get(containingPropertyName);
-        if (typeof existing === 'function')
-            throw new CodingError('Cannot change');
-        this.configConditions.set(containingPropertyName, resolver);
-    }
-    /**
-     * The ConditionConfigMergeServiceHandler assigned to the property or undefined if not assigned.
-     * @param containingPropertyName 
-     * @returns 
-     */
-    public getConditionConflictRule(containingPropertyName: string): ConditionConfigMergeServiceHandler | undefined {
-        return this.configConditions.get(containingPropertyName);
-    }
-
-    // Key is the containingPropertyName
-    protected get configConditions(): Map<string, ConditionConfigMergeServiceHandler> {
-        return this._configConditions;
-    }
-    private _configConditions: Map<string, ConditionConfigMergeServiceHandler> = new Map<string, ConditionConfigMergeServiceHandler>();
 
     protected log(message: (() => string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void {
         if (this.hasServices()) {
@@ -275,82 +241,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
                 throw new CodingError(`Unknown rule ${rule}`);
         }
     }
-//!!!DEPRECATED
-    /**
-     * PropertyConfigMergeServiceHandler for properties that host a ConditionConfig object.
-     * This call expects the property to be defined in both source and destination.
-     * @param propertyName 
-     * @param source 
-     * @param destination 
-     * @param identity 
-     */
-    public handleConditionConfigProperty(source: TConfig, destination: TConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult {
-        let sourceCond = (source as any)[propertyName];
-        if (sourceCond === null)
-            return { useAction: 'nochange' };
-        let destCond = (destination as any)[propertyName];
-        let fn = this.configConditions.get(propertyName);
-        if (!fn) {
-            if (destCond === null)
-                return { useValue: sourceCond };
-            return { useAction: 'nochange' };
-        }
-        let updatedIdentity: MergeIdentity = { ...identity, containingProperty: propertyName };
-        let result = fn.call(this, sourceCond, destCond, updatedIdentity);
-        if (result.useValue)
-            return { useValue: result.useValue };
-        if (result.useAction) {
-            let action = this.replaceCondition(sourceCond, destCond, updatedIdentity, result.useAction);
-            if (typeof action === 'object')
-                return { useValue: action };
-            return { useAction: action };
-        }
-        throw new CodingError('conditionConfig function has invalid result');
-    }
 
-//!!!DEPRECATED    
-    /**
-     * Determines how to handle when both the source and destination have a condition with the same conditionType.
-     * Follows the rule set by setConditionConflictRule.
-     * If there is no rule but the destination has a null condition,
-     * it is replaced by the source condition. This is the only place
-     * where replacement happens automatically. If you wanted to replace
-     * any other case, provide a rule with function to resolve it,
-     * as great care should be taken on overwriting rules from phase 1.
-     * It does not change anything, but the result tells the caller how to proceed.
-     * @param source 
-     * @param destination 
-     * @param identity 
-     * @param action
-     */
-    protected replaceCondition(source: ConditionConfig, destination: ConditionConfig, identity: MergeIdentity, action: ConditionConfigMergeServiceAction): ConditionConfig | 'delete' | 'nochange' {
-        switch (action) {
-            case 'all':
-                {
-                    let container = <AllMatchConditionConfig>{
-                        conditionType: ConditionType.All,
-                        category: destination.category,
-                        conditionConfigs: [destination, source]
-                    };
-                    if (destination.category)
-                        container.category = destination.category;
-                    return container;
-                }
-            case 'any':
-                {
-                    let container = <AllMatchConditionConfig>{
-                        conditionType: ConditionType.Any,
-                        category: destination.category,
-                        conditionConfigs: [destination, source]
-                    };
-                    if (destination.category)
-                        container.category = destination.category;
-                    return container;
-                }
-            default:
-                return action;
-        }
-    }
     /**
      * Exposes property names that are not expected to be changed by the rules.
      * Ignores rules with functions. 
@@ -454,7 +345,6 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
         super();
         this.setPropertyConflictRule('validatorType', 'locked');
         this.setPropertyConflictRule('errorCode', 'nochange');
-//        this.setPropertyConflictRule('conditionConfig', this.handleConditionConfigProperty);//!!!DEPRECATED
         this.setPropertyConflictRule('conditionConfig', this.protectConditionConfigProperty);
         this.setPropertyConflictRule('conditionCreator', 'nochange');   //!!! haven't worked on a solution for the creator callback functions
 

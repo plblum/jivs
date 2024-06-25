@@ -19,6 +19,7 @@ import { EvaluateChildConditionResultsBaseConfig } from '../../src/Conditions/Ev
 import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { CombineUsingCondition, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../../src/ValueHosts/ManagerConfigBuilderBase';
 import { WhenConditionConfig } from '../../src/Conditions/WhenCondition';
+import { ValidationManagerConfigModifier } from '../../src/Validation/ValidationManagerConfigModifier';
 
 
 function createVMConfig(): ValidationManagerConfig {
@@ -838,12 +839,13 @@ describe('combineWithRule', () => {
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
             builder.input('Field1').requireText();
             builder.override();
-            builder.combineWithRule('Field1', ConditionType.RequireText,
+            let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.all((childrenBuilder) =>
                         childrenBuilder.conditionConfig(existingConditionConfig).regExp(/abc/));
                 }
             );
+            expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
             let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
             expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
@@ -930,12 +932,13 @@ describe('combineWithRule', () => {
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
             builder.input('Field1').requireText();
             builder.override();
-            builder.combineWithRule('Field1', ConditionType.RequireText,
+            let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
                 (combiningBuilder: FluentConditionBuilder) => {
                     combiningBuilder.regExp(/abc/);
                 }
             );
+            expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);   
             let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
             expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
@@ -966,12 +969,13 @@ describe('combineWithRule', () => {
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
             builder.input('Field1').requireText();
             builder.override();
-            builder.combineWithRule('Field1', ConditionType.RequireText,
+            let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.When,
                 (combiningBuilder: FluentConditionBuilder) => {
                     combiningBuilder.regExp(/abc/);
                 }
             );
+            expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
             let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
             expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
             deleteConditionReplacedSymbol(result.validatorConfigs![0]);
@@ -1032,11 +1036,13 @@ describe('replaceRule', () => {
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         builder.input('Field1').requireText();
         builder.override();
-        builder.replaceRule('Field1', ConditionType.RequireText,
+        let testItem = builder.replaceRule('Field1', ConditionType.RequireText,
             (replacementBuilder: FluentConditionBuilder) => {
                 replacementBuilder.regExp(/abc/);
             }
         );
+        expect(testItem).toBeInstanceOf(ValidationManagerConfigBuilder);
+
         let result = builder.publicify_destinationValueHostConfigs()[0] as InputValueHostConfig;
         expect(hasConditionBeenReplaced(result.validatorConfigs![0])).toBe(true);
         deleteConditionReplacedSymbol(result.validatorConfigs![0]);

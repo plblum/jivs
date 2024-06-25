@@ -1,13 +1,22 @@
 ## 0.18.0
-- **Breaking API change** - Reworked how you create the ValidationManagerConfig object by improving the Builder class, ValidationManagerConfigBuilder (also renamed it)
-  and adding a Modifier class, ValidationManagerConfigModifier to handle changes to config after creating ValidationManager. Several functions used to change
-  config were removed to let Modifier take over.
-- Extensive examples for configuration are now in jivs-examples.
-- **Breaking API change** Fluent syntax for all, any, and countMatches revised to take a function instead of a FluentConditionCollector
+- **Breaking API changes and Major feature** - Redesigned how you configure Jivs, favoring the fluent syntax over config objects.
+This is a major reworking, reflected in the documentation. Quick summary:
+   - "Builder API" is the new name of the tooling.
+   - "Builder object" is the primary class, ValidationManagerConfigBuilder. It replaces ValidatorManagerBuilder.
+   - "Modifier object" is the primary class used to modify the configuration after the ValidationManager is created.
+   - There can be up to 3 phases to configuration: business logic, ui layer, changes after ValidationManager is created.
+   - Overriding business logic validation rules remain protected from the ui layer, but changes are allowed
+     by explicitly stating which validation rule to modify and making it easy to combine business logic's condition with the UI's.
+     See combineWithRule() and replaceRule() functions in the Builder API.
+     These replace the setConditionConflictRule feature of ConfigMergeService.
+   - Fluent syntax for All, Any, and CountMatches conditions reworked to use a callback to supply their child ConditionConfigs.
+     The callback passes a Builder object: `builder.input('field').all((childrenBuilder)=>childrenBuilder.requireText(null, 'F1').requireText(null, 'F2'))`
+   - Extensive examples for configuration are now in jivs-examples.
 - New condition, NotCondition. Inverts the result of a child condition. input('field').not((child)=> child.regExp(/\d*/));
 - New condition, WhenCondition. Replacement for the Enabler feature on ValidatorConfig. Has two conditions: enabler and the condition to enable. The child condition is executed only when the enabler condition matches the condition. input('field').when((enabler)=>enabler.regExp(/\d*/, null, null, 'otherValueHostName'), (child)=>child.requireText())
 - **Breaking API change** Removed the enablerConfig and enablerCreator properties on ValidatorConfig. Use the WhenCondition instead.
-- Fluent syntax for building conditions now has conditionConfig function, which adds any fully created ConditionConfig to the chain.
+- Fluent syntax for building conditions now has conditionConfig() function, which adds any fully created ConditionConfig to the chain.
+
 ## 0.17.1
 - Added setIssuesFound() method on ValidationManager and ValidatableValueHostBase. Simplifies how to send Jivs errors found by the server and sent up to the client.
 - Added {DataType} token to error messages, with localization using TextLocalizerService.

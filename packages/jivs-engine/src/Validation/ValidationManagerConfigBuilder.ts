@@ -222,9 +222,10 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      *                  (childBuilder)=> childBuilder.conditionConfig(existingConditionConfig));
      * });
      * ```
+     * @returns itself for chaining
      */
     public combineWithRule(valueHostName: ValueHostName, errorCode: string,
-        builderFn: (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void): void;
+        builderFn: (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void): ValidationManagerConfigBuilder;
     /**
      * Uses the combineUsing parameter to determine how to combine the conditions.
      * @param valueHostName 
@@ -238,13 +239,14 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * ```
      */
     public combineWithRule(valueHostName: ValueHostName, errorCode: string, combineUsing: CombineUsingCondition,
-        builderFn: (combiningBuilder: FluentConditionBuilder) => void): void
+        builderFn: (combiningBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder
 
     public combineWithRule(valueHostName: ValueHostName, errorCode: string,
         arg3: CombineUsingCondition | ((combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void),
-        arg4?: (combiningBuilder: FluentConditionBuilder) => void): void {
+        arg4?: (combiningBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder {
         let { vhc, vc } = this.setupValueHostToCombine(valueHostName, errorCode);   // throws if not found
         this.combineWithValidatorConfig(vc, arg3, arg4);
+        return this;
     }
 
     /**
@@ -261,7 +263,7 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * @param errorCode 
      * @param conditionConfig - provide a complete ConditionConfig as the replacement
      */
-    public replaceRule(valueHostName: ValueHostName, errorCode: string, conditionConfig: ConditionConfig): void
+    public replaceRule(valueHostName: ValueHostName, errorCode: string, conditionConfig: ConditionConfig): ValidationManagerConfigBuilder
     /** 
      * Replace supplying the replacement condition through a Builder object.
      * @param valueHostName 
@@ -269,13 +271,15 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
      * @param builderFn
      * Use a function to create a conditionConfig that will replace the existing. You are
      * passed the builder, where you can build your new conditions.
+     * @returns itself for chaining
      */
 
-    public replaceRule(valueHostName: ValueHostName, errorCode: string, builderFn: (replacementBuilder: FluentConditionBuilder) => void): void
+    public replaceRule(valueHostName: ValueHostName, errorCode: string, builderFn: (replacementBuilder: FluentConditionBuilder) => void): ValidationManagerConfigBuilder
     public replaceRule(valueHostName: ValueHostName, errorCode: string,
-        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: FluentConditionBuilder) => void)): void {
+        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: FluentConditionBuilder) => void)): ValidationManagerConfigBuilder {
         let { vhc, vc } = this.setupValueHostToCombine(valueHostName, errorCode);   // throws if not found
         this.replaceConditionWith(vc, sourceOfConditionConfig);
+        return this;
     }
 
     //#region InstanceState

@@ -710,13 +710,14 @@ describe('combineWithRule', () => {
             let vm = new Publicify_ValidationManager(builder);
             let modifier = vm.startModifying();
 
-            modifier.combineWithRule('Field1', ConditionType.RequireText,
+            let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.all((childrenBuilder) =>
                         childrenBuilder.conditionConfig(existingConditionConfig).regExp(/abc/));
                 }
             );
-            modifier.apply();        
+            modifier.apply();   
+            expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
             let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
@@ -806,13 +807,14 @@ describe('combineWithRule', () => {
             let vm = new Publicify_ValidationManager(builder);
             let modifier = vm.startModifying();
 
-            modifier.combineWithRule('Field1', ConditionType.RequireText,
+            let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
                 (combiningBuilder: FluentConditionBuilder) => {
                     combiningBuilder.regExp(/abc/);
                 }
             );
-            modifier.apply();        
+            modifier.apply();    
+            expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
             let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
@@ -843,13 +845,14 @@ describe('combineWithRule', () => {
             let vm = new Publicify_ValidationManager(builder);
             let modifier = vm.startModifying();
 
-            modifier.combineWithRule('Field1', ConditionType.RequireText,
+            let testItem = modifier.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.When,
                 (combiningBuilder: FluentConditionBuilder) => {
                     combiningBuilder.regExp(/abc/);
                 }
             );
-            modifier.apply();        
+            modifier.apply();
+            expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
             let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
             expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 
@@ -912,12 +915,13 @@ describe('replaceRule', () => {
         let vm = new Publicify_ValidationManager(builder);
         let modifier = vm.startModifying();
 
-        modifier.replaceRule('Field1', ConditionType.RequireText,
+        let testItem = modifier.replaceRule('Field1', ConditionType.RequireText,
             (replacementBuilder: FluentConditionBuilder) => {
                 replacementBuilder.regExp(/abc/);
             }
         );
         modifier.apply();        
+        expect(testItem).toBeInstanceOf(ValidationManagerConfigModifier);
         let updateValueHostConfig  = vm.publicify_valueHostConfigs.get('Field1') as InputValueHostConfig;;
         expect(!hasConditionBeenReplaced(updateValueHostConfig.validatorConfigs![0])).toBe(true);
 

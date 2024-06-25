@@ -23,25 +23,6 @@ export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
     setPropertyConflictRule(propertyName: string, rule: PropertyConflictRule<TConfig>): void;
 
     /**
-     * Assigns the resolver function for a condition, associated with the property containing
-     * that ConditionConfig.
-     * Any containingPropertyName unassigned is effectively 'nochange'.
-     * @param containingPropertyName 
-     * @param resolver 
-     */
-    setConditionConflictRule(containingPropertyName: string, resolver: ConditionConfigMergeServiceHandler): void;    
-
-    /**
-     * PropertyConfigMergeServiceHandler for properties that host a ConditionConfig object.
-     * This call expects the property to be defined in both source and destination.
-     * @param propertyName 
-     * @param source 
-     * @param destination 
-     * @param identity 
-     */
-    handleConditionConfigProperty(source: TConfig, destination: TConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult;
-
-    /**
      * Exposes property names that are not expected to be changed by the rules.
      * Ignores rules with functions. 
      * Intent is to allow ValueHostsManagerConfigModifier to know of properties
