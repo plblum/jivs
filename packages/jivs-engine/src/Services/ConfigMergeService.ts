@@ -19,8 +19,9 @@ import {
     ConditionConfigMergeServiceAction,
     ConditionConflictIdentifierHandler
 } from '../Interfaces/ConfigMergeService';
-import { deepEquals } from '../Utilities/Utilities';
+import { deepClone, deepEquals } from '../Utilities/Utilities';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
+import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../ValueHosts/ManagerConfigBuilderBase';
 
 /**
  * The ValidationManagerConfig file may be populated in 2 phases:
@@ -55,7 +56,7 @@ import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
  *   ]
  * }
  * ```
- * The UI can use the ConfigMergeService by installing it with the builder.clientImplementation() function.
+ * The UI can use the ConfigMergeService by installing it with the builder.override() function.
  * From that point on, builder will make it available to the fluent syntax system and fluent will
  * call upon it to address conflicts.
  * 
@@ -87,7 +88,8 @@ import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
  * ConfigMergeService has to deal with several types of Config objects:
  * - ValueHost (including all subclasses)
  * - Validator
- * - Condition
+ * - Condition (by only replacing it when combineWithRule() or replaceRule() functions 
+ * where used in the Builder/Modifier)
  * 
  * Its basic behavior is to copy a list of properties from phase 2 over phase 1's object.
  * When phase2 has a property not found in phase1, its just copied.
@@ -98,8 +100,9 @@ import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
  * and ValueHostType (changes automatically for upscaling Property to Input). Also ValidationConfig, ConditionConfig cannot be 
  * specified for replacement. But their children can. 
  * 
- * Condition properties are preconfigured to use a callback to handle condition resolution.
- * You must supply a function that determines how you want the destination's condition to change.
+ * Conditions -- the validatorConfig.conditionConfig property -- are a special case. 
+ * They are resolved by defining the conditions through 
+ * combineWithRule() or replaceRule() functions where used in the Builder/Modifier.
  * 
  */
 export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccessorBase
@@ -272,7 +275,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
                 throw new CodingError(`Unknown rule ${rule}`);
         }
     }
-
+//!!!DEPRECATED
     /**
      * PropertyConfigMergeServiceHandler for properties that host a ConditionConfig object.
      * This call expects the property to be defined in both source and destination.
@@ -305,6 +308,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
         throw new CodingError('conditionConfig function has invalid result');
     }
 
+//!!!DEPRECATED    
     /**
      * Determines how to handle when both the source and destination have a condition with the same conditionType.
      * Follows the rule set by setConditionConflictRule.
@@ -450,10 +454,20 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
         super();
         this.setPropertyConflictRule('validatorType', 'locked');
         this.setPropertyConflictRule('errorCode', 'nochange');
-        this.setPropertyConflictRule('conditionConfig', this.handleConditionConfigProperty);
+//        this.setPropertyConflictRule('conditionConfig', this.handleConditionConfigProperty);//!!!DEPRECATED
+        this.setPropertyConflictRule('conditionConfig', this.protectConditionConfigProperty);
         this.setPropertyConflictRule('conditionCreator', 'nochange');   //!!! haven't worked on a solution for the creator callback functions
 
         // everything else has no initial value which means 'replace'
+    }
+
+    protected protectConditionConfigProperty(source: ValidatorConfig, destination: ValidatorConfig, propertyName: string, identity: MergeIdentity): PropertyConfigMergeServiceHandlerResult {
+        if (hasConditionBeenReplaced(source)) {
+            let replacement = deepClone(source);
+            deleteConditionReplacedSymbol(replacement);
+            return { useValue: replacement.conditionConfig };
+        }
+        return { useAction: 'nochange' };
     }
 
     public dispose(): void {
@@ -513,8 +527,10 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
                     if (validatorSrc.conditionConfig.conditionType !==
                         validatorDest.conditionConfig.conditionType)
                         this.log(() => `ConditionType mismatch for ${identity.errorCode}`, LoggingLevel.Warn);
-
+                let keepErrorCode = hasConditionBeenReplaced(validatorSrc) && validatorSrc.errorCode
                 this.mergeConfigs(validatorSrc, validatorDest, identity);
+                if (keepErrorCode)
+                    validatorDest.errorCode = validatorSrc.errorCode;
             }
             else {
                 destination.validatorConfigs.push(validatorSrc);

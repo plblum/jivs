@@ -20,6 +20,8 @@ import { ValueHostType } from "../Interfaces/ValueHostFactory";
 import { InputValueHostConfig } from "../Interfaces/InputValueHost";
 import { PropertyValueHostConfig } from "../Interfaces/PropertyValueHost";
 import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
+import { ConditionConfig } from "../Interfaces/Conditions";
+import { CombineUsingCondition } from "../ValueHosts/ManagerConfigBuilderBase";
 
 /**
  * Used by ValidationManager.startModifying() function to modify the ValidationManagerConfig.valueHostConfigs array.
@@ -118,6 +120,84 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
         return fluent.conditions(parentConfig);
     }    
 
+    /**
+     * If it finds the validator with the errorcode specified, it will combine the condition with the existing condition
+     * using a rule supplied or callback to let you create a conditionConfig.
+     * If it the validator is not found, it will throw an error and log.
+     * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
+     * reflecting the same data as earlier, but now with a modified validator.
+     * If the ValueHost is on the current override, the existing entry is modified.
+     *
+     * The resulting ValidatorConfig's errorCode will not have changed from the original 
+     * to ensure it aligns with everything depending on the original error code.
+     * @param valueHostName 
+     * @param errorCode 
+     * @param builderFn - A function to create a conditionConfig that will replace the existing. 
+     * You are passed a Builder object, where you can build your new conditions, 
+     * and the existing conditionConfig,
+     * which can be added to a Builder object with the conditionConfig() function.
+     * ```ts
+     * modifier.combineWithRule('Field1', 'NotNull', 
+     *   (combiningBuilder, existingConditionConfig)=> {
+     *      combiningBuilder.when(
+     *                  (enablerBuilder)=> enablerBuilder.equalToValue('YES', 'Field2'),
+     *                  (childBuilder)=> childBuilder.conditionConfig(existingConditionConfig));
+     * });
+     * ```
+     */
+    public combineWithRule(valueHostName: ValueHostName, errorCode: string,
+        builderFn: (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void): void;
+    /**
+     * Uses the combineUsing parameter to determine how to combine the conditions.
+     * @param valueHostName 
+     * @param errorCode 
+     * @param combineUsing 
+     * @param builderFn - A function to create the condition that you want 
+     * to combine with the existing condition.
+     * ```ts
+     * modifier.combineWithRule('Field1', 'NotNull', CombineUsingCondition.When, 
+     *    (combiningBuilder)=> combiningBuilder.equalToValue('YES', 'Field2'));
+     * ```
+     */
+    public combineWithRule(valueHostName: ValueHostName, errorCode: string, combineUsing: CombineUsingCondition,
+        builderFn: (combiningBuilder: FluentConditionBuilder) => void): void
+
+    public combineWithRule(valueHostName: ValueHostName, errorCode: string,
+        arg3: CombineUsingCondition | ((combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void),
+        arg4?: (combiningBuilder: FluentConditionBuilder) => void): void {
+        let { vhc, vc } = this.setupValueHostToCombine(valueHostName, errorCode);   // throws if not found
+        this.combineWithValidatorConfig(vc, arg3, arg4);
+    }
+
+    /**
+     * Replace the condition supplying the replacement conditionConfig directly.
+     * If it finds the validator with the errorcode specified, it will replace the condition with the existing condition.
+     * If not, it logs and throws an error.
+     * If the ValueHost is on an earlier override or baseConfig, a new entry is made in the current override,
+     * reflecting the same data as earlier, but now with a modified validator.
+     * If the ValueHost is on the current override, the existing entry is modified.
+     *
+     * The resulting ValidatorConfig's errorCode will not have changed from the original 
+     * to ensure it aligns with everything depending on the original error code.
+     * @param valueHostName 
+     * @param errorCode 
+     * @param conditionConfig - provide a complete ConditionConfig as the replacement
+     */
+    public replaceRule(valueHostName: ValueHostName, errorCode: string, conditionConfig: ConditionConfig): void
+    /** 
+     * Replace supplying the replacement condition through a Builder object.
+     * @param valueHostName 
+     * @param errorCode 
+     * @param builderFn
+     * Use a function to create a conditionConfig that will replace the existing. You are
+     * passed the builder, where you can build your new conditions.
+     */    
+    public replaceRule(valueHostName: ValueHostName, errorCode: string, builderFn: (replacementBuilder: FluentConditionBuilder) => void): void
+    public replaceRule(valueHostName: ValueHostName, errorCode: string,
+        sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: FluentConditionBuilder) => void)): void {
+        let { vhc, vc } = this.setupValueHostToCombine(valueHostName, errorCode);   // throws if not found
+        this.replaceConditionWith(vc, sourceOfConditionConfig);
+    }
 
     /**
      * Replace any of the ValidatorConfig properties supported by UI (most are).

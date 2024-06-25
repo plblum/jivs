@@ -75,7 +75,7 @@ export class ValueHostsManagerConfigModifier<T extends ValueHostsManagerConfig>
      * instance retrieved, as your reference was disposed.
      */
     public apply(): void {
-        let valueHostManager = this._valueHostManager.deref();;
+        let valueHostManager = this._valueHostManager.deref();
         if (valueHostManager) {
             this.overriddenValueHostConfigs[0].forEach((vhConfig) => {
                 valueHostManager.addOrMergeValueHost(vhConfig, null);

@@ -937,7 +937,7 @@ describe('ValidatorConfigMergeService', () => {
         test('constructor sets default propertyConflictRules', () => {
             let testItem = new ValidatorConfigMergeService();
             expect(testItem.getPropertyConflictRule('validatorType')).toBe('locked');
-            expect(testItem.getPropertyConflictRule('conditionConfig')).toBe(testItem.handleConditionConfigProperty);
+            expect(typeof testItem.getPropertyConflictRule('conditionConfig')).toBe('function');
             expect(testItem.getPropertyConflictRule('conditionCreator')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorCode')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorMessage')).toBeUndefined();
@@ -1031,8 +1031,7 @@ describe('ValidatorConfigMergeService', () => {
         function testResolve(testItem: ValidatorConfigMergeService,
             source: ValidatorsValueHostBaseConfig, destination: ValidatorsValueHostBaseConfig,
             expectedDestination: ValidatorsValueHostBaseConfig,
-            logContains?: string, logLevel?: LoggingLevel)
-        {
+            logContains?: string, logLevel?: LoggingLevel) {
             let setup = createServices();
             testItem.services = setup.services;
             setup.services.validatorConfigMergeService = testItem;
@@ -1183,48 +1182,10 @@ describe('ValidatorConfigMergeService', () => {
                 });
         });
         test('Source and destination conflicting Validators merges validatorConfigs except nochange for conditionConfig', () => {
+            //!! NOTE: There is an override for conditionConfig. It involves passing a special flag
+            // through the ValidatorConfig. The ValidatorConfigMergeService respects that flag and replaces.
+            // That capability is tested in the Builder and Modifier code tests.
             let testItem = new ValidatorConfigMergeService();
-            testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                validatorConfigs:
-                    [{
-                        conditionConfig: {
-                            conditionType: '1'
-                        },
-                        summaryMessage: 'From Source'
-                    }]
-                },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.String,
-                    validatorConfigs: [
-                        {
-                            errorCode: '1',
-                            errorMessage: 'From Destination',
-                            conditionConfig: { conditionType: 'Require' }
-                        }]
-                },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.String,
-                    validatorConfigs: [
-                        {
-                            errorCode: '1',
-                            errorMessage: 'From Destination',
-                            summaryMessage: 'From Source',
-                            conditionConfig: { conditionType: 'Require' }
-                        }
-                    ]
-                },
-            'ConditionType mismatch for', LoggingLevel.Warn);
-        });
-        test('Source and destination conflicting Validators merges validatorConfigs and conditionConfig is modified using the "all" rule', () => {
-            let testItem = new ValidatorConfigMergeService();
-            testItem.setConditionConflictRule('conditionConfig',
-                (source, destination, identity) => { return { useAction: 'all' } });
             testResolve(testItem, {
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
@@ -1256,68 +1217,11 @@ describe('ValidatorConfigMergeService', () => {
                             errorCode: '1',
                             errorMessage: 'From Destination',
                             summaryMessage: 'From Source',
-                            conditionConfig: <AllMatchConditionConfig>{
-                                conditionType: ConditionType.All,
-                                conditionConfigs: [
-                                    { conditionType: 'Require' },
-                                    {
-                                        conditionType: '1'
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                });
-        });
-        test('Source and destination conflicting Validators merges validatorConfigs and conditionConfig is replaced by ConditionConflictRule', () => {
-            let testItem = new ValidatorConfigMergeService();
-            testItem.setConditionConflictRule('conditionConfig',
-                (source, destination, identity) => {
-                    return {
-                        useValue: <RegExpConditionConfig>{
-                            conditionType: ConditionType.RegExp,
-                            expression: /^\d+$/
-                        }
-                    }
-                });
-            testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                validatorConfigs:
-                    [{
-                        conditionConfig: {
-                            conditionType: '1'
-                        },
-                        summaryMessage: 'From Source'
-                    }]
-            },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.String,
-                    validatorConfigs: [
-                        {
-                            errorCode: '1',
-                            errorMessage: 'From Destination',
                             conditionConfig: { conditionType: 'Require' }
-                        }]
-                },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.String,
-                    validatorConfigs: [
-                        {
-                            errorCode: '1',
-                            errorMessage: 'From Destination',
-                            summaryMessage: 'From Source',
-                            conditionConfig: <RegExpConditionConfig>{
-                                conditionType: ConditionType.RegExp,
-                                expression: /^\d+$/
-                            }
                         }
                     ]
-                });
+                },
+                'ConditionType mismatch for', LoggingLevel.Warn);
         });
     });
 
