@@ -56,7 +56,7 @@ import { deleteConditionReplacedSymbol, hasConditionBeenReplaced } from '../Valu
  *   ]
  * }
  * ```
- * The UI can use the ConfigMergeService by installing it with the builder.override() function.
+ * The UI can use the ConfigMergeService by installing it with the builder.startUILayerConfig() function.
  * From that point on, builder will make it available to the fluent syntax system and fluent will
  * call upon it to address conflicts.
  * 

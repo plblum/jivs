@@ -58,7 +58,7 @@ import { ValidatorConfig } from '../Interfaces/Validator';
  * builder.property('Field1', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  * builder.static('Field2', LookupKey.Date);
  * builder.property('Field3', LookupKey.String).requireText().regExp(^/\d\d\d\-\d\d\d\d$/);
- * builder.override({ favorUIMessages: true, convertPropertyToInput: true });
+ * builder.startUILayerConfig({ favorUIMessages: true, convertPropertyToInput: true });
  * // At this point, we've converted PropertyValueHosts to InputValueHosts and discarded 
  * // all error messages that were covered by the TextLocalizerService.
  * builder.input('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
@@ -80,7 +80,7 @@ import { ValidatorConfig } from '../Interfaces/Validator';
  * };
  * myBusinessLogicToJivsConverter(vmConfig); // expect 'Field1', 'Field2', and 'Field3' to be generated as shown in the previous case
  * let builder = build(vmConfig);
- * builder.override({ favorUIMessages: true, convertPropertyToInput: true });
+ * builder.startUILayerConfig({ favorUIMessages: true, convertPropertyToInput: true });
  * // At this point, we've converted PropertyValueHosts to InputValueHosts and discarded 
  * // all error messages that were covered by the TextLocalizerService.
  * builder.input('Field4', LookupKey.String, { label: 'Phone number', parserLookupKey: 'PhoneNumber' }).requireText(); // ui created this ValueHost
@@ -189,7 +189,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
     /**
      * A ValueHostManagerConfig that is getting overridden ValueHost configurations.
-     * Each are created by the override() function.
+     * Each are created by the addOverride() function.
      * They retain a reference to services.
      */
     protected get overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
@@ -259,7 +259,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
     /**
      * Gets a ValueHostConfig with matching name by looking in previous overrides and the baseConfig.
-     * Goal is to find a ValueHostConfig that existed prior to creating the Modifier or using override().
+     * Goal is to find a ValueHostConfig that existed prior to creating the Modifier or using addOverride().
      * @param valueHostName 
      * @param throwWhenNotFound 
      * @returns 

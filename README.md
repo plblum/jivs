@@ -482,7 +482,7 @@ See [jivs-examples/src/Config_with_BusinessLogic_using_Builder.ts](https://githu
 ```ts
 ... continuing from the business logic code...
  // all further changes are applied by merging carefully with business logic's work
-builder.override();
+builder.startUILayerConfig();
 
 // apply label to Start Date ValueHost
 // update the lessThan validator created by business logic
@@ -1181,7 +1181,7 @@ The <a href="#builder_and_vmconfig">`Builder object`</a> (`ValidationManagerConf
 
 <a name="valuehostmembers"></a>
 Here are the arguments, parameters, and config members for all ValueHost functions of the <a href="#builder_and_vmconfig">Builder API</a>.
-- name – The ValueHost name. Required. See <a href="#naming">Naming each ValueHost</a>. If you repeat the same name after calling `builder.override()`, you want to modify that ValueHost configuration.
+- name – The ValueHost name. Required. See <a href="#naming">Naming each ValueHost</a>. If you repeat the same name after calling `builder.startUILayerConfig()`, you want to modify that ValueHost configuration.
 - dataType – The data type. Generally recommended to be setup, although the actual value provided by ValueHost.setValue() can be used to infer the data type. See <a href="#lookupkeys">Lookup Keys: Data Types and Companion Tools</a>.
 - label – The text to show in the {Label} and {SecondLabel} tokens of an error message.
 - labell10n – Localization key to get the label from the <a href="#textlocalizerservice">TextLocalizerService</a>.
@@ -1454,7 +1454,7 @@ class ValidationManagerConfigBuilder {
     calc(valueHostName, dataType, calcFn): ValidationManagerConfigBuilder;      
     
  // additional functions
-    override(options?): void;    
+    startUILayerConfig(options?): void;    
     combineWithRule(valueHostName, errorCode, CombineUsingCondition parameter, builderFn): ValidationManagerConfigModifier;
     combineWithRule(valueHostName, errorCode, builderFn): ValidationManagerConfigModifier;  
     replaceRule(valueHostName, errorCode, builderFn):   ValidationManagerConfigModifier;      
@@ -1476,8 +1476,8 @@ Let’s go through these types.
 - `static()` adds or modifies a <a href="#valuehosts">StaticValueHost</a> configuration. See <a href="#valuehostbuilderapi">Configuring ValueHosts with Builder API</a>.
 - `calc()` adds or modifies a <a href="#valuehosts">CalcValueHost</a> configuration. See <a href="#valuehostbuilderapi">Configuring ValueHosts with Builder API</a>.
 
-- `override(options)` is used when business logic first configures the ValueHosts and their validators.
-	Once done, its time for the UI to make extensions and modifications. First call override(). It prepares the Builder API to merge the UI's changes and takes these actions based on the options object:
+- `startUILayerConfig(options)` is used when business logic first configures the ValueHosts and their validators.
+	Once done, its time for the UI to make extensions and modifications. First call startUILayerConfig(). It prepares the Builder API to merge the UI's changes and takes these actions based on the options object:
 	+ favorUIMessages - When true or undefined, remove all error messages supplied by the business logic so long as there is an error message for the same error code registered in the TextLocalizerService. This ensures that TextLocalizerService messages are used, as any error message directly assigned to a validator overrides the TextLocalizerService.
 	+ convertPropertyToInput - When true or undefined, PropertyValueHosts that were created by business logic are upgraded to InputValueHosts. Business logic can use PropertyValueHosts for validating models in Jivs. This option allows the same configuration to work with both model and UI validation.
 - `combineWithRule()` allows the UI to change a validation rule for a specific valuehost+errorCode. The UI incorporates the business logic's rule with its own condition by using both within a WhenCondition, AllMatchCondition, or AnyMatchCondition. Alternatively, supply a function that determines another way.

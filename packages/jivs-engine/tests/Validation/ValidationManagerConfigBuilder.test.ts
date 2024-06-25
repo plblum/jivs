@@ -474,7 +474,7 @@ describe('favorUIMessages', () => {
         }
         ]);
     });
-    test('Using override({favorUIMessages: true})', () => {
+    test('Using startUILayerConfig({favorUIMessages: true})', () => {
         let vmConfig = createVMConfig();
         let tls = new TextLocalizerService();
         vmConfig.services.textLocalizerService = tls;   // start fresh
@@ -489,7 +489,7 @@ describe('favorUIMessages', () => {
                 summaryMessagel10n: 'sml10n'
             }
         );
-        builder.override({ favorUIMessages: true});
+        builder.startUILayerConfig({ favorUIMessages: true});
 
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Input,
@@ -502,7 +502,7 @@ describe('favorUIMessages', () => {
         }
         ]);
     });    
-    test('Using override({favorUIMessages: undefined})', () => {
+    test('Using startUILayerConfig({favorUIMessages: undefined})', () => {
         let vmConfig = createVMConfig();
         let tls = new TextLocalizerService();
         vmConfig.services.textLocalizerService = tls;   // start fresh
@@ -517,7 +517,7 @@ describe('favorUIMessages', () => {
                 summaryMessagel10n: 'sml10n'
             }
         );
-        builder.override();
+        builder.startUILayerConfig();
 
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Input,
@@ -530,7 +530,7 @@ describe('favorUIMessages', () => {
         }
         ]);
     });        
-    test('Using override({favorUIMessages: false}), no changes are made', () => {
+    test('Using startUILayerConfig({favorUIMessages: false}), no changes are made', () => {
         let vmConfig = createVMConfig();
         let tls = new TextLocalizerService();
         vmConfig.services.textLocalizerService = tls;   // start fresh
@@ -545,7 +545,7 @@ describe('favorUIMessages', () => {
                 summaryMessagel10n: 'sml10n'
             }
         );
-        builder.override({ favorUIMessages: false});
+        builder.startUILayerConfig({ favorUIMessages: false});
 
         expect(vmConfig.valueHostConfigs).toEqual([{
             valueHostType: ValueHostType.Input,
@@ -634,7 +634,7 @@ describe('convertPropertyToInput', () => {
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         builder.property('Field1', LookupKey.Number);
         builder.property('Field2');
-        builder.override({ convertPropertyToInput: false, favorUIMessages: false });
+        builder.startUILayerConfig({ convertPropertyToInput: false, favorUIMessages: false });
         builder.property('Field3');
         let expectedBaseConfig: Array<ValueHostConfig> = [
             <InputValueHostConfig>{
@@ -662,13 +662,13 @@ describe('convertPropertyToInput', () => {
         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
         expect(builder.publicify_overriddenValueHostConfigs[0]).toEqual(expectedOverrideConfig);
     });       
-    test('Using override({ convertPropertyToInput: true} ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
+    test('Using startUILayerConfig({ convertPropertyToInput: true} ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
         let vmConfig = createVMConfig();
         
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         builder.property('Field1', LookupKey.Number);
         builder.property('Field2');
-        builder.override({ convertPropertyToInput: true, favorUIMessages: false });
+        builder.startUILayerConfig({ convertPropertyToInput: true, favorUIMessages: false });
         let expectedBaseConfig: Array<ValueHostConfig> = [
             <InputValueHostConfig>{
                 valueHostType: ValueHostType.Input,
@@ -686,13 +686,13 @@ describe('convertPropertyToInput', () => {
 
         expect(builder.publicify_baseConfig.valueHostConfigs).toEqual(expectedBaseConfig);
     });        
-    test('Using override({ convertPropertyToInput: undefined } ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
+    test('Using startUILayerConfig({ convertPropertyToInput: undefined } ) to invoke, with ValueHostConfigs defined in baseconfig and all with ValueHostType=Property, changes to all ValueHostType properties in baseConfig', () => {
         let vmConfig = createVMConfig();
         
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         builder.property('Field1', LookupKey.Number);
         builder.property('Field2');
-        builder.override({ favorUIMessages: false });
+        builder.startUILayerConfig({ favorUIMessages: false });
         let expectedBaseConfig: Array<ValueHostConfig> = [
             <InputValueHostConfig>{
                 valueHostType: ValueHostType.Input,
@@ -838,7 +838,7 @@ describe('combineWithRule', () => {
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
             builder.input('Field1').requireText();
-            builder.override();
+            builder.startUILayerConfig();
             let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.all((childrenBuilder) =>
@@ -876,7 +876,7 @@ describe('combineWithRule', () => {
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
             builder.input('Field1').requireText();
-            builder.override();
+            builder.startUILayerConfig();
             builder.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     combiningBuilder.regExp(/abc/);
@@ -905,7 +905,7 @@ describe('combineWithRule', () => {
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
             builder.input('Field1').requireText();
-            builder.override();
+            builder.startUILayerConfig();
             builder.combineWithRule('Field1', ConditionType.RequireText,
                 (combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => {
                     ;
@@ -931,7 +931,7 @@ describe('combineWithRule', () => {
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
             builder.input('Field1').requireText();
-            builder.override();
+            builder.startUILayerConfig();
             let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
                 (combiningBuilder: FluentConditionBuilder) => {
@@ -968,7 +968,7 @@ describe('combineWithRule', () => {
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
             builder.input('Field1').requireText();
-            builder.override();
+            builder.startUILayerConfig();
             let testItem = builder.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.When,
                 (combiningBuilder: FluentConditionBuilder) => {
@@ -1005,7 +1005,7 @@ describe('combineWithRule', () => {
 
             let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
             builder.input('Field1').requireText();
-            builder.override();
+            builder.startUILayerConfig();
             builder.combineWithRule('Field1', ConditionType.RequireText,
                 CombineUsingCondition.All,
                 (combiningBuilder: FluentConditionBuilder) => {
@@ -1035,7 +1035,7 @@ describe('replaceRule', () => {
 
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         builder.input('Field1').requireText();
-        builder.override();
+        builder.startUILayerConfig();
         let testItem = builder.replaceRule('Field1', ConditionType.RequireText,
             (replacementBuilder: FluentConditionBuilder) => {
                 replacementBuilder.regExp(/abc/);
@@ -1065,7 +1065,7 @@ describe('replaceRule', () => {
 
         let builder = new Publicify_ValidationManagerConfigBuilder(vmConfig);
         builder.input('Field1').requireText();
-        builder.override();
+        builder.startUILayerConfig();
         builder.replaceRule('Field1', ConditionType.RequireText,
             <RegExpConditionConfig>{
                 conditionType: ConditionType.RegExp,

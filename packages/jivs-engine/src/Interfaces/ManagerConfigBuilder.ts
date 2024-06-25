@@ -60,10 +60,13 @@ export interface IValidationManagerConfigBuilder<T extends ValidationManagerConf
 {
 
     /**
-     * Expand the override behavior to support the options.
+     * When working with both business layer and UI layer configurations,
+     * call before starting the UI layer configuration.
+     * It will prepare for merging overlapping configurations and optionally
+     * change some of the configuration already prepared by the business layer.
      * @param options 
      */
-    override(options?: BuilderOverrideOptions): void;
+    startUILayerConfig(options?: BuilderOverrideOptions): void;
 }
 
 export interface IValidationManagerConfigExtensions
