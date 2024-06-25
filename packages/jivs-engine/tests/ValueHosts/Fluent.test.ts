@@ -7,8 +7,8 @@ import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { InputValueHostConfig } from '../../src/Interfaces/InputValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import {
-    FluentValidatorConfig, FluentValidatorCollector, FluentFactory, IFluentValidatorCollector, FluentConditionCollector, IFluentConditionCollector,
-    finishFluentValidatorCollector, finishFluentConditionCollector,
+    FluentValidatorConfig, FluentValidatorBuilder, FluentFactory, IFluentValidatorBuilder, FluentConditionBuilder, IFluentConditionBuilder,
+    finishFluentValidatorBuilder, finishFluentConditionBuilder,
     ValidationManagerStartFluent,
     ValueHostsManagerStartFluent
 } from './../../src/ValueHosts/Fluent';
@@ -115,7 +115,7 @@ describe('ValidationManagerStartFluent', () => {
     });
 });
 
-describe('FluentValidatorCollector', () => {
+describe('FluentValidatorBuilder', () => {
     test('constructor with vhConfig sets up vhConfig property', () => {
         let vhConfig: InputValueHostConfig = {
             valueHostType: ValueHostType.Input,
@@ -124,7 +124,7 @@ describe('FluentValidatorCollector', () => {
             dataType: LookupKey.Currency,
             validatorConfigs: []
         }
-        let testItem = new FluentValidatorCollector(vhConfig);
+        let testItem = new FluentValidatorBuilder(vhConfig);
         expect(testItem.parentConfig).toBe(vhConfig);
     });
     test('constructor with vhConfig that has validatorConfig=null sets up vhConfig property with empty validatorConfig array', () => {
@@ -135,12 +135,12 @@ describe('FluentValidatorCollector', () => {
             dataType: LookupKey.Currency,
             validatorConfigs: null
         }
-        let testItem = new FluentValidatorCollector(vhConfig);
+        let testItem = new FluentValidatorBuilder(vhConfig);
         expect(testItem.parentConfig).toBeDefined();
         expect(testItem.parentConfig.validatorConfigs).toEqual([]);
     });
     test('constructor with null in first parameter throws', () => {
-        expect(() => new FluentValidatorCollector(null!)).toThrow('parentConfig');
+        expect(() => new FluentValidatorBuilder(null!)).toThrow('parentConfig');
 
     });
 
@@ -152,7 +152,7 @@ describe('FluentValidatorCollector', () => {
             dataType: LookupKey.Currency,
             validatorConfigs: []
         }
-        let testItem = new FluentValidatorCollector(vhConfig);
+        let testItem = new FluentValidatorBuilder(vhConfig);
         let validatorConfig: FluentValidatorConfig = {
             summaryMessage: 'Summary'
         };
@@ -174,7 +174,7 @@ describe('FluentValidatorCollector', () => {
             dataType: LookupKey.Currency,
             validatorConfigs: []
         }
-        let testItem = new FluentValidatorCollector(vhConfig);
+        let testItem = new FluentValidatorBuilder(vhConfig);
         let conditionConfig: ConditionConfig = {
             conditionType: ConditionType.RequireText
         };
@@ -199,7 +199,7 @@ describe('FluentValidatorCollector', () => {
             dataType: LookupKey.Currency,
             validatorConfigs: []
         }
-        let testItem = new FluentValidatorCollector(vhConfig);
+        let testItem = new FluentValidatorBuilder(vhConfig);
         let validatorConfig: FluentValidatorConfig = {
             errorMessage: 'Error',
             summaryMessage: 'Summary'
@@ -222,7 +222,7 @@ describe('FluentValidatorCollector', () => {
             dataType: LookupKey.Currency,
             validatorConfigs: []
         }
-        let testItem = new FluentValidatorCollector(vhConfig);
+        let testItem = new FluentValidatorBuilder(vhConfig);
         let validatorConfig: FluentValidatorConfig = {
             summaryMessage: 'Summary'
         };
@@ -232,17 +232,17 @@ describe('FluentValidatorCollector', () => {
     });    
 });
 
-describe('FluentConditionCollector', () => {
+describe('FluentConditionBuilder', () => {
     test('constructor with vhConfig sets up vhConfig property', () => {
         let vhConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
-        let testItem = new FluentConditionCollector(vhConfig);
+        let testItem = new FluentConditionBuilder(vhConfig);
         expect(testItem.parentConfig).toBe(vhConfig);
     });
     test('constructor with null parameter creates a Config with conditionConfigs=[] and type="TBD"', () => {
-        let testItem = new FluentConditionCollector(null);
+        let testItem = new FluentConditionBuilder(null);
         expect(testItem.parentConfig).toEqual({
             conditionType: 'TBD',
             conditionConfigs: []
@@ -255,7 +255,7 @@ describe('FluentConditionCollector', () => {
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
 
-        let testItem = new FluentConditionCollector(vhConfig);
+        let testItem = new FluentConditionBuilder(vhConfig);
         expect(testItem.parentConfig).toBeDefined();
         expect(testItem.parentConfig.conditionConfigs).toEqual([]);
     });
@@ -264,7 +264,7 @@ describe('FluentConditionCollector', () => {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
-        let testItem = new FluentConditionCollector(vhConfig);
+        let testItem = new FluentConditionBuilder(vhConfig);
 
         expect(() => testItem.add(ConditionType.RequireText, {})).not.toThrow();
         expect(testItem.parentConfig.conditionConfigs!.length).toBe(1);
@@ -277,7 +277,7 @@ describe('FluentConditionCollector', () => {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
-        let testItem = new FluentConditionCollector(vhConfig);
+        let testItem = new FluentConditionBuilder(vhConfig);
         let conditionConfig: ConditionConfig = {
             conditionType: ConditionType.RequireText
         };
@@ -406,7 +406,7 @@ describe('withoutValidators()', () => {
 describe('input()', () => {
     test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().input('Field1', null, { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         expect(testItem.parentConfig).toEqual({
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -416,7 +416,7 @@ describe('input()', () => {
     });
     test('Name, data type supplied. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().input('Field1', 'Test');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -428,7 +428,7 @@ describe('input()', () => {
     });
     test('Name supplied. Adds ValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().input('Field1');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -438,7 +438,7 @@ describe('input()', () => {
     });
     test('Pass in a InputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().input({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -469,7 +469,7 @@ describe('input()', () => {
 describe('property()', () => {
     test('Valid name, null data type and defined vhConfig. Adds PropertyValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().property('Field1', null, { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         expect(testItem.parentConfig).toEqual({
             valueHostType: ValueHostType.Property,
             name: 'Field1',
@@ -479,7 +479,7 @@ describe('property()', () => {
     });
     test('Name, data type supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().property('Field1', 'Test');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Property,
             name: 'Field1',
@@ -491,7 +491,7 @@ describe('property()', () => {
     });
     test('Name supplied. Adds ValueHostConfig with all propertys plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().property('Field1');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Property,
             name: 'Field1',
@@ -501,7 +501,7 @@ describe('property()', () => {
     });
     test('Pass in a PropertyValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().property({ name: 'Field1', dataType: 'Test', label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Property,
             name: 'Field1',
@@ -535,7 +535,7 @@ describe('property()', () => {
 describe('withValidators()', () => {
     test('Valid name, null data type and defined vhConfig. Adds InputValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().withValidators(ValueHostType.Input, 'Field1', null, { label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         expect(testItem.parentConfig).toEqual({
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -545,7 +545,7 @@ describe('withValidators()', () => {
     });
     test('Name, data type supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().withValidators(ValueHostType.Input, 'Field1', 'Test');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -557,7 +557,7 @@ describe('withValidators()', () => {
     });
     test('Name supplied. Adds ValueHostConfig with all parameters plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().withValidators(ValueHostType.Input, 'Field1');
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -567,7 +567,7 @@ describe('withValidators()', () => {
     });
     test('Pass in a InputValueHostConfig. Adds it plus type to ValidationManagerConfig', () => {
         let testItem = createFluent().withValidators(ValueHostType.Input, { name: 'Field1', dataType: 'Test', label: 'Field 1' });
-        expect(testItem).toBeInstanceOf(FluentValidatorCollector);
+        expect(testItem).toBeInstanceOf(FluentValidatorBuilder);
         let expected = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
@@ -597,41 +597,41 @@ describe('withValidators()', () => {
 
 
 describe('conditions', () => {
-    test('Undefined parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
+    test('Undefined parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
         let testItem = createFluent().conditions();
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
         expect(testItem.parentConfig).toEqual({
             conditionType: 'TBD',
             conditionConfigs: []
         });
     });
-    test('null parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
+    test('null parameter creates a FluentConditionBuilder with vhConfig containing type=TBD and collectionConfig=[]', () => {
         let testItem = createFluent().conditions(null!);
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
         expect(testItem.parentConfig).toEqual({
             conditionType: 'TBD',
             conditionConfigs: []
         });
     });    
-    test('Supplied parameter creates a FluentConditionCollector with the same vhConfig', () => {
+    test('Supplied parameter creates a FluentConditionBuilder with the same vhConfig', () => {
         let parentConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
         let testItem = createFluent().conditions(parentConfig);
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
         expect(testItem.parentConfig).toEqual({
             conditionType: ConditionType.All,
             conditionConfigs: []
         });
     });    
-    test('Supplied parameter with conditionConfig=null creates a FluentValidatorCollector with the same vhConfig and conditionConfig=[]', () => {
+    test('Supplied parameter with conditionConfig=null creates a FluentValidatorBuilder with the same vhConfig and conditionConfig=[]', () => {
         let parentConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: null as unknown as Array<ConditionConfig>
         }
         let testItem = createFluent().conditions(parentConfig);
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
+        expect(testItem).toBeInstanceOf(FluentConditionBuilder);
         expect(testItem.parentConfig).toEqual({
             conditionType: ConditionType.All,
             conditionConfigs: []
@@ -692,20 +692,20 @@ describe('configCalc', () => {
 
 
 describe('FluentFactory', () => {
-    test('Constructor followed by create will return an instance of FluentValidatorCollector with correct vhConfig', () => {
+    test('Constructor followed by create will return an instance of FluentValidatorBuilder with correct vhConfig', () => {
         let testItem = new FluentFactory();
         let vhConfig: InputValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
         };
-        let result: IFluentValidatorCollector | null = null;
-        expect(() => result = testItem.createValidatorCollector(vhConfig)).not.toThrow();
-        expect(result).toBeInstanceOf(FluentValidatorCollector);
+        let result: IFluentValidatorBuilder | null = null;
+        expect(() => result = testItem.createValidatorBuilder(vhConfig)).not.toThrow();
+        expect(result).toBeInstanceOf(FluentValidatorBuilder);
         expect(result!.parentConfig).toEqual(vhConfig);
     });
     test('Register followed by create returns an instance of the test class with correct vhConfig', () => {
-        class TestFluentValidatorCollector implements IFluentValidatorCollector {
+        class TestFluentValidatorBuilder implements IFluentValidatorBuilder {
             constructor(vhConfig: InputValueHostConfig) {
                 this.parentConfig = { ...vhConfig, dataType: 'test' };
             }
@@ -716,31 +716,31 @@ describe('FluentFactory', () => {
             }
         }
         let testItem = new FluentFactory();
-        testItem.registerValidatorCollector((vhConfig) => new TestFluentValidatorCollector(vhConfig));
+        testItem.registerValidatorBuilder((vhConfig) => new TestFluentValidatorBuilder(vhConfig));
 
         let vhConfig: InputValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'Field1',
             validatorConfigs: []
         };
-        let result: IFluentValidatorCollector | null = null;
-        expect(() => result = testItem.createValidatorCollector(vhConfig)).not.toThrow();
-        expect(result).toBeInstanceOf(TestFluentValidatorCollector);
+        let result: IFluentValidatorBuilder | null = null;
+        expect(() => result = testItem.createValidatorBuilder(vhConfig)).not.toThrow();
+        expect(result).toBeInstanceOf(TestFluentValidatorBuilder);
         expect(result!.parentConfig.dataType).toBe('test');
     });
-    test('Constructor followed by create will return an instance of FluentConditionCollector with correct vhConfig', () => {
+    test('Constructor followed by create will return an instance of FluentConditionBuilder with correct vhConfig', () => {
         let testItem = new FluentFactory();
         let vhConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
-        let result: IFluentConditionCollector | null = null;
-        expect(() => result = testItem.createConditionCollector(vhConfig)).not.toThrow();
-        expect(result).toBeInstanceOf(FluentConditionCollector);
+        let result: IFluentConditionBuilder | null = null;
+        expect(() => result = testItem.createConditionBuilder(vhConfig)).not.toThrow();
+        expect(result).toBeInstanceOf(FluentConditionBuilder);
         expect(result!.parentConfig).toEqual(vhConfig);
     });
     test('Register followed by create returns an instance of the test class with correct vhConfig', () => {
-        class TestFluentConditionCollector implements IFluentConditionCollector {
+        class TestFluentConditionBuilder implements IFluentConditionBuilder {
             constructor(vhConfig: EvaluateChildConditionResultsBaseConfig) {
                 this.parentConfig = { ...vhConfig, conditionType: 'Test' };
             }
@@ -751,61 +751,61 @@ describe('FluentFactory', () => {
             }
         }
         let testItem = new FluentFactory();
-        testItem.registerConditionCollector((vhConfig) => new TestFluentConditionCollector(vhConfig));
+        testItem.registerConditionBuilder((vhConfig) => new TestFluentConditionBuilder(vhConfig));
 
         let vhConfig: EvaluateChildConditionResultsBaseConfig = {
             conditionType: ConditionType.All,
             conditionConfigs: []
         }
-        let result: IFluentConditionCollector | null = null;
-        expect(() => result = testItem.createConditionCollector(vhConfig)).not.toThrow();
-        expect(result).toBeInstanceOf(TestFluentConditionCollector);
+        let result: IFluentConditionBuilder | null = null;
+        expect(() => result = testItem.createConditionBuilder(vhConfig)).not.toThrow();
+        expect(result).toBeInstanceOf(TestFluentConditionBuilder);
         expect(result!.parentConfig.conditionType).toBe('Test');
     })    
 });
 
-describe('finishFluentValidatorCollector ', () => {
-    test('Only FluentValidatorCollector legal for first parameter. Unexpect type throws', () => {
+describe('finishFluentValidatorBuilder ', () => {
+    test('Only FluentValidatorBuilder legal for first parameter. Unexpect type throws', () => {
         let vmConfig = createVMConfig();
 
-        let testItem1 = new FluentValidatorCollector({ name: '', validatorConfigs: [] }); 
-        expect(()=>finishFluentValidatorCollector(
+        let testItem1 = new FluentValidatorBuilder({ name: '', validatorConfigs: [] }); 
+        expect(()=>finishFluentValidatorBuilder(
             testItem1,
             '', {}, null, null)
         ).not.toThrow();
-        let testItem2 = new FluentConditionCollector({ conditionType: '', conditionConfigs: [] });
-        expect(()=>finishFluentValidatorCollector(
+        let testItem2 = new FluentConditionBuilder({ conditionType: '', conditionConfigs: [] });
+        expect(()=>finishFluentValidatorBuilder(
             testItem2,
             '', {}, null, null)
         ).toThrow();
-        expect(()=>finishFluentValidatorCollector(
+        expect(()=>finishFluentValidatorBuilder(
             100,
             '', {}, null, null)
         ).toThrow();       
-        expect(()=>finishFluentValidatorCollector(
+        expect(()=>finishFluentValidatorBuilder(
             null,
             '', {}, null, null)
         ).toThrow();               
     });
 });
-describe('finishFluentConditionCollector ', () => {
-    test('Only FluentConditionCollector legal for first parameter. Unexpect type throws', () => {
+describe('finishFluentConditionBuilder ', () => {
+    test('Only FluentConditionBuilder legal for first parameter. Unexpect type throws', () => {
         let vmConfig = createVMConfig();
-        let testItem1 = new FluentConditionCollector({conditionType: '', conditionConfigs: [] }); 
-        expect(()=>finishFluentConditionCollector(
+        let testItem1 = new FluentConditionBuilder({conditionType: '', conditionConfigs: [] }); 
+        expect(()=>finishFluentConditionBuilder(
             testItem1,
             '', {})
         ).not.toThrow();
-        let testItem2 = new FluentValidatorCollector({ name: '', validatorConfigs: [] });
-        expect(()=>finishFluentConditionCollector(
+        let testItem2 = new FluentValidatorBuilder({ name: '', validatorConfigs: [] });
+        expect(()=>finishFluentConditionBuilder(
             testItem2,
             '', {})
         ).toThrow();
-        expect(()=>finishFluentConditionCollector(
+        expect(()=>finishFluentConditionBuilder(
             100,
             '', {})
         ).toThrow();       
-        expect(()=>finishFluentConditionCollector(
+        expect(()=>finishFluentConditionBuilder(
             null,
             '', {})
         ).toThrow();               

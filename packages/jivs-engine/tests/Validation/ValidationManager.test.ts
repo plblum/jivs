@@ -2673,7 +2673,7 @@ describe('3 phase configuration: business logic->ui->new ValidationManager->modi
         builder.property('Property1').requireText();
 
         // phase 2
-        builder.override({ convertPropertyToInput: true });
+        builder.startUILayerConfig({ convertPropertyToInput: true });
         builder.input('Field2').regExp(/\d/);
 
         let vm = new PublicifiedValidationManager(builder);
@@ -2713,7 +2713,7 @@ describe('3 phase configuration: business logic->ui->new ValidationManager->modi
         let builder = build(services);
         builder.property('Property1').requireText();
         // phase 2
-        builder.override({ convertPropertyToInput: true });
+        builder.startUILayerConfig({ convertPropertyToInput: true });
         builder.input('Property1').regExp(/\d/);
 
         let vm = new PublicifiedValidationManager(builder);

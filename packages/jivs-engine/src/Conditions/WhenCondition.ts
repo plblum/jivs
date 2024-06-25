@@ -45,6 +45,10 @@ export interface WhenConditionConfig extends ConditionWithOneChildBaseConfig {
  * bypassing the WhenCondition.evaluate function and its limitation of no conditions that return a promise.
  * Any condition where WhenCondition is a child will use the WhenCondition.evaluate function
  * and retain its limitation of no conditions that return a promise.
+ * 
+ * ALERT: ConditionType=When is NEVER used as a Validator's errorCode.
+ * The child condition's ConditionType is used as the errorCode instead.
+ * This is maintained both in this class's conditionType and in resolveErrorCode().
  */
 export class WhenCondition extends ConditionWithOneChildBase<WhenConditionConfig> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.When; }

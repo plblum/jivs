@@ -1,11 +1,6 @@
-import { RegExpConditionConfig } from "../../src/Conditions/ConcreteConditions";
-import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { EvaluateChildConditionResultsBaseConfig } from "../../src/Conditions/EvaluateChildConditionResultsBase";
-import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
-import { FluentConditionCollector } from "../../src/ValueHosts/Fluent";
 import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
 import { MockValidationServices } from "../TestSupport/mocks";
 import { ensureFluentTestConditions } from "./ManagerConfigBuilderBase.test";
@@ -27,8 +22,8 @@ class Publicify_ValueHostsManagerConfigBuilder extends ValueHostsManagerConfigBu
         return super.baseConfig;
     }
 
-    public get publicify_overridenValueHostConfigs(): Array<Array<ValueHostConfig>> {
-        return super.overridenValueHostConfigs;
+    public get publicify_overriddenValueHostConfigs(): Array<Array<ValueHostConfig>> {
+        return super.overriddenValueHostConfigs;
     }
 }
 describe('instance state properties', () => {
@@ -186,125 +181,3 @@ describe('Callbacks get and set', () => {
         expect(result.onConfigChanged).toBe(replacementHandler);
     });    
 });
-describe('build(vmConfig).conditions', () => {
-    test('Undefined parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
-        let vmConfig = createVMConfig();
-
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let testItem = builder.conditions();
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        expect(testItem.parentConfig).toEqual({
-            conditionType: 'TBD',
-            conditionConfigs: []
-        });
-    });
-    test('null parameter creates a FluentConditionCollector with vhConfig containing type=TBD and collectionConfig=[]', () => {
-        let vmConfig = createVMConfig();
-
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let testItem = builder.conditions(null!);
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        expect(testItem.parentConfig).toEqual({
-            conditionType: 'TBD',
-            conditionConfigs: []
-        });
-    });
-    test('Supplied parameter creates a FluentConditionCollector with the same vhConfig', () => {
-        let vmConfig = createVMConfig();
-
-        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
-            conditionType: ConditionType.All,
-            conditionConfigs: []
-        }
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let testItem = builder.conditions(parentConfig);
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        expect(testItem.parentConfig).toEqual({
-            conditionType: ConditionType.All,
-            conditionConfigs: []
-        });
-    });
-    test('Supplied parameter with conditionConfig=null creates a FluentValidatorCollector with the same vhConfig and conditionConfig=[]', () => {
-        let vmConfig = createVMConfig();
-
-        let parentConfig: EvaluateChildConditionResultsBaseConfig = {
-            conditionType: ConditionType.All,
-            conditionConfigs: null as unknown as Array<ConditionConfig>
-        }
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let testItem = builder.conditions(parentConfig);
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        expect(testItem.parentConfig).toEqual({
-            conditionType: ConditionType.All,
-            conditionConfigs: []
-        });
-    });
-});
-
-describe('Fluent chaining on build(vmConfig).conditions', () => {
-    test('build(vmConfig).conditions: Add RequireTest condition to InputValueHostConfig via chaining', () => {
-        let vmConfig = createVMConfig();
-
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let testItem = builder.conditions().testChainRequireText({});
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        let parentConfig = (testItem as FluentConditionCollector).parentConfig;
-        expect(parentConfig.conditionConfigs!.length).toBe(1);
-        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
-    });
-    test('build(vmConfig).conditions: Add RequireTest and RegExp conditions to InputValueHostConfig via chaining', () => {
-        let vmConfig = createVMConfig();
-
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let testItem = builder.conditions()
-            .testChainRequireText({})
-            .testChainRegExp({ expressionAsString: '\\d' });
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        let parentConfig = (testItem as FluentConditionCollector).parentConfig;
-        expect(parentConfig.conditionConfigs!.length).toBe(2);
-        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
-        expect(parentConfig.conditionConfigs![1]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
-        expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
-    });
-    test('build(vmConfig).conditions with EvaluateChildConditionResultsBaseConfig parameter: Add RequireText condition to InputValueHostConfig via chaining', () => {
-        let vmConfig = createVMConfig();
-
-        let eccrConfig: EvaluateChildConditionResultsBaseConfig = {
-            conditionType: 'All',
-            conditionConfigs: []
-        };
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let testItem = builder.conditions(eccrConfig).testChainRequireText({});
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        let parentConfig = (testItem as FluentConditionCollector).parentConfig;
-        expect(parentConfig).toBe(eccrConfig);
-        expect(parentConfig.conditionConfigs!.length).toBe(1);
-        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
-    });
-    test('build(vmConfig).conditions with EvaluateChildConditionResultsBaseConfig parameter: Add RequireText and RegExp conditions to InputValueHostConfig via chaining', () => {
-        let vmConfig = createVMConfig();
-
-        let eccrConfig: EvaluateChildConditionResultsBaseConfig = {
-            conditionType: 'All',
-            conditionConfigs: []
-        };
-        let builder = new ValueHostsManagerConfigBuilder(vmConfig);
-        let testItem = builder.conditions(eccrConfig)
-            .testChainRequireText({})
-            .testChainRegExp({ expressionAsString: '\\d' });
-        expect(testItem).toBeInstanceOf(FluentConditionCollector);
-        let parentConfig = (testItem as FluentConditionCollector).parentConfig;
-        expect(parentConfig).toBe(eccrConfig);
-        expect(parentConfig.conditionConfigs!.length).toBe(2);
-        expect(parentConfig.conditionConfigs![0]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![0].conditionType).toBe(ConditionType.RequireText);
-        expect(parentConfig.conditionConfigs![1]).not.toBeNull();
-        expect(parentConfig.conditionConfigs![1].conditionType).toBe(ConditionType.RegExp);
-        expect((parentConfig.conditionConfigs![1] as RegExpConditionConfig).expressionAsString).toBe('\\d');
-    });
-});
-

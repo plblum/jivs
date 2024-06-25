@@ -135,19 +135,6 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
             expect(result()).toEqual({ useValue: 'result' });
         });
     });
-    describe('setConditionConflictRule', () => {
-        test('Set works, get returns the function. Second call throws', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'nochange' } };
-            expect(() => testItem.setConditionConflictRule('A', fn)).not.toThrow();
-            let result = testItem.getConditionConflictRule('A');
-            expect(typeof result).toBe('function');
-            expect(fn({ conditionType: 'X' }, { conditionType: 'Y' }, { valueHostName: 'X' })).toEqual({ useAction: 'nochange' });
-            expect(() => testItem.setConditionConflictRule('A', fn)).toThrow(CodingError);
-        });
-    });
-
     describe('log', () => {
         test('No services, does nothing even with MinLevel=Debug', () => {
             let testItem = new Publicify_ConfigMergeServiceBase();
@@ -359,307 +346,6 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
                 { 'A': 0, 'C': 'test' },
                 { 'A': 1, 'C': null });
         });                
-    });
-
-    describe('handleConditionConfigProperty', () => {
-        function testCondition(testItem: Publicify_ConfigMergeServiceBase,
-            source: object, destination: object, propertyName: string,
-            expected: PropertyConfigMergeServiceHandlerResult
-        ) {
-            let setup = createServices();
-            testItem.services = setup.services;
-
-            setup.logger.minLevel = LoggingLevel.Debug;
-
-            let result: PropertyConfigMergeServiceHandlerResult;
-            expect(() => result = testItem.handleConditionConfigProperty(
-                source, destination, propertyName, { valueHostName: 'X' }
-            )).not.toThrow();
-            expect(result!).toEqual(expected);
-        }
-
-        test('With no changes to rules, returns nochange', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const propertyName = 'cond';
-            testCondition(testItem,
-                { [propertyName]: { conditionType: 'X', prop1: 'A', prop2: 0 } },
-                { [propertyName]: { conditionType: 'X', prop1: 'B' } },
-                propertyName,
-                { useAction: 'nochange' }
-            );
-        });
-        test('With rule=nochange, returns nochange', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const propertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'nochange' } };
-
-            testItem.setConditionConflictRule(propertyName, fn);
-            testCondition(testItem,
-                { [propertyName]: { conditionType: 'X', prop1: 'A', prop2: 0 } },
-                { [propertyName]: { conditionType: 'X', prop1: 'B' } },
-                propertyName,
-                { useAction: 'nochange' }
-            );
-        });
-        test('With rule=delete, returns delete', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const propertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'delete' } };
-            testItem.setConditionConflictRule(propertyName, fn);
-            testCondition(testItem,
-                { [propertyName]: { conditionType: 'X', prop1: 'A', prop2: 0 } },
-                { [propertyName]: { conditionType: 'X', prop1: 'B' } },
-                propertyName,
-                { useAction: 'delete' }
-            );
-        });
-        test('With rule=all, returns { useValue: with allMatch condition with children [destination, source] }', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const propertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'all' } };
-            testItem.setConditionConflictRule(propertyName, fn);
-            testCondition(testItem,
-                { [propertyName]: { conditionType: 'X', prop1: 'A', prop2: 0 } },
-                { [propertyName]: { conditionType: 'X', prop1: 'B' } },
-                propertyName,
-                {
-                    useValue: {
-                        conditionType: ConditionType.All,
-                        conditionConfigs: [
-                            { conditionType: 'X', prop1: 'B' },
-                            { conditionType: 'X', prop1: 'A', prop2: 0 }
-                        ]
-                    },
-                }
-            );
-        });
-        test('With rule=any, returns { useValue: with allMatch condition with children [destination, source] }', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const propertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'any' } };
-            testItem.setConditionConflictRule(propertyName, fn);
-            testCondition(testItem,
-                { [propertyName]: { conditionType: 'X', prop1: 'A', prop2: 0 } },
-                { [propertyName]: { conditionType: 'X', prop1: 'B' } },
-                propertyName,
-                {
-                    useValue: {
-                        conditionType: ConditionType.Any,
-                        conditionConfigs: [
-                            { conditionType: 'X', prop1: 'B' },
-                            { conditionType: 'X', prop1: 'A', prop2: 0 }
-                        ]
-                    }
-                }
-            );
-        });
-        test('With function returning a conditionConfig, returns the same', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const propertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useValue: { conditionType: 'Y' } } };
-            testItem.setConditionConflictRule(propertyName, fn);
-            testCondition(testItem,
-                { [propertyName]: { conditionType: 'X', prop1: 'A', prop2: 0 } },
-                { [propertyName]: { conditionType: 'X', prop1: 'B' } },
-                propertyName,
-                { useValue: { conditionType: 'Y' } }
-            );
-        });
-        test('With function returning nulls, throws', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const propertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useValue: null!, useAction: null! } };
-            testItem.setConditionConflictRule(propertyName, fn);
-            expect(() => testItem.handleConditionConfigProperty(
-                { [propertyName]: { conditionType: 'X', prop1: 'A', prop2: 0 } },
-                { [propertyName]: { conditionType: 'X', prop1: 'B' } },
-                propertyName, { valueHostName: 'Z' }
-            )).toThrow(CodingError);
-        });
-    });
-    describe('mergeConfigs using handleConditionConfigProperty', () => {
-        function testMerge(testItem: Publicify_ConfigMergeServiceBase,
-            source: object, destination: object, condPropertyName: string, expected: object
-        ) {
-            let setup = createServices();
-            testItem.services = setup.services;
-
-            testItem.setPropertyConflictRule(condPropertyName, testItem.handleConditionConfigProperty);
-
-            let expectedSource = { ...source };
-            setup.logger.minLevel = LoggingLevel.Debug;
-
-            expect(() => testItem.publicify_mergeConfigs(
-                source, destination, { valueHostName: 'X' }
-            )).not.toThrow();
-            expect(destination).toEqual(expected);
-            expect(source).toEqual(expectedSource);
-        }
-        test('Assign all properties to empty destination from those found in source when no rules applied', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'nochange' } };
-            testItem.setConditionConflictRule(condPropertyName, fn);
-            testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
-                {},
-                condPropertyName,
-                { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } });
-        });
-        test('With rule=all, combine the two conditions under All condition', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'all' } };
-            testItem.setConditionConflictRule(condPropertyName, fn);
-            testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
-                { 'A': 2, [condPropertyName]: { conditionType: 'Y', prop1: '2' } },
-                condPropertyName,
-                {
-                    'A': 1, [condPropertyName]:
-                    {
-                        conditionType: ConditionType.All,
-                        conditionConfigs: [
-                            { conditionType: 'Y', prop1: '2' },
-                            { conditionType: 'X', prop1: '1' }
-                        ]
-                    }
-
-                });
-        });
-        test('With rule=all, combine the two conditions under All condition and transfer category', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'all' } };
-            testItem.setConditionConflictRule(condPropertyName, fn);
-            testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
-                { 'A': 2, [condPropertyName]: { conditionType: 'Y', prop1: '2', category: ConditionCategory.Undetermined } },
-                condPropertyName,
-                {
-                    'A': 1, [condPropertyName]:
-                    {
-                        conditionType: ConditionType.All,
-                        conditionConfigs: [
-                            { conditionType: 'Y', prop1: '2', category: ConditionCategory.Undetermined },
-                            { conditionType: 'X', prop1: '1' }
-                        ],
-                        category: ConditionCategory.Undetermined
-                    }
-
-                });
-        });
-        test('With rule=any, combine the two conditions under All condition', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'any' } };
-            testItem.setConditionConflictRule(condPropertyName, fn);
-            testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
-                { 'A': 2, [condPropertyName]: { conditionType: 'Y', prop1: '2' } },
-                condPropertyName,
-                {
-                    'A': 1,
-                    [condPropertyName]:
-                    {
-                        conditionType: ConditionType.Any,
-                        conditionConfigs: [
-                            { conditionType: 'Y', prop1: '2' },
-                            { conditionType: 'X', prop1: '1' }
-                        ]
-                    }
-
-                });
-        });
-        test('With rule=any, combine the two conditions under All condition and transfer category', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'any' } };
-            testItem.setConditionConflictRule(condPropertyName, fn);
-            testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
-                { 'A': 2, [condPropertyName]: { conditionType: 'Y', prop1: '2', category: ConditionCategory.Undetermined } },
-                condPropertyName,
-                {
-                    'A': 1,
-                    [condPropertyName]:
-                    {
-                        conditionType: ConditionType.Any,
-                        conditionConfigs: [
-                            { conditionType: 'Y', prop1: '2', category: ConditionCategory.Undetermined },
-                            { conditionType: 'X', prop1: '1' }
-                        ],
-                        category: ConditionCategory.Undetermined
-                    }
-
-                });
-        });
-        test('With rule=delete and a source condition is supplied, the condition property is deleted in destination', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'delete' } };
-            testItem.setConditionConflictRule(condPropertyName, fn);
-            testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
-                { 'A': 2, [condPropertyName]: { conditionType: 'Y', prop1: '2' } },
-                condPropertyName,
-                {
-                    'A': 1
-                });
-        });
-        test('With source condition is null and rule is not setup, no change', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            testMerge(testItem, { 'A': 1, [condPropertyName]: null },
-                { 'A': 2, [condPropertyName]: { conditionType: 'Y', prop1: '2' } },
-                condPropertyName,
-                {
-                    'A': 1, [condPropertyName]: { conditionType: 'Y', prop1: '2' }
-                });
-        });
-        test('With source condition is null and rule is setup, no change', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'all' } };        // action will be ignored
-            testItem.setConditionConflictRule(condPropertyName, fn);
-            testMerge(testItem, { 'A': 1, [condPropertyName]: null },
-                { 'A': 2, [condPropertyName]: { conditionType: 'Y', prop1: '2' } },
-                condPropertyName,
-                {
-                    'A': 1, [condPropertyName]: { conditionType: 'Y', prop1: '2' }
-                });
-        });
-        test('With dest condition is null and rule is not defined, assign it to sourcecond', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
-                { 'A': 2, [condPropertyName]: null },
-                condPropertyName,
-                {
-                    'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' }
-                });
-        });
-
-        test('With dest condition is null and rule is nochange, dest does not change', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            const condPropertyName = 'cond';
-            let fn: ConditionConfigMergeServiceHandler =
-                (source: ConditionConfig, dest: ConditionConfig, identity: MergeIdentity) => { return { useAction: 'nochange' } };
-            testItem.setConditionConflictRule(condPropertyName, fn);
-            testMerge(testItem, { 'A': 1, [condPropertyName]: { conditionType: 'X', prop1: '1' } },
-                { 'A': 2, [condPropertyName]: null },
-                condPropertyName,
-                {
-                    'A': 1, [condPropertyName]: null
-                });
-        });
     });
 });
 
@@ -937,7 +623,7 @@ describe('ValidatorConfigMergeService', () => {
         test('constructor sets default propertyConflictRules', () => {
             let testItem = new ValidatorConfigMergeService();
             expect(testItem.getPropertyConflictRule('validatorType')).toBe('locked');
-            expect(testItem.getPropertyConflictRule('conditionConfig')).toBe(testItem.handleConditionConfigProperty);
+            expect(typeof testItem.getPropertyConflictRule('conditionConfig')).toBe('function');
             expect(testItem.getPropertyConflictRule('conditionCreator')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorCode')).toBe('nochange');
             expect(testItem.getPropertyConflictRule('errorMessage')).toBeUndefined();
@@ -1031,8 +717,7 @@ describe('ValidatorConfigMergeService', () => {
         function testResolve(testItem: ValidatorConfigMergeService,
             source: ValidatorsValueHostBaseConfig, destination: ValidatorsValueHostBaseConfig,
             expectedDestination: ValidatorsValueHostBaseConfig,
-            logContains?: string, logLevel?: LoggingLevel)
-        {
+            logContains?: string, logLevel?: LoggingLevel) {
             let setup = createServices();
             testItem.services = setup.services;
             setup.services.validatorConfigMergeService = testItem;
@@ -1183,48 +868,10 @@ describe('ValidatorConfigMergeService', () => {
                 });
         });
         test('Source and destination conflicting Validators merges validatorConfigs except nochange for conditionConfig', () => {
+            //!! NOTE: There is an override for conditionConfig. It involves passing a special flag
+            // through the ValidatorConfig. The ValidatorConfigMergeService respects that flag and replaces.
+            // That capability is tested in the Builder and Modifier code tests.
             let testItem = new ValidatorConfigMergeService();
-            testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                validatorConfigs:
-                    [{
-                        conditionConfig: {
-                            conditionType: '1'
-                        },
-                        summaryMessage: 'From Source'
-                    }]
-                },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.String,
-                    validatorConfigs: [
-                        {
-                            errorCode: '1',
-                            errorMessage: 'From Destination',
-                            conditionConfig: { conditionType: 'Require' }
-                        }]
-                },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.String,
-                    validatorConfigs: [
-                        {
-                            errorCode: '1',
-                            errorMessage: 'From Destination',
-                            summaryMessage: 'From Source',
-                            conditionConfig: { conditionType: 'Require' }
-                        }
-                    ]
-                },
-            'ConditionType mismatch for', LoggingLevel.Warn);
-        });
-        test('Source and destination conflicting Validators merges validatorConfigs and conditionConfig is modified using the "all" rule', () => {
-            let testItem = new ValidatorConfigMergeService();
-            testItem.setConditionConflictRule('conditionConfig',
-                (source, destination, identity) => { return { useAction: 'all' } });
             testResolve(testItem, {
                 valueHostType: ValueHostType.Input,
                 name: 'Field1',
@@ -1256,68 +903,11 @@ describe('ValidatorConfigMergeService', () => {
                             errorCode: '1',
                             errorMessage: 'From Destination',
                             summaryMessage: 'From Source',
-                            conditionConfig: <AllMatchConditionConfig>{
-                                conditionType: ConditionType.All,
-                                conditionConfigs: [
-                                    { conditionType: 'Require' },
-                                    {
-                                        conditionType: '1'
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                });
-        });
-        test('Source and destination conflicting Validators merges validatorConfigs and conditionConfig is replaced by ConditionConflictRule', () => {
-            let testItem = new ValidatorConfigMergeService();
-            testItem.setConditionConflictRule('conditionConfig',
-                (source, destination, identity) => {
-                    return {
-                        useValue: <RegExpConditionConfig>{
-                            conditionType: ConditionType.RegExp,
-                            expression: /^\d+$/
-                        }
-                    }
-                });
-            testResolve(testItem, {
-                valueHostType: ValueHostType.Input,
-                name: 'Field1',
-                validatorConfigs:
-                    [{
-                        conditionConfig: {
-                            conditionType: '1'
-                        },
-                        summaryMessage: 'From Source'
-                    }]
-            },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.String,
-                    validatorConfigs: [
-                        {
-                            errorCode: '1',
-                            errorMessage: 'From Destination',
                             conditionConfig: { conditionType: 'Require' }
-                        }]
-                },
-                {
-                    valueHostType: ValueHostType.Input,
-                    name: 'Field1',
-                    dataType: LookupKey.String,
-                    validatorConfigs: [
-                        {
-                            errorCode: '1',
-                            errorMessage: 'From Destination',
-                            summaryMessage: 'From Source',
-                            conditionConfig: <RegExpConditionConfig>{
-                                conditionType: ConditionType.RegExp,
-                                expression: /^\d+$/
-                            }
                         }
                     ]
-                });
+                },
+                'ConditionType mismatch for', LoggingLevel.Warn);
         });
     });
 

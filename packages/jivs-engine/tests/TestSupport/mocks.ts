@@ -32,7 +32,7 @@ import { ValueHostValidationStateChangedHandler } from "../../src/Interfaces/Val
 import { populateServicesWithManyCultures } from "./utilities";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
-import { FluentValidatorCollector } from "../../src/ValueHosts/Fluent";
+import { FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
 import { IValueHostsManager, ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceStateChangedHandler } from "../../src/Interfaces/ValueHostsManager";
 import { CapturingLogger } from "./CapturingLogger";
 

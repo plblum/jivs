@@ -3,6 +3,7 @@
  * @module Utilities
  */
 
+import { WhenConditionConfig } from "../Conditions/WhenCondition";
 import { ConditionType } from "../Conditions/ConditionTypes";
 import { ValidatorConfig } from "../Interfaces/Validator";
 
@@ -16,5 +17,18 @@ import { ValidatorConfig } from "../Interfaces/Validator";
  */
 export function resolveErrorCode(ivConfig: ValidatorConfig): string
 {
-    return ivConfig.errorCode ?? ivConfig.conditionConfig?.conditionType ?? ConditionType.Unknown;
+    if (ivConfig.errorCode)
+        return ivConfig.errorCode;
+    if (ivConfig.conditionConfig)
+    {
+        let ct = ivConfig.conditionConfig.conditionType;
+        if (ct === ConditionType.When)
+        {
+            let whenConfig = ivConfig.conditionConfig as WhenConditionConfig;
+            ct = whenConfig.childConditionConfig?.conditionType;
+        }
+        if (ct)
+            return ct
+    }
+    return ConditionType.Unknown;
 }

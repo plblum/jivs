@@ -1,12 +1,12 @@
 /**
  * Implements a fluent syntax to chain together conditions quickly.
  * Each condition gets its own function that expects to have
- * 'this' as FluentConditionCollector and return this for the next in the chain.
+ * 'this' as FluentConditionBuilder and return this for the next in the chain.
  * See @link ValueHosts/Fluent
  * @module Conditions/Fluent
  */
 
-import { FluentConditionCollector, FluentConditionCollectorHandler, FluentOneConditionCollector, FluentOneConditionCollectorHandler, finishFluentConditionCollector } from "../ValueHosts/Fluent";
+import { FluentConditionBuilder, FluentConditionBuilderHandler, FluentOneConditionBuilder, FluentOneConditionBuilderHandler, finishFluentConditionBuilder } from "../ValueHosts/Fluent";
 import {
     AllMatchConditionConfig, AnyMatchConditionConfig, CountMatchesConditionConfig, DataTypeCheckConditionConfig,
     EqualToConditionConfig, EqualToValueConditionConfig, GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
@@ -21,130 +21,132 @@ import { WhenConditionConfig,  } from "./WhenCondition";
 import { ConditionType } from "./ConditionTypes";
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { assertFunction, assertNotNull } from "../Utilities/ErrorHandling";
+import { ConditionConfig } from "../Interfaces/Conditions";
 
-// How TypeScript merges functions with the FluentConditionCollector class
+// How TypeScript merges functions with the FluentConditionBuilder class
 declare module "./../ValueHosts/Fluent"
 {
-    export interface FluentConditionCollector {
-        dataTypeCheck(): FluentConditionCollector;
+    export interface FluentConditionBuilder {
+        conditionConfig(conditionConfig: ConditionConfig): FluentConditionBuilder;
+        dataTypeCheck(): FluentConditionBuilder;
         requireText(
             conditionConfig?: FluentRequireTextConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
-        notNull(valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
+        notNull(valueHostName?: ValueHostName): FluentConditionBuilder;
         regExp(
             expression: RegExp | string, ignoreCase?: boolean | null,
             conditionConfig?: FluentRegExpConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         range(
             minimum: any, maximum: any,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         not(
-            childConfig: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
+            childBuilder: FluentOneConditionBuilderHandler): FluentOneConditionBuilder;
         when(
-            enablerConfig: FluentOneConditionCollectorHandler,
-            childConfig: FluentOneConditionCollectorHandler): FluentOneConditionCollector;
+            enablerBuilder: FluentOneConditionBuilderHandler,
+            childBuilder: FluentOneConditionBuilderHandler): FluentOneConditionBuilder;
         
         equalToValue(
             secondValue: any,
             conditionConfig?: FluentEqualToValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         equalTo(
             secondValueHostName: ValueHostName,
             conditionConfig?: FluentEqualToConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         notEqualToValue(
             secondValue: any,
             conditionConfig?: FluentNotEqualToValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         notEqualTo(
             secondValueHostName: string,
             conditionConfig?: FluentNotEqualToConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         lessThanValue(
             secondValue: any,
             conditionConfig?: FluentLessThanValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         lessThan(
             secondValueHostName: ValueHostName,
             conditionConfig?: FluentLessThanConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         lessThanOrEqualValue(
             secondValue: any,
             conditionConfig?: FluentLessThanOrEqualValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         lessThanOrEqual(
             secondValueHostName: ValueHostName,
             conditionConfig?: FluentLessThanOrEqualConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         greaterThanValue(
             secondValue: any,
             conditionConfig?: FluentGreaterThanValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         greaterThan(
             secondValueHostName: ValueHostName,
             conditionConfig?: FluentGreaterThanConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         greaterThanOrEqualValue(
             secondValue: any,
             conditionConfig?: FluentGreaterThanOrEqualValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         greaterThanOrEqual(
             secondValueHostName: ValueHostName,
             conditionConfig?: FluentGreaterThanOrEqualConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
 
         stringLength(
             maximum: number | null,
             conditionConfig?: FluentStringLengthConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         all(
-            conditions: FluentConditionCollectorHandler): FluentConditionCollector;
+            conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder;
         any(
-            conditions: FluentConditionCollectorHandler): FluentConditionCollector;
+            conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder;
         countMatches(
             minimum: number | null, maximum: number | null,
-            conditions: FluentConditionCollectorHandler): FluentConditionCollector;
+            conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder;
         
         positive(
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         integer(
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         maxDecimals(maxDecimals: number,
-            valueHostName?: ValueHostName): FluentConditionCollector;        
+            valueHostName?: ValueHostName): FluentConditionBuilder;        
 
         //#region shorter names for some
         ltValue(
             secondValue: any,
             conditionConfig?: FluentLessThanValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         lt(
             secondValueHostName: ValueHostName,
             conditionConfig?: FluentLessThanConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         lteValue(
             secondValue: any,
             conditionConfig?: FluentLessThanOrEqualValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         lte(
             secondValueHostName: ValueHostName,
             conditionConfig?: FluentLessThanOrEqualConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         gtValue(
             secondValue: any,
             conditionConfig?: FluentGreaterThanValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         gt(
             secondValueHostName: ValueHostName,
             conditionConfig?: FluentGreaterThanConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         gteValue(
             secondValue: any,
             conditionConfig?: FluentGreaterThanOrEqualValueConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         gte(
             secondValueHostName: ValueHostName,
             conditionConfig?: FluentGreaterThanOrEqualConditionConfig | null,
-            valueHostName?: ValueHostName): FluentConditionCollector;
+            valueHostName?: ValueHostName): FluentConditionBuilder;
         //#endregion shorter names for some        
 
     }
@@ -157,70 +159,82 @@ declare module "./../ValueHosts/Fluent"
  * to avoid any time setting up something not used.
  */
 export function enableFluentConditions(): void {
-    if (typeof FluentConditionCollector.prototype.dataTypeCheck === 'function')
+    if (typeof FluentConditionBuilder.prototype.dataTypeCheck === 'function')
         return;
-    // How JavaScript sees the functions added to the FluentConditionCollector class
-    FluentConditionCollector.prototype.dataTypeCheck = dataTypeCheck;
-    FluentConditionCollector.prototype.requireText = requireText;
-    FluentConditionCollector.prototype.notNull = notNull;
-    FluentConditionCollector.prototype.regExp = regExp;
-    FluentConditionCollector.prototype.range = range;
-    FluentConditionCollector.prototype.not = not;
-    FluentConditionCollector.prototype.when = when;
-    FluentConditionCollector.prototype.equalToValue = equalToValue;
-    FluentConditionCollector.prototype.equalTo = equalTo;
-    FluentConditionCollector.prototype.notEqualToValue = notEqualToValue;
-    FluentConditionCollector.prototype.notEqualTo = notEqualTo;
-    FluentConditionCollector.prototype.lessThanValue = lessThanValue;
-    FluentConditionCollector.prototype.lessThan = lessThan;
-    FluentConditionCollector.prototype.lessThanOrEqualValue = lessThanOrEqualValue;
-    FluentConditionCollector.prototype.lessThanOrEqual = lessThanOrEqual;
-    FluentConditionCollector.prototype.greaterThanValue = greaterThanValue;
-    FluentConditionCollector.prototype.greaterThan = greaterThan;
-    FluentConditionCollector.prototype.greaterThanOrEqualValue = greaterThanOrEqualValue;
-    FluentConditionCollector.prototype.greaterThanOrEqual = greaterThanOrEqual;
-    FluentConditionCollector.prototype.stringLength = stringLength;
-    FluentConditionCollector.prototype.all = all;
-    FluentConditionCollector.prototype.any = any;
-    FluentConditionCollector.prototype.countMatches = countMatches;
-    FluentConditionCollector.prototype.positive = positive;
-    FluentConditionCollector.prototype.integer = integer;
-    FluentConditionCollector.prototype.maxDecimals = maxDecimals;
+    // How JavaScript sees the functions added to the FluentConditionBuilder class
+    FluentConditionBuilder.prototype.conditionConfig = conditionConfig;
+    FluentConditionBuilder.prototype.dataTypeCheck = dataTypeCheck;
+    FluentConditionBuilder.prototype.requireText = requireText;
+    FluentConditionBuilder.prototype.notNull = notNull;
+    FluentConditionBuilder.prototype.regExp = regExp;
+    FluentConditionBuilder.prototype.range = range;
+    FluentConditionBuilder.prototype.not = not;
+    FluentConditionBuilder.prototype.when = when;
+    FluentConditionBuilder.prototype.equalToValue = equalToValue;
+    FluentConditionBuilder.prototype.equalTo = equalTo;
+    FluentConditionBuilder.prototype.notEqualToValue = notEqualToValue;
+    FluentConditionBuilder.prototype.notEqualTo = notEqualTo;
+    FluentConditionBuilder.prototype.lessThanValue = lessThanValue;
+    FluentConditionBuilder.prototype.lessThan = lessThan;
+    FluentConditionBuilder.prototype.lessThanOrEqualValue = lessThanOrEqualValue;
+    FluentConditionBuilder.prototype.lessThanOrEqual = lessThanOrEqual;
+    FluentConditionBuilder.prototype.greaterThanValue = greaterThanValue;
+    FluentConditionBuilder.prototype.greaterThan = greaterThan;
+    FluentConditionBuilder.prototype.greaterThanOrEqualValue = greaterThanOrEqualValue;
+    FluentConditionBuilder.prototype.greaterThanOrEqual = greaterThanOrEqual;
+    FluentConditionBuilder.prototype.stringLength = stringLength;
+    FluentConditionBuilder.prototype.all = all;
+    FluentConditionBuilder.prototype.any = any;
+    FluentConditionBuilder.prototype.countMatches = countMatches;
+    FluentConditionBuilder.prototype.positive = positive;
+    FluentConditionBuilder.prototype.integer = integer;
+    FluentConditionBuilder.prototype.maxDecimals = maxDecimals;
 
 
     //#region shorter names for some
-    FluentConditionCollector.prototype.ltValue = lessThanValue;
-    FluentConditionCollector.prototype.lt = lessThan;
-    FluentConditionCollector.prototype.lteValue = lessThanOrEqualValue;
-    FluentConditionCollector.prototype.lte = lessThanOrEqual;
-    FluentConditionCollector.prototype.gtValue = greaterThanValue;
-    FluentConditionCollector.prototype.gt = greaterThan;
-    FluentConditionCollector.prototype.gteValue = greaterThanOrEqualValue;
-    FluentConditionCollector.prototype.gte = greaterThanOrEqual;
+    FluentConditionBuilder.prototype.ltValue = lessThanValue;
+    FluentConditionBuilder.prototype.lt = lessThan;
+    FluentConditionBuilder.prototype.lteValue = lessThanOrEqualValue;
+    FluentConditionBuilder.prototype.lte = lessThanOrEqual;
+    FluentConditionBuilder.prototype.gtValue = greaterThanValue;
+    FluentConditionBuilder.prototype.gt = greaterThan;
+    FluentConditionBuilder.prototype.gteValue = greaterThanOrEqualValue;
+    FluentConditionBuilder.prototype.gte = greaterThanOrEqual;
     //#endregion shorter names for some
 }
 
 // --- Actual fluent functions -------
 
 /**
+ * Adds a condition to the builder based on a ConditionConfig.
+ * @param conditionConfig 
+ * @returns 
+ */
+function conditionConfig(conditionConfig: ConditionConfig): FluentConditionBuilder {
+    assertNotNull(conditionConfig, 'conditionConfig');
+    assertNotNull(conditionConfig.conditionType, 'conditionConfig.conditionType');
+    return finishFluentConditionBuilder(this, conditionConfig.conditionType, conditionConfig);
+}
+
+/**
  * Common code to setup DataTypeCheckConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genCDDataTypeCheck(): DataTypeCheckConditionConfig {
     return {} as DataTypeCheckConditionConfig;
 }
 
-function dataTypeCheck(): FluentConditionCollector {
+function dataTypeCheck(): FluentConditionBuilder {
     // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty    
-    return finishFluentConditionCollector(this, ConditionType.DataTypeCheck, _genCDDataTypeCheck());
+    return finishFluentConditionBuilder(this, ConditionType.DataTypeCheck, _genCDDataTypeCheck());
 }
 
 
 export type FluentRequireTextConditionConfig = Partial<Omit<RequireTextConditionConfig, 'conditionType' /* | 'valueHostName'*/ | 'category'>>;
 /**
  * Common code to setup RequireTextConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCRequireText(
@@ -230,31 +244,31 @@ export function _genDCRequireText(
 }
 function requireText(
     conditionConfig?: FluentRequireTextConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.RequireText, _genDCRequireText(conditionConfig), valueHostName);
 }
 
 /**
  * Common code to setup NotNullConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCNotNull(): NotNullConditionConfig {
     return {} as NotNullConditionConfig;
 }
 
-function notNull(valueHostName?: ValueHostName): FluentConditionCollector {
+function notNull(valueHostName?: ValueHostName): FluentConditionBuilder {
     // no ConditionConfig parameter because without conditionType and valueHostName, it will always be empty        
 
-    return finishFluentConditionCollector(this,
+    return finishFluentConditionBuilder(this,
         ConditionType.NotNull, _genDCNotNull(), valueHostName);
 }
 
 export type FluentRegExpConditionConfig = Partial<Omit<RegExpConditionConfig, 'conditionType' /* | 'valueHostName'*/ | 'category' | 'expressionAsString' | 'expression' | 'ignoreCase'>>;
 /**
  * Common code to setup RegExpConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genCDRegExp(
@@ -274,15 +288,15 @@ export function _genCDRegExp(
 function regExp(
     expression: RegExp | string, ignoreCase?: boolean | null,
     conditionConfig?: FluentRegExpConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.RegExp, _genCDRegExp(expression, ignoreCase, conditionConfig),
         valueHostName);
 }
 
 /**
  * Common code to setup RangeConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genCDRange(
@@ -297,10 +311,10 @@ export function _genCDRange(
 
 function range(
     minimum: any, maximum: any,
-    valueHostName?: ValueHostName): FluentConditionCollector {
+    valueHostName?: ValueHostName): FluentConditionBuilder {
     // no ConditionConfig parameter because without conditionType, valueHostName, minimum, and maximum, it will always be empty    
 
-    return finishFluentConditionCollector(this,
+    return finishFluentConditionBuilder(this,
         ConditionType.Range, _genCDRange(minimum, maximum), valueHostName);
 }
 
@@ -309,7 +323,7 @@ export type FluentEqualToValueConditionConfig = Partial<Omit<EqualToValueConditi
 
 /**
  * Common code to setup EqualToValueConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCEqualToValue(
@@ -324,15 +338,15 @@ export function _genDCEqualToValue(
 function equalToValue(
     secondValue: any,
     conditionConfig?: FluentEqualToValueConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.EqualToValue, _genDCEqualToValue(secondValue, conditionConfig), valueHostName);
 }
 
 export type FluentEqualToConditionConfig = Partial<Omit<EqualToConditionConfig, 'conditionType' /* | 'valueHostName'*/ | 'category' | 'secondValueHostName'>>;
 /**
  * Common code to setup EqualToConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCEqualTo(
@@ -346,8 +360,8 @@ export function _genDCEqualTo(
 function equalTo(
     secondValueHostName: ValueHostName,
     conditionConfig?: FluentEqualToConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.EqualTo, _genDCEqualTo(secondValueHostName, conditionConfig), valueHostName);
 }
 
@@ -355,7 +369,7 @@ export type FluentNotEqualToValueConditionConfig = Partial<Omit<NotEqualToValueC
 
 /**
  * Common code to setup NotEqualToConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCNotEqualToValue(
@@ -369,8 +383,8 @@ export function _genDCNotEqualToValue(
 function notEqualToValue(
     secondValue: any,
     conditionConfig?: FluentNotEqualToValueConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.NotEqualToValue, _genDCNotEqualToValue(secondValue, conditionConfig), valueHostName);
 }
 
@@ -378,7 +392,7 @@ export type FluentNotEqualToConditionConfig = Partial<Omit<NotEqualToConditionCo
 
 /**
  * Common code to setup NotEqualToConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCNotEqualTo(
@@ -392,8 +406,8 @@ export function _genDCNotEqualTo(
 function notEqualTo(
     secondValueHostName: ValueHostName,
     conditionConfig?: FluentNotEqualToConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.NotEqualTo, _genDCNotEqualTo(secondValueHostName, conditionConfig), valueHostName);
 }
 
@@ -401,7 +415,7 @@ export type FluentLessThanValueConditionConfig = Partial<Omit<LessThanValueCondi
 
 /**
  * Common code to setup LessThanConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCLessThanValue(
@@ -416,8 +430,8 @@ export function _genDCLessThanValue(
 function lessThanValue(
     secondValue: any,
     conditionConfig?: FluentLessThanValueConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.LessThanValue, _genDCLessThanValue(secondValue, conditionConfig), valueHostName);
 }
 
@@ -425,7 +439,7 @@ export type FluentLessThanConditionConfig = Partial<Omit<LessThanConditionConfig
 
 /**
  * Common code to setup LessThanConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCLessThan(
@@ -440,8 +454,8 @@ export function _genDCLessThan(
 function lessThan(
     secondValueHostName: ValueHostName,
     conditionConfig?: FluentLessThanConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.LessThan, _genDCLessThan(secondValueHostName, conditionConfig), valueHostName);
 }
 
@@ -449,7 +463,7 @@ export type FluentLessThanOrEqualValueConditionConfig = Partial<Omit<LessThanVal
 
 /**
  * Common code to setup LessThanOrEqualValueConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCLessThanOrEqualValue(
@@ -464,8 +478,8 @@ export function _genDCLessThanOrEqualValue(
 function lessThanOrEqualValue(
     secondValue: any,
     conditionConfig?: FluentLessThanOrEqualValueConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.LessThanOrEqualValue, _genDCLessThanOrEqualValue(secondValue, conditionConfig), valueHostName);
 }
 
@@ -473,7 +487,7 @@ export type FluentLessThanOrEqualConditionConfig = Partial<Omit<LessThanConditio
 
 /**
  * Common code to setup LessThanOrEqualConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCLessThanOrEqual(
@@ -488,8 +502,8 @@ export function _genDCLessThanOrEqual(
 function lessThanOrEqual(
     secondValueHostName: ValueHostName,
     conditionConfig?: FluentLessThanOrEqualConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.LessThanOrEqual, _genDCLessThanOrEqual(secondValueHostName, conditionConfig), valueHostName);
 }
 export type FluentGreaterThanValueConditionConfig = Partial<Omit<LessThanValueConditionConfig, 'conditionType' /* | 'valueHostName'*/ | 'category' | 'secondValue' >>;
@@ -499,7 +513,7 @@ export type FluentGreaterThanOrEqualConditionConfig = Partial<Omit<LessThanCondi
 
 /**
  * Common code to setup GreaterThanValueConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCGreaterThanValue(
@@ -514,14 +528,14 @@ export function _genDCGreaterThanValue(
 function greaterThanValue(
     secondValue: any,
     conditionConfig?: FluentGreaterThanValueConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.GreaterThanValue, _genDCGreaterThanValue(secondValue, conditionConfig), valueHostName);
 }
 
 /**
  * Common code to setup GreaterThanConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCGreaterThan(
@@ -536,14 +550,14 @@ export function _genDCGreaterThan(
 function greaterThan(
     secondValueHostName: ValueHostName,
     conditionConfig?: FluentGreaterThanConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.GreaterThan, _genDCGreaterThan(secondValueHostName, conditionConfig), valueHostName);
 }
 
 /**
  * Common code to setup GreaterThanOrEqualValueConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCGreaterThanOrEqualValue(
@@ -558,14 +572,14 @@ export function _genDCGreaterThanOrEqualValue(
 function greaterThanOrEqualValue(
     secondValue: any,
     conditionConfig?: FluentGreaterThanOrEqualValueConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.GreaterThanOrEqualValue, _genDCGreaterThanOrEqualValue(secondValue, conditionConfig), valueHostName);
 }
 
 /**
  * Common code to setup GreaterThanOrEqualConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCGreaterThanOrEqual(
@@ -580,15 +594,15 @@ export function _genDCGreaterThanOrEqual(
 function greaterThanOrEqual(
     secondValueHostName: ValueHostName,
     conditionConfig?: FluentGreaterThanOrEqualConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.GreaterThanOrEqual, _genDCGreaterThanOrEqual(secondValueHostName, conditionConfig), valueHostName);
 }
 
 export type FluentStringLengthConditionConfig = Partial<Omit<StringLengthConditionConfig, 'conditionType' /* | 'valueHostName'*/ | 'category' | 'maximum'>>;
 /**
  * Common code to setup StringLengthConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCStringLength(
@@ -603,66 +617,66 @@ export function _genDCStringLength(
 function stringLength(
     maximum: number | null,
     conditionConfig?: FluentStringLengthConditionConfig | null,
-    valueHostName?: ValueHostName): FluentConditionCollector {
+    valueHostName?: ValueHostName): FluentConditionBuilder {
     // no ConditionConfig parameter because without conditionType, valueHostName, minimum and maximum, it will always be empty        
-    return finishFluentConditionCollector(this,
+    return finishFluentConditionBuilder(this,
         ConditionType.StringLength, _genDCStringLength(maximum, conditionConfig), valueHostName);
 }
 /**
  * Common code to setup AllMatchConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCAll(
-    conditions: FluentConditionCollectorHandler): AllMatchConditionConfig {
-    assertNotNull(conditions, 'conditions');
-    assertFunction(conditions);
+    conditionsBuilder: FluentConditionBuilderHandler): AllMatchConditionConfig {
+    assertNotNull(conditionsBuilder, 'conditionsBuilder');
+    assertFunction(conditionsBuilder);
     
-    let fluent = new FluentConditionCollector(null);
-    conditions(fluent);
+    let fluent = new FluentConditionBuilder(null);
+    conditionsBuilder(fluent);
     let conditionConfigs = fluent.parentConfig.conditionConfigs;
     return { conditionConfigs: conditionConfigs } as AllMatchConditionConfig;
 }
 function all(
-    conditions: FluentConditionCollectorHandler): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
-        ConditionType.All, _genDCAll(conditions));
+    conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
+        ConditionType.All, _genDCAll(conditionsBuilder));
 }
 /**
  * Common code to setup AnyMatchConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCAny(
-    conditions: FluentConditionCollectorHandler): AnyMatchConditionConfig {
-    assertNotNull(conditions, 'conditions');
-    assertFunction(conditions);
+    conditionsBuilder: FluentConditionBuilderHandler): AnyMatchConditionConfig {
+    assertNotNull(conditionsBuilder, 'conditionsBuilder');
+    assertFunction(conditionsBuilder);
     
-    let fluent = new FluentConditionCollector(null);
-    conditions(fluent);
+    let fluent = new FluentConditionBuilder(null);
+    conditionsBuilder(fluent);
     let conditionConfigs = fluent.parentConfig.conditionConfigs;
     return { conditionConfigs: conditionConfigs } as AnyMatchConditionConfig;
 }
 function any(
-    conditions: FluentConditionCollectorHandler): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
-        ConditionType.Any,  _genDCAny(conditions));
+    conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
+        ConditionType.Any,  _genDCAny(conditionsBuilder));
 }
 
 /**
  * Common code to setup CountMatchesConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCCountMatches(
     minimum: number | null,
     maximum: number | null,
-    conditions: FluentConditionCollectorHandler): CountMatchesConditionConfig {
-    assertNotNull(conditions, 'conditions');
-    assertFunction(conditions);
+    conditionsBuilder: FluentConditionBuilderHandler): CountMatchesConditionConfig {
+    assertNotNull(conditionsBuilder, 'conditionsBuilder');
+    assertFunction(conditionsBuilder);
     
-    let fluent = new FluentConditionCollector(null);
-    conditions(fluent);
+    let fluent = new FluentConditionBuilder(null);
+    conditionsBuilder(fluent);
     let conditionConfigs = fluent.parentConfig.conditionConfigs;
 
     let condConfig: CountMatchesConditionConfig =
@@ -676,99 +690,99 @@ export function _genDCCountMatches(
 function countMatches(
     minimum: number | null,
     maximum: number | null,
-    conditions: FluentConditionCollectorHandler): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
-        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, conditions));
+    conditionsBuilder: FluentConditionBuilderHandler): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
+        ConditionType.CountMatches, _genDCCountMatches(minimum, maximum, conditionsBuilder));
 }
 
 /**
  * Common code to setup PositiveConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCPositive(): PositiveConditionConfig {
     return {} as PositiveConditionConfig;
 }
 function positive(
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.Positive, _genDCPositive(), valueHostName);
 }
 
 /**
  * Common code to setup IntegerConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCInteger(): IntegerConditionConfig {
     return {} as IntegerConditionConfig;
 }
 function integer(
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.Integer, _genDCInteger(), valueHostName);
 }
 
 /**
  * Common code to setup MaxDecimalsConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCMaxDecimals(maxDecimals: number): MaxDecimalsConditionConfig {
     return { maxDecimals: maxDecimals } as MaxDecimalsConditionConfig;
 }
 function maxDecimals(maxDecimals: number,
-    valueHostName?: ValueHostName): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
+    valueHostName?: ValueHostName): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
         ConditionType.MaxDecimals, _genDCMaxDecimals(maxDecimals), valueHostName);
 }
 
 /**
  * Common code to setup NotConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCNot(
-    childConfig: FluentOneConditionCollectorHandler): NotConditionConfig {
-    assertNotNull(childConfig, 'childConfig');
-    assertFunction(childConfig);
+    childBuilder: FluentOneConditionBuilderHandler): NotConditionConfig {
+    assertNotNull(childBuilder, 'childBuilder');
+    assertFunction(childBuilder);
     
-    let fluent = new FluentOneConditionCollector(null);
-    childConfig(fluent);
+    let fluent = new FluentOneConditionBuilder(null);
+    childBuilder(fluent);
     let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
     return { childConditionConfig: conditionConfig } as NotConditionConfig;
 }
 function not(
-    childConfig: FluentOneConditionCollectorHandler): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
-        ConditionType.Not, _genDCNot(childConfig));
+    childBuilder: FluentOneConditionBuilderHandler): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
+        ConditionType.Not, _genDCNot(childBuilder));
 }
 
 /**
  * Common code to setup WhenConditionConfig for support within
- * FluentValidatorCollector and FluentConditionCollector fluent functions.
+ * FluentValidatorBuilder and FluentConditionBuilder fluent functions.
  * @internal
  */
 export function _genDCWhen(
-    enablerConfig: FluentOneConditionCollectorHandler,
-    childConfig: FluentOneConditionCollectorHandler): WhenConditionConfig {
-    assertNotNull(enablerConfig, 'enablerConfig');
-    assertFunction(enablerConfig);
-    assertNotNull(childConfig, 'childConfig');
-    assertFunction(childConfig);
+    enablerBuilder: FluentOneConditionBuilderHandler,
+    childBuilder: FluentOneConditionBuilderHandler): WhenConditionConfig {
+    assertNotNull(enablerBuilder, 'enablerBuilder');
+    assertFunction(enablerBuilder);
+    assertNotNull(childBuilder, 'childBuilder');
+    assertFunction(childBuilder);
 
-    let fluentEnabler = new FluentOneConditionCollector(null);
-    enablerConfig(fluentEnabler);
+    let fluentEnabler = new FluentOneConditionBuilder(null);
+    enablerBuilder(fluentEnabler);
     let enablerConditionConfig = fluentEnabler.parentConfig.conditionConfigs[0] ?? {};
 
-    let fluent = new FluentOneConditionCollector(null);
-    childConfig(fluent);
+    let fluent = new FluentOneConditionBuilder(null);
+    childBuilder(fluent);
     let conditionConfig = fluent.parentConfig.conditionConfigs[0] ?? {};
     return { enablerConfig: enablerConditionConfig, childConditionConfig: conditionConfig } as WhenConditionConfig;
 }
 function when(
-    enablerConfig: FluentOneConditionCollectorHandler,
-    childConfig: FluentOneConditionCollectorHandler): FluentConditionCollector {
-    return finishFluentConditionCollector(this,
-        ConditionType.When, _genDCWhen(enablerConfig, childConfig));
+    enablerBuilder: FluentOneConditionBuilderHandler,
+    childBuilder: FluentOneConditionBuilderHandler): FluentConditionBuilder {
+    return finishFluentConditionBuilder(this,
+        ConditionType.When, _genDCWhen(enablerBuilder, childBuilder));
 }
