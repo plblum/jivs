@@ -112,15 +112,6 @@ export class ValidationManagerConfigModifier extends ValueHostsManagerConfigModi
     //#endregion validation oriented ValueHost support
 
     /**
-     * @inheritdoc ValueHosts/Types/ManagerConfigBuilder!IValidationManagerConfigExtensions.conditions
-    */
-    public conditions(parentConfig?: ConditionWithChildrenBaseConfig): FluentConditionBuilder
-    {
-        let fluent = this.createFluent();
-        return fluent.conditions(parentConfig);
-    }    
-
-    /**
      * If it finds the validator with the errorcode specified, it will combine the condition with the existing condition
      * using a rule supplied or callback to let you create a conditionConfig.
      * If it the validator is not found, it will throw an error and log.

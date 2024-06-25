@@ -117,15 +117,6 @@ export class ValidationManagerConfigBuilder extends ValueHostsManagerConfigBuild
     }
     //#endregion validation oriented ValueHost support
 
-
-    /**
-     * @inheritdoc ValueHosts/Types/ManagerConfigBuilder!IValidationManagerConfigExtensions.conditions
-    */
-    public conditions(parentConfig?: ConditionWithChildrenBaseConfig): FluentConditionBuilder {
-        let fluent = this.createFluent();
-        return fluent.conditions(parentConfig);
-    }
-
     /**
      * When working with both business layer and UI layer configurations,
      * call before starting the UI layer configuration.

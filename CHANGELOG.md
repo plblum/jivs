@@ -16,6 +16,7 @@ This is a major reworking, reflected in the documentation. Quick summary:
 - New condition, WhenCondition. Replacement for the Enabler feature on ValidatorConfig. Has two conditions: enabler and the condition to enable. The child condition is executed only when the enabler condition matches the condition. input('field').when((enabler)=>enabler.regExp(/\d*/, null, null, 'otherValueHostName'), (child)=>child.requireText())
 - **Breaking API change** Removed the enablerConfig and enablerCreator properties on ValidatorConfig. Use the WhenCondition instead.
 - Fluent syntax for building conditions now has conditionConfig() function, which adds any fully created ConditionConfig to the chain.
+  As a result, builder.conditions() function has been removed.
 
 ## 0.17.1
 - Added setIssuesFound() method on ValidationManager and ValidatableValueHostBase. Simplifies how to send Jivs errors found by the server and sent up to the client.
