@@ -8,12 +8,10 @@ import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
-import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
+import { ValidatorValidateResult, IValidator } from '../Interfaces/Validator';
 import { SevereErrorBase, assertNotNull } from '../Utilities/ErrorHandling';
 import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
-import { FluentValidatorBuilder } from './Fluent';
-import { enableFluent } from '../Conditions/FluentValidatorBuilderExtensions';
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { IValidationManager } from '../Interfaces/ValidationManager';
 
@@ -59,7 +57,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     {
         return this.getValidator(errorCode) !== null;
     }
-    
+
     /**
      * Runs validation against some of all validators.
      * If at least one validator was NoMatch, it returns ValueHostValidateResult
@@ -68,16 +66,26 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * If there are no validators, or all validators were skipped (disabled),
      * it returns ValidationStatus.Undetermined.
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
+     * 
+     * When called an it is disabled, it clears existing data and returns null.
+     * If the enabled state changes, the user must call validate again to get the new state.
+     * 
      * @param options - Provides guidance on which validators to include.
      * @returns Non-null when there is something to report. null if there was nothing to evaluate
      * which includes all existing validators reporting "Undetermined"
      */
     public validate(options?: ValidateOptions): ValueHostValidateResult | null {
+        if (!this.isEnabled())
+        {
+            this.clearValidation();
+            this.log(() => `Validation skipped because ValueHost "${this.getName()}" is disabled`, LoggingLevel.Debug);
+            return null;
+        }
         let self = this;
         if (!options)
             options = {};
         lazyLog(() => {
-            return { message: `Validating ValueHostName ${this.getName()}` }
+            return { message: `Validating ValueHost "${this.getName()}"` }
         }, LoggingLevel.Debug);
         
         // NOTE: This object instance is important for async validation.
@@ -266,7 +274,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     LoggingCategory.Validation,
                     parms.source ??
                 /* istanbul ignore next */  // defensive
-                    `ValueHost name ${self.config.name}`);
+                    `ValueHost "${self.getName()}"`);
             }
         }
         function logError(message: string): void {
@@ -336,7 +344,11 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      */
     public setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean {
         if (error) {
-
+            if (!this.isEnabled())
+            {
+                this.log(() => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`, LoggingLevel.Warn);
+            }
+        
             // see if the error code matches an existing validator.
             // If so, use that validator's ValidatorValidateResult instead.
             if (error.errorCode)
@@ -372,9 +384,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                             return true;
                         }
                     }
-
                 }
-
         }
         return super.setBusinessLogicError(error, options);
     }

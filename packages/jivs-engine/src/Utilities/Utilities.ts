@@ -158,7 +158,7 @@ export function valueForLog(value: any): string
         case 'number':
             return value.toString();
         case 'string':
-            return value.length > 25 ? value.substring(0, 20) + '...' : value;   // clipped
+            return value.length > 25 ? '"' + value.substring(0, 20) + '"...' : '"' + value + '"';   // clipped
         // @ts-ignore so we don't worry about the fall-thru        
         case 'object':
             if (isPlainObject(value))

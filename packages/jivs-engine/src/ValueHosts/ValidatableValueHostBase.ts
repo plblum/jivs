@@ -3,7 +3,7 @@
  * @module ValueHosts/AbstractClasses/ValidatableValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { cleanString, deepEquals, groupsMatch } from '../Utilities/Utilities';
+import { cleanString, deepEquals, groupsMatch, valueForLog } from '../Utilities/Utilities';
 import { ValueHostConfig, type SetValueOptions } from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
@@ -73,8 +73,12 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     * appear in the Category=Require validator within the {ConversionError} token.
     */
     public setValue(value: any, options?: SetValueOptions): void {
+        this.log(()=>`setValue(${valueForLog(value)})`, LoggingLevel.Debug);
+
         if (!options)
             options = {};
+        if (!this.canChangeValueCheck(options))
+            return;
         if (options.duringEdit)
         {
             options.duringEdit = false;
@@ -159,6 +163,27 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      */
     public abstract gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void;
 
+
+    /**
+     * When the ValueHost is disabled, it clears any validation issues.
+     * A call to validate() will return null until the ValueHost is enabled again.
+     * If the Enabler condition changes the state to enabled, it remains up to the user
+     * to call validate() again to get the new state.
+     * While disabled, some validation activity can still happen:
+     * - BusinessLogicErrors can be set, but will not be available with
+     *   getIssuesFound() until the ValueHost is enabled again.
+     * - The onValueHostValidationStateChanged event will be raised
+     *   on actions that change the state, such as setting a BusinessLogicError.
+     * Otherwise all calls to get ValidationStatus will act as if the ValueHost 
+     * has no errors, except for ValidationState which is set to Disabled.
+     * @param enabled 
+     */
+    public setEnabled(enabled: boolean): void {
+        super.setEnabled(enabled);
+        if (!enabled)
+            this.clearValidation();
+    }
+        
     //#endregion IValidatableValueHostBase
 
     //#region validation
@@ -204,8 +229,12 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * it is NotAttempted.
      * After setValue it is NeedsValidation.
      * After validate, it may be Valid, Invalid or Undetermined.
+     * If ValueHost is disabled, it returns Disabled.
      */
     public get validationStatus(): ValidationStatus {
+        if (!this.isEnabled())
+            return ValidationStatus.Disabled;
+
         // any business logic errors that aren't warnings override ValidationStatus with Invalid.
         if (this.businessLogicErrors)
             for (let error of this.businessLogicErrors)
@@ -226,6 +255,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
      * It calls onValueHostValidationStateChanged if there was a changed to the state.
+     * 
+     * When valueHost is disabled, this still clears the validation state.
      * @param options - Only supports the skipCallback and Group options.
      * @returns true when there was something cleared
      */
@@ -307,6 +338,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      */
     public setBusinessLogicError(error: BusinessLogicError, options?: ValidateOptions): boolean {
         if (error) {
+            if (!this.isEnabled())
+            {
+                this.log(() => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`, LoggingLevel.Warn);
+            }
+    
             // check for existing with the same errorcode and replace
             let replacementIndex = -1;
             if (error.errorCode && this.instanceState.businessLogicErrors) 
@@ -362,6 +398,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * with Validate itself or BusinessLogicErrors.
      * It also asks ValidationManager to call onValidationStateChanged so observers that only 
      * watch for validation from a high level will be notified.
+     * 
+     * This may still be called when the ValueHost is disabled, so long
+     * as an underlying state has changed. The call to setEnabled(false)
+     * itself calls clearValidation() which usually triggers this event
+     * allow the UI to know to handle the discarded valuehost's validation data.
      */
     protected invokeOnValueHostValidationStateChanged(options: ValidateOptions | undefined): void
     {
@@ -400,6 +441,12 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * @returns The issue or null if none.
      */    
     public getIssueFound(errorCode: string): IssueFound | null {
+        if (!this.isEnabled())
+        {
+            this.log(() => `Issues not available on disabled ValueHost "${this.getName()}"`, LoggingLevel.Warn);
+            return null;
+        }
+    
         let ec = cleanString(errorCode);
         if (!ec)
             return null;
@@ -425,6 +472,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * - summaryMessage - The message suited for a Validation Summary widget.
      */
     public getIssuesFound(group?: string): Array<IssueFound> | null {
+        if (!this.isEnabled())
+        {
+            this.log(() => `Issues not available on disabled ValueHost "${this.getName()}"`, LoggingLevel.Warn);
+            return null;
+        }        
         let list: Array<IssueFound> = [];
 
         if (this.instanceState.issuesFound && this.groupsMatch(group, true)) {

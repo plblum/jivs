@@ -2020,6 +2020,30 @@ describe('ValidationManager.validate, and isValid, doNotSave, getIssuesForInput,
 
         expect(callbackValue).toBeNull();
     });
+    test('When ValueHost.isEnabled=false, even though validator is valid, result is as if the validator did not get used because its own ValidationStatus=Disabled', () => {
+        let config = setupInputValueHostConfig(0, [AlwaysMatchesConditionType]);
+        let setup = setupValidationManager([config]);
+        let vh = setup.validationManager.getInputValueHost(config.name)!;
+        vh.setEnabled(false);
+        setup.validationManager.validate();
+        expect(vh.validationStatus).toBe(ValidationStatus.Disabled);
+        expect(setup.validationManager.isValid).toBe(true);
+        expect(setup.validationManager.doNotSave).toBe(false);
+        expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
+    });    
+    test('When ValueHost.isEnabled=false, even though validator is invalid, result is as if the validator did not get used because its own ValidationStatus=Disabled', () => {
+        let config = setupInputValueHostConfig(0, [NeverMatchesConditionType]);
+        let setup = setupValidationManager([config]);
+        let vh = setup.validationManager.getInputValueHost(config.name)!;
+        vh.setEnabled(false);
+        setup.validationManager.validate();
+        expect(vh.validationStatus).toBe(ValidationStatus.Disabled);
+        expect(setup.validationManager.isValid).toBe(true);
+        expect(setup.validationManager.doNotSave).toBe(false);
+        expect(setup.validationManager.getIssuesForInput(config.name)).toBeNull();
+        expect(setup.validationManager.getIssuesFound()).toBeNull();
+    });        
 });
 describe('ValidationManager.clearValidation', () => {
     test('With 2 inputValueHost that are both Invalid, returns 2 ValidateResults each with 1 issue found. isValid=false. DoNotSave=true', () => {

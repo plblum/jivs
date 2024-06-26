@@ -145,6 +145,14 @@ export class MockValueHost implements IValueHost
 
     isChanged: boolean = false;
 
+    isEnabled(): boolean {
+        return this._enabled;
+    }
+    setEnabled(enabled: boolean): void {
+        this._enabled = enabled;
+    }
+    private _enabled: boolean = true;
+
 }
 
 
