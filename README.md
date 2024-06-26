@@ -83,7 +83,7 @@ libraries of many types, including other schema validation services and internat
 	- When you ask it to validate, there are times that some validators should get skipped for better user experience.
 		+ Run form validation after the form is setup can skip the required validators, as it does not make sense to call out errors when the user hasn't had a chance to edit those fields.
 		+ Run field validation as the user types. Only these validators make sense to interactively update error messages: Required, regular expression, and string length.
-		+ Validators have the "Enabler" feature which is a way to turn themselves off when they no longer need to participate. For example, unless a checkbox is marked, an associated text box will not report errors.
+		+ Validators can be wrapped in the WhenCondition to disable themselves based on a rule. For example, unless a checkbox is marked, an associated text box will not report errors. Also the containing field can be configured to disable all of its validators based on a rule.
 		+ If the user has edited a field and it has yet to be validated, the form reports "do not save", helping prevent form submission without validation.
 - Handling submitting data:
 	- When submitting HTML form data, the server gets strings representing the data that need to be converted into their native values (like a string with a date into a Date object). Jivs provides parsers to handle this.
@@ -1078,6 +1078,7 @@ The <a href="#builder_and_vmconfig">`Builder object`</a> (`ValidationManagerConf
       label?: string;
       labell10n?: null | string;
       initialValue?: any;   
+      initialEnabled?: boolean;
       parserLookupKey?: null | string;
       parserCreator?: ((valueHost) => null | IDataTypeParser<any>);
       group?: null | string | string[];
@@ -1111,6 +1112,7 @@ The <a href="#builder_and_vmconfig">`Builder object`</a> (`ValidationManagerConf
       label?: string;
       labell10n?: null | string;
       initialValue?: any;   
+      initialEnabled?: boolean;
       group?: null | string | string[];
    }
    ```
@@ -1142,6 +1144,7 @@ The <a href="#builder_and_vmconfig">`Builder object`</a> (`ValidationManagerConf
       label?: string;
       labell10n?: null | string;
       initialValue?: any;   
+      initialEnabled?: boolean;
    }
    ```
    static(*config*): ValidationManagerConfigBuilder
@@ -1174,7 +1177,8 @@ The <a href="#builder_and_vmconfig">`Builder object`</a> (`ValidationManagerConf
    {  // config
       name: string;
       dataType?: string;
-      calcFn: CalculationHandler
+      calcFn: CalculationHandler;
+      initialEnabled?: boolean;
    }
    ```
  > All members of parameters, config, and arguments are <a href="#valuehostmembers">discussed below</a>.
@@ -1186,6 +1190,7 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 - label – The text to show in the {Label} and {SecondLabel} tokens of an error message.
 - labell10n – Localization key to get the label from the <a href="#textlocalizerservice">TextLocalizerService</a>.
 - initialValue – An initial native value for the ValueHost. If not assigned, it is initially undefined.
+- initialEnabled - ValueHosts have an enabled state. When it is false, validation and setting their value is blocked, plus attempts to get the validation state report no error, except to say the ValidationStatus is Disabled. Use initialValue=false to configure the ValueHost as disabled. If omitted, the state is initially true. See <a href="#disablevaluehost">Disabling a ValueHost</a> for more.
 - calcFn – Assign the function used by CalcValueHost to determine its value. See <a href="#calcvaluehost">CalcValueHost</a>.
 - group – Group validation is a tool to group ValueHosts with a specific submit command when validating. If used, create a name for the group and use it on all ValueHosts and calls to validate() that share the group. The name matching is case insensitive.
 - parserLookupKey – When you have <a href="#datatypeparser">configured parsing</a> for InputValueHosts, this overrides the default parser. Specify a lookupKey to match one that you have registered with the DataTypeParserService.
@@ -1232,6 +1237,49 @@ builder.calc('TimesTen', LookupKey.Integer,
 
 See a practical example here: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts)
 
+<a name="disablevaluehost"></a>
+### Disabling a ValueHost
+ValueHosts can be disabled. Here are their behavior changes when disabled:
+- Validation will not run
+- Validation State is similar to having no error. You will still get some messages through the onValueHostValidationStateChanged callback. Expect the ValidationState object to look like this:
+  ```ts
+  {
+    isValid: true,
+    status: ValidationStatus.Disabled,
+    doNotSave: false,
+    issuesFound: null,
+  }
+  ```
+- Calls to `setValue()`, `setInputValue()`, and `setValues()` will not make any changes to the values. Use the overrideDisabled option to override this behavior: 
+  ```ts
+   vh.setValue(value, { overrideDisable: true });
+  ```
+
+- Explicitly setting it to false using the setEnabled() function clears the validation state.
+
+#### How to disable and enable the ValueHost
+There are two ways to set and change it: using the 'enabled' state, which is a boolean that you change on demand, and using the **Enabler Condition**, where the Condition determines whether it is true or false.
+
+- If you want to disable it as part of initial configuration, set the initialEnabled property to false in the ValueHostConfig object or as shown here using Builder API.
+  ```ts
+  builder.input('name', LookupKey.String, { initialEnabled: false });
+  ```
+- To change it on demand, call the setEnabled() function on the ValueHost object.
+  ```ts
+  vm.getValueHost('name').setEnabled(false);
+  ```
+ 
+  >When setting it to true, also be sure to call validate() if you want to restore the validation state. 
+  
+- To use the Enabler Condition, select the appropriate Condition class and use the Builder API like this:
+  ```ts
+  builder.input('field1').validators go here
+  builder.enabler('field1', (enablerBuilder)=> enablerBuilder.condition(parameters));
+  
+  // example
+  builder.input('field1').requireText();
+  builder.enabler('field1', (enablerBuilder)=> enablerBuilder.equalToValue('YES', 'Field2'));
+  ```
 <a name="validators"></a>
 ## Validators: Connecting Conditions to Error Messages
 
@@ -1458,6 +1506,8 @@ class ValidationManagerConfigBuilder {
     combineWithRule(valueHostName, errorCode, CombineUsingCondition parameter, builderFn): ValidationManagerConfigModifier;
     combineWithRule(valueHostName, errorCode, builderFn): ValidationManagerConfigModifier;  
     replaceRule(valueHostName, errorCode, builderFn):   ValidationManagerConfigModifier;      
+    enabler(valueHostName, builderFn): ValidationManagerConfigModifier;
+    enabler(valueHostName, conditionConfig): ValidationManagerConfigModifier;
 }
 ```
 Let’s go through these types.
@@ -1482,6 +1532,7 @@ Let’s go through these types.
 	+ convertPropertyToInput - When true or undefined, PropertyValueHosts that were created by business logic are upgraded to InputValueHosts. Business logic can use PropertyValueHosts for validating models in Jivs. This option allows the same configuration to work with both model and UI validation.
 - `combineWithRule()` allows the UI to change a validation rule for a specific valuehost+errorCode. The UI incorporates the business logic's rule with its own condition by using both within a WhenCondition, AllMatchCondition, or AnyMatchCondition. Alternatively, supply a function that determines another way.
 - `replaceRule()` allows the UI to replace a validation rule for a specific valuehost+errorCode. Be careful that your replacement still confirms to the business logic's validation rule.
+- `enabler()` attaches a Condition to the ValueHost that determines if it is enabled or not. See <a href="#disablevaluehost">Disabling a ValueHost</a>.
 
 #### Chaining Validators using the Builder API
 The `builder.input()` and `builder.property()` functions allow appending validators. Just use the name of the validator without the "Condition" suffix, and in camelCase.
@@ -2074,6 +2125,7 @@ interface SetValueOptions {
     reset?: boolean;
     conversionErrorTokenValue?: string;
     skipValueChangedCallback?: boolean;
+    overrideDisabled?: boolean;
 }
 ```
 These properties are all related to validation:
@@ -2342,15 +2394,20 @@ Both functions have an options parameter. Here is its type:
 interface SetValueOptions {
     validate?: boolean;
     reset?: boolean;
-    conversionErrorTokenValue?: string;
+    overrideDisabled?: boolean;    
     skipValueChangedCallback?: boolean;
     duringEdit?: boolean;
+    conversionErrorTokenValue?: string;
+
 }
 ```
 These properties are all related to validation:
 - validate - When true, invoke validation but only if the value changed. Only supported by validatable ValueHosts.
 - reset - When true, change the state of the ValueHost to unchanged and validation has not been attempted. Consider setting this to true when using `setValue()` to initialize.
 - skipValueChangedCallback - When true, the onValueChanged and onInputValueChanged callbacks will not be invoked.
+- overrideDisabled - When true, it forces the change to the value even when the ValueHost is disabled.
+ValueHost is disabled when `isEnabled()` returns false.
+Use case: You may want to initialize a ValueHost with a value that is disabled. See <a href="#disablevaluehost">Disabling a ValueHost</a>.
 - The other two are special cases covered elsewhere.
 
 ### Setting values on InputValueHosts
