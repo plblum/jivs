@@ -27,6 +27,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver } from './ValueHostResolver';
 import { IValueHostsManager, IValueHostsManagerAccessor } from './ValueHostsManager';
 import { IDisposable } from './General_Purpose';
+import { ConditionConfig } from './Conditions';
 /**
  * Interface for creating ValueHosts.
  */
@@ -334,8 +335,20 @@ export interface ValueHostConfig {
     /**
      * When defined, it is the initial value for isEnabled(). Its value overridden
      * by calling setEnabled() or using an Enabler condition.
+     * It is not used when enablerConfig is defined.
      */
     initialEnabled?: boolean;
+
+    /**
+     * Provides an automated way to change the value of isEnabled() on the ValueHost.
+     * To use, provide a Condition through its ConditionConfig object. 
+     * When using, the initialEnabled property is ignored.
+     * The setEnabled() function will override this when setting it to false,
+     * while setting it to true will restore this condition.
+     * 
+     * Using the Builder API, use builder.enabler('valueHostName', (builder)=> builder.condition(parameters)).
+     */
+    enablerConfig?: ConditionConfig;
 
     //!! Interferes with intellisense support for building with known properties
     // /**

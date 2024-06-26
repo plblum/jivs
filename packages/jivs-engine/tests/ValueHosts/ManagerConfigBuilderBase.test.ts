@@ -1155,3 +1155,84 @@ describe('replaceConditionWith', () => {
 
     });            
 });
+describe('enabler', () => {
+    function setupEnablerAssignment( ): {
+        builder: TestValidationManagerConfigBuilderBase,
+        vmConfig: ValidationManagerConfig
+    } {
+        ensureFluentTestConditions();
+        enableFluentConditions();
+        let vmConfig = createVMConfig();
+        vmConfig.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = new TestValidationManagerConfigBuilderBase(vmConfig);
+        testItem.static('Field1');
+
+        return { builder: testItem, vmConfig: vmConfig };
+    }
+    function testEnablerAssignment(setup: { builder: TestValidationManagerConfigBuilderBase, vmConfig: ValidationManagerConfig },
+        sourceOfConditionConfig: ConditionConfig | ((builder: FluentConditionBuilder) => void),
+        expectedEnablerConfig: ConditionConfig | undefined, logContent: string
+    ): void {
+
+        let valueHostConfig: ValueHostConfig = {
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        };
+        if (expectedEnablerConfig) 
+            valueHostConfig.enablerConfig = expectedEnablerConfig;
+
+        expect(() => setup.builder.enabler('Field1', sourceOfConditionConfig as any)).not.toThrow();        
+
+        expect(setup.vmConfig.valueHostConfigs[0]).toEqual(valueHostConfig);
+        let logger = setup.vmConfig.services.loggerService as CapturingLogger;
+        expect(logger.findMessage(logContent, null, null, null)).toBeTruthy();
+    }
+
+    test('Actual conditionConfig and then replace it to see difference in logging', () => {
+        let setup = setupEnablerAssignment();
+        const expectedConfig = <RegExpConditionConfig>{
+            conditionType: ConditionType.RegExp,
+            expression: /abc/
+        };
+        testEnablerAssignment(setup, expectedConfig, expectedConfig, 'Adding enabler to ValueHost "Field1"');
+
+        setup.builder.publicify_addOverride();
+        const replacementConfig = <RequireTextConditionConfig>{
+            conditionType: ConditionType.RequireText
+        };
+        testEnablerAssignment(setup, replacementConfig, replacementConfig, 'Replacing enabler on ValueHost "Field1"');
+    });
+
+    test('builder function and then replace it to see difference in logging', () => {
+        let setup = setupEnablerAssignment();
+        const expectedConfig = <RegExpConditionConfig>{
+            conditionType: ConditionType.RegExp,
+            expression: /abc/
+        };
+        testEnablerAssignment(setup, (builder)=> builder.regExp(/abc/), expectedConfig, 'Adding enabler to ValueHost "Field1"');
+
+        setup.builder.publicify_addOverride();
+        const replacementConfig = <RequireTextConditionConfig>{
+            conditionType: ConditionType.RequireText
+        };
+        testEnablerAssignment(setup, (builder)=> builder.requireText(), replacementConfig, 'Replacing enabler on ValueHost "Field1"');
+    });    
+    test('With 1st parameter null, throw', () => {
+        let setup = setupEnablerAssignment();
+        expect(() => setup.builder.enabler(null!, { conditionType: 'x ' })).toThrow(/valueHostName/);
+    });
+    test('With 2nd parameter null, throw', () => {
+        let setup = setupEnablerAssignment();
+        expect(() => setup.builder.enabler('Field1', null!)).toThrow(/sourceOfConditionConfig/);
+    });
+    test('With 2nd parameter not a function or object, throw', () => {      
+        let setup = setupEnablerAssignment();
+        expect(() => setup.builder.enabler('Field1', 10 as any)).toThrow(/Invalid parameters/);
+    });
+    test('With unknown valueHost, throw', () => {
+        let setup = setupEnablerAssignment();
+        expect(() => setup.builder.enabler('Field2', { conditionType: 'x ' })).toThrow(/not defined/);
+        let logger = setup.vmConfig.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('not defined', null, null, null)).toBeTruthy();
+    });
+});
