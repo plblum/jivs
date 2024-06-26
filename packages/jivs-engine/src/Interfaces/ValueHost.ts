@@ -27,6 +27,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver } from './ValueHostResolver';
 import { IValueHostsManager, IValueHostsManagerAccessor } from './ValueHostsManager';
 import { IDisposable } from './General_Purpose';
+import { ConditionConfig } from './Conditions';
 /**
  * Interface for creating ValueHosts.
  */
@@ -122,6 +123,36 @@ export interface IValueHost extends IValueHostsManagerAccessor, IDisposable {
      * unless the native value has been assigned and the DataTypeIdentifierService can figure out its lookupKey.
      */
     getDataTypeLabel(): string;
+
+    /**
+     * Determines if the ValueHost is enabled for user interaction.
+     * It is enabled unless you explicilty set it to false using
+     * ValueHostConfig.initialEnabled : false, 
+     * setup the EnablerCondition which determines when it is enabled,
+     * or the ValueHost's own setEnabled() function.
+     * 
+     * When disabled, the data values of the ValueHost do not get changed
+     * by setValue() and related functions. However, those functions offer the 
+     * overrideDisabled option to force the change.
+     * 
+     * When disabled and the ValueHost have validators, all validation is 
+     * disabled and its ValidationStatus reports ValidationState.Disabled.
+     */
+    isEnabled(): boolean;
+
+    /**
+     * Sets the enabled state of the ValueHost.
+     * When false, the ValueHost is disabled and setValue() and related functions
+     * will not change the value. However, they offer the overrideDisabled option
+     * to force the change.
+     * When disabled and the ValueHost has validators, all validation is disabled
+     * and its ValidationStatus reports ValidationState.Disabled.
+     * 
+     * This value is part of the ValueHost's InstanceState, not the Config,
+     * although the ValueHostConfig.initialEnabled is used when it is not set in the state.
+     * @param enabled 
+     */
+    setEnabled(enabled: boolean): void;
 }
 
 /**
@@ -175,6 +206,13 @@ export interface SetValueOptions {
      * When null, it is the same as false.
      */
     skipValueChangedCallback?: boolean;
+
+    /**
+     * When true, it forces the change to the value even when the ValueHost is disabled.
+     * ValueHost is disabled when ValueHost.isEnabled() returns false.
+     * Use case: You may want to initialize a ValueHost with a value that is disabled.
+     */
+    overrideDisabled?: boolean;
 }
 
 /**
@@ -197,6 +235,13 @@ export interface ValueHostInstanceState {
      * from the input field/element or is otherwise unknown.
      */
     value: any;
+
+    /**
+     * The latest value of setEnabled. When undefined, it uses the ValueHostConfig.initialEnabled
+     * and if that is undefined, it is enabled.
+     * Note that this value overrides any EnablerCondition that may be setup.
+     */
+    enabled?: boolean;
 
     /**
      * Counts the number of changes made to the Value thru setValue() and related functions.
@@ -286,6 +331,24 @@ export interface ValueHostConfig {
      * If null, the current value's type (ValueHostInstanceState.Value) is used and must be string, number, boolean, or date.
      */
     dataType?: string;
+
+    /**
+     * When defined, it is the initial value for isEnabled(). Its value overridden
+     * by calling setEnabled() or using an Enabler condition.
+     * It is not used when enablerConfig is defined.
+     */
+    initialEnabled?: boolean;
+
+    /**
+     * Provides an automated way to change the value of isEnabled() on the ValueHost.
+     * To use, provide a Condition through its ConditionConfig object. 
+     * When using, the initialEnabled property is ignored.
+     * The setEnabled() function will override this when setting it to false,
+     * while setting it to true will restore this condition.
+     * 
+     * Using the Builder API, use builder.enabler('valueHostName', (builder)=> builder.condition(parameters)).
+     */
+    enablerConfig?: ConditionConfig;
 
     //!! Interferes with intellisense support for building with known properties
     // /**

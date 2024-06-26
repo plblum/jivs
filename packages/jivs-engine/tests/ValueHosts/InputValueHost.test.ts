@@ -223,6 +223,7 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.corrected).toBe(false);        
         expect(testItem!.requiresInput).toBe(false);
         expect(testItem!.getConversionErrorMessage()).toBeNull();
+        expect(testItem!.getParserLookupKey()).toBeUndefined();
     });
 });
 
@@ -392,6 +393,42 @@ describe('setInputValue with getInputValue to check result', () => {
         expect(() => setup.valueHost.setInputValue("ABC", { conversionErrorTokenValue: 'ERROR' })).not.toThrow();
         expect(setup.valueHost.getConversionErrorMessage()).toBe('ERROR');
     });
+    test('Log call when Level=Debug.', () => {
+        const initialValue = 'A';
+        const finalValue = 'B';
+        let setup = setupInputValueHost({}, { value: initialValue } );
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setInputValue(finalValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('setInputValue\\("B"\\)', LoggingLevel.Debug, null, null)).toBeTruthy();
+    });
+    test('isEnabled=false will not change the value.', () => {
+        const initialValue = 'A';   // this is the native value
+        const finalValue = 'B';
+        let setup = setupInputValueHost({}, { value: initialValue } );
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setEnabled(false);
+        testItem.setInputValue(finalValue);
+        expect(testItem.getInputValue()).toBeUndefined();   // never set it
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeNull();
+    });
+    test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
+        const initialValue = 'A';
+        const finalValue = 'B';
+        let setup = setupInputValueHost({}, { value: initialValue } );
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setEnabled(false);
+        testItem.setInputValue(finalValue, { overrideDisabled: true });
+        expect(testItem.getInputValue()).toBe(finalValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeTruthy();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeNull();
+    });    
 });
 describe('setInputValue with parser enabled to see both input value and native values are assigned', () => {
     function testWithParser(inputValue: any,
@@ -419,6 +456,7 @@ describe('setInputValue with parser enabled to see both input value and native v
         expect(setup.valueHost.getInputValue()).toBe(inputValue);
         expect(setup.valueHost.getValue()).toBe(expectedNativeValue);     
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        expect(setup.valueHost.getParserLookupKey()).toBe(parserLookupKey);
         return setup;
     }
     function testWithParserWithErrorMessage(inputValue: any,
@@ -735,6 +773,42 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(false);
     });
+    test('Log call when Level=Debug.', () => {
+        const initialValue = 'A';
+        const finalValue = 'B';
+        let setup = setupInputValueHost({}, { value: initialValue } );
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setValues(finalValue, ' B ');
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('setValues\\("B", " B "\\)', LoggingLevel.Debug, null, null)).toBeTruthy();
+    });
+    test('isEnabled=false will not change the value.', () => {
+        const initialValue = 'A';
+        const finalValue = 'B';
+        let setup = setupInputValueHost({}, { value: initialValue } );
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setEnabled(false);
+        testItem.setValues(finalValue, " B ");
+        expect(testItem.getValue()).toBe(initialValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeNull();
+    });
+    test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
+        const initialValue = 'A';
+        const finalValue = 'B';
+        let setup = setupInputValueHost({}, { value: initialValue } );
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setEnabled(false);
+        testItem.setValues(finalValue, " B ", { overrideDisabled: true });
+        expect(testItem.getValue()).toBe(finalValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeTruthy();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeNull();
+    });    
 });
 
 describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', () => {
@@ -1213,6 +1287,7 @@ describe('toIInputValueHost function', () => {
         expect(toIInputValueHost(testItem)).toBe(testItem);
     });
     class TestIInputValueHostImplementation implements IInputValueHost {
+
         valueHostsManager: IValidationManager = {} as IValidationManager;       
         dispose(): void {}
         gatherValueHostNames(collection: Set<string>, valueHostResolver: IValueHostResolver): void {
@@ -1304,7 +1379,12 @@ describe('toIInputValueHost function', () => {
         getValidator(errorCode: string): IValidator | null {
             throw new Error("Method not implemented.");
         }
-
+        isEnabled(): boolean {
+            throw new Error("Method not implemented.");
+        }
+        setEnabled(enabled: boolean): void {
+            throw new Error("Method not implemented.");
+        }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIInputValueHostImplementation();

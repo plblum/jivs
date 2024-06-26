@@ -418,7 +418,42 @@ describe('setValue', () => {
         expect(logger.findMessage('does not support duringEdit', LoggingLevel.Warn, null, null)).not.toBeNull();
         expect(options.duringEdit).not.toBe(true);
     });
-
+    test('Log call when Level=Debug.', () => {
+        const initialValue = 100;
+        const finalValue = 200;
+        let setup = setupValidatableValueHostBase({},  { value: initialValue });
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setValue(finalValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null, null)).toBeTruthy();
+    });
+    test('isEnabled=false will not change the value.', () => {
+        const initialValue = 100;
+        const finalValue = 200;
+        let setup = setupValidatableValueHostBase({},  { value: initialValue });
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setEnabled(false);
+        testItem.setValue(finalValue);
+        expect(testItem.getValue()).toBe(initialValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeNull();
+    });
+    test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
+        const initialValue = 100;
+        const finalValue = 200;
+        let setup = setupValidatableValueHostBase({},  { value: initialValue });
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setEnabled(false);
+        testItem.setValue(finalValue, { overrideDisabled: true });
+        expect(testItem.getValue()).toBe(finalValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeTruthy();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeNull();
+    });
 });
 
 describe('validate() and its impact on isValid and ValidationStatus', () => {
@@ -440,6 +475,13 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         setup.valueHost.validate();
         expect(setup.valueHost.isValid).toBe(true);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
+    });    
+    test('When isEnabled=false, even though validate result should be Valid, result is IsValid=true, ValidationStatus = Disabled', () => {
+        let setup = setupValidatableValueHostBase(null, null, ValidationStatus.Valid);
+        setup.valueHost.setEnabled(false);
+        setup.valueHost.validate();
+        expect(setup.valueHost.isValid).toBe(true);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
     });    
 });
 
@@ -683,6 +725,29 @@ describe('ValidatableValueHostBase.setBusinessLogicError', () => {
         let changes = setup.validationManager.getHostStateChanges();
         expect(changes.length).toBe(0);
     });
+
+    test('With ValueHost.isEnabled=false, still applied and now has a logged message', () => {
+        let setup = setupValidatableValueHostBase();
+        setup.valueHost.setEnabled(false);
+        expect(() => setup.valueHost.setBusinessLogicError({
+            errorMessage: 'ERROR',
+            severity: ValidationSeverity.Error
+        })).not.toThrow();
+
+        let changes = setup.validationManager.getHostStateChanges();
+        expect(changes.length).toBe(2); // first changes the enabled flag; second changes ValidationStatus
+        let valueChange = <ValidatableValueHostBaseInstanceState>changes[1];
+        expect(valueChange.businessLogicErrors).toBeDefined();
+        expect(valueChange.businessLogicErrors![0]).toEqual(
+            <BusinessLogicError>{
+                errorMessage: 'ERROR',
+                severity: ValidationSeverity.Error
+
+            });
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('BusinessLogicError applied on disabled ValueHost.', LoggingLevel.Warn, null, null)).toBeTruthy();
+    });
+
 });
 describe('clearBusinessLogicErrors', () => {
     test('Call while no existing makes not changes to the state', () => {
@@ -839,6 +904,18 @@ describe('ValidatableValueHostBase.getIssueFound only checking without calls to 
         expect(() => issueFound = setup.valueHost.getIssueFound(' code ')).not.toThrow();
         expect(issueFound).toBeNull();
     });            
+    test('When ValueHost.isEnabled=false, always return null and create log entry', () => {
+        let setup = setupValidatableValueHostBase(null, null);
+        setup.valueHost.setEnabled(false);
+        let issueFound = setup.valueHost.getIssueFound('Field1');
+        expect(issueFound).toBeNull();
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null, null)).toBeTruthy();
+        setup.valueHost.setEnabled(true);
+        logger.clearAll();
+        issueFound = setup.valueHost.getIssueFound('Field1')
+        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null, null)).toBeNull();
+    });                
 
 });
 
@@ -914,7 +991,55 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
         ];
         expect(issuesFound).toEqual(expected);
     });
-
+    test('When ValueHost.isEnabled=false, always return null and create log entry', () => {
+        let setup = setupValidatableValueHostBase(null, null);
+        setup.valueHost.setEnabled(false);
+        let issuesFound = setup.valueHost.getIssuesFound();
+        expect(issuesFound).toBeNull();
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null, null)).toBeTruthy();
+        setup.valueHost.setEnabled(true);
+        logger.clearAll();
+        issuesFound = setup.valueHost.getIssuesFound()
+        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null, null)).toBeNull();
+    });         
+});
+describe('setEnabled', () => {
+    test('When set to false, existing validation is cleared', () => {
+        let setup = setupValidatableValueHostBase(null, null, ValidationStatus.Invalid);
+        setup.valueHost.validate();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(setup.valueHost.getIssuesFound()!.length).toBe(1);
+        setup.valueHost.setEnabled(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
+        expect(setup.valueHost.getIssuesFound()).toBeNull();
+        expect(setup.valueHost.isValid).toBe(true);
+    });
+    test('When set to false but no previous validation has occurred, ValidationState=Disabled', () => {
+        let setup = setupValidatableValueHostBase(null, null, ValidationStatus.NotAttempted);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
+        setup.valueHost.setEnabled(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
+        expect(setup.valueHost.getIssuesFound()).toBeNull();
+        expect(setup.valueHost.isValid).toBe(true);
+    });
+    test('When set to true and was previously false, validationState=NotAttempted', () => {
+        let setup = setupValidatableValueHostBase(null, { enabled: false }, ValidationStatus.NotAttempted);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
+        setup.valueHost.setEnabled(true);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
+        expect(setup.valueHost.getIssuesFound()).toBeNull();     
+        expect(setup.valueHost.isValid).toBe(true);
+    });
+    test('When set to true and was previously false, call to validate() works correctly', () => {
+        let setup = setupValidatableValueHostBase(null, { enabled: false }, ValidationStatus.Invalid);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
+        setup.valueHost.setEnabled(true);
+        setup.valueHost.validate();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(setup.valueHost.getIssuesFound()!.length).toBe(1);     
+        expect(setup.valueHost.isValid).toBe(false);
+    });    
 });
 
 describe('toIValidatableValueHostBase', () => {
@@ -998,7 +1123,13 @@ describe('toIValidatableValueHostBase', () => {
             },
             gatherValueHostNames: function (collection: Set<string>, valueHostResolver: IValueHostResolver): void {
                 throw new Error("Function not implemented.");
-            }
+            },
+            isEnabled(): boolean {
+                throw new Error("Method not implemented.");
+            },
+            setEnabled(enabled: boolean): void {
+                throw new Error("Method not implemented.");
+            }            
         }
         expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
     });
@@ -1108,6 +1239,12 @@ describe('toIValidatableValueHostBase function', () => {
         }
     
         isChanged: boolean = false;
+        isEnabled(): boolean {
+            throw new Error("Method not implemented.");
+        }
+        setEnabled(enabled: boolean): void {
+            throw new Error("Method not implemented.");
+        }        
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
             throw new Error("Method not implemented.");
         }

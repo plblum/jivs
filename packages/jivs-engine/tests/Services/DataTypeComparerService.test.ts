@@ -138,7 +138,7 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
         let test4 = new TestDataType("z", "y");
 
         expect(testItem.compare(test1, test1, null, null)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Identified TEST', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified "TEST"', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
 
@@ -192,7 +192,7 @@ describe('DataTypeComparerService.compare', () => {
         testItem.services = services;
       
         expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Identified Number', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified "Number"', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug, null, null)).toBeNull();
         expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
 
@@ -239,8 +239,8 @@ describe('DataTypeComparerService.compare', () => {
         dtic.register(new TestConverter());        
 
         expect(testItem.compare(new TestDataType(0), 0, null, null)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Identified TEST', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Identified Number', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified "TEST"', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified "Number"', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
         expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
 

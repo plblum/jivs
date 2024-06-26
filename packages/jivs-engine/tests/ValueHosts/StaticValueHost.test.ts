@@ -225,8 +225,13 @@ describe('toIStaticValueHost function', () => {
         getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined {
             throw new Error("Method not implemented.");
         }
-        isChanged: boolean = false
-        
+        isChanged: boolean = false;
+        isEnabled(): boolean {
+            throw new Error("Method not implemented.");
+        }
+        setEnabled(enabled: boolean): void {
+            throw new Error("Method not implemented.");
+        }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIStaticValueHostImplementation();

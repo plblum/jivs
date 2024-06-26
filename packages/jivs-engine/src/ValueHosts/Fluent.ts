@@ -445,37 +445,37 @@ export class ValidationManagerStartFluent extends ValueHostsManagerStartFluent
 /**
  * For fluent configStatic function.
  */
-export type FluentStaticValueConfig = Omit<StaticValueHostConfig, 'valueHostType' | 'conditionType' >;
+export type FluentStaticValueConfig = Omit<StaticValueHostConfig, 'valueHostType' | 'conditionType' | 'enablerConfig' >;
 export type FluentStaticParameters = Omit<FluentStaticValueConfig, 'name' | 'dataType'>;
 
 /**
  * For fluent input() function.
  */
-export type FluentInputValueConfig = Omit<InputValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs'>;
+export type FluentInputValueConfig = Omit<InputValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
 export type FluentInputParameters = Omit<FluentInputValueConfig, 'name' | 'dataType'>;
 
 
 /**
  * For fluent property() function.
  */
-export type FluentPropertyValueConfig = Omit<PropertyValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs'>;
+export type FluentPropertyValueConfig = Omit<PropertyValueHostConfig, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
 export type FluentPropertyParameters = Omit<FluentPropertyValueConfig, 'name' | 'dataType'>;
 
 /**
  * For fluent calc() function.
  */
-export type FluentCalcValueConfig = Omit<CalcValueHostConfig, 'valueHostType' | 'conditionType' | 'initialValue' | 'label' | 'labell10n'>;
+export type FluentCalcValueConfig = Omit<CalcValueHostConfig, 'valueHostType' | 'conditionType' | 'initialValue' | 'label' | 'labell10n' | 'enablerConfig'>;
 
 /**
  * For fluent withoutValidators() function.
  */
-export type FluentAnyValueHostConfig<T extends ValueHostConfig> = Omit<T, 'valueHostType' | 'conditionType' | 'validatorConfigs'>;
+export type FluentAnyValueHostConfig<T extends ValueHostConfig> = Omit<T, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
 export type FluentAnyValueHostParameters<T extends ValueHostConfig> = Omit<FluentAnyValueHostConfig<T>, 'name' | 'dataType' >;
 
 /**
  * for fluent withValidators() function.
  */
-export type FluentValidatorsValueHostConfig<T extends ValidatorsValueHostBaseConfig> = Omit<T, 'valueHostType' | 'conditionType' | 'validatorConfigs'>;
+export type FluentValidatorsValueHostConfig<T extends ValidatorsValueHostBaseConfig> = Omit<T, 'valueHostType' | 'conditionType' | 'validatorConfigs' | 'enablerConfig'>;
 export type FluentValidatorsValueHostParameters<T extends ValidatorsValueHostBaseConfig> = Omit<FluentValidatorsValueHostConfig<T>, 'name' | 'dataType'>;
 
 /**

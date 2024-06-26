@@ -165,15 +165,15 @@ describe('valueForLog', () => {
         expect(valueForLog(null)).toBe('[null]');
         expect(valueForLog(false)).toBe('false');
         expect(valueForLog(10)).toBe('10');
-        expect(valueForLog('abc')).toBe('abc');
+        expect(valueForLog('abc')).toBe('"abc"');
         expect(valueForLog(new Date())).toBe('Date');
         expect(valueForLog({ a: 1 })).toBe('Plain object');
         expect(valueForLog(new X())).toBe('X');     
         expect(valueForLog([])).toBe('Array');
         expect(valueForLog(()=>0)).toBe('[function]');        
-        expect(valueForLog('123456789012345678901234567890')).toBe('12345678901234567890...');        
-        expect(valueForLog('1234567890123456789012345')).toBe('1234567890123456789012345');        
-        expect(valueForLog('12345678901234567890123456')).toBe('12345678901234567890...');        
+        expect(valueForLog('123456789012345678901234567890')).toBe('"12345678901234567890"...');        
+        expect(valueForLog('1234567890123456789012345')).toBe('"1234567890123456789012345"');        
+        expect(valueForLog('12345678901234567890123456')).toBe('"12345678901234567890"...');        
     });
 });
 

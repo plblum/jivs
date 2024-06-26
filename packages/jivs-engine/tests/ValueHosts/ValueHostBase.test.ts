@@ -1,10 +1,11 @@
 import {
-    type ValueHostInstanceState, type IValueHost, ValueHostConfig, IValueHostCallbacks, toIValueHostCallbacks
+    type ValueHostInstanceState, type IValueHost, ValueHostConfig, IValueHostCallbacks, toIValueHostCallbacks,
+    ValueHostInstanceStateChangedHandler
 } from "../../src/Interfaces/ValueHost";
 import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsManager, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
 import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
@@ -13,6 +14,12 @@ import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { createValidationServicesForTesting } from "../TestSupport/createValidationServices";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
+import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { ConditionConfig } from "../../src/Interfaces/Conditions";
+import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
+import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
+import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
 
 
 interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
@@ -143,10 +150,12 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.getDataType()).toBeNull();
         expect(testItem!.getValue()).toBeUndefined();
         expect(testItem!.isChanged).toBe(false);
+        expect(testItem!.isEnabled()).toBe(true);
 
         expect(testItem!.exposeServices).toBe(services);
         expect(testItem!.exposeConfig).toBe(vhConfig);
         expect(testItem!.exposeState.name).toBe('Field1');
+        expect(testItem!.exposeState.enabled).toBeUndefined();
         expect(testItem!.valueHostsManager).toBe(vm);
     });
 
@@ -451,7 +460,43 @@ describe('setValue', () => {
         expect(() => testItem.setValue(initialValue)).not.toThrow();
 
         expect(changedState.length).toBe(0);
-    });        
+    });       
+    test('Log call when Level=Debug.', () => {
+        const initialValue = 100;
+        const finalValue = 200;
+        let setup = setupValueHost({}, initialValue);
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setValue(finalValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null, null)).toBeTruthy();
+    });
+    test('isEnabled=false will not change the value.', () => {
+        const initialValue = 100;
+        const finalValue = 200;
+        let setup = setupValueHost({}, initialValue);
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setEnabled(false);
+        testItem.setValue(finalValue);
+        expect(testItem.getValue()).toBe(initialValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeNull();
+    });
+    test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
+        const initialValue = 100;
+        const finalValue = 200;
+        let setup = setupValueHost({}, initialValue);
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        let testItem = setup.valueHost;
+        testItem.setEnabled(false);
+        testItem.setValue(finalValue, { overrideDisabled: true });
+        expect(testItem.getValue()).toBe(finalValue);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeTruthy();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeNull();
+    });
 });
 describe('setValueToUndefined', () => {
     test('Value was changed. State changes.', () => {
@@ -677,5 +722,263 @@ describe('dispose', () => {
         expect(valConfig.x).toBeUndefined();
 
     });               
+
+});
+describe('isEnabled and related enabled', () => {
+    function setupTestItem(initialEnabled: boolean | undefined, stateEnabled: boolean | undefined,
+        enablerConfig?: ConditionConfig,
+        stateChangeCallback?: ValueHostInstanceStateChangedHandler
+    ): {
+        vh: PublicifiedValueHostBase,
+        logger: CapturingLogger
+    } {
+        let services = new MockValidationServices(true, false);
+        services.loggerService.minLevel = LoggingLevel.Debug;
+        let vm = new MockValidationManager(services);
+        if (stateChangeCallback)
+            vm.onValueHostInstanceStateChanged = stateChangeCallback;
+        let vhConfig: ValueHostConfig = {
+            name: 'Field1',
+            valueHostType: 'TestValidatableValueHost'
+        };
+        if (initialEnabled !== undefined)
+            vhConfig.initialEnabled = initialEnabled;
+        if (enablerConfig !== undefined)
+            vhConfig.enablerConfig = enablerConfig;
+
+        let state: IPublicifiedValueHostInstanceState = {
+            name: 'Field1',
+            counter: 0,
+            value: undefined
+        };
+        if (stateEnabled !== undefined)
+            state.enabled = stateEnabled;
+
+        return {
+            vh: new PublicifiedValueHostBase(vm, vhConfig, state),
+            logger: services.loggerService as CapturingLogger
+        };
+    }
+    function setupTestItemWithBuilder(
+        enablerConfig?: ConditionConfig,
+        stateEnabled?: boolean,
+        stateChangeCallback?: ValueHostInstanceStateChangedHandler
+    ): {
+        vh: PublicifiedValueHostBase,
+        logger: CapturingLogger,
+        vm: ValueHostsManager<ValueHostsManagerInstanceState>
+    } {
+        let services = new MockValidationServices(true, false);
+        services.loggerService.minLevel = LoggingLevel.Debug;
+        let builder = new ValueHostsManagerConfigBuilder(services);
+        if (stateChangeCallback)
+            builder.onValueHostInstanceStateChanged = stateChangeCallback;
+        builder.static('Field1');
+
+
+        if (enablerConfig !== undefined)
+            builder.enabler('Field1', enablerConfig);
+
+        let state: IPublicifiedValueHostInstanceState = {
+            name: 'Field1',
+            counter: 0,
+            value: undefined
+        };
+        if (stateEnabled !== undefined)
+            state.enabled = stateEnabled;
+        builder.savedValueHostInstanceStates = [];
+        builder.savedValueHostInstanceStates.push(state);
+
+        let vm = new ValueHostsManager(builder);
+
+        return {
+            vm: vm,
+            vh: vm.getValueHost('Field1') as PublicifiedValueHostBase,
+            logger: services.loggerService as CapturingLogger
+        };
+    }    
+
+    describe('constructor', () => {
+        function testConstructor(initialEnabled: boolean | undefined, stateEnabled: boolean | undefined,
+            expectedIsEnabled: boolean, expectedStateEnabled: boolean | undefined): void {
+            let setup = setupTestItem(initialEnabled, stateEnabled);
+
+            expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
+            expect(setup.vh.exposeState.enabled).toBe(expectedStateEnabled);
+        }
+        test('constructor with config.initialEnabled=true, state.enabled=undefined, results in isEnabled=true, state.enabled=undefined', () => {
+            testConstructor(true, undefined, true, undefined);
+        });
+        test('constructor with config.initialEnabled=false, state.enabled=undefined, results in isEnabled=false, state.enabled=undefined', () => {
+            testConstructor(false, undefined, false, undefined);
+        });
+        test('constructor with config.initialEnabled=true, state.enabled=false, results in isEnabled=false, state.enabled=false', () => {
+            testConstructor(true, false, false, false);
+        });
+        test('constructor with config.initialEnabled=true, state.enabled=true, results in isEnabled=true, state.enabled=true', () => {
+            testConstructor(true, true, true, true);
+        });
+        test('constructor with config.initialEnabled=false, state.enabled=true, results in isEnabled=true, state.enabled=true', () => {
+            testConstructor(false, true, true, true);
+        });
+        test('constructor with config.initialEnabled=undefined, state.enabled=true, results in isEnabled=true, state.enabled=true', () => {
+            testConstructor(undefined, true, true, true);
+        });
+        test('constructor with config.initialEnabled=undefined, state.enabled=false, results in isEnabled=false, state.enabled=false', () => {
+            testConstructor(undefined, false, false, false);
+        });
+        test('constructor with config.initialEnabled=undefined, state.enabled=undefined, results in isEnabled=true, state.enabled=undefined', () => {
+            testConstructor(undefined, undefined, true, undefined);
+        });
+    });
+    describe('setEnabled and isEnabled', () => {
+        function testSetEnabled(initialEnabled: boolean | undefined, stateEnabled: boolean | undefined,
+            newEnabled: boolean, expectedIsEnabled: boolean, expectedStateEnabled: boolean | undefined,
+            expectStateChange: boolean): void {
+            let stateChanged = false;
+            let setup = setupTestItem(initialEnabled, stateEnabled, undefined,
+                (vh, state) => {
+                    stateChanged = true;    
+                }
+            );
+
+            setup.vh.setEnabled(newEnabled);
+            expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
+            expect(setup.vh.exposeState.enabled).toBe(expectedStateEnabled);
+            expect(stateChanged).toBe(expectStateChange);
+            expect(setup.logger.findMessage('setEnabled', LoggingLevel.Debug, null, null)).toBeTruthy();
+        }
+        test('setEnabled(true) results in isEnabled=true, state.enabled=true', () => {
+            testSetEnabled(undefined, undefined, true, true, true, true);
+        });
+        test('setEnabled(false) results in isEnabled=false, state.enabled=false,', () => {
+            testSetEnabled(undefined, undefined, false, false, false, true);
+        });
+        test('With initialEnabled=false, setEnabled(true) results in isEnabled=true, state.enabled=true', () => {
+            testSetEnabled(false, undefined, true, true, true, true);
+        });
+        test('With initialEnabled=false, setEnabled(false) results in isEnabled=false, state.enabled=false', () => {
+            testSetEnabled(false, undefined, false, false, false, true);
+        });
+        test('With initial state.enabled=false, setEnabled(true) results in isEnabled=true, state.enabled=true', () => {
+            testSetEnabled(undefined, false, true, true, true, true);
+        });
+        test('With initial state.enabled=false, setEnabled(false) results in isEnabled=false, state.enabled=false and no state change', () => {
+            testSetEnabled(undefined, false, false, false, false, false);
+        });
+    });
+
+    describe('config.enablerConfig', () => {
+        function testIsEnabled(enablerConfig: ConditionConfig,
+            stateEnabled: boolean | undefined,
+            setEnabledValueBefore: boolean | undefined,
+            expectedIsEnabled: boolean): void {
+            let setup = setupTestItem(undefined, stateEnabled, enablerConfig);
+            if (setEnabledValueBefore !== undefined)
+                setup.vh.setEnabled(setEnabledValueBefore);
+
+            expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
+        }
+
+        test('enablerConfig set to return Match, isEnabled=true', () => {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, undefined, true);
+        });
+        test('enablerConfig set to return NoMatch, isEnabled=false', () => {
+            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, undefined, false);
+        });        
+        test('enablerConfig set to return Undetermined, isEnabled=true because it is a fallback', () => {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, undefined, true);
+        });     
+        test('enablerConfig set to return Match but setEnabled(false), isEnabled=false', () => {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, false, false);
+        });        
+        test('enablerConfig set to return NoMatch but setEnabled(false), isEnabled=false', () => {
+            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, false, false);
+        });
+        test('enablerConfig set to return Undetermined but setEnabled(false), isEnabled=false', () => {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, false, false);
+        });        
+        test('enablerConfig set to return Match and setEnabled(true), isEnabled=true', () => {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, true, true);
+        });        
+        test('enablerConfig set to return NoMatch and setEnabled(true), isEnabled=false', () => {
+            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, true, false);
+        });
+        test('enablerConfig set to return Undetermined and setEnabled(true), isEnabled=true', () => {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, true, true);
+        });        
+        test('enablerConfig set to throw an error logs and throws', () => {
+            let setup = setupTestItem(undefined, undefined, { conditionType: ThrowsExceptionConditionType });
+
+            expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
+            let logger = setup.logger as CapturingLogger;
+            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null, null)).toBeTruthy();
+
+        });             
+        test('invalid enablerConfig throws and logs', () => {
+            let setup = setupTestItem(undefined, undefined, { conditionType: 'UNKNOWN' });
+
+            expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
+            let logger = setup.logger as CapturingLogger;
+            expect(logger.findMessage('not registered', LoggingLevel.Error, null, null)).toBeTruthy();
+
+        });         
+    });
+    describe('builder API enabler to steup', () => {
+        function testIsEnabled(enablerConfig: ConditionConfig,
+            stateEnabled: boolean | undefined,
+            setEnabledValueBefore: boolean | undefined,
+            expectedIsEnabled: boolean): void {
+            let setup = setupTestItemWithBuilder(enablerConfig, stateEnabled);
+            if (setEnabledValueBefore !== undefined)
+                setup.vh.setEnabled(setEnabledValueBefore);
+
+            expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
+        }
+
+        test('enablerConfig set to return Match, isEnabled=true', () => {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, undefined, true);
+        });
+        test('enablerConfig set to return NoMatch, isEnabled=false', () => {
+            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, undefined, false);
+        });        
+        test('enablerConfig set to return Undetermined, isEnabled=true because it is a fallback', () => {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, undefined, true);
+        });     
+        test('enablerConfig set to return Match but setEnabled(false), isEnabled=false', () => {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, false, false);
+        });        
+        test('enablerConfig set to return NoMatch but setEnabled(false), isEnabled=false', () => {
+            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, false, false);
+        });
+        test('enablerConfig set to return Undetermined but setEnabled(false), isEnabled=false', () => {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, false, false);
+        });        
+        test('enablerConfig set to return Match and setEnabled(true), isEnabled=true', () => {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, true, true);
+        });        
+        test('enablerConfig set to return NoMatch and setEnabled(true), isEnabled=false', () => {
+            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, true, false);
+        });
+        test('enablerConfig set to return Undetermined and setEnabled(true), isEnabled=true', () => {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, true, true);
+        });        
+        test('enablerConfig set to throw an error logs and throws', () => {
+            let setup = setupTestItem(undefined, undefined, { conditionType: ThrowsExceptionConditionType });
+
+            expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
+            let logger = setup.logger as CapturingLogger;
+            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null, null)).toBeTruthy();
+
+        });             
+        test('invalid enablerConfig throws and logs', () => {
+            let setup = setupTestItem(undefined, undefined, { conditionType: 'UNKNOWN' });
+
+            expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
+            let logger = setup.logger as CapturingLogger;
+            expect(logger.findMessage('not registered', LoggingLevel.Error, null, null)).toBeTruthy();
+
+        });         
+    });
 
 });

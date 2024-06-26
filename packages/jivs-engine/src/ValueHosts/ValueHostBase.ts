@@ -4,13 +4,14 @@
  */
 import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
-import { deepEquals, deepClone } from '../Utilities/Utilities';
+import { deepEquals, deepClone, valueForLog } from '../Utilities/Utilities';
 import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
-import type { IValueHostsManager, IValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
+import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
+import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 
 /**
  * Standard implementation of IValueHost
@@ -112,8 +113,12 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     * OnValueChanged property.
     */
     public setValue(value: any, options?: SetValueOptions): void {
+        this.log(()=>`setValue(${valueForLog(value)})`, LoggingLevel.Debug);
         if (!options)
             options = {};
+        if (!this.canChangeValueCheck(options))
+            return;
+        
         let oldValue: any = this.instanceState.value;   // even undefined is supported
         let changed = !deepEquals(value, oldValue);
         this.updateInstanceState((stateToUpdate) => {
@@ -125,7 +130,21 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         }, this);
         this.useOnValueChanged(changed, oldValue, options);
     }
-    
+
+    /**
+     * For setValue functions to check for disabled before trying to change.
+     */
+    protected canChangeValueCheck(options: SetValueOptions): boolean
+    {
+        if (!options.overrideDisabled && !this.isEnabled()) {
+            this.log(() => `ValueHost "${this.getName()}" disabled. Value not changed`, LoggingLevel.Warn);
+            return false;
+        }
+        if (options.overrideDisabled && !this.isEnabled()) {
+            this.log(() => `overrideDisabled option on ValueHost "${this.getName()}". Value changed`, LoggingLevel.Info);
+        }
+        return true;
+    }
 
     /**
      * Consuming system calls this when it attempts to resolve
@@ -196,7 +215,100 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     {
         return (this.instanceState.changeCounter ?? 0) > 0;
     }
-    
+
+    /**
+     * Determines if the ValueHost is enabled for user interaction.
+     * It is enabled unless you explicilty set it to false using
+     * ValueHostConfig.initialEnabled : false, 
+     * setup the EnablerCondition which determines when it is enabled,
+     * or the ValueHost's own setEnabled() function.
+     * 
+     * When disabled, the data values of the ValueHost do not get changed
+     * by setValue() and related functions. However, those functions offer the 
+     * overrideDisabled option to force the change.
+     * 
+     * When disabled and the ValueHost have validators, all validation is 
+     * disabled and its ValidationStatus reports ValidationState.Disabled.
+     */
+    public isEnabled(): boolean
+    {
+        if (this.instanceState.enabled === false)
+            return false;
+
+        let enabler = this.getEnablerCondition();
+        if (enabler) {
+            try
+            {
+                // NOTE: The result of the enabler does not change any state of the valueHost,
+                // unlike setEnabled(false) which clears validation.
+                let result = enabler.evaluate(this, this.valueHostsManager);
+                if (result === ConditionEvaluateResult.Match)
+                    return true;
+                if (result === ConditionEvaluateResult.NoMatch)
+                    return false;
+            }
+            catch (e) {
+                if (e instanceof Error)
+                    this.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration);
+                throw e;                    
+        }
+        }
+
+        // enablerCondition takes precedence over instanceState.enabled
+        if (this.instanceState.enabled === true)
+            return true;
+
+        // the presence of enablerConfig always overrides initialEnabled.
+        if (!this.config.enablerConfig && this.config.initialEnabled !== undefined)
+            return this.config.initialEnabled;
+        
+        return true;
+    }
+    /**
+     * 
+     * @returns 
+     */
+    protected getEnablerCondition(): ICondition | null
+    {
+        if (this._enablerCondition === undefined)
+            if (this.config.enablerConfig)
+            {
+                try {
+                    this._enablerCondition = this.services.conditionFactory.create(this.config.enablerConfig!);
+                }
+                catch (e) {
+                    if (e instanceof Error)
+                        this.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration);
+                    throw e;                    
+                }
+            }
+            else
+                this._enablerCondition = null;
+        return this._enablerCondition;
+    }
+    private _enablerCondition: ICondition | null | undefined = undefined;
+
+    /**
+     * Sets the enabled state of the ValueHost.
+     * When false, the ValueHost is disabled and setValue() and related functions
+     * will not change the value. However, they offer the overrideDisabled option
+     * to force the change.
+     * When disabled and the ValueHost has validators, all validation is disabled
+     * and its ValidationStatus reports ValidationState.Disabled.
+     * 
+     * This value is part of the ValueHost's InstanceState, not the Config,
+     * although the ValueHostConfig.initialEnabled is used when it is not set in the state.
+     * @param enabled 
+     */
+    public setEnabled(enabled: boolean): void
+    {
+        this.log(()=>`setEnabled(${enabled})`, LoggingLevel.Debug);
+        this.updateInstanceState((stateToUpdate) => {
+            stateToUpdate.enabled = enabled;
+            return stateToUpdate;
+        }, this);
+    }
+
     //#endregion IValueHost
 
     //#region State
@@ -267,7 +379,14 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         return this.instanceState.items ? this.instanceState.items[key] : undefined;
     }
 
-    protected log(message: (()=>string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void
+
+    /**
+     * Lazy logging allowing the message to be generated after checking the log level.
+     * @param message 
+     * @param logLevel 
+     * @param logCategory 
+     */
+    protected log(message: (() => string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void
     {
         let logger = this.services.loggerService;
         if (logger.minLevel <= logLevel) {

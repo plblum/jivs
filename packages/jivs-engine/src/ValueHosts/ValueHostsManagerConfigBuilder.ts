@@ -3,9 +3,8 @@
  * @module ValueHosts/ConcreteClasses/ValueHostsManagerConfigBuilder
  */
 
-import { FluentConditionBuilder, ValueHostsManagerStartFluent } from "./Fluent";
+import { ValueHostsManagerStartFluent } from "./Fluent";
 import { InputValueChangedHandler } from "../Interfaces/InputValueHost";
-import { ConditionWithChildrenBaseConfig } from "../Conditions/ConditionWithChildrenBase";
 import { ManagerConfigBuilderBase } from "./ManagerConfigBuilderBase";
 import { ValueHostsManagerConfig, ValueHostsManagerConfigChangedHandler, ValueHostsManagerInstanceState, ValueHostsManagerInstanceStateChangedHandler } from "../Interfaces/ValueHostsManager";
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';

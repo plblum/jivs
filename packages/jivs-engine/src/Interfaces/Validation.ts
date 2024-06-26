@@ -113,7 +113,12 @@ export enum ValidationStatus {
     /**
      * Validation completed with at least one Condition evaluating as NoMatch
      */
-    Invalid
+    Invalid,
+
+    /**
+     * ValueHost is disabled, thus so is validation.
+     */
+    Disabled
 }
 
 

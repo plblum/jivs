@@ -913,7 +913,20 @@ describe('ValidatorsValueHostBase.validate', () => {
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         setup.valueHost.validate();
-        expect(logger.findMessage('Validating ValueHostName Field1', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Validating ValueHost "Field1"', LoggingLevel.Debug, null, null)).not.toBeNull();
+    });    
+    test('With ValueHost.isEnabled=false, return null and log', () => {
+        let ivConfigs: Array<Partial<ValidatorConfig>> = [
+            {
+                conditionConfig: {
+                    conditionType: NeverMatchesConditionType
+                }
+            }
+        ];
+        let state: Partial<ValidatorsValueHostBaseInstanceState> = { enabled: false };
+        let setup = testValidateFunctionIsNull(ivConfigs, state, undefined, undefined, 0);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('ValueHost "Field1" is disabled', LoggingLevel.Debug, null, null)).not.toBeNull();
     });    
 });
 
@@ -1064,6 +1077,22 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         expect(setup.valueHost.isValid).toBe(true);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
     });
+    test('With ValueHost.isEnabled=false, Without Validators but have a BusinessLogicError (Error), everything continues to work plus there is a log entry so when re-enabled it is there', () => {
+        let setup = setupValidatorsValueHostBaseForValidate(null, null);
+        setup.valueHost.setEnabled(false);
+        setup.valueHost.setBusinessLogicError({
+            errorMessage: 'ERROR',
+        });
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('BusinessLogicError applied on disabled ValueHost', LoggingLevel.Warn, null, null)).not.toBeNull();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
+        let issuesFound = setup.valueHost.getIssuesFound();
+        expect(issuesFound).toBeNull();
+        setup.valueHost.setEnabled(true);
+        issuesFound = setup.valueHost.getIssuesFound();
+        expect(issuesFound).not.toBeNull();
+        expect(issuesFound!.length).toBe(1);        
+    });    
     test('Confirm the OnValueHostValidate event is called and captures the correct ValidationStatus', () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
@@ -3075,6 +3104,12 @@ describe('toIValidatorsValueHostBase function', () => {
             throw new Error("Method not implemented.");
         }
         isChanged: boolean = false;
+        isEnabled(): boolean {
+            throw new Error("Method not implemented.");
+        }
+        setEnabled(enabled: boolean): void {
+            throw new Error("Method not implemented.");
+        }        
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
             throw new Error("Method not implemented.");
         }

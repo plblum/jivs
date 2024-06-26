@@ -177,6 +177,20 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     }
 
     /**
+     * Lazy logging allowing the message to be generated after checking the log level.
+     * @param message 
+     * @param logLevel 
+     * @param logCategory 
+     */
+    protected log(message: (()=>string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void
+    {
+        let logger = this.services.loggerService;
+        if (logger.minLevel <= logLevel) {
+            logger.log((typeof message === 'function') ? message() : message,
+                logLevel, logCategory ?? LoggingCategory.Configuration, valueForLog(this));
+        }
+    }
+    /**
      * The initial setup from the constructor and assigned ValueHostConfigs
      * until an OverrideConfig is added.
      * It always retains the official services and callbacks.
@@ -336,7 +350,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * You can omit the valueHostType property.
      * @returns Same instance for chaining.
      */
-    public static(config: Omit<StaticValueHostConfig, 'valueHostType'>): ManagerConfigBuilderBase<T>;
+    public static(config: Omit<StaticValueHostConfig, 'valueHostType' | 'enablerConfig'>): ManagerConfigBuilderBase<T>;
     // overload resolution
     public static(arg1: ValueHostName | StaticValueHostConfig, arg2?: FluentStaticParameters | string | null, arg3?: FluentStaticParameters): ManagerConfigBuilderBase<T> {
         assertNotNull(arg1, 'arg1');
@@ -391,6 +405,72 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
         if (valueHostType !== expectedType)
             throw new CodingError(`ValueHost name "${valueHostConfig!.name}" is not type=${expectedType}.`);
+
+    }
+
+    /**
+     * Attaches an enabler Condition to a ValueHost. The Enabler Condition is actually a ConditionConfig object used
+     * to create the Condition. This is used to enable or disable the ValueHost based on the condition.
+     * If called on a ValueHost already with an enabler, it will replace the existing enabler.
+     * @param valueHostName 
+     * @param conditionConfig - An actual conditionConfig
+     */
+    public enabler(valueHostName: ValueHostName, conditionConfig: ConditionConfig): ManagerConfigBuilderBase<T> 
+    /**
+     * Using the Builder API
+     * @param valueHostName 
+     * @param builderFn - A function that will build the conditionConfig with the Builder API
+     */
+    public enabler(valueHostName: ValueHostName, builderFn: ((enablerBuilder: FluentConditionBuilder) => void)): ManagerConfigBuilderBase<T>
+
+    public enabler(valueHostName: ValueHostName, sourceOfConditionConfig: ConditionConfig | ((enablerBuilder: FluentConditionBuilder) => void)): ManagerConfigBuilderBase<T> {
+        function getValueHostConfig(): ValueHostConfig
+        {
+            // replace condition in existing ValueHostConfig if in destinationValueHostConfigs.
+            let vhToModify = self.destinationValueHostConfigs().find((item) => item.name === valueHostName) as ValidatorsValueHostBaseConfig | undefined;
+            if (vhToModify) {
+                return vhToModify;
+            }
+            // find in earlier arrays. Clone the ValueHostConfig and add it to the current array, replacing the validator's condition
+            let vhToClone = self.getExistingValueHostConfig(valueHostName, false) as ValidatorsValueHostBaseConfig;
+            if (vhToClone) {
+                let clonedVH = deepClone(vhToClone) as ValidatorsValueHostBaseConfig;
+                self.destinationValueHostConfigs().push(clonedVH);
+                return vhToClone;
+            }
+            let msg = `ValueHost name "${valueHostName}" is not defined.`;
+            self.services.loggerService.log(msg, LoggingLevel.Error, LoggingCategory.Configuration, valueForLog(self));
+            throw new CodingError(msg);
+        }
+        function attachEnablerCondition(vhConfig: ValueHostConfig, enabler: ConditionConfig): void {
+            let replace = vhConfig.enablerConfig != null;   // null or undefined
+            vhConfig.enablerConfig = enabler;
+            self.log(() => (replace ? 'Replacing enabler on' : 'Adding enabler to') + ` ValueHost "${valueHostName}"`, LoggingLevel.Info);
+
+        }   
+        let self = this;
+        assertNotNull(valueHostName, 'valueHostName');
+        assertNotNull(sourceOfConditionConfig, 'sourceOfConditionConfig');
+        this.log(() => `enabler("${valueHostName}")`, LoggingLevel.Debug);
+        
+        if (typeof sourceOfConditionConfig === 'function') {
+            let vhConfig = getValueHostConfig();
+            let builder = new FluentConditionBuilder(null);
+            sourceOfConditionConfig(builder);
+            if (this.confirmConfigWasAdded(builder.parentConfig.conditionConfigs))
+                attachEnablerCondition(vhConfig, builder.parentConfig.conditionConfigs[0]);
+        }
+        else if (isPlainObject(sourceOfConditionConfig)) {
+            let vhConfig = getValueHostConfig();
+            attachEnablerCondition(vhConfig, sourceOfConditionConfig as ConditionConfig);
+        }
+        else
+        {
+            let msg = `Invalid parameters.`;
+            this.log(msg, LoggingLevel.Error, LoggingCategory.Configuration);
+            throw new CodingError(msg);
+        }
+        return this;
 
     }
     //#region utilities for ValidationManager-based subclasses
@@ -457,12 +537,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         else if (typeof arg3 === 'function' && typeof arg2 === 'number') {
             let newConfigBuilder = new FluentConditionBuilder(null);
             arg3(newConfigBuilder);
-            if (newConfigBuilder.parentConfig.conditionConfigs.length === 0)
-            {
-                this.services.loggerService.log(missingConditionMsg,
-                    LoggingLevel.Warn, LoggingCategory.Configuration, valueForLog(this));
+            if (!this.confirmConfigWasAdded(newConfigBuilder.parentConfig.conditionConfigs))
                 return;
-            }
+            
             let newConditionConfig = newConfigBuilder.parentConfig.conditionConfigs[0];
 
             switch (arg2 as CombineUsingCondition) {
@@ -495,20 +572,28 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         if (fn) {
             
             fn(builder, destinationOfCondition.conditionConfig!);
-            if (builder.parentConfig.conditionConfigs.length) {
+            if (this.confirmConfigWasAdded(builder.parentConfig.conditionConfigs)) {
                 destinationOfCondition.conditionConfig = builder.parentConfig.conditionConfigs[0];
                 destinationOfCondition.errorCode = errorCode;
                 (destinationOfCondition as any)[conditionReplacedSymbol] = true;
                 return;
             }
-            this.services.loggerService.log(missingConditionMsg,
-                LoggingLevel.Warn, LoggingCategory.Configuration, valueForLog(this));
+
             return;
         }
 
         let msg = `Invalid parameters.`;
-        this.services.loggerService.log(msg, LoggingLevel.Error, LoggingCategory.Configuration, valueForLog(this));
+        this.log(msg, LoggingLevel.Error);
         throw new CodingError(msg);
+    }
+
+    protected confirmConfigWasAdded(configs: Array<ConditionConfig>): boolean
+    {
+        if (configs.length === 0) {
+            this.log(()=> `Builder function did not create a conditionConfig`, LoggingLevel.Warn);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -548,7 +633,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
         else {
             let msg = `Invalid parameters.`;
-            this.services.loggerService.log(msg, LoggingLevel.Error, LoggingCategory.Configuration, valueForLog(this));
+            this.log(msg, LoggingLevel.Error);
             throw new CodingError(msg);
         }
 
@@ -589,7 +674,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         let msg = (vhToModify || vhToClone) ?
             `ValueHost name "${valueHostName}" does not have a validator with error code "${errorCode}".` :
             `ValueHost name "${valueHostName}" is not defined.`;
-        this.services.loggerService.log(msg, LoggingLevel.Error, LoggingCategory.Configuration, valueForLog(this));
+        this.log(msg, LoggingLevel.Error);
         throw new CodingError(msg);
     }
 

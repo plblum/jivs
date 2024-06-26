@@ -8,7 +8,7 @@
  *   quite different from the value intended to be stored in the Model/Entity.
  * @module ValueHosts/ConcreteClasses/InputValueHost
  */
-import { deepEquals } from '../Utilities/Utilities';
+import { deepEquals, valueForLog } from '../Utilities/Utilities';
 import { ConditionCategory } from '../Interfaces/Conditions';
 import { ValidationSeverity, ValidationStatus } from '../Interfaces/Validation';
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
@@ -89,8 +89,12 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
     *    A Data Type parser will also setup the conversionErrorTokenValue if it reports an error.
     */
     public setInputValue(value: any, options?: SetInputValueOptions): void {
+        this.log(()=>`setInputValue(${valueForLog(value)})`, LoggingLevel.Debug);        
+
         if (!options)
             options = {};
+        if (!this.canChangeValueCheck(options))
+            return;        
         if (this.tryParse(value, options))
             return; // determines the native value and redirects to setValues().
 
@@ -109,6 +113,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         this.processValidationOptions(options, valStateChanged); //NOTE: If validates or clears, results in a second updateInstanceState()
         this.notifyOthersOfChange(options);
         this.useOnValueChanged(changed, oldValue, options);
+
     }
 
     /**
@@ -131,7 +136,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
             let nativeValue = resolution.value; // may be undefined which indicates a parser error
             if (resolution.errorMessage)
                 options.conversionErrorTokenValue = resolution.errorMessage;
-            self.log('Parsed into native value', LoggingLevel.Debug, LoggingCategory.Debug);
+            self.log(()=> 'Parsed into native value', LoggingLevel.Debug, LoggingCategory.Debug);
 
             self.setValues(nativeValue, inputValue, options);
         }
@@ -143,12 +148,12 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
         if (typeof inputValue === 'string') {
             if (options.disableParser === true)
             {
-                this.log('option.disableParser=true', LoggingLevel.Debug, LoggingCategory.Debug);
+                this.log(()=> 'option.disableParser=true', LoggingLevel.Debug, LoggingCategory.Debug);
                 return false;
             }
             let dtps = this.services.dataTypeParserService;
             if (dtps.isActive()) {
-                this.log('Attempt to parse into native value', LoggingLevel.Debug, LoggingCategory.Debug);
+                this.log(()=> 'Attempt to parse into native value', LoggingLevel.Debug, LoggingCategory.Debug);
                          
                 let lookupKey = this.config.parserLookupKey ?? this.getDataType() ?? null;
                 let cultureId = this.services.cultureService.activeCultureId;
@@ -198,7 +203,10 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
     * appear in the Category=Require validator within the {ConversionError} token.
      */
     public setValues(nativeValue: any, inputValue: any, options?: SetValueOptions): void {
+        this.log(()=>`setValues(${valueForLog(nativeValue)}, ${valueForLog(inputValue)})`, LoggingLevel.Debug);        
         options = options ?? {};
+        if (!this.canChangeValueCheck(options))
+            return;        
         let oldNative: any = this.instanceState.value;
         let nativeChanged = !deepEquals(nativeValue, oldNative);
         let oldInput: any = this.instanceState.inputValue;

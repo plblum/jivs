@@ -47,7 +47,7 @@ describe('assertFunction', () => {
 describe('InvalidTypeError', () => {
     test('create', () => {
         let testItem = new InvalidTypeError('Value');
-        expect(testItem.message).toBe('Type is not supported for this value: Value');
+        expect(testItem.message).toBe('Type is not supported for this value: "Value"');
         expect(testItem).toBeInstanceOf(Error);
     });
 });
