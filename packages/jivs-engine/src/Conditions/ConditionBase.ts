@@ -145,7 +145,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         }
         catch (e)
         {
-            services.loggerService.log(`Error creating condition: ${e}`, LoggingLevel.Error, LoggingCategory.Configuration, valueForLog(this));
+            services.loggerService.log(`Error creating condition: ${e}`, LoggingLevel.Error, LoggingCategory.Exception, valueForLog(this));
             return new ErrorResponseCondition();
         }
             // expect exceptions here for invalid Configs

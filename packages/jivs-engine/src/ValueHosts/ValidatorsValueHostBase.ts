@@ -271,7 +271,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             if (self.services.loggerService.minLevel <= logLevel) {
                 let parms = fn();
                 self.services.loggerService.log(parms.message, logLevel,
-                    LoggingCategory.Validation,
+                    LoggingCategory.None,
                     parms.source ??
                 /* istanbul ignore next */  // defensive
                     `ValueHost "${self.getName()}"`);
@@ -281,7 +281,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             self.log(()=> 'Exception: ' + (message ??
                 /* istanbul ignore next */  // defensive             
                 'Reason unspecified'),
-                LoggingLevel.Error, LoggingCategory.Validation);
+                LoggingLevel.Error, LoggingCategory.Exception);
         }
     }
 

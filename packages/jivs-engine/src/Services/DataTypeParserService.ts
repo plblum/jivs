@@ -7,7 +7,7 @@ import { valueForLog } from '../Utilities/Utilities';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IDataTypeParser } from '../Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError, SevereErrorBase, assertNotEmptyString, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { LookupKeyFallbackService } from './LookupKeyFallbackService';
@@ -78,7 +78,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
                 this.log(() => `Parser selected: ${valueForLog(parser)}`, LoggingLevel.Debug);
                 let result = parser!.parse(text, lookupKey!, cultureId);
                 if (result.value)
-                    this.log(() => `Parsed "${lookupKey}" with culture "${cultureId}"`, LoggingLevel.Info);
+                    this.log(() => `Parsed "${lookupKey}" with culture "${cultureId}"`, LoggingLevel.Info, LoggingCategory.Result);
                 return result;
             }
 
@@ -91,7 +91,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
         }
         catch (e) {
             let err = ensureError(e);
-            this.log(err.message, LoggingLevel.Error);
+            this.log(err.message, LoggingLevel.Error, LoggingCategory.Exception);
             if (err instanceof SevereErrorBase)
                 throw err;
             return { errorMessage: err.message };

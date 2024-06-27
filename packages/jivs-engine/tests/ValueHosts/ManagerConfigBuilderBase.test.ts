@@ -318,6 +318,25 @@ describe('snapshot', () => {
         }]);
         expect(testItem.publicify_baseConfig).toBeTruthy();
     });    
+    test('Using service, override and add a new field', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestValueHostManagerConfigBuilderBase(services);
+        testItem.static('Field1');
+        testItem.publicify_addOverride();
+        testItem.static('Field2');
+        let result = testItem.snapshot();
+        expect(result.services).toBe(services);
+        expect(result.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+            },
+            {
+                valueHostType: ValueHostType.Static,
+                name: 'Field2'
+            
+        }]);
+        expect(testItem.publicify_baseConfig).toBeTruthy();
+    });        
     test('Using VMConfig, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
         let testItem = new TestValueHostManagerConfigBuilderBase(createVMConfig());
         testItem.static('Field1');

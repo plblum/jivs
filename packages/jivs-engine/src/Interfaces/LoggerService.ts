@@ -26,7 +26,7 @@ export interface ILoggerService extends IService
      * @param category - optional string used by logger to categorize the data.
      * @param source - A way to identify the source of this message, such as function name or class name + method name.
      */
-    log(message: string, level: LoggingLevel, category?: string, source?: string): void;
+    log(message: string, level: LoggingLevel, category?: LoggingCategory, source?: string): void;
 }
 
 export enum LoggingLevel
@@ -41,11 +41,27 @@ export enum LoggingLevel
  * Groups strings recommended for the log function's category property.
  */
 export enum LoggingCategory {
-    Debug = 'Debug',
-    Info = 'Info',
+    /**
+     * No specific category. Generally for debug and info messages.
+     */
+    None = 'None',
+    /**
+     * Errors thrown by the system.
+     */
+    Exception = 'Exception',
+
+    /**
+     * Reporting a result. Effectively the same as Info, but contains details on the result.
+     */
+    Result = 'Result',    
+    /**
+     * Issue due to a misconfiguration
+     */
     Configuration = 'Configuration',
-    TypeMismatch = 'Type Mismatch',
-    Validation = 'Validation',
-    Service = 'Service'
+    /**
+     * Issue due to supplying the wrong type of data.
+     */
+    TypeMismatch = 'Type Mismatch'
+
 }
 

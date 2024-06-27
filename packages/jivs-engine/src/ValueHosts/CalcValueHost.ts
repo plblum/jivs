@@ -59,7 +59,7 @@ export class CalcValueHost extends ValueHostBase<CalcValueHostConfig, CalcValueH
             this._reentrantCount++;
             if (this.config.calcFn)
                 return this.config.calcFn(this, this.valueHostsManager);
-            this.log('calcFn property not configured', LoggingLevel.Warn);
+            this.log('calcFn property not configured', LoggingLevel.Warn, LoggingCategory.Configuration);
             return undefined;
         }
         finally

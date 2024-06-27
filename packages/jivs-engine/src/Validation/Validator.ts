@@ -32,6 +32,7 @@ import { IValidationManager, toIValidationManager } from '../Interfaces/Validati
 import { ValidationManager } from './ValidationManager';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { WhenCondition } from '../Conditions/WhenCondition';
+import { resolveErrorCode } from '../Utilities/Validation';
 
 /**
  * An IValidator implementation that represents a single validator 
@@ -156,7 +157,7 @@ export class Validator implements IValidator {
             }
             catch (e) {
                 if (e instanceof Error)
-                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration, this.getLogSourceText());
+                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Exception, this.getLogSourceText());
                 throw e;
             }
             if (this._condition instanceof WhenCondition)
@@ -193,7 +194,7 @@ export class Validator implements IValidator {
             catch (e) {
                 // istanbul ignore next // this.condition is usually called before enabler, leaving its errors handled elsewhere
                 if (e instanceof Error)
-                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration, this.getLogSourceText());
+                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Exception, this.getLogSourceText());
                 throw e;
             }
         return this._enabler;
@@ -259,7 +260,7 @@ export class Validator implements IValidator {
         if (msg == null) {
             msg = Validator.errorMessageMissing;
             this.services.loggerService.log(`Error message missing for Validator ${this.errorCode}`,
-                LoggingLevel.Error, LoggingCategory.Validation, 'Validator');
+                LoggingLevel.Error, LoggingCategory.Configuration, 'Validator');
         }
         return msg;
     }
@@ -379,18 +380,18 @@ export class Validator implements IValidator {
         finally {
             if (resultState.issueFound)
                 lazyLog(() => {
-                    let msg = `Validation error ${this.errorCode} found this issue: ${JSON.stringify(resultState.issueFound)}`;
+                    let msg = `Validation errorcode "${this.errorCode}" found this issue: ${JSON.stringify(resultState.issueFound)}`;
                     return {
                         message: msg
                     };
-                });
+                }, undefined, LoggingCategory.Result);
         }
         function resolveCER(cer: ConditionEvaluateResult): ValidatorValidateResult {
             lazyLog(() => {
                 return {
-                    message: `Condition ${self.conditionType} evaluated as ${ConditionEvaluateResult[cer]}`
+                    message: `Condition ${self.conditionType} evaluated as ${ConditionEvaluateResult[cer]}`,
                 };
-            });
+            }, undefined, LoggingCategory.Result);
             resultState.conditionEvaluateResult = cer;
             switch (cer) {
                 case ConditionEvaluateResult.NoMatch:
@@ -429,17 +430,17 @@ export class Validator implements IValidator {
             return resultState;
         }
         function lazyLog(
-            fn: () => { message: string; source?: string }, logLevel : LoggingLevel = LoggingLevel.Info): void {
+            fn: () => { message: string; source?: string }, logLevel : LoggingLevel = LoggingLevel.Info, logCategory: LoggingCategory = LoggingCategory.None): void {
             if (self.services.loggerService.minLevel <= logLevel) {
                 let parms = fn();
                 self.services.loggerService.log(parms.message, logLevel,
-                    LoggingCategory.Validation,
+                    logCategory,
                     parms.source ?? `Validation with ${self.getLogSourceText()}`);
             }
         }
         function logError(message: string): void {
             self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
-                LoggingLevel.Error, LoggingCategory.Validation, self.getLogSourceText());
+                LoggingLevel.Error, LoggingCategory.Exception, self.getLogSourceText());
         }
     }
 
@@ -605,7 +606,8 @@ export class Validator implements IValidator {
     }
 
     protected getLogSourceText(): string {
-        return `Validator on ValueHost ${this.valueHost.getName()}`;
+        let errorCode = resolveErrorCode(this.config);  // instead of this.errorCode to avoid circular reference
+        return `Validator "${errorCode}" on ValueHost "${this.valueHost.getName()}"`;
     }
 }
 

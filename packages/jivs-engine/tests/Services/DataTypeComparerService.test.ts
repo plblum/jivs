@@ -439,8 +439,8 @@ booleancomparer compares the two values
 
         let dtis = services.dataTypeIdentifierService as DataTypeIdentifierService;        
         expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
-        expect(logger.findMessage('Compare result: Equals', LoggingLevel.Info, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, LoggingCategory.None, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('Compare result: Equals', LoggingLevel.Info, LoggingCategory.Result, 'DataTypeComparerService')).not.toBeNull();        
 
     });
 
@@ -464,9 +464,9 @@ booleancomparer compares the two values
         testItem.register(new NonSevereErrorComparer());    
 
         expect(testItem.compare(1, 1, LookupKey.Number, LookupKey.Number)).toBe(ComparersResult.Undetermined);
-        expect(logger.findMessage('Using NonSevereErrorComparer', LoggingLevel.Debug, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('Using NonSevereErrorComparer', LoggingLevel.Debug, LoggingCategory.None, 'DataTypeComparerService')).not.toBeNull();        
         expect(logger.findMessage('Non-severe', LoggingLevel.Error, null, null)).not.toBeNull();        
-        expect(logger.findMessage('Compare result: Undetermined', LoggingLevel.Info, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('Compare result: Undetermined', LoggingLevel.Info, LoggingCategory.Result, 'DataTypeComparerService')).not.toBeNull();        
 
     });    
     test('Unsupported data type for lookupKey using JavaScript object logs error and throws', () => {
@@ -475,7 +475,7 @@ booleancomparer compares the two values
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare({}, 'A', null, null)).toThrow(/operand/);
         let logger = testItem.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeComparerService')).not.toBeNull();        
         expect(logger.findMessage('Compare result:', LoggingLevel.Info, null, null)).toBeNull();        
 
     });    
@@ -485,7 +485,7 @@ booleancomparer compares the two values
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare(testItem /* some class */, 'A', null, null)).toThrow(/operand/);
         let logger = testItem.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeComparerService')).not.toBeNull();        
 
     });    
 

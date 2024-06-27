@@ -79,7 +79,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
                     catch (e)
                     {
                         this.log(()=>`${capturedToken.full}: ${(e as Error).message}`,
-                            LoggingLevel.Error, LoggingCategory.TypeMismatch); 
+                            LoggingLevel.Error, LoggingCategory.Exception); 
                         if (e instanceof SevereErrorBase)
                             throw e;
                                     

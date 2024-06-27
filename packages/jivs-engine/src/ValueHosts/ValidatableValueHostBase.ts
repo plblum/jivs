@@ -82,7 +82,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         if (options.duringEdit)
         {
             options.duringEdit = false;
-            this.log('setValue does not support duringEdit option', LoggingLevel.Warn, LoggingCategory.Validation);
+            this.log('setValue does not support duringEdit option', LoggingLevel.Warn, LoggingCategory.None);
         }
         let oldValue: any = this.instanceState.value;
         let changed = !deepEquals(value, oldValue);
@@ -554,7 +554,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             errorMsg = 'IssueFound has wrong valueHostName';
         if (errorMsg)
         {
-            this.log(errorMsg, LoggingLevel.Error);
+            this.log(errorMsg, LoggingLevel.Error, LoggingCategory.Exception);
             throw new CodingError(errorMsg);            
         }
 

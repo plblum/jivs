@@ -92,7 +92,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
             catch (e) {
                 let err = ensureError(e);
 
-                this.log(err.message, LoggingLevel.Error);
+                this.log(err.message, LoggingLevel.Error, LoggingCategory.Exception);
                 if (err instanceof SevereErrorBase)
                     throw e;
 
@@ -103,7 +103,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
         finally
         {
             if (result !== undefined)
-                this.log(`Compare result: ${ComparersResult[result]}`, LoggingLevel.Info);
+                this.log(`Compare result: ${ComparersResult[result]}`, LoggingLevel.Info, LoggingCategory.Result);
         }
     }
     /**

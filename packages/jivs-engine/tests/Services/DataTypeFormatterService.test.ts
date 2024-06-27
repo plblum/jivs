@@ -59,9 +59,9 @@ describe('DataTypeFormatterService.format', () => {
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format({})).toThrow(/LookupKey/);
 
-        expect(logger.findMessage('Identify LookupKey from value', LoggingLevel.Debug, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('Identify LookupKey from value', LoggingLevel.Debug, LoggingCategory.None, 'DataTypeFormatterService')).not.toBeNull();
 
-        expect(logger.findMessage('LookupKey', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('LookupKey', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeFormatterService')).not.toBeNull();
     });
     test('Unsupported lookupKey error', () => {
         let services = new MockValidationServices(false, true);
@@ -73,7 +73,7 @@ describe('DataTypeFormatterService.format', () => {
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format(0, 'huh')).toThrow(/No DataTypeFormatter/);
         expect(logger.findMessage('Trying cultureId', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('No DataTypeFormatter', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeFormatter', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeFormatterService')).not.toBeNull();
     });
 
     test('Lookup Key in DataTypeFormatter en', () => {
@@ -179,7 +179,7 @@ describe('DataTypeFormatterService.format', () => {
         expect(testItem.format(10, 'TEST').errorMessage).toBe('ERROR');
          // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService'
         expect(logger.findMessage('Formatter selected: FormatterThrowsError', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeFormatterService')).not.toBeNull();
     });
     test('Formatter throws string. results throwing exception using the string as the error message', () => {
         class FormatterThrowsString implements IDataTypeFormatter
@@ -208,7 +208,7 @@ describe('DataTypeFormatterService.format', () => {
         }
         // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService'
         expect(logger.findMessage('Formatter selected: FormatterThrowsString', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeFormatterService')).not.toBeNull();
     });
 });
 describe('format() using lookupKeyFallbackService', () => {

@@ -153,7 +153,7 @@ export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccesso
             let logger = this.services.loggerService;
             if (logger.minLevel <= logLevel) {
                 logger.log((typeof message === 'function') ? message() : message,
-                    logLevel, logCategory ?? LoggingCategory.Configuration, this.constructor.name);
+                    logLevel, logCategory ?? LoggingCategory.None, this.constructor.name);
             }
         }
     }

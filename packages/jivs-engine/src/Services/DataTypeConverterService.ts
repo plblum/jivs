@@ -47,14 +47,14 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
             if (dtc) {
                 this.log(() => `Using ${dtc.constructor.name}`, LoggingLevel.Debug);
                 let result = dtc.convert(value, dataTypeLookupKey!);
-                this.log(() => `Converted to ${valueForLog(result)}`, LoggingLevel.Info);
+                this.log(() => `Converted to ${valueForLog(result)}`, LoggingLevel.Info, LoggingCategory.Result);
                 return result;
             }
             this.log(() => `No converter found for ${dataTypeLookupKey}`, LoggingLevel.Debug);
         }
         catch (e) {
             let err = ensureError(e);
-            this.log(err.message, LoggingLevel.Error);
+            this.log(err.message, LoggingLevel.Error, LoggingCategory.Exception);
             if (err instanceof SevereErrorBase)
                 throw err;
 
@@ -86,7 +86,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
         }
         catch (e) {
             let err = ensureError(e);
-            this.log(err.message, LoggingLevel.Error);
+            this.log(err.message, LoggingLevel.Error, LoggingCategory.Exception);
             if (err instanceof SevereErrorBase)
                 throw e;
             return undefined;

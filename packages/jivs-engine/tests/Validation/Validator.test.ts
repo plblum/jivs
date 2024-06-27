@@ -8,7 +8,7 @@ import {
 } from "../../src/Conditions/ConcreteConditions";
 
 import { Validator, ValidatorFactory } from "../../src/Validation/Validator";
-import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
 import type { IValidationServices } from "../../src/Interfaces/ValidationServices";
 import { MockValidationManager, MockValidationServices, MockInputValueHost } from "../TestSupport/mocks";
@@ -790,6 +790,7 @@ describe('Validator.validate', () => {
 
     test('No issue found. Returns ConditionEvaluateResult.Match', () => {
         let setup = setupWithField1AndField2();
+        setup.services.loggerService.minLevel = LoggingLevel.Info;
         setup.valueHost1.setValue('valid');
 
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
@@ -799,11 +800,14 @@ describe('Validator.validate', () => {
         vrResult = vrResult as unknown as ValidatorValidateResult;
         expect(vrResult!.issueFound).toBeNull();
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Match', LoggingLevel.Info, LoggingCategory.Result, null)).toBeTruthy();
     });
     function testSeverity(severity: ValidationSeverity): void {
         let setup = setupWithField1AndField2({
             severity: severity
         });
+        setup.services.loggerService.minLevel = LoggingLevel.Info;
         setup.valueHost1.setValue('');   // will be invalid
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
         expect(() => vrResult = setup.validator.validate({})).not.toThrow();
@@ -814,6 +818,9 @@ describe('Validator.validate', () => {
         expect(vrResult!.issueFound!.errorCode).toBe(ConditionType.RequireText);
         expect(vrResult!.issueFound!.severity).toBe(severity);
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('NoMatch', LoggingLevel.Info, LoggingCategory.Result, null)).toBeTruthy();     
+        expect(logger.findMessage('Validation errorcode "RequireText"', LoggingLevel.Info, LoggingCategory.Result, null)).toBeTruthy();                
     }
     test('Warning Issue found. Returns the issue with severity = warning', () => {
         testSeverity(ValidationSeverity.Warning);

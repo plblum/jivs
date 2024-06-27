@@ -255,10 +255,10 @@ describe('convertToPrimitive', ()=> {
         services.dataTypeConverterService = testItem;
 
         expect(()=> testItem.convertToPrimitive(new TestDataTypeAsNumber(500), "")).toThrow(/unknown/);
-        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeConverterService')).not.toBeNull();      
+        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeConverterService')).not.toBeNull();      
         logger.clearAll();
         expect(()=> testItem.convertToPrimitive(new TestDataTypeAsString("ZYX"), "")).toThrow(/unknown/);
-        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeConverterService')).not.toBeNull();      
+        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeConverterService')).not.toBeNull();      
     });    
     test('convertToPrimitive returns the same value when passed either null or undefined', () => {
         let services = new ValidationServices();  

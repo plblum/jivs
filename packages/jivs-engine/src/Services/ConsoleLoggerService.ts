@@ -2,7 +2,7 @@
  * Concrete implemenation of ILogger that provides logging to the Console.
  * @module Services/ConcreteClasses/LoggerService
  */
-import { ILoggerService, LoggingLevel } from '../Interfaces/LoggerService';
+import { ILoggerService, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { ServiceBase } from './ServiceBase';
 
 
@@ -55,14 +55,14 @@ export class ConsoleLoggerService extends ServiceBase implements ILoggerService
      * @param category - optional string used by logger to categorize the data.
      * @param source - A way to identify the source of this message, such as function name or class name + method name.
      */
-    public log(message: string, level: LoggingLevel, category?: string, source?: string): void {
+    public log(message: string, level: LoggingLevel, category?: LoggingCategory, source?: string): void {
         if (this.minLevel > level)
             return;
         let msgTemplate = '%s %s "%s"'; // expects source, category, message
         if (!source)
             source = 'Source unspecified';
         if (!category)
-            category = 'Category unspecified';
+            category = LoggingCategory.None;
         switch (level) {
             case LoggingLevel.Debug:
                 console.debug(msgTemplate, source, category, message);

@@ -188,7 +188,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         let logger = this.services.loggerService;
         if (logger.minLevel <= logLevel) {
             logger.log((typeof message === 'function') ? message() : message,
-                logLevel, logCategory ?? LoggingCategory.Configuration, valueForLog(this));
+                logLevel, logCategory ?? LoggingCategory.None, valueForLog(this));
         }
     }
     /**
@@ -463,7 +463,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
                 return vhToClone;
             }
             let msg = `ValueHost name "${valueHostName}" is not defined.`;
-            self.services.loggerService.log(msg, LoggingLevel.Error, LoggingCategory.Configuration, valueForLog(self));
+            self.services.loggerService.log(msg, LoggingLevel.Error, LoggingCategory.Exception, valueForLog(self));
             throw new CodingError(msg);
         }
         function attachEnablerCondition(vhConfig: ValueHostConfig, enabler: ConditionConfig): void {
@@ -491,7 +491,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         else
         {
             let msg = `Invalid parameters.`;
-            this.log(msg, LoggingLevel.Error, LoggingCategory.Configuration);
+            this.log(msg, LoggingLevel.Error, LoggingCategory.Exception);
             throw new CodingError(msg);
         }
         return this;

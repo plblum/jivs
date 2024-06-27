@@ -1,4 +1,4 @@
-import { ILoggerService, LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { ILoggerService, LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { ServiceBase } from "../../src/Services/ServiceBase";
 
@@ -37,7 +37,7 @@ export class CapturingLogger extends ServiceBase implements ILoggerService
     }
     private _extraLogger: ILoggerService = new ConsoleLoggerService();
 
-    public log(message: string, level: LoggingLevel, category?: string | undefined, source?: string | undefined): void {
+    public log(message: string, level: LoggingLevel, category?: LoggingCategory, source?: string): void {
         if (level >= this.minLevel)
             this.captured.push({
                 message: message,

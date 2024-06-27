@@ -6,7 +6,7 @@
 import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterService';
 import { IDataTypeFormatter } from '../Interfaces/DataTypeFormatters';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError, SevereErrorBase, ensureError } from '../Utilities/ErrorHandling';
 import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { LookupKeyFallbackService } from './LookupKeyFallbackService';
@@ -67,7 +67,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
                     this.log(()=> `Formatter selected: ${dtlf.constructor.name} with culture "${cultureId}"`, LoggingLevel.Debug);
                     let result = dtlf.format(value, lookupKey, cultureId);
                     if (result.value)
-                        this.log(()=> `Formatted "${lookupKey}" with culture "${cultureId}": "${result.value}`, LoggingLevel.Info);                    
+                        this.log(()=> `Formatted "${lookupKey}" with culture "${cultureId}": "${result.value}`, LoggingLevel.Info, LoggingCategory.Result);                    
                     return result;
                 }
 
@@ -83,7 +83,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
         }
         catch (e) {
             let err = ensureError(e);
-            this.log(err.message, LoggingLevel.Error);
+            this.log(err.message, LoggingLevel.Error, LoggingCategory.Exception);
             if (err instanceof SevereErrorBase)
                 throw err;
             return {

@@ -72,7 +72,7 @@ describe('DataTypeParserService.parse', () => {
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.parse('', 'huh', 'en')).toThrow(/No DataTypeParser/);
-        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
     });
 
     test('Parameters find a parser with same lookup key and culture plus logs', () => {
@@ -109,7 +109,7 @@ describe('DataTypeParserService.parse', () => {
         expect(testItem.parse('anything', 'TEST', 'does not matter').errorMessage).toBe('ERROR');
          // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService'
         expect(logger.findMessage('Parser selected: ParserThrowsError', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
     });
     test('Parser throws string. results throwing exception using the string as the error message', () => {
         class ParserThrowsString implements IDataTypeParser<string>
@@ -138,7 +138,7 @@ describe('DataTypeParserService.parse', () => {
         }
         // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService'
         expect(logger.findMessage('Parser selected: ParserThrowsString', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
     });
     test('With registered parsers but a lookup key that does not match, throws Unsupported lookupKey error and logs', () => {
         let services = new MockValidationServices(false, true);
@@ -149,7 +149,7 @@ describe('DataTypeParserService.parse', () => {
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.parse('', 'huh', 'en')).toThrow(/No DataTypeParser/);
-        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
     });    
     test('With registered parsers and matching lookup key but no match to cultureId, throws Unsupported lookupKey error and logs', () => {
         let services = new MockValidationServices(false, true);
@@ -160,7 +160,7 @@ describe('DataTypeParserService.parse', () => {
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.parse('', 'TEST', 'en-GB')).toThrow(/No DataTypeParser/);
-        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
     });        
 });
 describe('parse() using lookupKeyFallbackService', () => {

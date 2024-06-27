@@ -173,14 +173,14 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
             testItem.publicify_log('abc', LoggingLevel.Error);
             expect(setup.logger.findMessage('abc', null, null, null)).not.toBeNull();
             expect(setup.logger.findMessage(null, LoggingLevel.Error, null, null)).not.toBeNull();
-            expect(setup.logger.findMessage(null, null, LoggingCategory.Configuration, null)).not.toBeNull();
+            expect(setup.logger.findMessage(null, null, LoggingCategory.None, null)).not.toBeNull();
         });        
         test('config parameter assigned', () => {
             let testItem = new Publicify_ConfigMergeServiceBase();
             let setup = createServices();
             testItem.services = setup.services;
-            testItem.publicify_log('abc', LoggingLevel.Error, LoggingCategory.Debug);
-            expect(setup.logger.findMessage(null, null, LoggingCategory.Debug, null)).not.toBeNull();
+            testItem.publicify_log('abc', LoggingLevel.Error, LoggingCategory.None);
+            expect(setup.logger.findMessage(null, null, LoggingCategory.None, null)).not.toBeNull();
         });           
     });
     describe('mergeProperty', () => {

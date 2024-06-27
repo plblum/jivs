@@ -249,7 +249,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
             }
             catch (e) {
                 if (e instanceof Error)
-                    this.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration);
+                    this.log(e.message, LoggingLevel.Error, LoggingCategory.Exception);
                 throw e;                    
         }
         }
@@ -278,7 +278,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
                 }
                 catch (e) {
                     if (e instanceof Error)
-                        this.log(e.message, LoggingLevel.Error, LoggingCategory.Configuration);
+                        this.log(e.message, LoggingLevel.Error, LoggingCategory.Exception);
                     throw e;                    
                 }
             }
@@ -386,12 +386,12 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * @param logLevel 
      * @param logCategory 
      */
-    protected log(message: (() => string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void
+    protected log(message: (() => string) | string, logLevel: LoggingLevel, logCategory: LoggingCategory = LoggingCategory.None): void
     {
         let logger = this.services.loggerService;
         if (logger.minLevel <= logLevel) {
             logger.log((typeof message === 'function') ? message() : message,
-                logLevel, logCategory ?? LoggingCategory.Configuration, `${this.constructor.name} "${this.getName()}"`);
+                logLevel, logCategory, `${this.constructor.name} "${this.getName()}"`);
         }
         
     }
