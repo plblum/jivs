@@ -127,6 +127,9 @@ You will use it to supply data from your Inputs and Properties, to invoke valida
 - **Builder API** - Tooling to configure the ValueHosts and their Validators used by ValidationManager.
 - **Builder object** - An object supplying the Builder API that is used to configure prior to creating the ValidationManager.
 - **Modifier object** - An object supplying the Builder API that is used to configure after creating the ValidationManager.
+- **Parser** - Code that converts of the Input Value from a string into its Native Value.
+- **Formatter** - Code that converts the Native Value into a localized, user friendly string for display within an error message.
+- **Converter** - Code that converts a Native Value into another value, such as converting a date into the day offset from the start of the year, or making a string all lowercase characters.
 
 <img src="http://jivs.peterblum.com/images/Class_overview.svg"></img>
 
@@ -507,9 +510,9 @@ let vm = new ValidationManager(builder);
 ```
 
 ### When UI creates everything (not business logic driven)
-1. UI creates the <a href="#builder_and_vmconfig">`Builder object`</a> along with the `<a href="#validationservices">`Services object`</a>`.
+1. UI creates the <a href="#builder_and_vmconfig">`Builder object`</a> along with the <a href="#validationservices">`Services object`</a>.
 2. Use `Builder object` to create all ValueHosts and their validators.
-3. Attach any callbacks
+3. Attach any callbacks.
 4. Create the `ValidationManager object`, passing in the Builder object.
 
 ```ts
@@ -565,10 +568,10 @@ modifier.updateValidator('Start Date', ConditionType.LessThan, {
 });
 modifier.apply();
 ```
-We must be careful not to modify or replace the validation rules supplied by the business logic layer. Yet the UI often has to do just that. The Builder API includes two functions designed to make any changes transparent: `combineWithRule()` and `replaceRule()`.
+You must be careful not to disable the validation rules supplied by the business logic layer without good reason. Yet the UI often has to augment them or replace them with an improved rule. The Builder API includes two functions designed to make any changes transparent: `combineWithRule()` and `replaceRule()`. When combining, the business logic Condition is retained, with the UI adding a second condition. Both become children of either the `AllMatchCondition`, `AnyMatchCondition`, or `WhenCondition`.
 > These functions are available on the `Builder object` too.
 
-Here we elect to combine a new condition with the `RegExpCondition` supplied by business object layer with a `StringLengthCondition` by placing them under an `AllMatchCondition`. That preserves both and ensures they can both participate.
+Here we elect to combine a new condition with the `RegExpCondition` supplied by business object layer with a `StringLengthCondition` by placing them under an `AllMatchCondition`.
 ```ts
 let builder = build(createValidationServices('en-US'));
 builder.input('Key', LookupKey.String, { label: 'Start date'} ).regExp(/^[\d[ABCD_]+$/);
@@ -580,7 +583,7 @@ modifier.combineWithRule('Key', ConditionType.RegExp, CombiningUsingCondition.Al
 	(combiningBuilder)=> combiningBuilder.stringLength(10));
 modifier.apply();
 ```
-The above would be the same as if business logic had initially done this:
+The result would be the same as if business logic had initially done this:
 ```ts
 builder.input('Key', LookupKey.String, { label: 'Start date'} ).all(
 	(childrenBuilder)=> childrenBuilder.regExp(/^[\d[ABCD_]+$/).stringLength(10));
