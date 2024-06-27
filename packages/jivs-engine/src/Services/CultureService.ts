@@ -100,6 +100,34 @@ export class CultureService extends ServiceBase implements ICultureService {
             result = { cultureId: this._activeCultureId };
         return result;
     }
+
+
+  /**
+   * Returns the list of all the culture IDs that have been registered.
+   */
+    public availableCultures(): Array<string>    
+    {
+        let list: Array<string> = [];
+        this.cultureIdFallback.forEach((cc) => {
+            if (!list.includes(cc.cultureId))
+                list.push(cc.cultureId);
+        });
+        return list;
+    }
+  /**
+   * Returns a list of all language codes that have been registered.
+   * 'en', 'fr', etc.
+   */
+    public availableLanguages(): Array<string>
+    {
+        let list: Array<string> = [];
+        this.cultureIdFallback.forEach((cc) => {
+            let code = cultureLanguageCode(cc.cultureId);
+            if (!list.includes(code))
+                list.push(code);
+        });
+        return list;
+    }
 }
 
 /**
