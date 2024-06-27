@@ -121,6 +121,20 @@ export function objectKeysCount(value: object | null): number
 }
 
 /**
+ * Look in the members of an enum object whose elements are strings
+ * to see if it contains the key.
+ * @param value 
+ * @param enumType 
+ * @returns 
+ */
+export function isValueOfStringEnum<T extends object>(value: string, enumType: T): boolean {
+    return Object.values(enumType).includes(value as unknown as T[keyof T]);
+}
+export function findCaseInsensitiveValueInStringEnum<T extends object>(value: string, enumType: T): string | undefined {
+    return Object.values(enumType).find((enumValue) => enumValue.toLowerCase() === value.toLowerCase());
+}
+  
+/**
  * Ensures that if the value is actually assigned a string, that string is
  * trimmed and not empty. If null, undefined or empty (after trimming),
  * it returns null.

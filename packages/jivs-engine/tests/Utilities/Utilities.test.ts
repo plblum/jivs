@@ -1,5 +1,5 @@
 import { ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { deepClone, deepEquals, groupsMatch, isPlainObject, isSupportedAsValue, valueForLog } from "../../src/Utilities/Utilities";
+import { deepClone, deepEquals, groupsMatch, isValueOfStringEnum, isPlainObject, isSupportedAsValue, valueForLog, findCaseInsensitiveValueInStringEnum } from "../../src/Utilities/Utilities";
 
 
 
@@ -217,5 +217,64 @@ describe('isPlainObject', () => {
         expect(isPlainObject(10)).toBe(false);
         expect(isPlainObject('abc')).toBe(false);
 
+    });
+});
+
+describe('isValueOfStringEnum', () => {
+    enum TestEnum {
+        FIRST = "First",
+        SECOND = "Second",
+        THIRD = "Third"
+    }
+
+    test('Key exists in enum', () => {
+        expect(isValueOfStringEnum("First", TestEnum)).toBe(true);
+        expect(isValueOfStringEnum("Second", TestEnum)).toBe(true);
+    });
+
+    test('Key does not exist in enum', () => {
+        expect(isValueOfStringEnum("FOURTH", TestEnum)).toBe(false);
+        expect(isValueOfStringEnum("Fifth", TestEnum)).toBe(false);
+    });
+
+    test('Empty string as key', () => {
+        expect(isValueOfStringEnum("", TestEnum)).toBe(false);
+    });
+
+    test('Key case sensitivity', () => {
+        expect(isValueOfStringEnum("first", TestEnum)).toBe(false); // Assuming isKeyInEnum is case-sensitive
+        expect(isValueOfStringEnum("SECOND", TestEnum)).toBe(false);
+    });
+});
+
+describe('Utilities.findCaseInsensitiveValueInStringEnum', () => {
+    enum TestEnum {
+        FirstValue = "Value1",
+        SecondValue = "Value2",
+        ThirdValue = "VALUE3"
+    }
+
+    test('Find existing value with exact case', () => {
+        expect(findCaseInsensitiveValueInStringEnum("Value1", TestEnum)).toBe("Value1");
+    });
+
+    test('Find existing value with different case', () => {
+        expect(findCaseInsensitiveValueInStringEnum("value1", TestEnum)).toBe("Value1");
+        expect(findCaseInsensitiveValueInStringEnum("VALUE2", TestEnum)).toBe("Value2");
+        expect(findCaseInsensitiveValueInStringEnum("value3", TestEnum)).toBe("VALUE3");
+    });
+
+    test('Return undefined for non-existing value', () => {
+        expect(findCaseInsensitiveValueInStringEnum("NonExistingValue", TestEnum)).toBeUndefined();
+    });
+
+    test('Return undefined for empty string', () => {
+        expect(findCaseInsensitiveValueInStringEnum("", TestEnum)).toBeUndefined();
+    });
+
+    test('Case insensitive match for all enum values', () => {
+        expect(findCaseInsensitiveValueInStringEnum("value1", TestEnum)).toBe("Value1");
+        expect(findCaseInsensitiveValueInStringEnum("value2", TestEnum)).toBe("Value2");
+        expect(findCaseInsensitiveValueInStringEnum("value3", TestEnum)).toBe("VALUE3");
     });
 });
