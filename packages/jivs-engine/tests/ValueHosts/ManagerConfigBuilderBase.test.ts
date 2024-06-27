@@ -290,6 +290,81 @@ describe('complete', () => {
         expect(testItem.publicify_baseConfig).toBeUndefined();  // indicates disposal
     });       
 });
+describe('snapshot', () => {
+    test('Using service, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestValueHostManagerConfigBuilderBase(services);
+        let result = testItem.snapshot();
+        expect(result.services).toBe(services);
+        expect(result.valueHostConfigs).toEqual([]);
+        expect(testItem.publicify_baseConfig).toBeTruthy();
+    });
+    test('Using VMConfig, with no valueHosts or overrides returns vmConfig with 0 valueHostConfigs, plus disposal checks', () => {
+        let testItem = new TestValueHostManagerConfigBuilderBase(createVMConfig());
+        let result = testItem.snapshot();
+        expect(result.services).not.toBeNull();
+        expect(result.valueHostConfigs).toEqual([]);
+        expect(testItem.publicify_baseConfig).toBeTruthy();
+    });    
+    test('Using service, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
+        let services = new MockValidationServices(false, false);
+        let testItem = new TestValueHostManagerConfigBuilderBase(services);
+        testItem.static('Field1');
+        let result = testItem.snapshot();
+        expect(result.services).toBe(services);
+        expect(result.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        }]);
+        expect(testItem.publicify_baseConfig).toBeTruthy();
+    });    
+    test('Using VMConfig, add 1 valueHost but no overrides returns vmConfig with 1 valueHostConfigs', () => {
+        let testItem = new TestValueHostManagerConfigBuilderBase(createVMConfig());
+        testItem.static('Field1');
+        let result = testItem.snapshot();
+        expect(result.services).not.toBeNull();
+        expect(result.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        }]);
+        expect(testItem.publicify_baseConfig).toBeTruthy();
+    }); 
+    test('Using VMConfig that already has 1 value, add 0 valueHosts but no overrides returns vmConfig with 1 valueHostConfigs', () => {
+        let vmConfig = createVMConfig();
+        vmConfig.valueHostConfigs.push({
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        });
+        let testItem = new TestValueHostManagerConfigBuilderBase(vmConfig);
+        let result = testItem.snapshot();
+        expect(result.services).not.toBeNull();
+        expect(result.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        }]);
+        expect(testItem.publicify_baseConfig).toBeTruthy();
+    });   
+    test('Using VMConfig that already has 1 value, add 1 valueHosts but no overrides returns vmConfig with 1 valueHostConfigs', () => {
+        let vmConfig = createVMConfig();
+        vmConfig.valueHostConfigs.push({
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        });
+        let testItem = new TestValueHostManagerConfigBuilderBase(vmConfig);
+        testItem.static('Field2');
+        let result = testItem.snapshot();
+        expect(result.services).not.toBeNull();
+        expect(result.valueHostConfigs).toEqual([{
+            valueHostType: ValueHostType.Static,
+            name: 'Field1'
+        },
+        {
+            valueHostType: ValueHostType.Static,
+            name: 'Field2'
+        }]);
+        expect(testItem.publicify_baseConfig).toBeTruthy();
+    });       
+});
 
 describe('build(vmConfig).static()', () => {
     test('Valid name, null data type and defined vhConfig. Adds StaticValueHostConfig with all inputs plus type to ValidationManagerConfig', () => {

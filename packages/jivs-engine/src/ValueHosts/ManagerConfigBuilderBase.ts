@@ -24,6 +24,7 @@ import { ConditionConfig } from '../Interfaces/Conditions';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { ValidatorConfig } from '../Interfaces/Validator';
+import { ValueHostsManager } from './ValueHostsManager';
 
 
 /**
@@ -253,6 +254,29 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         });
         this.dispose(); // every property will be undefined, including _baseConfig
 
+        return destination;
+    }
+
+    /**
+     * Creates the same output as complete() but does not modify the baseConfig
+     * allowing it to be called multiple times.
+     */
+    public snapshot(): T {
+        let destination = ValueHostsManager.safeConfigClone(this.baseConfig) as T;
+        let vhms = destination.services.valueHostConfigMergeService;
+
+        this.overriddenValueHostConfigs.forEach((o) => {
+            o.forEach((sourceConfig) => {
+                sourceConfig = deepClone(sourceConfig); // don't change the original
+                let destinationConfig = vhms.identifyValueHostConflict(sourceConfig, destination.valueHostConfigs);
+                if (destinationConfig) {
+                    vhms.merge(sourceConfig, destinationConfig);    // changes destinationConfig directly
+                }
+                else
+                    destination.valueHostConfigs.push(sourceConfig);
+
+            });
+        });
         return destination;
     }
 
