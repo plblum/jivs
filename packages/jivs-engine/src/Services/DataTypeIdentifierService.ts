@@ -45,7 +45,13 @@ implements IDataTypeIdentifierService
     public identify(value: any): string | null {
         let idt = this.find(value);
         let result = idt ? idt.dataTypeLookupKey : null;
-        this.log(() => `Identified ${valueForLog(result)}`, LoggingLevel.Debug, LoggingCategory.Result);    // considered using Info, but Debug felt better
+        this.log(LoggingLevel.Debug, () => {
+            return {
+                message: `Identified ${valueForLog(result)}`,
+                category: LoggingCategory.Result
+            
+            }
+        });
         return result;
     }
 

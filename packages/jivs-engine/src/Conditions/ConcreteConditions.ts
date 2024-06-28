@@ -307,8 +307,8 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
                 null, lookupKey) :
             ComparersResult.Equals; // always valid
         if (lower === ComparersResult.Undetermined) {
-            services.loggerService.log('Type mismatch. Value cannot be compared to Minimum',
-                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `RangeCondition for ${valueHost.getName()}`);
+            this.logTypeMismatch(services, 'Value', 'Minimum', value, lower);
+
             return ConditionEvaluateResult.Undetermined;
         }
         let upper = this.config.maximum != null ?  // null/undefined
@@ -316,8 +316,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
                 null, lookupKey) :
             ComparersResult.Equals; // always value
         if (upper === ComparersResult.Undetermined) {
-            services.loggerService.log('Type mismatch. Value cannot be compared to Maximum',
-                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `RangeCondition for ${valueHost.getName()}`);
+            this.logTypeMismatch(valueHostsManager.services, 'Value', 'Maximum', value, upper);            
             return ConditionEvaluateResult.Undetermined;
         }
         if (lower === ComparersResult.Equals || lower === ComparersResult.LessThan)

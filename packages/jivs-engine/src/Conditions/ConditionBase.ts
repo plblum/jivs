@@ -7,15 +7,14 @@
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { type ConditionConfig, type IConditionCore, ConditionEvaluateResult, ConditionCategory, ICondition } from '../Interfaces/Conditions';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
+import { CodingError, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { ConditionType } from './ConditionTypes';
-import { valueForLog } from '../Utilities/Utilities';
 
 /**
  * Base implementation of ICondition.
@@ -120,16 +119,6 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
     }
 
     /**
-     * Utility to log when a conditionConfig property is incorrectly setup.
-     * @param errorMessage 
-     * @param valueHostsManager 
-     */
-    protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostsManager: IValueHostsManager): void {
-        let fnName = this.constructor.name;
-        valueHostsManager.services.loggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, LoggingCategory.Configuration, fnName);
-    }
-
-    /**
      * Utility to create a condition to use as a child condition.
      * It uses the conditionFactory. If the factory throws an exception, it logs the error
      * and returns a condition that always returns Undetermined to allow execution to continue.
@@ -145,7 +134,9 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         }
         catch (e)
         {
-            services.loggerService.log(`Error creating condition: ${e}`, LoggingLevel.Error, LoggingCategory.Exception, valueForLog(this));
+            let err = ensureError(e);
+            this.logError(services, err);
+
             return new ErrorResponseCondition();
         }
             // expect exceptions here for invalid Configs
@@ -155,6 +146,91 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         if (result instanceof Promise)
             throw new CodingError('Promises are not supported for child conditions at this time.');
         return result;
+    }
+
+
+    /**
+     * Utility to log when a conditionConfig property is incorrectly setup.
+     * @param errorMessage 
+     * @param valueHostsManager 
+     */
+    protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostsManager: IValueHostsManager): void {
+        this.log(valueHostsManager.services, LoggingLevel.Error, (options?: LogOptions) => {
+            let details: LogDetails = {
+                message: propertyName + ': ' + errorMessage,
+                category: LoggingCategory.Configuration
+            };
+            if (options?.includeData)
+                details.data = { propertyName: propertyName };
+            return details;
+        });
+    }
+    /**
+     * Report a comparison error where the data types of the two values are mismatched.
+     * @param services 
+     * @param propertyName 
+     * @param propertyName2 
+     * @param propertyValue 
+     * @param propertyValue2 
+     */
+    protected logTypeMismatch(services: IValueHostsServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
+        this.log(services, LoggingLevel.Warn, (options?: LogOptions) => {
+            let details: LogDetails = {
+                message: `Type mismatch. ${propertyName} cannot be compared to ${propertyName2}`,
+                category: LoggingCategory.TypeMismatch,
+            };
+            if (options?.includeData)
+                details.data = {
+                    value: propertyValue,
+                    secondValue: propertyValue2
+                };
+            return details;
+        });        
+    }
+    /**
+     * Log a message. The message gets assigned the details of feature, type, and identity
+     * here.
+     */
+    protected log(services: IValueHostsServices, level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        let logger = services.loggerService;
+        logger.log(level, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'Condition';
+            details.type = this;
+            details.identity = this.conditionType;
+            return details;
+        });
+    }
+    /**
+     * When the log only needs the message and nothing else.
+     * @param level 
+     * @param messageFn
+     */
+    protected logQuick(services: IValueHostsServices, level: LoggingLevel, messageFn: ()=> string): void {
+        this.log(services, level, () => {
+            return {
+                message: messageFn()
+            };
+        });
+    }    
+    /**
+     * Log an exception. The GatherFn should only be used to gather additional data
+     * as the Error object supplies message, category (Exception), and this function
+     * resolves feature, type, and identity.
+     * @param error 
+     * @param gatherFn 
+     */
+    protected logError(services: IValueHostsServices, error: Error, gatherFn?: logGatheringErrorHandler): void
+    {
+        let logger = services.loggerService;
+        logger.logError(error, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'Condition';
+            details.type = this;
+            details.identity = this.conditionType;
+            return details;
+        });
+    
     }
 }
 

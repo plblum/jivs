@@ -40,7 +40,7 @@ export abstract class DataTypeConverterServiceBase<T> extends DataTypeServiceBas
         // but also may return undefined from the DataTypeConverter.convert() function itself.
         let dtc = this.services.dataTypeConverterService.find(value, lookupKey);
         if (dtc) {
-            this.log(() => `Using ${valueForLog(dtc)}`, LoggingLevel.Debug);
+            this.logQuick(LoggingLevel.Debug, () => `Using ${valueForLog(dtc)}`);
             value = dtc.convert(value, lookupKey!);
 
             switch (typeof value) {

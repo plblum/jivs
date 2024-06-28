@@ -3,8 +3,8 @@
  * @module Services/ConcreteClasses/MessageTokenResolverService
  */
 import type { DataTypeResolution } from '../Interfaces/DataTypes';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull, CodingError, SevereErrorBase } from '../Utilities/ErrorHandling';
+import { LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { assertNotNull, CodingError, ensureError, SevereErrorBase } from '../Utilities/ErrorHandling';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
@@ -72,16 +72,28 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
                         else
                             if (replacement.errorMessage)
                             {
-                                this.log(()=> `${capturedToken.full}: ${replacement.errorMessage}`,
-                                    LoggingLevel.Error, LoggingCategory.Configuration);   
+                                this.log(LoggingLevel.Error,
+                                    () => {
+                                        return {
+                                            message: `${capturedToken.full}: ${replacement.errorMessage}`,
+                                            category: LoggingCategory.Configuration
+                                        };
+                                    }
+                                ); 
                             }
                     }
                     catch (e)
                     {
-                        this.log(()=>`${capturedToken.full}: ${(e as Error).message}`,
-                            LoggingLevel.Error, LoggingCategory.Exception); 
-                        if (e instanceof SevereErrorBase)
-                            throw e;
+                        let err = ensureError(e);
+
+                        this.logError(err, (options?: LogOptions) => {
+                            let details: LogErrorDetails = {
+                                data: { token: capturedToken.full },
+                            };
+                            return details;
+                        });
+                        if (err instanceof SevereErrorBase)
+                            throw err;
                                     
                     }
                 }
@@ -89,8 +101,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
             if (!resolved)
             {
                 //Log token was not replaced
-                this.log(()=>`{${capturedToken.full}}: Token not replaced.`,
-                    LoggingLevel.Warn); 
+                this.logQuick(LoggingLevel.Warn, ()=>`{${capturedToken.full}}: Token not replaced.`); 
             }
         });
         return revised;

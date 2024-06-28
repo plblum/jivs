@@ -787,7 +787,7 @@ describe('ValidatorsValueHostBase.validate', () => {
             expect(logger.findMessage('Group names do not match', LoggingLevel.Info, null, null)).not.toBeNull();
         }
         else
-            expect(logger.findMessage('Input Validation result', LoggingLevel.Info, null, null)).not.toBeNull();            
+            expect(logger.findMessage('Validation result', LoggingLevel.Info, null, null)).not.toBeNull();            
     }
 
     test('Group test. ValidatorsValueHostBase has Group name but validate has empty string for group name. Validation occurs and returns an issue', () => {

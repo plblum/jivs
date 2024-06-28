@@ -436,7 +436,8 @@ describe('setInputValue with parser enabled to see both input value and native v
         parserLookupKey: string | null | undefined,
         parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
         options: SetInputValueOptions| null | undefined,
-        expectedNativeValue: any
+        expectedNativeValue: any,
+        expectParserCreatorToBeCalled: boolean = false
         ): ITestSetupConfig
     {
         let ivh: InputValueHostConfig = {
@@ -447,6 +448,7 @@ describe('setInputValue with parser enabled to see both input value and native v
             parserCreator: parserCreator
         }
         let setup = setupInputValueHost(ivh);
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
         registerDataTypeParsers(setup.services.dataTypeParserService);
         setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
 
@@ -457,6 +459,14 @@ describe('setInputValue with parser enabled to see both input value and native v
         expect(setup.valueHost.getValue()).toBe(expectedNativeValue);     
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
         expect(setup.valueHost.getParserLookupKey()).toBe(parserLookupKey);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
+            null, null)).toBeTruthy();  
+        expect(logger.findMessage('Parsed into native value', LoggingLevel.Debug,    
+            null, null)).toBeTruthy();
+        if (expectParserCreatorToBeCalled)
+            expect(logger.findMessage('Parsing', LoggingLevel.Info,    
+                null, null)).toBeTruthy();
         return setup;
     }
     function testWithParserWithErrorMessage(inputValue: any,
@@ -474,6 +484,7 @@ describe('setInputValue with parser enabled to see both input value and native v
             parserCreator: parserCreator
         }
         let setup = setupInputValueHost(ivh);
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
         registerDataTypeParsers(setup.services.dataTypeParserService);
         setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
 
@@ -483,6 +494,12 @@ describe('setInputValue with parser enabled to see both input value and native v
         expect(setup.valueHost.getInputValue()).toBe(inputValue);
         expect(setup.valueHost.getValue()).toBeUndefined();     
         expect(setup.valueHost.getConversionErrorMessage()).toBeTruthy();
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
+            null, null)).toBeTruthy();  
+        expect(logger.findMessage('Parser reported error', LoggingLevel.Debug,    
+            null, null)).toBeTruthy();  
+
         return setup;
     }    
     function testWithParserWhereErrorIsThrown(inputValue: any,
@@ -490,7 +507,7 @@ describe('setInputValue with parser enabled to see both input value and native v
         parserLookupKey: string | null | undefined,
         parserCreator: undefined | ((valueHost: IInputValueHost) => IDataTypeParser<any>),
         options: SetInputValueOptions| null | undefined,
-        errorMsg: RegExp
+        errorMsg: string
         ): ITestSetupConfig
     {
         let ivh: InputValueHostConfig = {
@@ -501,15 +518,22 @@ describe('setInputValue with parser enabled to see both input value and native v
             parserCreator: parserCreator
         }
         let setup = setupInputValueHost(ivh);
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
         registerDataTypeParsers(setup.services.dataTypeParserService);
         setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
 
-        expect(() => setup.valueHost.setInputValue(inputValue, options!)).toThrow(errorMsg);
+        let regex = new RegExp(errorMsg);
+        expect(() => setup.valueHost.setInputValue(inputValue, options!)).toThrow(regex);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.isChanged).toBe(false);
         expect(setup.valueHost.getInputValue()).toBeUndefined();
         expect(setup.valueHost.getValue()).toBeUndefined();     
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
+            null, null)).toBeTruthy();
+        expect(logger.findMessage(errorMsg, LoggingLevel.Error,    
+            LoggingCategory.Exception, null)).toBeTruthy();
         return setup;
     }        
     function testWithDisabledParser(inputValue: any,
@@ -528,6 +552,7 @@ describe('setInputValue with parser enabled to see both input value and native v
             parserCreator: parserCreator
         }
         let setup = setupInputValueHost(ivh);
+        setup.services.loggerService.minLevel = LoggingLevel.Debug;
         setup.services.dataTypeParserService.enabled = isActiveParser;
         registerDataTypeParsers(setup.services.dataTypeParserService);
         setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
@@ -537,6 +562,10 @@ describe('setInputValue with parser enabled to see both input value and native v
         expect(setup.valueHost.isChanged).toBe(true);
         expect(setup.valueHost.getInputValue()).toBe(inputValue);    
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
+        let logger = setup.services.loggerService as CapturingLogger;
+        if (options && options.disableParser)
+            expect(logger.findMessage('option.disableParser=true', LoggingLevel.Debug,
+                null, null)).toBeTruthy();
         return setup;
     }    
 // trims then appends '!' to show this function was applied
@@ -621,9 +650,9 @@ describe('setInputValue with parser enabled to see both input value and native v
 
     });    
     test('parserCreator is provided but its supports() will return false. The parserLookupKey or dataType will be used instead.', () => {
-        testWithParser('30', undefined!, LookupKey.Integer, parserFnToNumber, {}, 30);        
-        testWithParser('30', LookupKey.Integer, LookupKey.Integer, parserFnToNumber, {}, 30);        
-        testWithParser('30', LookupKey.Integer, undefined, parserFnToNumber, {}, 30);        
+        testWithParser('30', undefined!, LookupKey.Integer, parserFnToNumber, {}, 30, false);        
+        testWithParser('30', LookupKey.Integer, LookupKey.Integer, parserFnToNumber, {}, 30, false);        
+        testWithParser('30', LookupKey.Integer, undefined, parserFnToNumber, {}, 30, false);        
     });
 
     test('As a string that cannot parse to a number, but using datatype=number, reports an error', () => {
@@ -661,11 +690,11 @@ describe('setInputValue with parser enabled to see both input value and native v
         testWithDisabledParser(new Date(), LookupKey.Number, undefined, parserFnTrimString, {}); // not a string
     });    
     test('Cases that throw exceptions', () => {
-        testWithParserWhereErrorIsThrown('ABC', undefined!, undefined, undefined, {}, /Cannot parse/);
-        testWithParserWhereErrorIsThrown('ABC', undefined!, undefined, parserFnThrows, {}, /ERROR/);
+        testWithParserWhereErrorIsThrown('ABC', undefined!, undefined, undefined, {}, 'Cannot parse');
+        testWithParserWhereErrorIsThrown('ABC', undefined!, undefined, parserFnThrows, {}, 'ERROR');
         testWithParserWhereErrorIsThrown('10', LookupKey.Integer, undefined, (vh) => {
-            throw new CodingError('ERROR');  
-        }, {}, /ERROR/);        
+            throw new CodingError('ERROR');
+        }, {}, 'ERROR');        
     });
 });
 

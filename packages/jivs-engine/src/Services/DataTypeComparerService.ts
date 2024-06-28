@@ -55,7 +55,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
             try {
                 result = handleNullsAndUndefined(value1, value2);
                 if (result != null) {
-                    this.log('Has nulls', LoggingLevel.Debug);
+                    this.logQuick(LoggingLevel.Debug, () => 'Has nulls');
                     return result;
                 }
 
@@ -64,7 +64,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
 
                 let comparer = this.find(value1, value2);
                 if (comparer) {
-                    this.log(()=> `Using ${valueForLog(comparer)} with ${lookupKey1} and ${lookupKey2}`, LoggingLevel.Debug);
+                    this.logQuick(LoggingLevel.Debug, () => `Using ${valueForLog(comparer)} with ${lookupKey1} and ${lookupKey2}`);
                     result = comparer.compare(value1, value2);
                     return result;
                 }
@@ -74,25 +74,25 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
 
                 result = handleNullsAndUndefined(cleanedUpValue1, cleanedUpValue2);
                 if (result != null) {
-                    this.log('Has nulls', LoggingLevel.Debug);
+                    this.logQuick(LoggingLevel.Debug, () => 'Has nulls');
                     return result;
                 }
 
                 let comparerCU = this.find(cleanedUpValue1, cleanedUpValue2);
                 if (comparerCU) {
-                    this.log(()=> `Using ${valueForLog(comparerCU)} with ${lookupKey1} and ${lookupKey2}`, LoggingLevel.Debug);
+                    this.logQuick(LoggingLevel.Debug, () => `Using ${valueForLog(comparerCU)} with ${lookupKey1} and ${lookupKey2}`);
                     result = comparerCU.compare(cleanedUpValue1, cleanedUpValue2);
                     return result;
                 }
 
-                this.log(`Using defaultComparer with ${lookupKey1} and ${lookupKey2}`, LoggingLevel.Debug);
+                this.logQuick(LoggingLevel.Debug, () => `Using defaultComparer with ${lookupKey1} and ${lookupKey2}`);
                 result = defaultComparer(cleanedUpValue1, cleanedUpValue2);
                 return result;
             }
             catch (e) {
                 let err = ensureError(e);
 
-                this.log(err.message, LoggingLevel.Error, LoggingCategory.Exception);
+                this.logError(err);
                 if (err instanceof SevereErrorBase)
                     throw e;
 
@@ -100,10 +100,14 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
                 return result;
             }
         }
-        finally
-        {
+        finally {
             if (result !== undefined)
-                this.log(`Compare result: ${ComparersResult[result]}`, LoggingLevel.Info, LoggingCategory.Result);
+                this.log(LoggingLevel.Info, () => {
+                    return {
+                        message: `Compare result: ${ComparersResult[result!]}`,
+                        category: LoggingCategory.Result
+                    }
+                });
         }
     }
     /**

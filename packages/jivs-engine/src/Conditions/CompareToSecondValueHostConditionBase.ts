@@ -6,7 +6,7 @@
 
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
-import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
+import { LoggingLevel, LoggingCategory, LogOptions, LogDetails } from '../Interfaces/LoggerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
@@ -47,7 +47,7 @@ export abstract class CompareToSecondValueHostConditionBase<TConfig extends Comp
         if (this.config.secondValueHostName) {
             let vh2 = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
             if (!vh2) {
-                const msg = 'secondValueHostName is unknown';
+                const msg = 'is unknown';
                 this.logInvalidPropertyData('secondValueHostName', msg, valueHostsManager);
                 return ConditionEvaluateResult.Undetermined;
             }
@@ -56,7 +56,7 @@ export abstract class CompareToSecondValueHostConditionBase<TConfig extends Comp
         }
         if (secondValue == null)  // null/undefined
         {
-            const msg = 'secondValue lacks value to evaluate';
+            const msg = 'lacks value to evaluate';
             this.logInvalidPropertyData('secondValue', msg, valueHostsManager);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -65,8 +65,8 @@ export abstract class CompareToSecondValueHostConditionBase<TConfig extends Comp
             value, secondValue,
             this.config.conversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
         if (comparison === ComparersResult.Undetermined) {
-            valueHostsManager.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
-                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `${this.constructor.name} for ${valueHost.getName()}`);
+            this.logTypeMismatch(valueHostsManager.services, 'Value', 'SecondValue', value, secondValue);
+
             return ConditionEvaluateResult.Undetermined;
         }
         return this.compareTwoValues(comparison);

@@ -8,7 +8,7 @@
 import { IValueHostsManager } from './../Interfaces/ValueHostsManager';
 import { ConditionCategory, ConditionEvaluateResult, SupportsDataTypeConverter } from './../Interfaces/Conditions';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
-import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
+import { LoggingLevel, LoggingCategory, LogOptions, LogDetails } from '../Interfaces/LoggerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
@@ -52,7 +52,7 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
 
         if (this.config.secondValue == null)    // null/undefined
         {
-            const msg = 'secondValue lacks value to evaluate';
+            const msg = 'lacks value to evaluate';
             this.logInvalidPropertyData('secondValue', msg, valueHostsManager);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -62,8 +62,8 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
             value, secondValue,
             this.config.conversionLookupKey ?? valueHost.getDataType(), this.config.secondConversionLookupKey ?? null);
         if (comparison === ComparersResult.Undetermined) {
-            valueHostsManager.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
-                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `${this.constructor.name} for ${valueHost.getName()}`);
+            this.logTypeMismatch(valueHostsManager.services, 'Value', 'SecondValue', value, secondValue);
+
             return ConditionEvaluateResult.Undetermined;
         }
         return this.compareTwoValues(comparison);

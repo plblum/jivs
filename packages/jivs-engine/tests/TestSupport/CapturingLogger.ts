@@ -1,6 +1,7 @@
-import { ILoggerService, LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { ILoggerService, LogDetails, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { ServiceBase } from "../../src/Services/ServiceBase";
+import { valueForLog } from "../../src/Utilities/Utilities";
 
 /**
  * Captures all logged info that qualifies with minLevel
@@ -9,6 +10,7 @@ import { ServiceBase } from "../../src/Services/ServiceBase";
  */
 export class CapturingLogger extends ServiceBase implements ILoggerService
 {
+
     public get minLevel(): LoggingLevel
     {
         return this._minLevel;
@@ -37,16 +39,41 @@ export class CapturingLogger extends ServiceBase implements ILoggerService
     }
     private _extraLogger: ILoggerService = new ConsoleLoggerService();
 
-    public log(message: string, level: LoggingLevel, category?: LoggingCategory, source?: string): void {
-        if (level >= this.minLevel)
-            this.captured.push({
-                message: message,
-                level: level,
-                category: category,
-                source : source
-            });
-        this.extraLogger.log(message, level, category, source);
+    public log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        if (this.minLevel > level)
+            return;
+        let logDetails = gatherFn() as LogDetails;    // this logger does not use the data option
+        if (logDetails.type && typeof logDetails.type !== 'string')
+            logDetails.type = valueForLog(logDetails.type); // convert to string
+//!!!PENDING: REPLACE with capturing logDetails. Needs findMessage method to be revised
+        this.captured.push({
+            message: logDetails.message,
+            level: level,
+            category: logDetails.category ?? LoggingCategory.None,
+            source : logDetails.type
+        });
+        if (this.extraLogger)
+            this.extraLogger.log(level, gatherFn);
     }
+    logError(error: Error, gatherFn: logGatheringErrorHandler): void {
+
+        let logDetails = gatherFn() as LogDetails;    // this logger does not use the data option
+        if (logDetails.type && typeof logDetails.type !== 'string')
+            logDetails.type = valueForLog(logDetails.type); // convert to string
+
+        logDetails.message = error.message;
+        logDetails.category = LoggingCategory.Exception;
+        //!!!PENDING: REPLACE with capturing logDetails. Needs findMessage method to be revised
+        this.captured.push({
+            message: logDetails.message,
+            level: LoggingLevel.Error,
+            category: logDetails.category ?? LoggingCategory.None,
+            source : logDetails.type
+        });
+
+        if (this.extraLogger)
+            this.extraLogger.logError(error, gatherFn);
+    }    
     public entryCount(): Number
     {
         return this.captured.length;
@@ -82,6 +109,7 @@ export class CapturingLogger extends ServiceBase implements ILoggerService
         return null;
     }
 }
+//!!!PENDING: To be replaced by LogDetails
 export interface MockCapturedLog
 {
     message: string,

@@ -1117,14 +1117,14 @@ describe('Validator.validate', () => {
 
             }
     });
-    test('With loggingLevel=Debug, expect validate() to log Validating for error code [errorCode]', () => {
+    test('With loggingLevel=Debug, expect validate() to log Starting Validation for error code [errorCode]', () => {
         let setup = setupWithField1AndField2();
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         setup.valueHost1.setValue('valid');
 
         setup.validator.validate({});
-        expect(logger.findMessage('Validating for error code', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Starting Validation for error code', LoggingLevel.Debug, null, null)).not.toBeNull();
     });    
 });
 describe('Validator.gatherValueHostNames', () => {

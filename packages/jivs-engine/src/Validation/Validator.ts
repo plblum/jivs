@@ -19,8 +19,8 @@ import { type IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { type ICondition, ConditionCategory, ConditionEvaluateResult, toIEvaluateConditionDuringEdits, IEvaluateConditionDuringEdits } from '../Interfaces/Conditions';
 import { type ValidateOptions, ValidationSeverity, type IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { type ValidatorValidateResult, type IValidator, type ValidatorConfig, type IValidatorFactory } from '../Interfaces/Validator';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { assertNotNull, assertWeakRefExists, CodingError, SevereErrorBase } from '../Utilities/ErrorHandling';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
+import { assertNotNull, assertWeakRefExists, CodingError, ensureError, SevereErrorBase } from '../Utilities/ErrorHandling';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { cleanString } from '../Utilities/Utilities';
@@ -156,9 +156,9 @@ export class Validator implements IValidator {
                     throw new CodingError('Condition must be setup');
             }
             catch (e) {
-                if (e instanceof Error)
-                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Exception, this.getLogSourceText());
-                throw e;
+                let err = ensureError(e);
+                this.logError(err);
+                throw err;
             }
             if (this._condition instanceof WhenCondition)
             {
@@ -191,11 +191,11 @@ export class Validator implements IValidator {
             try {
                 let temp = this.condition;  // this will assign both _condition and _enabler if using WhenCondition 
             }
+            // istanbul ignore next // this.condition is usually called before enabler, leaving its errors handled elsewhere
             catch (e) {
-                // istanbul ignore next // this.condition is usually called before enabler, leaving its errors handled elsewhere
-                if (e instanceof Error)
-                    this.services.loggerService.log(e.message, LoggingLevel.Error, LoggingCategory.Exception, this.getLogSourceText());
-                throw e;
+                let err = ensureError(e);
+                this.logError(err);
+                throw err;
             }
         return this._enabler;
     }
@@ -259,8 +259,13 @@ export class Validator implements IValidator {
         }
         if (msg == null) {
             msg = Validator.errorMessageMissing;
-            this.services.loggerService.log(`Error message missing for Validator ${this.errorCode}`,
-                LoggingLevel.Error, LoggingCategory.Configuration, 'Validator');
+            this.log(LoggingLevel.Error, () => {
+                return {
+                    message: `Error message missing for Validator ${this.errorCode}`,
+                    category: LoggingCategory.Configuration
+                };
+            });
+
         }
         return msg;
     }
@@ -303,9 +308,7 @@ export class Validator implements IValidator {
     public validate(options: ValidateOptions): ValidatorValidateResult | Promise<ValidatorValidateResult> {
         assertNotNull(options, 'options');
         let self = this;
-        lazyLog(() => {
-            return { message: `Validating for error code ${this.errorCode}` }
-        }, LoggingLevel.Debug);
+        this.logQuick(LoggingLevel.Debug, () => `Starting Validation for error code ${this.errorCode}`);
 
         let resultState: ValidatorValidateResult = {
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
@@ -342,11 +345,8 @@ export class Validator implements IValidator {
                 if (ivh) {
                     let text = ivh.getInputValue();
                     if (typeof text === 'string') {
-                        lazyLog(() => {
-                            return {
-                                message: 'Using DuringEdit validation',
-                            };
-                        }, LoggingLevel.Debug);
+                        this.logQuick(LoggingLevel.Debug, () => 'Using DuringEdit validation');
+
                         return resolveCER((this.condition as IEvaluateConditionDuringEdits).evaluateDuringEdits(
                             text, ivh, this.services));
                     }
@@ -367,11 +367,12 @@ export class Validator implements IValidator {
 
         }
         catch (e) {
-            if (e instanceof Error) {
-                logError(e.message);
-                if (e instanceof SevereErrorBase)
-                    throw e;
-            }
+            let err = ensureError(e);            
+
+            this.logError(err);
+            if (err instanceof SevereErrorBase)
+                throw err;
+            
             // resume normal processing with Undetermined state
             resultState.conditionEvaluateResult = ConditionEvaluateResult.Undetermined;
             resultState.issueFound = null;
@@ -379,19 +380,34 @@ export class Validator implements IValidator {
         }
         finally {
             if (resultState.issueFound)
-                lazyLog(() => {
-                    let msg = `Validation errorcode "${this.errorCode}" found this issue: ${JSON.stringify(resultState.issueFound)}`;
-                    return {
-                        message: msg
+                this.log(LoggingLevel.Info, (options?: LogOptions) => {
+                    let details: LogDetails = {
+                        message: `Validation errorcode "${this.errorCode}" found this issue: ${JSON.stringify(resultState.issueFound)}`,
+                        category: LoggingCategory.Result,
                     };
-                }, undefined, LoggingCategory.Result);
+                    if (options?.includeData)
+                        details.data = {
+                            conditionType: this.conditionType,
+                            result: ConditionEvaluateResult[resultState.conditionEvaluateResult],
+                            issueFound: resultState.issueFound
+                        };
+                    return details;
+                });
+
         }
         function resolveCER(cer: ConditionEvaluateResult): ValidatorValidateResult {
-            lazyLog(() => {
-                return {
+            self.log(LoggingLevel.Info, (options? : LogOptions) => {
+                let details: LogDetails = {
                     message: `Condition ${self.conditionType} evaluated as ${ConditionEvaluateResult[cer]}`,
+                    category: LoggingCategory.Result
                 };
-            }, undefined, LoggingCategory.Result);
+                if (options?.includeData)
+                    details.data = {
+                        conditionType: self.conditionType,
+                        result: ConditionEvaluateResult[cer]
+                    };
+                return details;
+            });
             resultState.conditionEvaluateResult = cer;
             switch (cer) {
                 case ConditionEvaluateResult.NoMatch:
@@ -410,7 +426,7 @@ export class Validator implements IValidator {
                         resolve(resolveCER(resultingCER));
                     },
                     (reason) => {
-                        logError(reason);
+                        self.logError(new Error(reason));
                         reject(reason);
                     });
             });
@@ -421,26 +437,9 @@ export class Validator implements IValidator {
                 conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
                 issueFound: null
             };
-            lazyLog(() => {
-                return {
-                    message: errorMessage
-                };
-            });
+            self.logQuick(LoggingLevel.Info, () => errorMessage);
             resultState.skipped = true;
             return resultState;
-        }
-        function lazyLog(
-            fn: () => { message: string; source?: string }, logLevel : LoggingLevel = LoggingLevel.Info, logCategory: LoggingCategory = LoggingCategory.None): void {
-            if (self.services.loggerService.minLevel <= logLevel) {
-                let parms = fn();
-                self.services.loggerService.log(parms.message, logLevel,
-                    logCategory,
-                    parms.source ?? `Validation with ${self.getLogSourceText()}`);
-            }
-        }
-        function logError(message: string): void {
-            self.services.loggerService.log('Exception: ' + (message ?? 'Reason unspecified'),
-                LoggingLevel.Error, LoggingCategory.Exception, self.getLogSourceText());
         }
     }
 
@@ -604,10 +603,50 @@ export class Validator implements IValidator {
             tlv = tlv.concat((this.condition as unknown as IMessageTokenSource).getValuesForTokens(valueHost, valueHostResolver));
         return tlv;
     }
-
-    protected getLogSourceText(): string {
-        let errorCode = resolveErrorCode(this.config);  // instead of this.errorCode to avoid circular reference
-        return `Validator "${errorCode}" on ValueHost "${this.valueHost.getName()}"`;
+    /**
+     * Log a message. The message gets assigned the details of feature, type, and identity
+     * here.
+     */
+    protected log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        let logger = this.services.loggerService;
+        logger.log(level, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'Validator';
+            details.type = this;
+            details.identity = [this.valueHost.getName() ?? 'ValueHost', resolveErrorCode(this.config)];
+            return details;
+        });
+    }
+    /**
+     * When the log only needs the message and nothing else.
+     * @param level 
+     * @param messageFn
+     */
+    protected logQuick(level: LoggingLevel, messageFn: ()=> string): void {
+        this.log(level, () => {
+            return {
+                message: messageFn()
+            };
+        });
+    }    
+    /**
+     * Log an exception. The GatherFn should only be used to gather additional data
+     * as the Error object supplies message, category (Exception), and this function
+     * resolves feature, type, and identity.
+     * @param error 
+     * @param gatherFn 
+     */
+    protected logError(error: Error, gatherFn?: logGatheringErrorHandler): void
+    {
+        let logger = this.services.loggerService;
+        logger.logError(error, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'Validator';
+            details.type = this;
+            details.identity = [this.valueHost.getName() ?? 'ValueHost', resolveErrorCode(this.config)];
+            return details;
+        });
+    
     }
 }
 

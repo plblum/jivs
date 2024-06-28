@@ -3,14 +3,14 @@
  * @module ValueHosts/AbstractClasses/ValueHostBase
  */
 import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
-import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
+import { assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
 import { deepEquals, deepClone, valueForLog } from '../Utilities/Utilities';
 import { type IValueHost, type SetValueOptions, type ValueHostInstanceState, type ValueHostConfig, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { toIDisposable } from '../Interfaces/General_Purpose';
-import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
+import { LoggingLevel, LoggingCategory, logGatheringHandler, LogOptions, LogDetails, logGatheringErrorHandler } from '../Interfaces/LoggerService';
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 
 /**
@@ -26,7 +26,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         this._config = config;
         this._instanceState = state;
     }
-//#region IValueHostsManagerAccessor
+    //#region IValueHostsManagerAccessor
     public get valueHostsManager(): IValueHostsManager {
         assertWeakRefExists(this._valueHostsManager, 'ValueHostManager disposed');
         return this._valueHostsManager.deref()!;
@@ -35,8 +35,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
 
     //#endregion IValueHostsManagerAccessor
     
-    protected get services(): IValueHostsServices
-    {
+    protected get services(): IValueHostsServices {
         return this.valueHostsManager.services;
     }
     /**
@@ -56,8 +55,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
-    {
+    public dispose(): void {
         toIDisposable(this._config)?.dispose();
         (this._config as any) = undefined;
         this._instanceState = undefined!;
@@ -113,7 +111,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     * OnValueChanged property.
     */
     public setValue(value: any, options?: SetValueOptions): void {
-        this.log(()=>`setValue(${valueForLog(value)})`, LoggingLevel.Debug);
+        this.logQuick(LoggingLevel.Debug, () => `setValue(${value})`);
         if (!options)
             options = {};
         if (!this.canChangeValueCheck(options))
@@ -134,14 +132,13 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
     /**
      * For setValue functions to check for disabled before trying to change.
      */
-    protected canChangeValueCheck(options: SetValueOptions): boolean
-    {
+    protected canChangeValueCheck(options: SetValueOptions): boolean {
         if (!options.overrideDisabled && !this.isEnabled()) {
-            this.log(() => `ValueHost "${this.getName()}" disabled. Value not changed`, LoggingLevel.Warn);
+            this.logQuick(LoggingLevel.Warn, () => `ValueHost "${this.getName()}" disabled. Value not changed`);
             return false;
         }
         if (options.overrideDisabled && !this.isEnabled()) {
-            this.log(() => `overrideDisabled option on ValueHost "${this.getName()}". Value changed`, LoggingLevel.Info);
+            this.logQuick(LoggingLevel.Info, () =>`overrideDisabled option on ValueHost "${this.getName()}". Value changed`);
         }
         return true;
     }
@@ -163,25 +160,22 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         this.setValue(undefined, options);
     }
 
-    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void
-    {
+    protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: SetValueOptions): void {
         if (options.reset)
             stateToUpdate.changeCounter = 0;
         else if (valueChanged)
-            stateToUpdate.changeCounter = (stateToUpdate.changeCounter ?? 0) + 1;        
+            stateToUpdate.changeCounter = (stateToUpdate.changeCounter ?? 0) + 1;
     }
 
-    protected useOnValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void
-    {
+    protected useOnValueChanged(changed: boolean, oldValue: any, options: SetValueOptions): void {
         if (changed && (!options || !options.skipValueChangedCallback))
-            toIValueHostCallbacks(this.valueHostsManager)?.onValueChanged?.(this, oldValue);        
+            toIValueHostCallbacks(this.valueHostsManager)?.onValueChanged?.(this, oldValue);
     }
-/**
- * A name of a data type used to lookup supporting services specific to the data type.
- * See the {@link DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
- */    
-    public getDataType(): string | null
-    {
+    /**
+     * A name of a data type used to lookup supporting services specific to the data type.
+     * See the {@link DataTypes/Types/LookupKey | LookupKey}. Some examples: "String", "Number", "Date", "DateTime", "MonthYear"
+     */
+    public getDataType(): string | null {
         return this.config.dataType ?? null;
     }
     /**
@@ -189,12 +183,11 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * Since the ValueHostConfig.dataType is optional, this will end up returning the empty string,
      * unless the native value has been assigned and the DataTypeIdentifierService can figure out its lookupKey.
      */
-    public getDataTypeLabel(): string
-    {
+    public getDataTypeLabel(): string {
         let dt = this.getDataType();
         if (!dt) {
             let value = this.getValue();
-            if (value != null)  { // null or undefined
+            if (value != null) { // null or undefined
                 dt = this.services.dataTypeIdentifierService.identify(value);
             }
         }
@@ -211,8 +204,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * up the form, you want to avoid showing Category=Require validators. Those should appear only
      * if the user edits, or when the user attempts to submit.
      */
-    public get isChanged(): boolean
-    {
+    public get isChanged(): boolean {
         return (this.instanceState.changeCounter ?? 0) > 0;
     }
 
@@ -230,15 +222,13 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * When disabled and the ValueHost have validators, all validation is 
      * disabled and its ValidationStatus reports ValidationState.Disabled.
      */
-    public isEnabled(): boolean
-    {
+    public isEnabled(): boolean {
         if (this.instanceState.enabled === false)
             return false;
 
         let enabler = this.getEnablerCondition();
         if (enabler) {
-            try
-            {
+            try {
                 // NOTE: The result of the enabler does not change any state of the valueHost,
                 // unlike setEnabled(false) which clears validation.
                 let result = enabler.evaluate(this, this.valueHostsManager);
@@ -248,10 +238,10 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
                     return false;
             }
             catch (e) {
-                if (e instanceof Error)
-                    this.log(e.message, LoggingLevel.Error, LoggingCategory.Exception);
-                throw e;                    
-        }
+                let err = ensureError(e);                
+                this.logError(err);
+                throw err;
+            }
         }
 
         // enablerCondition takes precedence over instanceState.enabled
@@ -268,18 +258,16 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * 
      * @returns 
      */
-    protected getEnablerCondition(): ICondition | null
-    {
+    protected getEnablerCondition(): ICondition | null {
         if (this._enablerCondition === undefined)
-            if (this.config.enablerConfig)
-            {
+            if (this.config.enablerConfig) {
                 try {
                     this._enablerCondition = this.services.conditionFactory.create(this.config.enablerConfig!);
                 }
                 catch (e) {
-                    if (e instanceof Error)
-                        this.log(e.message, LoggingLevel.Error, LoggingCategory.Exception);
-                    throw e;                    
+                    let err = ensureError(e);                    
+                    this.logError(err);
+                    throw err;
                 }
             }
             else
@@ -300,9 +288,8 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
      * although the ValueHostConfig.initialEnabled is used when it is not set in the state.
      * @param enabled 
      */
-    public setEnabled(enabled: boolean): void
-    {
-        this.log(()=>`setEnabled(${enabled})`, LoggingLevel.Debug);
+    public setEnabled(enabled: boolean): void {
+        this.logQuick(LoggingLevel.Debug, () => `setEnabled(${enabled})`);        
         this.updateInstanceState((stateToUpdate) => {
             stateToUpdate.enabled = enabled;
             return stateToUpdate;
@@ -349,51 +336,79 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig, TState exte
         return false;
     }
 
-/**
- * Adds a custom entry into the ValueHost's state
- * or removes it when value = undefined.
- * @param key 
- * @param value - when undefined, it removes the value from the state
- */    
-    public saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void
-    {
+    /**
+     * Adds a custom entry into the ValueHost's state
+     * or removes it when value = undefined.
+     * @param key 
+     * @param value - when undefined, it removes the value from the state
+     */
+    public saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
         this.updateInstanceState((stateToUpdate) => {
             if (!stateToUpdate.items)
                 stateToUpdate.items = {};
             if (value !== undefined)
                 stateToUpdate.items[key] = value;
             else
-                delete stateToUpdate.items[key];      
+                delete stateToUpdate.items[key];
             return stateToUpdate;
         }, this);
 
     }
-/**
- * Use to retrieve a value from the state that was stored
- * with saveIntoInstanceState().
- * @param key 
- * @returns the stored value or undefined if nothing is stored.
- */
-    public getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined
-    {
+    /**
+     * Use to retrieve a value from the state that was stored
+     * with saveIntoInstanceState().
+     * @param key 
+     * @returns the stored value or undefined if nothing is stored.
+     */
+    public getFromInstanceState(key: string): ValidTypesForInstanceStateStorage | undefined {
         return this.instanceState.items ? this.instanceState.items[key] : undefined;
     }
 
 
     /**
-     * Lazy logging allowing the message to be generated after checking the log level.
-     * @param message 
-     * @param logLevel 
-     * @param logCategory 
+     * Log a message. The message gets assigned the details of feature, type, and identity
+     * here.
      */
-    protected log(message: (() => string) | string, logLevel: LoggingLevel, logCategory: LoggingCategory = LoggingCategory.None): void
+    protected log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        let logger = this.services.loggerService;
+        logger.log(level, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'ValueHost';
+            details.type = this;
+            details.identity = this.getName();
+            return details;
+        });
+    }
+    /**
+     * When the log only needs the message and nothing else.
+     * @param level 
+     * @param messageFn
+     */
+    protected logQuick(level: LoggingLevel, messageFn: ()=> string): void {
+        this.log(level, () => {
+            return {
+                message: messageFn()
+            };
+        });
+    }    
+    /**
+     * Log an exception. The GatherFn should only be used to gather additional data
+     * as the Error object supplies message, category (Exception), and this function
+     * resolves feature, type, and identity.
+     * @param error 
+     * @param gatherFn 
+     */
+    protected logError(error: Error, gatherFn?: logGatheringErrorHandler): void
     {
         let logger = this.services.loggerService;
-        if (logger.minLevel <= logLevel) {
-            logger.log((typeof message === 'function') ? message() : message,
-                logLevel, logCategory, `${this.constructor.name} "${this.getName()}"`);
-        }
-        
+        logger.logError(error, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'ValueHost';
+            details.type = this;
+            details.identity = this.getName();
+            return details;
+        });
+    
     }
 
 }

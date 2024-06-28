@@ -82,8 +82,9 @@ export class WhenCondition extends ConditionWithOneChildBase<WhenConditionConfig
             this.ensureNoPromise(result);
             return result;
         }
-        valueHostsManager.services.loggerService.log(`WhenCondition enabler condition did not match. Child condition not evaluated.`, LoggingLevel.Info,
-            LoggingCategory.None, valueForLog(this));
+
+        this.logQuick(valueHostsManager.services, LoggingLevel.Info,
+            () => `WhenCondition enabler condition did not match. Child condition not evaluated.`);
         return ConditionEvaluateResult.Undetermined;
     }
 
@@ -101,7 +102,7 @@ export class WhenCondition extends ConditionWithOneChildBase<WhenConditionConfig
     protected enabler(valueHostsManager: IValueHostsManager): ICondition {
         if (!this._enabler) {
             if (!this.config.enablerConfig) {
-                this.logInvalidPropertyData('enablerConfig', 'Must be assigned to a Condition', valueHostsManager);
+                this.logInvalidPropertyData('enablerConfig', 'must be assigned to a Condition', valueHostsManager);
                 this._enabler = new ErrorResponseCondition();
             }
             else

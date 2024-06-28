@@ -45,16 +45,21 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
             let dtc = this.find(value, dataTypeLookupKey);
 
             if (dtc) {
-                this.log(() => `Using ${dtc.constructor.name}`, LoggingLevel.Debug);
+                this.logQuick(LoggingLevel.Debug, () => `Using ${dtc.constructor.name}`);
                 let result = dtc.convert(value, dataTypeLookupKey!);
-                this.log(() => `Converted to ${valueForLog(result)}`, LoggingLevel.Info, LoggingCategory.Result);
+                this.log(LoggingLevel.Info, () => {
+                    return {
+                        message: `Converted to ${valueForLog(result)}`,
+                        category: LoggingCategory.Result
+                    }
+                });
                 return result;
             }
-            this.log(() => `No converter found for ${dataTypeLookupKey}`, LoggingLevel.Debug);
+            this.logQuick(LoggingLevel.Debug, () => `No converter found for ${dataTypeLookupKey}`);
         }
         catch (e) {
             let err = ensureError(e);
-            this.log(err.message, LoggingLevel.Error, LoggingCategory.Exception);
+            this.logError(err);
             if (err instanceof SevereErrorBase)
                 throw err;
 
@@ -81,14 +86,14 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
             dataTypeLookupKey = this.resolveLookupKey(value, dataTypeLookupKey, 'CalcValueHost function');
 
             let result = this.cleanupConvertableValue(value, dataTypeLookupKey);
-            this.log(() => `Converted to ${valueForLog(result)}`, LoggingLevel.Info);
+            this.logQuick(LoggingLevel.Info, () => `Converted to ${valueForLog(result)}`);
             return result;
         }
         catch (e) {
             let err = ensureError(e);
-            this.log(err.message, LoggingLevel.Error, LoggingCategory.Exception);
+            this.logError(err);
             if (err instanceof SevereErrorBase)
-                throw e;
+                throw err;
             return undefined;
         }
     }

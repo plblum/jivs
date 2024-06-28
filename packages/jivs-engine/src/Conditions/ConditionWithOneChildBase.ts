@@ -41,7 +41,7 @@ export abstract class ConditionWithOneChildBase<TConfig extends ConditionWithOne
         if (!this._condition) {
             if (!this.config.childConditionConfig)
             {
-                this.logInvalidPropertyData('childConditionConfig', 'Must be assigned to a Condition', valueHostsManager);
+                this.logInvalidPropertyData('childConditionConfig', 'must be assigned to a Condition', valueHostsManager);
                 this._condition = new ErrorResponseCondition();
             }
             else

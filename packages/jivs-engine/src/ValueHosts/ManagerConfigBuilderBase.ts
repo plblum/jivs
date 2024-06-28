@@ -22,7 +22,7 @@ import { ValidatorsValueHostBaseConfig, toIValidatorsValueHostBase } from '../In
 import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
 import { ConditionConfig } from '../Interfaces/Conditions';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValueHostsManager } from './ValueHostsManager';
 
@@ -177,20 +177,6 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         return this.baseConfig.services;
     }
 
-    /**
-     * Lazy logging allowing the message to be generated after checking the log level.
-     * @param message 
-     * @param logLevel 
-     * @param logCategory 
-     */
-    protected log(message: (()=>string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void
-    {
-        let logger = this.services.loggerService;
-        if (logger.minLevel <= logLevel) {
-            logger.log((typeof message === 'function') ? message() : message,
-                logLevel, logCategory ?? LoggingCategory.None, valueForLog(this));
-        }
-    }
     /**
      * The initial setup from the constructor and assigned ValueHostConfigs
      * until an OverrideConfig is added.
@@ -462,20 +448,20 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
                 self.destinationValueHostConfigs().push(clonedVH);
                 return vhToClone;
             }
-            let msg = `ValueHost name "${valueHostName}" is not defined.`;
-            self.services.loggerService.log(msg, LoggingLevel.Error, LoggingCategory.Exception, valueForLog(self));
-            throw new CodingError(msg);
+            let error = new CodingError(`ValueHost name "${valueHostName}" is not defined.`);
+            self.logError(error);
+            throw error;
         }
         function attachEnablerCondition(vhConfig: ValueHostConfig, enabler: ConditionConfig): void {
             let replace = vhConfig.enablerConfig != null;   // null or undefined
             vhConfig.enablerConfig = enabler;
-            self.log(() => (replace ? 'Replacing enabler on' : 'Adding enabler to') + ` ValueHost "${valueHostName}"`, LoggingLevel.Info);
+            self.logQuick(LoggingLevel.Info, () => (replace ? 'Replacing enabler on' : 'Adding enabler to') + ` ValueHost "${valueHostName}"`);
 
         }   
         let self = this;
         assertNotNull(valueHostName, 'valueHostName');
         assertNotNull(sourceOfConditionConfig, 'sourceOfConditionConfig');
-        this.log(() => `enabler("${valueHostName}")`, LoggingLevel.Debug);
+        this.logQuick(LoggingLevel.Debug, () => `enabler("${valueHostName}")`);
         
         if (typeof sourceOfConditionConfig === 'function') {
             let vhConfig = getValueHostConfig();
@@ -490,9 +476,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         }
         else
         {
-            let msg = `Invalid parameters.`;
-            this.log(msg, LoggingLevel.Error, LoggingCategory.Exception);
-            throw new CodingError(msg);
+            let error = new CodingError('Invalid parameters');
+            this.logError(error);
+            throw error;
         }
         return this;
 
@@ -605,16 +591,15 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
             return;
         }
-
-        let msg = `Invalid parameters.`;
-        this.log(msg, LoggingLevel.Error);
-        throw new CodingError(msg);
+        let error = new CodingError('Invalid parameters.');
+        this.logError(error);
+        throw error;
     }
 
     protected confirmConfigWasAdded(configs: Array<ConditionConfig>): boolean
     {
         if (configs.length === 0) {
-            this.log(()=> `Builder function did not create a conditionConfig`, LoggingLevel.Warn);
+            this.logQuick(LoggingLevel.Warn, ()=> `Builder function did not create a conditionConfig`);
             return false;
         }
         return true;
@@ -656,9 +641,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         }
 
         else {
-            let msg = `Invalid parameters.`;
-            this.log(msg, LoggingLevel.Error);
-            throw new CodingError(msg);
+            let error = new CodingError('Invalid parameters');
+            this.logError(error);
+            throw error;
         }
 
     }
@@ -698,11 +683,58 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         let msg = (vhToModify || vhToClone) ?
             `ValueHost name "${valueHostName}" does not have a validator with error code "${errorCode}".` :
             `ValueHost name "${valueHostName}" is not defined.`;
-        this.log(msg, LoggingLevel.Error);
-        throw new CodingError(msg);
+
+        let error = new CodingError(msg);
+        this.logError(error);
+        throw error;
     }
 
     //#endregion utilities for ValidationManager-based subclasses
+    //#region logging
+    /**
+     * Log a message. The message gets assigned the details of feature, type, and identity
+     * here.
+     */
+    protected log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        let logger = this.services.loggerService;
+        logger.log(level, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'ConfigBuilder';
+            details.type = this;
+            return details;
+        });
+    }
+    /**
+     * When the log only needs the message and nothing else.
+     * @param level 
+     * @param messageFn
+     */
+    protected logQuick(level: LoggingLevel, messageFn: ()=> string): void {
+        this.log(level, () => {
+            return {
+                message: messageFn()
+            };
+        });
+    }    
+    /**
+     * Log an exception. The GatherFn should only be used to gather additional data
+     * as the Error object supplies message, category (Exception), and this function
+     * resolves feature, type, and identity.
+     * @param error 
+     * @param gatherFn 
+     */
+    protected logError(error: Error, gatherFn?: logGatheringErrorHandler): void
+    {
+        let logger = this.services.loggerService;
+        logger.logError(error, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'ConfigBuilder';
+            details.type = this;
+            return details;
+        });
+    
+    }
+    //#endregion logging
 }
 
 

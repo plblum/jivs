@@ -20,13 +20,100 @@ export interface ILoggerService extends IService
     minLevel: LoggingLevel;
 
     /**
-     * Create a new log entry.
-     * @param message
-     * @param level - One of these: 'info', 'warn', 'error'.
-     * @param category - optional string used by logger to categorize the data.
-     * @param source - A way to identify the source of this message, such as function name or class name + method name.
+     * Create a new log entry if the level is at or above the minimum level.
+     * The function is only called if the level is at or above the minimum level,
+     * avoiding any processing that would be done to create its data.
+     * The intent is to be performant when the log level is set to a higher level.
+     * @param level 
+     * @param gatherFn 
      */
-    log(message: string, level: LoggingLevel, category?: LoggingCategory, source?: string): void;
+    log(level: LoggingLevel, gatherFn: logGatheringHandler): void;
+/**
+ * Create a new log entry for an error object. It is always added, because the Error object
+ * is always LoggingLevel.Error.
+ * The Error object has most of the info needed
+ * @param error 
+ * @param gatherFn 
+ */
+    logError(error: Error, gatherFn: logGatheringErrorHandler): void;
+}
+/**
+ * Used by the log function that all details through the LogDetails object that is supplied
+ * by this function. Its options object is only supplied if the LoggerService supports it.
+ * 
+ */
+export type logGatheringHandler = (options?: LogOptions) => LogDetails;
+
+/**
+ * Used by the log function that takes an error to gather the value used in the logDetails.data property.
+ * Its options object is only supplied if the LoggerService supports it.
+ */
+export type logGatheringErrorHandler = (options?: LogOptions) => LogErrorDetails;
+
+
+export interface LogDetailsBase
+{
+    /**
+     * A name for the general feature that uses it:
+     * ValueHost, Validator, Condition, Formatter, etc.
+     */
+    feature?: string;
+    /**
+     * The object that is the source of the log message. Logging will
+     * convert it into source.constructor.name, if available.
+     * Alternatively a string as the type of source.
+     */
+    type?: object | string;
+    /**
+     * A way to identify the source of this message, such as the ValueHostName or error Code.
+     * If there are several sources, create an array. For example, when reporting a 
+     * validator's error code, it helps to have the ValueHost too:
+     * ['ValueHost', 'ErrorCode']
+    */
+    identity?: string | Array<string>;
+    /**
+     * Additional data that the logger can use to take further actions.
+     * Only add this if LogOptions.includeData is true and you have data to share.
+     * It should be assigned to an object with name/value pairs.
+     * Those entries should be published and be consistent throughout the system
+     * as other systems are likely to use it.
+     */
+    data?: object;
+}
+
+
+export interface LogDetails extends LogDetailsBase{
+    message: string;
+    /**
+     * Helps understand the reason for the log message, such as 'Exception', 'Result',
+     * 'Configuration', 'TypeMismatch', etc.
+     */
+    category?: LoggingCategory;
+
+}
+
+/**
+ * Used by the log function that takes an Error object. It gets the message from the Error.message
+ * and set category to 'Exception'.
+ */
+export interface LogErrorDetails extends LogDetailsBase {
+    stack?: Array<string>;
+}
+
+
+/**
+ * The logger service will ask for specific info it supports with this as the argument
+ * to the logGatheringHandler. It can be omitted if you don't support any of its options.
+ */
+export interface LogOptions {
+    /**
+     * The logger wants to capture names and values of any data that you wish to share.
+     * This is used by loggers used for diagnostics, such as the DiagnosticLoggerService.
+     * That data will enable the logger to take further actions.
+     * When true, the LogDetails.data property should be assigned to an object with name/value pairs.
+     * Those entries should be published and be consistent throughout the system.
+     */
+    includeData: boolean;
 }
 
 export enum LoggingLevel

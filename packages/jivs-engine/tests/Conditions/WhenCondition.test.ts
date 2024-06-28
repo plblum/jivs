@@ -78,7 +78,7 @@ describe('WhenCondition', () => {
         
         expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Error creating condition', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null, null)).toBeTruthy();
 
     });
     test('with null childconfig but valid enabler that returns Match, logs error and evaluate returns undetermined', () => {
@@ -99,7 +99,7 @@ describe('WhenCondition', () => {
         let testItem = new WhenCondition(config);
         
         expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.findMessage('childConditionConfig', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('childConditionConfig: must be assigned to a Condition', LoggingLevel.Error, null, null)).toBeTruthy();
 
     });    
     test('with invalid enablerConfig, logs error and evaluate returns undetermined', () => {
@@ -120,7 +120,7 @@ describe('WhenCondition', () => {
         let testItem = new WhenCondition(config);
         
         expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.findMessage('Error creating condition', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null, null)).toBeTruthy();
 
     });        
     test('with null enablerConfig, logs error and evaluate returns undetermined', () => {
@@ -141,7 +141,7 @@ describe('WhenCondition', () => {
         let testItem = new WhenCondition(config);
         
         expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.findMessage('enablerConfig', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('enablerConfig: must be assigned to a Condition', LoggingLevel.Error, null, null)).toBeTruthy();
 
     });    
 

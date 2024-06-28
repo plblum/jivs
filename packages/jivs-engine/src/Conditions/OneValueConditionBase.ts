@@ -60,11 +60,13 @@ export abstract class OneValueConditionBase<TConditionConfig extends OneValueCon
         if (this.config.valueHostName) {
             valueHost = this.getValueHost(this.config.valueHostName, valueHostsManager);
             if (!valueHost)
-                this.logInvalidPropertyData('valueHostName', 'valueHostName is unknown', valueHostsManager);
+                this.logInvalidPropertyData('valueHostName', 'is unknown', valueHostsManager);
         }
         if (valueHost)
             return valueHost;
-        throw new CodingError('Missing value for valueHostName.');
+        let error = new CodingError('Missing value for valueHostName.');
+        this.logError(valueHostsManager.services, error);
+        throw error;
     }
     protected getValueHost(valueHostName: ValueHostName, valueHostsManager: IValueHostsManager): IValueHost | null {
         return valueHostsManager.getValueHost(valueHostName);
