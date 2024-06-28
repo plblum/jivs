@@ -401,7 +401,7 @@ describe('setInputValue with getInputValue to check result', () => {
         let testItem = setup.valueHost;
         testItem.setInputValue(finalValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('setInputValue\\("B"\\)', LoggingLevel.Debug, null, null)).toBeTruthy();
+        expect(logger.findMessage('setInputValue\\("B"\\)', LoggingLevel.Debug, null)).toBeTruthy();
     });
     test('isEnabled=false will not change the value.', () => {
         const initialValue = 'A';   // this is the native value
@@ -413,8 +413,8 @@ describe('setInputValue with getInputValue to check result', () => {
         testItem.setInputValue(finalValue);
         expect(testItem.getInputValue()).toBeUndefined();   // never set it
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeTruthy();
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeNull();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeNull();
     });
     test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
         const initialValue = 'A';
@@ -426,8 +426,8 @@ describe('setInputValue with getInputValue to check result', () => {
         testItem.setInputValue(finalValue, { overrideDisabled: true });
         expect(testItem.getInputValue()).toBe(finalValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeTruthy();
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeNull();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeTruthy();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });    
 });
 describe('setInputValue with parser enabled to see both input value and native values are assigned', () => {
@@ -461,12 +461,12 @@ describe('setInputValue with parser enabled to see both input value and native v
         expect(setup.valueHost.getParserLookupKey()).toBe(parserLookupKey);
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
-            null, null)).toBeTruthy();  
+            null)).toBeTruthy();  
         expect(logger.findMessage('Parsed into native value', LoggingLevel.Debug,    
-            null, null)).toBeTruthy();
+            null)).toBeTruthy();
         if (expectParserCreatorToBeCalled)
             expect(logger.findMessage('Parsing', LoggingLevel.Info,    
-                null, null)).toBeTruthy();
+                null)).toBeTruthy();
         return setup;
     }
     function testWithParserWithErrorMessage(inputValue: any,
@@ -496,9 +496,9 @@ describe('setInputValue with parser enabled to see both input value and native v
         expect(setup.valueHost.getConversionErrorMessage()).toBeTruthy();
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
-            null, null)).toBeTruthy();  
+            null)).toBeTruthy();  
         expect(logger.findMessage('Parser reported error', LoggingLevel.Debug,    
-            null, null)).toBeTruthy();  
+            null)).toBeTruthy();  
 
         return setup;
     }    
@@ -531,9 +531,9 @@ describe('setInputValue with parser enabled to see both input value and native v
         expect(setup.valueHost.getConversionErrorMessage()).toBeNull();
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
-            null, null)).toBeTruthy();
+            null)).toBeTruthy();
         expect(logger.findMessage(errorMsg, LoggingLevel.Error,    
-            LoggingCategory.Exception, null)).toBeTruthy();
+            LoggingCategory.Exception)).toBeTruthy();
         return setup;
     }        
     function testWithDisabledParser(inputValue: any,
@@ -565,7 +565,7 @@ describe('setInputValue with parser enabled to see both input value and native v
         let logger = setup.services.loggerService as CapturingLogger;
         if (options && options.disableParser)
             expect(logger.findMessage('option.disableParser=true', LoggingLevel.Debug,
-                null, null)).toBeTruthy();
+                null)).toBeTruthy();
         return setup;
     }    
 // trims then appends '!' to show this function was applied
@@ -810,7 +810,7 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         let testItem = setup.valueHost;
         testItem.setValues(finalValue, ' B ');
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('setValues\\("B", " B "\\)', LoggingLevel.Debug, null, null)).toBeTruthy();
+        expect(logger.findMessage('setValues\\("B", " B "\\)', LoggingLevel.Debug, null)).toBeTruthy();
     });
     test('isEnabled=false will not change the value.', () => {
         const initialValue = 'A';
@@ -822,8 +822,8 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         testItem.setValues(finalValue, " B ");
         expect(testItem.getValue()).toBe(initialValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeTruthy();
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeNull();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeNull();
     });
     test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
         const initialValue = 'A';
@@ -835,8 +835,8 @@ describe('InputValueHost.setValues with getInputValue and getValue to check resu
         testItem.setValues(finalValue, " B ", { overrideDisabled: true });
         expect(testItem.getValue()).toBe(finalValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeTruthy();
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeNull();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeTruthy();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });    
 });
 
@@ -885,7 +885,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
             }
         );        
 
-        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Result, 'InputValueHost')).not.toBeNull();
+        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();
     });
     test('1 condition exists and it is not a DataTypeCheck category. DataTypeCheckCondition gets added', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -937,7 +937,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
         );
 
 
-        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Result, 'InputValueHost')).not.toBeNull();
+        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();
     });
     test('1 condition and it is an actual DataTypeCheckCondition. No DataTypeCheckCondition gets added.', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -990,7 +990,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
             }
         );        
 
-        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).toBeNull(); // proves not auto generated
+        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration)).toBeNull(); // proves not auto generated
     });
 
     test('1 condition and it has ConditionCategory=DataTypeCheck. No DataTypeCheckCondition gets added.', () => {
@@ -1047,7 +1047,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
             }
         );        
 
-        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration, 'Validator')).toBeNull(); // proves not auto generated
+        expect(logger.findMessage('Condition for Data Type Check', LoggingLevel.Info, LoggingCategory.Configuration)).toBeNull(); // proves not auto generated
     });
     test('Register a DataTypeCheckCondition for PhoneNumber and ensure it gets autogenerated and used', () => {
         const phoneNumberLookupKey = 'PhoneNumber';
@@ -1125,7 +1125,7 @@ describe('InputValueHost.validate uses autogenerated DataTypeCheck condition', (
                 corrected: false
             });        
 
-        expect(logger.findMessage('PhoneNumber Condition for Data Type Check', LoggingLevel.Info, null, null)).not.toBeNull();
+        expect(logger.findMessage('PhoneNumber Condition for Data Type Check', LoggingLevel.Info)).toBeTruthy();
     });
 
 });

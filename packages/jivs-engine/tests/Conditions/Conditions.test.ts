@@ -77,7 +77,7 @@ describe('ConditionBase class additional cases', () => {
         };
         let testItem = new RequireTextCondition(config);
         expect(() => testItem.evaluate(vh, vm)).toThrow(/valueHostName/);
-        expect(logger.findMessage('valueHostName: is unknown', LoggingLevel.Error, LoggingCategory.Configuration, null)).toBeTruthy();
+        expect(logger.findMessage('valueHostName: is unknown', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();
     });
     test('Config.valueHostName with null and evaluate value is null logs and throws', () => {
         let services = new MockValidationServices(false, false);
@@ -92,7 +92,7 @@ describe('ConditionBase class additional cases', () => {
         };
         let testItem = new RequireTextCondition(config);
         expect(() => testItem.evaluate(null, vm)).toThrow(/valueHostName/);
-        expect(logger.findMessage('valueHostName: is unknown', LoggingLevel.Error, LoggingCategory.Configuration, null)).toBeTruthy();
+        expect(logger.findMessage('valueHostName: is unknown', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();
     });
     test('ensurePrimaryValueHost with ValueHostName = null and parameter = null throws exception', () => {
         let services = new MockValidationServices(false, false);
@@ -107,7 +107,7 @@ describe('ConditionBase class additional cases', () => {
         let testItem = new RequireTextCondition(config);
         expect(() => testItem.evaluate(null, vm)).toThrow(/Missing value for valueHostName/);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Missing value for valueHostName', LoggingLevel.Error, LoggingCategory.Exception, null)).toBeTruthy();
+        expect(logger.findMessage('Missing value for valueHostName', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
 
     });
     test('ensurePrimaryValueHost will ValueHostName = null and parameter = assigned works normally', () => {
@@ -220,7 +220,7 @@ describe('class DataTypeCheckCondition', () => {
         let testItem = new DataTypeCheckCondition(config);
         expect(() => testItem.evaluate(vh, vm)).toThrow(/Invalid ValueHost/);
         let logger = vm.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Invalid ValueHost', LoggingLevel.Error, null, null)).not.toBeNull();
+        expect(logger.findMessage('Invalid ValueHost', LoggingLevel.Error)).toBeTruthy();
 
     });    
     test('getValuesForTokens where ConversionErrorTokenValue is setup shows that token', () => {
@@ -1028,9 +1028,8 @@ describe('class RangeCondition', () => {
         vh.setValue(100);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.message).toMatch(/mismatch.*Minimum/);
-        expect(logger.getLatest()!.level).toBe(LoggingLevel.Warn);
+        expect(logger.findMessage('Type mismatch. Value cannot be compared to Minimum', LoggingLevel.Warn, LoggingCategory.TypeMismatch)).toBeTruthy();
+
     });
     test('evaluate when Maximum is different data type from Value', () => {
         let services = new MockValidationServices(false, true);
@@ -1047,9 +1046,8 @@ describe('class RangeCondition', () => {
         vh.setValue(100);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.message).toMatch(/mismatch.*Maximum/);
-        expect(logger.getLatest()!.level).toBe(LoggingLevel.Warn);
+        expect(logger.findMessage('Type mismatch. Value cannot be compared to Maximum', LoggingLevel.Warn, LoggingCategory.TypeMismatch)).toBeTruthy();
+
     });
     test('Using IntegerConverter, evaluate to show that ConversionLookupKey is applied correctly.', () => {
         let services = new MockValidationServices(false, true);
@@ -1229,9 +1227,7 @@ describe('CompareToConditionBase class additional cases', () => {
         };
         let testItem = new EqualToCondition(config);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/secondValueHostName/);
-        expect(logger.findMessage('secondValueHostName: is unknown', LoggingLevel.Error, LoggingCategory.Configuration, null)).not.toBeNull(); 
+        expect(logger.findMessage('secondValueHostName: is unknown', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy(); 
     });
     
     test('Config.secondValueHostName with null logs and returns undefined', () => {
@@ -1248,9 +1244,7 @@ describe('CompareToConditionBase class additional cases', () => {
         };
         let testItem = new EqualToCondition(config);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/secondValue/);
-        expect(logger.findMessage('secondValue: lacks value to evaluate', LoggingLevel.Error, LoggingCategory.Configuration, null)).not.toBeNull(); 
+        expect(logger.findMessage('secondValue: lacks value to evaluate', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy(); 
 
     });
 });
@@ -2527,10 +2521,8 @@ describe('CompareToValueConditionBase class additional cases', () => {
         };
         let testItem = new EqualToValueCondition(config);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/secondValue/);
         expect(logger.findMessage('secondValue: lacks value to evaluate', LoggingLevel.Error, 
-            LoggingCategory.Configuration, null)).toBeTruthy();
+            LoggingCategory.Configuration)).toBeTruthy();
     });
 });
 
@@ -3869,7 +3861,7 @@ describe('class AllMatchCondition', () => {
 
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
     });
     test('With 1 child whose evaluate() function returns a Promise throws', () => {
         let services = new MockValidationServices(true, true);
@@ -4288,7 +4280,7 @@ describe('class AnyMatchCondition', () => {
 
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
     });
     test('category is Children', () => {
         let config: AnyMatchConditionConfig = {
@@ -4662,7 +4654,7 @@ describe('class NotNullCondition', () => {
         vh.setValue('');
         expect(() => testItem.evaluate(null, vm)).toThrow(/Missing value/);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Missing value', LoggingLevel.Error, LoggingCategory.Exception, null)).toBeTruthy(); 
+        expect(logger.findMessage('Missing value', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy(); 
     });
     test('category is Require', () => {
         let config: NotNullConditionConfig = {

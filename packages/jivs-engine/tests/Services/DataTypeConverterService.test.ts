@@ -150,8 +150,8 @@ describe('convert', ()=> {
         let date1 = new Date(2000, 0, 1);
 
         expect(testItem.convert(new TestDataTypeAsNumber(500), "")).toBe(500);
-        expect(logger.findMessage('Using TestDataTypeAsNumberConverter', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Converted to', LoggingLevel.Info, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using TestDataTypeAsNumberConverter', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Converted to', LoggingLevel.Info)).toBeTruthy();
 
         expect(testItem.convert(new TestDataTypeAsString("ZYX"), "")).toBe("ZYX");
         let convertDate1 = testItem.convert(new TestDataTypeAsDate(date1), "");
@@ -166,7 +166,7 @@ describe('convert', ()=> {
         logger.minLevel = LoggingLevel.Debug;
         
         expect(testItem.convert(new TestDataTypeAsNumber(500), "")).toBeUndefined();
-        expect(logger.findMessage('No converter found', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('No converter found', LoggingLevel.Debug)).toBeTruthy();
         expect(testItem.convert(new TestDataTypeAsString("ZYX"), "")).toBeUndefined();
         expect(testItem.convert(100, "")).toBeUndefined();
         expect(testItem.convert(new TestDataTypeAsDate(new Date()), "")).toBeUndefined();
@@ -179,7 +179,7 @@ describe('convert', ()=> {
         testItem.register(new TestConverterToLowerCase());
 
         expect(testItem.convert("ABC", "")).toBeUndefined();
-        expect(logger.findMessage('No converter found', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('No converter found', LoggingLevel.Debug)).toBeTruthy();
         expect(testItem.convert("ABC", null)).toBeUndefined();
         expect(testItem.convert("ABC", "Anything")).toBeUndefined();
         expect(testItem.convert(100, "")).toBeUndefined();
@@ -194,8 +194,8 @@ describe('convert', ()=> {
         testItem.register(new TestConverterThatThrows(new Error('test')));
 
         expect(testItem.convert("ABC", "")).toBeUndefined();
-        expect(logger.findMessage('Using TestConverterThatThrows', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using TestConverterThatThrows', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('TEST', LoggingLevel.Error)).toBeTruthy();
     });    
 
     test('Converter that throws severe is handled by throwing and adding to the log.', () => {
@@ -208,8 +208,8 @@ describe('convert', ()=> {
         testItem.register(new TestConverterThatThrows(new CodingError('test')));
 
         expect(()=> testItem.convert("ABC", "")).toThrow(/test/);
-        expect(logger.findMessage('Using TestConverterThatThrows', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using TestConverterThatThrows', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('TEST', LoggingLevel.Error)).toBeTruthy();
     });        
 });
 describe('convertToPrimitive', ()=> {
@@ -234,7 +234,7 @@ describe('convertToPrimitive', ()=> {
         let date1 = new Date(2000, 0, 1);
 
         expect(testItem.convertToPrimitive(new TestDataTypeAsNumber(500), "")).toBe(500);
-        expect(logger.findMessage('Converted to', LoggingLevel.Info, null, null)).not.toBeNull();
+        expect(logger.findMessage('Converted to', LoggingLevel.Info)).toBeTruthy();
 
         expect(testItem.convertToPrimitive(new TestDataTypeAsString("ZYX"), "")).toBe("ZYX");
         expect(testItem.convertToPrimitive("ABC", "TEST")).toBe("abc");
@@ -255,10 +255,10 @@ describe('convertToPrimitive', ()=> {
         services.dataTypeConverterService = testItem;
 
         expect(()=> testItem.convertToPrimitive(new TestDataTypeAsNumber(500), "")).toThrow(/unknown/);
-        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeConverterService')).not.toBeNull();      
+        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();      
         logger.clearAll();
         expect(()=> testItem.convertToPrimitive(new TestDataTypeAsString("ZYX"), "")).toThrow(/unknown/);
-        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeConverterService')).not.toBeNull();      
+        expect(logger.findMessage('unknown', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();      
     });    
     test('convertToPrimitive returns the same value when passed either null or undefined', () => {
         let services = new ValidationServices();  
@@ -271,7 +271,7 @@ describe('convertToPrimitive', ()=> {
         services.dataTypeConverterService = testItem;
 
         expect(testItem.convertToPrimitive(null, "")).toBeNull();
-        expect(logger.entryCount()).toBe(0);
+        expect(logger.entryCount).toBe(0);
         expect(testItem.convertToPrimitive(undefined, "")).toBeUndefined();
     });        
     test('Within convertToPrimitive, Converter that throws non-severe is handled by returning undefined and adding to the log.', () => {
@@ -285,7 +285,7 @@ describe('convertToPrimitive', ()=> {
         testItem.register(new TestConverterThatThrows(new Error('TEST')));
 
         expect(testItem.convertToPrimitive("ABC", "")).toBeUndefined();
-        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
+        expect(logger.findMessage('TEST', LoggingLevel.Error)).toBeTruthy();
     });        
     test('Within convertToPrimitive, Converter that throws severe throws and adding to the log.', () => {
         let services = new ValidationServices();  
@@ -298,7 +298,7 @@ describe('convertToPrimitive', ()=> {
         testItem.register(new TestConverterThatThrows(new CodingError('TEST')));
 
         expect(()=> testItem.convertToPrimitive("ABC", "")).toThrow(/TEST/);
-        expect(logger.findMessage('TEST', LoggingLevel.Error, null, null)).not.toBeNull();
+        expect(logger.findMessage('TEST', LoggingLevel.Error)).toBeTruthy();
     });            
 });
 
@@ -323,7 +323,7 @@ describe('cleanupConvertableValue', () => {
         logger.minLevel = LoggingLevel.Debug;
 
         expect(testItem.cleanupConvertableValue(0, LookupKey.Number)).toBe(0);
-        expect(logger.findMessage('Using TestLookupKeyConverter', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using TestLookupKeyConverter', LoggingLevel.Debug)).toBeTruthy();
      
         expect(testItem.cleanupConvertableValue(true, LookupKey.Boolean)).toBe(true);
         expect(testItem.cleanupConvertableValue('text', LookupKey.String)).toBe('text');
@@ -344,7 +344,7 @@ describe('cleanupConvertableValue', () => {
         logger.minLevel = LoggingLevel.Debug;
 
         expect(() => testItem.cleanupConvertableValue([], 'SOMETHING')).toThrow(/unsupported/);
-        expect(logger.findMessage('Using TestLookupKeyConverter', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using TestLookupKeyConverter', LoggingLevel.Debug)).toBeTruthy();
      
     });
 

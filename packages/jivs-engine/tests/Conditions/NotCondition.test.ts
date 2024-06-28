@@ -81,7 +81,7 @@ describe('NotCondition', () => {
         
         expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
     });
     test('with null childconfig, logs error and evaluate returns undetermined', () => {
@@ -100,7 +100,7 @@ describe('NotCondition', () => {
         
         expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('childConditionConfig', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('childConditionConfig', LoggingLevel.Error, null)).toBeTruthy();
 
     });    
     test('with evaluate returning a promise in child condition, throws', () => {

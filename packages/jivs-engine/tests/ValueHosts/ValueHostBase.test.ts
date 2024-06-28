@@ -482,7 +482,7 @@ describe('setValue', () => {
         let testItem = setup.valueHost;
         testItem.setValue(finalValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null, null)).toBeTruthy();
+        expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null)).toBeTruthy();
     });
     test('isEnabled=false will not change the value.', () => {
         const initialValue = 100;
@@ -494,8 +494,8 @@ describe('setValue', () => {
         testItem.setValue(finalValue);
         expect(testItem.getValue()).toBe(initialValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeTruthy();
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeNull();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeNull();
     });
     test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
         const initialValue = 100;
@@ -507,8 +507,8 @@ describe('setValue', () => {
         testItem.setValue(finalValue, { overrideDisabled: true });
         expect(testItem.getValue()).toBe(finalValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeTruthy();
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeNull();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeTruthy();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });
 });
 describe('setValueToUndefined', () => {
@@ -859,7 +859,7 @@ describe('isEnabled and related enabled', () => {
             expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
             expect(setup.vh.exposeState.enabled).toBe(expectedStateEnabled);
             expect(stateChanged).toBe(expectStateChange);
-            expect(setup.logger.findMessage('setEnabled', LoggingLevel.Debug, null, null)).toBeTruthy();
+            expect(setup.logger.findMessage('setEnabled', LoggingLevel.Debug, null)).toBeTruthy();
         }
         test('setEnabled(true) results in isEnabled=true, state.enabled=true', () => {
             testSetEnabled(undefined, undefined, true, true, true, true);
@@ -925,7 +925,7 @@ describe('isEnabled and related enabled', () => {
 
             expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
             let logger = setup.logger as CapturingLogger;
-            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null, null)).toBeTruthy();
+            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null)).toBeTruthy();
 
         });             
         test('invalid enablerConfig throws and logs', () => {
@@ -933,7 +933,7 @@ describe('isEnabled and related enabled', () => {
 
             expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
             let logger = setup.logger as CapturingLogger;
-            expect(logger.findMessage('not registered', LoggingLevel.Error, null, null)).toBeTruthy();
+            expect(logger.findMessage('not registered', LoggingLevel.Error, null)).toBeTruthy();
 
         });         
     });
@@ -981,7 +981,7 @@ describe('isEnabled and related enabled', () => {
 
             expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
             let logger = setup.logger as CapturingLogger;
-            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null, null)).toBeTruthy();
+            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null)).toBeTruthy();
 
         });             
         test('invalid enablerConfig throws and logs', () => {
@@ -989,7 +989,7 @@ describe('isEnabled and related enabled', () => {
 
             expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
             let logger = setup.logger as CapturingLogger;
-            expect(logger.findMessage('not registered', LoggingLevel.Error, null, null)).toBeTruthy();
+            expect(logger.findMessage('not registered', LoggingLevel.Error, null)).toBeTruthy();
 
         });         
     });

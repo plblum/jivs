@@ -184,8 +184,8 @@ describe('resolveTokens', () => {
         testItem.services = vm.services;
         expect(testItem.resolveTokens('{token:' + LookupKey.Number + '}', null!, vm, messageTokeSource)).toBe('{token:' + LookupKey.Number + '}');
 
-        expect(logger.findMessage('token', LoggingLevel.Error, LoggingCategory.Configuration, 'MessageTokenResolverService')).not.toBeNull();        
-        expect(logger.findMessage('not replaced', LoggingLevel.Warn, LoggingCategory.None, 'MessageTokenResolverService')).not.toBeNull();        
+        expect(logger.findMessage('token', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();        
+        expect(logger.findMessage('not replaced', LoggingLevel.Warn)).toBeTruthy();        
     });          
     test('Message with {token:formatter} where the value cannot be resolved and is not replaced and gets logged', () => {
         let vm = createMockValidationManagerForMessageTokenResolver(true);
@@ -205,7 +205,7 @@ describe('resolveTokens', () => {
         vm.services.cultureService.activeCultureId = 'de-DE';  // not configured in LA
         expect(() => testItem.resolveTokens('{token:UNKNOWNLOOKUPKEY}', null!, vm, messageTokeSource)).toThrow();
 
-        expect(logger.findMessage('No DataTypeFormatter for LookupKey', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeFormatter for LookupKey', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });        
     test('getValuesForTokens function throws an error', () => {
         let vm = createMockValidationManagerForMessageTokenResolver(false);
@@ -222,7 +222,7 @@ describe('resolveTokens', () => {
         testItem.services = vm.services;
         expect(() => testItem.resolveTokens('{token:INVALID}', null!, vm, messageTokeSource)).toThrow(/No DataTypeFormatter for LookupKey/);
         let logger = vm.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('No DataTypeFormatter for LookupKey', LoggingLevel.Error, LoggingCategory.Exception, null)).not.toBeNull();
+        expect(logger.findMessage('No DataTypeFormatter for LookupKey', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });    
 });
 

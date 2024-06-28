@@ -138,9 +138,9 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
         let test4 = new TestDataType("z", "y");
 
         expect(testItem.compare(test1, test1, null, null)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Identified "TEST"', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified "TEST"', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info)).toBeTruthy();
 
 
         expect(testItem.compare(test2, test3, null, null)).toBe(ComparersResult.Equals);
@@ -169,9 +169,9 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
         let test4 = new TestDataType("z", "y");
 
         expect(testItem.compare(test1, test1, "TEST", "TEST")).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Identified TEST', LoggingLevel.Debug, null, null)).toBeNull();
-        expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified TEST', LoggingLevel.Debug, null)).toBeNull();
+        expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info)).toBeTruthy();
 
 
         expect(testItem.compare(test2, test3, "TEST", "TEST")).toBe(ComparersResult.Equals);
@@ -192,9 +192,9 @@ describe('DataTypeComparerService.compare', () => {
         testItem.services = services;
       
         expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Identified "Number"', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug, null, null)).toBeNull();
-        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified "Number"', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Using TestComparer', LoggingLevel.Debug, null)).toBeNull();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info)).toBeTruthy();
 
         expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equals);
         expect(testItem.compare(1, 0, null, null)).toBe(ComparersResult.GreaterThan);
@@ -239,10 +239,10 @@ describe('DataTypeComparerService.compare', () => {
         dtic.register(new TestConverter());        
 
         expect(testItem.compare(new TestDataType(0), 0, null, null)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Identified "TEST"', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Identified "Number"', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified "TEST"', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Identified "Number"', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info)).toBeTruthy();
 
         expect(testItem.compare(new TestDataType(10), 0, null, null)).toBe(ComparersResult.GreaterThan);
         expect(testItem.compare(new TestDataType(undefined!), 0, null, null)).toBe(ComparersResult.Undetermined);        
@@ -273,8 +273,8 @@ describe('DataTypeComparerService.compare', () => {
         let dtcs = services.dataTypeConverterService as DataTypeConverterService;
         dtcs.register(new CaseInsensitiveStringConverter());
         expect(testItem.compare("ABC", "ABC", LookupKey.CaseInsensitive, LookupKey.CaseInsensitive)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Compare Result: Equals', LoggingLevel.Info)).toBeTruthy();
 
         expect(testItem.compare("ABC", "abc", LookupKey.CaseInsensitive, LookupKey.CaseInsensitive)).toBe(ComparersResult.Equals);
         expect(testItem.compare("abc", "ABC", LookupKey.CaseInsensitive, LookupKey.CaseInsensitive)).toBe(ComparersResult.Equals);
@@ -333,9 +333,9 @@ booleancomparer compares the two values
 
         testItem.register(new BooleanDataTypeComparer());
         expect(testItem.compare("YES", "yes", LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Using BooleanAsStringConverter', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Using BooleanDataTypeComparer with Boolean and Boolean', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Compare result: Equal', LoggingLevel.Info, null, null)).not.toBeNull();
+        expect(logger.findMessage('Using BooleanAsStringConverter', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Using BooleanDataTypeComparer with Boolean and Boolean', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Compare result: Equal', LoggingLevel.Info)).toBeTruthy();
 
 
         expect(testItem.compare("NO", "YES", LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.NotEquals);
@@ -439,8 +439,8 @@ booleancomparer compares the two values
 
         let dtis = services.dataTypeIdentifierService as DataTypeIdentifierService;        
         expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equals);
-        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, LoggingCategory.None, 'DataTypeComparerService')).not.toBeNull();        
-        expect(logger.findMessage('Compare result: Equals', LoggingLevel.Info, LoggingCategory.Result, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, null)).toBeTruthy();        
+        expect(logger.findMessage('Compare result: Equals', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();        
 
     });
 
@@ -464,9 +464,9 @@ booleancomparer compares the two values
         testItem.register(new NonSevereErrorComparer());    
 
         expect(testItem.compare(1, 1, LookupKey.Number, LookupKey.Number)).toBe(ComparersResult.Undetermined);
-        expect(logger.findMessage('Using NonSevereErrorComparer', LoggingLevel.Debug, LoggingCategory.None, 'DataTypeComparerService')).not.toBeNull();        
-        expect(logger.findMessage('Non-severe', LoggingLevel.Error, null, null)).not.toBeNull();        
-        expect(logger.findMessage('Compare result: Undetermined', LoggingLevel.Info, LoggingCategory.Result, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('Using NonSevereErrorComparer', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Non-severe', LoggingLevel.Error)).toBeTruthy();        
+        expect(logger.findMessage('Compare result: Undetermined', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();
 
     });    
     test('Unsupported data type for lookupKey using JavaScript object logs error and throws', () => {
@@ -475,8 +475,8 @@ booleancomparer compares the two values
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare({}, 'A', null, null)).toThrow(/operand/);
         let logger = testItem.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeComparerService')).not.toBeNull();        
-        expect(logger.findMessage('Compare result:', LoggingLevel.Info, null, null)).toBeNull();        
+        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy()      
+        expect(logger.findMessage('Compare result:', LoggingLevel.Info, null)).toBeNull();        
 
     });    
     test('Unsupported data type for lookupKey using some class instance logs error and throws', () => {
@@ -485,7 +485,7 @@ booleancomparer compares the two values
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare(testItem /* some class */, 'A', null, null)).toThrow(/operand/);
         let logger = testItem.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeComparerService')).not.toBeNull();        
+        expect(logger.findMessage('operand', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();    
 
     });    
 

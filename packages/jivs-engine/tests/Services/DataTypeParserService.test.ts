@@ -72,7 +72,7 @@ describe('DataTypeParserService.parse', () => {
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.parse('', 'huh', 'en')).toThrow(/No DataTypeParser/);
-        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
 
     test('Parameters find a parser with same lookup key and culture plus logs', () => {
@@ -85,8 +85,8 @@ describe('DataTypeParserService.parse', () => {
         let expectedResult: DataTypeResolution<string> = { value: 'RESULT' };
         testItem.register(new TestParser('TestKey', ['en'], expectedResult));
         expect(testItem.parse('RESULT', 'TestKey', 'en')).toEqual(expectedResult);
-        expect(logger.findMessage('Parser selected', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Parsed "TestKey" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
+        expect(logger.findMessage('Parser selected', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Parsed "TestKey" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
 
     test('Parser throws Error. results in errorMessage with exception message', () => {
@@ -108,8 +108,8 @@ describe('DataTypeParserService.parse', () => {
         testItem.register(new ParserThrowsError());
         expect(testItem.parse('anything', 'TEST', 'does not matter').errorMessage).toBe('ERROR');
          // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService'
-        expect(logger.findMessage('Parser selected: ParserThrowsError', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('Parser selected: ParserThrowsError', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
     test('Parser throws string. results throwing exception using the string as the error message', () => {
         class ParserThrowsString implements IDataTypeParser<string>
@@ -137,8 +137,8 @@ describe('DataTypeParserService.parse', () => {
             expect((e as Error).message).toBe('ERROR');
         }
         // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeParserService'
-        expect(logger.findMessage('Parser selected: ParserThrowsString', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('Parser selected: ParserThrowsString', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
     test('With registered parsers but a lookup key that does not match, throws Unsupported lookupKey error and logs', () => {
         let services = new MockValidationServices(false, true);
@@ -149,7 +149,7 @@ describe('DataTypeParserService.parse', () => {
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.parse('', 'huh', 'en')).toThrow(/No DataTypeParser/);
-        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });    
     test('With registered parsers and matching lookup key but no match to cultureId, throws Unsupported lookupKey error and logs', () => {
         let services = new MockValidationServices(false, true);
@@ -160,7 +160,7 @@ describe('DataTypeParserService.parse', () => {
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.parse('', 'TEST', 'en-GB')).toThrow(/No DataTypeParser/);
-        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception, 'DataTypeParserService')).not.toBeNull();
+        expect(logger.findMessage('No DataTypeParser', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });        
 });
 describe('parse() using lookupKeyFallbackService', () => {
@@ -187,9 +187,9 @@ describe('parse() using lookupKeyFallbackService', () => {
         let dtfs = services.dataTypeParserService;
         let result = dtfs.parse('1', LookupKey.Integer, 'en');
         expect(result.value).toEqual(1);
-        expect(logger.findMessage('Trying fallback', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Parser selected: NumberParser', LoggingLevel.Debug, null, null)).not.toBeNull();        
-        expect(logger.findMessage('Parsed "Number" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
+        expect(logger.findMessage('Trying fallback', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Parser selected: NumberParser', LoggingLevel.Debug)).toBeTruthy();        
+        expect(logger.findMessage('Parsed "Number" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Custom currency type falls back to Currency', () => {
         let services = createValidationServices();
@@ -204,10 +204,10 @@ describe('parse() using lookupKeyFallbackService', () => {
         let dtfs = services.dataTypeParserService;
         let result = dtfs.parse('1', 'CUSTOMB', 'en');
         expect(result.value).toBeDefined();
-        expect(logger.findMessage('Trying fallback: CUSTOMA', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Trying fallback: Currency', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Parser selected: CurrencyParser', LoggingLevel.Debug, null, null)).not.toBeNull();        
-        expect(logger.findMessage('Parsed "Currency" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();        
+        expect(logger.findMessage('Trying fallback: CUSTOMA', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Trying fallback: Currency', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Parser selected: CurrencyParser', LoggingLevel.Debug)).toBeTruthy();        
+        expect(logger.findMessage('Parsed "Currency" with culture "en"', LoggingLevel.Info)).toBeTruthy();        
     });    
     test('Fallback loop stopped with exception', () => {
         let services = createValidationServices();

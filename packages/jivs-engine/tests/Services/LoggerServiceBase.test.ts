@@ -154,32 +154,28 @@ describe('TestLoggerServiceBase.log using MainLogger to also capture content', (
         mainLogger.minLevel = LoggingLevel.Debug;
         let testItem = new TestLoggerServiceBase(LoggingLevel.Debug, mainLogger);
         expect(() => testItem.log(LoggingLevel.Debug, messageOnly)).not.toThrow();
-        expect(mainLogger.entryCount()).toBeGreaterThan(0);
-        expect(mainLogger.getLatest()?.level).toBe(LoggingLevel.Debug);
+        expect(mainLogger.findMessage('Message', LoggingLevel.Debug, null)).toBeTruthy();
     });
     test('Info', () => {
         let mainLogger = new CapturingLogger();
         mainLogger.minLevel = LoggingLevel.Debug;
         let testItem = new TestLoggerServiceBase(LoggingLevel.Debug, mainLogger);
         expect(() => testItem.log(LoggingLevel.Info, messageOnly)).not.toThrow();
-        expect(mainLogger.entryCount()).toBeGreaterThan(0);
-        expect(mainLogger.getLatest()?.level).toBe(LoggingLevel.Info);
+        expect(mainLogger.findMessage('Message', LoggingLevel.Info, null)).toBeTruthy();
     });
     test('Warn', () => {
         let mainLogger = new CapturingLogger();
         mainLogger.minLevel = LoggingLevel.Debug;
         let testItem = new TestLoggerServiceBase(LoggingLevel.Debug, mainLogger);
         expect(() => testItem.log(LoggingLevel.Warn, messageOnly)).not.toThrow();
-        expect(mainLogger.entryCount()).toBeGreaterThan(0);
-        expect(mainLogger.getLatest()?.level).toBe(LoggingLevel.Warn);
+        expect(mainLogger.findMessage('Message', LoggingLevel.Warn, null)).toBeTruthy();
     });
     test('Error', () => {
         let mainLogger = new CapturingLogger();
         mainLogger.minLevel = LoggingLevel.Debug;
         let testItem = new TestLoggerServiceBase(LoggingLevel.Debug, mainLogger);
         expect(() => testItem.log(LoggingLevel.Error, messageOnly)).not.toThrow();
-        expect(mainLogger.entryCount()).toBeGreaterThan(0);
-        expect(mainLogger.getLatest()?.level).toBe(LoggingLevel.Error);
+        expect(mainLogger.findMessage('Message', LoggingLevel.Error, null)).toBeTruthy();
     });
 });
 
@@ -283,8 +279,7 @@ describe('logError()', () => {
 
             });
         expect(testItem.lastLevel).toBe(LoggingLevel.Error);
-        expect(mainLogger.entryCount()).toBeGreaterThan(0);
-        expect(mainLogger.getLatest()?.level).toBe(LoggingLevel.Error);
+        expect(mainLogger.findMessage('Message', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
 
     });
 

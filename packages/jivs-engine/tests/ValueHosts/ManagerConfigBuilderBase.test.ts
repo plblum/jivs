@@ -1019,7 +1019,7 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
         expect(()=> testItem.publicify_combineWithValidatorConfig(destinationConfig,
             (combiningBuilder) => { })).not.toThrow();          
         expect(destinationConfig).toEqual(expectedConfig);
-        expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null)).toBeTruthy();
 
     });    
     test('3 parameter function to combine does not provide any replacement makes no change but logs', () => {
@@ -1050,7 +1050,7 @@ describe('ManagerConfigBuilderBase.combineWithValidatorConfig', () => {
             CombineUsingCondition.All,
             (combiningBuilder) => { })).not.toThrow();          
         expect(destinationConfig).toEqual(expectedConfig);
-        expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null)).toBeTruthy();
 
     });        
     test('arg1 parameter null', () => {
@@ -1245,7 +1245,7 @@ describe('replaceConditionWith', () => {
         expect(() => testItem.publicify_replaceConditionWith(destinationConfig,
             (replacementBuilder) => { })).not.toThrow();          
         expect(destinationConfig).toEqual(expectedConfig);
-        expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('did not create a conditionConfig', LoggingLevel.Warn, null)).toBeTruthy();
 
     });            
 });
@@ -1279,7 +1279,7 @@ describe('enabler', () => {
 
         expect(setup.vmConfig.valueHostConfigs[0]).toEqual(valueHostConfig);
         let logger = setup.vmConfig.services.loggerService as CapturingLogger;
-        expect(logger.findMessage(logContent, null, null, null)).toBeTruthy();
+        expect(logger.findMessage(logContent, null, null)).toBeTruthy();
     }
 
     test('Actual conditionConfig and then replace it to see difference in logging', () => {
@@ -1327,6 +1327,6 @@ describe('enabler', () => {
         let setup = setupEnablerAssignment();
         expect(() => setup.builder.enabler('Field2', { conditionType: 'x ' })).toThrow(/not defined/);
         let logger = setup.vmConfig.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('not defined', null, null, null)).toBeTruthy();
+        expect(logger.findMessage('not defined', null, null)).toBeTruthy();
     });
 });

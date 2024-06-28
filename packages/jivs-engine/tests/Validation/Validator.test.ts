@@ -332,7 +332,7 @@ describe('Validator.enabler', () => {
         expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
         expect(enabler).toBeInstanceOf(ErrorResponseCondition);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('UnknownType', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
     });
     test('Attempt to create WhenCondition child condition with invalid type logs and replaces the condition with ErrorResponseCondition', () => {
         let setup = setupWithField1AndField2({
@@ -354,7 +354,7 @@ describe('Validator.enabler', () => {
         expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
         expect(enabler).toBeInstanceOf(AlwaysMatchesCondition);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('UnknownType', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
     });    
 
     test('Not using WhenCondition sets enabler to null', () => {
@@ -801,7 +801,7 @@ describe('Validator.validate', () => {
         expect(vrResult!.issueFound).toBeNull();
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Match', LoggingLevel.Info, LoggingCategory.Result, null)).toBeTruthy();
+        expect(logger.findMessage('Match', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();
     });
     function testSeverity(severity: ValidationSeverity): void {
         let setup = setupWithField1AndField2({
@@ -819,8 +819,8 @@ describe('Validator.validate', () => {
         expect(vrResult!.issueFound!.severity).toBe(severity);
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('NoMatch', LoggingLevel.Info, LoggingCategory.Result, null)).toBeTruthy();     
-        expect(logger.findMessage('Validation errorcode "RequireText"', LoggingLevel.Info, LoggingCategory.Result, null)).toBeTruthy();                
+        expect(logger.findMessage('NoMatch', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();     
+        expect(logger.findMessage('Validation errorcode "RequireText"', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();                
     }
     test('Warning Issue found. Returns the issue with severity = warning', () => {
         testSeverity(ValidationSeverity.Warning);
@@ -873,10 +873,7 @@ describe('Validator.validate', () => {
         expect(vrResult).not.toBeInstanceOf(Promise);
         vrResult = vrResult as unknown as ValidatorValidateResult;
         expect(vrResult!.issueFound).toBeNull();
-
-        // // 2 info level log entries: bailout and validation result
-        // expect(logger.entryCount()).toBe(2);
-        expect(logger.findMessage(loggedMessage, loggingLevel, null, null)).not.toBeNull();
+        expect(logger.findMessage(loggedMessage, loggingLevel)).toBeTruthy();
     }
     test('Issue exists. Enabled = false. Returns null', () => {
         testConditionHasIssueButDisabledReturnsNull({
@@ -934,7 +931,7 @@ describe('Validator.validate', () => {
             expect(vrResult!.issueFound).toBeNull();
 
         if (loggedMessage || logLevel)
-            expect(logger.findMessage(loggedMessage, logLevel, null, null)).not.toBeNull();
+            expect(logger.findMessage(loggedMessage, logLevel)).toBeTruthy();
     }
 
 
@@ -998,9 +995,8 @@ describe('Validator.validate', () => {
             expect(vrResult!.issueFound).not.toBeNull();
         else
             expect(vrResult!.issueFound).toBeNull();
-        // // 2 info level log entries: first Condition second validate result
-        // expect(logger.entryCount()).toBe(logCount);
-        expect(logger.findMessage(loggedMessage, logLevel, null, null)).not.toBeNull();
+
+        expect(logger.findMessage(loggedMessage, logLevel)).toBeTruthy();
     }
     test('ValidationOption.duringEdit = true with issue found.', () => {
         testDuringEditIsTrue({}, '', 'DuringEdit', LoggingLevel.Debug, true);
@@ -1024,11 +1020,7 @@ describe('Validator.validate', () => {
         expect(vrResult!.issueFound).toBeNull();
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
 
-        // // 3 log entries: intro, Error level exception
-        // expect(logger.entryCount()).toBe(2);
-        // expect(logger.captured[0].level).toBe(LoggingLevel.Info);        
-        // expect(logger.captured[1].level).toBe(LoggingLevel.Error);
-        expect(logger.findMessage('Always throws', LoggingLevel.Error, null, null)).not.toBeNull();
+        expect(logger.findMessage('Always throws', LoggingLevel.Error)).toBeTruthy();
     });
 
     function setupPromiseTest(result: ConditionEvaluateResult, delay: number, error?: string): {
@@ -1112,8 +1104,7 @@ describe('Validator.validate', () => {
             catch (e) {
                 expect(e).toBe('ERROR');
                 let logger = setup.services.loggerService as CapturingLogger;
-                expect(logger.entryCount()).toBe(1);
-                expect(logger.getLatest()!.message).toMatch(/ERROR/);
+                expect(logger.findMessage('ERROR', LoggingLevel.Error, null)).toBeTruthy();
 
             }
     });
@@ -1124,7 +1115,7 @@ describe('Validator.validate', () => {
         setup.valueHost1.setValue('valid');
 
         setup.validator.validate({});
-        expect(logger.findMessage('Starting Validation for error code', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Starting Validation for error code', LoggingLevel.Debug)).toBeTruthy();
     });    
 });
 describe('Validator.gatherValueHostNames', () => {

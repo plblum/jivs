@@ -26,7 +26,7 @@ function createServices(): { logger: CapturingLogger, services: IValidationServi
 function setupLogger(services: IValidationServices, level: LoggingLevel): CapturingLogger
 {
     let logger = new CapturingLogger();
-    logger.extraLogger = new ConsoleLoggerService();
+    logger.mainLogger = new ConsoleLoggerService();
     services.loggerService = logger;
     return logger;
 }
@@ -153,9 +153,8 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
             expect(destination).toEqual(expected);
             expect(source).toEqual(expectedSource);
             if (logContains)
-                expect(setup.logger.findMessage(logContains, null, null, null)).not.toBeNull();
-            else
-                expect(setup.logger.entryCount()).toBe(0);
+                expect(setup.logger.findMessage(logContains, null, null)).toBeTruthy();
+
         }
         test('nochange keeps destination intact', () => {
             testMergeProperty('nochange', { A: 'ABC' }, { A: 'XYZ' }, { A: 'XYZ' }, 'Rule prevents changes');
@@ -337,7 +336,7 @@ describe('ValueHostConfigMergeService', () => {
             expect(destination).toEqual(expectedDestionation);
             expect(source).toEqual(expectedSource);
             if (logContains)
-                expect(setup.logger.findMessage(logContains, null, null, null)).not.toBeNull();
+                expect(setup.logger.findMessage(logContains, null)).toBeTruthy();
         }
         test('Same valueHostName, no validatorConfigs, no custom rules. Copies everything except valueHostType and valueHostName', () => {
             testResolve({
@@ -678,7 +677,7 @@ describe('ValidatorConfigMergeService', () => {
             testItem.merge(source, destination);
             expect(destination).toEqual(expectedDestination);
             if (logContains)
-                expect(setup.logger.findMessage(logContains, logLevel ?? null, null, null)).toBeTruthy();
+                expect(setup.logger.findMessage(logContains, logLevel ?? null, null)).toBeTruthy();
         }
         test('Neither source or destination has ValidatorConfigs leaves destination unchanged', () => {
             let testItem = new ValidatorConfigMergeService();

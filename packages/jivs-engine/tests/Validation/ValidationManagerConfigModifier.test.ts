@@ -28,7 +28,7 @@ function createVMConfig(): ValidationManagerConfig {
         valueHostConfigs: []
     };
     let logger = vmConfig.services.loggerService as CapturingLogger;
-    logger.extraLogger = new ConsoleLoggerService();
+    logger.mainLogger = new ConsoleLoggerService();
     logger.minLevel = LoggingLevel.Debug
 
     return vmConfig;
@@ -591,7 +591,7 @@ describe('addValidatorsTo', () => {
             }]
         });
         let logger = vmConfig.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ConditionType mismatch', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('ConditionType mismatch', LoggingLevel.Warn, null)).toBeTruthy();
     });
 });
 

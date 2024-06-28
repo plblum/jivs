@@ -5,7 +5,7 @@ import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
 import { ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
-import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState, BusinessLogicError, SetIssuesFoundErrorCodeMissingBehavior } from "../../src/Interfaces/Validation";
 import { IValidationManager, ValidationManagerConfig } from "../../src/Interfaces/ValidationManager";
@@ -545,7 +545,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let logger = setup.services.loggerService as CapturingLogger;        
         let vrDetails: ValueHostValidateResult | null = null;
         expect(() => vrDetails = setup.valueHost.validate()).toThrow('Always Throws');
-        expect(logger.findMessage('Always Throws', LoggingLevel.Error, null, null)).not.toBeNull();
+        expect(logger.findMessage('Always Throws', LoggingLevel.Error)).toBeTruthy();
     });    
     test('With 2 Conditions evaluating as Match is ValidatorResult.Valid, IssuesFound = null', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -784,10 +784,10 @@ describe('ValidatorsValueHostBase.validate', () => {
             setup = testValidateFunctionIsNull(ivConfigs, state, valueHostGroup, validateGroup, expectedStateChanges);
         let logger = setup.services.loggerService as CapturingLogger;
         if (expectedResult === null) {
-            expect(logger.findMessage('Group names do not match', LoggingLevel.Info, null, null)).not.toBeNull();
+            expect(logger.findMessage('Group names do not match', LoggingLevel.Info)).toBeTruthy();
         }
         else
-            expect(logger.findMessage('Validation result', LoggingLevel.Info, null, null)).not.toBeNull();            
+            expect(logger.findMessage('Validation result', LoggingLevel.Info)).toBeTruthy();            
     }
 
     test('Group test. ValidatorsValueHostBase has Group name but validate has empty string for group name. Validation occurs and returns an issue', () => {
@@ -913,7 +913,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let logger = setup.services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
         setup.valueHost.validate();
-        expect(logger.findMessage('Validating ValueHost "Field1"', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Validating ValueHost "Field1"', LoggingLevel.Debug)).toBeTruthy();
     });    
     test('With ValueHost.isEnabled=false, return null and log', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -926,7 +926,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = { enabled: false };
         let setup = testValidateFunctionIsNull(ivConfigs, state, undefined, undefined, 0);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ValueHost "Field1" is disabled', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('ValueHost "Field1" is disabled', LoggingLevel.Debug)).toBeTruthy();
     });    
 });
 
@@ -1084,7 +1084,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
             errorMessage: 'ERROR',
         });
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('BusinessLogicError applied on disabled ValueHost', LoggingLevel.Warn, null, null)).not.toBeNull();
+        expect(logger.findMessage('BusinessLogicError applied on disabled ValueHost', LoggingLevel.Warn)).toBeTruthy();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
         let issuesFound = setup.valueHost.getIssuesFound();
         expect(issuesFound).toBeNull();
@@ -1529,9 +1529,8 @@ describe('validate handles exception from custom Validator class', () => {
         expect(() => setup.valueHost.validate()).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
         // 2 log entries: Error level exception and Info Level validation result
-        expect(logger.entryCount()).toBe(2);
-        expect(logger.captured[0].level).toBe(LoggingLevel.Error);
-        expect(logger.captured[1].level).toBe(LoggingLevel.Info);
+        expect(logger.findMessage('Always Throws', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
+        expect(logger.findMessage('Validation result', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();
     });
 });
 
@@ -1956,8 +1955,7 @@ describe('validate with async Conditions', () => {
                     statecounter++;
                     if (statecounter === 2) {
                         let logger = setup.services.loggerService as CapturingLogger;
-                        expect(logger.getLatest()).not.toBeNull();
-                        expect(logger.getLatest()!.message).toMatch(/REJECTED ERROR/);
+                        expect(logger.findMessage('REJECTED ERROR')).toBeTruthy();
                         done();
                     }
                 };

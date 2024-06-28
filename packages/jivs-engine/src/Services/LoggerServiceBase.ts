@@ -54,7 +54,10 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
     public get mainLogger(): ILoggerService | null {
         return this._mainLogger;
     }
-    private readonly _mainLogger: ILoggerService | null;
+    public set mainLogger(logger: ILoggerService | null) {
+        this._mainLogger = logger;
+    } 
+    private _mainLogger: ILoggerService | null;
 
     /**
      * Create a new log entry if the level is at or above the minimum level.
