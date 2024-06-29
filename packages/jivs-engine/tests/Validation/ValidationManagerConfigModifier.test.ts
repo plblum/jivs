@@ -28,7 +28,7 @@ function createVMConfig(): ValidationManagerConfig {
         valueHostConfigs: []
     };
     let logger = vmConfig.services.loggerService as CapturingLogger;
-    logger.mainLogger = new ConsoleLoggerService();
+    logger.chainedLogger = new ConsoleLoggerService();
     logger.minLevel = LoggingLevel.Debug
 
     return vmConfig;

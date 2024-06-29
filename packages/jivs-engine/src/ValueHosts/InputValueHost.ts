@@ -183,7 +183,7 @@ export class InputValueHost extends ValidatorsValueHostBase<InputValueHostConfig
                         sendResultAlong(result);
                         return true;
                     }
-                    let error = new CodingError(`Cannot parse until parserDataType or dataType is assigned to "${this.getName()}"`);
+                    let error = new CodingError(`Cannot parse until parserDataType or dataType is assigned in "${this.getName()}"`);
                     this.logError(error);
                     throw error;
                 }

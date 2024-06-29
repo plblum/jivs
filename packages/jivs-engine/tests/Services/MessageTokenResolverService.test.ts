@@ -5,7 +5,7 @@ import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IInputValueHost } from "../../src/Interfaces/InputValueHost";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IMessageTokenSource, TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
-import { CapturingLogger } from "../TestSupport/CapturingLogger";
+import { CapturedLogDetails, CapturingLogger } from "../TestSupport/CapturingLogger";
 
 
 // resolveTokens(message: string, validationManager: IValidationManager, ...hosts: Array<IMessageTokenSource>): string
@@ -222,7 +222,17 @@ describe('resolveTokens', () => {
         testItem.services = vm.services;
         expect(() => testItem.resolveTokens('{token:INVALID}', null!, vm, messageTokeSource)).toThrow(/No DataTypeFormatter for LookupKey/);
         let logger = vm.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('No DataTypeFormatter for LookupKey', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
+        expect(logger.findMessage('No DataTypeFormatter for LookupKey', null, null, {
+            type: MessageTokenResolverService
+        })).toEqual(
+            expect.objectContaining(
+            <CapturedLogDetails>{
+            level: LoggingLevel.Error,
+            category: LoggingCategory.Exception,
+            feature: 'service',
+            typeAsString: 'MessageTokenResolverService',
+            data: { token: '{token:INVALID}' }
+        }));
     });    
 });
 

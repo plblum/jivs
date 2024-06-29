@@ -61,6 +61,7 @@ import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifier
 import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
 import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
 import { ConditionFactory } from '../../src/Conditions/ConditionFactory';
+import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
 
 
 describe('ConditionBase class additional cases', () => {
@@ -2513,6 +2514,7 @@ describe('CompareToValueConditionBase class additional cases', () => {
             'Property1', LookupKey.String, 'Label');
         let logger = services.loggerService as CapturingLogger;
         logger.minLevel = LoggingLevel.Debug;
+        let chainedLogger = logger.chainedLogger = new ConsoleLoggerService(undefined, undefined, true);
         vh.setValue('');
         let config: CompareToValueConditionBaseConfig= {
             conditionType: ConditionType.EqualTo,

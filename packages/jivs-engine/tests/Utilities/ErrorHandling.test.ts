@@ -80,8 +80,9 @@ describe('ensureError', () => {
         runTest(new Date(), 'Date');
         runTest({ a: 1 }, 'Plain object');
         runTest(new X(), 'X');     
+        runTest(X, 'X');
         runTest([], 'Array');
-        runTest(()=>0, '[function]');         
+        runTest(()=>0, 'Function');         
     });    
     test('String values all return the expected result of a CodingError with string itself as the message', () => {
         function runTest(value: any, message: string): void

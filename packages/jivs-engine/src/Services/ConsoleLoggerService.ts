@@ -2,7 +2,7 @@
  * Concrete implemenation of ILogger that provides logging to the Console.
  * @module Services/ConcreteClasses/LoggerService
  */
-import { LogDetails, LogOptions, LoggingLevel } from '../Interfaces/LoggerService';
+import { ILoggerService, LogDetails, LogOptions, LoggingLevel } from '../Interfaces/LoggerService';
 import { LoggerServiceBase } from './LoggerServiceBase';
 
 
@@ -13,6 +13,12 @@ import { LoggerServiceBase } from './LoggerServiceBase';
  */
 export class ConsoleLoggerService extends LoggerServiceBase
 {
+    constructor(minLevel: LoggingLevel = LoggingLevel.Warn,
+        chainedLogger?: ILoggerService,
+        includeData: boolean = false) {
+        super(minLevel, chainedLogger);
+        this._includeData = includeData;
+    }
 /**
  * When true, add the additional details that document the results
  * of functions as individual JSON properties.
@@ -21,13 +27,13 @@ export class ConsoleLoggerService extends LoggerServiceBase
  */
     public get includeData(): boolean
     {
-        return this._includeDetails;
+        return this._includeData;
     }
     public set includeData(value: boolean)
     {
-        this._includeDetails = value;
+        this._includeData = value;
     }
-    private _includeDetails: boolean = false;
+    private _includeData: boolean = false;
 
     /**
      * Supplies the logOptions used in the callbacks.

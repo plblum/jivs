@@ -173,6 +173,8 @@ export function valueForLog(value: any): string
             return value.toString();
         case 'string':
             return value.length > 25 ? '"' + value.substring(0, 20) + '"...' : '"' + value + '"';   // clipped
+        case 'function':
+            return value.name ? value.name : value.constructor.name;
         // @ts-ignore so we don't worry about the fall-thru        
         case 'object':
             if (isPlainObject(value))

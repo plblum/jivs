@@ -26,7 +26,7 @@ function createServices(): { logger: CapturingLogger, services: IValidationServi
 function setupLogger(services: IValidationServices, level: LoggingLevel): CapturingLogger
 {
     let logger = new CapturingLogger();
-    logger.mainLogger = new ConsoleLoggerService();
+    logger.chainedLogger = new ConsoleLoggerService();
     services.loggerService = logger;
     return logger;
 }

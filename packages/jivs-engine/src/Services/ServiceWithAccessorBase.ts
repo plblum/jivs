@@ -69,7 +69,6 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
                 let details = gatherFn ? gatherFn(options) : <LogDetails>{};
                 details.feature = 'service';
                 details.type = this;
-                details.identity = this.serviceName;
                 return details;
             });
         }

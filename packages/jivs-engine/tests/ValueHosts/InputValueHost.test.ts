@@ -32,6 +32,7 @@ import { registerDataTypeParsers } from "../TestSupport/createValidationServices
 import { IDataTypeParser } from "../../src/Interfaces/DataTypeParsers";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
+import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 
 interface ITestSetupConfig {
     services: MockValidationServices,
@@ -151,6 +152,8 @@ function setupInputValueHost(
     partialIVHConfig?: Partial<InputValueHostConfig> | null,
     partialState?: Partial<InputValueHostInstanceState> | null): ITestSetupConfig {
     let services = new MockValidationServices(true, true);
+    (services.loggerService as CapturingLogger).chainedLogger = new ConsoleLoggerService(services.loggerService.minLevel);
+    (services.loggerService as CapturingLogger).overrideMinLevelWhen({ hasData: true });
     let vm = new MockValidationManager(services);
     let updatedConfig = finishPartialInputValueHostConfig(partialIVHConfig ?? null);
     let updatedState = finishPartialInputValueHostInstanceState(partialState ?? null);
@@ -463,7 +466,7 @@ describe('setInputValue with parser enabled to see both input value and native v
         expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
             null)).toBeTruthy();  
         expect(logger.findMessage('Parsed into native value', LoggingLevel.Debug,    
-            null)).toBeTruthy();
+            null, { hasData: true })).toBeTruthy();
         if (expectParserCreatorToBeCalled)
             expect(logger.findMessage('Parsing', LoggingLevel.Info,    
                 null)).toBeTruthy();
@@ -485,6 +488,7 @@ describe('setInputValue with parser enabled to see both input value and native v
         }
         let setup = setupInputValueHost(ivh);
         setup.services.loggerService.minLevel = LoggingLevel.Debug;
+ //       (setup.services.loggerService as CapturingLogger).
         registerDataTypeParsers(setup.services.dataTypeParserService);
         setup.services.lookupKeyFallbackService.register(LookupKey.Integer, LookupKey.Number);
 
@@ -498,7 +502,7 @@ describe('setInputValue with parser enabled to see both input value and native v
         expect(logger.findMessage('Attempt to parse into native value', LoggingLevel.Debug,    
             null)).toBeTruthy();  
         expect(logger.findMessage('Parser reported error', LoggingLevel.Debug,    
-            null)).toBeTruthy();  
+            null, { hasData: true })).toBeTruthy();  
 
         return setup;
     }    

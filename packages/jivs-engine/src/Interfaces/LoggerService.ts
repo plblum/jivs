@@ -63,7 +63,7 @@ export interface LogDetailsBase
      * convert it into source.constructor.name, if available.
      * Alternatively a string as the type of source.
      */
-    type?: object | string;
+    type?: object | Function | string;
     /**
      * A way to identify the source of this message, such as the ValueHostName or error Code.
      * If there are several sources, create an array. For example, when reporting a 

@@ -168,12 +168,15 @@ describe('valueForLog', () => {
         expect(valueForLog('abc')).toBe('"abc"');
         expect(valueForLog(new Date())).toBe('Date');
         expect(valueForLog({ a: 1 })).toBe('Plain object');
-        expect(valueForLog(new X())).toBe('X');     
+        expect(valueForLog(new X())).toBe('X');   
+        expect(valueForLog(X)).toBe('X');   // Class type itself
         expect(valueForLog([])).toBe('Array');
-        expect(valueForLog(()=>0)).toBe('[function]');        
+        expect(valueForLog(()=>0)).toBe('Function');        
         expect(valueForLog('123456789012345678901234567890')).toBe('"12345678901234567890"...');        
         expect(valueForLog('1234567890123456789012345')).toBe('"1234567890123456789012345"');        
-        expect(valueForLog('12345678901234567890123456')).toBe('"12345678901234567890"...');        
+        expect(valueForLog('12345678901234567890123456')).toBe('"12345678901234567890"...');  
+        let testSymbol = Symbol('test');
+        expect(valueForLog(testSymbol)).toBe('[symbol]');
     });
 });
 

@@ -193,8 +193,11 @@ export class Validator implements IValidator {
             }
             // istanbul ignore next // this.condition is usually called before enabler, leaving its errors handled elsewhere
             catch (e) {
+                 // istanbul ignore next
                 let err = ensureError(e);
+                 // istanbul ignore next
                 this.logError(err);
+                 // istanbul ignore next
                 throw err;
             }
         return this._enabler;

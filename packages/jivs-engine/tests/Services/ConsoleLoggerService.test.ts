@@ -6,10 +6,21 @@ describe('ConsoleLoggerService constructor and supporting properties', () => {
     test('Default parameters', () => {
         let testItem = new ConsoleLoggerService();
         expect(testItem.minLevel).toBe(LoggingLevel.Warn);
-        expect(testItem.mainLogger).toBeNull();
+        expect(testItem.chainedLogger).toBeNull();
         expect(testItem.showStack).toBe(false);
         expect(testItem.serviceName).toBe('ConsoleLoggerService');
         expect(testItem.includeData).toBe(false);
+    });
+
+    test('change includeData', () => {
+        let testItem = new ConsoleLoggerService();
+        testItem.includeData = true;
+        expect(testItem.includeData).toBe(true);
+    });
+    test('change showStack', () => {
+        let testItem = new ConsoleLoggerService();
+        testItem.showStack = true;
+        expect(testItem.showStack).toBe(true);
     });
 
 });
@@ -97,6 +108,32 @@ describe('ConsoleLoggerService.log', () => {
         });
         logSpy.mockReset();
     });                
+    test('With includeData=true and data present, callback is passed options with includeData=true', () => {
+        let resultIncludeDataFromHandler: boolean | undefined = undefined;
+        function handler(options?: LogOptions): LogDetails {
+            resultIncludeDataFromHandler = options?.includeData;            
+            let details: LogDetails = {
+                message: 'Message',
+            };
+            if (options?.includeData) {
+                details.data = {
+                    data1: 'Data1',
+                };
+            }
+            return details;
+        }           
+        let logSpy = jest.spyOn(console, 'error');
+        let testItem = new ConsoleLoggerService(LoggingLevel.Debug);
+        testItem.includeData = true;
+        expect(() => testItem.log(LoggingLevel.Error, handler)).not.toThrow();
+        expect(resultIncludeDataFromHandler).toBe(true);
+        resultIncludeDataFromHandler = undefined;
+        testItem.includeData = false;
+        testItem.log(LoggingLevel.Error, handler);
+        expect(resultIncludeDataFromHandler).toBeUndefined();
+        logSpy.mockReset();
+    });
+    
 });
 
 describe('logError()', () => {

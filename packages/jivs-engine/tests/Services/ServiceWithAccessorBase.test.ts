@@ -129,8 +129,7 @@ describe('log()', () => {
         expect(setup.logger.lastLogDetails).toEqual({
             message: 'Test message with no services',
             feature: 'service',
-            type: 'Publicify_ServiceWithAccessorBase',
-            identity: testItem.serviceName
+            type: 'Publicify_ServiceWithAccessorBase'
         });
     });
 
@@ -151,8 +150,7 @@ describe('log()', () => {
             category: LoggingCategory.Result,
             data: { key: 'value' },
             feature: 'service',
-            type: 'Publicify_ServiceWithAccessorBase',
-            identity: testItem.serviceName
+            type: 'Publicify_ServiceWithAccessorBase'
         });
     });
 });
@@ -166,8 +164,7 @@ describe('logQuick()', () => {
         expect(setup.logger.lastLogDetails).toEqual({
             message: 'Quick log message',
             feature: 'service',
-            type: 'Publicify_ServiceWithAccessorBase',
-            identity: testItem.serviceName
+            type: 'Publicify_ServiceWithAccessorBase'
         });        
     });
 
