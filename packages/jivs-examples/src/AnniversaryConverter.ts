@@ -1,6 +1,9 @@
-import { IDataTypeConverter } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverters";
+import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { DataTypeConverterBase } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+
+
 
 // Example: Supporting a Date object in a different way than it was intended by
 // implementing IDataTypeConverter. This uses just the Day and Month.
@@ -15,17 +18,22 @@ export const AnniversaryLookupKey = 'Anniversary';  // when using a Date object 
  * even if that's not what was supplied.
  * DataType LookupKey: "Anniversary".
  */
-export class UTCAnniversaryConverter implements IDataTypeConverter
+export class UTCAnniversaryConverter extends DataTypeConverterBase
 {
-    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === AnniversaryLookupKey) &&
-            value instanceof Date;
-    }
-    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+    convert(value: any, sourceLookupKey: string | null, resultLookupKey: string) {
         if (isNaN(value.getTime()))
             return undefined;        
         let dateOnly = new Date(Date.UTC(2004, value.getUTCMonth(), value.getUTCDate()));
         return dateOnly.getTime();
+    }
+    protected validValue(value: any): boolean {
+        return value instanceof Date;
+    }
+    supportedResultLookupKeys(): string[] {
+        return [LookupKey.Number, LookupKey.Milliseconds]
+    }
+    supportedSourceLookupKeys(): (string | null)[] {
+        return [AnniversaryLookupKey];
     }
 }
 

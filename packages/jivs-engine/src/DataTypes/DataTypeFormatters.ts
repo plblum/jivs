@@ -327,7 +327,7 @@ export class IntegerFormatter extends NumberFormatterBase
 
     // public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
     //     if (typeof value === 'number')
-    //         value = Math.floor(value);
+    //         value = Math.trunc(value);
     //     super.format(value, dataTypeLookupKey, cultureId);
     // }
 }

@@ -38,19 +38,19 @@ import {
     MaxDecimalsConditionConfig
 } from "../../src/Conditions/ConcreteConditions";
 import { NotCondition, NotConditionConfig } from "../../src/Conditions/NotCondition";
-import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LogDetails, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
 
 import {
     MockValidationServices, MockValidationManager,
 } from "../TestSupport/mocks";
-import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
+import { ConditionEvaluateResult, ConditionCategory, ConditionConfig, ICondition } from "../../src/Interfaces/Conditions";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
-import { IntegerConverter } from "../../src/DataTypes/DataTypeConverters";
+import { IntegerConverter, NumericStringToNumberConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import { AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, registerTestingOnlyConditions, EvaluatesAsPromiseConditionType, makeDisposable, DisposableConditionType } from "../TestSupport/conditionsForTesting";
-import { CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
-import { CompareToValueConditionBaseConfig } from "../../src/Conditions/CompareToValueConditionBase";
+import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
+import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from "../../src/Conditions/CompareToValueConditionBase";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { RegExpConditionBase, RegExpConditionBaseConfig } from "../../src/Conditions/RegExpConditionBase";
 import { IValidationServices } from "../../src/Interfaces/ValidationServices";
@@ -61,98 +61,474 @@ import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifier
 import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
 import { SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
 import { ConditionFactory } from '../../src/Conditions/ConditionFactory';
+import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
+import { ConditionBase, ErrorResponseCondition } from '../../src/Conditions/ConditionBase';
+import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
+import { CodingError, InvalidTypeError } from '../../src/Utilities/ErrorHandling';
+import { OneValueConditionBase, OneValueConditionBaseConfig } from '../../src/Conditions/OneValueConditionBase';
+import { IInputValueHost } from '../../src/Interfaces/InputValueHost';
+import { ComparersResult } from '../../src/Interfaces/DataTypeComparerService';
 
+function setupServicesAndVM(): {
+    services: IValidationServices,
+    vm: MockValidationManager
+} {
+    let services = new MockValidationServices(false, false);
+    let logger = services.loggerService as CapturingLogger;
+    logger.minLevel = LoggingLevel.Debug;
+    logger.chainedLogger = new ConsoleLoggerService(LoggingLevel.Debug, undefined, true);
+    let vm = new MockValidationManager(services);
 
-describe('ConditionBase class additional cases', () => {
-    test('Config.valueHostName with unknown name logs and throws', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let logger = services.loggerService as CapturingLogger;
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RequireTextConditionConfig = {
-            conditionType: ConditionType.RequireText,
-            valueHostName: 'PropertyNotRegistered',
-            trim: true
+    return { services, vm };
+}
+
+function setupWithValueHost(): {
+    services: IValidationServices,
+    vm: MockValidationManager,
+    vh: IInputValueHost
+} {
+    let setup = setupServicesAndVM();
+    let vh = setup.vm.addMockInputValueHost(
+        'Property1', LookupKey.String, 'Label');
+    return { ...setup, vh };
+}
+
+describe('ConditionBase class', () => {
+
+    function setupTest(): {
+        services: IValidationServices,
+        vm: MockValidationManager,
+        testItem: Publicify_ConditionBase
+    } {
+        let setup =  setupServicesAndVM();
+        let condition = new Publicify_ConditionBase({ conditionType: baseConditionType });
+        return { ...setup, testItem: condition };
+    }
+    const baseConditionType = 'TEST';
+    class Publicify_ConditionBase extends ConditionBase<ConditionConfig> {
+
+        constructor(config: ConditionConfig) {
+            super(config);
+        }
+        public publicify_generateCondition(config: ConditionConfig, services: IValueHostsServices): ICondition {
+            return super.generateCondition(config, services);
+        }
+
+        public publicify_convertValueAndLookupKey(value: any, valueLookupKey: string | null | undefined,
+            conversionLookupKey: string | null | undefined, services: IValueHostsServices): {
+                value?: any,
+                lookupKey?: string | null,
+                failed: boolean
+            } {
+            return super.tryConversion(value, valueLookupKey, conversionLookupKey, services);
+        }
+
+        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            throw new Error('Method not implemented.');
+        }
+        protected get defaultCategory(): ConditionCategory {
+            return ConditionCategory.Contents;
+        }
+        public gatherValueHostNames(collection: Set<string>, valueHostsManager: IValueHostsManager): void {
+            throw new Error('Method not implemented.');
+        }
+        public publicify_ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
+            return super.ensureNoPromise(result);
+        }
+        public publicify_logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices, logLevel : LoggingLevel): void {
+            super.logInvalidPropertyData(propertyName, errorMessage, services, logLevel);
+        }
+        public publicify_logTypeMismatch(services: IValueHostsServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
+            super.logTypeMismatch(services, propertyName, propertyName2, propertyValue, propertyValue2);
+        }
+
+        public publicify_log(services: IValueHostsServices, level: LoggingLevel, gatherFn: logGatheringHandler): void {
+            super.log(services, level, gatherFn);
+        }
+        public publicify_logQuick(services: IValueHostsServices, level: LoggingLevel, messageFn: () => string): void {
+            super.logQuick(services, level, messageFn);
+        }
+        public publicify_logError(services: IValueHostsServices, error: Error, gatherFn?: logGatheringErrorHandler): void {
+            super.logError(services, error, gatherFn);
+        }
+    }
+    // create all unit tests
+
+    test('generateCondition with known conditionType returns its instance', () => {
+        let setup = setupTest();
+        setup.services.conditionFactory.register<ConditionConfig>(baseConditionType,
+            (config) => new Publicify_ConditionBase(config));
+
+        let config: ConditionConfig = {
+            conditionType: baseConditionType
         };
-        let testItem = new RequireTextCondition(config);
-        expect(() => testItem.evaluate(vh, vm)).toThrow(/valueHostName/);
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/valueHostName/);
+
+        let result = setup.testItem.publicify_generateCondition(config, setup.services);
+        expect(result).toBeInstanceOf(ConditionBase);
     });
-    test('Config.valueHostName with null and evaluate value is null logs and throws', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let logger = services.loggerService as CapturingLogger;
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RequireTextConditionConfig = {
-            conditionType: ConditionType.RequireText,
-            valueHostName: 'PropertyNotRegistered',
-            trim: true
+    test('generateCondition with unknown conditionType throws and logs', () => {
+        let setup = setupTest();
+
+        let config: ConditionConfig = {
+            conditionType: 'UNKNOWN'
         };
-        let testItem = new RequireTextCondition(config);
-        expect(() => testItem.evaluate(null, vm)).toThrow(/valueHostName/);
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/valueHostName/);
+        expect(() => setup.testItem.publicify_generateCondition(config, setup.services)).toThrow(/ConditionType not registered/);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error)).toBeTruthy();
     });
-    test('ensurePrimaryValueHost will ValueHostName = null and parameter = null throws exception', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RequireTextConditionConfig = {
-            conditionType: ConditionType.RequireText,
-            valueHostName: null,
-            trim: true
+    test('generateCondition when known condition throws minor Error during construction returns an ErrorResponseCondition', () => {
+        class constructorThrowsMinorErrorCondition extends ConditionBase<ConditionConfig> {
+            constructor(config: ConditionConfig) {
+                super(config);
+                throw new Error('Test Error');
+            }
+            evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+                throw new Error('Method not implemented.');
+            }
+            gatherValueHostNames(collection: Set<string>, valueHostsManager: IValueHostsManager): void {
+                throw new Error('Method not implemented.');
+            }
+            protected get defaultCategory(): ConditionCategory {
+                throw new Error('Method not implemented.');
+            }
+        }
+        let setup = setupTest();
+        setup.services.conditionFactory.register<ConditionConfig>('THROWS',
+            (config) => new constructorThrowsMinorErrorCondition(config));
+
+        let config: ConditionConfig = {
+            conditionType: 'THROWS'
         };
-        let testItem = new RequireTextCondition(config);
-        //     expect(() => testItem.evaluate(vh, vm)).toThrow(/valueHostName/);
-        expect(() => testItem.evaluate(null, vm)).toThrow(/valueHostName/);
+        let result = setup.testItem.publicify_generateCondition(config, setup.services);
+        expect(result).toBeInstanceOf(ErrorResponseCondition);
+    
     });
-    test('ensurePrimaryValueHost will ValueHostName = null and parameter = assigned works normally', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RequireTextConditionConfig = {
-            conditionType: ConditionType.RequireText,
-            valueHostName: null,
-            trim: true
-        };
-        let testItem = new RequireTextCondition(config);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue('');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-    });
-    test('dispose', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RequireTextConditionConfig = {
-            conditionType: ConditionType.RequireText,
-            valueHostName: null,
-            trim: true
-        };
-        let testItem = new RequireTextCondition(config);
-        testItem.dispose();
-        expect(()=> testItem.evaluate(null, vm)).toThrow(TypeError);
-    });    
-    test('dispose with IDisposable on config ', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: RequireTextConditionConfig = makeDisposable({
-            conditionType: ConditionType.RequireText,
-            valueHostName: null,
-            trim: true
+    describe('convertValueAndLookupKey', () => {
+        test('With null conversionLookupKey returns input value and valueLookupKey, with false=false', () => {
+            let setup = setupTest();
+            let result = setup.testItem.publicify_convertValueAndLookupKey(10, 'Number', null, setup.services);
+            expect(result.value).toBe(10);
+            expect(result.lookupKey).toBe('Number');
+            expect(result.failed).toBeFalsy();
+            result = setup.testItem.publicify_convertValueAndLookupKey('10', 'String', null, setup.services);
+            expect(result.value).toBe('10');
+            expect(result.lookupKey).toBe('String');
+            expect(result.failed).toBeFalsy();
         });
-        let testItem = new RequireTextCondition(config);
-        testItem.dispose();
-        expect(()=> testItem.evaluate(null, vm)).toThrow(TypeError);
-    });          
+
+        test('With undefined conversionLookupKey returns input value and valueLookupKey, with false=false', () => {
+            let setup = setupTest();
+            let result = setup.testItem.publicify_convertValueAndLookupKey(10, 'Number', undefined, setup.services);
+            expect(result.value).toBe(10);
+            expect(result.lookupKey).toBe('Number');
+            expect(result.failed).toBeFalsy();
+            result = setup.testItem.publicify_convertValueAndLookupKey('10', 'String', undefined, setup.services);
+            expect(result.value).toBe('10');
+            expect(result.lookupKey).toBe('String');
+            expect(result.failed).toBeFalsy();
+        });
+        test('use NumericStringToNumberConverter to change string value and lookupKey=null to number and LookupKey.Number', () => {
+            let setup = setupTest();
+            setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+            let result = setup.testItem.publicify_convertValueAndLookupKey(
+                '10', null, LookupKey.Number, setup.services);
+            expect(result.value).toBe(10);
+            expect(result.lookupKey).toBe(LookupKey.Number);
+            expect(result.failed).toBeFalsy();
+        });
+        // same but pass in lookupKey as string
+        test('use NumericStringToNumberConverter to change string value and lookupKey=String to number and LookupKey.Number', () => {
+            let setup = setupTest();
+            setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+            let result = setup.testItem.publicify_convertValueAndLookupKey(
+                '10', LookupKey.String, LookupKey.Number, setup.services);
+            expect(result.value).toBe(10);
+            expect(result.lookupKey).toBe(LookupKey.Number);
+            expect(result.failed).toBeFalsy();
+        });
+        test('with value and lookupKey that fails conversion returns failed as true', () => {
+            let setup = setupTest();
+            let result = setup.testItem.publicify_convertValueAndLookupKey(10, LookupKey.Number, LookupKey.Date, setup.services);
+            expect(result.failed).toBeTruthy();
+            expect(result.value).toBeUndefined();
+            expect(result.lookupKey).toBeUndefined();
+            let logger = setup.services.loggerService as CapturingLogger;
+            let logDetails = logger.findMessage('Value cannot be converted', LoggingLevel.Warn);
+            expect(logDetails).toBeTruthy();
+            expect(logDetails!.message).toContain(LookupKey.Date);
+            expect(logDetails!.data).toEqual({
+                value: 10,
+                valueLookupKey: LookupKey.Number,
+                conversionLookupKey: LookupKey.Date
+            });
+
+        });
+    });
+    describe('ensureNoPromise', () => {
+        test('ensureNoPromise with ConditionEvaluateResult returns the same result', () => {
+            let setup = setupTest();
+            let result = setup.testItem.publicify_ensureNoPromise(ConditionEvaluateResult.Match);
+            expect(result).toBe(ConditionEvaluateResult.Match);
+        });
+        test('ensureNoPromise with Promise<ConditionEvaluateResult> throws CodingError', () => {
+            let setup = setupTest();
+            let testPromise = new Promise<ConditionEvaluateResult>((resolve, reject) => {
+                resolve(ConditionEvaluateResult.Match);
+            });
+            expect(() => setup.testItem.publicify_ensureNoPromise(testPromise)).toThrow(CodingError);
+        });
+        
+    });
+    describe('logInvalidPropertyData', () => {
+        test('logInvalidPropertyData logs level=error message', () => {
+            let setup = setupTest();
+            setup.testItem.publicify_logInvalidPropertyData('Property1', 'Error Message', setup.services, LoggingLevel.Error);
+            let logger = setup.services.loggerService as CapturingLogger;
+            let logDetails = logger.findMessage('Property1', LoggingLevel.Error, LoggingCategory.Configuration);
+            expect(logDetails).toBeTruthy();
+            expect(logDetails!.message).toContain('Error Message');
+            expect(logDetails!.data).toEqual({
+                propertyName: 'Property1'
+            });
+        });
+        test('logInvalidPropertyData logs level=warn message', () => {
+            let setup = setupTest();
+            setup.testItem.publicify_logInvalidPropertyData('Property1', 'Warn Message', setup.services, LoggingLevel.Warn);
+            let logger = setup.services.loggerService as CapturingLogger;
+            let logDetails = logger.findMessage('Property1', LoggingLevel.Warn, LoggingCategory.Configuration);
+            expect(logDetails).toBeTruthy();
+            expect(logDetails!.message).toContain('Warn Message');
+            expect(logDetails!.data).toEqual({
+                propertyName: 'Property1'
+            });
+        });        
+    });
+    // logTypeMismatch tests
+    describe('logTypeMismatch', () => {
+        test('logTypeMismatch logs error message', () => {
+            let setup = setupTest();
+            setup.testItem.publicify_logTypeMismatch(setup.services, 'Property1', 'Property2', 10, '10');
+            let logger = setup.services.loggerService as CapturingLogger;
+            let logDetails = logger.findMessage('Type Mismatch', LoggingLevel.Warn, LoggingCategory.TypeMismatch);
+            expect(logDetails).toBeTruthy();
+            expect(logDetails!.message).toContain('Property1');
+            expect(logDetails!.message).toContain('Property2');
+            expect(logDetails!.data).toEqual({
+                value: 10,
+                secondValue: '10'
+            });
+        });
+    });
+    // log tests
+    describe('log', () => {
+        test('log with logGatheringHandler logs message', () => {
+            let setup = setupTest();
+            setup.testItem.publicify_log(setup.services, LoggingLevel.Debug, (options) => {
+                let logDetails: LogDetails = {
+                    message: 'Test Message',
+                    category: LoggingCategory.Result,
+                    data: {
+                        Value1: 'Value1'
+                    }
+                }
+                return logDetails;
+            });
+            let logger = setup.services.loggerService as CapturingLogger;
+            let logDetails = logger.findMessage('Test Message', LoggingLevel.Debug, LoggingCategory.Result);
+            expect(logDetails).toBeTruthy();
+            expect(logDetails?.feature).toBe('Condition');
+            expect(logDetails?.type).toBe('Publicify_ConditionBase');
+            expect(logDetails!.identity).toBe(baseConditionType)
+            expect(logDetails!.data).toEqual({
+                Value1: 'Value1'
+            });
+        });
+    });
+    describe('logQuick', () => {
+        test('logQuick logs message', () => {
+            let setup = setupTest();
+            setup.testItem.publicify_logQuick(setup.services, LoggingLevel.Debug,
+                () => 'Quick Message');
+            let logger = setup.services.loggerService as CapturingLogger;
+            let logDetails = logger.findMessage('Quick Message', LoggingLevel.Debug);
+            expect(logDetails).toBeTruthy();
+            expect(logDetails?.feature).toBe('Condition');
+            expect(logDetails?.type).toBe('Publicify_ConditionBase');
+            expect(logDetails!.identity).toBe(baseConditionType)
+            expect(logDetails!.data).toBeUndefined();
+        });
+    });
+    describe('logError', () => {
+        test('logError with non-severe error class logs error message but does not throw', () => {
+            let setup = setupTest();
+            setup.testItem.publicify_logError(setup.services, new Error('Test Error'));
+            let logger = setup.services.loggerService as CapturingLogger;
+            let logDetails = logger.findMessage('Test Error', LoggingLevel.Error, LoggingCategory.Exception);
+            expect(logDetails).toBeTruthy();
+            expect(logDetails?.feature).toBe('Condition');
+            expect(logDetails?.type).toBe('Publicify_ConditionBase');
+            expect(logDetails!.identity).toBe(baseConditionType)
+        });
+        test('logError with severe error class logs error message and throws', () => {
+            let setup = setupTest();
+            expect(() => setup.testItem.publicify_logError(setup.services, new CodingError('Test Error'))).toThrow(CodingError);
+            let logger = setup.services.loggerService as CapturingLogger;
+            let logDetails = logger.findMessage('Test Error', LoggingLevel.Error, LoggingCategory.Exception);
+            expect(logDetails).toBeTruthy();
+            expect(logDetails?.feature).toBe('Condition');
+            expect(logDetails?.type).toBe('Publicify_ConditionBase');
+            expect(logDetails!.identity).toBe(baseConditionType)
+        });
+    });
+    
+    describe('ErrorResponseCondition class mini-tests', () =>{
+        test('ErrorResponseCondition has category of Error', () => {
+            let testItem = new ErrorResponseCondition();
+            expect(testItem.category).toBe(ConditionCategory.Undetermined);
+            expect(testItem.conditionType).toBe(ConditionType.Unknown);
+            let evaluateResult: ConditionEvaluateResult | null = null;
+            expect(() => evaluateResult = testItem.evaluate(null, null!) as ConditionEvaluateResult).not.toThrow();
+            expect(evaluateResult).toBe(ConditionEvaluateResult.Undetermined);
+        });
+    });
+
+});
+
+describe('OneValueConditionBase class', () => {
+    const oneValueBaseConditionType = 'TEST';
+    class Publicify_OneValueConditionBase extends OneValueConditionBase<OneValueConditionBaseConfig> {
+        constructor(config: OneValueConditionBaseConfig) {
+            super(config);
+        }
+        public publicify_ensurePrimaryValueHost(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): IValueHost {
+            return super.ensurePrimaryValueHost(valueHost, valueHostsManager);
+        }
+        public publicify_getValueHost(valueHostName: ValueHostName, valueHostsManager: IValueHostsManager): IValueHost | null {
+            return super.getValueHost(valueHostName, valueHostsManager);
+        }
+        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            let vh = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
+            return ConditionEvaluateResult.Undetermined;
+        }
+        protected get defaultCategory(): ConditionCategory {
+            throw new Error('Method not implemented.');
+        }        
+    }
+
+    describe('publicify_ensurePrimaryValueHost', () => {
+        test('with ValueHostName = null and vh parameter = assigned works normally', () => {
+            let setup = setupWithValueHost();
+
+            let config: OneValueConditionBaseConfig = {
+                conditionType: oneValueBaseConditionType,
+                valueHostName: null
+            };
+            let testItem = new Publicify_OneValueConditionBase(config);
+            let resultVH = testItem.publicify_ensurePrimaryValueHost(setup.vh, setup.vm);
+            expect(resultVH).toBeTruthy();
+            expect(resultVH.getName()).toBe('Property1');
+        });      
+        test('with ValueHostName = valid property name and vh parameter = assigned works normally', () => {
+            let setup = setupWithValueHost();
+
+            let config: OneValueConditionBaseConfig = {
+                conditionType: oneValueBaseConditionType,
+                valueHostName: 'Property1'
+            };
+            let testItem = new Publicify_OneValueConditionBase(config);
+            let resultVH = testItem.publicify_ensurePrimaryValueHost(setup.vh, setup.vm);
+            expect(resultVH).toBeTruthy();
+            expect(resultVH.getName()).toBe('Property1');
+         });                
+        test('Config.valueHostName with unknown name logs and throws', () => {
+            let setup = setupWithValueHost();
+
+            let config: OneValueConditionBaseConfig = {
+                conditionType: oneValueBaseConditionType,
+                valueHostName: 'PropertyNotRegistered'
+            };
+            let testItem = new Publicify_OneValueConditionBase(config);
+            let logger = setup.services.loggerService as CapturingLogger;
+            expect(() => testItem.publicify_ensurePrimaryValueHost(setup.vh, setup.vm)).toThrow(/valueHostName/);
+            expect(logger.findMessage('is unknown', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();
+        });
+
+        test('ensurePrimaryValueHost with ValueHostName = null and parameter = null throws exception', () => {
+            let setup = setupWithValueHost();
+
+            let config: OneValueConditionBaseConfig = {
+                conditionType: oneValueBaseConditionType,
+                valueHostName: null
+            };
+            let testItem = new Publicify_OneValueConditionBase(config);
+            expect(() => testItem.publicify_ensurePrimaryValueHost(null, setup.vm)).toThrow(/Missing value/);
+            let logger = setup.services.loggerService as CapturingLogger;
+            expect(logger.findMessage('Missing value', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
+
+        });
+
+    });
+    describe('publicify_getValueHost', () => {
+        test('with ValueHostName = empty string returns null', () => {
+            let setup = setupWithValueHost();
+
+            let config: OneValueConditionBaseConfig = {
+                conditionType: oneValueBaseConditionType,
+                valueHostName: null
+            };
+            let testItem = new Publicify_OneValueConditionBase(config);
+            let resultVH = testItem.publicify_getValueHost('', setup.vm);
+            expect(resultVH).toBeNull();
+        });
+        test('with ValueHostName = known property name returns ValueHost', () => {
+            let setup = setupWithValueHost();
+
+            let config: OneValueConditionBaseConfig = {
+                conditionType: oneValueBaseConditionType,
+                valueHostName: 'Property1'
+            };
+            let testItem = new Publicify_OneValueConditionBase(config);
+            let resultVH = testItem.publicify_getValueHost('Property1', setup.vm);
+            expect(resultVH).toBeTruthy();
+            expect(resultVH!.getName()).toBe('Property1');
+        });
+        test('with ValueHostName = unknown property name returns null', () => {
+            let setup = setupWithValueHost();
+
+            let config: OneValueConditionBaseConfig = {
+                conditionType: oneValueBaseConditionType,
+                valueHostName: 'Property1'
+            };
+            let testItem = new Publicify_OneValueConditionBase(config);
+            let resultVH = testItem.publicify_getValueHost('PropertyNotRegistered', setup.vm);
+            expect(resultVH).toBeNull();
+        });
+    });
+    describe('dispose', () => {
+        test('dispose', () => {
+            let setup = setupWithValueHost();
+
+            let config: OneValueConditionBaseConfig = {
+                conditionType: oneValueBaseConditionType,
+                valueHostName: null
+            };
+            let testItem = new Publicify_OneValueConditionBase(config);
+            testItem.dispose();
+            expect(() => testItem.evaluate(null, setup.vm)).toThrow(TypeError);
+        });
+        test('dispose with IDisposable on config ', () => {
+            let setup = setupWithValueHost();
+
+            let config: OneValueConditionBaseConfig = makeDisposable({
+                conditionType: oneValueBaseConditionType,
+                valueHostName: null,
+                trim: true
+            });
+            let testItem = new Publicify_OneValueConditionBase(config);
+            testItem.dispose();
+            expect(() => testItem.evaluate(null, setup.vm)).toThrow(TypeError);
+        });
+    });
 });
 
 describe('class DataTypeCheckCondition', () => {
@@ -160,82 +536,89 @@ describe('class DataTypeCheckCondition', () => {
         expect(DataTypeCheckCondition.DefaultConditionType).toBe(ConditionType.DataTypeCheck);
     });
     test('evaluate returns Match when InputValue is not undefined and native Value is not undefined', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
+        let setup = setupWithValueHost();
+
         let config: DataTypeCheckConditionConfig = {
             conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
+
         let testItem = new DataTypeCheckCondition(config);
-        vh.setValues('A', 'A');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValues(10, '10');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValues(null, '');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValues(false, 'NO');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        setup.vh.setValues('A', 'A');
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Match);
+        setup.vh.setValues(10, '10');
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Match);
+        setup.vh.setValues(null, '');
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Match);
+        setup.vh.setValues(false, 'NO');
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Match);
     });
     test('evaluate returns NoMatch when InputValue is not undefined but native Value is undefined', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
+        let setup = setupWithValueHost();
+
         let config: DataTypeCheckConditionConfig = {
             conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
-        vh.setInputValue('A');    // at this moment, setValue is undefined
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
-        vh.setValues(undefined, '10');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        setup.vh.setInputValue('A');    // at this moment, setValue is undefined
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.NoMatch);
+        setup.vh.setValues(undefined, '10');
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('evaluate returns Undetermined when InputValue is undefined', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
+        let setup = setupWithValueHost();
+
         let config: DataTypeCheckConditionConfig = {
             conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
         // at this moment, setValue is undefined
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(10);    // doesn't change InputValue...
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
+        setup.vh.setValue(10);    // doesn't change InputValue...
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
-    test('Using StaticValueHost for property throws', () => {
-        let services = new MockValidationServices(false, false);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockValueHost(
-            'Property1', LookupKey.String, 'Label');
+    test('Using Unknown property', () => {
+        let setup = setupWithValueHost();
+
         let config: DataTypeCheckConditionConfig = {
             conditionType: ConditionType.DataTypeCheck,
-            valueHostName: 'Property1',
+            valueHostName: 'UnknownProperty',
         };
         let testItem = new DataTypeCheckCondition(config);
-        expect(() => testItem.evaluate(vh, vm)).toThrow(/Invalid ValueHost/);
-        let logger = vm.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Invalid ValueHost', LoggingLevel.Error, null, null)).not.toBeNull();
+        expect(() => testItem.evaluate(setup.vh, setup.vm)).toThrow(/is unknown/);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('is unknown', LoggingLevel.Error)).toBeTruthy();
 
     });    
+
+    test('Using StaticValueHost for property throws', () => {
+        let setup = setupWithValueHost();
+        let vh2 = setup.vm.addMockValueHost(
+            'Property2', LookupKey.String, 'Label');
+
+        let config: DataTypeCheckConditionConfig = {
+            conditionType: ConditionType.DataTypeCheck,
+            valueHostName: 'Property2',
+        };
+        let testItem = new DataTypeCheckCondition(config);
+        expect(() => testItem.evaluate(vh2, setup.vm)).toThrow(/Invalid ValueHost used/);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(logger.findMessage('Invalid ValueHost used', LoggingLevel.Error)).toBeTruthy();
+
+    });        
     test('getValuesForTokens where ConversionErrorTokenValue is setup shows that token', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
+        let setup = setupWithValueHost();
+
         let config: DataTypeCheckConditionConfig = {
             conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
-        vh.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
+        setup.vh.setValueToUndefined({ conversionErrorTokenValue: 'ERROR' });
         let testItem = new DataTypeCheckCondition(config);
 
-        let list = testItem.getValuesForTokens(vh, vm);
+        let list = testItem.getValuesForTokens(setup.vh, setup.vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
@@ -246,17 +629,15 @@ describe('class DataTypeCheckCondition', () => {
         ]);
     });
     test('getValuesForTokens where ConversionErrorTokenValue is null', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
+        let setup = setupWithValueHost();
+
         let config: DataTypeCheckConditionConfig = {
             conditionType: ConditionType.DataTypeCheck,
             valueHostName: 'Property1',
         };
         let testItem = new DataTypeCheckCondition(config);
 
-        let list = testItem.getValuesForTokens(vh, vm);
+        let list = testItem.getValuesForTokens(setup.vh, setup.vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
@@ -996,7 +1377,7 @@ describe('class RangeCondition', () => {
     });
 
 
-    test('evaluate returns Undetermined for null, undefined, and non-number types', () => {
+    test('evaluate returns Undetermined for null or undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
         let vh = vm.addMockInputValueHost(
@@ -1007,11 +1388,19 @@ describe('class RangeCondition', () => {
             minimum: 'C',
             maximum: 'G'
         };
+        let logger = services.loggerService as CapturingLogger;
         let testItem = new RangeCondition(config);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        let logDetails = logger.findMessage('lacks value to evaluate', LoggingLevel.Warn, LoggingCategory.Configuration);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.message).toContain('value:');
+        logger.clearAll();
         vh.setValue(undefined);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        logDetails = logger.findMessage('lacks value to evaluate', LoggingLevel.Warn, LoggingCategory.Configuration);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.message).toContain('value:');
     });
     test('evaluate when Minimum is different data type from Value', () => {
         let services = new MockValidationServices(false, true);
@@ -1028,9 +1417,13 @@ describe('class RangeCondition', () => {
         vh.setValue(100);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.message).toMatch(/mismatch.*Minimum/);
-        expect(logger.getLatest()!.level).toBe(LoggingLevel.Warn);
+        let logDetails = logger.findMessage('Type mismatch. Value cannot be compared to Minimum', LoggingLevel.Warn, LoggingCategory.TypeMismatch);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual({
+            secondValue: 'G',
+            value: 100
+        });
+     
     });
     test('evaluate when Maximum is different data type from Value', () => {
         let services = new MockValidationServices(false, true);
@@ -1041,15 +1434,18 @@ describe('class RangeCondition', () => {
             conditionType: ConditionType.Range,
             valueHostName: 'Property1',
             minimum: 10, // this is OK
-            maximum: 'G'    // this is a mismatch
+            maximum: 'H'    // this is a mismatch
         };
         let testItem = new RangeCondition(config);
         vh.setValue(100);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.message).toMatch(/mismatch.*Maximum/);
-        expect(logger.getLatest()!.level).toBe(LoggingLevel.Warn);
+        let logDetails = logger.findMessage('Type mismatch. Value cannot be compared to Maximum', LoggingLevel.Warn, LoggingCategory.TypeMismatch);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual({
+            secondValue: 'H',
+            value: 100
+        });
     });
     test('Using IntegerConverter, evaluate to show that ConversionLookupKey is applied correctly.', () => {
         let services = new MockValidationServices(false, true);
@@ -1066,16 +1462,13 @@ describe('class RangeCondition', () => {
         };
         let testItem = new RangeCondition(config);
         vh.setInputValue('---- does not matter ----');
-        vh.setValue(1.51);  // this will round up to 2, above the minimum
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(1.49);  // will round down to 1, below the minimum
+        vh.setValue(1.99);  // will round down to 1, below the minimum
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(6.1);   // will round down to 6, below the maximum
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(6.2);   // will round down to 6, below the maximum
+        vh.setValue(6.99);   // will round down to 6, below the maximum
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
-        vh.setValue(6.6);   // will round up to 7, above the maximum
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+
     });    
     test('getValuesForTokens with non-null values for parameters', () => {
         let services = new MockValidationServices(false, true);
@@ -1185,21 +1578,26 @@ describe('class RangeCondition', () => {
     });
 });
 
-describe('CompareToConditionBase class additional cases', () => {
+describe('CompareToSecondValueHostConditionBase class additional cases', () => {
+    const baseConditionType = 'TEST';
+    class Publicify_CompareToSecondValueHostConditionBase extends CompareToSecondValueHostConditionBase<CompareToSecondValueHostConditionBaseConfig> {
+        protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+            return ConditionEvaluateResult.Undetermined;
+        }
+    }   
+
     test('getValuesForTokens with secondValueHostName assigned supports {SecondLabel} token', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.Number, 'Label');
-        let vh2 = vm.addMockInputValueHost('Property2', LookupKey.Number, 'Second label');
+        let setup = setupWithValueHost();
+
+        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.Number, 'Second label');
 
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValueHostName: 'Property2'
         };
-        let testItem = new EqualToCondition(config);
-        let list = testItem.getValuesForTokens(vh, vm);
+        let testItem = new Publicify_CompareToSecondValueHostConditionBase(config);
+        let list = testItem.getValuesForTokens(setup.vh, setup.vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
             {
@@ -1215,41 +1613,219 @@ describe('CompareToConditionBase class additional cases', () => {
         ]);
     });    
 
-    test('Config.secondValueHostName with unknown name logs and returns Undetermined', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let logger = services.loggerService as CapturingLogger;
-        vh.setValue('');
+    test('Config.secondValueHostName with unknown name logs and throws', () => {
+        let setup = setupWithValueHost();
+        setup.vh.setValue('');
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
             secondValueHostName: 'PropertyNotRegistered',
             valueHostName: null
         };
-        let testItem = new EqualToCondition(config);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/secondValueHostName/);
+        let testItem = new Publicify_CompareToSecondValueHostConditionBase(config);
+        let logger = setup.services.loggerService as CapturingLogger;
+        expect(() => testItem.evaluate(setup.vh, setup.vm)).toThrow(/is unknown/);
+        expect(logger.findMessage('secondValueHostName: is unknown', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy(); 
     });
     
     test('Config.secondValueHostName with null logs and returns undefined', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let logger = services.loggerService as CapturingLogger;
-        vh.setValue('');
+        let setup = setupWithValueHost();
+        let logger = setup.services.loggerService as CapturingLogger;
+        setup.vh.setValue('');
         let config: CompareToSecondValueHostConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
             valueHostName: null,
             secondValueHostName: null
         };
-        let testItem = new EqualToCondition(config);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/secondValue/);
+        let testItem = new Publicify_CompareToSecondValueHostConditionBase(config);
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(logger.findMessage('secondValue: lacks value to evaluate', LoggingLevel.Warn, LoggingCategory.Configuration)).toBeTruthy(); 
+
     });
+     test('Using NumericStringToNumberConverter, evaluate to show that config.conversionLookupKey is applied correctly.', () => {
+        let setup = setupServicesAndVM();
+        setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+        // vh1 will have a string that needs converting. vh2 does not need converting
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        vh1.setValue('100');
+        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.Number, 'Label2');
+        vh2.setValue(5);
+        let config: CompareToSecondValueHostConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2',
+            conversionLookupKey: LookupKey.Number
+        };
+        let testItem = new Publicify_CompareToSecondValueHostConditionBase(config);
+
+        testItem.evaluate(null, setup.vm);  // result does not matter. We are looking at logs for conversion facts
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage('Converted to type "Number"', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            value: 100,
+            resolvedValue: true,
+            converter: 'NumericStringToNumberConverter'
+        }));
+        logDetails = logger.findMessage('Comparison result', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            result: 'GreaterThan',
+            comparer: '"DefaultComparer"'
+
+        }));
+     });
+    // same test but using secondConversionLookupKey and second value
+    test('Using NumericStringToNumberConverter, evaluate to show that config.secondConversionLookupKey is applied correctly.', () => {
+        let setup = setupServicesAndVM();
+        setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+        // vh1 will have a string that needs converting. vh2 does not need converting
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Number, 'Label1');
+        vh1.setValue(100);
+        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.String, 'Label2');
+        vh2.setValue('8');
+        let config: CompareToSecondValueHostConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2',
+            secondConversionLookupKey: LookupKey.Number
+        };
+        let testItem = new Publicify_CompareToSecondValueHostConditionBase(config);
+
+        testItem.evaluate(null, setup.vm);  // result does not matter. We are looking at logs for conversion facts
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage('Converted to type "Number"', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            value: 8,
+            resolvedValue: true,
+            converter: 'NumericStringToNumberConverter'
+        }));
+        logDetails = logger.findMessage('Comparison result', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            result: 'GreaterThan',
+            comparer: '"DefaultComparer"'
+
+        }));
+    });
+    // now both first and second values need to convert string to number
+    test('Using NumericStringToNumberConverter, evaluate to show that config.conversionLookupKey and secondConversionLookupKey are applied correctly.', () => {
+        let setup = setupServicesAndVM();
+        setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+        // vh1 will have a string that needs converting. vh2 does not need converting
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        vh1.setValue('100');
+        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.String, 'Label2');
+        vh2.setValue('8');
+        let config: CompareToSecondValueHostConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2',
+            conversionLookupKey: LookupKey.Number,
+            secondConversionLookupKey: LookupKey.Number
+        };
+        let testItem = new Publicify_CompareToSecondValueHostConditionBase(config);
+
+        testItem.evaluate(null, setup.vm);  // result does not matter. We are looking at logs for conversion facts
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage(null, LoggingLevel.Info, LoggingCategory.Result,
+            {
+                data: {
+                    value: 100
+                }
+            }
+        );
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            value: 100,
+            resolvedValue: true,
+            converter: 'NumericStringToNumberConverter'
+        }));
+        logDetails = logger.findMessage(null, LoggingLevel.Info, LoggingCategory.Result,
+            {   data: { value: 8 }  }   
+        );
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            value: 8,
+            resolvedValue: true,
+            converter: 'NumericStringToNumberConverter'
+        }));
+        logDetails = logger.findMessage('Comparison result', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            result: 'GreaterThan',
+            comparer: '"DefaultComparer"'
+
+        }));
+        
+    });
+    // test where conversionLookupKey is not registered. It should evaluate to Undetermined and log
+    test('Using conversionLookupKey assigned to invalid value, evaluate to  Undetermined and log.', () => {
+        let setup = setupServicesAndVM();
+        // NumericStringToNumberConverter is not registered
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        vh1.setValue('100');
+        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.Number, 'Label2');
+        vh2.setValue(5);
+        let config: CompareToSecondValueHostConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2',
+            conversionLookupKey: LookupKey.Number   // no converter registered
+        };
+        let testItem = new Publicify_CompareToSecondValueHostConditionBase(config);
+
+        expect(testItem.evaluate(null, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage('Need a DataTypeConverter', LoggingLevel.Warn, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual({
+            sourceLookupKey: LookupKey.String,
+            resultLookupKey: LookupKey.Number
+        });
+    });
+
+    // same bug for second value 
+    test('Using secondConversionLookupKey assigned to invalid value, evaluate to  Undetermined and log.', () => {
+        let setup = setupServicesAndVM();
+        // NumericStringToNumberConverter is not registered
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Number, 'Label1');
+        vh1.setValue(100);
+        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.String, 'Label2');
+        vh2.setValue('5');
+        let config: CompareToSecondValueHostConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2',
+            secondConversionLookupKey: LookupKey.Number   // no converter registered
+        };
+        let testItem = new Publicify_CompareToSecondValueHostConditionBase(config);
+
+        expect(testItem.evaluate(null, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage('Need a DataTypeConverter', LoggingLevel.Warn, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual({
+            sourceLookupKey: LookupKey.String,
+            resultLookupKey: LookupKey.Number
+        });
+    });
+
+    test('evaluate throws an error when passed an invalid value type that is not either number or string because it cannot be converted to string or number', () => {
+        let setup = setupServicesAndVM();
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Boolean, 'Label1');
+        vh1.setValue(true);
+        let vh2 = setup.vm.addMockInputValueHost('Property2', LookupKey.Number, 'Label2');
+        vh2.setValue(5);
+        let config: CompareToSecondValueHostConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValueHostName: 'Property2'
+        };
+        let testItem = new Publicify_CompareToSecondValueHostConditionBase(config);
+
+        expect(()=>testItem.evaluate(null, setup.vm)).toThrow(InvalidTypeError);
+    });        
 });
 
 describe('class EqualToCondition', () => {
@@ -1327,8 +1903,7 @@ describe('class EqualToCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('string');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+
         // vh is a number, vh2 is not
         vh.setValue(100);
         vh2.setValue(null);
@@ -1337,8 +1912,7 @@ describe('class EqualToCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh2.setValue('string');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh2.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
+
     });
     
     test('Using ConversionLookupKey = Integer, show ValueHost(but not Second) is impacted by conversion', () => {
@@ -1353,7 +1927,7 @@ describe('class EqualToCondition', () => {
         let config: EqualToConditionConfig = {
             conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
-            conversionLookupKey: LookupKey.Integer,
+            conversionLookupKey: LookupKey.Integer, // uses Math.trunc
             secondValueHostName: 'Property2'
         };
         let testItem = new EqualToCondition(config);
@@ -1362,10 +1936,12 @@ describe('class EqualToCondition', () => {
         vh.setValue(99.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(99.9);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(100.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(100.6);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(101.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('Using SecondConversionLookupKey = Integer, show SecondValueHost(but not ValueHost) is impacted by conversion', () => {
@@ -1383,7 +1959,7 @@ describe('class EqualToCondition', () => {
             valueHostName: 'Property1',
             conversionLookupKey: null,
             secondValueHostName: 'Property2',
-            secondConversionLookupKey: LookupKey.Integer
+            secondConversionLookupKey: LookupKey.Integer        // converts with Math.trunc
         };
         let testItem = new EqualToCondition(config);
         vh1.setInputValue('---- does not matter ----');
@@ -1392,10 +1968,12 @@ describe('class EqualToCondition', () => {
         vh2.setValue(99.1);
         expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh2.setValue(99.9);
-        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh2.setValue(100.1);
         expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
         vh2.setValue(100.6);
+        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
+        vh2.setValue(101.1);
         expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });    
 
@@ -1583,8 +2161,7 @@ describe('class NotEqualToCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('string');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+
         // now swap them
         vh.setValue(100);
         vh2.setValue(null);
@@ -1593,8 +2170,7 @@ describe('class NotEqualToCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh2.setValue('string');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh2.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+
     });
 
     test('getValuesForTokens using secondValueHostName', () => {
@@ -1773,8 +2349,6 @@ describe('class GreaterThanCondition', () => {
         vh.setValue(undefined);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('string');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('getValuesForTokens with non-null values', () => {
@@ -2171,8 +2745,7 @@ describe('class LessThanCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('string');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+
         // swap them
         vh.setValue(100);
         vh2.setValue(null);
@@ -2180,9 +2753,7 @@ describe('class LessThanCondition', () => {
         vh2.setValue(undefined);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh2.setValue('string');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh2.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);       
     });
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
@@ -2486,6 +3057,12 @@ describe('class LessThanOrEqualCondition', () => {
 
 
 describe('CompareToValueConditionBase class additional cases', () => {
+    const baseConditionType = 'TEST';
+    class Publicify_CompareToValueConditionBase extends CompareToValueConditionBase<CompareToValueConditionBaseConfig> {
+        protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+            return ConditionEvaluateResult.Undetermined;
+        }
+    }
     test('getValuesForTokens supports {CompareTo} token', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -2494,10 +3071,10 @@ describe('CompareToValueConditionBase class additional cases', () => {
         let vh2 = vm.addMockInputValueHost('Property2', LookupKey.Number, 'Second label');
 
         let config: CompareToValueConditionBaseConfig= {
-            conditionType: ConditionType.Unknown,
+            conditionType: baseConditionType,
             valueHostName: 'Property1',
         };
-        let testItem = new EqualToValueCondition(config);
+        let testItem = new Publicify_CompareToValueConditionBase(config);
         let list = testItem.getValuesForTokens(vh, vm);
         expect(list).not.toBeNull();
         expect(list).toEqual([
@@ -2509,23 +3086,201 @@ describe('CompareToValueConditionBase class additional cases', () => {
         ]);
     });    
     
-    test('Config secondValue with null logs and returns Undetermined', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let vh = vm.addMockInputValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let logger = services.loggerService as CapturingLogger;
-        vh.setValue('');
-        let config: CompareToValueConditionBaseConfig= {
+
+    test('Config.secondValueH with null logs and returns Undetermined', () => {
+        let setup = setupWithValueHost();
+        let logger = setup.services.loggerService as CapturingLogger;
+        setup.vh.setValue('');
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: ConditionType.EqualTo,
             valueHostName: null,
             secondValue: null
         };
-        let testItem = new EqualToValueCondition(config);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()?.message).toMatch(/secondValue/);
+        let testItem = new Publicify_CompareToValueConditionBase(config);
+        expect(testItem.evaluate(setup.vh, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(logger.findMessage('secondValue: lacks value to evaluate', LoggingLevel.Warn, LoggingCategory.Configuration)).toBeTruthy(); 
+
     });
+     test('Using NumericStringToNumberConverter, evaluate to show that config.conversionLookupKey is applied correctly.', () => {
+        let setup = setupServicesAndVM();
+        setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+        // vh1 will have a string that needs converting. vh2 does not need converting
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        vh1.setValue('100');
+
+        let config: CompareToValueConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValue: 5,
+            conversionLookupKey: LookupKey.Number
+        };
+        let testItem = new Publicify_CompareToValueConditionBase(config);
+
+        testItem.evaluate(null, setup.vm);  // result does not matter. We are looking at logs for conversion facts
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage('Converted to type "Number"', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            value: 100,
+            resolvedValue: true,
+            converter: 'NumericStringToNumberConverter'
+        }));
+        logDetails = logger.findMessage('Comparison result', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            result: 'GreaterThan',
+            comparer: '"DefaultComparer"'
+
+        }));
+     });
+    // same test but using secondConversionLookupKey and second value
+    test('Using NumericStringToNumberConverter, evaluate to show that config.secondConversionLookupKey is applied correctly.', () => {
+        let setup = setupServicesAndVM();
+        setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+        // vh1 will have a string that needs converting. vh2 does not need converting
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Number, 'Label1');
+        vh1.setValue(100);
+
+        let config: CompareToValueConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValue: '8',
+            secondConversionLookupKey: LookupKey.Number
+        };
+        let testItem = new Publicify_CompareToValueConditionBase(config);
+
+        testItem.evaluate(null, setup.vm);  // result does not matter. We are looking at logs for conversion facts
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage('Converted to type "Number"', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            value: 8,
+            resolvedValue: true,
+            converter: 'NumericStringToNumberConverter'
+        }));
+        logDetails = logger.findMessage('Comparison result', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            result: 'GreaterThan',
+            comparer: '"DefaultComparer"'
+
+        }));
+    });
+    // now both first and second values need to convert string to number
+    test('Using NumericStringToNumberConverter, evaluate to show that config.conversionLookupKey and secondConversionLookupKey are applied correctly.', () => {
+        let setup = setupServicesAndVM();
+        setup.services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+        // vh1 will have a string that needs converting. vh2 does not need converting
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        vh1.setValue('100');
+
+        let config: CompareToValueConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValue: '8',
+            conversionLookupKey: LookupKey.Number,
+            secondConversionLookupKey: LookupKey.Number
+        };
+        let testItem = new Publicify_CompareToValueConditionBase(config);
+
+        testItem.evaluate(null, setup.vm);  // result does not matter. We are looking at logs for conversion facts
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage(null, LoggingLevel.Info, LoggingCategory.Result,
+            {
+                data: {
+                    value: 100
+                }
+            }
+        );
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            value: 100,
+            resolvedValue: true,
+            converter: 'NumericStringToNumberConverter'
+        }));
+        logDetails = logger.findMessage(null, LoggingLevel.Info, LoggingCategory.Result,
+            {   data: { value: 8 }  }   
+        );
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            value: 8,
+            resolvedValue: true,
+            converter: 'NumericStringToNumberConverter'
+        }));
+        logDetails = logger.findMessage('Comparison result', LoggingLevel.Info, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual(expect.objectContaining({
+            result: 'GreaterThan',
+            comparer: '"DefaultComparer"'
+
+        }));
+        
+    });
+    // test where conversionLookupKey is not registered. It should evaluate to Undetermined and log
+    test('Using conversionLookupKey assigned to invalid value, evaluate to Undetermined and log.', () => {
+        let setup = setupServicesAndVM();
+        // NumericStringToNumberConverter is not registered
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.String, 'Label1');
+        vh1.setValue('100');
+
+        let config: CompareToValueConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValue: 5,
+            conversionLookupKey: LookupKey.Number   // no converter registered
+        };
+        let testItem = new Publicify_CompareToValueConditionBase(config);
+
+        expect(testItem.evaluate(null, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage('Need a DataTypeConverter', LoggingLevel.Warn, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual({
+            sourceLookupKey: LookupKey.String,
+            resultLookupKey: LookupKey.Number
+        });
+    });
+
+    // same bug for second value 
+    test('Using secondConversionLookupKey assigned to invalid value, evaluate to Undetermined and log.', () => {
+        let setup = setupServicesAndVM();
+        // NumericStringToNumberConverter is not registered
+        let vh1 = setup.vm.addMockInputValueHost('Property1', LookupKey.Number, 'Label1');
+        vh1.setValue(100);
+
+        let config: CompareToValueConditionBaseConfig = {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValue: '5',
+            secondConversionLookupKey: LookupKey.Number   // no converter registered
+        };
+        let testItem = new Publicify_CompareToValueConditionBase(config);
+
+        expect(testItem.evaluate(null, setup.vm)).toBe(ConditionEvaluateResult.Undetermined);
+        let logger = setup.services.loggerService as CapturingLogger;
+        let logDetails = logger.findMessage('Need a DataTypeConverter', LoggingLevel.Warn, LoggingCategory.Result);
+        expect(logDetails).toBeTruthy();
+        expect(logDetails!.data).toEqual({
+            sourceLookupKey: null,
+            resultLookupKey: LookupKey.Number
+        });
+    });
+
+    test('evaluate throws an error when passed an invalid value type that is not either number or string because it cannot be converted to string or number', () => {
+        // compares a number to a boolean, which cannot be converted to number without a converter
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: CompareToValueConditionBaseConfig= {
+            conditionType: baseConditionType,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new Publicify_CompareToValueConditionBase(config);
+        vh.setValue(false);
+        expect(()=>testItem.evaluate(vh, vm)).toThrow(InvalidTypeError);
+    });        
 });
 
 describe('class EqualToValueCondition', () => {
@@ -2587,8 +3342,6 @@ describe('class EqualToValueCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('string');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     
     test('Using ConversionLookupKey = Integer, show ValueHost(but not Second) is impacted by conversion', () => {
@@ -2601,7 +3354,7 @@ describe('class EqualToValueCondition', () => {
         let config: EqualToValueConditionConfig= {
             conditionType: ConditionType.EqualToValue,
             valueHostName: 'Property1',
-            conversionLookupKey: LookupKey.Integer,
+            conversionLookupKey: LookupKey.Integer, //uses Math.trunc
             secondValue: 100,
         };
         let testItem = new EqualToValueCondition(config);
@@ -2609,19 +3362,20 @@ describe('class EqualToValueCondition', () => {
         vh.setValue(99.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(99.9);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
         vh.setValue(100.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
         vh.setValue(100.6);
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue(101.1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
     test('Using SecondConversionLookupKey = Integer, show secondvalue (but not ValueHost) is impacted by conversion', () => {
-        let services = new MockValidationServices(false, true);
-        let vm = new MockValidationManager(services);
-        let dsc = services.dataTypeConverterService as DataTypeConverterService;
+        let setup = setupServicesAndVM();
+        let dsc = setup.services.dataTypeConverterService as DataTypeConverterService;
         dsc.register(new IntegerConverter());
 
-        let vh1 = vm.addMockInputValueHost(
+        let vh1 = setup.vm.addMockInputValueHost(
             'Property1', LookupKey.Number, 'Label');
 
         let config: EqualToValueConditionConfig= {
@@ -2634,9 +3388,9 @@ describe('class EqualToValueCondition', () => {
         let testItem = new EqualToValueCondition(config);
         vh1.setInputValue('---- does not matter ----');
         vh1.setValue(100);
-        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.Match);
+        expect(testItem.evaluate(vh1, setup.vm)).toBe(ConditionEvaluateResult.Match);
         vh1.setValue(100.2);
-        expect(testItem.evaluate(vh1, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        expect(testItem.evaluate(vh1, setup.vm)).toBe(ConditionEvaluateResult.NoMatch);
     });    
 
     test('getValuesForTokens with non-null values', () => {
@@ -2759,8 +3513,6 @@ describe('class NotEqualToValueCondition', () => {
         vh.setValue(undefined);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('string');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('getValuesForTokens using secondValue', () => {
@@ -2886,8 +3638,6 @@ describe('class GreaterThanValueCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('string');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
@@ -3009,8 +3759,6 @@ describe('class GreaterThanOrEqualValueCondition', () => {
         vh.setValue(undefined);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('string');
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
     test('getValuesForTokens with non-null values', () => {
@@ -3208,9 +3956,21 @@ describe('class LessThanOrEqualValueCondition', () => {
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue('string');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
     });
+    test('evaluate throws an error when passed an invalid value type that is not either number or string because it cannot be converted to string or number', () => {
+        let services = new MockValidationServices(false, true);
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.Number, 'Label');
+        let config: LessThanOrEqualValueConditionConfig= {
+            conditionType: ConditionType.LessThanOrEqualValue,
+            valueHostName: 'Property1',
+            secondValue: 100
+        };
+        let testItem = new LessThanOrEqualValueCondition(config);
+        vh.setValue(false);
+        expect(()=>testItem.evaluate(vh, vm)).toThrow(InvalidTypeError);
+    });    
     test('getValuesForTokens with non-null values', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -3861,9 +4621,9 @@ describe('class AllMatchCondition', () => {
         };
         let testItem = new AllMatchCondition(config);
 
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(()=> testItem.evaluate(vh, vm)).toThrow(CodingError);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Error creating condition', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
     });
     test('With 1 child whose evaluate() function returns a Promise throws', () => {
         let services = new MockValidationServices(true, true);
@@ -4280,9 +5040,9 @@ describe('class AnyMatchCondition', () => {
         };
         let testItem = new AnyMatchCondition(config);
 
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(()=> testItem.evaluate(vh, vm)).toThrow(CodingError);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Error creating condition', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
     });
     test('category is Children', () => {
         let config: AnyMatchConditionConfig = {
@@ -4654,11 +5414,9 @@ describe('class NotNullCondition', () => {
         };
         let testItem = new NotNullCondition(config);
         vh.setValue('');
-        expect(() => testItem.evaluate(null, vm)).toThrow(/Missing value/);
+        expect(() => testItem.evaluate(null, vm)).toThrow(/is unknown/);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.entryCount()).toBe(1);
-        expect(logger.getLatest()!.category).toBe(LoggingCategory.Configuration);
-        expect(logger.getLatest()!.level).toBe(LoggingLevel.Error);
+        expect(logger.findMessage('is unknown', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy(); 
     });
     test('category is Require', () => {
         let config: NotNullConditionConfig = {
@@ -4734,6 +5492,30 @@ describe('NumberConditionBase', () => {
         vh.setValue(-1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
     });
+    test('evaluate non-numbers with converters. They result in a number to evaluate.', () => {
+        let services = new MockValidationServices(false, true);
+        
+        services.dataTypeConverterService.register(new UTCDateOnlyConverter());
+        services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: PositiveConditionConfig = {
+            conditionType: ConditionType.Positive,
+            valueHostName: 'Property1'
+        };
+        let testItem = new TestNumberConditionBase(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(new Date(2000, 0, 1));
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue('10');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
+        vh.setValue('0');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);      
+        vh.setValue('-1');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);             
+    });        
     test('Evaluate non-number types are undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -4747,9 +5529,7 @@ describe('NumberConditionBase', () => {
         vh.setValue('ABC');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);   
-        vh.setValue(new Date());
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);     
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);      
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
         vh.setValue(undefined);
@@ -4773,11 +5553,20 @@ describe('NumberConditionBase', () => {
         }
         class NumberHolderConverter implements IDataTypeConverter
         {
-            supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-                return value instanceof NumberHolder;
+            canConvert(value: any, sourceLookupKey: string | null, resultLookupKey: string): boolean {
+                return value instanceof NumberHolder && resultLookupKey === LookupKey.Number;
             }
-            convert(source: NumberHolder, dataTypeLookupKey: string): SimpleValueType {
-                return source.value;
+            convert(value: NumberHolder, sourceLookupKey: string | null, resultLookupKey: string) {
+                return value.value;
+            }
+            supportedResultLookupKeys(): string[] {
+                return [LookupKey.Number];
+            }
+            supportedSourceLookupKeys(): (string | null)[] {
+                return [null];
+            }
+            sourceIsCompatible(value: any, sourceLookupKey: string | null): boolean {
+                return value instanceof NumberHolder;
             }
             
         }
@@ -4852,6 +5641,30 @@ describe('PositiveCondition', () => {
         vh.setValue(-1);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
     });
+    test('evaluate non-numbers with converters. They result in a number to evaluate.', () => {
+        let services = new MockValidationServices(false, true);
+        
+        services.dataTypeConverterService.register(new UTCDateOnlyConverter());
+        services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: PositiveConditionConfig = {
+            conditionType: ConditionType.Positive,
+            valueHostName: 'Property1'
+        };
+        let testItem = new PositiveCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(new Date(2000, 0, 1));
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue('10');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
+        vh.setValue('0');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);      
+        vh.setValue('-1');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);             
+    });    
     test('evaluate non-numbers; all return Undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -4866,8 +5679,6 @@ describe('PositiveCondition', () => {
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(new Date());
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
@@ -4922,6 +5733,32 @@ describe('IntegerCondition', () => {
         vh.setValue(-1.9);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
     });
+    test('evaluate non-numbers that have converters available results in numbers that can be evaluated', () => {
+        let services = new MockValidationServices(false, true, true);
+
+        services.dataTypeConverterService.register(new UTCDateOnlyConverter());
+        services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+        
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: IntegerConditionConfig = {
+            conditionType: ConditionType.Integer,
+            valueHostName: 'Property1'
+        };
+        let testItem = new IntegerCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(new Date(2000, 0, 1));    // UTCDateConverter will convert this to an integer which is a match
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue('10');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);        
+        vh.setValue('1.5');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
+        vh.setValue('A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        
+    });
+
     test('evaluate non-numbers; all return Undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -4936,8 +5773,6 @@ describe('IntegerCondition', () => {
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(new Date());
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        
@@ -5023,6 +5858,32 @@ describe('MaxDecimalsCondition', () => {
         vh.setValue(-1.63);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);        
     });
+    test('evaluate non-numbers that can be converted to numbers through a converter; they work like numbers', () => {
+        let services = new MockValidationServices(false, true);
+
+        services.dataTypeConverterService.register(new UTCDateOnlyConverter());
+        services.dataTypeConverterService.register(new NumericStringToNumberConverter());
+
+        let vm = new MockValidationManager(services);
+        let vh = vm.addMockInputValueHost(
+            'Property1', LookupKey.String, 'Label');
+        let config: MaxDecimalsConditionConfig = {
+            conditionType: ConditionType.MaxDecimals,
+            valueHostName: 'Property1',
+            maxDecimals: 1
+        };
+        let testItem = new MaxDecimalsCondition(config);
+        vh.setInputValue('---- does not matter ----');
+        vh.setValue(new Date(2000, 0, 1));    // UTCDateConverter will convert this to an integer which is a match
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);         
+        vh.setValue('10');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Match);
+        vh.setValue('10.35');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.NoMatch);
+        vh.setValue('A');
+        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
+
+    });    
     test('evaluate non-numbers; all return Undetermined', () => {
         let services = new MockValidationServices(false, true);
         let vm = new MockValidationManager(services);
@@ -5038,8 +5899,6 @@ describe('MaxDecimalsCondition', () => {
         vh.setValue('A');
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(false);
-        expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        vh.setValue(new Date());
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vm)).toBe(ConditionEvaluateResult.Undetermined);        

@@ -1,5 +1,3 @@
-import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
-import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 /*
  Supporting code for all Config examples.
  Each example uses the same model and services, which are defined here.
@@ -15,6 +13,8 @@ import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
 
 */
+import { IValidationManager } from '@plblum/jivs-engine/build/Interfaces/ValidationManager';
+import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValidationServices } from "@plblum/jivs-engine/build/Services/ValidationServices";
 import { createMinimalValidationServices } from "./support";
 import {
@@ -25,7 +25,7 @@ import {
     LessThanOrEqualConditionConfig, LessThanOrEqualCondition
 } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { TotalDaysConverter, IntegerConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
+import { IntegerConverter, UTCDateOnlyConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 import { StringFormatter, NumberFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
 import { ShortDatePatternParser, CleanUpStringParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
 import { DateTimeCultureInfo } from "@plblum/jivs-engine/build/DataTypes/DataTypeParserBase";
@@ -60,8 +60,8 @@ export const timeZoneRegex = /^UTC([+-]\d+(\.\d+)?)?$/;
 
 // Used by CalcValueHosts in this example
 export function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager): SimpleValueType {
-    let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('startDate')?.getValue(), LookupKey.TotalDays);
-    let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('endDate')?.getValue(), LookupKey.TotalDays);
+    let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('startDate')?.getValue(), null, LookupKey.TotalDays);
+    let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('endDate')?.getValue(), null, LookupKey.TotalDays);
     if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
         return undefined;   // can log with findValueHosts.services.logger.log();
     return Math.abs(totalDays2 - totalDays1);
@@ -77,12 +77,12 @@ export function createValidationServices(cultureID: string): ValidationServices 
     // We are expecting to use Data Types: Date, Integer, String. 
     // Jivs preconfigures Date and String.
     // Integer is supported as "Number" automatically. We only need to
-    // specify IntegerConverter if we want to run the Math.floor() function on the initial value.
-    // We will use the TotalDaysConverter to return a number of days.
+    // specify IntegerConverter if we want to run the Math.trunc() function on the initial value.
+    // We will use the UTCDateOnlyConverter to return a number of days.
     // It will be used for our difference of dates calculation.
 
     let convertService = services.dataTypeConverterService as DataTypeConverterService;
-    convertService.register(new TotalDaysConverter());  // for LookupKey.TotalDays
+    convertService.register(new UTCDateOnlyConverter());  // for LookupKey.TotalDays
     convertService.register(new IntegerConverter());    // for LookupKey.Integer
 
     // Register the Conditions (validation rules) needed.

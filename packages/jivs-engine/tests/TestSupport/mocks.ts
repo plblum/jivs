@@ -1,6 +1,6 @@
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 
-import { type ILoggerService } from "../../src/Interfaces/LoggerService";
+import { LoggingLevel, type ILoggerService } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { type IValidationServices } from "../../src/Interfaces/ValidationServices";
 import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
@@ -62,6 +62,7 @@ import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfig
 import { IManagerConfigModifierFactory } from "../../src/Interfaces/ManagerConfigModifierFactory";
 import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -266,8 +267,18 @@ export class MockInputValueHost extends MockValueHost
  */
 export class MockValidationServices implements IValidationServices
 {
+    /**
+     * 
+     * @param registerStandardConditions 
+     * @param registerStandardDataTypes 
+     * @param powerLogging - When true, the CapturingLogger will log at the Debug level
+     * and will chain to the ConsoleLoggerService.
+     * @param powerLoggingTypeFilter - If not null, only logs with this type will be logged.
+     */
     constructor(registerStandardConditions: boolean,
-        registerStandardDataTypes: boolean)
+        registerStandardDataTypes: boolean,
+        powerLogging: boolean = false,
+        powerLoggingTypeFilter: string | null = null)
     {
         let factory = new ValueHostFactory();
         registerStandardValueHostGenerators(factory);
@@ -295,7 +306,19 @@ export class MockValidationServices implements IValidationServices
         this.managerConfigBuilderFactory = new ManagerConfigBuilderFactory();
         this.managerConfigModifierFactory = new ManagerConfigModifierFactory();
 
-        this.loggerService = new CapturingLogger();
+        let logger = new CapturingLogger();
+        this.loggerService = logger;
+        if (powerLogging) {
+            logger.minLevel = LoggingLevel.Debug;
+            logger.chainedLogger = new ConsoleLoggerService(LoggingLevel.Debug, null, true);
+            if (powerLoggingTypeFilter) {
+                logger.overrideMinLevelWhen({
+                    type: powerLoggingTypeFilter
+                });
+         
+                logger.minLevel = LoggingLevel.Warn;
+            }
+        }
 
         if (registerStandardConditions) {
             registerAllConditions(this.conditionFactory as ConditionFactory);

@@ -1,16 +1,17 @@
 import { BooleanDataTypeComparer, defaultComparer } from "../../src/DataTypes/DataTypeComparers";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ComparersResult } from "../../src/Interfaces/DataTypeComparerService";
 
 // function defaultComparer(value1: any, value2: any): ComparersResult
 describe('Comparers.defaultComparer', () => {
     test('Equal primitives', () => {
-        expect(defaultComparer(0, 0)).toBe(ComparersResult.Equals);
-        expect(defaultComparer(10, 10)).toBe(ComparersResult.Equals);
-        expect(defaultComparer(true, true)).toBe(ComparersResult.Equals);
-        expect(defaultComparer(false, false)).toBe(ComparersResult.Equals);
-        expect(defaultComparer('10', '10')).toBe(ComparersResult.Equals);
-        expect(defaultComparer(null, null)).toBe(ComparersResult.Equals);
-        expect(defaultComparer(undefined, undefined)).toBe(ComparersResult.Equals);
+        expect(defaultComparer(0, 0)).toBe(ComparersResult.Equal);
+        expect(defaultComparer(10, 10)).toBe(ComparersResult.Equal);
+        expect(defaultComparer(true, true)).toBe(ComparersResult.Equal);
+        expect(defaultComparer(false, false)).toBe(ComparersResult.Equal);
+        expect(defaultComparer('10', '10')).toBe(ComparersResult.Equal);
+        expect(defaultComparer(null, null)).toBe(ComparersResult.Equal);
+        expect(defaultComparer(undefined, undefined)).toBe(ComparersResult.Equal);
     });
     test('Undetermined with different type primitives', () => {
         expect(defaultComparer(0, '0')).toBe(ComparersResult.Undetermined); 
@@ -21,9 +22,9 @@ describe('Comparers.defaultComparer', () => {
         expect(defaultComparer(false, 0)).toBe(ComparersResult.Undetermined); 
         expect(defaultComparer(null, undefined)).toBe(ComparersResult.Undetermined); 
     });
-// there are no cases with same type primitives that support NotEquals
+// there are no cases with same type primitives that support NotEqual
     test('Not Equal with same type primitives', () => {
-        // is greater than    expect(DefaultComparer(true, false)).toBe(ComparersResult.NotEquals);  
+        // is greater than    expect(DefaultComparer(true, false)).toBe(ComparersResult.NotEqual);  
         
     });
     
@@ -52,21 +53,29 @@ describe('Comparers.BooleanDataTypeComparer', () => {
     test('supportsValues', () => {
         let testItem = new BooleanDataTypeComparer();
         // so long as one is boolean, true
-        expect(testItem.supportsValues(true, false)).toBe(true);
-        expect(testItem.supportsValues(false, true)).toBe(true);
-        expect(testItem.supportsValues(null, false)).toBe(true);
-        expect(testItem.supportsValues(true, null)).toBe(true);
-        expect(testItem.supportsValues("A", "B")).toBe(false);
-        expect(testItem.supportsValues("A", null)).toBe(false);
-        expect(testItem.supportsValues(0, new Date())).toBe(false);
+        expect(testItem.supportsValues(true, false, null, null)).toBe(true);
+        expect(testItem.supportsValues(false, true, null, null)).toBe(true);
+        expect(testItem.supportsValues(true, false, LookupKey.Boolean, null)).toBe(true);
+        expect(testItem.supportsValues(true, false, null, LookupKey.Boolean)).toBe(true);
+
+        expect(testItem.supportsValues(null, false, null, null)).toBe(false);
+        expect(testItem.supportsValues(true, null, null, null)).toBe(false);
+        expect(testItem.supportsValues("A", "B", null, null)).toBe(false);
+        expect(testItem.supportsValues("A", null, null, null)).toBe(false);
+        expect(testItem.supportsValues(0, new Date(), null, null)).toBe(false);
+        expect(testItem.supportsValues(true, true, LookupKey.String, null)).toBe(false);
+        expect(testItem.supportsValues(true, true, null, LookupKey.String)).toBe(false);
 
     });
     test('Equals', () => {
         let testItem = new BooleanDataTypeComparer();
         // only supply values are were approved by supportsValues
-        // This class allows just one to be a boolean
-        expect(testItem.compare(true, true)).toBe(ComparersResult.Equals);
-        expect(testItem.compare(false, false)).toBe(ComparersResult.Equals);
+        expect(testItem.compare(true, true, null, null)).toBe(ComparersResult.Equal);
+        expect(testItem.compare(false, false, null, null)).toBe(ComparersResult.Equal);
+        expect(testItem.compare(true, true, LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.Equal);
+        expect(testItem.compare(false, false, LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.Equal);        
+        expect(testItem.compare(true, true, null, LookupKey.Boolean)).toBe(ComparersResult.Equal);
+        expect(testItem.compare(false, false, LookupKey.Boolean, null)).toBe(ComparersResult.Equal);        
      });    
     test('Not Equals', () => {
         let testItem = new BooleanDataTypeComparer();
@@ -74,19 +83,10 @@ describe('Comparers.BooleanDataTypeComparer', () => {
         // This class allows just one to be a boolean, and if so, returns NotEquals
         // when the other is null.
 
-        expect(testItem.compare(true, false)).toBe(ComparersResult.NotEquals);
-        expect(testItem.compare(false, true)).toBe(ComparersResult.NotEquals);
-        expect(testItem.compare(false, null)).toBe(ComparersResult.NotEquals);
-        expect(testItem.compare(null, true)).toBe(ComparersResult.NotEquals);        
+        expect(testItem.compare(true, false, null, null)).toBe(ComparersResult.NotEqual);
+        expect(testItem.compare(false, true, null, null)).toBe(ComparersResult.NotEqual);
+        expect(testItem.compare(true, false, LookupKey.Boolean, LookupKey.Boolean)).toBe(ComparersResult.NotEqual);
+        expect(testItem.compare(false, true, null, LookupKey.Boolean)).toBe(ComparersResult.NotEqual);
     });      
-    test('Undefined', () => {
-        let testItem = new BooleanDataTypeComparer();
-        // only supply values are were approved by supportsValues
-        // This class allows just one to be a boolean, and if so, returns Undetermined
-        // unless the other is null
 
-        expect(testItem.compare(false, "A")).toBe(ComparersResult.Undetermined);
-        expect(testItem.compare(10, true)).toBe(ComparersResult.Undetermined);  
-        expect(testItem.compare(new Date(), true)).toBe(ComparersResult.Undetermined);        
-    });            
 });

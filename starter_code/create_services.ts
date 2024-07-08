@@ -32,8 +32,8 @@ import { WhenCondition, WhenConditionConfig }  from "@plblum/jivs-engine/build/C
 import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import {
-    CaseInsensitiveStringConverter, DateTimeConverter, LocalDateOnlyConverter, TotalDaysConverter, IntegerConverter,
-    TimeOfDayOnlyConverter, TimeOfDayHMSOnlyConverter
+    CaseInsensitiveStringConverter, DateTimeConverter, LocalDateOnlyConverter, IntegerConverter,
+    TimeOfDayOnlyConverter, TimeOfDayHMSOnlyConverter, UTCDateOnlyConverter
 } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 import {
     StringFormatter, NumberFormatter, IntegerFormatter, DateFormatter, CapitalizeStringFormatter,
@@ -65,6 +65,7 @@ import {
 import { NumberCultureInfo, DateTimeCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { ValueHostConfigMergeService, ValidatorConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
 import { } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { NumericStringToNumberConverter } from '@plblum/jivs-engine/src/DataTypes/DataTypeConverters';
 
 
 /**
@@ -378,17 +379,19 @@ export function registerDataTypeConverters(dtcs: DataTypeConverterService): void
     dtcs.lazyLoad = (service) => {
         // Register DataTypeConverters the app will use, including adding your own.
 
-        /* These are pre-installed into DataTypeIdentifierService as they are core functionality
-            dtcs.register(new UTCDateOnlyConverter()); // so Dates have support out of the box
-        */
+        dtcs.register(new DateTimeConverter());         // Source = Date object, result = LookupKey.DateTime
+        dtcs.register(new LocalDateOnlyConverter());    // Source = Date object, result = LookupKey.LocalDate
+        dtcs.register(new TimeOfDayOnlyConverter());    // Source = Date object, result = LookupKey.TimeOfDay
+        dtcs.register(new TimeOfDayHMSOnlyConverter()); // Source = Date object, result = LookupKey.TimeOfDayHMS
+
+        // this takes any call where no LookupKey was supplied, in addition to LookupKey.Date.
+        // As a result, it is placed after converters that are more specific.
+        dtcs.register(new UTCDateOnlyConverter());      // Source = Date object, result = LookupKey.Date or no LookupKey
+
         // see \examples\ folder for numerous examples of custom DataTypeConverters.
-        dtcs.register(new CaseInsensitiveStringConverter());
-        dtcs.register(new DateTimeConverter());
-        dtcs.register(new LocalDateOnlyConverter());
-        dtcs.register(new TimeOfDayOnlyConverter());
-        dtcs.register(new TimeOfDayHMSOnlyConverter());
-        dtcs.register(new IntegerConverter());
-        dtcs.register(new TotalDaysConverter());
+        dtcs.register(new CaseInsensitiveStringConverter());    // Source = string, result = LookupKey.CaseInsensitive
+        dtcs.register(new IntegerConverter());                  // Source = number, result = LookupKey.Integer
+        dtcs.register(new NumericStringToNumberConverter());    // Source = string, result = LookupKey.Number or LookupKey.Integer
     }
 }
 
@@ -398,7 +401,7 @@ export function registerDataTypeConverters(dtcs: DataTypeConverterService): void
  * 
  * This is a special case where using an IDataTypeConverter isn't enough.
  * We've provided a comparer for Booleans, because we wanted them to have
- * comparison results of Equals or NotEquals (instead of default Equals, Lessthan, GreaterThan)
+ * comparison results of Equal or NotEqual (instead of default Equal, Lessthan, GreaterThan)
  * -> Use classes that implement IDataTypeComparer in register()
  * @param dtcs 
  */

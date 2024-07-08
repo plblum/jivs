@@ -37,9 +37,8 @@ export abstract class InputValueConditionBase<TConfig extends InputValueConditio
     public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         if (!toIInputValueHost(valueHost)) {
-            valueHostsManager.services.loggerService.log('Invalid ValueHost used. Must be an InputValueHost',
-                LoggingLevel.Error, LoggingCategory.Configuration, 'InputValueConditionBase.Evaluate');
-            throw new CodingError('Invalid ValueHost used. Must be an InputValueHost');
+            let error = new CodingError('Invalid ValueHost used. Must be an InputValueHost');
+            this.logError(valueHostsManager.services, error);
         }
         let iValueHost = valueHost as unknown as IInputValueHost;
         let value = iValueHost.getInputValue();

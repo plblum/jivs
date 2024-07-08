@@ -8,7 +8,7 @@ import { NumberDataTypeIdentifier, StringDataTypeIdentifier, BooleanDataTypeIden
 import { IDataTypeIdentifier } from "../Interfaces/DataTypeIdentifier";
 import { IDataTypeIdentifierService } from "../Interfaces/DataTypeIdentifierService";
 import { DataTypeServiceBase } from "./DataTypeServiceBase";
-import { LoggingLevel } from "../Interfaces/LoggerService";
+import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
 
 /**
  * A service for identifing the Data Type Lookup Key associated with a data type
@@ -45,7 +45,13 @@ implements IDataTypeIdentifierService
     public identify(value: any): string | null {
         let idt = this.find(value);
         let result = idt ? idt.dataTypeLookupKey : null;
-        this.log(() => `Identified ${valueForLog(result)}`, LoggingLevel.Debug);    // considered using Info, but Debug felt better
+        this.log(LoggingLevel.Debug, () => {
+            return {
+                message: `Identified ${valueForLog(result)}`,
+                category: LoggingCategory.Result
+            
+            }
+        });
         return result;
     }
 

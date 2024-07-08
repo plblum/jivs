@@ -7,7 +7,7 @@ import { valueForLog } from '../Utilities/Utilities';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IDataTypeParser } from '../Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError, SevereErrorBase, assertNotEmptyString, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { LookupKeyFallbackService } from './LookupKeyFallbackService';
@@ -75,25 +75,28 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
 
             if (parser) {
                 // log info level the parser selected
-                this.log(() => `Parser selected: ${valueForLog(parser)}`, LoggingLevel.Debug);
+                this.logQuick(LoggingLevel.Debug, () => `Parser selected: ${valueForLog(parser)}`);
                 let result = parser!.parse(text, lookupKey!, cultureId);
                 if (result.value)
-                    this.log(() => `Parsed "${lookupKey}" with culture "${cultureId}"`, LoggingLevel.Info);
+                    this.log(LoggingLevel.Info, () => {
+                        return {
+                            message: `Parsed "${lookupKey}" with culture "${cultureId}"`,
+                            category: LoggingCategory.Result
+                        }
+                    } );
                 return result;
             }
 
             let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
             if (fallbackLookupKey) {
-                this.log(() => `Trying fallback: ${fallbackLookupKey}`, LoggingLevel.Debug);
+                this.logQuick(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
                 return this.parseRecursive(text, fallbackLookupKey, cultureId, alreadyChecked);
             }
             throw new CodingError(`No DataTypeParser for LookupKey "${lookupKey}" with culture "${cultureId}"`);
         }
         catch (e) {
             let err = ensureError(e);
-            this.log(err.message, LoggingLevel.Error);
-            if (err instanceof SevereErrorBase)
-                throw err;
+            this.logError(err); // will throw if SevereErrorBase
             return { errorMessage: err.message };
         }
 

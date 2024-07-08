@@ -9,7 +9,7 @@ import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound, BusinessLogicError } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator } from '../Interfaces/Validator';
-import { SevereErrorBase, assertNotNull } from '../Utilities/ErrorHandling';
+import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import { ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState, IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
 import { ConditionType } from '../Conditions/ConditionTypes';
@@ -78,15 +78,13 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         if (!this.isEnabled())
         {
             this.clearValidation();
-            this.log(() => `Validation skipped because ValueHost "${this.getName()}" is disabled`, LoggingLevel.Debug);
+            this.logQuick(LoggingLevel.Debug, () => `Validation skipped because ValueHost "${this.getName()}" is disabled`);            
             return null;
         }
         let self = this;
         if (!options)
             options = {};
-        lazyLog(() => {
-            return { message: `Validating ValueHost "${this.getName()}"` }
-        }, LoggingLevel.Debug);
+        this.logQuick(LoggingLevel.Debug, ()=> `Validating ValueHost "${this.getName()}"`);
         
         // NOTE: This object instance is important for async validation.
         // Its properties collect all validator results, including those delayed by async.
@@ -152,12 +150,12 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
             }
             catch (e) {
-                if (e instanceof Error) {
-                    logError(e.message);
-                    if (e instanceof SevereErrorBase)
-                        throw e;
-    
-                }
+                let err = ensureError(e);                
+
+                logError(err.message);
+                if (err instanceof SevereErrorBase)
+                    throw err;
+
                 // resume normal processing with Undetermined state
                 result.status = ValidationStatus.Undetermined;
             }
@@ -170,12 +168,14 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         }
 
         finally {
-            lazyLog(() => {
+            this.log(LoggingLevel.Info, (options) => {
                 return {
-                    message: `Input Validation result: ${ValidationStatus[result.status]} Issues found:` +
-                        (result.issuesFound ? JSON.stringify(result.issuesFound) : 'none')
+                    message: `Validation result: ${ValidationStatus[result.status]} Issues found:` +
+                        (result.issuesFound ? JSON.stringify(result.issuesFound) : 'none'),
+                    category: LoggingCategory.Result
                 };
             });
+
         }
         function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean {
             return self.updateInstanceState((stateToUpdate) => {
@@ -259,29 +259,19 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         }
 
         function bailout(errorMessage: string): null {
-            lazyLog(() => {
-                return {
-                    message: errorMessage
-                };
-            });
+            self.logQuick(LoggingLevel.Info, () => errorMessage);
             return null;
         }
-        function lazyLog(
-            fn: () => { message: string; source?: string }, logLevel : LoggingLevel = LoggingLevel.Info): void {
-            if (self.services.loggerService.minLevel <= logLevel) {
-                let parms = fn();
-                self.services.loggerService.log(parms.message, logLevel,
-                    LoggingCategory.Validation,
-                    parms.source ??
-                /* istanbul ignore next */  // defensive
-                    `ValueHost "${self.getName()}"`);
-            }
-        }
+
         function logError(message: string): void {
-            self.log(()=> 'Exception: ' + (message ??
-                /* istanbul ignore next */  // defensive             
-                'Reason unspecified'),
-                LoggingLevel.Error, LoggingCategory.Validation);
+            self.log(LoggingLevel.Error, (options) => {
+                return {
+                    message: message ??
+                        /* istanbul ignore next */  // defensive             
+                        'Reason unspecified',
+                    category: LoggingCategory.Exception
+                };
+            });            
         }
     }
 
@@ -346,7 +336,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         if (error) {
             if (!this.isEnabled())
             {
-                this.log(() => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`, LoggingLevel.Warn);
+                this.logQuick(LoggingLevel.Warn, () => `BusinessLogicError applied on disabled ValueHost "${this.getName()}"`);                
             }
         
             // see if the error code matches an existing validator.

@@ -415,7 +415,7 @@ describe('setValue', () => {
         logger.minLevel = LoggingLevel.Debug;
         let options: SetValueOptions = { duringEdit: true };
         expect(() => setup.valueHost.setValue(10, options)).not.toThrow();
-        expect(logger.findMessage('does not support duringEdit', LoggingLevel.Warn, null, null)).not.toBeNull();
+        expect(logger.findMessage('does not support duringEdit', LoggingLevel.Warn)).toBeTruthy();
         expect(options.duringEdit).not.toBe(true);
     });
     test('Log call when Level=Debug.', () => {
@@ -426,7 +426,7 @@ describe('setValue', () => {
         let testItem = setup.valueHost;
         testItem.setValue(finalValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null, null)).toBeTruthy();
+        expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null)).toBeTruthy();
     });
     test('isEnabled=false will not change the value.', () => {
         const initialValue = 100;
@@ -438,8 +438,8 @@ describe('setValue', () => {
         testItem.setValue(finalValue);
         expect(testItem.getValue()).toBe(initialValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeTruthy();
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeNull();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeNull();
     });
     test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
         const initialValue = 100;
@@ -451,8 +451,8 @@ describe('setValue', () => {
         testItem.setValue(finalValue, { overrideDisabled: true });
         expect(testItem.getValue()).toBe(finalValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeTruthy();
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeNull();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeTruthy();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });
 });
 
@@ -745,7 +745,7 @@ describe('ValidatableValueHostBase.setBusinessLogicError', () => {
 
             });
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('BusinessLogicError applied on disabled ValueHost.', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('BusinessLogicError applied on disabled ValueHost.', LoggingLevel.Warn, null)).toBeTruthy();
     });
 
 });
@@ -910,11 +910,11 @@ describe('ValidatableValueHostBase.getIssueFound only checking without calls to 
         let issueFound = setup.valueHost.getIssueFound('Field1');
         expect(issueFound).toBeNull();
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeTruthy();
         setup.valueHost.setEnabled(true);
         logger.clearAll();
         issueFound = setup.valueHost.getIssueFound('Field1')
-        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null, null)).toBeNull();
+        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeNull();
     });                
 
 });
@@ -997,11 +997,11 @@ describe('ValidatableValueHostBase.getIssuesFound without calling validate', () 
         let issuesFound = setup.valueHost.getIssuesFound();
         expect(issuesFound).toBeNull();
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null, null)).toBeTruthy();
+        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeTruthy();
         setup.valueHost.setEnabled(true);
         logger.clearAll();
         issuesFound = setup.valueHost.getIssuesFound()
-        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null, null)).toBeNull();
+        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeNull();
     });         
 });
 describe('setEnabled', () => {

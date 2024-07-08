@@ -2,8 +2,8 @@
  * Concrete implemenation of ILogger that provides logging to the Console.
  * @module Services/ConcreteClasses/LoggerService
  */
-import { ILoggerService, LoggingLevel } from '../Interfaces/LoggerService';
-import { ServiceBase } from './ServiceBase';
+import { ILoggerService, LogDetails, LogOptions, LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggerServiceBase } from './LoggerServiceBase';
 
 
 /**
@@ -11,74 +11,62 @@ import { ServiceBase } from './ServiceBase';
  * If you want to log both to the console and another system, create both loggers,
  * passing the other into this constructor.
  */
-export class ConsoleLoggerService extends ServiceBase implements ILoggerService
+export class ConsoleLoggerService extends LoggerServiceBase
 {
-/**
- * Constructor
- * @param minLevel - defaults to Warn
- * @param mainLogger - Reference to another ILogger implementation
-   that gets called after the console's logging.
- */    
-    constructor(minLevel: LoggingLevel = LoggingLevel.Warn, mainLogger?: ILoggerService)
-    {
-        super();
-        this._minLevel = minLevel;
-        this._mainLogger = mainLogger ?? null;
+    constructor(minLevel: LoggingLevel = LoggingLevel.Warn,
+        chainedLogger?: ILoggerService | null,
+        includeData: boolean = false) {
+        super(minLevel, chainedLogger);
+        this._includeData = includeData;
     }
 /**
- * Control which levels are output.
- */    
-    private _minLevel = LoggingLevel.Warn;
-    public get minLevel(): LoggingLevel
+ * When true, add the additional details that document the results
+ * of functions as individual JSON properties.
+ * Often the same values are already in the message itself.
+ * The values will appear under the 'data' property.
+ */
+    public get includeData(): boolean
     {
-        return this._minLevel;
+        return this._includeData;
     }
-    public set minLevel(level: LoggingLevel)
+    public set includeData(value: boolean)
     {
-        this._minLevel = level;
+        this._includeData = value;
     }
+    private _includeData: boolean = false;
 
     /**
-     * Reference to another ILogger implementation
-     * that gets called after the console's logging.
-     * Optional.
+     * Supplies the logOptions used in the callbacks.
      */
-    public get mainLogger(): ILoggerService | null
+    protected getLogOptions(): LogOptions | undefined
     {
-        return this._mainLogger;
+        if (this.includeData)
+            return { includeData: true };
+        return undefined;
     }
-    private readonly _mainLogger: ILoggerService | null;
     /**
-     * Create a new log entry.
-     * @param message
-     * @param level - One of these: 'info', 'warn', 'error'.
-     * @param category - optional string used by logger to categorize the data.
-     * @param source - A way to identify the source of this message, such as function name or class name + method name.
+     * Uses the JSON formatting capability of console.log to output the logDetails.
+     * Expect to see the logDetails in the console in JSON.
+     * @param level 
+     * @param logDetails 
      */
-    public log(message: string, level: LoggingLevel, category?: string, source?: string): void {
-        if (this.minLevel > level)
-            return;
-        let msgTemplate = '%s %s "%s"'; // expects source, category, message
-        if (!source)
-            source = 'Source unspecified';
-        if (!category)
-            category = 'Category unspecified';
+    protected writeLog(level: LoggingLevel, logDetails: LogDetails): void {
+        // the current formatting is JSON from the logDetails
         switch (level) {
             case LoggingLevel.Debug:
-                console.debug(msgTemplate, source, category, message);
+                console.debug(logDetails);
                 break;
             case LoggingLevel.Info:
-                console.log(msgTemplate, source, category, message);
+                console.log(logDetails);
                 break;
             case LoggingLevel.Warn:
-                console.warn(msgTemplate, source, category, message);
+                console.warn(logDetails);
                 break;
             case LoggingLevel.Error:
-                console.error(msgTemplate, source, category, message);
+                console.error(logDetails);
                 break;
         }
-        if (this._mainLogger)
-            this._mainLogger.log(message, level, category, source);
     }
+
 }
 

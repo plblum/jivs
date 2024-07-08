@@ -39,13 +39,18 @@ export abstract class ConditionWithOneChildBase<TConfig extends ConditionWithOne
 
     protected condition(valueHostsManager: IValueHostsManager): ICondition {
         if (!this._condition) {
-            if (!this.config.childConditionConfig)
-            {
-                this.logInvalidPropertyData('childConditionConfig', 'Must be assigned to a Condition', valueHostsManager);
+            if (!this.config.childConditionConfig) {
                 this._condition = new ErrorResponseCondition();
+                this.throwInvalidPropertyData('childConditionConfig', 'must be assigned to a Condition', valueHostsManager.services);
             }
             else
-                this._condition = this.generateCondition(this.config.childConditionConfig, valueHostsManager.services);
+                try {
+                    this._condition = this.generateCondition(this.config.childConditionConfig, valueHostsManager.services);
+                }
+                catch (e) {
+                    this._condition = new ErrorResponseCondition();
+                    throw e;
+                }
         }
         return this._condition;
     }
