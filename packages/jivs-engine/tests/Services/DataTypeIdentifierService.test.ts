@@ -69,7 +69,7 @@ describe('DataTypeIdentifierService.identify', () => {
 
         testItem.register(new TestIdentifier());
         expect(testItem.identify(0)).toBe(LookupKey.Number);
-        expect(logger.findMessage('Identified "Number"', LoggingLevel.Debug, null, null)).not.toBeNull();
+        expect(logger.findMessage('Identified "Number"', LoggingLevel.Debug)).toBeTruthy();
 
 
         expect(testItem.identify('abc')).toBe(LookupKey.String);

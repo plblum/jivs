@@ -4,7 +4,7 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
-import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import {
     registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, EvaluatesAsPromiseConditionType,
@@ -13,6 +13,7 @@ import {
 } from "../TestSupport/conditionsForTesting";
 import { WhenCondition, WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
+import { CodingError } from "../../src/Utilities/ErrorHandling";
 
 describe('WhenCondition', () => {
     test('DefaultConditionType', () => {
@@ -40,10 +41,8 @@ describe('WhenCondition', () => {
         expect(testItem.evaluate(null, vm)).toBe(expectedResult);
         expect(testItem.evaluate(vh, vm)).toBe(expectedResult);
         if (logContent) {
-            expect(logger.findMessage(logContent, LoggingLevel.Info, null, null)).toBeTruthy();
+            expect(logger.findMessage(logContent, LoggingLevel.Info, null)).toBeTruthy();
         }
-        else
-            expect(logger.entryCount()).toBe(0);
     }
     test('evaluate with enabler always returning Match results in condition evaluate and returning its own value', () => {
         testEvaluateWithEnabler(ConditionEvaluateResult.Match, ConditionEvaluateResult.Match, ConditionEvaluateResult.Match);
@@ -76,9 +75,9 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(()=> testItem.evaluate(null, vm)).toThrow(CodingError);
         let logger = services.loggerService as CapturingLogger;
-        expect(logger.findMessage('Error creating condition', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
     });
     test('with null childconfig but valid enabler that returns Match, logs error and evaluate returns undetermined', () => {
@@ -98,8 +97,8 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.findMessage('childConditionConfig', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(()=> testItem.evaluate(null, vm)).toThrow(CodingError);
+        expect(logger.findMessage('childConditionConfig: must be assigned to a Condition', LoggingLevel.Error, null)).toBeTruthy();
 
     });    
     test('with invalid enablerConfig, logs error and evaluate returns undetermined', () => {
@@ -119,8 +118,8 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.findMessage('Error creating condition', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(()=> testItem.evaluate(null, vm)).toThrow(/ConditionType/);
+        expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
     });        
     test('with null enablerConfig, logs error and evaluate returns undetermined', () => {
@@ -141,7 +140,7 @@ describe('WhenCondition', () => {
         let testItem = new WhenCondition(config);
         
         expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.findMessage('enablerConfig', LoggingLevel.Error, null, null)).toBeTruthy();
+        expect(logger.findMessage('enablerConfig: must be assigned to a Condition', LoggingLevel.Warn, LoggingCategory.Configuration)).toBeTruthy();
 
     });    
 

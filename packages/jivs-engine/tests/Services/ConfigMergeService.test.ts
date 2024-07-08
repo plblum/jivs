@@ -1,7 +1,7 @@
 import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
 import { ConditionConflictIdentifierHandler, ConditionConfigMergeServiceHandler, IConfigMergeServiceBase, PropertyConfigMergeServiceHandlerResult } from '../../src/Interfaces/ConfigMergeService';
 import { MergeIdentity, PropertyConflictRule } from '../../src/Interfaces/ConfigMergeService';
-import { ILoggerService, LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggerService';
+import { ILoggerService, LoggingCategory, LoggingLevel, logGatheringHandler } from '../../src/Interfaces/LoggerService';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
 import { ConfigMergeServiceBase, ValidatorConfigMergeService, ValueHostConfigMergeService } from '../../src/Services/ConfigMergeService';
 import { CapturingLogger } from '../TestSupport/CapturingLogger';
@@ -26,7 +26,7 @@ function createServices(): { logger: CapturingLogger, services: IValidationServi
 function setupLogger(services: IValidationServices, level: LoggingLevel): CapturingLogger
 {
     let logger = new CapturingLogger();
-    logger.extraLogger = new ConsoleLoggerService();
+    logger.chainedLogger = new ConsoleLoggerService();
     services.loggerService = logger;
     return logger;
 }
@@ -38,8 +38,8 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
 
         }
 
-        public publicify_log(message: (() => string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void {
-            this.log(message, logLevel, logCategory);
+        protected publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
+            super.log(level, gatherFn);
         }
 
         public publicify_mergeConfigs(source: object, destination: object, identity: MergeIdentity): void {
@@ -135,54 +135,6 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
             expect(result()).toEqual({ useValue: 'result' });
         });
     });
-    describe('log', () => {
-        test('No services, does nothing even with MinLevel=Debug', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            expect(() => testItem.publicify_log('test', LoggingLevel.Error)).not.toThrow();
-        });
-        test('Logger MinLevel is higher than supplied log level never calls the message function or logs', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            let setup = createServices();
-            testItem.services = setup.services;
-            setup.logger.minLevel = LoggingLevel.Error;
-            let called = false;
-            testItem.publicify_log(() => {
-                called = true;
-                return 'abc';
-            }, LoggingLevel.Warn);
-            expect(called).toBe(false);
-            expect(setup.logger.entryCount()).toBe(0);
-        });
-        test('Logger MinLevel is lower than supplied log level calls the message function and logs', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            let setup = createServices();
-            testItem.services = setup.services;
-            setup.logger.minLevel = LoggingLevel.Warn;
-            let called = false;
-            testItem.publicify_log(() => {
-                called = true;
-                return 'abc';
-            }, LoggingLevel.Error);
-            expect(called).toBe(true);
-            expect(setup.logger.entryCount()).toBe(1);
-        });
-        test('Message is a string, not a function and gets logged', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            let setup = createServices();
-            testItem.services = setup.services;
-            testItem.publicify_log('abc', LoggingLevel.Error);
-            expect(setup.logger.findMessage('abc', null, null, null)).not.toBeNull();
-            expect(setup.logger.findMessage(null, LoggingLevel.Error, null, null)).not.toBeNull();
-            expect(setup.logger.findMessage(null, null, LoggingCategory.Configuration, null)).not.toBeNull();
-        });        
-        test('config parameter assigned', () => {
-            let testItem = new Publicify_ConfigMergeServiceBase();
-            let setup = createServices();
-            testItem.services = setup.services;
-            testItem.publicify_log('abc', LoggingLevel.Error, LoggingCategory.Debug);
-            expect(setup.logger.findMessage(null, null, LoggingCategory.Debug, null)).not.toBeNull();
-        });           
-    });
     describe('mergeProperty', () => {
         function testMergeProperty(rule: PropertyConflictRule<object>,
             source: object, destination: object, expected: object,
@@ -201,9 +153,8 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
             expect(destination).toEqual(expected);
             expect(source).toEqual(expectedSource);
             if (logContains)
-                expect(setup.logger.findMessage(logContains, null, null, null)).not.toBeNull();
-            else
-                expect(setup.logger.entryCount()).toBe(0);
+                expect(setup.logger.findMessage(logContains, null, null)).toBeTruthy();
+
         }
         test('nochange keeps destination intact', () => {
             testMergeProperty('nochange', { A: 'ABC' }, { A: 'XYZ' }, { A: 'XYZ' }, 'Rule prevents changes');
@@ -385,7 +336,7 @@ describe('ValueHostConfigMergeService', () => {
             expect(destination).toEqual(expectedDestionation);
             expect(source).toEqual(expectedSource);
             if (logContains)
-                expect(setup.logger.findMessage(logContains, null, null, null)).not.toBeNull();
+                expect(setup.logger.findMessage(logContains, null)).toBeTruthy();
         }
         test('Same valueHostName, no validatorConfigs, no custom rules. Copies everything except valueHostType and valueHostName', () => {
             testResolve({
@@ -726,7 +677,7 @@ describe('ValidatorConfigMergeService', () => {
             testItem.merge(source, destination);
             expect(destination).toEqual(expectedDestination);
             if (logContains)
-                expect(setup.logger.findMessage(logContains, logLevel ?? null, null, null)).toBeTruthy();
+                expect(setup.logger.findMessage(logContains, logLevel ?? null, null)).toBeTruthy();
         }
         test('Neither source or destination has ValidatorConfigs leaves destination unchanged', () => {
             let testItem = new ValidatorConfigMergeService();

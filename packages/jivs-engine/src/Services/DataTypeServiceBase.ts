@@ -9,6 +9,8 @@ import { IValidationServices } from '../Interfaces/ValidationServices';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 import { toIDisposable } from '../Interfaces/General_Purpose';
+import { LoggingLevel } from '../Interfaces/LoggerService';
+import { valueForLog } from '../Utilities/Utilities';
 
 
 /**
@@ -113,6 +115,9 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
 
     /**
      * Runs the lazyload function if setup and returns true if run.
+     * This has a side effect of disabling the lazyload function
+     * to avoid additional recursion of the calling function by
+     * always returning false while the lazyloader function is running.
      * @returns 
      */
     protected ensureLazyLoaded(): boolean
@@ -126,4 +131,15 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
         }
         return false;
     }        
+
+    /**
+     * Call once the object T was found and we want to call a function on it.
+     * It logs "Using [name]"
+     * @param instance 
+     * @param purpose
+     */
+    protected logUsingInstance(instance: any, purpose?: string | null): void
+    {
+        this.logQuick(LoggingLevel.Debug, () => `Using ${valueForLog(instance)} ${purpose ?? '.'}`);
+    }
 }

@@ -160,3 +160,102 @@ describe('dispose()', () => {
         expect(() => testItem.find('fr')).toThrow(TypeError);
     });
 });
+
+describe('availableCultures', () => {
+    let testItem: CultureService;
+
+    beforeEach(() => {
+        testItem = new CultureService();
+    });
+
+    test('Initially empty when no cultures are registered', () => {
+        expect(testItem.availableCultures()).toEqual([]);
+    });
+
+    test('Returns a single registered culture', () => {
+        let culture: CultureIdFallback = { cultureId: 'en-US' };
+        testItem.register(culture);
+        expect(testItem.availableCultures()).toEqual(['en-US']);
+    });
+
+    test('Returns multiple registered cultures', () => {
+        let cultures: CultureIdFallback[] = [
+            { cultureId: 'en-US', fallbackCultureId: 'en' },
+            { cultureId: 'en' },
+            { cultureId: 'fr-FR' },
+            { cultureId: 'es-ES' }
+        ];
+        cultures.forEach(culture => testItem.register(culture));
+        expect(testItem.availableCultures()).toEqual(['en-US','en', 'fr-FR', 'es-ES']);
+    });
+
+    test('Does not return duplicates if the same culture is registered multiple times', () => {
+        let cultures: CultureIdFallback[] = [
+            { cultureId: 'en-US', fallbackCultureId: 'en' },
+            { cultureId: 'en-US' }, // duplicate - however, this will REPLACE the previous registration, so duplicates are never a problem
+            { cultureId: 'en' }
+        ];
+        cultures.forEach(culture => testItem.register(culture));
+        expect(testItem.find('en-US')).toEqual({ cultureId: 'en-US' });
+        expect(testItem.availableCultures()).toEqual(['en-US', 'en']);
+    });
+
+});
+
+describe('availableLanguages', () => {
+    let testItem: CultureService;
+
+    beforeEach(() => {
+        testItem = new CultureService();
+    });
+
+    test('Initially empty when no cultures are registered', () => {
+        expect(testItem.availableLanguages()).toEqual([]);
+    });
+
+    test('Returns a single language code when one culture is registered', () => {
+        let culture: CultureIdFallback = { cultureId: 'en-US' };
+        testItem.register(culture);
+        expect(testItem.availableLanguages()).toEqual(['en']);
+    });
+
+    test('Returns multiple language codes for registered cultures', () => {
+        let cultures: CultureIdFallback[] = [
+            { cultureId: 'en-US', fallbackCultureId: 'en' },
+            { cultureId: 'fr-FR' },
+            { cultureId: 'es-ES' }
+        ];
+        cultures.forEach(culture => testItem.register(culture));
+        expect(testItem.availableLanguages()).toEqual(['en', 'fr', 'es']);
+    });
+
+    test('Does not return duplicate language codes if the same language is registered multiple times', () => {
+        let cultures: CultureIdFallback[] = [
+            { cultureId: 'en-US', fallbackCultureId: 'en' },
+            { cultureId: 'en-GB' },
+            { cultureId: 'fr-FR' }
+        ];
+        cultures.forEach(culture => testItem.register(culture));
+        expect(testItem.availableLanguages()).toEqual(['en', 'fr']);
+    });
+
+    test('Correctly extracts language codes from culture IDs with region codes', () => {
+        let cultures: CultureIdFallback[] = [
+            { cultureId: 'en-US' },
+            { cultureId: 'fr-CA' },
+            { cultureId: 'es-MX' }
+        ];
+        cultures.forEach(culture => testItem.register(culture));
+        expect(testItem.availableLanguages()).toEqual(['en', 'fr', 'es']);
+    });
+
+    test('Handles cultures without region codes', () => {
+        let cultures: CultureIdFallback[] = [
+            { cultureId: 'en' },
+            { cultureId: 'fr' },
+            { cultureId: 'es' }
+        ];
+        cultures.forEach(culture => testItem.register(culture));
+        expect(testItem.availableLanguages()).toEqual(['en', 'fr', 'es']);
+    });
+});

@@ -6,7 +6,7 @@
 import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterService';
 import { IDataTypeFormatter } from '../Interfaces/DataTypeFormatters';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError, SevereErrorBase, ensureError } from '../Utilities/ErrorHandling';
 import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { LookupKeyFallbackService } from './LookupKeyFallbackService';
@@ -46,7 +46,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
     protected formatRecursive(value: any, lookupKey: string | null | undefined, alreadyChecked: Set<string>): DataTypeResolution<string> {
         try {
             if (!lookupKey) {
-                this.log('Identify LookupKey from value', LoggingLevel.Debug);
+                this.logQuick(LoggingLevel.Debug, ()=> 'Identify LookupKey from value');
                 lookupKey = this.services.dataTypeIdentifierService.identify(value);
             }
             if (lookupKey === null)
@@ -61,13 +61,18 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
                 /* istanbul ignore next */ // this error is defensive, but currently find will never return null for an activeCultureID
                 if (!cc)
                     throw new CodingError(`Need to support CultureID ${cultureId} in DataTypeServices.`);
-                this.log(() => `Trying cultureId: ${cultureId}`, LoggingLevel.Debug);
+                this.logQuick(LoggingLevel.Debug, () => `Trying cultureId: ${cultureId}`);
                 let dtlf = this.find(lookupKey, cultureId);
                 if (dtlf) {
-                    this.log(()=> `Formatter selected: ${dtlf.constructor.name} with culture "${cultureId}"`, LoggingLevel.Debug);
+                    this.logQuick(LoggingLevel.Debug, ()=> `Formatter selected: ${dtlf.constructor.name} with culture "${cultureId}"`);
                     let result = dtlf.format(value, lookupKey, cultureId);
                     if (result.value)
-                        this.log(()=> `Formatted "${lookupKey}" with culture "${cultureId}": "${result.value}`, LoggingLevel.Info);                    
+                        this.log(LoggingLevel.Info, () => {
+                            return {
+                                message: `Formatted "${lookupKey}" with culture "${cultureId}": "${result.value}`,
+                                category: LoggingCategory.Result
+                            }
+                        });                    
                     return result;
                 }
 
@@ -75,17 +80,15 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
             }
             let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
             if (fallbackLookupKey) {
-                this.log(() => `Trying fallback: ${fallbackLookupKey}`, LoggingLevel.Debug);
+                this.logQuick(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
                 return this.formatRecursive(value, fallbackLookupKey, alreadyChecked);
             }
             
-            throw new CodingError(`No DataTypeFormatter for LookupKey "${lookupKey}" with culture "${cultureId}"`);
+            throw new CodingError(`No DataTypeFormatter for LookupKey "${lookupKey}" with culture "${this.services.cultureService.activeCultureId}"`);
         }
         catch (e) {
             let err = ensureError(e);
-            this.log(err.message, LoggingLevel.Error);
-            if (err instanceof SevereErrorBase)
-                throw err;
+            this.logError(err); // will throw if SevereErrorBase
             return {
                 errorMessage: err.message,
                 value: undefined

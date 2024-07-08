@@ -15,7 +15,7 @@ import { ValidationManager } from '@plblum/jivs-engine/build/Validation/Validati
 import { ValidationSeverity } from "@plblum/jivs-engine/build/Interfaces/Validation";
 import { IValidationManager } from "@plblum/jivs-engine/build/Interfaces/ValidationManager";
 import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
-import { IntegerConverter, TotalDaysConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
+import { IntegerConverter, UTCDateOnlyConverter } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 import { NumberFormatter, StringFormatter } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
 import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
@@ -26,8 +26,8 @@ import { build } from '@plblum/jivs-engine/build/Validation/ValidationManagerCon
 // Here's our target function to use with a CalcValueHost. 
 // Assign CalcValueHostConfig.calcFn to it.
 function differenceBetweenDates(callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) : SimpleValueType {
-    let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), LookupKey.TotalDays);
-    let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('EndDate')?.getValue(), LookupKey.TotalDays);
+    let totalDays1 = callingValueHost.convert(findValueHosts.getValueHost('StartDate')?.getValue(), null, LookupKey.TotalDays);
+    let totalDays2 = callingValueHost.convert(findValueHosts.getValueHost('EndDate')?.getValue(), null, LookupKey.TotalDays);
     if (typeof totalDays1 !== 'number' || typeof totalDays2 !== 'number')
         return undefined;   // can log with findValueHosts.services.logger.log();
     return Math.abs(totalDays2 - totalDays1);
@@ -40,7 +40,7 @@ export function configureVMForDifferenceBetweenDates(): IValidationManager {
     // let's add the supporting tools needed by this example
     // normally you call createValidationServices() which already has this stuff setup
     let convertService = services.dataTypeConverterService as DataTypeConverterService;
-    convertService.register(new TotalDaysConverter());  // for LookupKey.TotalDays
+    convertService.register(new UTCDateOnlyConverter());  // for LookupKey.TotalDays
     convertService.register(new IntegerConverter());    // for LookupKey.Integer
     let formatterService = services.dataTypeFormatterService as DataTypeFormatterService;
     formatterService.register(new StringFormatter());  // for {Label} and {SecondLabel} tokens in error message    

@@ -81,13 +81,14 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
             config = arg1 as ValueHostsManagerConfig;
         assertNotNull(config.services, 'services');
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
-        let savedServices = config.services;
-        config.services = null as any; // to ignore during DeepClone
-        let internalConfig = deepClone(config) as ValueHostsManagerConfig;
-        config.services = savedServices;
-        internalConfig.services = savedServices;
+        // let savedServices = config.services;
+        // config.services = null as any; // to ignore during DeepClone
+        // let internalConfig = deepClone(config) as ValueHostsManagerConfig;
+        // config.services = savedServices;
+        // internalConfig.services = savedServices;
 
-        this._config = internalConfig;
+        // this._config = internalConfig;
+        let internalConfig = this._config = ValueHostsManager.safeConfigClone(config);
 
         this._instanceState = internalConfig.savedInstanceState ?? {};
         if (typeof this._instanceState.stateChangeCounter !== 'number')
@@ -107,6 +108,16 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState>
             this.addValueHost(item as ValueHostConfig, null);   // will get its instance state from _lastValueHostInstanceStates
         }
         this._config.onConfigChanged = saveOnChangeConfig;
+    }
+
+    public static safeConfigClone(config: ValueHostsManagerConfig): ValueHostsManagerConfig {
+        // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
+        let savedServices = config.services;
+        config.services = null as any; // to ignore during DeepClone
+        let internalConfig = deepClone(config) as ValueHostsManagerConfig;
+        config.services = savedServices;
+        internalConfig.services = savedServices;
+        return internalConfig;
     }
     /**
      * If the user needs to abandon this instance, they should use this to 

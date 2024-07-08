@@ -59,9 +59,9 @@ describe('DataTypeFormatterService.format', () => {
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format({})).toThrow(/LookupKey/);
 
-        expect(logger.findMessage('Identify LookupKey from value', LoggingLevel.Debug, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('Identify LookupKey from value', LoggingLevel.Debug)).toBeTruthy();
 
-        expect(logger.findMessage('LookupKey', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('LookupKey', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
     test('Unsupported lookupKey error', () => {
         let services = new MockValidationServices(false, true);
@@ -72,8 +72,8 @@ describe('DataTypeFormatterService.format', () => {
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format(0, 'huh')).toThrow(/No DataTypeFormatter/);
-        expect(logger.findMessage('Trying cultureId', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('No DataTypeFormatter', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('Trying cultureId', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('No DataTypeFormatter', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
 
     test('Lookup Key in DataTypeFormatter en', () => {
@@ -86,9 +86,9 @@ describe('DataTypeFormatterService.format', () => {
 
         testItem.register(new TestFormatter(['en'], 'EN TestKey'));
         expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en TestKey' });
-        expect(logger.findMessage('Trying cultureId: en', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Formatter selected: TestFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
+        expect(logger.findMessage('Trying cultureId: en', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Formatter selected: TestFormatter with culture "en"', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Lookup Key in DataTypeFormatter en using fallback from en-GB', () => {
         let services = new MockValidationServices(false, true);
@@ -100,10 +100,10 @@ describe('DataTypeFormatterService.format', () => {
         testItem.register(new TestFormatter(['en'], 'EN TestKey'));
         expect(testItem.format(10, 'TestKey')).toEqual({ value: 'en TestKey' });
 
-        expect(logger.findMessage('Trying cultureId: en-GB', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Trying cultureId: en', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Formatter selected: TestFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
+        expect(logger.findMessage('Trying cultureId: en-GB', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Trying cultureId: en', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Formatter selected: TestFormatter with culture "en"', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Formatted "TestKey" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Lookup Key in DataTypeFormatter en and en-GB gets from en-GB', () => {
         let services = new MockValidationServices(false, true);
@@ -178,8 +178,8 @@ describe('DataTypeFormatterService.format', () => {
         testItem.register(new FormatterThrowsError());
         expect(testItem.format(10, 'TEST').errorMessage).toBe('ERROR');
          // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService'
-        expect(logger.findMessage('Formatter selected: FormatterThrowsError', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('Formatter selected: FormatterThrowsError', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
     test('Formatter throws string. results throwing exception using the string as the error message', () => {
         class FormatterThrowsString implements IDataTypeFormatter
@@ -207,8 +207,8 @@ describe('DataTypeFormatterService.format', () => {
             expect((e as Error).message).toBe('ERROR');
         }
         // LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService'
-        expect(logger.findMessage('Formatter selected: FormatterThrowsString', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Service, 'DataTypeFormatterService')).not.toBeNull();
+        expect(logger.findMessage('Formatter selected: FormatterThrowsString', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('ERROR', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
     });
 });
 describe('format() using lookupKeyFallbackService', () => {
@@ -235,9 +235,9 @@ describe('format() using lookupKeyFallbackService', () => {
         let dtfs = services.dataTypeFormatterService;
         let result = dtfs.format(1, LookupKey.Integer);
         expect(result.value).toEqual('1');
-        expect(logger.findMessage('Trying fallback', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Formatter selected: NumberFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();        
-        expect(logger.findMessage('Formatted "Number" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();  
+        expect(logger.findMessage('Trying fallback', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Formatter selected: NumberFormatter with culture "en"', LoggingLevel.Debug)).toBeTruthy();        
+        expect(logger.findMessage('Formatted "Number" with culture "en"', LoggingLevel.Info)).toBeTruthy();  
     });
     test('Custom currency type falls back to Currency', () => {
         let services = createValidationServices();
@@ -252,10 +252,10 @@ describe('format() using lookupKeyFallbackService', () => {
         let dtfs = services.dataTypeFormatterService;
         let result = dtfs.format(1, 'CUSTOMB');
         expect(result.value).toEqual('$1.00');
-        expect(logger.findMessage('Trying fallback: CUSTOMA', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Trying fallback: Currency', LoggingLevel.Debug, null, null)).not.toBeNull();
-        expect(logger.findMessage('Formatter selected: CurrencyFormatter with culture "en"', LoggingLevel.Debug, null, null)).not.toBeNull();        
-        expect(logger.findMessage('Formatted "Currency" with culture "en"', LoggingLevel.Info, null, null)).not.toBeNull();        
+        expect(logger.findMessage('Trying fallback: CUSTOMA', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Trying fallback: Currency', LoggingLevel.Debug)).toBeTruthy();
+        expect(logger.findMessage('Formatter selected: CurrencyFormatter with culture "en"', LoggingLevel.Debug)).toBeTruthy();        
+        expect(logger.findMessage('Formatted "Currency" with culture "en"', LoggingLevel.Info)).toBeTruthy();        
     });    
     test('Fallback loop stopped with exception', () => {
         let services = createValidationServices();

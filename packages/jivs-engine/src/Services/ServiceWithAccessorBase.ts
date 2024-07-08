@@ -3,9 +3,9 @@
  * @module Services/AbstractClasses/ServiceWithAccessorBase
  */
 
-import { CodingError, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
+import { CodingError, SevereErrorBase, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
 import { IValidationServices } from "../Interfaces/ValidationServices";
-import { LoggingCategory, LoggingLevel } from "../Interfaces/LoggerService";
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../Interfaces/LoggerService";
 import { ServiceBase } from "./ServiceBase";
 import { IServicesAccessor } from "../Interfaces/Services";
 
@@ -57,27 +57,56 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
     {
         this._services = undefined!;
     }    
+ 
     /**
-     * Wrapper around logging that takes no action if logLevel is below min,
-     * allowing for some of the work to set up to be skipped, especially
-     * by providing a function for message when message requires some work to create.
-     * @param message 
-     * @param logLevel 
-     * @param logCategory
+     * Log a message. The message gets assigned the details of feature, type, and identity
+     * here.
      */
-    protected log(message: (()=>string) | string, logLevel: LoggingLevel, logCategory?: LoggingCategory): void
+    protected log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        if (this.hasServices()) {
+            let logger = this.services.loggerService;
+            logger.log(level, (options?: LogOptions) => {
+                let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+                details.feature = 'service';
+                details.type = this;
+                return details;
+            });
+        }
+    }
+    /**
+     * When the log only needs the message and nothing else.
+     * @param level 
+     * @param messageFn
+     */
+    protected logQuick(level: LoggingLevel, messageFn: ()=> string): void {
+        this.log(level, () => {
+            return {
+                message: messageFn()
+            };
+        });
+        
+    }
+    /**
+     * Log an exception. The GatherFn should only be used to gather additional data
+     * as the Error object supplies message, category (Exception), and this function
+     * resolves feature, type, and identity.
+     * If the error class extends SevereErrorBase, the same Error object will be thrown after logging.
+     * @param error 
+     * @param gatherFn 
+     */
+    protected logError(error: Error, gatherFn?: logGatheringErrorHandler): void
     {
         if (this.hasServices()) {
             let logger = this.services.loggerService;
-            if (logger.minLevel <= logLevel) {
-                logger.log((typeof message === 'function') ? message() : message,
-                    logLevel, logCategory ?? this.logCategory(), this.serviceName);
-            }
+            logger.logError(error, (options?: LogOptions) => {
+                let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+                details.feature = 'service';
+                details.type = this;
+                details.identity = this.serviceName;
+                return details;
+            });
         }
-    }
-
-    protected logCategory(): LoggingCategory
-    {
-        return LoggingCategory.Service;
+        if (error instanceof SevereErrorBase)
+            throw error;
     }
 }

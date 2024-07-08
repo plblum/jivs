@@ -24,11 +24,12 @@
  * Registration is shown at the bottom of the file.
  */
 
-import { IDataTypeConverter } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverters";
 import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
 import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "@plblum/jivs-engine/build/Services/DataTypeIdentifierService";
+import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { DataTypeConverterBase } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 
 
 export class RelativeDate
@@ -89,16 +90,22 @@ export class RelativeDateIdentifier implements IDataTypeIdentifier
     }
 }
 
-export class RelativeDateConverter implements IDataTypeConverter
+export class RelativeDateConverter extends DataTypeConverterBase
 {
-    // handles the value without any lookup key or with "RelativeDate"
-    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return value instanceof RelativeDate &&
-            (!dataTypeLookupKey || (dataTypeLookupKey === RelativeDataLookupKey));
-    }
-    public convert(value: RelativeDate, dataTypeLookupKey: string): string | number | Date | null | undefined {
+    convert(value: RelativeDate, sourceLookupKey: string | null, resultLookupKey: string) {
         return value.resolvedDate;
     }
+    protected validValue(value: any): boolean {
+        return value instanceof RelativeDate;
+    }
+    supportedResultLookupKeys(): string[] {
+        return [LookupKey.Date];
+    }
+    supportedSourceLookupKeys(): (string | null)[] {
+        // when passing null for sourceLookupKey in canConvert, it will always match using validValue()
+        return [null, RelativeDataLookupKey];
+    }
+
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService

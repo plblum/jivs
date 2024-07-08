@@ -62,6 +62,7 @@ import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserServi
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
 import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 
 
 export function createValidationServicesForTesting(): ValidationServices {
@@ -299,6 +300,7 @@ export function registerDataTypeFormatters(dtfs: DataTypeFormatterService): void
  */
 export function registerDataTypeConverters(dtcs: DataTypeConverterService): void
 {
+    dtcs.register(new UTCDateOnlyConverter());
 }
 export function registerDataTypeComparers(dtcs: DataTypeComparerService): void
 { 

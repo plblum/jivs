@@ -6,7 +6,7 @@
 
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
-import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
+import { LoggingLevel, LoggingCategory, LogOptions, LogDetails } from '../Interfaces/LoggerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
@@ -41,32 +41,40 @@ export abstract class CompareToSecondValueHostConditionBase<TConfig extends Comp
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (value == null)  // null/undefined
+        {
+            this.logNothingToEvaluate('value', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
+        }
+        let valueDetails = this.tryConversion(value, valueHost.getDataType(), this.config.conversionLookupKey, valueHostsManager.services); 
+        if (valueDetails.failed)
+            return ConditionEvaluateResult.Undetermined;
+
         let secondValue: any = undefined;
         let secondValueLookupKey: string | null = null;
         if (this.config.secondValueHostName) {
             let vh2 = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
             if (!vh2) {
-                const msg = 'secondValueHostName is unknown';
-                this.logInvalidPropertyData('secondValueHostName', msg, valueHostsManager);
-                return ConditionEvaluateResult.Undetermined;
+                const msg = 'is unknown';
+                this.throwInvalidPropertyData('secondValueHostName', msg, valueHostsManager.services);
             }
-            secondValue = vh2.getValue();
-            secondValueLookupKey = this.config.secondConversionLookupKey ?? vh2.getDataType();
+            secondValue = vh2!.getValue();
+            secondValueLookupKey = vh2!.getDataType();
         }
         if (secondValue == null)  // null/undefined
         {
-            const msg = 'secondValue lacks value to evaluate';
-            this.logInvalidPropertyData('secondValue', msg, valueHostsManager);
+            this.logNothingToEvaluate('secondValue', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
+        let secondValueDetails = this.tryConversion(secondValue, secondValueLookupKey, this.config.secondConversionLookupKey, valueHostsManager.services);
+        if (secondValueDetails.failed)
+            return ConditionEvaluateResult.Undetermined;
 
         let comparison = valueHostsManager.services.dataTypeComparerService.compare(
-            value, secondValue,
-            this.config.conversionLookupKey ?? valueHost.getDataType(), secondValueLookupKey);
+            valueDetails.value, secondValueDetails.value,
+            valueDetails.lookupKey ?? null, secondValueDetails.lookupKey ?? null);
         if (comparison === ComparersResult.Undetermined) {
-            valueHostsManager.services.loggerService.log('Type mismatch. Value cannot be compared to secondValue',
-                LoggingLevel.Warn, LoggingCategory.TypeMismatch, `${this.constructor.name} for ${valueHost.getName()}`);
+            this.logTypeMismatch(valueHostsManager.services, 'value', 'secondValue', value, secondValue);
+
             return ConditionEvaluateResult.Undetermined;
         }
         return this.compareTwoValues(comparison);

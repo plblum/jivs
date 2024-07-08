@@ -98,6 +98,32 @@ export class LookupKeyFallbackService extends ServiceBase implements ILookupKeyF
 
         return this._registered!.get(lookupKey) ?? null;
     }
+  /**
+   * Determine if the initialLookupKey can fallback to the targetLookupKey.
+   * @param initialLookupKey 
+   * @param targetLookupKey 
+   * @returns true when fallback is possible, false otherwise.
+   */
+    public canFallbackTo(initialLookupKey: string, targetLookupKey: string): boolean
+    {
+        assertNotNull(initialLookupKey, 'initialLookupKey');
+        assertNotNull(targetLookupKey, 'targetLookupKey');
+        this.ensureBuiltIn();
+        let alreadyCheckedLookupKeys = new Set<string>();
+
+        let lookupKey: string | null = initialLookupKey;
+        alreadyCheckedLookupKeys.add(lookupKey);        
+        while (lookupKey)
+        {
+            if (lookupKey === targetLookupKey)
+                return true;
+
+            lookupKey = this.find(lookupKey);
+            if (lookupKey)
+                LookupKeyFallbackService.ensureRecursionSafe(lookupKey, alreadyCheckedLookupKeys);
+        }
+        return false;
+    }
 
     /**
      * Defense for recursion looking through fallbacks to avoid loops.

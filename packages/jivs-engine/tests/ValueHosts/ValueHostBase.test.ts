@@ -15,11 +15,12 @@ import { createValidationServicesForTesting } from "../TestSupport/createValidat
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { ValidationManager } from "../../src/Validation/ValidationManager";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
-import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../TestSupport/conditionsForTesting";
 import { ValueHostsManagerConfigBuilder } from "../../src/ValueHosts/ValueHostsManagerConfigBuilder";
 import { ValueHostsManager } from "../../src/ValueHosts/ValueHostsManager";
+import { TestLogCallsLoggingService } from "../TestSupport/TestLogCallsLoggingService";
 
 
 interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
@@ -46,6 +47,18 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
     public get exposeState(): IPublicifiedValueHostInstanceState {
         return this.instanceState;
     }
+    public publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        super.log(level, gatherFn);
+    }
+
+    public publicify_logQuick(level: LoggingLevel, messageFn: () => string): void {
+        super.logQuick(level, messageFn);
+
+    }
+    public publicify_logError(error: Error, gatherFn?: logGatheringErrorHandler): void {
+        super.logError(error, gatherFn);
+    }
+
 }
 /**
  * This implementation of IValueHostGenerator is actually tested in ValueHostFactory.tests.ts
@@ -469,7 +482,7 @@ describe('setValue', () => {
         let testItem = setup.valueHost;
         testItem.setValue(finalValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null, null)).toBeTruthy();
+        expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null)).toBeTruthy();
     });
     test('isEnabled=false will not change the value.', () => {
         const initialValue = 100;
@@ -481,8 +494,8 @@ describe('setValue', () => {
         testItem.setValue(finalValue);
         expect(testItem.getValue()).toBe(initialValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeTruthy();
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeNull();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeNull();
     });
     test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
         const initialValue = 100;
@@ -494,8 +507,8 @@ describe('setValue', () => {
         testItem.setValue(finalValue, { overrideDisabled: true });
         expect(testItem.getValue()).toBe(finalValue);
         let logger = setup.services.loggerService as CapturingLogger;
-        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null, null)).toBeTruthy();
-        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null, null)).toBeNull();
+        expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeTruthy();
+        expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });
 });
 describe('setValueToUndefined', () => {
@@ -846,7 +859,7 @@ describe('isEnabled and related enabled', () => {
             expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
             expect(setup.vh.exposeState.enabled).toBe(expectedStateEnabled);
             expect(stateChanged).toBe(expectStateChange);
-            expect(setup.logger.findMessage('setEnabled', LoggingLevel.Debug, null, null)).toBeTruthy();
+            expect(setup.logger.findMessage('setEnabled', LoggingLevel.Debug, null)).toBeTruthy();
         }
         test('setEnabled(true) results in isEnabled=true, state.enabled=true', () => {
             testSetEnabled(undefined, undefined, true, true, true, true);
@@ -912,7 +925,7 @@ describe('isEnabled and related enabled', () => {
 
             expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
             let logger = setup.logger as CapturingLogger;
-            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null, null)).toBeTruthy();
+            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null)).toBeTruthy();
 
         });             
         test('invalid enablerConfig throws and logs', () => {
@@ -920,7 +933,7 @@ describe('isEnabled and related enabled', () => {
 
             expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
             let logger = setup.logger as CapturingLogger;
-            expect(logger.findMessage('not registered', LoggingLevel.Error, null, null)).toBeTruthy();
+            expect(logger.findMessage('not registered', LoggingLevel.Error, null)).toBeTruthy();
 
         });         
     });
@@ -968,7 +981,7 @@ describe('isEnabled and related enabled', () => {
 
             expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
             let logger = setup.logger as CapturingLogger;
-            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null, null)).toBeTruthy();
+            expect(logger.findMessage('Always Throws', LoggingLevel.Error, null)).toBeTruthy();
 
         });             
         test('invalid enablerConfig throws and logs', () => {
@@ -976,9 +989,131 @@ describe('isEnabled and related enabled', () => {
 
             expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
             let logger = setup.logger as CapturingLogger;
-            expect(logger.findMessage('not registered', LoggingLevel.Error, null, null)).toBeTruthy();
+            expect(logger.findMessage('not registered', LoggingLevel.Error, null)).toBeTruthy();
 
         });         
     });
 
+});
+describe('logging functions', () => {
+    function setupForLogging(): { valueHost: PublicifiedValueHostBase, services: MockValidationServices, logger: TestLogCallsLoggingService } {
+        let originalSetup = setupValueHost();
+        let services = originalSetup.services;
+        let logger = new TestLogCallsLoggingService(LoggingLevel.Debug);
+        services.loggerService = logger;
+        return { valueHost: originalSetup.valueHost, services: services, logger: logger };
+    }
+    describe('logError', () => {
+        test('No services, does nothing even with an error thrown', () => {
+            let setup = setupForLogging();
+            let testItem = setup.valueHost;
+            const error = new Error('Test error');
+            expect(() => testItem.publicify_logError(error)).not.toThrow();
+        });
+        test('With services, logs the error correctly', () => {
+            let setup = setupForLogging();
+            let testItem = setup.valueHost;
+
+            const error = new Error('Test error');
+            testItem.publicify_logError(error);
+            expect(setup.logger.lastLogDetails).toEqual({
+                message: 'Test error',
+                category: LoggingCategory.Exception,
+                feature: 'ValueHost',
+                type: 'PublicifiedValueHostBase',
+                identity: 'Field1'
+            });
+        });
+        test('Gather function is called and additional data is logged', () => {
+            let setup = setupForLogging();
+            let testItem = setup.valueHost;
+
+            const error = new Error('Test error with additional data');
+            let gatherCalled = false;
+            const gatherFn: logGatheringErrorHandler = (options) => {
+                gatherCalled = true;
+                return { data: { additionalData: 'Extra info' } };
+            };
+            testItem.publicify_logError(error, gatherFn);
+            expect(gatherCalled).toBe(true);
+            expect(setup.logger.lastLogDetails).toEqual({
+                message: 'Test error with additional data',
+                category: LoggingCategory.Exception,
+                data: { additionalData: 'Extra info' },
+                feature: 'ValueHost',
+                type: 'PublicifiedValueHostBase',
+                identity: 'Field1'
+            });
+        });
+        test('Error logged without gather function still captures basic error information', () => {
+            let setup = setupForLogging();
+            let testItem = setup.valueHost;
+
+            const error = new Error('Basic error information');
+            testItem.publicify_logError(error);
+            expect(setup.logger.lastLogDetails).toEqual({
+                message: 'Basic error information',
+                category: LoggingCategory.Exception,
+                feature: 'ValueHost',
+                type: 'PublicifiedValueHostBase',
+                identity: 'Field1'
+            });
+        });
+    });
+
+    describe('log()', () => {
+
+        test('log function correctly logs a message with services set', () => {
+            let setup = setupForLogging();
+            let testItem = setup.valueHost;
+
+            testItem.publicify_log(LoggingLevel.Info, () => {
+                return { message: 'Test message with no services' };
+            });
+            expect(setup.logger.lastLogDetails).toEqual({
+                message: 'Test message with no services',
+                feature: 'ValueHost',
+                type: 'PublicifiedValueHostBase',
+                identity: 'Field1'
+            });
+        });
+
+
+        test('log function gathers and logs detailed information when provided a gather function', () => {
+            let setup = setupForLogging();
+            let testItem = setup.valueHost;
+
+            let gatherCalled = false;
+            const gatherFn: logGatheringHandler = (options) => {
+                gatherCalled = true;
+                return { message: 'TestMessage', category: LoggingCategory.Result, data: { key: 'value' } };
+            };
+            testItem.publicify_log(LoggingLevel.Info, gatherFn);
+            expect(gatherCalled).toBe(true);
+            expect(setup.logger.lastLogDetails).toEqual({
+                message: 'TestMessage',
+                category: LoggingCategory.Result,
+                data: { key: 'value' },
+                feature: 'ValueHost',
+                type: 'PublicifiedValueHostBase',
+                identity: 'Field1'
+            });
+        });
+    });
+    describe('logQuick()', () => {
+
+        test('logQuick function logs simple messages without needing a gather function', () => {
+            let setup = setupForLogging();
+            let testItem = setup.valueHost;
+
+            testItem.publicify_logQuick(LoggingLevel.Info, () => 'Quick log message');
+            expect(setup.logger.lastLogDetails).toEqual({
+                message: 'Quick log message',
+                feature: 'ValueHost',
+                type: 'PublicifiedValueHostBase',
+                identity: 'Field1'
+            });
+        });
+
+    });
 });

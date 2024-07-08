@@ -1,6 +1,7 @@
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { CultureIdFallback } from "../../src/Interfaces/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
+import { CodingError } from "../../src/Utilities/ErrorHandling";
 
 describe('constructor and properties', () => {
 
@@ -55,4 +56,51 @@ describe('register and find, ', () => {
         expect(() => testItem.register('B', null!)).toThrow('fallbackLookupKey');
         expect(() => testItem.register('B', 'B')).toThrow(/same value/);        
     });        
+});
+describe('canFallbackTo', () => {
+    test('No custom lookupkeys registered and request value returns false', () => {
+        let testItem = new LookupKeyFallbackService();
+
+        expect(testItem.canFallbackTo('custom', 'custom2')).toBe(false);
+        expect(testItem.canFallbackTo('custom2', 'custom')).toBe(false);
+    });    
+    // same input and output always true
+    test('Register several custom lookupkeys and all are returned by find', () => {
+        let testItem = new LookupKeyFallbackService();
+        expect(() => testItem.register('A1', 'A')).not.toThrow();
+        expect(() => testItem.register('B1', 'B')).not.toThrow();
+        expect(() => testItem.register('B2', 'B1')).not.toThrow();        
+
+        expect(testItem.canFallbackTo('custom', 'custom')).toBe(true);
+        expect(testItem.canFallbackTo('A1', 'A1')).toBe(true);
+        expect(testItem.canFallbackTo('B1', 'B1')).toBe(true);
+        expect(testItem.canFallbackTo('B2', 'B2')).toBe(true);
+    });
+    test('Register several custom lookupkeys and all are returned by find', () => {
+        let testItem = new LookupKeyFallbackService();
+        expect(() => testItem.register('A1', 'A')).not.toThrow();
+        expect(() => testItem.register('B1', 'B')).not.toThrow();
+        expect(() => testItem.register('B2', 'B1')).not.toThrow();        
+        expect(testItem.canFallbackTo('A1', 'A')).toBe(true);
+        expect(testItem.canFallbackTo('B1', 'B')).toBe(true);
+        expect(testItem.canFallbackTo('B2', 'B1')).toBe(true);
+        expect(testItem.canFallbackTo('A', 'A1')).toBe(false);
+        expect(testItem.canFallbackTo('B', 'B1')).toBe(false);
+        expect(testItem.canFallbackTo('B1', 'B2')).toBe(false);
+    });
+    test('Invalid parameters', () => {
+        let testItem = new LookupKeyFallbackService();
+        expect(() => testItem.canFallbackTo(null!, 'A')).toThrow('initialLookupKey');
+        expect(() => testItem.canFallbackTo('B', null!)).toThrow('targetLookupKey');
+    });
+    test('Circular reference throws exception', () => {
+        let testItem = new LookupKeyFallbackService();
+        expect(() => testItem.register('A1', 'A2')).not.toThrow();     
+        expect(() => testItem.register('A2', 'A3')).not.toThrow();
+        expect(() => testItem.register('A3', 'A1')).not.toThrow();
+        expect(() => testItem.canFallbackTo('A1', 'A4')).toThrow(CodingError);
+        expect(testItem.canFallbackTo('A1', 'A2')).toBe(true);
+
+    });
+
 });

@@ -41,13 +41,13 @@ export class EvenNumberCondition extends OneValueConditionBase<EvenNumberConditi
         //#region  --- start optional lines
         // Give it the ability to get a number from an object that has a converter for a number.
         if (typeof value !== 'number') {
-            value = valueHostsManager.services.dataTypeConverterService.convertToPrimitive(value, LookupKey.Number);
+            value = valueHostsManager.services.dataTypeConverterService.convertUntilResult(value, null, LookupKey.Number);
             if (typeof value !== 'number')
                 return ConditionEvaluateResult.Undetermined;
         }
         //#endregion  --- end optional lines
 
-        if (value === Math.floor(value))    // must be an integer
+        if (value === Math.trunc(value))    // must be an integer
             return value % 2 === 0 ?
                 ConditionEvaluateResult.Match :
                 ConditionEvaluateResult.NoMatch;            

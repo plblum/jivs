@@ -220,10 +220,15 @@ export enum ConditionCategory {
 export interface SupportsDataTypeConverter extends ConditionConfig
 {
     /**
-     * Assign to a LookupKey that is associated with a DataTypeConverter.
-     * Use it to convert the value prior to comparing, to handle special cases like
-     * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Integer"),
-     * just the Day or Month or any other number in a Date object ("Day", "Month").
+     * Assign to a LookupKey of the data type you want the current value to be
+     * converted to before comparing.
+     * Examples:
+     *  - case insensitive matching, use LookupKey.CaseInsensitive, 
+     *  - rounding a number to an integer, use LookupKey.Integer,
+     *  - just the Day or Month or any other number in a Date object,
+     *    use LookupKey.Day, LookupKey.Month, LookupKey.Year, etc.
+     *  - a calculated value derived from the value, like the total days
+     *    represented by a Date object, use LookupKey.TotalDays.
      */
     conversionLookupKey?: string | null;
 }

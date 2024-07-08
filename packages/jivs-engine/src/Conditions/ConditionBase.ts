@@ -7,15 +7,14 @@
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { type ConditionConfig, type IConditionCore, ConditionEvaluateResult, ConditionCategory, ICondition } from '../Interfaces/Conditions';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
-import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
+import { CodingError, SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';
 import { ConditionType } from './ConditionTypes';
-import { valueForLog } from '../Utilities/Utilities';
 
 /**
  * Base implementation of ICondition.
@@ -120,16 +119,6 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
     }
 
     /**
-     * Utility to log when a conditionConfig property is incorrectly setup.
-     * @param errorMessage 
-     * @param valueHostsManager 
-     */
-    protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostsManager: IValueHostsManager): void {
-        let fnName = this.constructor.name;
-        valueHostsManager.services.loggerService.log(propertyName + ': ' + errorMessage, LoggingLevel.Error, LoggingCategory.Configuration, fnName);
-    }
-
-    /**
      * Utility to create a condition to use as a child condition.
      * It uses the conditionFactory. If the factory throws an exception, it logs the error
      * and returns a condition that always returns Undetermined to allow execution to continue.
@@ -145,16 +134,176 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         }
         catch (e)
         {
-            services.loggerService.log(`Error creating condition: ${e}`, LoggingLevel.Error, LoggingCategory.Configuration, valueForLog(this));
+            let err = ensureError(e);
+            this.logError(services, err);
+
             return new ErrorResponseCondition();
         }
             // expect exceptions here for invalid Configs
     }
 
+
+    /**
+     * Converts the given value and lookup key using the provided conversion lookup key.
+     * If the conversion fails, a warning log is generated.
+     * Takes no action if the conversionLookupKey is null.
+     *
+     * @param value - The value to be converted.
+     * @param valueLookupKey - The lookup key associated with the value. Often this should
+     * be assigned to valueHost.getDataType().
+     * @param conversionLookupKey - The conversion lookup key to be used for conversion.
+     * Often this comes from conversionLookupKey or secondConversionLookupKey
+     * found on the Config object.
+     * @param services - The services
+     * @returns An object containing the converted value, lookup key, and a flag indicating if the conversion failed.
+     */
+    protected tryConversion(value: any, valueLookupKey: string | null | undefined,
+        conversionLookupKey: string | null | undefined, services: IValueHostsServices): {
+        value?: any,
+        lookupKey?: string | null,
+        failed: boolean
+    }
+    {
+        if (conversionLookupKey) {
+            let result = services.dataTypeConverterService.convertUntilResult(
+                value, valueLookupKey ?? null, conversionLookupKey);
+            if (!result.resolvedValue) {
+
+                this.log(services, LoggingLevel.Warn, (options?: LogOptions) => {
+                    let details: LogDetails = {
+                        message: `Value cannot be converted to "${conversionLookupKey}".`,
+                        category: LoggingCategory.TypeMismatch,
+                    };
+                    if (options?.includeData)
+                        details.data = {
+                            value: value,
+                            valueLookupKey: valueLookupKey,
+                            conversionLookupKey: conversionLookupKey
+                        };
+                    return details;                    
+                });
+                return { failed: true };
+            }
+            value = result.value;
+            valueLookupKey = conversionLookupKey;
+        }
+        return { value: value, lookupKey: valueLookupKey, failed: false };
+    }
+    
     protected ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
         if (result instanceof Promise)
             throw new CodingError('Promises are not supported for child conditions at this time.');
         return result;
+    }
+
+
+    /**
+     * Utility to log when a conditionConfig property is incorrectly setup.
+     * @param propertyName
+     * @param errorMessage 
+     * @param services 
+     */
+    protected logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices, logLevel: LoggingLevel = LoggingLevel.Warn): void {
+        
+        this.log(services, logLevel,
+            (options?: LogOptions) => {
+            let details: LogDetails = {
+                message: propertyName + ': ' + errorMessage,
+                category: LoggingCategory.Configuration
+            };
+            if (options?.includeData)
+                details.data = { propertyName: propertyName };
+            return details;
+            });
+    }
+
+    /**
+     * Logs the invalid property data and throws a CodingError.
+     * @param propertyName - The name of the invalid property.
+     * @param errorMessage - The error message describing the invalid property data.
+     * @param services - The value host services.
+     * @throws {CodingError} - Throws a CodingError with the specified error message.
+     */
+    protected throwInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices): void {
+        this.logInvalidPropertyData(propertyName, errorMessage, services, LoggingLevel.Error);
+        throw new CodingError(propertyName + ': ' + errorMessage);
+    }
+    /**
+     * Report a comparison error where the data types of the two values are mismatched.
+     * @param services 
+     * @param propertyName 
+     * @param propertyName2 
+     * @param propertyValue 
+     * @param propertyValue2 
+     */
+    protected logTypeMismatch(services: IValueHostsServices, propertyName: string, propertyName2: string, propertyValue: any, propertyValue2: any): void {
+        this.log(services, LoggingLevel.Warn, (options?: LogOptions) => {
+            let details: LogDetails = {
+                message: `Type mismatch. ${propertyName} cannot be compared to ${propertyName2}`,
+                category: LoggingCategory.TypeMismatch,
+            };
+            if (options?.includeData)
+                details.data = {
+                    value: propertyValue,
+                    secondValue: propertyValue2
+                };
+            return details;
+        });        
+    }
+    /**
+     * Logs a message indicating that the specified property lacks a value to evaluate.
+     * @param propertyName - The name of the property.
+     * @param services - The value host services.
+     */
+    protected logNothingToEvaluate(propertyName: string, services: IValueHostsServices): void {
+        const msg = 'lacks value to evaluate';
+        this.logInvalidPropertyData(propertyName, msg, services);
+    }
+    /**
+     * Log a message. The message gets assigned the details of feature, type, and identity
+     * here.
+     */
+    protected log(services: IValueHostsServices, level: LoggingLevel, gatherFn: logGatheringHandler): void {
+        let logger = services.loggerService;
+        logger.log(level, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'Condition';
+            details.type = this;
+            details.identity = this.conditionType;
+            return details;
+        });
+    }
+    /**
+     * When the log only needs the message and nothing else.
+     * @param level 
+     * @param messageFn
+     */
+    protected logQuick(services: IValueHostsServices, level: LoggingLevel, messageFn: ()=> string): void {
+        this.log(services, level, () => {
+            return {
+                message: messageFn()
+            };
+        });
+    }    
+    /**
+     * Log an exception. The GatherFn should only be used to gather additional data
+     * as the Error object supplies message, category (Exception), and this function
+     * resolves feature, type, and identity.
+     * @param error 
+     * @param gatherFn 
+     */
+    protected logError(services: IValueHostsServices, error: Error, gatherFn?: logGatheringErrorHandler): void
+    {
+        let logger = services.loggerService;
+        logger.logError(error, (options?: LogOptions) => {
+            let details = gatherFn ? gatherFn(options) : <LogDetails>{};
+            details.feature = 'Condition';
+            details.type = this;
+            details.identity = this.conditionType;
+            return details;
+        });
+        if (error instanceof SevereErrorBase)
+            throw error;
     }
 }
 
