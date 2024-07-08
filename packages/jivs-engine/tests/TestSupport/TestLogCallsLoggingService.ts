@@ -12,6 +12,7 @@ export class TestLogCallsLoggingService implements ILoggerService {
     dispose(): void {
     }
     minLevel: LoggingLevel;
+    chainedLogger: ILoggerService | null = null;
 
     lastLogDetails: LogDetails | LogErrorDetails | null = null;
 

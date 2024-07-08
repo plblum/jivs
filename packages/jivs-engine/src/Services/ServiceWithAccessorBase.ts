@@ -3,7 +3,7 @@
  * @module Services/AbstractClasses/ServiceWithAccessorBase
  */
 
-import { CodingError, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
+import { CodingError, SevereErrorBase, assertNotNull, assertWeakRefExists } from "../Utilities/ErrorHandling";
 import { IValidationServices } from "../Interfaces/ValidationServices";
 import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../Interfaces/LoggerService";
 import { ServiceBase } from "./ServiceBase";
@@ -90,6 +90,7 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
      * Log an exception. The GatherFn should only be used to gather additional data
      * as the Error object supplies message, category (Exception), and this function
      * resolves feature, type, and identity.
+     * If the error class extends SevereErrorBase, the same Error object will be thrown after logging.
      * @param error 
      * @param gatherFn 
      */
@@ -105,5 +106,7 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
                 return details;
             });
         }
+        if (error instanceof SevereErrorBase)
+            throw error;
     }
 }

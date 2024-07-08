@@ -88,9 +88,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
         }
         catch (e) {
             let err = ensureError(e);
-            this.logError(err);
-            if (err instanceof SevereErrorBase)
-                throw err;
+            this.logError(err); // will throw if SevereErrorBase
             return {
                 errorMessage: err.message,
                 value: undefined

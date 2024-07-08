@@ -6,6 +6,7 @@ import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { CodingError } from "../../src/Utilities/ErrorHandling";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, IsUndeterminedConditionType, EvaluatesAsPromiseConditionType, makeDisposable, DisposableConditionType } from "../TestSupport/conditionsForTesting";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
@@ -79,7 +80,7 @@ describe('NotCondition', () => {
 
         let testItem = new NotCondition(config);
         
-        expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(()=> testItem.evaluate(null, vm)).toThrow(CodingError);
         let logger = services.loggerService as CapturingLogger;
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
@@ -98,7 +99,7 @@ describe('NotCondition', () => {
 
         let testItem = new NotCondition(config);
         
-        expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(()=> testItem.evaluate(null, vm)).toThrow(CodingError);
         let logger = services.loggerService as CapturingLogger;
         expect(logger.findMessage('childConditionConfig', LoggingLevel.Error, null)).toBeTruthy();
 

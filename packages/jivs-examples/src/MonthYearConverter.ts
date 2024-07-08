@@ -1,6 +1,7 @@
-import { IDataTypeConverter } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverters';
 import { IValidationServices } from '@plblum/jivs-engine/build/Interfaces/ValidationServices';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { DataTypeConverterBase } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 
 // Example: Supporting a Date object in a different way than it was intended by
 // implementing IDataTypeConverter. This uses the month and year.
@@ -15,18 +16,24 @@ export const MonthYearLookupKey = 'MonthYear'; // "expiry" when using a Date obj
  * that's not what was supplied.
  * DataType LookupKey: "MonthYear".
  */
-export class UTCMonthYearConverter implements IDataTypeConverter
+export class UTCMonthYearConverter extends DataTypeConverterBase
 {
-    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return (dataTypeLookupKey === MonthYearLookupKey) &&
-            value instanceof Date;
-    }
-    public convert(value: Date, dataTypeLookupKey: string): string | number | Date | null | undefined {
+    public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string) {
         if (isNaN(value.getTime()))
-            return undefined;        
+            return undefined;
         let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), 1));
         return dateOnly.getTime();
     }
+    protected validValue(value: any): boolean {
+        return value instanceof Date;
+    }
+    public supportedResultLookupKeys(): string[] {
+        return [LookupKey.Number];
+    }
+    public supportedSourceLookupKeys(): (string | null)[] {
+        return [MonthYearLookupKey];
+    }
+    
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService

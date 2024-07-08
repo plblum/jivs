@@ -20,6 +20,18 @@ export interface ILoggerService extends IService
     minLevel: LoggingLevel;
 
     /**
+     * Reference to another ILogger implementation
+     * that gets called after the console's logging.
+     * Optional.
+     * Will only be called if this logger instance has level >= minLevel
+     * or an override. Its own MinLevel will be changed to Debug
+     * because this logger expects chainedLogger to output all log entries.
+     * However, you can set the minLevel on chainedLogger after this
+     * assignment to control what it outputs.
+     */
+    chainedLogger: ILoggerService | null;
+
+    /**
      * Create a new log entry if the level is at or above the minimum level.
      * The function is only called if the level is at or above the minimum level,
      * avoiding any processing that would be done to create its data.

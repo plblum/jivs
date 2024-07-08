@@ -91,9 +91,8 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
                                 data: { token: capturedToken.full },
                             };
                             return details;
-                        });
-                        if (err instanceof SevereErrorBase)
-                            throw err;
+                        }); // will throw if SevereErrorBase
+
                                     
                     }
                 }

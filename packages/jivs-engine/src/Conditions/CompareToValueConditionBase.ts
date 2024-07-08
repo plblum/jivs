@@ -25,10 +25,16 @@ export interface CompareToValueConditionBaseConfig extends OneValueConditionBase
 
     /**
      * Associated with secondValue only.
-     * Assign to a LookupKey that is associated with a DataTypeConverter.
-     * Use it to convert the value prior to comparing, to handle special cases like
-     * case insensitive matching ("CaseInsensitive"), rounding a number to an integer ("Round"),
-     * just the Day or Month or any other number in a Date object ("Day", "Month").
+     * Assign to a LookupKey of the data type you want the second value
+     * to be converted to before comparing. Also consider the same for the first value
+     * by using the conversionLookupKey property.
+     * Examples:
+     *  - case insensitive matching, use LookupKey.CaseInsensitive, 
+     *  - rounding a number to an integer, use LookupKey.Integer,
+     *  - just the Day or Month or any other number in a Date object,
+     *    use LookupKey.Day, LookupKey.Month, LookupKey.Year, etc.
+     *  - a calculated value derived from the value, like the total days
+     *    represented by a Date object, use LookupKey.TotalDays.
      */
     secondConversionLookupKey?: string | null;
 }
@@ -47,22 +53,34 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (value == null)  // null/undefined
-            return ConditionEvaluateResult.Undetermined;
-        let secondValue: any = undefined;
-
-        if (this.config.secondValue == null)    // null/undefined
         {
-            const msg = 'lacks value to evaluate';
-            this.logInvalidPropertyData('secondValue', msg, valueHostsManager);
+            this.logNothingToEvaluate('value', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
-        secondValue = this.config.secondValue;
+        
+        if (this.config.secondValue == null)    // null/undefined
+        {
+            this.logNothingToEvaluate('secondValue', valueHostsManager.services);
+            return ConditionEvaluateResult.Undetermined;
+        }
+
+        let valueDetails = this.tryConversion(value, valueHost.getDataType(),
+            this.config.conversionLookupKey, valueHostsManager.services);
+        if (valueDetails.failed)
+            return ConditionEvaluateResult.Undetermined;
+
+        // !!! The secondValue initially is expected to be a native data type.
+        // !!! However, this isn't ideal. We should offer config.secondValueLookupKey        
+        
+        let secondValueDetails = this.tryConversion(this.config.secondValue, null,   
+            this.config.secondConversionLookupKey, valueHostsManager.services);
+        if (secondValueDetails.failed)
+            return ConditionEvaluateResult.Undetermined;
 
         let comparison = valueHostsManager.services.dataTypeComparerService.compare(
-            value, secondValue,
-            this.config.conversionLookupKey ?? valueHost.getDataType(), this.config.secondConversionLookupKey ?? null);
+            valueDetails.value, secondValueDetails.value, valueDetails.lookupKey ?? null, secondValueDetails.lookupKey ?? null);
         if (comparison === ComparersResult.Undetermined) {
-            this.logTypeMismatch(valueHostsManager.services, 'Value', 'SecondValue', value, secondValue);
+            this.logTypeMismatch(valueHostsManager.services, 'value', 'secondValue', valueDetails.value, secondValueDetails.value);
 
             return ConditionEvaluateResult.Undetermined;
         }

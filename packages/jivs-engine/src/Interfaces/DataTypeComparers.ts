@@ -17,7 +17,27 @@ import { ComparersResult } from "./DataTypeComparerService";
  */
 export interface IDataTypeComparer
 {
-    supportsValues(value1: any, value2: any): boolean;
+/**
+ * Determines if this Comparer supports the inputs.
+ * Do not call compare() if this returns false.
+ * @param value1 The first value to compare.
+ * @param value2 The second value to compare.
+ * @param lookupKey1  A lookup key indicating how to interpret `value1` or null if no such hint is needed.
+ * @param lookupKey2  A lookup key indicating how to interpret `value2` or null if no such hint is needed.
+ */    
+    supportsValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): boolean;
 
-    compare(value1: any, value2: any): ComparersResult;
+    /**
+     * Performs the comparison. It has 3 possible outcomes:
+     * - Using Equal, LessThan and GreaterThan when both values can be compared
+     *   relative to the other.
+     * - Using Equal and NotEqual when the values don't make sense
+     *   as LessThan or GreaterThan, such as with booleans.
+     * - Using Undetermined when either of the values are not supported.
+     * @param value1 
+     * @param value2 
+     * @param lookupKey1 
+     * @param lookupKey2 
+     */
+    compare(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult;
 }

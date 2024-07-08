@@ -18,12 +18,13 @@
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { IDataTypeComparer } from '../Interfaces/DataTypeComparers';
 import { InvalidTypeError } from '../Utilities/ErrorHandling';
+import { LookupKey } from './LookupKeys';
 
 /**
  * Just the function for a DataTypeComparer that handles numbers and strings. 
  * Supports Equals, LessThan, and Greater using the native Javascript operators
  * of ===, <, >. If the two values are the same data type, it can use LessThan/GreaterThan.
- * Otherwise, it returns NotEquals.
+ * Otherwise, it returns NotEqual.
  * By the time this is called, dataTypeComparerService.compare() has handled out all other datatypes.
  * @param value1 
  * @param value2 
@@ -32,7 +33,7 @@ export function defaultComparer(value1: any, value2: any): ComparersResult {
     assertPrimitive(value1);
     assertPrimitive(value2);
     if (value1 === value2)
-        return ComparersResult.Equals;
+        return ComparersResult.Equal;
     if (typeof value1 === typeof value2) {
         if (value1 < value2)
             return ComparersResult.LessThan;
@@ -49,29 +50,24 @@ function assertPrimitive(value: any): void {
 
 /**
  * IDataTypeComparer for booleans. Booleans have two states,
- * so they have two comparable results, Equals and NotEquals.
- * This class will handle any time EITHER value of a comparison
- * is boolean.
- * It returns Equals when both are boolean and match their values.
- * It returns NotEquals when both are boolean and do not match,
- * or when one is boolean and the other is null (for nullable booleans).
- * The rest are Undetermined
+ * so they have two comparable results, Equal and NotEqual.
+ * This class expects both values to be booleans.
+ * Without any lookup key specified, it only checks the value types.
+ * Otherwise, the LookupKeys must be LookupKey.Boolean.
  */
 export class BooleanDataTypeComparer implements IDataTypeComparer
 {
-    public supportsValues(value1: any, value2: any): boolean {
+    public supportsValues(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): boolean {
         let isBool1 = typeof value1 === 'boolean';
         let isBool2 = typeof value2 === 'boolean';
-        return isBool1 || isBool2;
+        if (isBool1 && (lookupKey1 && lookupKey1 !== LookupKey.Boolean))
+            return false;
+        if (isBool2 && (lookupKey2 && lookupKey2 !== LookupKey.Boolean))
+            return false;
+        return isBool1 && isBool2;
     }
-    public compare(value1: any, value2: any): ComparersResult {
-        let isBool1 = typeof value1 === 'boolean';
-        let isBool2 = typeof value2 === 'boolean';
-    
-        if (isBool1 && isBool2)
-            return value1 === value2 ? ComparersResult.Equals : ComparersResult.NotEquals;
-        if (value1 === null || value2 === null)
-            return ComparersResult.NotEquals;
-        return ComparersResult.Undetermined;
+    public compare(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): ComparersResult {
+        return value1 === value2 ? ComparersResult.Equal : ComparersResult.NotEqual;
+
     }
 }

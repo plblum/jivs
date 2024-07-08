@@ -17,7 +17,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
      * @param chainedLogger - Reference to another ILoggerService implementation
        that gets called after the console's logging.
      */
-    constructor(minLevel: LoggingLevel = LoggingLevel.Warn, chainedLogger?: ILoggerService) {
+    constructor(minLevel: LoggingLevel = LoggingLevel.Warn, chainedLogger?: ILoggerService | null) {
         super();
         this._minLevel = minLevel;
         this._chainedLogger = chainedLogger ?? null;

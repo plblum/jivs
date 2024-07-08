@@ -39,7 +39,6 @@ export abstract class InputValueConditionBase<TConfig extends InputValueConditio
         if (!toIInputValueHost(valueHost)) {
             let error = new CodingError('Invalid ValueHost used. Must be an InputValueHost');
             this.logError(valueHostsManager.services, error);
-            throw error;
         }
         let iValueHost = valueHost as unknown as IInputValueHost;
         let value = iValueHost.getInputValue();

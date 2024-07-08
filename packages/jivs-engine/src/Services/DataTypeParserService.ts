@@ -96,9 +96,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
         }
         catch (e) {
             let err = ensureError(e);
-            this.logError(err);
-            if (err instanceof SevereErrorBase)
-                throw err;
+            this.logError(err); // will throw if SevereErrorBase
             return { errorMessage: err.message };
         }
 

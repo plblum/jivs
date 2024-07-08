@@ -298,29 +298,36 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (value == null)  // includes undefined
+        {
+            this.logNothingToEvaluate('value', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
+        }
 
         let services = valueHostsManager.services;
-        let lookupKey = this.config.conversionLookupKey ?? valueHost.getDataType();
+        //        let lookupKey = this.config.conversionLookupKey ?? valueHost.getDataType();
+        let valueInfo = this.tryConversion(value, valueHost.getDataType(), this.config.conversionLookupKey, services);
+        if (valueInfo.failed)
+            return ConditionEvaluateResult.Undetermined;
+        
         let lower = this.config.minimum != null ?  // null/undefined
-            services.dataTypeComparerService.compare(this.config.minimum, value,
-                null, lookupKey) :
-            ComparersResult.Equals; // always valid
+            services.dataTypeComparerService.compare(this.config.minimum, valueInfo.value,
+                null, valueInfo.lookupKey ?? null) :
+            ComparersResult.Equal; // always valid
         if (lower === ComparersResult.Undetermined) {
-            this.logTypeMismatch(services, 'Value', 'Minimum', value, lower);
+            this.logTypeMismatch(services, 'value', 'minimum', valueInfo.value, this.config.minimum ?? '');
 
             return ConditionEvaluateResult.Undetermined;
         }
         let upper = this.config.maximum != null ?  // null/undefined
-            services.dataTypeComparerService.compare(this.config.maximum, value,
-                null, lookupKey) :
-            ComparersResult.Equals; // always value
+            services.dataTypeComparerService.compare(this.config.maximum, valueInfo.value,
+                null, valueInfo.lookupKey ?? null) :
+            ComparersResult.Equal; // always value
         if (upper === ComparersResult.Undetermined) {
-            this.logTypeMismatch(valueHostsManager.services, 'Value', 'Maximum', value, upper);            
+            this.logTypeMismatch(valueHostsManager.services, 'value', 'maximum', valueInfo.value, this.config.maximum ?? '');            
             return ConditionEvaluateResult.Undetermined;
         }
-        if (lower === ComparersResult.Equals || lower === ComparersResult.LessThan)
-            if (upper === ComparersResult.Equals || upper === ComparersResult.GreaterThan)
+        if (lower === ComparersResult.Equal || lower === ComparersResult.LessThan)
+            if (upper === ComparersResult.Equal || upper === ComparersResult.GreaterThan)
                 return ConditionEvaluateResult.Match;
 
 
@@ -361,7 +368,7 @@ export class EqualToCondition extends CompareToSecondValueHostConditionBase<Equa
     public static get DefaultConditionType(): ConditionType { return ConditionType.EqualTo; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
-        return comparison === ComparersResult.Equals ?
+        return comparison === ComparersResult.Equal ?
             ConditionEvaluateResult.Match :
             ConditionEvaluateResult.NoMatch;
     }
@@ -380,7 +387,7 @@ export class NotEqualToCondition extends CompareToSecondValueHostConditionBase<N
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
 
-        return comparison !== ComparersResult.Equals ?
+        return comparison !== ComparersResult.Equal ?
             ConditionEvaluateResult.Match :
             ConditionEvaluateResult.NoMatch;
     }
@@ -402,7 +409,7 @@ export class GreaterThanCondition extends CompareToSecondValueHostConditionBase<
         switch (comparison) {
             case ComparersResult.GreaterThan:
                 return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEquals:
+            case ComparersResult.NotEqual:
                 return ConditionEvaluateResult.Undetermined;
             default:
                 return ConditionEvaluateResult.NoMatch;
@@ -427,7 +434,7 @@ export class LessThanCondition extends CompareToSecondValueHostConditionBase<Les
         switch (comparison) {
             case ComparersResult.LessThan:
                 return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEquals:
+            case ComparersResult.NotEqual:
                 return ConditionEvaluateResult.Undetermined;
             default:
                 return ConditionEvaluateResult.NoMatch;
@@ -451,9 +458,9 @@ export class GreaterThanOrEqualCondition extends CompareToSecondValueHostConditi
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
             case ComparersResult.GreaterThan:
-            case ComparersResult.Equals:
+            case ComparersResult.Equal:
                 return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEquals:
+            case ComparersResult.NotEqual:
                 return ConditionEvaluateResult.Undetermined;
             default:
                 return ConditionEvaluateResult.NoMatch;
@@ -477,9 +484,9 @@ export class LessThanOrEqualCondition extends CompareToSecondValueHostConditionB
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
             case ComparersResult.LessThan:
-            case ComparersResult.Equals:
+            case ComparersResult.Equal:
                 return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEquals:
+            case ComparersResult.NotEqual:
                 return ConditionEvaluateResult.Undetermined;
             default:
                 return ConditionEvaluateResult.NoMatch;
@@ -500,7 +507,7 @@ export class EqualToValueCondition extends CompareToValueConditionBase<EqualToVa
     public static get DefaultConditionType(): ConditionType { return ConditionType.EqualToValue; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
-        return comparison === ComparersResult.Equals ?
+        return comparison === ComparersResult.Equal ?
             ConditionEvaluateResult.Match :
             ConditionEvaluateResult.NoMatch;
     }
@@ -519,7 +526,7 @@ export class NotEqualToValueCondition extends CompareToValueConditionBase<NotEqu
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
 
-        return comparison !== ComparersResult.Equals ?
+        return comparison !== ComparersResult.Equal ?
             ConditionEvaluateResult.Match :
             ConditionEvaluateResult.NoMatch;
     }
@@ -543,7 +550,7 @@ export class GreaterThanValueCondition extends CompareToValueConditionBase<Great
         switch (comparison) {
             case ComparersResult.GreaterThan:
                 return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEquals:
+            case ComparersResult.NotEqual:
                 return ConditionEvaluateResult.Undetermined;
             default:
                 return ConditionEvaluateResult.NoMatch;
@@ -568,7 +575,7 @@ export class LessThanValueCondition extends CompareToValueConditionBase<LessThan
         switch (comparison) {
             case ComparersResult.LessThan:
                 return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEquals:
+            case ComparersResult.NotEqual:
                 return ConditionEvaluateResult.Undetermined;
             default:
                 return ConditionEvaluateResult.NoMatch;
@@ -592,9 +599,9 @@ export class GreaterThanOrEqualValueCondition extends CompareToValueConditionBas
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
             case ComparersResult.GreaterThan:
-            case ComparersResult.Equals:
+            case ComparersResult.Equal:
                 return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEquals:
+            case ComparersResult.NotEqual:
                 return ConditionEvaluateResult.Undetermined;
             default:
                 return ConditionEvaluateResult.NoMatch;
@@ -619,9 +626,9 @@ export class LessThanOrEqualValueCondition extends CompareToValueConditionBase<L
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
             case ComparersResult.LessThan:
-            case ComparersResult.Equals:
+            case ComparersResult.Equal:
                 return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEquals:
+            case ComparersResult.NotEqual:
                 return ConditionEvaluateResult.Undetermined;
             default:
                 return ConditionEvaluateResult.NoMatch;
@@ -858,7 +865,7 @@ export class IntegerCondition extends NumberConditionBase<IntegerConditionConfig
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Integer; }    
     protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        return value === Math.floor(value) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
+        return value === Math.trunc(value) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.DataTypeCheck;

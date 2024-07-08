@@ -57,7 +57,7 @@ export enum LookupKey {
      * | IDataTypeIdentifier            | BooleanDataTypeIdentifier
      * | IDataTypeFormatter    | BooleanFormatter
      * | IDataTypeConverter             | none
-     * | IDataTypeComparer              | BooleanComparer, returns only Equals and NotEquals
+     * | IDataTypeComparer              | BooleanDataTypeComparer, returns only Equal and NotEqual
      * @Group Native Data Type
      * @remarks
      * This is used when no Lookup Key is supplied.
@@ -71,7 +71,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "Date"
      * | IDataTypeIdentifier            | DateDataTypeIdentifier
-     * | IDataTypeFormatter    | DateFormatter
+     * | IDataTypeFormatter             | DateFormatter
      * | IDataTypeConverter             | UTCDateOnlyConverter
      * | IDataTypeComparer              | default
      * @Group Native Data Type
@@ -87,7 +87,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "DateTime"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeFormatter    | DateTimeFormatter
+     * | IDataTypeFormatter             | DateTimeFormatter
      * | IDataTypeConverter             | DateTimeConverter
      * | IDataTypeComparer              | default
      * @Group Native Data Type
@@ -99,7 +99,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "LocalDate"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeFormatter    | DateFormatter
+     * | IDataTypeFormatter             | DateFormatter
      * | IDataTypeConverter             | LocalDateOnlyConverter
      * | IDataTypeComparer              | default
      * @Group Native Data Type
@@ -114,7 +114,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "Capitalize"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeFormatter    | CapitalizeStringFormatter
+     * | IDataTypeFormatter             | CapitalizeStringFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
@@ -129,7 +129,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "Uppercase"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeFormatter    | UppercaseStringFormatter
+     * | IDataTypeFormatter             | UppercaseStringFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
@@ -144,7 +144,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "Lowercase"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeFormatter    | LowercaseStringFormatter
+     * | IDataTypeFormatter             | LowercaseStringFormatter
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * 
@@ -159,8 +159,8 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'string'
      * | Lookup Key                     | "Integer"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeFormatter    | IntegerFormatter, uses Intl API
-     * | IDataTypeConverter             | IntegerConverter, uses Math.round()
+     * | IDataTypeFormatter             | IntegerFormatter, uses Intl API
+     * | IDataTypeConverter             | IntegerConverter, uses Math.trunc()
      * | IDataTypeComparer              | default
      * @Group Formatter
      * @remarks
@@ -173,7 +173,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'number'
      * | Lookup Key                     | "Currency"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeFormatter    | CurrencyFormatter, uses Intl API
+     * | IDataTypeFormatter             | CurrencyFormatter, uses Intl API
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * @Group Formatter
@@ -188,7 +188,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'number'
      * | Lookup Key                     | "Percentage"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeFormatter    | PercentageFormatter, uses Intl API
+     * | IDataTypeFormatter             | PercentageFormatter, uses Intl API
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * @Group Formatter
@@ -202,7 +202,7 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'number'
      * | Lookup Key                     | "Percentage100"
      * | IDataTypeIdentifier            | none
-     * | IDataTypeFormatter    | Percentage100Formatter, uses Intl API
+     * | IDataTypeFormatter             | Percentage100Formatter, uses Intl API
      * | IDataTypeConverter             | none
      * | IDataTypeComparer              | default
      * @Group Formatter
@@ -217,7 +217,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "ShortDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeFormatter    | DateFormatter, uses Intl API
+     * | IDataTypeFormatter             | DateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -231,7 +231,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "AbbrevDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeFormatter    | AbbrevDateFormatter, uses Intl API
+     * | IDataTypeFormatter             | AbbrevDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -245,7 +245,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "LongDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeFormatter    | LongDateFormatter, uses Intl API
+     * | IDataTypeFormatter             | LongDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -259,7 +259,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "AbbrevDOWDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeFormatter    | AbbrevDOWDateFormatter, uses Intl API
+     * | IDataTypeFormatter             | AbbrevDOWDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -273,7 +273,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "LongDOWDate"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeFormatter    | LongDOWDateFormatter, uses Intl API
+     * | IDataTypeFormatter             | LongDOWDateFormatter, uses Intl API
      * | IDataTypeConverter             | n/a
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -287,7 +287,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "TimeOfDay"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeFormatter    | TimeOfDayFormatter, uses Intl API
+     * | IDataTypeFormatter             | TimeOfDayFormatter, uses Intl API
      * | IDataTypeConverter             | TimeOfDayOnlyConverter, as total minutes
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -301,7 +301,7 @@ export enum LookupKey {
      * | Native value                   | value instanceof Date
      * | Lookup Key                     | "TimeOfDayHMS"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeFormatter    | TimeOfDayHMSFormatter, uses
+     * | IDataTypeFormatter             | TimeOfDayHMSFormatter, uses
      * | IDataTypeConverter             | TimeOfDayHMSOnlyConverter, as total seconds
      * | IDataTypeComparer              | n/a
      * @Group Formatter
@@ -316,9 +316,9 @@ export enum LookupKey {
      * | Native value                   | typeof value === 'boolean'
      * | Lookup Key                     | "YesNoBoolean"
      * | IDataTypeIdentifier            | n/a
-     * | IDataTypeFormatter    | YesNoBooleanFormatter
+     * | IDataTypeFormatter             | YesNoBooleanFormatter
      * | IDataTypeConverter             | n/a
-     * | IDataTypeComparer              | BooleanComparer, returns Equals and NotEquals
+     * | IDataTypeComparer              | n/a
      * @Group Formatter
      * @remarks
      * Converts boolean into "yes" and "no".
@@ -343,6 +343,54 @@ export enum LookupKey {
      * Helps with comparing the difference between two dates. 
      */
     TotalDays = 'TotalDays',
+
+    /**
+     * | Label                          | Value
+     * | ------                         | ------
+     * | Native value                   | value instanceof Date
+     * | Lookup Key                     | "Milliseconds"
+     * | IDataTypeIdentifier            | none
+     * | IDataTypeFormatter    | n/a
+     * | IDataTypeConverter             | DateTimeConverter
+     * | IDataTypeComparer              | default
+     * @Group Converter
+     * @remarks
+     * For converting the Date into a number of milliseconds since Jan 1 1970
+     * (basically calling getTime() on the Date object)
+     * Helps with comparing the difference between two dates. 
+     */
+    Milliseconds = 'Milliseconds',    
+    /**
+     * | Label                          | Value
+     * | ------                         | ------
+     * | Native value                   | value instanceof Date
+     * | Lookup Key                     | "Seconds"
+     * | IDataTypeIdentifier            | none
+     * | IDataTypeFormatter    | n/a
+     * | IDataTypeConverter             | TimeOfDayHMSOnlyDateTimeConverter
+     * | IDataTypeComparer              | default
+     * @Group Converter
+     * @remarks
+     * For converting the Date into a number of seconds since Jan 1 1970
+     * Helps with comparing the difference between two dates. 
+     */
+    Seconds = 'Seconds',
+        /**
+     * | Label                          | Value
+     * | ------                         | ------
+     * | Native value                   | value instanceof Date
+     * | Lookup Key                     | "Minutes"
+     * | IDataTypeIdentifier            | none
+     * | IDataTypeFormatter    | n/a
+     * | IDataTypeConverter             | TimeOfDayOnlyConverter
+     * | IDataTypeComparer              | default
+     * @Group Converter
+     * @remarks
+     * For converting the Date into a number of minutes since Jan 1 1970
+     * Helps with comparing the difference between two dates. 
+     */
+    Minutes = 'Minutes',
+    
     /**
      * | Label                          | Value
      * | ------                         | ------

@@ -43,5 +43,13 @@ export interface ILookupKeyFallbackService extends IService {
    */
   find(lookupKey: string): string | null;
 
+  /**
+   * Determine if the initialLookupKey can fallback to the targetLookupKey.
+   * @param initialLookupKey 
+   * @param targetLookupKey 
+   * @returns true when fallback is possible, false otherwise.
+   */
+  canFallbackTo(initialLookupKey: string, targetLookupKey: string): boolean;
+
 }
 

@@ -4,6 +4,8 @@
   - Use ValueHostConfig.enablerConfig to define a Condition that automatically determines the state. Build API: builder.enabler(valueHostName, (builder)=>builder.condition(parameters));
   - Use ValueHost.isEnabled() to determine the current state.
   - Overhauled the logging API in preparation for a better testing story.
+  - Refactored the DataTypeComparerService and related classes to limit its role in conversion,
+    putting the onus on the Condition classes to call the Converter service.
 ## 0.18.0
 - **Breaking API changes and Major feature** - Redesigned how you configure Jivs, favoring the fluent syntax over config objects.
 This is a major reworking, reflected in the documentation. Quick summary:

@@ -24,11 +24,12 @@
  * 
  */
 
-import { IDataTypeConverter } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverters";
 import { IDataTypeIdentifier } from "@plblum/jivs-engine/build/Interfaces/DataTypeIdentifier";
-import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices"
+import { IValidationServices } from "@plblum/jivs-engine/build/Interfaces/ValidationServices";
 import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "@plblum/jivs-engine/build/Services/DataTypeIdentifierService";
+import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
+import { DataTypeConverterBase } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
 
 export class TimeSpan
 {
@@ -66,37 +67,43 @@ export class TimeSpan
     }
 }
 
-export const TimeSpanLookupKey = "TimeSpan";
-export const TimeSpanAsSecondsLookupKey = "TimeSpanAsSeconds";
+export const timeSpanLookupKey = "TimeSpan";
+export const timeSpanAsHoursLookupKey = "TimeSpanAsHours";
+export const timeSpanAsSecondsLookupKey = "TimeSpanAsSeconds";
 
 export class TimeSpanIdentifier implements IDataTypeIdentifier
 {
-    public get dataTypeLookupKey(): string { return TimeSpanLookupKey}
+    public get dataTypeLookupKey(): string { return timeSpanLookupKey}
     public supportsValue(value: any): boolean {
         return value instanceof TimeSpan;
     }
 }
-// handles the value without any lookup key or for the specific key "TimeSpan"
-export class TimeSpanToHoursConverter implements IDataTypeConverter
+// handles the value without any source lookup key or for the specific key "TimeSpan"
+// Converts both to hours and seconds based on the resultLookupKey
+// being "TimeSpanAsHours" or "TimeSpanAsSeconds"
+export class TimeSpanConverter extends DataTypeConverterBase
 {
-    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return value instanceof TimeSpan &&
-            (!dataTypeLookupKey || dataTypeLookupKey === TimeSpanLookupKey);
+    public convert(value: TimeSpan, sourceLookupKey: string | null, resultLookupKey: string) {
+        switch (resultLookupKey)
+        {
+            case timeSpanAsHoursLookupKey:
+                return value.totalHours;
+            case timeSpanAsSecondsLookupKey:
+                return value.totalSeconds;
+            default:
+                return value.totalHours;
+        }
     }
-    public convert(value: TimeSpan, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        return value.totalHours;
+    protected validValue(value: any): boolean {
+        return value instanceof TimeSpan;
     }
-}
-// handles the value only with the specific key "TimeSpanAsSeconds"
-export class TimeSpanToSecondsConverter implements IDataTypeConverter
-{
-    public supportsValue(value: any, dataTypeLookupKey: string | null): boolean {
-        return value instanceof TimeSpan &&
-            (dataTypeLookupKey === TimeSpanAsSecondsLookupKey);
+    supportedResultLookupKeys(): string[] {
+        return [LookupKey.Number, timeSpanAsHoursLookupKey, timeSpanAsSecondsLookupKey];
     }
-    public convert(value: TimeSpan, dataTypeLookupKey: string): string | number | Date | null | undefined {
-        return value.totalSeconds;
-    }
+    supportedSourceLookupKeys(): (string | null)[] {
+        return [null, timeSpanLookupKey];
+    }  
+
 }
 
 // Register after you have a ValidationService instance. Setup only on the ValidationService
@@ -107,8 +114,7 @@ export function registerTimeSpan(validationServices: IValidationServices): void
     dtis.register(new TimeSpanIdentifier());
     let dtcs = validationServices.dataTypeConverterService as DataTypeConverterService;
     // or move just this line into registerDataTypeConverters() function         
-    dtcs.register(new TimeSpanToHoursConverter()); 
-    dtcs.register(new TimeSpanToSecondsConverter()); 
+    dtcs.register(new TimeSpanConverter()); 
 
     // now whenever a Condition's value is TimeSpan, it gets identified as LookupKey="TimeSpan"
     // When its time to compare, the TimeSpanToHoursConverters are asked if they support the value.

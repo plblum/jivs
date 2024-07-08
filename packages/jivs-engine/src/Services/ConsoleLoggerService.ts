@@ -14,7 +14,7 @@ import { LoggerServiceBase } from './LoggerServiceBase';
 export class ConsoleLoggerService extends LoggerServiceBase
 {
     constructor(minLevel: LoggingLevel = LoggingLevel.Warn,
-        chainedLogger?: ILoggerService,
+        chainedLogger?: ILoggerService | null,
         includeData: boolean = false) {
         super(minLevel, chainedLogger);
         this._includeData = includeData;

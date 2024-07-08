@@ -8,7 +8,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { type ConditionConfig, type IConditionCore, ConditionEvaluateResult, ConditionCategory, ICondition } from '../Interfaces/Conditions';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
-import { CodingError, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
+import { CodingError, SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
@@ -142,6 +142,54 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
             // expect exceptions here for invalid Configs
     }
 
+
+    /**
+     * Converts the given value and lookup key using the provided conversion lookup key.
+     * If the conversion fails, a warning log is generated.
+     * Takes no action if the conversionLookupKey is null.
+     *
+     * @param value - The value to be converted.
+     * @param valueLookupKey - The lookup key associated with the value. Often this should
+     * be assigned to valueHost.getDataType().
+     * @param conversionLookupKey - The conversion lookup key to be used for conversion.
+     * Often this comes from conversionLookupKey or secondConversionLookupKey
+     * found on the Config object.
+     * @param services - The services
+     * @returns An object containing the converted value, lookup key, and a flag indicating if the conversion failed.
+     */
+    protected tryConversion(value: any, valueLookupKey: string | null | undefined,
+        conversionLookupKey: string | null | undefined, services: IValueHostsServices): {
+        value?: any,
+        lookupKey?: string | null,
+        failed: boolean
+    }
+    {
+        if (conversionLookupKey) {
+            let result = services.dataTypeConverterService.convertUntilResult(
+                value, valueLookupKey ?? null, conversionLookupKey);
+            if (!result.resolvedValue) {
+
+                this.log(services, LoggingLevel.Warn, (options?: LogOptions) => {
+                    let details: LogDetails = {
+                        message: `Value cannot be converted to "${conversionLookupKey}".`,
+                        category: LoggingCategory.TypeMismatch,
+                    };
+                    if (options?.includeData)
+                        details.data = {
+                            value: value,
+                            valueLookupKey: valueLookupKey,
+                            conversionLookupKey: conversionLookupKey
+                        };
+                    return details;                    
+                });
+                return { failed: true };
+            }
+            value = result.value;
+            valueLookupKey = conversionLookupKey;
+        }
+        return { value: value, lookupKey: valueLookupKey, failed: false };
+    }
+    
     protected ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
         if (result instanceof Promise)
             throw new CodingError('Promises are not supported for child conditions at this time.');
@@ -151,11 +199,14 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
 
     /**
      * Utility to log when a conditionConfig property is incorrectly setup.
+     * @param propertyName
      * @param errorMessage 
-     * @param valueHostsManager 
+     * @param services 
      */
-    protected logInvalidPropertyData(propertyName: string, errorMessage: string, valueHostsManager: IValueHostsManager): void {
-        this.log(valueHostsManager.services, LoggingLevel.Error, (options?: LogOptions) => {
+    protected logInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices, logLevel: LoggingLevel = LoggingLevel.Warn): void {
+        
+        this.log(services, logLevel,
+            (options?: LogOptions) => {
             let details: LogDetails = {
                 message: propertyName + ': ' + errorMessage,
                 category: LoggingCategory.Configuration
@@ -163,7 +214,19 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
             if (options?.includeData)
                 details.data = { propertyName: propertyName };
             return details;
-        });
+            });
+    }
+
+    /**
+     * Logs the invalid property data and throws a CodingError.
+     * @param propertyName - The name of the invalid property.
+     * @param errorMessage - The error message describing the invalid property data.
+     * @param services - The value host services.
+     * @throws {CodingError} - Throws a CodingError with the specified error message.
+     */
+    protected throwInvalidPropertyData(propertyName: string, errorMessage: string, services: IValueHostsServices): void {
+        this.logInvalidPropertyData(propertyName, errorMessage, services, LoggingLevel.Error);
+        throw new CodingError(propertyName + ': ' + errorMessage);
     }
     /**
      * Report a comparison error where the data types of the two values are mismatched.
@@ -186,6 +249,15 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
                 };
             return details;
         });        
+    }
+    /**
+     * Logs a message indicating that the specified property lacks a value to evaluate.
+     * @param propertyName - The name of the property.
+     * @param services - The value host services.
+     */
+    protected logNothingToEvaluate(propertyName: string, services: IValueHostsServices): void {
+        const msg = 'lacks value to evaluate';
+        this.logInvalidPropertyData(propertyName, msg, services);
     }
     /**
      * Log a message. The message gets assigned the details of feature, type, and identity
@@ -230,7 +302,8 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
             details.identity = this.conditionType;
             return details;
         });
-    
+        if (error instanceof SevereErrorBase)
+            throw error;
     }
 }
 

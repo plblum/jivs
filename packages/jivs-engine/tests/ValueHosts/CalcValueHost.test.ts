@@ -13,6 +13,7 @@ import { SetValueOptions, ValidTypesForInstanceStateStorage } from "../../src/In
 import { InputValueHost } from "../../src/ValueHosts/InputValueHost";
 import { StaticValueHost } from "../../src/ValueHosts/StaticValueHost";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
+import { UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 
 function TestCalcFunctionReturnsOne(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
     SimpleValueType {
@@ -29,12 +30,12 @@ function TestCalcFunctionReentrant(calcValueHost: ICalcValueHost, findValueHost:
 function TestCalcFunctionUsingConvert(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
     SimpleValueType {
     let date1 = new Date(Date.UTC(2000, 0, 1));
-    return calcValueHost.convert(date1, 'Date');
+    return calcValueHost.convert(date1, 'Date', LookupKey.Number);
 }
 function TestCalcFunctionUsingConvertToPrimitive(calcValueHost: ICalcValueHost, findValueHost: IValueHostsManager):
     SimpleValueType {
     let date1 = new Date(Date.UTC(2000, 0, 1));
-    return calcValueHost.convertToPrimitive(date1, 'Date');
+    return calcValueHost.convertToPrimitive(date1, 'Date', LookupKey.Number);
 }
 
 
@@ -232,6 +233,7 @@ describe('getValue using the calcFn', () => {
     });          
     test('function uses convert on a Date and gets a total number of days', () => {
         let services = createValidationServicesForTesting();
+        services.dataTypeConverterService.register(new UTCDateOnlyConverter());
         let vm = new ValidationManager({
             services: services,
             valueHostConfigs: [ 
@@ -248,6 +250,7 @@ describe('getValue using the calcFn', () => {
     });      
     test('function uses convertToPrimitive on a Date and gets a total number of days', () => {
         let services = createValidationServicesForTesting();
+        services.dataTypeConverterService.register(new UTCDateOnlyConverter());
         let vm = new ValidationManager({
             services: services,
             valueHostConfigs: [ 

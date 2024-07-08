@@ -4,7 +4,7 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
-import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import {
     registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, EvaluatesAsPromiseConditionType,
@@ -13,6 +13,7 @@ import {
 } from "../TestSupport/conditionsForTesting";
 import { WhenCondition, WhenConditionConfig } from "../../src/Conditions/WhenCondition";
 import { MockValidationServices, MockValidationManager } from "../TestSupport/mocks";
+import { CodingError } from "../../src/Utilities/ErrorHandling";
 
 describe('WhenCondition', () => {
     test('DefaultConditionType', () => {
@@ -74,7 +75,7 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(()=> testItem.evaluate(null, vm)).toThrow(CodingError);
         let logger = services.loggerService as CapturingLogger;
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
@@ -96,7 +97,7 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(()=> testItem.evaluate(null, vm)).toThrow(CodingError);
         expect(logger.findMessage('childConditionConfig: must be assigned to a Condition', LoggingLevel.Error, null)).toBeTruthy();
 
     });    
@@ -117,7 +118,7 @@ describe('WhenCondition', () => {
 
         let testItem = new WhenCondition(config);
         
-        expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
+        expect(()=> testItem.evaluate(null, vm)).toThrow(/ConditionType/);
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
     });        
@@ -139,7 +140,7 @@ describe('WhenCondition', () => {
         let testItem = new WhenCondition(config);
         
         expect(testItem.evaluate(null, vm)).toBe(ConditionEvaluateResult.Undetermined);
-        expect(logger.findMessage('enablerConfig: must be assigned to a Condition', LoggingLevel.Error, null)).toBeTruthy();
+        expect(logger.findMessage('enablerConfig: must be assigned to a Condition', LoggingLevel.Warn, LoggingCategory.Configuration)).toBeTruthy();
 
     });    
 

@@ -42,6 +42,7 @@
 * @module ValueHosts/Types/CalcValueHost
  */
 
+import { LookupKey } from "../DataTypes/LookupKeys";
 import { SimpleValueType } from "./DataTypeConverterService";
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "./ValueHost";
 import { IValueHostsManager } from "./ValueHostsManager";
@@ -59,10 +60,17 @@ export interface ICalcValueHost extends IValueHost
     /**
      * Provides conversion support against the original value using the DataTypeConverters
      * and DataTypeIdentifiers through services.dataTypeConverterService.convert()
-     * @param value 
-     * @param dataTypeLookupKey 
+     * @param value - The value to be converted. Check its type and possibly its content.
+     * @param sourceLookupKey - The value can represent several other values, such as a Date 
+     * represents date, time, etc. Use this when you need to distinguish between them.
+     * If null or '', evaluate the value itself,
+     * such as checking its class (using 'instanceof') or for properties of an interface
+     * that you are using.
+     * This is often the dataType property of the ValueHost.
+     * @resultLookupKey - The lookup key that the result should be.
+     * @returns The converted value. If the value is not convertable, return undefined.
      */
-    convert(value: any, dataTypeLookupKey: string | null): SimpleValueType;
+    convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): SimpleValueType;
     
     /**
      * Provides conversion support against the original value using the DataTypeConverters
@@ -70,11 +78,17 @@ export interface ICalcValueHost extends IValueHost
      * Attempts to convert it all the way down to a number, string or boolean.
      * Return null if the value represents null.
      * Return undefined if the value was unconvertable.
-     * @param value 
-     * @param dataTypeLookupKey - if not supplied, it will attempt to resolve it with
-     * the DataTypeIdentifiers.
+     * @param value - The value to be converted. Check its type and possibly its content.
+     * @param sourceLookupKey - The value can represent several other values, such as a Date 
+     * represents date, time, etc. Use this when you need to distinguish between them.
+     * If null or '', evaluate the value itself,
+     * such as checking its class (using 'instanceof') or for properties of an interface
+     * that you are using.
+     * This is often the dataType property of the ValueHost.
+     * @resultLookupKey - The lookup key that the result should be
+     * @returns The converted value. If the value is not convertable, return undefined.
      */
-    convertToPrimitive(value: any, dataTypeLookupKey: string | null): SimpleValueType;        
+    convertToPrimitive(value: any, sourceLookupKey: string | null, resultLookupKey: LookupKey.Number | LookupKey.String | LookupKey.Boolean): SimpleValueType;        
 }
 /**
  * How the user configures the CalcValueHost. They are expected to supply

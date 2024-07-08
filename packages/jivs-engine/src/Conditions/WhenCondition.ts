@@ -102,8 +102,8 @@ export class WhenCondition extends ConditionWithOneChildBase<WhenConditionConfig
     protected enabler(valueHostsManager: IValueHostsManager): ICondition {
         if (!this._enabler) {
             if (!this.config.enablerConfig) {
-                this.logInvalidPropertyData('enablerConfig', 'must be assigned to a Condition', valueHostsManager);
                 this._enabler = new ErrorResponseCondition();
+                this.logInvalidPropertyData('enablerConfig', 'must be assigned to a Condition', valueHostsManager.services);
             }
             else
                 this._enabler = this.generateCondition(this.config.enablerConfig, valueHostsManager.services);

@@ -328,13 +328,12 @@ describe('Validator.enabler', () => {
             }            
         });
 
-        let enabler: ICondition | null = null;
-        expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
-        expect(enabler).toBeInstanceOf(ErrorResponseCondition);
+        expect(() => setup.validator.ExposeEnabler()).toThrow(/ConditionType/);
+
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
     });
-    test('Attempt to create WhenCondition child condition with invalid type logs and replaces the condition with ErrorResponseCondition', () => {
+    test('Attempt to create WhenCondition child condition with invalid type logs, throws, and replaces the condition with ErrorResponseCondition', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
@@ -347,12 +346,11 @@ describe('Validator.enabler', () => {
             }            
         });
         let child: ICondition | null = null;
-        expect(() => child = setup.validator.condition).not.toThrow();
-        expect(child).toBeInstanceOf(ErrorResponseCondition);
+        expect(() => child = setup.validator.condition).toThrow(/ConditionType/);
 
         let enabler: ICondition | null = null;
         expect(() => enabler = setup.validator.ExposeEnabler()).not.toThrow();
-        expect(enabler).toBeInstanceOf(AlwaysMatchesCondition);
+        expect(enabler).toBeNull(); // because of the error
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
     });    

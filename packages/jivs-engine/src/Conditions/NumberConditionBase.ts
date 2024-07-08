@@ -30,9 +30,10 @@ export abstract class NumberConditionBase<TConditionConfig extends NumberConditi
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (typeof value !== 'number') {
-            value = valueHostsManager.services.dataTypeConverterService.convertToPrimitive(value, LookupKey.Number);
-            if (typeof value !== 'number')
+            let result = valueHostsManager.services.dataTypeConverterService.convertUntilResult(value, null, LookupKey.Number);
+            if (result.value === undefined || typeof result.value !== 'number')
                 return ConditionEvaluateResult.Undetermined;
+            value = result.value;
         }
 
         return this.evaluateNumber(value, valueHost, valueHostsManager);
