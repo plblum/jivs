@@ -1,0 +1,213 @@
+/**
+ * 
+ * @module Services/ConcreteClasses/ConfigAnalysisService
+ */
+
+import { ConditionType } from "../../Conditions/ConditionTypes";
+import { defaultComparer } from "../../DataTypes/DataTypeComparers";
+import { ConditionCategory, ConditionConfig } from "../../Interfaces/Conditions";
+import { ConfigIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyInfo, OneClassRetrieval } from "../../Interfaces/ConfigAnalysisService";
+import { ComparersResult } from "../../Interfaces/DataTypeComparerService";
+import { ServiceName } from "../../Interfaces/ValidationServices";
+import { ValueHostConfig } from "../../Interfaces/ValueHost";
+import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
+import { InvalidTypeError } from "../../Utilities/ErrorHandling";
+import { cleanString } from "../../Utilities/Utilities";
+import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
+
+/**
+ * Handles IDataTypeComparer objects through the DataTypeComparerService.
+ * There are no lookupKeys that select a IDataTypeComparer.
+ * Instead, each DataTypeComparer evaluates two data values and determines if it supports
+ * them.
+ *
+ * Our task is to take all LookupKeys registered in Results.LookupKeysInfo
+ * and report on the viability of comparison.
+ * 
+ * All of that happens in the ConfigAnalysisService.checkForComparers function.
+ * 
+ * Comparison is done by specific Conditions. We don't even bother if after evaluating
+ * all ValueHostConfigs, we've found no evidence needing a comparer.
+ * 
+ * This class maintains a list of ConditionTypes that have been found to need a comparer.
+ * It provides a way for the ConditionConfigAnalyzer to notify it of the ConditionType.
+ * 
+ */
+
+export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
+    implements IDataTypeComparerAnalyzer {
+    constructor(helper: AnalysisResultsHelper<TServices>) {
+        this._helper = helper;
+    }
+
+    /**
+     * Supplies helper methods
+     */
+    protected get helper(): AnalysisResultsHelper<TServices> {
+        return this._helper;
+    }
+    private _helper: AnalysisResultsHelper<TServices>;
+
+    /**
+     * All ConditionConfigs are passed to this method. They will be evaluated
+     * for the need of a comparer. If so, try to determine the data type lookup key 
+     * from ValueHostConfig.dataType and ConditionConfig.conversionLookupKey/secondConversionLookupKey.
+     * We'll work with those that have such a lookup key. Using the SampleValue class, we'll get
+     * sample values to try to find a comparer. Whatever teh results, they'll be added to the LookupKeysInfo.services
+     * as a ServiceName.comparer. Future calls with the same lookup key will not need to re-analyze.
+     * 
+     * When there is an issue, its typically a warning or info, not an error. 'error' is reserved for 
+     * telling the user that something must be fixed. With comparers, that's rare.
+     * 
+     * @param conditionConfig 
+     * @returns When null, no reason to evaluate for the comparer. Otherwise, the same
+     * OneClassRetrieval object that was added to the LookupKeysInfo.services array.
+     */
+    public checkConditionConfig(conditionConfig: ConditionConfig, valueHostConfig: ValueHostConfig):
+        OneClassRetrieval | null {
+// anything to disqualify this condition from the check?
+        let cleanCT = cleanString(conditionConfig.conditionType);
+        if (!cleanCT)
+            return null;
+        let lookupKey = this.identifyLookupKey(conditionConfig, valueHostConfig);
+        if (!lookupKey)
+            return null;
+        if (!this.conditionUsesComparer(conditionConfig))
+            return null;
+
+        let lookupKeysInfo = this.helper.results.lookupKeysInfo;        
+
+        lookupKey = this.helper.checkForRealLookupKeyName(lookupKey, true);
+        let lookupKeyInfo = lookupKeysInfo.find(lki => lki.lookupKey === lookupKey);
+        if (!lookupKeyInfo)
+        {
+            lookupKey = this.helper.registerLookupKey(lookupKey, null, valueHostConfig);
+            // istanbul ignore next // defensive. We should always find the lookup key.
+            if (!lookupKey)
+                return null;
+            lookupKeyInfo = lookupKeysInfo.find(lki => lki.lookupKey === lookupKey)!;
+        }
+        let serviceInfo = lookupKeyInfo.services.find(si => si.feature === ServiceName.comparer);
+        // if we have already found a comparer, we don't need to do anything.
+        if (serviceInfo)
+            return serviceInfo;
+        let comparerResults: OneClassRetrieval = {
+            feature: ServiceName.comparer
+        };
+        // we'll add the remaining fields in the remaining code
+        lookupKeyInfo.services.push(comparerResults);
+
+        // we need to find a comparer. We'll use the sample values to try to find one.
+        // The compare() function needs two values. We'll pass it the same value twice.
+        let sampleValue = this.helper.getSampleValue(lookupKey, valueHostConfig);
+        if (sampleValue === undefined)
+        {
+            comparerResults.message = `No sample value found for Lookup Key ${lookupKey} in condition ${cleanCT}. Cannot determine a comparer.`;
+            comparerResults.severity = ConfigIssueSeverity.warning; 
+            return comparerResults;
+        }
+        // find a matching Comparer. Its likely there isn't one, and we'll progress onto using the default Comparer against the sample values.
+        let dtcs = this.helper.services.dataTypeComparerService;
+        let comparer = dtcs.find(sampleValue, sampleValue, lookupKey, lookupKey);
+        if (comparer) {
+            comparerResults.classFound = comparer.constructor.name;
+            comparerResults.instance = comparer;
+            comparerResults.dataExamples = [sampleValue];
+            return comparerResults;
+        }
+        // like with DataTypeComparerService, we'll try the lookup key fallbacks to find a comparer.
+        let lkfs = this.helper.services.lookupKeyFallbackService;
+        let lookupKeyFallback = lkfs.fallbackToDeepestMatch(lookupKey) ?? lookupKey;
+        if (lookupKeyFallback !== lookupKey) {
+            comparer = dtcs.find(sampleValue, sampleValue, lookupKeyFallback, lookupKeyFallback);
+            if (comparer) {
+                comparerResults.classFound = comparer.constructor.name;
+                comparerResults.instance = comparer;
+                comparerResults.dataExamples = [sampleValue];
+                return comparerResults;
+            }
+        }
+
+        try {
+            let compareResult = defaultComparer(sampleValue, sampleValue);  // this will only handle number and string, reporting Undetermined for all others.
+            if (compareResult !== ComparersResult.Undetermined) {
+                comparerResults.classFound = 'defaultComparer'; // intentionally camelcase as its the function name
+                comparerResults.dataExamples = [sampleValue];
+                return comparerResults;
+            }
+        }
+        catch (e)
+        {
+            // defaultComparer throws InvalidTypeError(value) for any non-primitive  
+            // istanbul ignore next // defensive. Currently only get InvalidTypeErrors
+            if (!(e instanceof InvalidTypeError))
+            {
+                comparerResults.message = (e as Error).message;
+                comparerResults.severity = ConfigIssueSeverity.error;
+                return comparerResults;
+            }
+        }
+        // none found. We'll report an warning.
+        comparerResults.message = `Cannot check the comparer used with Lookup Key ${lookupKey} in condition ${cleanCT}. Be sure to either supply one in DataTypeComparerService or setup the conversionLookupKey property to convert to a supported Lookup Key.`;
+        comparerResults.severity = ConfigIssueSeverity.warning;
+        comparerResults.notFound = true;
+        return comparerResults;
+    }
+
+    /**
+     * Checks if the given condition configuration uses a comparer.
+     * It looks at the ConditionCategory for "Comparison". There are two sources for that value:
+     * - The ConditionConfig.category property.
+     * - The Condition object created from the ConditionConfig, which has a category property.
+     * So it may have to create the Condition object, potentially throwing an error when doing that.
+     * For any error, we just return false. Exceptions like that are usually reported elsewhere.
+     * @param conditionConfig - The condition configuration to check.
+     * @returns A boolean indicating whether the condition uses a comparer.
+     */
+    public conditionUsesComparer(conditionConfig: ConditionConfig): boolean {
+        let cleanCT = cleanString(conditionConfig.conditionType);
+        if (!cleanCT) {
+            return false;
+        }
+        if (conditionConfig.category === ConditionCategory.Comparison)
+            return true;
+
+        try {
+            let basicConfig: ConditionConfig = {
+                conditionType: cleanCT!
+            }
+            let condition = this.helper.services.conditionFactory.create(basicConfig);
+            return condition.category === ConditionCategory.Comparison;
+        }
+        catch (e) {
+            // all errors are caught and ignored. We just return false.
+        }
+        return false;
+    }
+
+    /**
+     * Identifies the lookup key based on the condition's properties that have conversion lookup keys,
+     * and valueHostConfig.dataType.
+     * @param conditionConfig - The condition configuration.
+     * @param valueHostConfig - The value host configuration.
+     * @returns The lookup key or null if not found.
+     */
+    protected identifyLookupKey(conditionConfig: ConditionConfig, valueHostConfig: ValueHostConfig): string | null
+    {
+        let lookupKey = cleanString(valueHostConfig.dataType);
+        // let conversionLookupKey or secondConversionLookupKey override the lookupKey, even if they are different from each other.
+        // These actions are blind to the source config. We only need to know if the property name is there.
+        let conlk = cleanString((conditionConfig as any)['conversionLookupKey']);
+        if (conlk) {
+            lookupKey = conlk;
+        }
+        else {
+            let sconlk = cleanString((conditionConfig as any)['secondConversionLookupKey']);
+            if (sconlk) {
+                lookupKey = sconlk;
+            }
+        }
+        return lookupKey ?? null;
+    }
+
+}
