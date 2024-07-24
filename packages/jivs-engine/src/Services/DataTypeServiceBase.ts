@@ -92,7 +92,7 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
     /**
      * Returns the full collection.
      */
-    protected getAll() : Array<T>
+    public getAll() : Array<T>
     {
         return this._registeredClasses;
     }

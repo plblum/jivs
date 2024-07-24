@@ -122,9 +122,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
       * @returns true if a match is found, false if no match is found.
       */
     protected matchToOverrides(logLevel: LoggingLevel, logDetails: LogDetails): boolean {
-        function toRegExp(param: RegExp | string | Function | object | null | undefined): RegExp | null {
-            if (param == null)  // supports both null and undefined
-                return null;
+        function toRegExp(param: RegExp | string | Function | object): RegExp | null {
             if (param instanceof RegExp)
                 return param;
             if (typeof param === 'string')
@@ -133,8 +131,8 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
             if (typeof param === 'function')
                 return new RegExp('^' + (param.name ? param.name : param.constructor.name) + '$');
 
-            if (param.constructor !== undefined && param.constructor.name !== undefined)
-                return new RegExp('^' + param.constructor.name + '$');
+            // if (param.constructor !== undefined && param.constructor.name !== undefined)
+            //     return new RegExp('^' + param.constructor.name + '$');
 
             return null;
         }
@@ -144,7 +142,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
                     return false;
 
                 let re = toRegExp(overrideWhenValue);
-                if (!re!.test(logDetailsValue))
+                if (!re || !re.test(logDetailsValue))
                     return false;
             }
             return true;

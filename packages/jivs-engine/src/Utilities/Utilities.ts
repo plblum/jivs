@@ -131,7 +131,11 @@ export function isValueOfStringEnum<T extends object>(value: string, enumType: T
     return Object.values(enumType).includes(value as unknown as T[keyof T]);
 }
 export function findCaseInsensitiveValueInStringEnum<T extends object>(value: string, enumType: T): string | undefined {
-    return Object.values(enumType).find((enumValue) => enumValue.toLowerCase() === value.toLowerCase());
+    return Object.values(enumType).find((enumValue) => {
+        if (typeof enumValue === 'string')
+            return (enumValue.toLowerCase() === value.toLowerCase());
+        return false;
+    });
 }
   
 /**

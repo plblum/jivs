@@ -115,6 +115,16 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
             result = this.find(lookupKey, cultureId, text);
         return result;        
     }
-
+    /**
+     * A list of all matching DataTypeParsers. Null when none are found.
+     * @param lookupKey 
+     * @param cultureId 
+     */    
+    public compatible(lookupKey: string, cultureId: string): Array<IDataTypeParser<any>> | null
+    {
+        this.ensureLazyLoaded();
+        let result = this.getAll().filter((dtp) => dtp.isCompatible(lookupKey, cultureId));
+        return result.length > 0 ? result : null;
+    }
 
 }

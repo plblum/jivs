@@ -3,7 +3,7 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { LoggingLevel, type ILoggerService } from "../../src/Interfaces/LoggerService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { type IValidationServices } from "../../src/Interfaces/ValidationServices";
-import type { IValueHost, SetValueOptions, ValueHostInstanceState, IValueHostFactory, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
+import type { IValueHost, SetValueOptions, ValueHostInstanceState, ValueHostConfig, ValueChangedHandler, ValueHostInstanceStateChangedHandler } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 import { IInputValueHost, InputValueChangedHandler, InputValueHostConfig, InputValueHostInstanceState } from "../../src/Interfaces/InputValueHost";
@@ -63,6 +63,7 @@ import { IManagerConfigModifierFactory } from "../../src/Interfaces/ManagerConfi
 import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
+import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager

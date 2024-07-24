@@ -452,32 +452,3 @@ export function toIValueHostCallbacks(source: any): IValueHostCallbacks | null
     }
     return null;
 }
-
-/**
- * Factory for generating classes that implement IValueHost that use ValueHostConfig.
- * ValueHostConfig identifies the desired ValueHost class.
- * Most apps will use the standard InputValueHost class.
- * This interface targets unit testing with mocks.
- */
-export interface IValueHostFactory {
-    /**
-     * Creates the instance.
-     * @param valueHostsManager 
-     * @param config - determines the class. All classes supported here must ValueHostConfig to get their setup.
-     * @param state - Allows restoring the state of the new ValueHost instance. Use Factory.createInstanceState() to create an initial value.
-     */
-    create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: ValueHostInstanceState): IValueHost;
-    /**
-     * Adjusts the state from a previous time to conform to the Config.
-     * For example, if the Config had a rule change, some data in the state may
-     * be obsolete and can be discarded.
-     * @param state 
-     * @param config 
-     */
-    cleanupInstanceState(state: ValueHostInstanceState, config: ValueHostConfig): void;
-    /**
-     * Creates an initialized InstanceState object
-     * @param config 
-     */
-    createInstanceState(config: ValueHostConfig): ValueHostInstanceState;
-}

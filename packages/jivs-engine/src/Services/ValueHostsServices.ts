@@ -8,7 +8,7 @@
 
 import type { ILoggerService } from '../Interfaces/LoggerService';
 import { ServiceName } from '../Interfaces/ValidationServices';
-import { IValueHostFactory } from '../Interfaces/ValueHost';
+import { IValueHostFactory } from '../Interfaces/ValueHostFactory';
 import { ValueHostFactory, registerStandardValueHostGenerators } from '../ValueHosts/ValueHostFactory';
 import { ConsoleLoggerService } from './ConsoleLoggerService';
 import { IValueHostsServices } from '../Interfaces/ValueHostsServices';

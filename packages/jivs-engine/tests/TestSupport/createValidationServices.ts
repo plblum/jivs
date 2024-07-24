@@ -50,12 +50,10 @@ import { MessageTokenResolverService } from "../../src/Services/MessageTokenReso
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { ValidationServices } from "../../src/Services/ValidationServices";
 import { DataTypeCheckConditionConfig, RequireTextConditionConfig, RegExpConditionConfig, RangeConditionConfig } from "../../src/Conditions/ConcreteConditions";
-import { CultureIdFallback } from "../../src/Interfaces/DataTypeFormatterService";
 import { ITextLocalizerService } from "../../src/Interfaces/TextLocalizerService";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { registerTestingOnlyConditions } from "./conditionsForTesting";
-import { ICultureService } from "../../src/Interfaces/CultureService";
-import { CultureService } from "../../src/Services/CultureService";
+import { CultureIdFallback, ICultureService } from "../../src/Interfaces/CultureService";
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 import { CleanUpStringParser, NumberParser } from "../../src/DataTypes/DataTypeParsers";
 import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserService";
@@ -63,6 +61,7 @@ import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../
 import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
+import { IConditionFactory } from "../../src/Interfaces/Conditions";
 
 
 export function createValidationServicesForTesting(): ValidationServices {
@@ -161,7 +160,7 @@ export function registerConditions(cf: ConditionFactory): void
 
 */    
 }
-export function registerAllConditions(cf: ConditionFactory): void
+export function registerAllConditions(cf: IConditionFactory): void
 {
     cf.register<DataTypeCheckConditionConfig>(
         ConditionType.DataTypeCheck, (config) => new DataTypeCheckCondition(config));

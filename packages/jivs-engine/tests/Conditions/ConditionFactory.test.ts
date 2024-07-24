@@ -150,5 +150,18 @@ describe('lazyLoad', () => {
 
         expect(loaded).toBe(false);
     });    
- });
+});
+describe('findRealName', () => {
+    test('findRealName', () => {
+        let testItem = new ConditionFactory();
+        testItem.register<RequireTextConditionConfig>('RequireText', (config)=> new RequireTextCondition(config));
+        expect(testItem.findRealName('')).toBeNull();
+        expect(testItem.findRealName(' ')).toBeNull();
+        expect(testItem.findRealName('RequireText')).toBe('RequireText');
+        expect(testItem.findRealName(' RequireText ')).toBe('RequireText');
+        expect(testItem.findRealName('requiretext')).toBe('RequireText');
+        expect(testItem.findRealName(' requiretext ')).toBe('RequireText');
+
+    });
+});
  

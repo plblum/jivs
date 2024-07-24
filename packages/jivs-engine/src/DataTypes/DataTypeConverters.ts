@@ -28,7 +28,7 @@ export abstract class DataTypeConverterBase implements IDataTypeConverter
      * @param lookupKey 
      * @returns 
      */
-    protected validTreatAsLookupKey(lookupKey: string | null): boolean {
+    protected validSourceLookupKey(lookupKey: string | null): boolean {
         return this.supportedSourceLookupKeys().includes(lookupKey);
     }
     /**
@@ -40,7 +40,7 @@ export abstract class DataTypeConverterBase implements IDataTypeConverter
     public canConvert(value: any, sourceLookupKey: string | null, resultLookupKey: string): boolean
     {
         return this.validValue(value) &&
-            this.validTreatAsLookupKey(sourceLookupKey) &&
+            this.validSourceLookupKey(sourceLookupKey) &&
             this.validResultDataTypeLookupKey(resultLookupKey);
     }
     public abstract convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): any;
@@ -48,7 +48,7 @@ export abstract class DataTypeConverterBase implements IDataTypeConverter
     public abstract supportedSourceLookupKeys(): Array<string | null>;
     public sourceIsCompatible(value: any, sourceLookupKey: string | null): boolean
     {
-        return this.validValue(value) && this.validTreatAsLookupKey(sourceLookupKey);
+        return this.validValue(value) && this.validSourceLookupKey(sourceLookupKey);
     }
 //#endregion IDataTypeConverter   
 }

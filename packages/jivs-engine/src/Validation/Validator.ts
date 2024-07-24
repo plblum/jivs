@@ -672,6 +672,16 @@ export function createIssueFound(valueHost: IValueHost,
  * It supports the built-in Validator class when ValidatorConfig.validatorType=null/undefined.
  */
 export class ValidatorFactory implements IValidatorFactory {
+
+    /**
+     * Checks if a validator can be created based on the provided configuration.
+     * @param config - The configuration for the validator.
+     * @returns A boolean indicating whether the validator can be created.
+     */
+    public canCreate(config: ValidatorConfig): boolean {
+        return config.validatorType == null || this.isRegistered(config.validatorType);
+    }
+    
     public create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator {
         if (config.validatorType == null)   // null or undefined
             return new Validator(valueHost, config);
@@ -704,6 +714,7 @@ export class ValidatorFactory implements IValidatorFactory {
     public isRegistered(validatorType: string): boolean {
         return this._map.get(validatorType) !== undefined;
     }    
+
 }
 
 

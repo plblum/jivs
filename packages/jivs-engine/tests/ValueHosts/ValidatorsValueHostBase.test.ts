@@ -1509,6 +1509,9 @@ class TestValidatorFactory implements IValidatorFactory {
     public create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator {
         return new ThrowExceptionValidator(valueHost, config);
     }
+    canCreate(config: ValidatorConfig): boolean {
+        return true;
+    }
 }
 
 describe('validate handles exception from custom Validator class', () => {

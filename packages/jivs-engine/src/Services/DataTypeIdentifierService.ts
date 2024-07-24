@@ -69,5 +69,22 @@ implements IDataTypeIdentifierService
             result = this.find(value);
         return result;        
     }
+    /**
+     * Determines if the lookup key has an associated DataTypeIdentifier.
+     * @param lookupKey 
+     * @param caseInsensitive When true, uses a case insensitive comparison.
+     */
+    public findByLookupKey(lookupKey: string, caseInsensitive?: boolean): IDataTypeIdentifier | null
+    {
+        if (caseInsensitive)
+            lookupKey = lookupKey.toLowerCase();
+        let result = this.getAll().find((idt) => {
+            if (caseInsensitive)
+                return idt.dataTypeLookupKey.toLowerCase() === lookupKey;
+            else
+                return idt.dataTypeLookupKey === lookupKey;
+        }) ?? null;
+        return result;
+    }
 
 }

@@ -5550,6 +5550,10 @@ describe('NumberConditionBase', () => {
             supportsValue(value: any): boolean {
                 return value instanceof NumberHolder;
             }
+            sampleValue() {
+                return new NumberHolder(0);
+            
+            }
         }
         class NumberHolderConverter implements IDataTypeConverter
         {

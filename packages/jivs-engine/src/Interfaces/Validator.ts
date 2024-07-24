@@ -249,5 +249,6 @@ export interface ValidatorValidateResult {
  */
 export interface IValidatorFactory {
     create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator;
+    canCreate(config: ValidatorConfig): boolean;
 }
 

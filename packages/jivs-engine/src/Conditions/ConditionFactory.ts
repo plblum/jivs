@@ -7,6 +7,7 @@ import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import type { ConditionConfig, ICondition, IConditionCore, IConditionFactory } from '../Interfaces/Conditions';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IDisposable } from '../Interfaces/General_Purpose';
+import { cleanString } from '../Utilities/Utilities';
 
 //#region ConditionFactory
 
@@ -29,9 +30,10 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
      */
     public create<TConfig extends ConditionConfig>
         (config: TConfig): IConditionCore<TConfig> {
-        if (!config.conditionType)
+        let ct = cleanString(config.conditionType);
+        if (!ct)
             throw new CodingError('conditionType property not assigned in ConditionConfig');
-        let fn = this._map.get(config.conditionType);
+        let fn = this._map.get(ct);
         if (fn)
             return fn(config) as IConditionCore<TConfig>;
         if (this.ensureLazyLoaded())
@@ -43,6 +45,10 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
     // and it returns an instance of IValidator.
 
     private readonly _map = new NameToFunctionMapper<ConditionConfig, ICondition>();
+    // NameToFunctionMapper tracks conditiontypes case insensitively
+    // We also need to track the original case of the conditionType
+    // to reveal the real name when the user asks for it.
+    private readonly _registeredNames: Set<string> = new Set<string>();
 
     /**
      * Add or replace a function to create an instance of the Condition
@@ -52,7 +58,11 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
      */
     public register<TConfig extends ConditionConfig>(conditionType: string,
         fn: (config: TConfig) => IConditionCore<TConfig>): void {
+        let ct = cleanString(conditionType);
+        if (!ct)
+            throw new CodingError('conditionType not assigned');
         this._map.register(conditionType, fn as any);
+        this._registeredNames.add(ct);
     }
 
     /**
@@ -62,6 +72,27 @@ export class ConditionFactory implements IConditionFactory, IDisposable {
      */
     public isRegistered(conditionType: string): boolean {
         return this._map.get(conditionType) !== undefined;
+    }
+
+    /**
+     * Helper to see if the conditionType value is registered even
+     * when its case is different or it has whitespace that needs trimming.
+     * @param conditionType 
+     * @returns The real name of the conditionType or null if not found.
+     */
+    public findRealName(conditionType: string): string | null {
+        let ct = cleanString(conditionType);
+        if (!ct)
+            return null;
+        // _registeredNames needs to be searched
+        // with the same as the user supplied
+        let lcCT = ct.toLowerCase();
+        for (let key of this._registeredNames.keys()) {
+            if (key.toLowerCase() === lcCT)
+                return key;
+        }
+
+        return null;
     }
 
     /**

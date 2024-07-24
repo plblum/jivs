@@ -116,9 +116,20 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
      * Only requirse dataTypeLookupKey to match the supportedLookupKey
      */
     public supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
-        return dataTypeLookupKey === this.supportedLookupKey;
+        return this.isCompatible(dataTypeLookupKey, cultureId);
     }
 
+    /**
+     * Since there can be several parsers for a single lookupKey and cultureID
+     * that are selected based on the text, this function is used 
+     * when you want all possible candidates. It is effectively supports() without the text.
+     * @param dataTypeLookupKey 
+     * @param cultureId 
+     */
+    public isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
+    {
+        return dataTypeLookupKey === this.supportedLookupKey;
+    }
     /**
      * Handles trimming and returning the emptyStringResult if that's what it has.
      * Otherwise, it lets the child class work on the text.
@@ -386,11 +397,18 @@ export abstract class SpecificCulturesPatternParserBase<TDataType, TOptions exte
     }
     private _supportedCultures: Array<string>;
 
-    public supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
-        if (super.supports(dataTypeLookupKey, cultureId, text))
-            if (this.supportedCultures.includes(cultureId))
-                return true;
-        return false;
+     /**
+     * Since there can be several parsers for a single lookupKey and cultureID
+     * that are selected based on the text, this function is used 
+     * when you want all possible candidates. It is effectively supports() without the text.
+     * @param dataTypeLookupKey 
+     * @param cultureId 
+     */
+    public isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
+    {
+        if (!super.isCompatible(dataTypeLookupKey, cultureId))
+            return false;
+        return this.supportedCultures.includes(cultureId);
     }
 }
 
@@ -878,14 +896,20 @@ export abstract class BooleanParserBase<TOptions extends BooleanParserOptions> e
         return this._supportedCultures;
     }
     private _supportedCultures: Array<string>;
-
-    public supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
-        if (super.supports(dataTypeLookupKey, cultureId, text))
-            if (this.supportedCultures.includes(cultureId))
-                return true;
-        return false;
-    }    
-
+    /**
+     * Since there can be several parsers for a single lookupKey and cultureID
+     * that are selected based on the text, this function is used 
+     * when you want all possible candidates. It is effectively supports() without the text.
+     * @param dataTypeLookupKey 
+     * @param cultureId 
+     */
+    public isCompatible(dataTypeLookupKey: string, cultureId: string): boolean
+    {
+        if (!super.isCompatible(dataTypeLookupKey, cultureId))
+            return false;
+        return this.supportedCultures.includes(cultureId);
+    }
+    
     private _trueValuesLC: Array<string>;
     private _falseValuesLC: Array<string>;
 

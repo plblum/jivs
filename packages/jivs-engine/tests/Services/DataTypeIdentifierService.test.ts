@@ -12,6 +12,9 @@ class TestIdentifier implements IDataTypeIdentifier {
     supportsValue(value: any): boolean {
         return value instanceof TestDataType;
     }
+    sampleValue() {
+        return new TestDataType();
+    }
 }
 
 describe('DataTypeIdentifierService register and find', () => {
@@ -41,6 +44,9 @@ describe('DataTypeIdentifierService register and find', () => {
             dataTypeLookupKey: string = LookupKey.Date;  // will replace Dates...
             supportsValue(value: any): boolean {
                 return value instanceof TestDataType;
+            }
+            sampleValue() {
+                return new TestDataType();
             }
 
         }
@@ -81,6 +87,43 @@ describe('DataTypeIdentifierService.identify', () => {
     });
 });
 
+describe('findByLookupKey', () => {
+    test('with case sensitive matches', () => {
+        let testItem = new DataTypeIdentifierService();
+        let services = new MockValidationServices(false, false);
+        testItem.services = services;
+        testItem.register(new TestIdentifier());
+        expect(testItem.findByLookupKey(LookupKey.Number)).toBeInstanceOf(NumberDataTypeIdentifier);
+        expect(testItem.findByLookupKey(LookupKey.Boolean)).toBeInstanceOf(BooleanDataTypeIdentifier);
+        expect(testItem.findByLookupKey(LookupKey.String)).toBeInstanceOf(StringDataTypeIdentifier);
+        expect(testItem.findByLookupKey(LookupKey.Date)).toBeInstanceOf(DateDataTypeIdentifier);
+        expect(testItem.findByLookupKey('TEST')).toBeInstanceOf(TestIdentifier);
+        expect(testItem.findByLookupKey('NOTHING')).toBeNull();
+    });
+    // with case insensitive matches
+    test('with case insensitive matches', () => {
+        let testItem = new DataTypeIdentifierService();
+        let services = new MockValidationServices(false, false);
+        testItem.services = services;
+        testItem.register(new TestIdentifier());
+        expect(testItem.findByLookupKey(LookupKey.Number, true)).toBeInstanceOf(NumberDataTypeIdentifier);
+        expect(testItem.findByLookupKey(LookupKey.Boolean, true)).toBeInstanceOf(BooleanDataTypeIdentifier);
+        expect(testItem.findByLookupKey(LookupKey.String, true)).toBeInstanceOf(StringDataTypeIdentifier);
+        expect(testItem.findByLookupKey(LookupKey.Date, true)).toBeInstanceOf(DateDataTypeIdentifier);
+        expect(testItem.findByLookupKey('TEST', true)).toBeInstanceOf(TestIdentifier);
+        expect(testItem.findByLookupKey('NOTHING', true)).toBeNull();
+        // lower case tests
+
+        expect(testItem.findByLookupKey(LookupKey.Number.toLowerCase(), true)).toBeInstanceOf(NumberDataTypeIdentifier);
+        expect(testItem.findByLookupKey(LookupKey.Boolean.toLowerCase(), true)).toBeInstanceOf(BooleanDataTypeIdentifier);
+        expect(testItem.findByLookupKey(LookupKey.String.toLowerCase(), true)).toBeInstanceOf(StringDataTypeIdentifier);
+        expect(testItem.findByLookupKey(LookupKey.Date.toLowerCase(), true)).toBeInstanceOf(DateDataTypeIdentifier);
+        expect(testItem.findByLookupKey('test', true)).toBeInstanceOf(TestIdentifier);
+        expect(testItem.findByLookupKey('nothing', true)).toBeNull();
+
+    });
+});
+
 describe('lazyLoad', () => {
     class NormalDataType { }
     class NormalIdentifier implements IDataTypeIdentifier
@@ -89,6 +132,9 @@ describe('lazyLoad', () => {
         supportsValue(value: any): boolean {
             return value instanceof NormalDataType;
         }     
+        sampleValue() {
+            return new NormalDataType();
+        }
     }
     class LazyDataType { }
     class LazyLoadIdentifier implements IDataTypeIdentifier
@@ -96,6 +142,9 @@ describe('lazyLoad', () => {
         dataTypeLookupKey: string = 'LazyLoad';
         supportsValue(value: any): boolean {
             return value instanceof LazyDataType;
+        }
+        sampleValue() {
+            return new LazyDataType();
         }
     }    
     test('Call to register does not lazy load', () => {

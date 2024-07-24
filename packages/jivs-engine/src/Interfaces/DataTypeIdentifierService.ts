@@ -30,4 +30,11 @@ export interface IDataTypeIdentifierService extends IDataTypeService<IDataTypeId
      * @returns 
      */
     find(value: any): IDataTypeIdentifier | null;
+
+    /**
+     * Determines if the lookup key has an associated DataTypeIdentifier.
+     * @param lookupKey 
+     * @param caseInsensitive When true, uses a case insensitive comparison.
+     */
+    findByLookupKey(lookupKey: string, caseInsensitive?: boolean): IDataTypeIdentifier | null;
 }
