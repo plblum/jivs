@@ -1,4 +1,9 @@
-import { CodingError } from "../Utilities/ErrorHandling";
+/**
+ * Base class for Conditions that have a single child condition.
+ * 
+ * @module Conditions/AbstractClasses/ConditionWithOneChildBaseConfig
+ */
+
 import { ValueHostName } from "../DataTypes/BasicTypes";
 import { ConditionConfig, ICondition, ConditionCategory } from "../Interfaces/Conditions";
 import { toIDisposable } from "../Interfaces/General_Purpose";

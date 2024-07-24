@@ -6,7 +6,6 @@
 
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
