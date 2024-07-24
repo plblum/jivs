@@ -1,6 +1,7 @@
 /node_modules/**
 /packages/*/build/**
 /packages/*/coverage/**
+/packages/*/temp/**
 /examples/**
 /coverage/**
 /starter_code/**
