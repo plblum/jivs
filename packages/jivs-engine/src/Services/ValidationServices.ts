@@ -18,7 +18,9 @@ import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterServic
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { ValueHostsServices } from './ValueHostsServices';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
-import { IValidatorConfigMergeService, IValueHostConfigMergeService } from '../Interfaces/ConfigMergeService';
+import { IValidatorConfigMergeService } from '../Interfaces/ConfigMergeService';
+import { ValidationManagerConfigAnalysisService } from './ConfigAnalysisService/ConfigAnalysisService';
+import { IConfigAnalysisService } from '../Interfaces/ConfigAnalysisService';
 
 /**
  * Supplies services and tools to be used as dependency injection
@@ -122,5 +124,8 @@ export class ValidationServices extends ValueHostsServices implements IValidatio
         this.setService(ServiceName.validatorFactory, factory);
     }
 
-    //#endregion ValidatorFactory        
+    //#endregion ValidatorFactory     
+    protected defaultConfigAnalysisService(): IConfigAnalysisService {
+        return new ValidationManagerConfigAnalysisService();
+    }    
 }

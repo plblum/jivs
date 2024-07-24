@@ -29,6 +29,8 @@ import { IManagerConfigBuilderFactory } from '../Interfaces/ManagerConfigBuilder
 import { IManagerConfigModifierFactory } from '../Interfaces/ManagerConfigModifierFactory';
 import { ManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
 import { ManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
+import { IConfigAnalysisService } from '../Interfaces/ConfigAnalysisService';
+import { ValueHostsManagerConfigAnalysisService } from './ConfigAnalysisService/ConfigAnalysisService';
 
 /**
  * Supplies services and factories to be used as dependency injection
@@ -243,7 +245,24 @@ export class ValueHostsServices extends Services implements IValueHostsServices 
         this.setService(ServiceName.managerConfigModifier, factory);
     }
 
-  
+    /**
+     * Service for evaluating the configuration of a ValueHostsManagerConfig and
+     * ValidationManagerConfig object prior to creating the ValueHostsManager or ValidationManager.
+     */
+    public get configAnalysisService(): IConfigAnalysisService {
+        let service = this.getService<IConfigAnalysisService>(ServiceName.configAnalysis);
+        if (!service) {
+            service = this.defaultConfigAnalysisService();
+            this.setService(ServiceName.configAnalysis, service);
+        }
+        return service;
+    }
+    public set configAnalysisService(service: IConfigAnalysisService) {
+        this.setService(ServiceName.configAnalysis, service);
+    }
+    protected defaultConfigAnalysisService(): IConfigAnalysisService {
+        return new ValueHostsManagerConfigAnalysisService();
+    }
 
 }
 

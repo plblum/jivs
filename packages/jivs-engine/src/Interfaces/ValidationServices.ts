@@ -148,4 +148,9 @@ export enum ServiceName {
      */
     valuesToModelFactory = 'ValuesToModelFactory',
 
+    /**
+     * IConfigAnalysisService
+     */
+    configAnalysis = 'configAnalysis',
+
 }
