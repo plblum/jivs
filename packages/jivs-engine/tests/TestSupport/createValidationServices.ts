@@ -58,8 +58,8 @@ import { DataTypeParserService } from "../../src/Services/DataTypeParserService"
 import { CleanUpStringParser, NumberParser } from "../../src/DataTypes/DataTypeParsers";
 import { IDataTypeParserService } from "../../src/Interfaces/DataTypeParserService";
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
-import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
-import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import { IConditionFactory } from "../../src/Interfaces/Conditions";
 
@@ -102,8 +102,8 @@ export function createValidationServicesForTesting(): ValidationServices {
     vs.messageTokenResolverService = new MessageTokenResolverService();
     vs.valueHostConfigMergeService = new ValueHostConfigMergeService();
     vs.validatorConfigMergeService = new ValidatorConfigMergeService();
-    vs.managerConfigBuilderFactory = new ManagerConfigBuilderFactory();
-    vs.managerConfigModifierFactory = new ManagerConfigModifierFactory();
+    vs.managerConfigBuilderFactory = new ValidationManagerConfigBuilderFactory();
+    vs.managerConfigModifierFactory = new ValidationManagerConfigModifierFactory();
 
     return vs;
 }

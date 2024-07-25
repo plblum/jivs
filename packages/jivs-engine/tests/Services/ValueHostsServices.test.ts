@@ -13,8 +13,8 @@ import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { CultureService } from "../../src/Services/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
-import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
-import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { ValueHostsManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { ValidationManagerConfigModifierFactory, ValueHostsManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { ValueHostsManagerConfigAnalysisService } from "../../src/Services/ConfigAnalysisService/ConfigAnalysisService";
 import { MockValidationServices } from "../TestSupport/mocks";
 
@@ -28,7 +28,6 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(() => x = testItem.dataTypeComparerService).toThrow(/dataTypeComparerService/);
         expect(() => x = testItem.dataTypeConverterService).toThrow(/dataTypeConverterService/);
         expect(() => x = testItem.dataTypeIdentifierService).toThrow(/dataTypeIdentifierService/);
-        expect(() => x = testItem.valueHostConfigMergeService).toThrow(/valueHostConfigMergeService/);
        
         expect(testItem.loggerService).toBeInstanceOf(ConsoleLoggerService);
         expect(testItem.valueHostFactory).toBeInstanceOf(ValueHostFactory);
@@ -36,8 +35,9 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(testItem.textLocalizerService).toBeInstanceOf(TextLocalizerService);
         expect(testItem.cultureService).toBeInstanceOf(CultureService);    
         expect(testItem.lookupKeyFallbackService).toBeInstanceOf(LookupKeyFallbackService);            
-        expect(testItem.managerConfigBuilderFactory).toBeInstanceOf(ManagerConfigBuilderFactory);
-        expect(testItem.managerConfigModifierFactory).toBeInstanceOf(ManagerConfigModifierFactory);  
+        expect(testItem.valueHostConfigMergeService).toBeInstanceOf(ValueHostConfigMergeService);
+        expect(testItem.managerConfigBuilderFactory).toBeInstanceOf(ValueHostsManagerConfigBuilderFactory);
+        expect(testItem.managerConfigModifierFactory).toBeInstanceOf(ValueHostsManagerConfigModifierFactory);  
         expect(testItem.configAnalysisService).toBeInstanceOf(ValueHostsManagerConfigAnalysisService);
     });
 });
@@ -110,14 +110,14 @@ describe('Replace factories and services', () => {
     });    
 
     test('Replace managerConfigBuilderFactory', () => {
-        let replacement = new ManagerConfigBuilderFactory();
+        let replacement = new ValueHostsManagerConfigBuilderFactory();
         let testItem = new ValueHostsServices();
         testItem.managerConfigBuilderFactory = replacement;
         expect(testItem.managerConfigBuilderFactory).toBe(replacement);
         expect(replacement.services).toBe(testItem);
     });    
     test('Replace managerConfigModifierFactory', () => {
-        let replacement = new ManagerConfigModifierFactory();
+        let replacement = new ValueHostsManagerConfigModifierFactory();
         let testItem = new ValueHostsServices();
         testItem.managerConfigModifierFactory = replacement;
         expect(testItem.managerConfigModifierFactory).toBe(replacement);
@@ -319,6 +319,8 @@ describe('dispose', () => {
         testItem.textLocalizerService = new TextLocalizerService();
         testItem.valueHostFactory = new ValueHostFactory();
         testItem.configAnalysisService = new ValueHostsManagerConfigAnalysisService();
+        testItem.managerConfigBuilderFactory = new ValueHostsManagerConfigBuilderFactory();
+        testItem.managerConfigModifierFactory = new ValueHostsManagerConfigModifierFactory();
         testItem.dispose();
 
         expect(() => testItem.conditionFactory).toThrow(TypeError);        
@@ -327,6 +329,8 @@ describe('dispose', () => {
         expect(() => testItem.textLocalizerService).toThrow(TypeError);
         expect(() => testItem.valueHostConfigMergeService).toThrow(TypeError);
         expect(() => testItem.configAnalysisService).toThrow(TypeError);
+        expect(() => testItem.managerConfigBuilderFactory).toThrow(TypeError);
+        expect(() => testItem.managerConfigModifierFactory).toThrow(TypeError);
 
     });
 });

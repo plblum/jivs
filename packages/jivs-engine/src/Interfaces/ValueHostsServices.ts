@@ -16,6 +16,7 @@ import { IConditionFactory } from './Conditions';
 import { IValueHostConfigMergeService } from './ConfigMergeService';
 import { IManagerConfigModifierFactory } from './ManagerConfigModifierFactory';
 import { IManagerConfigBuilderFactory } from './ManagerConfigBuilderFactory';
+import { IConfigAnalysisService } from './ConfigAnalysisService';
 
 /**
  * Services that are needed by ValueHostsManager
@@ -102,4 +103,9 @@ export interface IValueHostsServices extends IServices
      * Creates the ManagerConfigModifier instances.
      */
     managerConfigModifierFactory: IManagerConfigModifierFactory;
+
+    /**
+     * Service to analyze the configuration of the ValueHostsConfig and ValidationManagerConfig.
+     */
+    configAnalysisService: IConfigAnalysisService;
 }

@@ -60,10 +60,11 @@ import { ValidatorsValueHostBase } from "../../src/ValueHosts/ValidatorsValueHos
 import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
 import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
 import { IManagerConfigModifierFactory } from "../../src/Interfaces/ManagerConfigModifierFactory";
-import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
-import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
+import { IConfigAnalysisService } from "../../src/Interfaces/ConfigAnalysisService";
 
 
 export function createMockValidationManagerForMessageTokenResolver(registerLookupKeys: boolean = true): IValidationManager
@@ -304,8 +305,8 @@ export class MockValidationServices implements IValidationServices
         this.messageTokenResolverService = new MessageTokenResolverService();
         this.valueHostConfigMergeService = new ValueHostConfigMergeService();
         this.validatorConfigMergeService = new ValidatorConfigMergeService();
-        this.managerConfigBuilderFactory = new ManagerConfigBuilderFactory();
-        this.managerConfigModifierFactory = new ManagerConfigModifierFactory();
+        this.managerConfigBuilderFactory = new ValidationManagerConfigBuilderFactory();
+        this.managerConfigModifierFactory = new ValidationManagerConfigModifierFactory();
 
         let logger = new CapturingLogger();
         this.loggerService = logger;
@@ -531,6 +532,15 @@ export class MockValidationServices implements IValidationServices
         factory.services = this;
     }
     private _managerConfigModifierFactory!: IManagerConfigModifierFactory;
+    public get configAnalysisService(): IConfigAnalysisService
+    {
+        return this._configAnalysisService;
+    }
+    public set configAnalysisService(service: IConfigAnalysisService)
+    {
+        this._configAnalysisService = service;
+    }
+    private _configAnalysisService!: IConfigAnalysisService;    
 }
 
 /**

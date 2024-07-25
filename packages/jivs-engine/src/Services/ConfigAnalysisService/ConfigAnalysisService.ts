@@ -128,6 +128,9 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
      * @param helper - The analysis results helper.
      */
     protected resolveConfigAnalyzers(analysisArgs: AnalysisArgs<TServices>, helper: AnalysisResultsHelper<TServices>): void {
+        analysisArgs.conditionConfigAnalyzer =
+            new ConditionConfigAnalyzer<TServices>(helper, this.conditionConfigPropertyAnalyzers);
+
         analysisArgs.comparerAnalyzer = new DataTypeComparerAnalyzer<TServices>(helper);
         analysisArgs.valueHostConfigAnalyzer = new ValueHostConfigAnalyzer<TServices>(helper, this.valueHostConfigPropertyAnalyzers);
     }
@@ -292,8 +295,6 @@ export class ValidationManagerConfigAnalysisService extends ConfigAnalysisServic
     protected resolveConfigAnalyzers(analysisArgs: AnalysisArgs<IValidationServices>, helper: AnalysisResultsHelper<IValidationServices>): void {
         super.resolveConfigAnalyzers(analysisArgs, helper);
         analysisArgs.validatorConfigAnalyzer = new ValidatorConfigAnalyzer(helper, this.validatorConfigPropertyAnalyzers);
-        analysisArgs.conditionConfigAnalyzer = new ConditionConfigAnalyzer<IValidationServices>(
-            helper, this.conditionConfigPropertyAnalyzers);
     }
 
 }

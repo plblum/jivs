@@ -25,6 +25,7 @@ import { resolveErrorCode } from '../Utilities/Validation';
 import { LogDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
 import { ValidatorConfig } from '../Interfaces/Validator';
 import { ValueHostsManager } from './ValueHostsManager';
+import { ConfigAnalysisServiceOptions, IConfigAnalysisOutput } from '../Interfaces/ConfigAnalysisService';
 
 
 /**
@@ -183,7 +184,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * It always retains the official services and callbacks.
      * Merging overrides updates this object.
      */
-    protected get baseConfig(): T {
+    protected get baseConfig(): T {     
         return this._baseConfig;
     }
     private _baseConfig: T;
@@ -197,6 +198,11 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         return this._overriddedValueHostConfigs;
     }
     private _overriddedValueHostConfigs: Array<Array<ValueHostConfig>> = [];
+
+    protected assertNotDisposed(): void {
+        if (this._baseConfig === undefined)
+            throw new CodingError('Object disposed. Call before complete()');
+    }
 
     /**
      * Starts a new ValueHostsConfig to collect ValueHostConfigs.
@@ -248,6 +254,8 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * allowing it to be called multiple times.
      */
     public snapshot(): T {
+        this.assertNotDisposed();
+        
         let destination = ValueHostsManager.safeConfigClone(this.baseConfig) as T;
         let vhms = destination.services.valueHostConfigMergeService;
 
@@ -264,6 +272,37 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             });
         });
         return destination;
+    }
+    /**
+     * A key tool to writing tests around Jivs configurations.
+     * 
+     * Prior to calling complete(), use this to review the current state of the configuration,
+     * taking both the services and ValueHost configurations into account.
+     * The resulting object provides you with tools for looking for errors and other issues,
+     * plus reporting on the configuration.
+     * 
+     * For example, you can learn about all Lookup Keys in use, with their associated
+     * converters, parsers, formatters, etc. You can identify those that are missing a supporting
+     * object that you need to add to the services.
+     * You can identify all errors and issues amongst the ValueHosts and their validators.
+     * This happens prior to even creating a ValidationManager or ValueHostsManager, so you know going in
+     * that the configuration is correct.
+     * 
+     * @remarks
+     * The underlying code is actually the ConfigAnalysisService, which is defined in the 
+     * ValidationServices or ValueHostsServices. This method is a convenience wrapper around that service.
+     * You could also call it directly from the services object like this:
+     * ```ts
+     * const analysis = services.configAnalysisService.analyze();
+     * ```
+     * @param options 
+     * @returns Tools to look for issues and report on the configuration. Its methods are used
+     * with your testing code.
+     */
+    public analyze(options?: ConfigAnalysisServiceOptions): IConfigAnalysisOutput
+    {
+        this.assertNotDisposed();
+        return this.baseConfig.services.configAnalysisService.analyze(this, options);
     }
 
     /**
@@ -363,6 +402,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     public static(config: Omit<StaticValueHostConfig, 'valueHostType' | 'enablerConfig'>): ManagerConfigBuilderBase<T>;
     // overload resolution
     public static(arg1: ValueHostName | StaticValueHostConfig, arg2?: FluentStaticParameters | string | null, arg3?: FluentStaticParameters): ManagerConfigBuilderBase<T> {
+        this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
         return this.addValueHost<StaticValueHostConfig>(ValueHostType.Static, arg1, arg2, arg3);
     }
@@ -386,6 +426,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     public calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): ManagerConfigBuilderBase<T>;
     // overload resolution
     public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): ManagerConfigBuilderBase<T> {
+        this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
         let fluent = this.createFluent();
         let vhConfig: CalcValueHostConfig;
@@ -459,6 +500,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
 
         }   
         let self = this;
+        this.assertNotDisposed();
         assertNotNull(valueHostName, 'valueHostName');
         assertNotNull(sourceOfConditionConfig, 'sourceOfConditionConfig');
         this.logQuick(LoggingLevel.Debug, () => `enabler("${valueHostName}")`);
@@ -501,7 +543,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         arg1: Partial<TVHConfig> | ValueHostName,
         arg2?: Partial<TVHConfig> | string | null,
         arg3?: Partial<TVHConfig>): FluentValidatorBuilder {
-
+        this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
         let fluent = this.createFluent() as ValidationManagerStartFluent;
         let builder = fluent.withValidators(valueHostType,
@@ -531,6 +573,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         destinationOfCondition: ValidatorConfig,
         arg2: CombineUsingCondition | ((combiningBuilder: FluentConditionBuilder, existingConditionConfig: ConditionConfig) => void),
         arg3?: (combiningBuilder: FluentConditionBuilder) => void): void {
+        this.assertNotDisposed();
         assertNotNull(destinationOfCondition, 'destinationOfCondition');
         assertNotNull(arg2);
 
@@ -624,6 +667,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * - provide a complete ConditionConfig as the replacement
      */
     protected replaceConditionWith(destinationOfCondition: ValidatorConfig, sourceOfConditionConfig: ConditionConfig | ((replacementBuilder: FluentConditionBuilder) => void)): void {
+        this.assertNotDisposed();
         assertNotNull(destinationOfCondition, 'destinationOfCondition');
         assertNotNull(sourceOfConditionConfig, 'sourceOfConditionConfig');  
 
@@ -658,6 +702,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
         vhc: ValidatorsValueHostBaseConfig,
         vc: ValidatorConfig
     } {
+        this.assertNotDisposed();
         assertNotNull(valueHostName, 'valueHostName');
         assertNotNull(errorCode, 'errorCode');
         // replace condition in existing ValueHostConfig if in destinationValueHostConfigs.

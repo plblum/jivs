@@ -35,12 +35,15 @@ import { IValueHostsServices } from '../../src/Interfaces/ValueHostsServices';
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { ValidationManagerConfigBuilder } from "../../src/Validation/ValidationManagerConfigBuilder";
 import { FluentValidatorBuilder } from "../../src/ValueHosts/Fluent";
-import { ManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
+import { ValidationManagerConfigBuilderFactory } from "../../src/Services/ManagerConfigBuilderFactory";
 import { IManagerConfigBuilder } from "../../src/Interfaces/ManagerConfigBuilder";
 import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { ValidationManagerConfigModifier } from "../../src/Validation/ValidationManagerConfigModifier";
-import { ManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
+import { ValidationManagerConfigModifierFactory } from "../../src/Services/ManagerConfigModifierFactory";
 import { IManagerConfigModifier } from "../../src/Interfaces/ManagerConfigModifier";
+import { IManagerConfigBuilderFactory } from "../../src/Interfaces/ManagerConfigBuilderFactory";
+import { ServiceWithAccessorBase } from "../../src/Services/ServiceWithAccessorBase";
+import { IManagerConfigModifierFactory } from "../../src/Interfaces/ManagerConfigModifierFactory";
 
 
 /**
@@ -99,7 +102,8 @@ class TestValueHostForValidationManagerConfigBuilder extends ValidationManagerCo
     }
 
 }
-class TestManagerConfigBuilderFactory extends ManagerConfigBuilderFactory {
+class TestManagerConfigBuilderFactory extends ServiceWithAccessorBase
+    implements IManagerConfigBuilderFactory {
     public create(configToExtend?: ValueHostsManagerConfig | undefined): IManagerConfigBuilder<ValidationManagerConfig> {
         return new TestValueHostForValidationManagerConfigBuilder(configToExtend as ValidationManagerConfig ?? this.services);
     }
@@ -115,7 +119,8 @@ class TestValueHostForValidationManagerConfigModifier extends ValidationManagerC
     }
 
 }
-class TestManagerConfigModifierFactory extends ManagerConfigModifierFactory {
+class TestManagerConfigModifierFactory extends ServiceWithAccessorBase
+implements IManagerConfigModifierFactory {
     public create(manager: IValidationManager, existingValueHostConfigs: Map<string, ValueHostConfig>): IManagerConfigModifier<ValueHostsManagerConfig> {
         return new TestValueHostForValidationManagerConfigModifier(manager, existingValueHostConfigs);
     }

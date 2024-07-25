@@ -8,10 +8,8 @@ import { ValueHostType } from "../../../src/Interfaces/ValueHostFactory";
 import { ValueHostsManagerConfig } from "../../../src/Interfaces/ValueHostsManager";
 import { IValueHostsServices } from "../../../src/Interfaces/ValueHostsServices";
 import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper";
-import { ConditionConfigAnalyzer } from "../../../src/Services/ConfigAnalysisService/ConditionConfigAnalyzer";
 import { ConfigAnalysisServiceBase, ValidationManagerConfigAnalysisService, ValueHostsManagerConfigAnalysisService } from "../../../src/Services/ConfigAnalysisService/ConfigAnalysisService";
 import { SampleValues } from "../../../src/Services/ConfigAnalysisService/SampleValues";
-import { ValidatorConfigAnalyzer } from "../../../src/Services/ConfigAnalysisService/ValidatorConfigAnalyzer";
 import { ValueHostConfigAnalyzer } from "../../../src/Services/ConfigAnalysisService/ValueHostConfigAnalyzer";
 import { MockAnalyzer, checkLookupKeyInfo, checkLookupKeyInfoForNoService, checkLookupKeysInfoForService, createServices } from "./support";
 import { DataTypePropertyAnalyzer, ParserLookupKeyPropertyAnalyzer, ValueHostConfigPropertyAnalyzerBase, ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from "../../../src/Services/ConfigAnalysisService/ValueHostConfigPropertyAnalyzerClasses";
@@ -208,7 +206,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             // Base class only registers for ValueHostConfig.
             expect(analysisArgs.valueHostConfigAnalyzer).toBeInstanceOf(ValueHostConfigAnalyzer);
             expect(analysisArgs.comparerAnalyzer).toBeInstanceOf(DataTypeComparerAnalyzer);
-            expect(analysisArgs.conditionConfigAnalyzer).toBeUndefined();
+            expect(analysisArgs.conditionConfigAnalyzer).toBeDefined();
             expect(analysisArgs.validatorConfigAnalyzer).toBeUndefined();
         });
 
@@ -537,7 +535,7 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
         let args = testItem.publicify_AnalysisArgs!;
         expect(args.comparerAnalyzer).toBeDefined();
         expect(args.valueHostConfigAnalyzer).toBeDefined();
-        expect(args.conditionConfigAnalyzer).toBeUndefined();
+        expect(args.conditionConfigAnalyzer).toBeDefined();
         expect(args.validatorConfigAnalyzer).toBeUndefined();
 
         expect(testItem.publicify_helper).toBeDefined();

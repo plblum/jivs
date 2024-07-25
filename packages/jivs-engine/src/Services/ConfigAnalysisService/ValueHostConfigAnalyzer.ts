@@ -80,6 +80,10 @@ implements IValueHostConfigAnalyzer<TServices> {
                 results.validators.push(childResults);
             }
         }
+        if (config.enablerConfig && this.helper.analysisArgs.conditionConfigAnalyzer) {
+            results.enablerCondition = this.helper.analysisArgs.conditionConfigAnalyzer.analyze(
+                config.enablerConfig, valueHostConfig ?? config, []);
+        }        
     }
 
 }

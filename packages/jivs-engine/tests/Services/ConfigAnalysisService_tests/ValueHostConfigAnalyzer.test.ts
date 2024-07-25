@@ -1,4 +1,5 @@
-import { ConfigIssueSeverity, IValidatorConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ValidatorConfigResults, ValueHostConfigResults } from '../../../src/Interfaces/ConfigAnalysisService';
+import { DataTypeComparerAnalyzer } from './../../../src/Services/ConfigAnalysisService/DataTypeComparerAnalyzer';
+import { ConfigIssueSeverity, IConditionConfigPropertyAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ValidatorConfigResults, ValueHostConfigResults } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ValueHostConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ValueHostConfigAnalyzer';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
@@ -16,6 +17,11 @@ import { InputValueHostConfig } from '../../../src/Interfaces/InputValueHost';
 import { NumberParser } from '../../../src/DataTypes/DataTypeParsers';
 import { DataTypeParserLookupKeyAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeParserLookupKeyAnalyzer';
 import { DataTypeParserService } from '../../../src/Services/DataTypeParserService';
+import { ValidatorsValueHostBaseConfig } from '../../../src/Interfaces/ValidatorsValueHostBase';
+import { registerAllConditions } from '../../TestSupport/createValidationServices';
+import { ConditionType } from '../../../src/Conditions/ConditionTypes';
+import { EqualToValueCondition, EqualToValueConditionConfig, RequireTextCondition, RequireTextConditionConfig } from '../../../src/Conditions/ConcreteConditions';
+import { ConditionConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ConditionConfigAnalyzer';
 
 class MockValueHostConfigPropertyAnalyzer implements IValueHostConfigPropertyAnalyzer {
     public analyze(config: ValueHostConfig, results: ValueHostConfigResults): void {
@@ -57,7 +63,7 @@ describe('ValueHostConfigAnalyzer', () => {
     // test with 0 property analyzers, 1 test config, the test config results should be initialized correctly and there are no property results
     describe('init results and config.name', () => {
         it('should initialize results correctly with 0 property analyzers', () => {
-            const testConfig = { name: 'Test', type: 'Type', count: 1 };
+            const testConfig: ValueHostConfig = { name: 'Test' };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -75,7 +81,7 @@ describe('ValueHostConfigAnalyzer', () => {
         it('should handle empty config.name with valueHostName=[Missing] and error message', () => {
             // NOTE: The ValueHostNamePropertyAnalyzer has more tests for a missing name
             // Here we are interested in Result.valueHostName. The propertyAnalyzer handles config.name.
-            const testConfig = { name: '' };
+            const testConfig: ValueHostConfig = { name: '' };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -144,8 +150,8 @@ describe('ValueHostConfigAnalyzer', () => {
     describe('duplicate config name', () => {
         // with no property analyzers, adding the same named config to existing results should result in a duplicate error
         it('should report duplicate config error after the same-named config is added twice.', () => {
-            const testConfig1 = { name: 'Test', type: 'Type', count: 1 };
-            const testConfig2 = { name: 'Test', type: 'AltType', count: 2 };
+            const testConfig1: ValueHostConfig = { name: 'Test', dataType: LookupKey.Number };
+            const testConfig2: ValueHostConfig = { name: 'Test', dataType: LookupKey.String };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -168,8 +174,8 @@ describe('ValueHostConfigAnalyzer', () => {
         });
         // same but case insensitive duplicate match
         it('should report duplicate config error after the same-named config is added twice with different case', () => {
-            const testConfig1 = { name: 'Test', type: 'Type', count: 1 };
-            const testConfig2 = { name: 'test', type: 'AltType', count: 2 };
+            const testConfig1: ValueHostConfig = { name: 'Test', dataType: LookupKey.Number };
+            const testConfig2: ValueHostConfig = { name: 'test', dataType: LookupKey.String };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -192,8 +198,8 @@ describe('ValueHostConfigAnalyzer', () => {
         });
         // same with whitespace differences
         it('should report duplicate config error after the same-named config is added twice with whitespace differences', () => {
-            const testConfig1 = { name: 'Test', type: 'Type', count: 1 };
-            const testConfig2 = { name: ' Test ', type: 'AltType', count: 2 };
+            const testConfig1: ValueHostConfig = { name: 'Test', dataType: LookupKey.Number };
+            const testConfig2: ValueHostConfig = { name: ' Test ', dataType: LookupKey.String };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -223,7 +229,7 @@ describe('ValueHostConfigAnalyzer', () => {
     
         // with config.validatorConfigs = undefined, the MockValidatorConfigAnalyzer.ranCount should be 0
         it('should not call the validatorConfigAnalyzer if config.validatorConfigs is undefined', () => {
-            const testConfig = { name: 'Test', type: 'Type', count: 1 };
+            const testConfig: ValueHostConfig = { name: 'Test' };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -234,7 +240,7 @@ describe('ValueHostConfigAnalyzer', () => {
         });
         // same with null
         it('should not call the validatorConfigAnalyzer if config.validatorConfigs is null', () => {
-            const testConfig = { name: 'Test', type: 'Type', count: 1, validatorConfigs: null };
+            const testConfig: ValidatorsValueHostBaseConfig = { name: 'Test', validatorConfigs: null };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -245,7 +251,7 @@ describe('ValueHostConfigAnalyzer', () => {
         });
         // with config.validatorConfigs = [], the MockValidatorConfigAnalyzer.ranCount should be 0
         it('should not call the validatorConfigAnalyzer if config.validatorConfigs is empty', () => {
-            const testConfig = { name: 'Test', type: 'Type', count: 1, validatorConfigs: [] };
+            const testConfig: ValidatorsValueHostBaseConfig = { name: 'Test', validatorConfigs: [] };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -256,7 +262,8 @@ describe('ValueHostConfigAnalyzer', () => {
         });
         // with config.validatorConfigs = [{}], the MockValidatorConfigAnalyzer.ranCount should be 1
         it('should call the validatorConfigAnalyzer if config.validatorConfigs has a config', () => {
-            const testConfig = { name: 'Test', type: 'Type', count: 1, validatorConfigs: [{}] };
+            const testConfig: ValidatorsValueHostBaseConfig = { name: 'Test', validatorConfigs: [{} as any] };            
+
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -268,7 +275,7 @@ describe('ValueHostConfigAnalyzer', () => {
         });
         // with config.validatorConfigs = [{}, {}], the MockValidatorConfigAnalyzer.ranCount should be 2
         it('should call the validatorConfigAnalyzer for each config in config.validatorConfigs', () => {
-            const testConfig = { name: 'Test', type: 'Type', count: 1, validatorConfigs: [{}, {}] };
+            const testConfig: ValidatorsValueHostBaseConfig = { name: 'Test', validatorConfigs: [{} as any, {} as any] };            
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
@@ -278,6 +285,114 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.validators).toHaveLength(2);
             expect(results.validators![0].errorCode).toBe('TESTEC');
             expect(results.validators![1].errorCode).toBe('TESTEC');
+        });
+    });
+    describe('enablerConfig uses child Config feature', () => {
+        // enablerConfig is similar to validatorConfigs property in that it is an optional value.
+        // However, it represents a single Condition to be evaluated by ConditionConfigAnalyzer.
+        // When that runs, expect results.enablerCondition to be set.
+
+        test('should not call the conditionConfigAnalyzer if config.enablerConfig is undefined', () => {
+            const testConfig: ValueHostConfig = { name: 'Test' };
+            let helper = setupHelperForTheseTests(createServices());
+            let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
+            const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
+            let results = analyzer.analyze(testConfig, null, []);
+            expect(results.enablerCondition).toBeUndefined();
+        });
+        test('should not call the conditionConfigAnalyzer if config.enablerConfig is null', () => {
+            const testConfig: ValueHostConfig = {
+                name: 'Test', 
+                enablerConfig: null!
+             };
+            let helper = setupHelperForTheseTests(createServices());
+            let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
+            const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
+            let results = analyzer.analyze(testConfig, null, []);
+            expect(results.enablerCondition).toBeUndefined();
+        });
+        test('should call the conditionConfigAnalyzer if config.enablerConfig is defined', () => {
+            const testConfig: ValueHostConfig = {
+                name: 'Test', 
+                dataType: LookupKey.String,
+                enablerConfig: { conditionType: ConditionType.RequireText }
+            };
+            let services = createServices();
+            services.conditionFactory.register<RequireTextConditionConfig>(
+                ConditionType.RequireText, (config) => new RequireTextCondition(config));
+            let helper = setupHelperForTheseTests(services);
+            let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [];
+            const testItem = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
+            let results = testItem.analyze(testConfig, null, []);
+            expect(results.enablerCondition).toBeDefined();
+            expect(results.enablerCondition!.feature).toBe('Condition');
+            expect(results.enablerCondition!.conditionType).toBe(ConditionType.RequireText);
+        });
+        // using EqualToValueConditionConfig, it will need to setup a comparer.
+        // The LookupKeyInfo for service comparer should be setup without error
+        // when dataType=String.
+        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyInfo for String identifies the comparer service', () => {
+            const testConfig: ValueHostConfig = {
+                name: 'Test', 
+                dataType: LookupKey.String,
+                enablerConfig: <EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
+                    value: 'Test',
+                    valueHostName: 'name'   // normally this would be a different valuehostname...
+                }
+            };
+            let services = createServices();
+            services.conditionFactory.register<EqualToValueConditionConfig>(
+                ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
+            let cpa: Array<IConditionConfigPropertyAnalyzer> = [
+
+            ];
+            let helper = setupHelperForTheseTests(services);
+            helper.analysisArgs.conditionConfigAnalyzer = new ConditionConfigAnalyzer(helper, cpa);
+            helper.analysisArgs.comparerAnalyzer = new DataTypeComparerAnalyzer(helper);
+            let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [
+                new DataTypePropertyAnalyzer()  // ensures dataType is setup in LookupKeysInfo
+            ];
+            const testItem = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
+            let results = testItem.analyze(testConfig, null, []);
+            expect(results.enablerCondition).toBeDefined();
+            expect(results.enablerCondition!.feature).toBe('Condition');
+            expect(results.enablerCondition!.conditionType).toBe(ConditionType.EqualToValue);
+            checkLookupKeysInfoForService(helper.results.lookupKeysInfo, LookupKey.String, ServiceName.comparer);
+        });
+        // similar but now the comparer fails to be setup and adds a warning message
+        // to the results.enablerCondition object.
+        // It fails because the LookupKey is "Custom" which is unknown
+        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyInfo for Custom identifies the comparer service', () => {
+            const testConfig: ValueHostConfig = {
+                name: 'Test', 
+                dataType: 'Custom',
+                enablerConfig: <EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
+                    value: 'Test',
+                    valueHostName: 'name'   // normally this would be a different valuehostname...
+                }
+            };
+            let services = createServices();
+            services.conditionFactory.register<EqualToValueConditionConfig>(
+                ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
+            let cpa: Array<IConditionConfigPropertyAnalyzer> = [
+
+            ];
+            let helper = setupHelperForTheseTests(services);
+            helper.analysisArgs.conditionConfigAnalyzer = new ConditionConfigAnalyzer(helper, cpa);
+            helper.analysisArgs.comparerAnalyzer = new DataTypeComparerAnalyzer(helper);
+            let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [
+                new DataTypePropertyAnalyzer()  // ensures dataType is setup in LookupKeysInfo
+            ];
+            const testItem = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
+            let results = testItem.analyze(testConfig, null, []);
+            expect(results.enablerCondition).toBeDefined();
+            expect(results.enablerCondition!.feature).toBe('Condition');
+            expect(results.enablerCondition!.conditionType).toBe(ConditionType.EqualToValue);
+            checkLookupKeysInfoForService(helper.results.lookupKeysInfo, 'Custom', ServiceName.comparer);
+            expect(results.enablerCondition!.severity).toBe(ConfigIssueSeverity.warning);
+            expect(results.enablerCondition!.message).toContain('No sample value found');
         });
     });
     describe('Various ValueHostConfigs', () => {

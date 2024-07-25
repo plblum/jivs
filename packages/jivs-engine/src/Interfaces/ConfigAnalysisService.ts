@@ -6,6 +6,7 @@
 import { ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
 import { ConditionConfig } from "./Conditions";
 import { ILoggerService } from "./LoggerService";
+import { IService, IServicesAccessor } from "./Services";
 import { IValidationServices, ServiceName } from "./ValidationServices";
 import { IValidator, ValidatorConfig } from "./Validator";
 import { ValueHostConfig } from "./ValueHost";
@@ -34,7 +35,7 @@ import { IValueHostsServices } from "./ValueHostsServices";
  * let vm = new ValidationManager(builder);
  * ```
  */
-export interface IConfigAnalysisService {
+export interface IConfigAnalysisService extends IService, IServicesAccessor {
 
     /**
      * Analyze the configuration
@@ -552,6 +553,10 @@ export interface ValueHostConfigResults extends ConfigResults<ValueHostConfig> {
      * using the ValidatorConfigAnalyzer for each.
      */
     validators?: Array<ValidatorConfigResults>;
+    /**
+     * If the condition.enablerConfig is setup, this is its analysis.
+     */
+    enablerCondition?: ConditionConfigResults;
 }
 
 /**
