@@ -161,7 +161,7 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
     protected gatherDataTypeIdentifierLookupKeys(helper: IAnalysisResultsHelper<TServices>): void {
 
         // We don't want to add built-in identifiers unless they are already
-        // added into the LookupKeyCAResult.services. In that case, we are just
+        // added into the LookupKeyCAResult.serviceResults. In that case, we are just
         // calling them out.
         // All user defined identifiers will be added because they are 
         // rare, and if supplied, they probably are intended to be used.

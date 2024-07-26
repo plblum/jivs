@@ -92,7 +92,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             if (existingServiceInfo)// prior line created LKI without the service
             { // now we'll emulate the ServiceWithLookupKeyCAResultBase having the comparer service
                 let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
-                lkResult!.services.push(existingServiceInfo);
+                lkResult!.serviceResults.push(existingServiceInfo);
             }
             let analyzer = new DataTypeComparerAnalyzer(helper);
             return analyzer.checkConditionConfig(conditionConfig, valueHostConfig);
@@ -367,7 +367,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                     let serviceInfo: ComparerServiceClassRetrieval = {
                         feature: ServiceName.comparer,
                     };
-                    lkResult!.services.push(serviceInfo);
+                    lkResult!.serviceResults.push(serviceInfo);
                 }
                 let analyzer = new DataTypeComparerAnalyzer(helper);
                 return analyzer.checkConditionConfig(conditionConfig, valueHostConfig);

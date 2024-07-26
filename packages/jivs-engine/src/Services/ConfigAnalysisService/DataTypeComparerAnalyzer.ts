@@ -121,7 +121,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
                 return null;
             lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey)!;
         }
-        let serviceInfo = lookupKeyResult.services.find(si => si.feature === ServiceName.comparer) as ComparerServiceClassRetrieval;
+        let serviceInfo = lookupKeyResult.serviceResults.find(si => si.feature === ServiceName.comparer) as ComparerServiceClassRetrieval;
         // if we have already found a comparer, we don't need to do anything.
         if (serviceInfo)
             return serviceInfo;
@@ -129,7 +129,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
             feature: comparerServiceFeature
         };
         // we'll add the remaining fields in the remaining code
-        lookupKeyResult.services.push(results);
+        lookupKeyResult.serviceResults.push(results);
 
         // we need to find a comparer. We'll use the sample values to try to find one.
         // The compare() function needs two values. We'll pass it the same value twice.

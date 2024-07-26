@@ -248,7 +248,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
-                    services: [
+                    serviceResults: [
                         { feature: converterServiceFeature, message: 'testConverter', counter: 0 } as any,
                         { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]
@@ -276,7 +276,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
-                    services: [
+                    serviceResults: [
                         { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
@@ -404,7 +404,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
-                    services: [
+                    serviceResults: [
                         { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }
@@ -466,7 +466,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
-                    services: [
+                    serviceResults: [
                         { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 }

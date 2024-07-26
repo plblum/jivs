@@ -70,7 +70,7 @@ export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValueHosts
 
 /**
  * For services that have a single object to report on per key.
- * Adds OneClassRetrieval to LookupKeyCAResult.services.
+ * Adds OneClassRetrieval to LookupKeyCAResult.serviceResults.
  */
 export abstract class OneClassPerLookupKeyAnalyzer<TData, TServices extends IValueHostsServices>
     extends LookupKeyAnalyzerBase<TData, TServices> 
@@ -81,7 +81,7 @@ export abstract class OneClassPerLookupKeyAnalyzer<TData, TServices extends IVal
 /**
  * For services that may have multiple objects to report on per key,
  * such as on for each cultureId.
- * Adds MultiClassRetrieval to LookupKeyCAResult.services.
+ * Adds MultiClassRetrieval to LookupKeyCAResult.serviceResults.
  */
 export abstract class MultipleClassesPerLookupKeyAnalyzer<TData, TServices extends IValueHostsServices> extends
     LookupKeyAnalyzerBase<TData, TServices> {

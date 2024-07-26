@@ -139,7 +139,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
-                    services: []
+                    serviceResults: []
                 };
                 let testItem = setupForTheseTests();
                 testItem.registerLookupKey('testKey', null, { name: 'testValueHost' });
@@ -154,7 +154,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
-                    services: []
+                    serviceResults: []
                 };
                 let testItem = setupForTheseTests();
                 testItem.registerLookupKey(LookupKey.Number, null, { name: 'testValueHost' });
@@ -168,7 +168,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
-                    services: []
+                    serviceResults: []
                 };
                 let testItem = setupForTheseTests();
                 testItem.publicify_services.lookupKeyFallbackService.register('testKey', LookupKey.Number);
@@ -186,7 +186,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
-                    services: [
+                    serviceResults: [
                         { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
                     ]
                 };
@@ -226,7 +226,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
-                    services: [
+                    serviceResults: [
                         { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
                         { feature: converterServiceFeature, message: 'testConverter', counter: 0 } as any,
                     ]
@@ -243,7 +243,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
-                    services: [
+                    serviceResults: [
                         { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
                         { feature: converterServiceFeature, message: 'testConverter', counter: 0 } as any
                     ]
@@ -260,7 +260,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
-                    services: [
+                    serviceResults: [
                         { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
                         { feature: converterServiceFeature, message: 'testConverter', counter: 0 } as any
                     ]
@@ -277,7 +277,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
-                    services: [
+                    serviceResults: [
                         { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
                     ]
                 };
@@ -293,7 +293,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
-                    services: [
+                    serviceResults: [
                         { feature: parserServiceFeature, tryFallback: true, message: 'testFallback' } as any,
                     ]
                 };
@@ -301,7 +301,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: false,
-                    services: [
+                    serviceResults: [
                         { feature: parserServiceFeature, message: 'testFallback', counter: 0 } as any,
                     ]
                 };
@@ -323,7 +323,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
-                    services: [
+                    serviceResults: [
                         { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]
                 };
@@ -339,7 +339,7 @@ describe('AnalysisResultsHelper', () => {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
-                    services: [
+                    serviceResults: [
                         { feature: formatterServiceFeature, message: 'testFormatter', counter: 0 } as any,
                         { feature: identifierServiceFeature, message: 'testIdentifier', counter: 0 } as any,
                     ]

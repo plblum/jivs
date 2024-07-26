@@ -296,7 +296,7 @@ class LookupKeyResultExplorer extends CAExplorerBase<LookupKeyCAResult>
     }
 
     public children(): Array<CAResultBase> {
-        return this.result.services ?? [];
+        return this.result.serviceResults ?? [];
     }
 }
 

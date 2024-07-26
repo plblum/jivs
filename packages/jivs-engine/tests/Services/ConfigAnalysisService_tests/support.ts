@@ -212,7 +212,7 @@ export function checkLookupKeyResultsForService(lookupKeyResults: Array<LookupKe
 export function checkLookupKeyResultForService(lkResult: LookupKeyCAResult,
     serviceName: ServiceName): ServiceWithLookupKeyCAResultBase {
 
-    let serviceInfo = lkResult!.services.find(si => si.feature === serviceName);
+    let serviceInfo = lkResult!.serviceResults.find(si => si.feature === serviceName);
     expect(serviceInfo).toBeDefined();
     expect(serviceInfo!.feature).toBe(serviceName);
     return serviceInfo!;
@@ -222,7 +222,7 @@ export function checkLookupKeyResultsForNoService(lookupKeyResults: Array<Lookup
 
     let lkResult = checkLookupKeyResults(lookupKeyResults, lookupKey);
 
-    let serviceInfo = lkResult!.services.find(si => si.feature === serviceName);
+    let serviceInfo = lkResult!.serviceResults.find(si => si.feature === serviceName);
     expect(serviceInfo).toBeUndefined();
 }
 
@@ -230,7 +230,7 @@ export function checkLookupKeyResultsForMultiClassRetrievalService(lookupKeyResu
     serviceName: ServiceName,
     expectedRequestCount: number = 0): MultiClassRetrieval {
 
-    let serviceInfo = lookupKeyResult.services.find(si => si.feature === serviceName) as MultiClassRetrieval;
+    let serviceInfo = lookupKeyResult.serviceResults.find(si => si.feature === serviceName) as MultiClassRetrieval;
 
     expect(serviceInfo).toBeDefined();
     expect(serviceInfo!.feature).toBe(serviceName);   

@@ -556,7 +556,7 @@ export interface LookupKeyCAResult extends CAResultBase {
     /**
      * Services in use associated with the lookup key like parser, formatter, etc.
      */
-    services: Array<ServiceWithLookupKeyCAResultBase>;
+    serviceResults: Array<ServiceWithLookupKeyCAResultBase>;
 }
 
 export const dataTypeFeature = 'DataType';
@@ -578,10 +578,9 @@ export interface ServiceWithLookupKeyCAResultBase extends CAResultBase
 }
 
 /**
- * A class requested from the services/factories or 
- * error details when the class was not found.
+ * For services that retrieve a class, so they can report that class and any issues.
  */
-export interface ClassRetrievalBase extends IssueForCAResultBase
+export interface ClassRetrieval // extends IssueForCAResultBase
 { 
     /**
      * The class Type found to handle the request, such as "BooleanParser", 
@@ -602,7 +601,8 @@ export interface ClassRetrievalBase extends IssueForCAResultBase
 }
 
 /**
- * For Retrieval objects where the class may not be found.
+ * For CAResultBase objects where the class may not be found.
+ * Use this to extend CAResult interfaces that may fail to find a class.
  */
 export interface ClassNotFound extends IssueForCAResultBase { 
     /**
@@ -616,7 +616,7 @@ export interface ClassNotFound extends IssueForCAResultBase {
  */
 export interface OneClassRetrieval extends
     ServiceWithLookupKeyCAResultBase,
-    ClassRetrievalBase,
+    ClassRetrieval,
     ClassNotFound{ 
 } 
 
@@ -624,7 +624,7 @@ export interface OneClassRetrieval extends
  * For services that have child result classes, this is a base class
  * that offers classRetrieval and error messages.
  */
-export interface ServiceChildResultBase extends ClassRetrievalBase, CAResultBase,
+export interface ServiceChildResultBase extends ClassRetrieval, CAResultBase,
     IssueForCAResultBase {
 }
 
@@ -663,7 +663,7 @@ export interface ComparerServiceClassRetrieval extends OneClassRetrieval {
  * reports an error.
  */
 export interface MultiClassRetrieval extends ServiceWithLookupKeyCAResultBase, ClassNotFound {
-    requests: Array<ClassRetrievalBase>;
+    requests: Array<CAResultBase>;
 }
 /**
  * For services that return a class to handle the request, but have to support cultures.
@@ -864,7 +864,7 @@ export const conditionFeature = 'Condition';
 /**
  * Issues found with the condition itself.
  */
-export interface ConditionConfigResults extends ConfigResults<ConditionConfig>, ClassRetrievalBase {
+export interface ConditionConfigResults extends ConfigResults<ConditionConfig>, ClassRetrieval {
     feature: 'Condition';   // use conditionFeature const
     conditionType: string;
 }

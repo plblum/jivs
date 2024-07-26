@@ -415,7 +415,7 @@ describe('ValueHostConfigAnalyzer', () => {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
-                    services: []
+                    serviceResults: []
                 }
             ]);
 

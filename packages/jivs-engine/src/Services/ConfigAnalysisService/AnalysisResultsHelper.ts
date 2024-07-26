@@ -116,18 +116,18 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
                     feature: lookupKeyFeature,
                     lookupKey: lookupKey,
                     usedAsDataType: serviceName === null || serviceName === ServiceName.identifier,
-                    services: []
+                    serviceResults: []
                 };
                 this.results.lookupKeyResults.push(lk);
             }
         };
         if (serviceName) {
-            let si = lk.services.find(si => si.feature === serviceName);
+            let si = lk.serviceResults.find(si => si.feature === serviceName);
             if (!si) {
                 let analyzer = this.lookupKeyAnalyzers.get(serviceName);
                 if (analyzer) {
                     si = analyzer.analyze(lookupKey, valueHostConfig);
-                    lk.services.push(si);
+                    lk.serviceResults.push(si);
 
                     if (si.tryFallback) {
                         let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
@@ -247,7 +247,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         let lk = this.results.lookupKeyResults.find(lk => lk.lookupKey === lookupKey)!;
         if (serviceName) {
         // expect this find() to always return a match due to the earlier call to registerLookupKey
-            let serviceInfo = lk.services.find(si => si.feature === serviceName)!;
+            let serviceInfo = lk.serviceResults.find(si => si.feature === serviceName)!;
             if (serviceInfo.tryFallback) {
                 let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
                 if (fallbackLookupKey)
