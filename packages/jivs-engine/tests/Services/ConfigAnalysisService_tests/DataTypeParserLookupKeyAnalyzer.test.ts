@@ -7,7 +7,7 @@ import { createAnalysisArgs } from "./support";
 import { IDataTypeParser } from '../../../src/Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../../../src/Interfaces/DataTypes';
 import { CultureService } from '../../../src/Services/CultureService';
-import { CAIssueSeverity, IssueForCAResultBase, ParserForCultureClassRetrieval, parserServiceFeature, parserForCultureFeature, ParserServiceClassRetrieval, parserServiceClassRetrievalFeature, ParserServiceByLookupKey } from "../../../src/Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, IssueForCAResultBase, ParsersByCultureCAResult, parserServiceFeature, parsersByCultureFeature, ParserFoundCAResult, ParserServiceCAResult, parserFoundFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 
 const toNumberParserLookupKey = 'toNumber';
 class ToNumberParser implements IDataTypeParser<number> {
@@ -92,33 +92,33 @@ function manyParsers(services: IValidationServices) {
     dtps.register(new ToNumberParser2('2:all', ['en-US', 'en', 'fr']));
     dtps.register(new ToNumberParser3('3:all', ['en-US', 'en', 'fr']));
 }
-function verifyResults(result: ParserServiceByLookupKey,
-    expectedMatchCount: number, expectedTryFallback: boolean | undefined): ParserServiceByLookupKey {
+function verifyResults(result: ParserServiceCAResult,
+    expectedRequestsCount: number, expectedTryFallback: boolean | undefined): ParserServiceCAResult {
     expect(result).toBeDefined();
     expect(result.feature).toBe(parserServiceFeature);
-    expect(result.requests).toBeDefined();
-    expect(result.requests).toHaveLength(expectedMatchCount);
+    expect(result.results).toBeDefined();
+    expect(result.results).toHaveLength(expectedRequestsCount);
     expect(result.tryFallback).toBe(expectedTryFallback);
     return result;
 }
 
-function verifyParserForCultureClassRetrieval(plk: ParserForCultureClassRetrieval,
-    cultureId: string, expectedMatchCount: number,
+function verifyParserForCultureClassRetrieval(plk: ParsersByCultureCAResult,
+    cultureId: string, expectedParsersCount: number,
     expectedErrorMessage?: string, expectedSeverity?: CAIssueSeverity) {
     expect(plk).toBeDefined();
-    expect(plk.feature).toBe(parserForCultureFeature);
+    expect(plk.feature).toBe(parsersByCultureFeature);
     expect(plk.cultureId).toEqual(cultureId);
     expect(plk.severity).toEqual(expectedSeverity);
     expect(plk.message).toEqual(expectedErrorMessage);
-    expect(plk.matches).toHaveLength(expectedMatchCount);
+    expect(plk.parserResults).toHaveLength(expectedParsersCount);
 }
-function verifyParserServiceClassRetrieval(
-    plk: ParserForCultureClassRetrieval,
+function verifyParserFoundCAResult(
+    plk: ParsersByCultureCAResult,
     scmlkIndex: number,
     expectedClassFound: string, expectedInstance: any, expectedCaseIdentifier: string) {
-    let scmlk = plk.matches[scmlkIndex] as ParserServiceClassRetrieval;
+    let scmlk = plk.parserResults[scmlkIndex] as ParserFoundCAResult;
     expect(scmlk).toBeDefined();
-    expect(scmlk.feature).toBe(parserServiceClassRetrievalFeature);
+    expect(scmlk.feature).toBe(parserFoundFeature);
     expect(scmlk.classFound).toEqual(expectedClassFound);
     expect(scmlk.instance).toBeInstanceOf(expectedInstance);
     expect(scmlk.instance.caseIdentifier).toEqual(expectedCaseIdentifier);
@@ -127,7 +127,7 @@ function verifyParserServiceClassRetrieval(
 describe('DataTypeParserLookupKeyAnalyzer', () => {
 
     describe('analyze', () => {
-        test('parserKey is unknown. Returns ParserServiceByLookupKey with \"not found\" error and no requests', () => {
+        test('parserKey is unknown. Returns ParserServiceCAResult with \"not found\" error and no requests', () => {
             let services = createValidationServicesForTesting();
             oneCulture(services);
             let dataTypeLookupKey = LookupKey.Number;
@@ -138,9 +138,9 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
             let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
             let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
-            const result = testItem.analyze('TestKey', valueHostConfig) as ParserServiceByLookupKey;
+            const result = testItem.analyze('TestKey', valueHostConfig) as ParserServiceCAResult;
             verifyResults(result, 1, true);
-            let match = result.requests[0] as ParserForCultureClassRetrieval;
+            let match = result.results[0] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(match, 'en', 0, 'No DataTypeParser for LookupKey "TestKey" with culture "en"', CAIssueSeverity.error);
 
         });
@@ -160,11 +160,11 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
             let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
             let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
-            const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
+            const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceCAResult;
             verifyResults(result, 1, false);
-            let match = result.requests[0] as ParserForCultureClassRetrieval;
+            let match = result.results[0] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(match, 'en', 1);
-            verifyParserServiceClassRetrieval(match, 0, 'ToNumberParser', ToNumberParser, 'en_custom');
+            verifyParserFoundCAResult(match, 0, 'ToNumberParser', ToNumberParser, 'en_custom');
         });
         // same as previous but with 3 cultures available, and all are supported by the same registered Parser
         test('parserKey is known and is unique amongst all registered. Three cultures available. Returns one parser per culture', () => {
@@ -181,17 +181,17 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
             let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
             let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
-            const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
+            const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceCAResult;
             verifyResults(result, 3, false);
-            let plk = result.requests[0] as ParserForCultureClassRetrieval;
+            let plk = result.results[0] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 1);
-            verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
-            plk = result.requests[1] as ParserForCultureClassRetrieval;
+            verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
+            plk = result.results[1] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 1);
-            verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
-            plk = result.requests[2] as ParserForCultureClassRetrieval;
+            verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
+            plk = result.results[2] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(plk, culturesSupported[2], 1);
-            verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
+            verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
 
         });
 
@@ -210,17 +210,17 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
             let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
             let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
-            const result = testItem.analyze(null!, valueHostConfig) as ParserServiceByLookupKey;
+            const result = testItem.analyze(null!, valueHostConfig) as ParserServiceCAResult;
             verifyResults(result, 3, false);
-            let plk = result.requests[0] as ParserForCultureClassRetrieval;
+            let plk = result.results[0] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 1);
-            verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
-            plk = result.requests[1] as ParserForCultureClassRetrieval;
+            verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
+            plk = result.results[1] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 1);
-            verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
-            plk = result.requests[2] as ParserForCultureClassRetrieval;
+            verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
+            plk = result.results[2] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(plk, culturesSupported[2], 1);
-            verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
+            verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'all_custom');
 
         });
 
@@ -246,23 +246,23 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
             let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
             let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
-            const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
+            const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceCAResult;
             verifyResults(result, 3, false);
-            let plk = result.requests[0] as ParserForCultureClassRetrieval;
+            let plk = result.results[0] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 3);
-            verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'case1');
-            verifyParserServiceClassRetrieval(plk, 1, 'ToNumberParser', ToNumberParser, 'case2');
-            verifyParserServiceClassRetrieval(plk, 2, 'ToNumberParser', ToNumberParser, 'case3');
-            plk = result.requests[1] as ParserForCultureClassRetrieval;
+            verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'case1');
+            verifyParserFoundCAResult(plk, 1, 'ToNumberParser', ToNumberParser, 'case2');
+            verifyParserFoundCAResult(plk, 2, 'ToNumberParser', ToNumberParser, 'case3');
+            plk = result.results[1] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 3);
-            verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'case1');
-            verifyParserServiceClassRetrieval(plk, 1, 'ToNumberParser', ToNumberParser, 'case2');
-            verifyParserServiceClassRetrieval(plk, 2, 'ToNumberParser', ToNumberParser, 'case3');
-            plk = result.requests[2] as ParserForCultureClassRetrieval;
+            verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'case1');
+            verifyParserFoundCAResult(plk, 1, 'ToNumberParser', ToNumberParser, 'case2');
+            verifyParserFoundCAResult(plk, 2, 'ToNumberParser', ToNumberParser, 'case3');
+            plk = result.results[2] as ParsersByCultureCAResult;
             verifyParserForCultureClassRetrieval(plk, culturesSupported[2], 3);
-            verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'case1');
-            verifyParserServiceClassRetrieval(plk, 1, 'ToNumberParser', ToNumberParser, 'case2');
-            verifyParserServiceClassRetrieval(plk, 2, 'ToNumberParser', ToNumberParser, 'case3');
+            verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'case1');
+            verifyParserFoundCAResult(plk, 1, 'ToNumberParser', ToNumberParser, 'case2');
+            verifyParserFoundCAResult(plk, 2, 'ToNumberParser', ToNumberParser, 'case3');
         });
     });
     // similar to previous but each case supports one culture and that culture differs from the others
@@ -287,17 +287,17 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
         let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
         let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
-        const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
+        const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceCAResult;
         verifyResults(result, 3, false);
-        let plk = result.requests[0] as ParserForCultureClassRetrieval;
+        let plk = result.results[0] as ParsersByCultureCAResult;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 1);
-        verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'case1');
-        plk = result.requests[1] as ParserForCultureClassRetrieval;
+        verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'case1');
+        plk = result.results[1] as ParsersByCultureCAResult;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 1);
-        verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'case2');
-        plk = result.requests[2] as ParserForCultureClassRetrieval;
+        verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'case2');
+        plk = result.results[2] as ParsersByCultureCAResult;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[2], 1);
-        verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'case3');
+        verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'case3');
     });
 
     // 3 cultures, but no parsers match, resulting in \"no found\" error on each culture
@@ -314,13 +314,13 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
         let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
         let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
-        const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
+        const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceCAResult;
         verifyResults(result, 3, true);
-        let plk = result.requests[0] as ParserForCultureClassRetrieval;
+        let plk = result.results[0] as ParsersByCultureCAResult;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 0, 'No DataTypeParser for LookupKey "unknownParser" with culture "en"', CAIssueSeverity.error);
-        plk = result.requests[1] as ParserForCultureClassRetrieval;
+        plk = result.results[1] as ParsersByCultureCAResult;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 0, 'No DataTypeParser for LookupKey "unknownParser" with culture "en-US"', CAIssueSeverity.error);
-        plk = result.requests[2] as ParserForCultureClassRetrieval;
+        plk = result.results[2] as ParsersByCultureCAResult;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[2], 0, 'No DataTypeParser for LookupKey "unknownParser" with culture "fr"', CAIssueSeverity.error);
     });
     // similar but there is a match for one culture, but not the others
@@ -338,15 +338,15 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
         let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
         let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
-        const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
+        const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceCAResult;
         verifyResults(result, 3, false);
-        let plk = result.requests[0] as ParserForCultureClassRetrieval;
+        let plk = result.results[0] as ParsersByCultureCAResult;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[0], 0, 'No DataTypeParser for LookupKey "uniqueParser" with culture "en"', CAIssueSeverity.error);
-        plk = result.requests[1] as ParserForCultureClassRetrieval;
+        plk = result.results[1] as ParsersByCultureCAResult;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[1], 0, 'No DataTypeParser for LookupKey "uniqueParser" with culture "en-US"', CAIssueSeverity.error);
-        plk = result.requests[2] as ParserForCultureClassRetrieval;
+        plk = result.results[2] as ParsersByCultureCAResult;
         verifyParserForCultureClassRetrieval(plk, culturesSupported[2], 1);
-        verifyParserServiceClassRetrieval(plk, 0, 'ToNumberParser', ToNumberParser, 'fr');
+        verifyParserFoundCAResult(plk, 0, 'ToNumberParser', ToNumberParser, 'fr');
     });
 
     // parser throws an error when isCompatible is called gets caught and reported as an error
@@ -364,9 +364,9 @@ describe('DataTypeParserLookupKeyAnalyzer', () => {
 
         let mockAnalysisArgs = createAnalysisArgs(services, [valueHostConfig]);
         let testItem = new DataTypeParserLookupKeyAnalyzer(mockAnalysisArgs);
-        const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceByLookupKey;
+        const result = testItem.analyze(dataTypeLookupKey, valueHostConfig) as ParserServiceCAResult;
         verifyResults(result, 1, false);
-        let crm = result.requests[0] as IssueForCAResultBase;
+        let crm = result.results[0] as IssueForCAResultBase;
         expect(crm).toBeDefined();
         expect(crm.severity).toEqual(CAIssueSeverity.error);
         expect(crm.message).toBe('ERROR');

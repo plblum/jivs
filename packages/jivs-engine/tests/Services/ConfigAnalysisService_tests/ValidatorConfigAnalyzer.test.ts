@@ -1,20 +1,20 @@
 import {
-    ConditionConfigResults,
-    CAIssueSeverity, IConditionConfigAnalyzer, IValidatorConfigPropertyAnalyzer, ValidatorConfigResults,
+    ConditionConfigCAResult,
+    CAIssueSeverity, IConditionConfigAnalyzer, IValidatorConfigPropertyAnalyzer, ValidatorConfigCAResult,
     conditionFeature,
     validatorFeature
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ValidatorConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ValidatorConfigAnalyzer';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { IValidationServices } from '../../../src/Interfaces/ValidationServices';
-import { createServices, checkConfigPropertyResultsFromArray, createAnalysisArgs, setupHelper, checkLocalizedPropertyResultFromArray } from './support';
+import { createServices, checkPropertyCAResultsFromArray, createAnalysisArgs, setupHelper, checkLocalizedPropertyResultFromArray } from './support';
 import { ValidatorConfig } from '../../../src/Interfaces/Validator';
 import { ValueHostConfig } from '../../../src/Interfaces/ValueHost';
 import { ConditionConfig } from '../../../src/Interfaces/Conditions';
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from '../../../src/Services/ConfigAnalysisService/ValidatorConfigPropertyAnalyzerClasses';
 
 class TestValidatorConfigPropertyAnalyzer implements IValidatorConfigPropertyAnalyzer {
-    public analyze(config: ValidatorConfig, results: ValidatorConfigResults): void {
+    public analyze(config: ValidatorConfig, results: ValidatorConfigCAResult): void {
         this.ranCount++;
     }
     public ranCount: number = 0;
@@ -24,9 +24,9 @@ class TestValidatorConfigPropertyAnalyzer implements IValidatorConfigPropertyAna
  * Mock of ValidatorConfigAnalyzer
  */
 class MockConditionConfigAnalyzer implements IConditionConfigAnalyzer<IValidationServices> {
-    analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigResults[]): ConditionConfigResults {
+    analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigCAResult[]): ConditionConfigCAResult {
         this.ranCount++;
-        return <ConditionConfigResults>{
+        return <ConditionConfigCAResult>{
             feature: conditionFeature,
             conditionType: config.conditionType ?? '[Missing]',
             config: config,
@@ -66,7 +66,7 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
-            expect(results.condition).toBeUndefined();
+            expect(results.conditionResult).toBeUndefined();
             expect(results.errorCode).toBe('TESTEC');
             expect(results.properties).toHaveLength(0);
             expect(results.message).toBeUndefined();
@@ -83,7 +83,7 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
-            expect(results.condition).toBeUndefined();
+            expect(results.conditionResult).toBeUndefined();
             expect(results.errorCode).toBe('[Missing]');
             expect(results.message).toContain('Must supply an error code.');
             expect(results.severity).toBe(CAIssueSeverity.error);
@@ -102,7 +102,7 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
-            expect(results.condition).toBeUndefined();
+            expect(results.conditionResult).toBeUndefined();
             expect(results.errorCode).toBe('[Missing]');
             expect(results.message).toContain('Must supply an error code.');
             expect(results.severity).toBe(CAIssueSeverity.error);
@@ -121,7 +121,7 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
-            expect(results.condition).toBeUndefined();
+            expect(results.conditionResult).toBeUndefined();
             expect(results.errorCode).toBe('[Missing]');
             expect(results.message).toContain('Must supply an error code.');
             expect(results.severity).toBe(CAIssueSeverity.error);
@@ -141,13 +141,13 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
-            expect(results.condition).toBeUndefined();
+            expect(results.conditionResult).toBeUndefined();
             expect(results.errorCode).toBe('TESTEC');
             expect(results.message).toBeUndefined();
             expect(results.severity).toBeUndefined();            
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(results.properties, 0,
+            checkPropertyCAResultsFromArray(results.properties, 0,
                 'errorCode', 'Error code must not contain whitespace.', CAIssueSeverity.error);
         });
         // errorCode is not assigned and conditionConfig has conditionType. results.errorCode is set to conditionType and info message in results.properties
@@ -161,13 +161,13 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
-            expect(results.condition).toBeDefined();
+            expect(results.conditionResult).toBeDefined();
             expect(results.errorCode).toBe('TestCondition');
             expect(results.message).toBeUndefined();
             expect(results.severity).toBeUndefined();            
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(results.properties, 0,
+            checkPropertyCAResultsFromArray(results.properties, 0,
                 'errorCode', 'Using the conditionType "TestCondition"', CAIssueSeverity.info);
         });
         // same with errorCode=null
@@ -182,13 +182,13 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
-            expect(results.condition).toBeDefined();
+            expect(results.conditionResult).toBeDefined();
             expect(results.errorCode).toBe('TestCondition');
             expect(results.message).toBeUndefined();
             expect(results.severity).toBeUndefined();            
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(results.properties, 0,
+            checkPropertyCAResultsFromArray(results.properties, 0,
                 'errorCode', 'Using the conditionType "TestCondition"', CAIssueSeverity.info);
         });
 
@@ -204,13 +204,13 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
-            expect(results.condition).toBeDefined();
+            expect(results.conditionResult).toBeDefined();
             expect(results.errorCode).toBe('TestCondition');
             expect(results.message).toBeUndefined();
             expect(results.severity).toBeUndefined();            
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(results.properties, 0,
+            checkPropertyCAResultsFromArray(results.properties, 0,
                 'errorCode', 'Using the conditionType "TestCondition"', CAIssueSeverity.info);
         });
         // errorCode=undefined, conditionConfig=null, and conditionCreator is assigned to a function. results.errorCode is set to '[Unknown at this time]' and warning in results.properties
@@ -225,13 +225,13 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
             expect(results.config).toBe(testConfig);
             expect(results.feature).toBe(validatorFeature);
-            expect(results.condition).toBeUndefined();
+            expect(results.conditionResult).toBeUndefined();
             expect(results.errorCode).toBe('[Unknown at this time]');
             expect(results.message).toBeUndefined();
             expect(results.severity).toBeUndefined();            
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
             expect(results.properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(results.properties, 0,
+            checkPropertyCAResultsFromArray(results.properties, 0,
                 'errorCode', 'conditionCreator is setup and will supply an error code when used.', CAIssueSeverity.warning);
         });
         // with an invalid validatorType="TEST", because its not in the ValidatorFactory,
@@ -261,7 +261,7 @@ describe('ValidatorConfigAnalyzer', () => {
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
-            let cummulativeResults: Array<ValidatorConfigResults> = [];
+            let cummulativeResults: Array<ValidatorConfigCAResult> = [];
             let results1 = analyzer.analyze(testConfig1, null, cummulativeResults);
             cummulativeResults.push(results1);
             let results2 = analyzer.analyze(testConfig2, null, cummulativeResults);
@@ -277,14 +277,14 @@ describe('ValidatorConfigAnalyzer', () => {
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
-            let cummulativeResults: Array<ValidatorConfigResults> = [];
+            let cummulativeResults: Array<ValidatorConfigCAResult> = [];
             let results1 = analyzer.analyze(testConfig1, null, cummulativeResults);
             cummulativeResults.push(results1);
             let results2 = analyzer.analyze(testConfig2, null, cummulativeResults);
             cummulativeResults.push(results2);
             expect(results1.properties).toHaveLength(0);
             expect(results2.properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(results2.properties, 0,
+            checkPropertyCAResultsFromArray(results2.properties, 0,
                 'errorCode',
                 `Duplicate error code "${testConfig1.errorCode}". All must be unique.`, CAIssueSeverity.error);
         });
@@ -296,14 +296,14 @@ describe('ValidatorConfigAnalyzer', () => {
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
-            let cummulativeResults: Array<ValidatorConfigResults> = [];
+            let cummulativeResults: Array<ValidatorConfigCAResult> = [];
             let results1 = analyzer.analyze(testConfig1, null, cummulativeResults);
             cummulativeResults.push(results1);
             let results2 = analyzer.analyze(testConfig2, null, cummulativeResults);
             cummulativeResults.push(results2);
             expect(results1.properties).toHaveLength(0);
             expect(results2.properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(results2.properties, 0,
+            checkPropertyCAResultsFromArray(results2.properties, 0,
                 'errorCode',
                 `Duplicate error code "${testConfig2.errorCode}". All must be unique.`, CAIssueSeverity.error);
         });
@@ -314,7 +314,7 @@ describe('ValidatorConfigAnalyzer', () => {
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
-            let cummulativeResults: Array<ValidatorConfigResults> = [];
+            let cummulativeResults: Array<ValidatorConfigCAResult> = [];
             let results1 = analyzer.analyze(testConfig1, null, cummulativeResults);
             cummulativeResults.push(results1);
             let results2 = analyzer.analyze(testConfig2, null, cummulativeResults);
@@ -322,10 +322,10 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(results1.properties).toHaveLength(0);
             expect(results2.properties).toHaveLength(2);
             // whitespaceerror in results2.properties[0]
-            checkConfigPropertyResultsFromArray(results2.properties, 0,
+            checkPropertyCAResultsFromArray(results2.properties, 0,
                 'errorCode',
                 `Error code must not contain whitespace.`, CAIssueSeverity.error);
-            checkConfigPropertyResultsFromArray(results2.properties, 1,
+            checkPropertyCAResultsFromArray(results2.properties, 1,
                 'errorCode',
                 `Duplicate error code "TestEC". All must be unique.`, CAIssueSeverity.error);   // whitespace trimmed here
         });
@@ -366,7 +366,7 @@ describe('ValidatorConfigAnalyzer', () => {
             let results = analyzer.analyze(testConfig, null, []);
 
             expect(ranCountOfMockConditionConfigAnalyzer(helper)).toBe(1);
-            expect(results.condition!.conditionType).toBe('TEST');
+            expect(results.conditionResult!.conditionType).toBe('TEST');
         });
 
     });
@@ -446,11 +446,11 @@ describe('ValidatorConfigAnalyzer', () => {
                 1, 'en', '*', undefined, false);
             checkLocalizedPropertyResultFromArray(results.properties, 1, 'summaryMessage',
                 1, 'en', '*', undefined, false);
-            // checkConfigPropertyResultsFromArray(results.properties, 0,
+            // checkPropertyCAResultsFromArray(results.properties, 0,
             //     'errorMessage', 'localization not declared in TextLocalizerService.', CAIssueSeverity.error);
-            // checkConfigPropertyResultsFromArray(results.properties, 1,
+            // checkPropertyCAResultsFromArray(results.properties, 1,
             //     'summaryMessage', 'localization not declared in TextLocalizerService.', CAIssueSeverity.error);
-            checkConfigPropertyResultsFromArray(results.properties, 2,
+            checkPropertyCAResultsFromArray(results.properties, 2,
                 'conditionCreator', 'Cannot supply both conditionCreator', CAIssueSeverity.error);
         });
  

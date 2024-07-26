@@ -6,7 +6,7 @@ import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
-import { ComparerServiceClassRetrieval, ConfigAnalysisServiceOptions, CAIssueSeverity } from "../../src/Interfaces/ConfigAnalysisService";
+import { ComparerServiceCAResult, ConfigAnalysisServiceOptions, CAIssueSeverity } from "../../src/Interfaces/ConfigAnalysisService";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { PropertyValueHostConfig } from "../../src/Interfaces/PropertyValueHost";
@@ -412,7 +412,7 @@ describe('analyze()', () => {
         expect(result).toBeDefined();
         expect(result.results).toBeDefined();
         let si = checkLookupKeyResultsForService(result.results.lookupKeyResults,
-            LookupKey.Number, ServiceName.comparer) as ComparerServiceClassRetrieval;
+            LookupKey.Number, ServiceName.comparer) as ComparerServiceCAResult;
         expect(si).toBeDefined();
         expect(si.severity).toBeUndefined();    // because we resolved the comparer
     });
@@ -440,7 +440,7 @@ describe('analyze()', () => {
         expect(result).toBeDefined();
         expect(result.results).toBeDefined();
         let si = checkLookupKeyResultsForService(result.results.lookupKeyResults,
-            'CustomKey', ServiceName.comparer) as ComparerServiceClassRetrieval;
+            'CustomKey', ServiceName.comparer) as ComparerServiceCAResult;
         expect(si).toBeDefined();
         expect(si.severity).toBe(CAIssueSeverity.warning); 
     });

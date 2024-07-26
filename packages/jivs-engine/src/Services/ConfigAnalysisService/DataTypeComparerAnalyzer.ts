@@ -6,7 +6,7 @@
 import { ConditionType } from "../../Conditions/ConditionTypes";
 import { defaultComparer } from "../../DataTypes/DataTypeComparers";
 import { ConditionCategory, ConditionConfig } from "../../Interfaces/Conditions";
-import { ComparerServiceClassRetrieval, CAIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyCAResult, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ComparerServiceCAResult, CAIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyCAResult, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ComparersResult } from "../../Interfaces/DataTypeComparerService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -31,10 +31,10 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * To qualify, the ConditionConfig must have a category of "Comparison" or
  * the Condition object created from the ConditionConfig must have a category of "Comparison".
  * 
- * When there is a result, it is the ComparerServiceClassRetrieval object.
+ * When there is a result, it is the ComparerServiceCAResult object.
  * When the class is found:
  * ```ts
- * {  // ComparerServiceClassRetrieval
+ * {  // ComparerServiceCAResult
  *      feature: comparerServiceFeature, // = ServiceName.comparer
  *      classFound: 'MyComparer',
  *      instance: comparerInstance,
@@ -43,7 +43,7 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * ```
  * When the defaultComparer function is used:
  * ```ts
- * {  // ComparerServiceClassRetrieval
+ * {  // ComparerServiceCAResult
  *      feature: comparerServiceFeature, // = ServiceName.comparer
  *      classFound: 'defaultComparer',
  *      dataExamples: [sampleValue]
@@ -51,7 +51,7 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * ```
  * When there is an error or warning:
  * ```ts
- * {  // ComparerServiceClassRetrieval
+ * {  // ComparerServiceCAResult
  *      feature: comparerServiceFeature, // = ServiceName.comparer
  *      message: 'error message',
  *      severity: 'error' | 'warning'
@@ -59,7 +59,7 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * ```
  * When the comparer is not found:
  * ```ts
- * {  // ComparerServiceClassRetrieval
+ * {  // ComparerServiceCAResult
  *      feature: comparerServiceFeature, // = ServiceName.comparer
  *      message: 'error message',
  *      severity: 'warning',
@@ -95,10 +95,10 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
      * 
      * @param conditionConfig 
      * @returns When null, no reason to evaluate for the comparer. Otherwise, the same
-     * ComparerServiceClassRetrieval object that was added to the lookupKeyResults.services array.
+     * ComparerServiceCAResult object that was added to the lookupKeyResults.services array.
      */
     public checkConditionConfig(conditionConfig: ConditionConfig, valueHostConfig: ValueHostConfig):
-        ComparerServiceClassRetrieval | null {
+        ComparerServiceCAResult | null {
 // anything to disqualify this condition from the check?
         let cleanCT = cleanString(conditionConfig.conditionType);
         if (!cleanCT)
@@ -121,11 +121,11 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
                 return null;
             lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey)!;
         }
-        let serviceInfo = lookupKeyResult.serviceResults.find(si => si.feature === ServiceName.comparer) as ComparerServiceClassRetrieval;
+        let serviceInfo = lookupKeyResult.serviceResults.find(si => si.feature === ServiceName.comparer) as ComparerServiceCAResult;
         // if we have already found a comparer, we don't need to do anything.
         if (serviceInfo)
             return serviceInfo;
-        let results: ComparerServiceClassRetrieval = {
+        let results: ComparerServiceCAResult = {
             feature: comparerServiceFeature
         };
         // we'll add the remaining fields in the remaining code

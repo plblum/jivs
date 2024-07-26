@@ -1,9 +1,9 @@
 import { ConditionCategoryPropertyAnalyzer, ConditionTypeConfigPropertyAnalyzer, ConditionWithConversionLookupKeyPropertyAnalyzer, ConditionWithSecondValueHostNamePropertyAnalyzer, ConditionWithValueHostNamePropertyAnalyzer } from './../../../src/Services/ConfigAnalysisService/ConditionConfigPropertyAnalyzerClasses';
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import {
-    AnalysisArgs, ConfigAnalysisServiceOptions, CAIssueSeverity, ConfigPropertyResult,
+    AnalysisArgs, ConfigAnalysisServiceOptions, CAIssueSeverity, PropertyCAResult,
     IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer,
-    IConfigAnalysisResults, IConfigAnalysisResultsExplorer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer, ServiceWithLookupKeyCAResultBase, ValidatorConfigResults, ValueHostConfigResults, converterServiceFeature, identifierServiceFeature, lookupKeyFeature, valueHostFeature
+    IConfigAnalysisResults, IConfigAnalysisResultsExplorer, IValidatorConfigPropertyAnalyzer, IValueHostConfigPropertyAnalyzer, ServiceWithLookupKeyCAResultBase, ValidatorConfigCAResult, ValueHostConfigCAResult, converterServiceFeature, identifierServiceFeature, lookupKeyFeature, valueHostFeature
 } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IDataTypeIdentifier } from "../../../src/Interfaces/DataTypeIdentifier";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
@@ -288,12 +288,12 @@ describe('ConfigAnalysisServiceBase class', () => {
         // populate through registerValueHostConfigPropertyAnalyzers
         // and demonstrate they matchin valueHostConfigPropertyAnalyzers
         class Test1ValueHostConfigPropertyAnalyzerBase extends ValueHostConfigPropertyAnalyzerBase {
-            public analyze(config: ValueHostConfig, results: ValueHostConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+            public analyze(config: ValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
                 throw new Error("Method not implemented.");
             }
         }
         class Test2ValueHostConfigPropertyAnalyzerBase extends ValueHostConfigPropertyAnalyzerBase {
-            public analyze(config: ValueHostConfig, results: ValueHostConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+            public analyze(config: ValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
                 throw new Error("Method not implemented.");
             }
         }
@@ -310,13 +310,13 @@ describe('ConfigAnalysisServiceBase class', () => {
         // populate through registerValidatorConfigPropertyAnalyzers
         // and demonstrate they matchin validatorConfigPropertyAnalyzers
         class Test1ValidatorConfigPropertyAnalyzerBase implements IValidatorConfigPropertyAnalyzer {
-            analyze(config: ValidatorConfig, results: ValidatorConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+            analyze(config: ValidatorConfig, results: ValidatorConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
                 throw new Error("Method not implemented.");
             }
 
         }
         class Test2ValidatorConfigPropertyAnalyzerBase implements IValidatorConfigPropertyAnalyzer {
-            analyze(config: ValidatorConfig, results: ValidatorConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+            analyze(config: ValidatorConfig, results: ValidatorConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
                 throw new Error("Method not implemented.");
             }
 
@@ -582,8 +582,8 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
         checkLookupKeyResultsForService(results.lookupKeyResults, LookupKey.Number, ServiceName.identifier);
         checkLookupKeyResultsForService(results.lookupKeyResults, LookupKey.String, ServiceName.identifier);
         expect(results.valueHostResults).toHaveLength(2);
-        let vhcConfigResults1 = results.valueHostResults[0] as ValueHostConfigResults;
-        let vhcConfigResults2 = results.valueHostResults[1] as ValueHostConfigResults;
+        let vhcConfigResults1 = results.valueHostResults[0] as ValueHostConfigCAResult;
+        let vhcConfigResults2 = results.valueHostResults[1] as ValueHostConfigCAResult;
         expect(vhcConfigResults1).toBeDefined();
         expect(vhcConfigResults2).toBeDefined();
         expect(vhcConfigResults1.valueHostName).toEqual('testValueHost1');
@@ -740,30 +740,30 @@ describe('ValidationManagerConfigAnalysisService', () => {
         checkLookupKeyResultsForNoService(results.lookupKeyResults, LookupKey.String, ServiceName.parser);
 
         expect(results.valueHostResults).toHaveLength(2);
-        let vhcConfigResults1 = results.valueHostResults[0] as ValueHostConfigResults;
-        let vhcConfigResults2 = results.valueHostResults[1] as ValueHostConfigResults;
+        let vhcConfigResults1 = results.valueHostResults[0] as ValueHostConfigCAResult;
+        let vhcConfigResults2 = results.valueHostResults[1] as ValueHostConfigCAResult;
         expect(vhcConfigResults1).toBeDefined();
         expect(vhcConfigResults2).toBeDefined();
         // focus on the first ValueHostConfig.
         // It should have 2 ValidatorConfigs
         expect(vhcConfigResults1.valueHostName).toEqual('testValueHost1');
         expect(vhcConfigResults1.severity).toBeUndefined();
-        expect(vhcConfigResults1.validators).toHaveLength(2);
-        let validatorConfigResults1 = vhcConfigResults1.validators![0];
-        let validatorConfigResults2 = vhcConfigResults1.validators![1];
+        expect(vhcConfigResults1.validatorResults).toHaveLength(2);
+        let validatorConfigResults1 = vhcConfigResults1.validatorResults![0];
+        let validatorConfigResults2 = vhcConfigResults1.validatorResults![1];
         expect(validatorConfigResults1).toBeDefined();
         expect(validatorConfigResults2).toBeDefined();
         expect(validatorConfigResults1.errorCode).toBe(ConditionType.RequireText);
         expect(validatorConfigResults2.errorCode).toBe(ConditionType.LessThan);
-        expect(validatorConfigResults1.condition).toBeDefined();
-        expect(validatorConfigResults2.condition).toBeDefined();
-        expect(validatorConfigResults1.condition!.conditionType).toEqual(ConditionType.RequireText);
-        expect(validatorConfigResults2.condition!.conditionType).toEqual(ConditionType.LessThan);
+        expect(validatorConfigResults1.conditionResult).toBeDefined();
+        expect(validatorConfigResults2.conditionResult).toBeDefined();
+        expect(validatorConfigResults1.conditionResult!.conditionType).toEqual(ConditionType.RequireText);
+        expect(validatorConfigResults2.conditionResult!.conditionType).toEqual(ConditionType.LessThan);
 
         expect(validatorConfigResults1.properties).toHaveLength(1); // info message about using ConditionType for ErrorCode
         expect(validatorConfigResults2.properties).toHaveLength(1); // info message about using ConditionType for ErrorCode
-        let prop1 = validatorConfigResults1.properties[0] as ConfigPropertyResult;
-        let prop2 = validatorConfigResults2.properties[0] as ConfigPropertyResult;
+        let prop1 = validatorConfigResults1.properties[0] as PropertyCAResult;
+        let prop2 = validatorConfigResults2.properties[0] as PropertyCAResult;
         expect(prop1.severity).toBe(CAIssueSeverity.info);
         expect(prop2.severity).toBe(CAIssueSeverity.info);
         expect(prop1.message).toMatch(/conditionType/);
@@ -775,14 +775,14 @@ describe('ValidationManagerConfigAnalysisService', () => {
         // It should have 1 ValidatorConfig
         expect(vhcConfigResults2.valueHostName).toEqual('testValueHost2');
         expect(vhcConfigResults2.severity).toBeUndefined();
-        expect(vhcConfigResults2.validators).toHaveLength(1);
-        let validatorConfigResults3 = vhcConfigResults2.validators![0];
+        expect(vhcConfigResults2.validatorResults).toHaveLength(1);
+        let validatorConfigResults3 = vhcConfigResults2.validatorResults![0];
         expect(validatorConfigResults3).toBeDefined();
         expect(validatorConfigResults3.errorCode).toBe(ConditionType.RegExp);
-        expect(validatorConfigResults3.condition).toBeDefined();
-        expect(validatorConfigResults3.condition!.conditionType).toEqual(ConditionType.RegExp);
+        expect(validatorConfigResults3.conditionResult).toBeDefined();
+        expect(validatorConfigResults3.conditionResult!.conditionType).toEqual(ConditionType.RegExp);
         expect(validatorConfigResults3.properties).toHaveLength(1); // info message about using ConditionType for ErrorCode
-        let prop3 = validatorConfigResults3.properties[0] as ConfigPropertyResult;
+        let prop3 = validatorConfigResults3.properties[0] as PropertyCAResult;
         expect(prop3.severity).toBe(CAIssueSeverity.info);
         expect(prop3.message).toMatch(/conditionType/);
         expect(prop3.propertyName).toEqual('errorCode');

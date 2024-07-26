@@ -5,12 +5,12 @@
 
 import { LookupKey } from "../../DataTypes/LookupKeys";
 import {
-    IConfigAnalysisResults, LookupKeyCAResult, ILookupKeyAnalyzer, ConfigPropertyResult,
+    IConfigAnalysisResults, LookupKeyCAResult, ILookupKeyAnalyzer, PropertyCAResult,
     CAIssueSeverity,
-    LocalizedPropertyResult,
+    LocalizedPropertyCAResult,
     LocalizedTextResult, AnalysisArgs,
     IAnalysisResultsHelper,
-    ConfigErrorResult,
+    ErrorCAResult,
     ClassNotFound,
     lookupKeyFeature,
     propertyNameFeature,
@@ -201,12 +201,12 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
  * - LookupKey is not found and not registered in DataTypeIdentifierService or even the LookupKey enum,
  *   reports an info message. "Lookup key "[lookupKey]" is unknown."
  * 
- * All errors are added into the ConfigPropertyResult object that is added to the properties parameter.
+ * All errors are added into the PropertyCAResult object that is added to the properties parameter.
  * 
  * @param propertyName - The name of the property being checked.
  * @param lookupKey - The lookup key to be checked.
  * @param serviceName - The service name to be checked. Use nullfor a dataType LookupKey.
- * @param properties - Add the ConfigPropertyResult object to this array.
+ * @param properties - Add the PropertyCAResult object to this array.
  * @param containingValueHostConfig - The ValueHostConfig that contains the property being checked.
  * The property may be found on a child config object like ValidatorConfig or ConditionConfig.
  * @param className - The name of the class that is registered with the service to handle the lookup key,
@@ -215,7 +215,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
  */
     public checkLookupKeyProperty(propertyName: string, lookupKey: string | null | undefined,
         serviceName: ServiceName | null, containingValueHostConfig: ValueHostConfig,
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+        properties: Array<PropertyCAResult | ErrorCAResult>,
         className?: string, servicePropertyName?: string): void {
         let originalLK = lookupKey;
         let revisedLK = this.registerLookupKey(lookupKey, serviceName, containingValueHostConfig);
@@ -237,7 +237,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             }
         }
         if (lookupKey !== originalLK) {
-            this.addConfigPropertyResult(propertyName, CAIssueSeverity.error,
+            this.addPropertyCAResult(propertyName, CAIssueSeverity.error,
                 `Value is not an exact match to the expected value of "${lookupKey}". Fix it.`, properties);
 
             return;
@@ -251,7 +251,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             if (serviceInfo.tryFallback) {
                 let fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
                 if (fallbackLookupKey)
-                    this.addConfigPropertyResult(propertyName, CAIssueSeverity.warning,
+                    this.addPropertyCAResult(propertyName, CAIssueSeverity.warning,
                         `Lookup key "${lookupKey}" does not have a ${className} registered but it will also try the Lookup Key "${fallbackLookupKey}".`, properties);
                 else
                     notFound = true;
@@ -261,12 +261,12 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         }
         else {
             if (!knownLK)
-                this.addConfigPropertyResult(propertyName, CAIssueSeverity.info,
+                this.addPropertyCAResult(propertyName, CAIssueSeverity.info,
                     `Lookup key "${lookupKey}" is unknown. That may be OK, but consider whether it should be registered in the LookupKeyFallbackService or DataTypeIdentifierService.`, properties);
             return;            
         }
         if (notFound)
-            this.addConfigPropertyResult(propertyName, CAIssueSeverity.error,
+            this.addPropertyCAResult(propertyName, CAIssueSeverity.error,
                 `Not found. Please register a ${className} to ${servicePropertyName}.`, properties);         
     }
 
@@ -284,9 +284,9 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      */
     public checkLocalization(propertyNamePrefix: string, l10nKey: string | null | undefined,
         fallbackText: string | null | undefined,
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>): void {
+        properties: Array<PropertyCAResult | ErrorCAResult>): void {
         if (l10nKey) {
-            let info: LocalizedPropertyResult = {
+            let info: LocalizedPropertyCAResult = {
                 feature: l10nPropertiesFeature,
                 propertyName: propertyNamePrefix,
                 l10nPropertyName: propertyNamePrefix + 'l10n',
@@ -333,7 +333,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     public checkMessageTokens(message: string | null | undefined | ((validator: IValidator) => string),
         vc: ValidatorConfig, vhc: ValueHostConfig,
         propertyName: string,
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>): void {
+        properties: Array<PropertyCAResult | ErrorCAResult>): void {
         if (message == null)
             return;
         if (typeof message === 'function')
@@ -351,7 +351,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
                 }
             }
             else {
-                this.addConfigPropertyResult(propertyName, CAIssueSeverity.error,
+                this.addPropertyCAResult(propertyName, CAIssueSeverity.error,
                     `Syntax error in: ${message}. Token "${match}" is not valid.`, properties);
             }
 
@@ -407,7 +407,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @param properties 
      * @returns 
      */
-    public checkValueHostNameExists(valueHostName: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>): void {
+    public checkValueHostNameExists(valueHostName: any, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>): void {
         if (valueHostName == null)  // null or undefined. Use other helper functions prior to calling this one
             return;
         
@@ -429,14 +429,14 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             }
             else
                 msg = 'ValueHostName does not exist';
-            this.addConfigPropertyResult(propertyName, CAIssueSeverity.error, msg, properties);
+            this.addPropertyCAResult(propertyName, CAIssueSeverity.error, msg, properties);
         }
     }
 
 
     /**
      * Evaluates the value and adds any issues to the properties array
-     * as a ConfigPropertyResult object.
+     * as a PropertyCAResult object.
      * Takes no action when undefined, null, or a trimmed empty string.
      * Call other helper functions to check for these conditions.
      * 
@@ -460,7 +460,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     public checkValuePropertyContents(value: any, propertyName: string,
         valueLookupKey: string | null | undefined,
         conversionLookupKey: string | null | undefined, 
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>): void {
+        properties: Array<PropertyCAResult | ErrorCAResult>): void {
 
         if (value == null)  // null or undefined - use other helper functions to report errors on these
             return;
@@ -482,24 +482,24 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
             let dtcResult = this.services.dataTypeConverterService.convertUntilResult(
                 value, valueLookupKey ?? null, conversionLookupKey);
             if (!dtcResult.resolvedValue) {
-                this.addConfigPropertyResult(propertyName, CAIssueSeverity.error,
+                this.addPropertyCAResult(propertyName, CAIssueSeverity.error,
                     `Value cannot be converted to Lookup Key "${conversionLookupKey}"`, properties);
             }
         }
         else if (!valueLookupKey) {
-            this.addConfigPropertyResult(propertyName, CAIssueSeverity.info,
+            this.addPropertyCAResult(propertyName, CAIssueSeverity.info,
                 'Value could not be validated', properties);
         }
     }
 
     /**
-     * Creates a prepared ConfigPropertyResult object with the given parameters.
+     * Creates a prepared PropertyCAResult object with the given parameters.
      * @param propertyName 
      * @param severity 
      * @param errorMessage 
      */
-    public createConfigPropertyResult(propertyName: string, severity: CAIssueSeverity,
-        errorMessage: string): ConfigPropertyResult {
+    public createPropertyCAResult(propertyName: string, severity: CAIssueSeverity,
+        errorMessage: string): PropertyCAResult {
         return {
             feature: propertyNameFeature,
             propertyName: propertyName,
@@ -508,22 +508,22 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         };
     }
     /**
-     * Creates a prepared ConfigErrorResult object with the given parameters
+     * Creates a prepared ErrorCAResult object with the given parameters
      * and adds it to properties.
      * @param propertyName 
      * @param severity 
      * @param errorMessage 
      * @param properties 
      */
-    public addConfigPropertyResult(propertyName: string, severity: CAIssueSeverity,
-        errorMessage: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>): void {
-        properties.push(this.createConfigPropertyResult(propertyName, severity, errorMessage));
+    public addPropertyCAResult(propertyName: string, severity: CAIssueSeverity,
+        errorMessage: string, properties: Array<PropertyCAResult | ErrorCAResult>): void {
+        properties.push(this.createPropertyCAResult(propertyName, severity, errorMessage));
     }
     /**
      * Reports a 'Value must be defined.' error when the value is undefined.
      * Helper to use within PropertyAnalyzers. Call before using the value 
      * in a function that fails if value is undefined.
-     * Will add a ConfigPropertyResult object to the properties array
+     * Will add a PropertyCAResult object to the properties array
      * if an issue is found.
      * @param value 
      * @param propertyName 
@@ -533,11 +533,11 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * When false, stop execution. The value was undefined.
      */
     public checkIsNotUndefined(value: any, propertyName: string,
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+        properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value === undefined) {
-            properties.push(this.createConfigPropertyResult(propertyName, severity, 'Value must be defined.'));
+            properties.push(this.createPropertyCAResult(propertyName, severity, 'Value must be defined.'));
             return false;
         }
         return true;
@@ -548,7 +548,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * ("Value should not be null") when the value is null.
      * Helper to use within PropertyAnalyzers. Call before using the value 
      * in a function that fails if value is null.
-     * Will add a ConfigPropertyResult object to the properties array
+     * Will add a PropertyCAResult object to the properties array
      * if an issue is found.
      * @param value 
      * @param propertyName 
@@ -557,13 +557,13 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @returns when true, continue execution. The value can be further analyzed.
      * When false, stop execution. The value was null.
      */
-    public checkIsNotNull(value: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+    public checkIsNotNull(value: any, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value === null) {
             let result = severity === CAIssueSeverity.error ?
-                this.createConfigPropertyResult(propertyName, severity, 'Value must not be null.') :
-                this.createConfigPropertyResult(propertyName, severity, 'Value should not be null.');
+                this.createPropertyCAResult(propertyName, severity, 'Value must not be null.') :
+                this.createPropertyCAResult(propertyName, severity, 'Value should not be null.');
             properties.push(result);
             return false;
         }
@@ -574,7 +574,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * Reports an error when the value is not a string.
      * Helper to use within PropertyAnalyzers. Call before using the value
      * in a function that fails if value is not a string.
-     * Will add a ConfigPropertyResult object to the properties array
+     * Will add a PropertyCAResult object to the properties array
      * if an issue is found.
      * @param value
      * @param propertyName
@@ -583,11 +583,11 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @returns when true, continue execution. The value can be further analyzed.
      * When false, stop execution. The value was not a string.
      */
-    public checkIsString(value: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+    public checkIsString(value: any, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (typeof value !== 'string') {
-            properties.push(this.createConfigPropertyResult(propertyName, severity, 'Must be a string.'));
+            properties.push(this.createPropertyCAResult(propertyName, severity, 'Must be a string.'));
             return false;
         }
         return true;
@@ -598,7 +598,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     * warning ("Value should not be an empty string") when the value is an empty string, after trimming.
     * Helper to use within PropertyAnalyzers. Call before using the value
     * in a function that fails if value is an empty string.
-    * Will add a ConfigPropertyResult object to the properties array
+    * Will add a PropertyCAResult object to the properties array
     * if an issue is found.
     * @param value
     * @param propertyName
@@ -607,13 +607,13 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     * @returns when true, continue execution. The value can be further analyzed.
     * When false, stop execution. The value was an empty string.
     */
-    public checkIsNotEmptyString(value: string, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+    public checkIsNotEmptyString(value: string, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value.trim().length === 0) {
             let result = severity === CAIssueSeverity.error ?
-                this.createConfigPropertyResult(propertyName, severity, 'Value must not be empty string.') :
-                this.createConfigPropertyResult(propertyName, severity, 'Value should not be empty string.');
+                this.createPropertyCAResult(propertyName, severity, 'Value must not be empty string.') :
+                this.createPropertyCAResult(propertyName, severity, 'Value should not be empty string.');
             properties.push(result);
             return false;
         }
@@ -624,7 +624,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * Reports an error when the value is a string that has enclosing whitespace.
      * Helper to use within PropertyAnalyzers. Call before using the value
      * in a function that fails if value has enclosing whitespace.
-     * Will add a ConfigPropertyResult object to the properties array
+     * Will add a PropertyCAResult object to the properties array
      * if an issue is found.
      * @param value 
      * @param propertyName 
@@ -633,11 +633,11 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @returns when true, continue execution. The value can be further analyzed.
      * When false, stop execution. The value was a string with enclosing whitespace.
      */
-    public checkNeedsTrimming(value: string, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+    public checkNeedsTrimming(value: string, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity = CAIssueSeverity.error): boolean
     {
         if (value.trim() !== value) {
-            properties.push(this.createConfigPropertyResult(propertyName, severity, 'Remove whitespace.'));
+            properties.push(this.createPropertyCAResult(propertyName, severity, 'Remove whitespace.'));
             return false;
         }
         return true;

@@ -7,7 +7,7 @@ import { CompareToSecondValueHostConditionBaseConfig } from "../../Conditions/Co
 import { ConditionWithChildrenBaseConfig } from "../../Conditions/ConditionWithChildrenBase";
 import { ConditionWithOneChildBaseConfig } from "../../Conditions/ConditionWithOneChildBase";
 import { ConditionCategory, ConditionConfig, SupportsDataTypeConverter } from "../../Interfaces/Conditions";
-import { ConditionConfigResults, ConditionConfigWithChildrenResults, CAIssueSeverity, IAnalysisResultsHelper } from "../../Interfaces/ConfigAnalysisService";
+import { ConditionConfigCAResult, ConditionConfigWithChildrenResults, CAIssueSeverity, IAnalysisResultsHelper } from "../../Interfaces/ConfigAnalysisService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { cleanString, findCaseInsensitiveValueInStringEnum, isPlainObject } from "../../Utilities/Utilities";
@@ -26,7 +26,7 @@ import { ConditionType } from '../../Conditions/ConditionTypes';
  * and the user doesn't need additional instructions.
  */
 export abstract class ConditionConfigPropertyAnalyzerBase extends
-    ConfigPropertyAnalyzerBase<ConditionConfig, ConditionConfigResults> {
+    ConfigPropertyAnalyzerBase<ConditionConfig, ConditionConfigCAResult> {
 
 }
 
@@ -35,7 +35,7 @@ export abstract class ConditionConfigPropertyAnalyzerBase extends
  * They are associated with a lookup key into the DataTypeConverter service.
  */
 export class ConditionWithConversionLookupKeyPropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
-    public analyze(config: ConditionConfig, results: ConditionConfigResults,
+    public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
         valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
         // The typecasts here cover all the possible conditions
         // Our goal is to ensure that the compiler is checking the property names
@@ -69,12 +69,12 @@ export class ConditionTypeConfigPropertyAnalyzer extends ConditionConfigProperty
      * @param valueHostConfig - The value host configuration.
      * @param helper - The analysis result helper.
      */
-    public analyze(config: ConditionConfig, results: ConditionConfigResults,
+    public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
         valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
 
         let ct = cleanString(config.conditionType);
         if (!ct) {
-            helper.addConfigPropertyResult(
+            helper.addPropertyCAResult(
                 'conditionType', CAIssueSeverity.error,
                 'conditionType must be assigned.', results.properties);
             return;
@@ -85,12 +85,12 @@ export class ConditionTypeConfigPropertyAnalyzer extends ConditionConfigProperty
         );
         let realCT = helper.services.conditionFactory.findRealName(ct);
         if (realCT === null) {
-            helper.addConfigPropertyResult(
+            helper.addPropertyCAResult(
                 'conditionType', CAIssueSeverity.error,
                 `The condition type is not found in the ConditionFactory.`, results.properties);
         }
         else if (realCT !== ct) {
-            helper.addConfigPropertyResult(
+            helper.addPropertyCAResult(
                 // use info because case insensitive match is supported
                 'conditionType', CAIssueSeverity.info,
                 `Change to ${realCT}.`, results.properties);
@@ -103,7 +103,7 @@ export class ConditionTypeConfigPropertyAnalyzer extends ConditionConfigProperty
  * When present, provide an info message about it overridding the default.
  */
 export class ConditionCategoryPropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
-    public analyze(config: ConditionConfig, results: ConditionConfigResults,
+    public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
         valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
         if (config.category) {
             // category is an enum, but when getting a value from JSON, it could be a string with a typo
@@ -114,17 +114,17 @@ export class ConditionCategoryPropertyAnalyzer extends ConditionConfigPropertyAn
             if (category) {
                 let ciCategory = findCaseInsensitiveValueInStringEnum(category, ConditionCategory);
                 if (ciCategory === undefined) {
-                    helper.addConfigPropertyResult(
+                    helper.addPropertyCAResult(
                         'category', CAIssueSeverity.error,
                         'The category property is not recognized.', results.properties);
                 }
                 else if (category !== ciCategory) {
-                    helper.addConfigPropertyResult(
+                    helper.addPropertyCAResult(
                         'category', CAIssueSeverity.info,
                         `Change to ${ciCategory}.`, results.properties);
                 }
                 else {
-                    helper.addConfigPropertyResult(
+                    helper.addPropertyCAResult(
                         'category', CAIssueSeverity.info,
                         'The category property is present. It will override the default category.', results.properties);
                 }
@@ -140,7 +140,7 @@ export class ConditionCategoryPropertyAnalyzer extends ConditionConfigPropertyAn
  * Warning if the property is present but has no children.
  */
 export class ConditionWithChildrenPropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
-    public analyze(config: ConditionConfig, results: ConditionConfigResults,
+    public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
         valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
         let container = config as ConditionWithChildrenBaseConfig;
         if (container.conditionConfigs === undefined)
@@ -149,18 +149,18 @@ export class ConditionWithChildrenPropertyAnalyzer extends ConditionConfigProper
         if (container.conditionConfigs === null ||
             !Array.isArray(container.conditionConfigs) ||
             container.conditionConfigs.length === 0)
-            helper.addConfigPropertyResult(
+            helper.addPropertyCAResult(
                 'conditionConfigs', CAIssueSeverity.error,
                 'Must be an array with at least one condition', results.properties);
         else {
             let chdConfigResults = results as ConditionConfigWithChildrenResults;
-            if (!chdConfigResults.children)
-                chdConfigResults.children = [];
+            if (!chdConfigResults.childrenResults)
+                chdConfigResults.childrenResults = [];
             if (helper.analysisArgs.conditionConfigAnalyzer)
                 for (let childConfig of container.conditionConfigs) {
                     let childResults = helper.analysisArgs.conditionConfigAnalyzer.analyze(childConfig, valueHostConfig, []);
                     if (childResults)
-                        chdConfigResults.children.push(childResults);
+                        chdConfigResults.childrenResults.push(childResults);
                 }
         }
 
@@ -174,24 +174,24 @@ export class ConditionWithChildrenPropertyAnalyzer extends ConditionConfigProper
  * If a ConditionConfig object, analyze it with ConditionConfigAnalyzer.
  */
 export class ConditionWithOneChildPropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
-    public analyze(config: ConditionConfig, results: ConditionConfigResults,
+    public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
         valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
         let container = config as ConditionWithOneChildBaseConfig;
         if (container.childConditionConfig === undefined)
             return; // we don't know if the actual config is really a ConditionWithChildrenBaseConfig.
 
         if (!isPlainObject(container.childConditionConfig)) // including null
-            helper.addConfigPropertyResult('childConditionConfig', CAIssueSeverity.error, 
+            helper.addPropertyCAResult('childConditionConfig', CAIssueSeverity.error, 
                 'Must be a condition object', results.properties)
         
         else {
             let chdConfigResults = results as ConditionConfigWithChildrenResults;
-            if (!chdConfigResults.children)
-                chdConfigResults.children = [];
+            if (!chdConfigResults.childrenResults)
+                chdConfigResults.childrenResults = [];
             if (helper.analysisArgs.conditionConfigAnalyzer) {
                 let childResults = helper.analysisArgs.conditionConfigAnalyzer.analyze(container.childConditionConfig, valueHostConfig, []);
                 if (childResults)
-                    chdConfigResults.children.push(childResults);
+                    chdConfigResults.childrenResults.push(childResults);
             }
         }
 
@@ -205,7 +205,7 @@ export class ConditionWithOneChildPropertyAnalyzer extends ConditionConfigProper
  * with an exact match. Report error if whitespace or case insensitive match.
  */
 export class ConditionWithValueHostNamePropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
-    public analyze(config: ConditionConfig, results: ConditionConfigResults,
+    public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
         valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
         let valueHostName = (config as any).valueHostName;
         helper.checkValueHostNameExists(valueHostName, 'valueHostName', results.properties);
@@ -221,7 +221,7 @@ export class ConditionWithValueHostNamePropertyAnalyzer extends ConditionConfigP
  * with an exact match. Report error if whitespace or case insensitive match.
  */
 export class ConditionWithSecondValueHostNamePropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
-    public analyze(config: ConditionConfig, results: ConditionConfigResults,
+    public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
         valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
         let secondValueHostName = (config as any).secondValueHostName;
         if (secondValueHostName === undefined &&
@@ -265,7 +265,7 @@ export class ConditionWithSecondValueHostNamePropertyAnalyzer extends ConditionC
  * and an info message that the value could not be verified is added.
  */
 export class ConditionWithSecondValuePropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
-    public analyze(config: ConditionConfig, results: ConditionConfigResults,
+    public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
         valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
         let secondValue = (config as any).secondValue;
         let secondConversionLookupKey = (config as any).secondConversionLookupKey;

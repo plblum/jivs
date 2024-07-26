@@ -4,7 +4,7 @@ import { createValidationServicesForTesting, registerAllConditions } from "../..
 import { ComparersResult } from "../../../src/Interfaces/DataTypeComparerService";
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
 import { ConditionCategory, ConditionConfig } from '../../../src/Interfaces/Conditions';
-import { CAIssueSeverity, ComparerServiceClassRetrieval } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAIssueSeverity, ComparerServiceCAResult } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ValueHostConfig } from '../../../src/Interfaces/ValueHost';
 import { DataTypeComparerAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeComparerAnalyzer';
 import { setupHelper } from './support';
@@ -77,9 +77,9 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             valueHostConfig: ValueHostConfig,
             expectedLookupKey: string,
             expectedResult: boolean,
-            existingServiceInfo?: ComparerServiceClassRetrieval | null,
+            existingServiceInfo?: ComparerServiceCAResult | null,
             supportCustomComparer: boolean = true,
-            supportCustomIdentifier: boolean = true): ComparerServiceClassRetrieval | null {
+            supportCustomIdentifier: boolean = true): ComparerServiceCAResult | null {
             let services = setupServices();
             registerAllConditions(services.conditionFactory);
             if (supportCustomComparer)
@@ -347,7 +347,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 supportCustomComparer: boolean = true,
                 supportCustomIdentifier: boolean = true,
                 fallbackLookupKey?: string
-            ): ComparerServiceClassRetrieval | null {
+            ): ComparerServiceCAResult | null {
                 let services = setupServices();
                 registerAllConditions(services.conditionFactory);
                 if (supportCustomComparer)
@@ -364,7 +364,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 if (existingService)// prior line created LKI without the service
                 { // now we'll emulate the ServiceWithLookupKeyCAResultBase having the comparer service
                     let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
-                    let serviceInfo: ComparerServiceClassRetrieval = {
+                    let serviceInfo: ComparerServiceCAResult = {
                         feature: ServiceName.comparer,
                     };
                     lkResult!.serviceResults.push(serviceInfo);

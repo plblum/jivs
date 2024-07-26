@@ -1,9 +1,9 @@
-import { CAIssueSeverity, ConfigResults, IConfigPropertyAnalyzer, propertyNameFeature } from "../../../src/Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, ConfigObjectCAResultsBase, IConfigPropertyAnalyzer, propertyNameFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper";
 import { ConfigAnalyzerBase } from "../../../src/Services/ConfigAnalysisService/ConfigAnalyzerBase";
-import { createServices, checkConfigPropertyResultsFromArray, createAnalysisArgs, setupHelper } from "./support";
+import { createServices, checkPropertyCAResultsFromArray, createAnalysisArgs, setupHelper } from "./support";
 
 // generate a Publicify_ConfigAnalyzerBase class from ConfigAnalyzerBase
 class Publicify_ConfigAnalyzerBase extends ConfigAnalyzerBase<TestConfig, TestConfigResults, IValidationServices> {
@@ -57,7 +57,7 @@ interface TestConfig {
     type: string;
     count: number;
 }
-interface TestConfigResults extends ConfigResults<TestConfig> {
+interface TestConfigResults extends ConfigObjectCAResultsBase<TestConfig> {
     feature: 'Test';
 }
 
@@ -113,7 +113,7 @@ describe('Publicify_ConfigAnalyzerBase', () => {
         cummulativeResults.push(results1);
         let results2 = analyzer.analyze(testConfig2, null, cummulativeResults);
         expect(results2.properties).toHaveLength(1);
-        checkConfigPropertyResultsFromArray(results2.properties, 0,
+        checkPropertyCAResultsFromArray(results2.properties, 0,
             'name', 'Must be unique.', CAIssueSeverity.error);
 
         expect(results2.config).toBe(testConfig2);
@@ -122,8 +122,8 @@ describe('Publicify_ConfigAnalyzerBase', () => {
         expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(2);
     });
 
-    // when a ConfigAnalyzer throws an error, it is caught and a ConfigErrorResult is added to the results
-    test('When a ConfigAnalyzer throws an error, it is caught and a ConfigErrorResult is added to the results', () => {
+    // when a ConfigAnalyzer throws an error, it is caught and a ErrorCAResult is added to the results
+    test('When a ConfigAnalyzer throws an error, it is caught and a ErrorCAResult is added to the results', () => {
         class ExceptionConfigPropertyAnalyzer implements IConfigPropertyAnalyzer<TestConfig, TestConfigResults> {
             public analyze(config: TestConfig, results: TestConfigResults): void {
                 throw new Error('TEST ERROR');

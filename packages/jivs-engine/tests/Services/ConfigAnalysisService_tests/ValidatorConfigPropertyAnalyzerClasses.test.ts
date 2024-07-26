@@ -1,13 +1,13 @@
 import { NumberFormatter } from "../../../src/DataTypes/DataTypeFormatters";
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
-import { ConfigPropertyResult, CAIssueSeverity, LocalizedPropertyResult, ValidatorConfigResults, IConfigAnalysisResults, validatorFeature, formatterForCultureFeature } from "../../../src/Interfaces/ConfigAnalysisService";
+import { PropertyCAResult, CAIssueSeverity, LocalizedPropertyCAResult, ValidatorConfigCAResult, IConfigAnalysisResults, validatorFeature, formattersByCultureFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValidatorConfig } from "../../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig } from "../../../src/Interfaces/ValidatorsValueHostBase";
 import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper";
 import { DataTypeFormatterLookupKeyAnalyzer } from "../../../src/Services/ConfigAnalysisService/DataTypeFormatterLookupKeyAnalyzer";
 import { DataTypeFormatterService } from "../../../src/Services/DataTypeFormatterService";
-import { checkConfigPropertyResultsFromArray, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, checkLocalizedPropertyResultFromArray, checkLookupKeyResults, checkLookupKeyResultsForMultiClassRetrievalService, checkSyntaxError, createServices, setupHelper } from "./support";
+import { checkPropertyCAResultsFromArray, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, checkLocalizedPropertyResultFromArray, checkLookupKeyResults, checkLookupKeyResultsForMultiClassRetrievalService, checkSyntaxError, createServices, setupHelper } from "./support";
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from "../../../src/Services/ConfigAnalysisService/ValidatorConfigPropertyAnalyzerClasses";
 
 function createServicesForTheseTests(addCultures: Array<string> = ['en']): IValidationServices {
@@ -26,7 +26,7 @@ function setupHelperForTheseTests(services: IValidationServices): AnalysisResult
     );    
     return helper;
 }        
-function createValidatorConfigResults(): ValidatorConfigResults {
+function createValidatorConfigResults(): ValidatorConfigCAResult {
     let vc: ValidatorConfig = {
         conditionConfig: { conditionType: 'Test' }
     };                
@@ -50,7 +50,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
     function executeFunction(services: IValidationServices,
         validatorConfig: Partial<ValidatorConfig>): {
             argResults: IConfigAnalysisResults,
-            vcResults: ValidatorConfigResults
+            vcResults: ValidatorConfigCAResult
         }
     {
         let helper = setupHelperForTheseTests(services);
@@ -84,7 +84,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
-                    serviceInfo, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+                    serviceInfo, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
                 
             });
             // token has a custom lookup key that has no compatible Formatter reports Not found error
@@ -99,16 +99,16 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
-                    serviceInfo, formatterForCultureFeature, 'en');
+                    serviceInfo, formattersByCultureFeature, 'en');
             });
 
-            test('invalid token results in adding to ValidatorConfigResults.properties', () => {
+            test('invalid token results in adding to ValidatorConfigCAResult.properties', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { errorMessage: '{Token:LookupKey' });
                 expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(1);
-                let prop = results.vcResults.properties[0] as ConfigPropertyResult;
+                let prop = results.vcResults.properties[0] as PropertyCAResult;
                 checkSyntaxError(prop, 'errorMessage');
             });
 
@@ -118,7 +118,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
 
                 let results = executeFunction(services, { errorMessage: () => 'This is a test message' });
                 expect(results.vcResults.properties).toHaveLength(1);
-                let prop = results.vcResults.properties[0] as ConfigPropertyResult;
+                let prop = results.vcResults.properties[0] as PropertyCAResult;
                 expect(prop.severity).toBe(CAIssueSeverity.info);
                 expect(prop.message).toBe('The errorMessage property is a function. It will not be analyzed.');
             });
@@ -128,7 +128,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
 
                 let results = executeFunction(services, { summaryMessage: () => 'This is a test message' });
                 expect(results.vcResults.properties).toHaveLength(1);
-                let prop = results.vcResults.properties[0] as ConfigPropertyResult;
+                let prop = results.vcResults.properties[0] as PropertyCAResult;
                 expect(prop.severity).toBe(CAIssueSeverity.info);
                 expect(prop.message).toBe('The summaryMessage property is a function. It will not be analyzed.');
             });
@@ -161,7 +161,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
-                    serviceInfo, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+                    serviceInfo, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
 
             });
             // token has a custom lookup key that has no compatible Formatter reports Not found error
@@ -175,15 +175,15 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
-                    serviceInfo, formatterForCultureFeature, 'en');
+                    serviceInfo, formattersByCultureFeature, 'en');
             });
-            test('invalid token results in adding to ValidatorConfigResults.properties', () => {
+            test('invalid token results in adding to ValidatorConfigCAResult.properties', () => {
                 let services = createServicesForTheseTests();
    
                 let results = executeFunction(services, { summaryMessage: '{Token:LookupKey' });
                 expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(1);
-                let prop = results.vcResults.properties[0] as ConfigPropertyResult;
+                let prop = results.vcResults.properties[0] as PropertyCAResult;
                 checkSyntaxError(prop, 'summaryMessage');
 
             });
@@ -245,7 +245,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
-                    serviceInfo, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+                    serviceInfo, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'errorMessage', 1, 'en', 'en', '{Token:Number}', undefined);
             });
@@ -264,11 +264,11 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
-                    serviceInfo, formatterForCultureFeature, 'en');
+                    serviceInfo, formattersByCultureFeature, 'en');
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'errorMessage', 1, 'en', 'en', '{Token:Custom}', undefined);                
             });
-            test('invalid token results in adding to ValidatorConfigResults.properties', () => {
+            test('invalid token results in adding to ValidatorConfigCAResult.properties', () => {
                 let services = createServicesForTheseTests();
                 let helper = setupHelperForTheseTests(services);
                 services.textLocalizerService.register('l10nKey',
@@ -277,7 +277,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let results = executeFunction(services, { errorMessagel10n: 'l10nKey' });
                 expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(2);
-                let prop = results.vcResults.properties[0] as ConfigPropertyResult;
+                let prop = results.vcResults.properties[0] as PropertyCAResult;
                 checkSyntaxError(prop, 'errorMessagel10n');
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 1, 'errorMessage', 1, 'en', 'en', '{Token:Bad', undefined);                
@@ -338,7 +338,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
-                    serviceInfo, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+                    serviceInfo, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'summaryMessage', 1, 'en', 'en', '{Token:Number}', undefined);                   
             });
@@ -355,11 +355,11 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
                     lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
-                    serviceInfo, formatterForCultureFeature, 'en');
+                    serviceInfo, formattersByCultureFeature, 'en');
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'summaryMessage', 1, 'en', 'en', '{Token:Custom}', undefined);                   
             });
-            test('invalid token results in adding to ValidatorConfigResults.properties', () => {
+            test('invalid token results in adding to ValidatorConfigCAResult.properties', () => {
                 let services = createServicesForTheseTests();
                 services.textLocalizerService.register('l10nKey',
                     { en: '{Token:Bad' });
@@ -367,14 +367,14 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let results = executeFunction(services, { summaryMessagel10n: 'l10nKey' });
                 expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(2);
-                let prop = results.vcResults.properties[0] as ConfigPropertyResult;
+                let prop = results.vcResults.properties[0] as PropertyCAResult;
                 checkSyntaxError(prop, 'summaryMessagel10n');
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 1, 'summaryMessage', 1, 'en', 'en', '{Token:Bad', undefined);                   
             });
         });
-        describe('localization results in LocalizedPropertyResult objects', () => {
-            // these use helper.checkLocalization to check LocalizedPropertyResult objects.
+        describe('localization results in LocalizedPropertyCAResult objects', () => {
+            // these use helper.checkLocalization to check LocalizedPropertyCAResult objects.
             // It uses multiple cultures.
             // It has TextLocalizerService with supporting messages reflecting the
             // messages for multiple cultures.
@@ -399,7 +399,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
 
                 let results = executeFunction(services, { errorMessagel10n: 'eml10nKey', summaryMessagel10n: 'seml10nKey' });
                 expect(results.vcResults.properties).toHaveLength(2);
-                let prop = results.vcResults.properties[0] as LocalizedPropertyResult;
+                let prop = results.vcResults.properties[0] as LocalizedPropertyCAResult;
                 checkLocalizedPropertyResultFromArray(results.vcResults.properties, 0, 'errorMessage',
                     3, 'en', 'en', 'This is a test message', undefined);
                 checkLocalizedPropertyResultFromArray(results.vcResults.properties, 0, 'errorMessage',
@@ -422,7 +422,7 @@ describe('ConditionCreatorConfigPropertyAnalyzer class', () => {
     function executeFunction(services: IValidationServices,
         validatorConfig: Partial<ValidatorConfig>): {
             argResults: IConfigAnalysisResults,
-            vcResults: ValidatorConfigResults
+            vcResults: ValidatorConfigCAResult
         }
     {
         let helper = setupHelperForTheseTests(services);
@@ -451,7 +451,7 @@ describe('ConditionCreatorConfigPropertyAnalyzer class', () => {
             conditionConfig: { conditionType: 'Test' }
         });
         expect(results.vcResults.properties).toHaveLength(1);
-        checkConfigPropertyResultsFromArray(results.vcResults.properties, 0,
+        checkPropertyCAResultsFromArray(results.vcResults.properties, 0,
             'conditionCreator', 
             'Cannot supply both conditionCreator and conditionConfig',
             CAIssueSeverity.error);
@@ -465,7 +465,7 @@ describe('ConditionCreatorConfigPropertyAnalyzer class', () => {
             conditionConfig: null!
          });
         expect(results.vcResults.properties).toHaveLength(1);
-        checkConfigPropertyResultsFromArray(results.vcResults.properties, 0,
+        checkPropertyCAResultsFromArray(results.vcResults.properties, 0,
             'conditionCreator', 
             'Must be a function.',
             CAIssueSeverity.error);

@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { ValueHostConfigResults, IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer, ConfigPropertyResult, CAIssueSeverity, propertyNameFeature, valueHostFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ValueHostConfigCAResult, IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer, PropertyCAResult, CAIssueSeverity, propertyNameFeature, valueHostFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ValidatorsValueHostBaseConfig } from "../../Interfaces/ValidatorsValueHostBase";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
@@ -19,7 +19,7 @@ import { ConfigAnalyzerBase } from "./ConfigAnalyzerBase";
  * - Each condition class may have its own tests, although many are generalized in this class.
  */
 export class ValueHostConfigAnalyzer<TServices extends IValueHostsServices>
-    extends ConfigAnalyzerBase<ValueHostConfig, ValueHostConfigResults, IValueHostsServices>
+    extends ConfigAnalyzerBase<ValueHostConfig, ValueHostConfigCAResult, IValueHostsServices>
 implements IValueHostConfigAnalyzer<TServices> {
 
     constructor(helper: AnalysisResultsHelper<TServices>,
@@ -27,8 +27,8 @@ implements IValueHostConfigAnalyzer<TServices> {
     ) {
         super(helper, conditionConfigPropertyAnalyzers);
     }
-    protected initResults(config: ValueHostConfig): ValueHostConfigResults {
-        let result: ValueHostConfigResults = {
+    protected initResults(config: ValueHostConfig): ValueHostConfigCAResult {
+        let result: ValueHostConfigCAResult = {
             feature: valueHostFeature,
             valueHostName: cleanString(config.name) ?? '',
             properties: [],
@@ -39,7 +39,7 @@ implements IValueHostConfigAnalyzer<TServices> {
         return result;
         
     }    
-    protected checkForValiability(config: ValueHostConfig, results: ValueHostConfigResults): boolean {
+    protected checkForValiability(config: ValueHostConfig, results: ValueHostConfigCAResult): boolean {
         if (results.valueHostName === '[Missing]') {
             results.message = 'The ValueHostConfig name is missing. It is required.';
             results.severity = CAIssueSeverity.error;
@@ -53,14 +53,14 @@ implements IValueHostConfigAnalyzer<TServices> {
      * @param results 
      * @param existingResults 
      */
-    protected checkForDuplicates(config: ValueHostConfig, results: ValueHostConfigResults, existingResults: ValueHostConfigResults[]): void {
+    protected checkForDuplicates(config: ValueHostConfig, results: ValueHostConfigCAResult, existingResults: ValueHostConfigCAResult[]): void {
         // look for duplicate names using case insensitive match
         if (results.valueHostName !== '[Missing]') {
             let lc = results.valueHostName.toLowerCase();
             let duplicate = existingResults.find(vhc => vhc.valueHostName.toLowerCase() === lc);
 
             if (duplicate) {
-                results.properties.push(<ConfigPropertyResult>{
+                results.properties.push(<PropertyCAResult>{
                     feature: propertyNameFeature,
                     propertyName: 'valueHostName',
                     severity: CAIssueSeverity.error,
@@ -70,18 +70,18 @@ implements IValueHostConfigAnalyzer<TServices> {
         }
     }
 
-    protected checkChildConfigs(config: ValueHostConfig, valueHostConfig: ValueHostConfig | null, results: ValueHostConfigResults): void {
+    protected checkChildConfigs(config: ValueHostConfig, valueHostConfig: ValueHostConfig | null, results: ValueHostConfigCAResult): void {
         let valValueHostConfig = config as ValidatorsValueHostBaseConfig;
         if (valValueHostConfig.validatorConfigs) {
-            results.validators = [];
+            results.validatorResults = [];
             for (let validatorConfig of valValueHostConfig.validatorConfigs) {
                 let childResults = this.helper.analysisArgs.validatorConfigAnalyzer!.analyze(
-                    validatorConfig, valValueHostConfig, results.validators);
-                results.validators.push(childResults);
+                    validatorConfig, valValueHostConfig, results.validatorResults);
+                results.validatorResults.push(childResults);
             }
         }
         if (config.enablerConfig && this.helper.analysisArgs.conditionConfigAnalyzer) {
-            results.enablerCondition = this.helper.analysisArgs.conditionConfigAnalyzer.analyze(
+            results.enablerConditionResult = this.helper.analysisArgs.conditionConfigAnalyzer.analyze(
                 config.enablerConfig, valueHostConfig ?? config, []);
         }        
     }

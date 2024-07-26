@@ -4,8 +4,8 @@
  */
 
 import {
-    ValidatorConfigResults, IValidatorConfigAnalyzer, IValidatorConfigPropertyAnalyzer,
-    ConfigPropertyResult, CAIssueSeverity,
+    ValidatorConfigCAResult, IValidatorConfigAnalyzer, IValidatorConfigPropertyAnalyzer,
+    PropertyCAResult, CAIssueSeverity,
     propertyNameFeature,
     validatorFeature
 } from "../../Interfaces/ConfigAnalysisService";
@@ -17,13 +17,13 @@ import { ConfigAnalyzerBase } from "./ConfigAnalyzerBase";
 import { IValidationServices } from '../../Interfaces/ValidationServices';
 
 /**
- * Analyzes a ValidatorConfig object, with results in a ValidatorConfigResults object.
- * Determines the value of ValidatorConfigResults.errorCode before analyzing all properties.
+ * Analyzes a ValidatorConfig object, with results in a ValidatorConfigCAResult object.
+ * Determines the value of ValidatorConfigCAResult.errorCode before analyzing all properties.
  * Invalid errorcodes are shown as messages in that property.
- * Requires no duplicates of error codes amongst all ValidatorConfigResults objects.
+ * Requires no duplicates of error codes amongst all ValidatorConfigCAResult objects.
  */
 export class ValidatorConfigAnalyzer
-    extends ConfigAnalyzerBase<ValidatorConfig, ValidatorConfigResults, IValidationServices>
+    extends ConfigAnalyzerBase<ValidatorConfig, ValidatorConfigCAResult, IValidationServices>
     implements IValidatorConfigAnalyzer {
 
     constructor(helper: AnalysisResultsHelper<IValidationServices>,
@@ -31,8 +31,8 @@ export class ValidatorConfigAnalyzer
     ) {
         super(helper, validatorConfigPropertyAnalyzers);
     }
-    protected initResults(config: ValidatorConfig): ValidatorConfigResults {
-        let vcResults: ValidatorConfigResults = {
+    protected initResults(config: ValidatorConfig): ValidatorConfigCAResult {
+        let vcResults: ValidatorConfigCAResult = {
             feature: validatorFeature,
             errorCode: null!,   // will be assigned in resolveErrorCode
             config: config,
@@ -64,11 +64,11 @@ export class ValidatorConfigAnalyzer
      * Finally, the error code is syntax checked. It must not contain any strings
      * and must have a min length of 1.
      * @param config - The ValidatorConfig object to analyze.
-     * @param vcResults - The ValidatorConfigResults object to populate with analysis results.
+     * @param vcResults - The ValidatorConfigCAResult object to populate with analysis results.
      */
     protected resolveErrorCode(config: ValidatorConfig,
-        vcResults: ValidatorConfigResults): void {
-        let propResult: ConfigPropertyResult = {
+        vcResults: ValidatorConfigCAResult): void {
+        let propResult: PropertyCAResult = {
             feature: propertyNameFeature,
             propertyName: 'errorCode',
             severity: undefined!,
@@ -116,7 +116,7 @@ export class ValidatorConfigAnalyzer
  * @param results 
  * @returns 
  */
-    protected checkForValiability(config: ValidatorConfig, results: ValidatorConfigResults): boolean {
+    protected checkForValiability(config: ValidatorConfig, results: ValidatorConfigCAResult): boolean {
         //NOTE: Depends on call to resolveErrorCode to set results.errorCode, which occurs in initResults
 
         if (results.errorCode === '[Missing]')
@@ -132,22 +132,22 @@ export class ValidatorConfigAnalyzer
     }
 
     /**
-     * Duplicates are based on the resolved errorCode in ValidatorConfigResults.
+     * Duplicates are based on the resolved errorCode in ValidatorConfigCAResult.
      * If there is a duplicate, it is an error that gets reported
      * in the results.properties array.
      * 
      * Finally, the error code is syntax checked. It must not contain any strings
      * and must have a min length of 1.
      * @param config - The ValidatorConfig object to analyze.
-     * @param results - The ValidatorConfigResults object to populate with analysis results.
-     * @param existingResults - The existing ValidatorConfigResults objects to check for duplicates.
+     * @param results - The ValidatorConfigCAResult object to populate with analysis results.
+     * @param existingResults - The existing ValidatorConfigCAResult objects to check for duplicates.
      */
-    protected checkForDuplicates(config: ValidatorConfig, results: ValidatorConfigResults, existingResults: ValidatorConfigResults[]): void {
+    protected checkForDuplicates(config: ValidatorConfig, results: ValidatorConfigCAResult, existingResults: ValidatorConfigCAResult[]): void {
         if (results.errorCode[0] !== '[') {
             let lcEC = results.errorCode.toLowerCase().trim();
             if (existingResults.find(vr => (vr !== results) &&
                 vr.errorCode.toLowerCase() === lcEC)) {
-                let propResult: ConfigPropertyResult = {
+                let propResult: PropertyCAResult = {
                     feature: propertyNameFeature,
                     propertyName: 'errorCode',
                     severity: CAIssueSeverity.error,
@@ -165,9 +165,9 @@ export class ValidatorConfigAnalyzer
      * @param valueHostConfig 
      * @param results 
      */
-    protected checkChildConfigs(config: ValidatorConfig, valueHostConfig: ValueHostConfig | null, results: ValidatorConfigResults): void {
+    protected checkChildConfigs(config: ValidatorConfig, valueHostConfig: ValueHostConfig | null, results: ValidatorConfigCAResult): void {
         if (config.conditionConfig && this.helper.analysisArgs.conditionConfigAnalyzer) {
-            results.condition = this.helper.analysisArgs.conditionConfigAnalyzer.analyze(config.conditionConfig, valueHostConfig, []);
+            results.conditionResult = this.helper.analysisArgs.conditionConfigAnalyzer.analyze(config.conditionConfig, valueHostConfig, []);
         }
     }
 

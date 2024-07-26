@@ -1,12 +1,12 @@
 import {
-    ConditionConfigResults,
+    ConditionConfigCAResult,
     CAIssueSeverity, IAnalysisResultsHelper, IConditionConfigPropertyAnalyzer,
     conditionFeature
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { ConditionConfigAnalyzer } from '../../../src/Services/ConfigAnalysisService/ConditionConfigAnalyzer';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
-import { createServices, checkConfigPropertyResultsFromArray, setupHelper, MockAnalyzer } from './support';
+import { createServices, checkPropertyCAResultsFromArray, setupHelper, MockAnalyzer } from './support';
 import { ValueHostConfig } from '../../../src/Interfaces/ValueHost';
 import { ConditionCategory, ConditionConfig } from '../../../src/Interfaces/Conditions';
 import { EqualToCondition, EqualToConditionConfig } from '../../../src/Conditions/ConcreteConditions';
@@ -17,7 +17,7 @@ import { AlwaysMatchesCondition } from '../../TestSupport/conditionsForTesting';
 import { DataTypeComparerAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeComparerAnalyzer';
 
 class TestConditionConfigPropertyAnalyzer implements IConditionConfigPropertyAnalyzer {
-    analyze(config: ConditionConfig, results: ConditionConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+    analyze(config: ConditionConfig, results: ConditionConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
         this.ranCount++;
     }
 
@@ -228,15 +228,15 @@ describe('ConditionConfigAnalyzer', () => {
             ];
             const analyzer = new ConditionConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testConfig, vhc, []);
-            checkConfigPropertyResultsFromArray(results.properties, 0,
+            checkPropertyCAResultsFromArray(results.properties, 0,
                 'conditionType', 'Change to TestCondition', CAIssueSeverity.info);
-            checkConfigPropertyResultsFromArray(results.properties, 1,
+            checkPropertyCAResultsFromArray(results.properties, 1,
                 'category', 'The category property is present', CAIssueSeverity.info);
-            checkConfigPropertyResultsFromArray(results.properties, 2,
+            checkPropertyCAResultsFromArray(results.properties, 2,
                 'valueHostName', 'ValueHostName does not exist', CAIssueSeverity.error);
-            checkConfigPropertyResultsFromArray(results.properties, 3,
+            checkPropertyCAResultsFromArray(results.properties, 3,
                 'secondValueHostName', 'ValueHostName does not exist', CAIssueSeverity.error);
-            checkConfigPropertyResultsFromArray(results.properties, 4,
+            checkPropertyCAResultsFromArray(results.properties, 4,
                 'secondConversionLookupKey', 'Value is not an exact match', CAIssueSeverity.error);
         });
  

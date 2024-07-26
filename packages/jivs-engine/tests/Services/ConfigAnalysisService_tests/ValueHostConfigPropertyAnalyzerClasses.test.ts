@@ -1,6 +1,6 @@
 import { LookupKey } from "../../../src/DataTypes/LookupKeys";
 import { CalcValueHostConfig } from "../../../src/Interfaces/CalcValueHost";
-import { CAIssueSeverity, LocalizedPropertyResult, ValueHostConfigResults, valueHostFeature } from "../../../src/Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, LocalizedPropertyCAResult, ValueHostConfigCAResult, valueHostFeature } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
 import { ValueHostType } from "../../../src/Interfaces/ValueHostFactory";
@@ -8,7 +8,7 @@ import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisServi
 
 import {
     checkValueHostConfigResults,
-    checkConfigPropertyResultsFromArray, checkLookupKeyIssue, checkLocalizedPropertyResult, createServices,
+    checkPropertyCAResultsFromArray, checkLookupKeyIssue, checkLocalizedPropertyResult, createServices,
     setupHelper,
     checkLookupKeyResultsForService,
     checkServiceInfoForCultureSpecificParserRetrieval
@@ -30,12 +30,12 @@ import { DataTypeParserLookupKeyAnalyzer } from "../../../src/Services/ConfigAna
 function setupForTheseTests(services: IValidationServices,
     config: ValueHostConfig): {
     helper: AnalysisResultsHelper<IValidationServices>
-    results: ValueHostConfigResults
+    results: ValueHostConfigCAResult
     } {
         
     let helper = setupHelper(services);
     // this should emulate the ValueHostConfigAnalyzer.analyze() function's creation of the results
-    let results: ValueHostConfigResults = {
+    let results: ValueHostConfigCAResult = {
         feature: valueHostFeature,
         config: config,
         valueHostName: config.name,
@@ -57,7 +57,7 @@ describe('ValueHostTypePropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
 
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostType',
+        checkPropertyCAResultsFromArray(setup.results.properties, 0, 'valueHostType',
             'not recognized by the ValueHostFactory', CAIssueSeverity.error);
     });
     //  valueHostType is unknown adds a configIssue on valueHostType field
@@ -74,7 +74,7 @@ describe('ValueHostTypePropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
 
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostType',
+        checkPropertyCAResultsFromArray(setup.results.properties, 0, 'valueHostType',
             'not recognized by the ValueHostFactory', CAIssueSeverity.error);
     });
     // no error for ValueHostType.Calc
@@ -171,7 +171,7 @@ describe('ValueHostNamePropertyAnalyzer class', () => {
         let testItem = new ValueHostNamePropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, ' testValueHost ');
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostName',
+        checkPropertyCAResultsFromArray(setup.results.properties, 0, 'valueHostName',
             'leading or trailing whitespace', CAIssueSeverity.error);
     });
     // valueHostName is null is a configIssue
@@ -186,7 +186,7 @@ describe('ValueHostNamePropertyAnalyzer class', () => {
         let setup = setupForTheseTests(services, testValueHostConfig);
         let testItem = new ValueHostNamePropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostName',
+        checkPropertyCAResultsFromArray(setup.results.properties, 0, 'valueHostName',
             'no name assigned', CAIssueSeverity.error);
     });
     // valueHostName is empty string is a configIssue
@@ -202,7 +202,7 @@ describe('ValueHostNamePropertyAnalyzer class', () => {
         let testItem = new ValueHostNamePropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
 
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostName',
+        checkPropertyCAResultsFromArray(setup.results.properties, 0, 'valueHostName',
             'no name assigned', CAIssueSeverity.error);
     });
     // valueHostName is whitespace is a configIssue
@@ -217,7 +217,7 @@ describe('ValueHostNamePropertyAnalyzer class', () => {
         let setup = setupForTheseTests(services, testValueHostConfig);
         let testItem = new ValueHostNamePropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'valueHostName',
+        checkPropertyCAResultsFromArray(setup.results.properties, 0, 'valueHostName',
             'no name assigned', CAIssueSeverity.error);
     });
 
@@ -238,7 +238,7 @@ describe('DataTypePropertyAnalyzer class', () => {
             let testItem = new DataTypePropertyAnalyzer();
             testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
             checkValueHostConfigResults(setup.results, 'testValueHost');
-            checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'dataType',
+            checkPropertyCAResultsFromArray(setup.results.properties, 0, 'dataType',
                 'No dataType assigned', CAIssueSeverity.info);
 
         });
@@ -256,7 +256,7 @@ describe('DataTypePropertyAnalyzer class', () => {
             testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
             checkValueHostConfigResults(setup.results, 'testValueHost');
 
-            checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'dataType',
+            checkPropertyCAResultsFromArray(setup.results.properties, 0, 'dataType',
                 'Lookup key "custom" is unknown', CAIssueSeverity.info);
             checkLookupKeyIssue(setup.helper.results, 0, 'custom', 'not already known');
         });
@@ -310,8 +310,8 @@ describe('LabelPropertiesAnalyzer class', () => {
         let testItem = new LabelPropertiesAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        let pi = checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'label',
-            undefined, undefined) as LocalizedPropertyResult;
+        let pi = checkPropertyCAResultsFromArray(setup.results.properties, 0, 'label',
+            undefined, undefined) as LocalizedPropertyCAResult;
         checkLocalizedPropertyResult(pi, 'label', 1, 'en', 'en', undefined, true);
     });
     // same with 3 cultures, all reporting the same severity/message
@@ -329,8 +329,8 @@ describe('LabelPropertiesAnalyzer class', () => {
         let testItem = new LabelPropertiesAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        let pi = checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'label',
-            undefined, undefined) as LocalizedPropertyResult;
+        let pi = checkPropertyCAResultsFromArray(setup.results.properties, 0, 'label',
+            undefined, undefined) as LocalizedPropertyCAResult;
         checkLocalizedPropertyResult(pi, 'label', 3, 'en', 'en', undefined, true);
         checkLocalizedPropertyResult(pi, 'label', 3, 'es', 'es', undefined, true);
         checkLocalizedPropertyResult(pi, 'label', 3, 'fr', 'fr', undefined, true);
@@ -350,8 +350,8 @@ describe('LabelPropertiesAnalyzer class', () => {
         let testItem = new LabelPropertiesAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        let pi = checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'label',
-            undefined, undefined) as LocalizedPropertyResult;
+        let pi = checkPropertyCAResultsFromArray(setup.results.properties, 0, 'label',
+            undefined, undefined) as LocalizedPropertyCAResult;
         checkLocalizedPropertyResult(pi, 'label', 3, 'en', 'en', undefined, false);
         checkLocalizedPropertyResult(pi, 'label', 3, 'es', 'es', undefined, false);
         checkLocalizedPropertyResult(pi, 'label', 3, 'fr', 'fr', undefined, false);
@@ -371,8 +371,8 @@ describe('LabelPropertiesAnalyzer class', () => {
         let testItem = new LabelPropertiesAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        let pi = checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'label',
-            undefined, undefined) as LocalizedPropertyResult;
+        let pi = checkPropertyCAResultsFromArray(setup.results.properties, 0, 'label',
+            undefined, undefined) as LocalizedPropertyCAResult;
         checkLocalizedPropertyResult(pi, 'label', 3, 'en', 'en', undefined, true);
         checkLocalizedPropertyResult(pi, 'label', 3, 'es', 'es', undefined, true);
         checkLocalizedPropertyResult(pi, 'label', 3, 'fr', 'fr', undefined, true);
@@ -398,8 +398,8 @@ describe('LabelPropertiesAnalyzer class', () => {
         let testItem = new LabelPropertiesAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        let pi = checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'label',
-            undefined, undefined) as LocalizedPropertyResult;
+        let pi = checkPropertyCAResultsFromArray(setup.results.properties, 0, 'label',
+            undefined, undefined) as LocalizedPropertyCAResult;
         checkLocalizedPropertyResult(pi, 'label', 3, 'en', 'en', 'testLabelL10n-en', undefined);
         checkLocalizedPropertyResult(pi, 'label', 3, 'es', 'es', 'testLabelL10n-es', undefined);
         checkLocalizedPropertyResult(pi, 'label', 3, 'fr', 'fr', 'testLabelL10n-fr', undefined);
@@ -425,8 +425,8 @@ describe('LabelPropertiesAnalyzer class', () => {
         let testItem = new LabelPropertiesAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        let pi = checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'label',
-            undefined, undefined) as LocalizedPropertyResult;
+        let pi = checkPropertyCAResultsFromArray(setup.results.properties, 0, 'label',
+            undefined, undefined) as LocalizedPropertyCAResult;
         checkLocalizedPropertyResult(pi, 'label', 2, 'en', 'en', 'testLabelL10n-en', undefined);
         checkLocalizedPropertyResult(pi, 'label', 2, 'en-US', 'en', 'testLabelL10n-en', undefined);
     });
@@ -485,7 +485,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
         setup.helper.registerLookupKeyAnalyzer(ServiceName.parser, new DataTypeParserLookupKeyAnalyzer(setup.helper.analysisArgs));
         let testItem = new ParserLookupKeyPropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0,
+        checkPropertyCAResultsFromArray(setup.results.properties, 0,
             'parserLookupKey',
             'Not found', CAIssueSeverity.error);
         checkLookupKeyIssue(setup.helper.results, 0, 'custom', 'not already known');
@@ -506,15 +506,15 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
         setup.helper.registerLookupKeyAnalyzer(ServiceName.parser, new DataTypeParserLookupKeyAnalyzer(setup.helper.analysisArgs));
         let testItem = new ParserLookupKeyPropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0,
+        checkPropertyCAResultsFromArray(setup.results.properties, 0,
             'parserLookupKey',
             'it will also try the Lookup Key "Number"', CAIssueSeverity.warning);
         expect(setup.helper.results.lookupKeysIssues).toHaveLength(0);
 
     });
 
-    // register a parser and use its lookupKey. Should not result in a ConfigPropertyResult
-    test('parserLookupKey is known results in no ConfigPropertyResult for that property. No other declared property has an error so the total valueHostResults = 0', () => {
+    // register a parser and use its lookupKey. Should not result in a PropertyCAResult
+    test('parserLookupKey is known results in no PropertyCAResult for that property. No other declared property has an error so the total valueHostResults = 0', () => {
         const testValueHostConfig: InputValueHostConfig = {
             valueHostType: ValueHostType.Input,
             name: 'testValueHost',
@@ -534,7 +534,7 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
         setup.helper.registerLookupKeyAnalyzer(ServiceName.parser, new DataTypeParserLookupKeyAnalyzer(setup.helper.analysisArgs));        
         let testItem = new ParserLookupKeyPropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
-        expect(setup.results.properties).toHaveLength(0); // no ConfigPropertyResult added
+        expect(setup.results.properties).toHaveLength(0); // no PropertyCAResult added
 
         let serviceInfo = checkLookupKeyResultsForService(
             setup.helper.results.lookupKeyResults, LookupKey.Number, ServiceName.parser);
@@ -573,8 +573,8 @@ describe('CalcFnPropertyAnalyzer class', () => {
         expect(setup.results.properties).toHaveLength(0);
     });
 
-    // calcFn is null adds a configPropertyResult with an error
-    test('calcFn is null adds a configPropertyResult with an error', () => {
+    // calcFn is null adds a propertyCAResult with an error
+    test('calcFn is null adds a propertyCAResult with an error', () => {
         const testValueHostConfig: CalcValueHostConfig = {
             valueHostType: ValueHostType.Calc,
             name: 'testValueHost',
@@ -586,11 +586,11 @@ describe('CalcFnPropertyAnalyzer class', () => {
         let testItem = new CalcFnPropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'calcFn',
+        checkPropertyCAResultsFromArray(setup.results.properties, 0, 'calcFn',
             'Function required', CAIssueSeverity.error);
     });
     // calcFn is undefined is a configIssue
-    test('calcFn is undefined adds a configPropertyResult with an error', () => {
+    test('calcFn is undefined adds a propertyCAResult with an error', () => {
         const testValueHostConfig: CalcValueHostConfig = {
             valueHostType: ValueHostType.Calc,
             name: 'testValueHost',
@@ -603,11 +603,11 @@ describe('CalcFnPropertyAnalyzer class', () => {
         let testItem = new CalcFnPropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'calcFn',
+        checkPropertyCAResultsFromArray(setup.results.properties, 0, 'calcFn',
             'Function required', CAIssueSeverity.error);
     });
-    // calcFn is not a function adds a configPropertyResult with an error
-    test('calcFn is not a function adds a configPropertyResult with an error', () => {
+    // calcFn is not a function adds a propertyCAResult with an error
+    test('calcFn is not a function adds a propertyCAResult with an error', () => {
         const testValueHostConfig: CalcValueHostConfig = {
             valueHostType: ValueHostType.Calc,
             name: 'testValueHost',
@@ -620,7 +620,7 @@ describe('CalcFnPropertyAnalyzer class', () => {
         let testItem = new CalcFnPropertyAnalyzer();
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         checkValueHostConfigResults(setup.results, 'testValueHost');
-        checkConfigPropertyResultsFromArray(setup.results.properties, 0, 'calcFn',
+        checkPropertyCAResultsFromArray(setup.results.properties, 0, 'calcFn',
             'Value must be a function', CAIssueSeverity.error);
     });
     // subclass CalcFnPropertyAnalyzer to override its calcValueHostType with "TEST" and write a test to confirm it works

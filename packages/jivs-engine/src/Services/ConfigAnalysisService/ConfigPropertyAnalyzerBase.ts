@@ -2,7 +2,7 @@
  * 
  * @module Services/AbstractClasses/ConfigAnalysisService
 */
-import { ConfigResults, IAnalysisResultsHelper, IConfigPropertyAnalyzer } from "../../Interfaces/ConfigAnalysisService";
+import { ConfigObjectCAResultsBase, IAnalysisResultsHelper, IConfigPropertyAnalyzer } from "../../Interfaces/ConfigAnalysisService";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 
 /**
@@ -14,7 +14,7 @@ import { ValueHostConfig } from "../../Interfaces/ValueHost";
  * Optionally if you have an info level message. But don't add if the data is in good shape
  * and the user doesn't need additional instructions.
  */
-export abstract class ConfigPropertyAnalyzerBase<TConfig, TResults extends ConfigResults<TConfig>>
+export abstract class ConfigPropertyAnalyzerBase<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>>
     implements IConfigPropertyAnalyzer<TConfig, TResults>
 {
     /**

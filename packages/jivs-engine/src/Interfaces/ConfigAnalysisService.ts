@@ -154,7 +154,7 @@ export interface IConfigAnalysisResults {
      * A list of all issues found in the ValueHostConfig objects, such as missing properties,
      * and their ValidatorConfigs and ConditionConfigs.
      */
-    valueHostResults: Array<ValueHostConfigResults>;
+    valueHostResults: Array<ValueHostConfigCAResult>;
 }
 
 /**
@@ -249,21 +249,21 @@ export interface IConfigAnalysisSearchCriteria {
 
     /**
      * Match to any errorCode listed or all errorCodes if undefined.
-     * Only applies to ValidatorConfigResults objects.
+     * Only applies to ValidatorConfigCAResult objects.
      * Case insensitive match.
      */
     errorCodes?: Array<string>;
 
     /**
      * Match to any conditionType listed or all conditionTypes if undefined.
-     * Only applies to ConditionConfigResults objects.
+     * Only applies to ConditionConfigCAResult objects.
      * Case insensitive match.
      */
     conditionTypes?: Array<string>;
 
     /**
      * Match to any propertyName listed or all propertyNames if undefined.
-     * Only applies to ConfigPropertyResult objects.
+     * Only applies to PropertyCAResult objects.
      * Case insensitive match.
      */
     propertyNames?: Array<string>;
@@ -622,9 +622,11 @@ export interface OneClassRetrieval extends
 
 /**
  * For services that have child result classes, this is a base class
- * that offers classRetrieval and error messages.
+ * that offers ClassRetrieval and IssueForCAResultBase for building those child result classes.
  */
-export interface ServiceChildResultBase extends ClassRetrieval, CAResultBase,
+export interface ServiceChildResultBase extends
+    ClassRetrieval,
+    CAResultBase,
     IssueForCAResultBase {
 }
 
@@ -633,7 +635,7 @@ export const identifierServiceFeature = ServiceName.identifier;
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeIdenfierService.
  */
-export interface IdentifierServiceClassRetrieval extends OneClassRetrieval {
+export interface IdentifierServiceCAResult extends OneClassRetrieval {
     feature: ServiceName.identifier;    // use identifierServiceFeature const
 }
 
@@ -642,7 +644,7 @@ export const converterServiceFeature = ServiceName.converter;
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeConverterService.
  */
-export interface ConverterServiceClassRetrieval extends OneClassRetrieval {
+export interface ConverterServiceCAResult extends OneClassRetrieval {
     feature: ServiceName.converter; // use converterServiceFeature const
 }
 
@@ -651,19 +653,19 @@ export const comparerServiceFeature = ServiceName.comparer;
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeComparerService.
  */
-export interface ComparerServiceClassRetrieval extends OneClassRetrieval {
+export interface ComparerServiceCAResult extends OneClassRetrieval {
     feature: ServiceName.comparer;  // use comparerServiceFeature const
 }
 
 
 /**
- * For services that return multiple classes to handle the request.
- * The list of requests is for each case attempted, such as each cultureId.
- * If the case has a result, it includes the class name. Otherwise it 
- * reports an error.
+ * For services that may return multiple classes to handle the request.
+ * Parser and Formatter both do, where each culture may have its own Parser or Formatter class.
+ * This class does not implement ClassRetrieval. A deeper class does that.
+ * This class can handle issues and the "not found" state.
  */
 export interface MultiClassRetrieval extends ServiceWithLookupKeyCAResultBase, ClassNotFound {
-    requests: Array<CAResultBase>;
+    results: Array<CAResultBase>;
 }
 /**
  * For services that return a class to handle the request, but have to support cultures.
@@ -689,40 +691,41 @@ export const parserServiceFeature = ServiceName.parser;
 
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeParserService.
- * It's requests array holds the results of the analysis for each cultureId,
- * using the ParserForCultureClassRetrieval object. Deeper down in 
- * ParserForCultureClassRetrieval.matches is the actual class retrieval.
+ * It's results array holds the results of the analysis for each cultureId,
+ * using the ParsersByCultureCAResult object. Deeper down in 
+ * ParsersByCultureCAResult.parserResults is the actual class retrieval.
  */
-export interface ParserServiceByLookupKey extends MultiClassRetrieval {
+export interface ParserServiceCAResult extends MultiClassRetrieval {
     feature: ServiceName.parser; // use parserServiceFeature const
 }
 
-
-export const parserForCultureFeature = 'CultureSpecificParser';    // parsers for a specific culture
+export const parsersByCultureFeature = 'ParsersByCulture';
 /**
- * Parsers may have multiple DataTypeParser objects for a single lookup key and cultureID.
- * This reflects the list for a single lookup key and cultureID.
+ * Parsers may have multiple DataTypeParser objects for a single lookup key and cultureId.
+ * This reflects the list for a single lookup key and cultureId.
+ * It is retained by ParserServiceCAResult.results.
+ * It holds a list of found parsers in its parserResults array.
  */
-export interface ParserForCultureClassRetrieval extends
+export interface ParsersByCultureCAResult extends
     CAResultBase,
     IssueForCAResultBase,
     ClassNotFound {
-    feature : 'CultureSpecificParser'; // use parserForCultureFeature
+    feature : 'ParsersByCulture'; // use parsersByCultureFeature
     cultureId: string;
-    matches: Array<ServiceChildResultBase>;
+    parserResults: Array<ParserFoundCAResult>;
 }
 
-export const parserServiceClassRetrievalFeature = 'ParserClass';
+export const parserFoundFeature = 'ParserFound';
 /**
  * For the individual parser classes found for a single lookup key.
- * These are retained by ParserForCultureClassRetrieval.parsers.
+ * These are retained by ParsersByCultureCAResult.parsers.
  * Therefore they are not descendants of ServiceWithLookupKeyCAResultBase.
  * They are not used to report an error or "not found".
- * That's reserved for the ParserForCultureClassRetrieval object.
+ * That's reserved for the ParsersByCultureCAResult object.
  */
-export interface ParserServiceClassRetrieval
+export interface ParserFoundCAResult
     extends ServiceChildResultBase {
-    feature: 'ParserClass'; // use parserServiceClassRetrievalFeature const
+    feature: 'ParserFound'; // use parserFoundFeature const
 }
 
 
@@ -730,21 +733,23 @@ export const formatterServiceFeature = ServiceName.formatter;
 
 /**
  * The ServiceWithLookupKeyCAResultBase object for the DataTypeFormatterService.
+ * Its requestResults array holds the results of the analysis for each cultureId,
+ * using the FormattersByCultureCAResult object.
  */
-export interface FormatterServiceClassRetrieval extends MultiClassRetrieval {
+export interface FormatterServiceCAResult extends MultiClassRetrieval {
     feature: ServiceName.formatter; // use formatterServiceFeature const
 }
 
-export const formatterForCultureFeature = 'FormatterForCulture';    // formatters for a specific culture
+export const formattersByCultureFeature = 'FormattersByCulture';    // formatters for a specific culture
 
 /**
  * Formatters may have multiple DataTypeFormatter objects for a single lookup key and cultureID.
- * These are retained by FormatterServiceClassRetrieval.requests.
+ * These are retained by FormatterServiceCAResult.requestResults.
  * They can hold a class retrieval, message/severity, or not found.
  */
-export interface FormatterForCultureClassRetrieval
+export interface FormattersByCultureCAResult
     extends CultureSpecificClassRetrieval, ClassNotFound {
-    feature: 'FormatterForCulture'; // use formatterForCultureFeature const
+    feature: 'FormattersByCulture'; // use formattersByCultureFeature const
 }
 
 /**
@@ -754,13 +759,13 @@ export interface FormatterForCultureClassRetrieval
  * If there are valiability errors, they are reported in its own message and severity properties.
  * @typedef TConfig - The type of the configuration object:
  */
-export interface ConfigResults<TConfig> extends CAResultBase, IssueForCAResultBase
+export interface ConfigObjectCAResultsBase<TConfig> extends CAResultBase, IssueForCAResultBase
 {
     /**
      * errors or warnings found amongst the properties of the TConfig object
      * expect properties that hold Config objects themselves.
      */    
-    properties: Array<ConfigPropertyResult|ConfigErrorResult>;
+    properties: Array<PropertyCAResult|ErrorCAResult>;
     /**
      * The configuration object analyzed.
      */
@@ -776,7 +781,7 @@ export const l10nPropertiesFeature = 'l10nProperties';
  * Most properties only report warnings and errors. Some, like 
  * localization, may report info messages describing the results of the analysis.
  */
-export interface ConfigPropertyResult extends CAResultBase, IssueForCAResultBase {
+export interface PropertyCAResult extends CAResultBase, IssueForCAResultBase {
     feature: 'Property' | 'l10nProperties'; // use propertyNameFeature, l10nPropertiesFeature
     /**
      * May be more than one property as several may be analyzed together.
@@ -786,7 +791,7 @@ export interface ConfigPropertyResult extends CAResultBase, IssueForCAResultBase
 /**
  * For a pair of properties related to localization, such as "label" and "labell10n".
  */
-export interface LocalizedPropertyResult extends ConfigPropertyResult {
+export interface LocalizedPropertyCAResult extends PropertyCAResult {
     feature: 'l10nProperties';  // use l10nPropertiesFeature
     /**
      * The localization key passed to TextLocalizerService.
@@ -815,7 +820,7 @@ export const errorFeature = 'Error';
 /**
  * Use when an error is throw. It can identify its source and message.
  */
-export interface ConfigErrorResult extends CAResultBase, IssueForCAResultBase {
+export interface ErrorCAResult extends CAResultBase, IssueForCAResultBase {
     feature: 'Error';   // use errorFeature const
     severity: CAIssueSeverity.error;
     analyzerClassName: string;
@@ -825,8 +830,10 @@ export const valueHostFeature = 'ValueHost';
 
 /**
  * Represents the analysis results for a ValueHostConfig object.
+ * If it has validators, their results are in the validatorResults array.
+ * If it has an enablerCondition, its results are in the enablerConditionResult.
  */
-export interface ValueHostConfigResults extends ConfigResults<ValueHostConfig> { 
+export interface ValueHostConfigCAResult extends ConfigObjectCAResultsBase<ValueHostConfig> { 
     feature: 'ValueHost';   // use valueHostFeature const
     valueHostName: string;
     /**
@@ -834,11 +841,11 @@ export interface ValueHostConfigResults extends ConfigResults<ValueHostConfig> {
      * ValidatorsValueHostConfig has will generate its own results
      * using the ValidatorConfigAnalyzer for each.
      */
-    validators?: Array<ValidatorConfigResults>;
+    validatorResults?: Array<ValidatorConfigCAResult>;
     /**
      * If the condition.enablerConfig is setup, this is its analysis.
      */
-    enablerCondition?: ConditionConfigResults;
+    enablerConditionResult?: ConditionConfigCAResult;
 }
 
 export const validatorFeature = 'Validator';
@@ -846,7 +853,7 @@ export const validatorFeature = 'Validator';
  * Issues found around the validatorConfig, such as invalid error messages and problem
  * with the condition.
  */
-export interface ValidatorConfigResults extends ConfigResults<ValidatorConfig> {
+export interface ValidatorConfigCAResult extends ConfigObjectCAResultsBase<ValidatorConfig> {
     feature: 'Validator';   // use validatorFeature const
     /**
      * The errorCode of the validator.
@@ -857,14 +864,14 @@ export interface ValidatorConfigResults extends ConfigResults<ValidatorConfig> {
      * If the conditionConfig property is specified, it will be analyzed
      * and its results are here.
      */
-    condition?: ConditionConfigResults;
+    conditionResult?: ConditionConfigCAResult;
 }
 
 export const conditionFeature = 'Condition';
 /**
  * Issues found with the condition itself.
  */
-export interface ConditionConfigResults extends ConfigResults<ConditionConfig>, ClassRetrieval {
+export interface ConditionConfigCAResult extends ConfigObjectCAResultsBase<ConditionConfig>, ClassRetrieval {
     feature: 'Condition';   // use conditionFeature const
     conditionType: string;
 }
@@ -873,8 +880,8 @@ export interface ConditionConfigResults extends ConfigResults<ConditionConfig>, 
  * For ConditionWithChildrenBase and ConditionWithOneChildBase
  * to gather their child ConditionConfig results.
  */
-export interface ConditionConfigWithChildrenResults extends ConditionConfigResults {
-    children: Array<ConditionConfigResults>;
+export interface ConditionConfigWithChildrenResults extends ConditionConfigCAResult {
+    childrenResults: Array<ConditionConfigCAResult>;
 }
 
 //#endregion description of results
@@ -948,12 +955,12 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
  * - LookupKey is not found in LookupKeyCAResult. Error. "Not found. Please add to [servicename]."
  * - With a service name, Error. "Not found. Please add to [servicename]."
  * 
- * All errors are added into the ConfigPropertyResult object that is added to the properties parameter.
+ * All errors are added into the PropertyCAResult object that is added to the properties parameter.
  * 
  * @param propertyName - The name of the property being checked.
  * @param lookupKey - The lookup key to be checked.
  * @param serviceName - The service name to be checked. Use nullfor a dataType LookupKey.
- * @param properties - Add the ConfigPropertyResult object to this array.
+ * @param properties - Add the PropertyCAResult object to this array.
  * @param containingValueHostConfig - The ValueHostConfig that contains the property being checked.
  * The property may be found on a child config object like ValidatorConfig or ConditionConfig.
  * @param className - The name of the class that is registered with the service to handle the lookup key,
@@ -962,7 +969,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
  */
     checkLookupKeyProperty(propertyName: string, lookupKey: string | null | undefined,
         serviceName: ServiceName | null, containingValueHostConfig: ValueHostConfig,
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+        properties: Array<PropertyCAResult | ErrorCAResult>,
         className?: string, servicePropertyName?: string): void;
     
     
@@ -991,7 +998,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      */
     checkLocalization(propertyNamePrefix: string, l10nKey: string | null | undefined,
         fallbackText: string | null | undefined,
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>): void;
+        properties: Array<PropertyCAResult | ErrorCAResult>): void;
     
     /**
      * Uses similar parser to MessageTokenResolverService to find tokens in the message.
@@ -1005,7 +1012,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
     checkMessageTokens(message: string | null | undefined | ((validator: IValidator) => string),
         vc: ValidatorConfig, vhc: ValueHostConfig,
         propertyName: string,
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>): void;
+        properties: Array<PropertyCAResult | ErrorCAResult>): void;
 
     /**
      * Check that the value in valueHostName is an exact match to one
@@ -1017,11 +1024,11 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * @param properties 
      * @returns 
      */
-    checkValueHostNameExists(valueHostName: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>): void;
+    checkValueHostNameExists(valueHostName: any, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>): void;
     
     /**
      * Evaluates the value and adds any issues to the properties array
-     * as a ConfigPropertyResult object.
+     * as a PropertyCAResult object.
      * Takes no action when undefined, null, or a trimmed empty string.
      * Call other helper functions to check for these conditions.
      * 
@@ -1045,33 +1052,33 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
     checkValuePropertyContents(value: any, propertyName: string,
         valueLookupKey: string | null | undefined,
         conversionLookupKey: string | null | undefined,
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>): void;
+        properties: Array<PropertyCAResult | ErrorCAResult>): void;
     
     /**
-     * Creates a prepared ConfigPropertyResult object with the given parameters.
+     * Creates a prepared PropertyCAResult object with the given parameters.
      * @param propertyName 
      * @param severity 
      * @param errorMessage 
      */
-    createConfigPropertyResult(propertyName: string, severity: CAIssueSeverity,
-        errorMessage: string): ConfigPropertyResult;
+    createPropertyCAResult(propertyName: string, severity: CAIssueSeverity,
+        errorMessage: string): PropertyCAResult;
     
     /**
-     * Creates a prepared ConfigErrorResult object with the given parameters
+     * Creates a prepared ErrorCAResult object with the given parameters
      * and adds it to properties.
      * @param propertyName 
      * @param severity 
      * @param errorMessage 
      * @param properties 
      */
-    addConfigPropertyResult(propertyName: string, severity: CAIssueSeverity,
-        errorMessage: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>): void;
+    addPropertyCAResult(propertyName: string, severity: CAIssueSeverity,
+        errorMessage: string, properties: Array<PropertyCAResult | ErrorCAResult>): void;
 
     /**
      * Reports an error when the value is undefined.
      * Helper to use within PropertyAnalyzers. Call before using the value 
      * in a function that fails if value is undefined.
-     * Will add a ConfigPropertyResult object to the properties array
+     * Will add a PropertyCAResult object to the properties array
      * if an issue is found.
      * @param value 
      * @param propertyName 
@@ -1081,14 +1088,14 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * When false, stop execution. The value was undefined.
      */
     checkIsNotUndefined(value: any, propertyName: string,
-        properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+        properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity): boolean;
 
     /**
      * Reports an error when the value is null.
      * Helper to use within PropertyAnalyzers. Call before using the value 
      * in a function that fails if value is null.
-     * Will add a ConfigPropertyResult object to the properties array
+     * Will add a PropertyCAResult object to the properties array
      * if an issue is found.
      * @param value 
      * @param propertyName 
@@ -1097,14 +1104,14 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * @returns when true, continue execution. The value can be further analyzed.
      * When false, stop execution. The value was null.
      */
-    checkIsNotNull(value: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+    checkIsNotNull(value: any, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity): boolean;
     
     /**
      * Reports an error when the value is not a string.
      * Helper to use within PropertyAnalyzers. Call before using the value
      * in a function that fails if value is not a string.
-     * Will add a ConfigPropertyResult object to the properties array
+     * Will add a PropertyCAResult object to the properties array
      * if an issue is found.
      * @param value
      * @param propertyName
@@ -1113,14 +1120,14 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * @returns when true, continue execution. The value can be further analyzed.
      * When false, stop execution. The value was not a string.
      */
-    checkIsString(value: any, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+    checkIsString(value: any, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity): boolean;
     
     /**
     * Reports an error when the value is an empty string, after trimming.
     * Helper to use within PropertyAnalyzers. Call before using the value
     * in a function that fails if value is an empty string.
-    * Will add a ConfigPropertyResult object to the properties array
+    * Will add a PropertyCAResult object to the properties array
     * if an issue is found.
     * @param value
     * @param propertyName
@@ -1129,14 +1136,14 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
     * @returns when true, continue execution. The value can be further analyzed.
     * When false, stop execution. The value was an empty string.
     */
-    checkIsNotEmptyString(value: string, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+    checkIsNotEmptyString(value: string, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity): boolean;
     
     /**
      * Reports an error when the value is a string that has enclosing whitespace.
      * Helper to use within PropertyAnalyzers. Call before using the value
      * in a function that fails if value has enclosing whitespace.
-     * Will add a ConfigPropertyResult object to the properties array
+     * Will add a PropertyCAResult object to the properties array
      * if an issue is found.
      * @param value 
      * @param propertyName 
@@ -1145,7 +1152,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * @returns when true, continue execution. The value can be further analyzed.
      * When false, stop execution. The value was a string with enclosing whitespace.
      */
-    checkNeedsTrimming(value: string, propertyName: string, properties: Array<ConfigPropertyResult | ConfigErrorResult>,
+    checkNeedsTrimming(value: string, propertyName: string, properties: Array<PropertyCAResult | ErrorCAResult>,
         severity: CAIssueSeverity): boolean;
     
 
@@ -1171,7 +1178,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
  * ValueHostConfig, ValidatorConfig, ConditionConfig.
  * @template TResults - The type of the analysis results.
  */
-export interface IConfigAnalyzer<TConfig, TResults extends ConfigResults<TConfig>,
+export interface IConfigAnalyzer<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>,
     TServices extends IValueHostsServices> {
     /**
      * Analyzes the given configuration object and returns the analysis results.
@@ -1187,18 +1194,18 @@ export interface IConfigAnalyzer<TConfig, TResults extends ConfigResults<TConfig
 
 /**
  * Represents an interface for analyzing ValueHostConfig objects,
- * creating a ValueHostConfigResults object for each VHC.
+ * creating a ValueHostConfigCAResult object for each VHC.
  */
 export interface IValueHostConfigAnalyzer<TServices extends IValueHostsServices>
-    extends IConfigAnalyzer<ValueHostConfig, ValueHostConfigResults, TServices> {
+    extends IConfigAnalyzer<ValueHostConfig, ValueHostConfigCAResult, TServices> {
 }
 
 /**
  * Represents an interface for analyzing ValidatorConfig objects,
- * creating a ValidatorConfigResults object for each VC.
+ * creating a ValidatorConfigCAResult object for each VC.
  */
 export interface IValidatorConfigAnalyzer
-    extends IConfigAnalyzer<ValidatorConfig, ValidatorConfigResults, IValidationServices> {
+    extends IConfigAnalyzer<ValidatorConfig, ValidatorConfigCAResult, IValidationServices> {
 }
 
 
@@ -1206,7 +1213,7 @@ export interface IValidatorConfigAnalyzer
  * Analyzes a ConditionConfig object, creating a ConditionResults object.
  */
 export interface IConditionConfigAnalyzer<TServices extends IValueHostsServices> extends
-    IConfigAnalyzer<ConditionConfig, ConditionConfigResults, TServices> {
+    IConfigAnalyzer<ConditionConfig, ConditionConfigCAResult, TServices> {
 }
 
 /**
@@ -1218,7 +1225,7 @@ export interface IConditionConfigAnalyzer<TServices extends IValueHostsServices>
  * Optionally if you have an info level message. But don't add if the data is in good shape
  * and the user doesn't need additional instructions.
  */
-export interface IConfigPropertyAnalyzer<TConfig, TResults extends ConfigResults<TConfig>> {
+export interface IConfigPropertyAnalyzer<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>> {
     /**
      * Analyzes the properties of the given configuration object and returns the analysis results.
      * If there are any issues, add them to results.properties.
@@ -1244,10 +1251,10 @@ export interface IConfigPropertyAnalyzer<TConfig, TResults extends ConfigResults
  * and the user doesn't need additional instructions.
  * 
  * Expected Result class to add to results.properties: ValueHostPropertyResult
- * or LocalizedPropertyResult.
+ * or LocalizedPropertyCAResult.
  */
 export interface IValueHostConfigPropertyAnalyzer
-    extends IConfigPropertyAnalyzer<ValueHostConfig, ValueHostConfigResults> {
+    extends IConfigPropertyAnalyzer<ValueHostConfig, ValueHostConfigCAResult> {
 
 }
 
@@ -1262,10 +1269,10 @@ export interface IValueHostConfigPropertyAnalyzer
  * and the user doesn't need additional instructions.
  * 
  * Expected Result class to add to results.properties: ValidatorPropertyResults
- * or LocalizedPropertyResult.
+ * or LocalizedPropertyCAResult.
  */
 export interface IValidatorConfigPropertyAnalyzer
-    extends IConfigPropertyAnalyzer<ValidatorConfig, ValidatorConfigResults> {
+    extends IConfigPropertyAnalyzer<ValidatorConfig, ValidatorConfigCAResult> {
 
 }
 
@@ -1280,9 +1287,9 @@ export interface IValidatorConfigPropertyAnalyzer
  * and the user doesn't need additional instructions.
  * 
  * Expected Result class to add to results.properties: ConditionPropertyResult
- * or LocalizedPropertyResult.
+ * or LocalizedPropertyCAResult.
  */
 export interface IConditionConfigPropertyAnalyzer
-    extends IConfigPropertyAnalyzer<ConditionConfig, ConditionConfigResults> {
+    extends IConfigPropertyAnalyzer<ConditionConfig, ConditionConfigCAResult> {
 
 }

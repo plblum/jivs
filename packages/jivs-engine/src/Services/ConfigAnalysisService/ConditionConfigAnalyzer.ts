@@ -4,7 +4,7 @@
  */
 
 import { ConditionConfig } from "../../Interfaces/Conditions";
-import { ConditionConfigResults, CAIssueSeverity, IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer, conditionFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ConditionConfigCAResult, CAIssueSeverity, IConditionConfigAnalyzer, IConditionConfigPropertyAnalyzer, conditionFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 import { ensureError } from "../../Utilities/ErrorHandling";
@@ -22,7 +22,7 @@ import { ConfigAnalyzerBase } from "./ConfigAnalyzerBase";
  * There are no child configs to check.
  */
 export class ConditionConfigAnalyzer<TServices extends IValueHostsServices>
-    extends ConfigAnalyzerBase<ConditionConfig, ConditionConfigResults, IValueHostsServices>
+    extends ConfigAnalyzerBase<ConditionConfig, ConditionConfigCAResult, IValueHostsServices>
 implements IConditionConfigAnalyzer<TServices> {
 
     constructor(helper: AnalysisResultsHelper<TServices>,
@@ -30,7 +30,7 @@ implements IConditionConfigAnalyzer<TServices> {
     ) {
         super(helper, conditionConfigPropertyAnalyzers);
     }
-    protected initResults(config: ConditionConfig): ConditionConfigResults {
+    protected initResults(config: ConditionConfig): ConditionConfigCAResult {
         return {
             feature: conditionFeature,
             conditionType: cleanString(config.conditionType) ?? '[Missing]',
@@ -39,7 +39,7 @@ implements IConditionConfigAnalyzer<TServices> {
             properties: []
         };
     }    
-    public analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigResults[]): ConditionConfigResults {
+    public analyze(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, existingResults: ConditionConfigCAResult[]): ConditionConfigCAResult {
         let result = super.analyze(config, valueHostConfig, existingResults);
         if (valueHostConfig && this.helper.analysisArgs.comparerAnalyzer) {
             let checkResult = this.helper.analysisArgs.comparerAnalyzer.checkConditionConfig(config, valueHostConfig);
@@ -57,7 +57,7 @@ implements IConditionConfigAnalyzer<TServices> {
      * @param config 
      * @param results 
      */
-    protected checkForValiability(config: ConditionConfig, results: ConditionConfigResults): boolean {
+    protected checkForValiability(config: ConditionConfig, results: ConditionConfigCAResult): boolean {
         try {
             results.instance = this.helper.services.conditionFactory.create(config);
         }
@@ -69,11 +69,11 @@ implements IConditionConfigAnalyzer<TServices> {
         }        
         return true;
     }
-    protected checkForDuplicates(config: ConditionConfig, results: ConditionConfigResults, existingResults: ConditionConfigResults[]): void {
+    protected checkForDuplicates(config: ConditionConfig, results: ConditionConfigCAResult, existingResults: ConditionConfigCAResult[]): void {
         
     }
 
-    protected checkChildConfigs(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, results: ConditionConfigResults): void {
+    protected checkChildConfigs(config: ConditionConfig, valueHostConfig: ValueHostConfig | null, results: ConditionConfigCAResult): void {
         
     }
 

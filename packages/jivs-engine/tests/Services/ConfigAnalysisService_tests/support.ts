@@ -1,9 +1,9 @@
 import {
-    IConfigAnalysisResults, ConfigAnalysisServiceOptions, AnalysisArgs, IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer, ValueHostConfigResults, CAIssueSeverity,
-    ConfigPropertyResult, ConfigErrorResult, LocalizedPropertyResult, LookupKeyIssue, LookupKeyCAResult, MultiClassRetrieval, ServiceWithLookupKeyCAResultBase, ParserForCultureClassRetrieval, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval, lookupKeyFeature,
-    parserForCultureFeature, propertyNameFeature, valueHostFeature, conditionFeature, validatorFeature,
+    IConfigAnalysisResults, ConfigAnalysisServiceOptions, AnalysisArgs, IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer, ValueHostConfigCAResult, CAIssueSeverity,
+    PropertyCAResult, ErrorCAResult, LocalizedPropertyCAResult, LookupKeyIssue, LookupKeyCAResult, MultiClassRetrieval, ServiceWithLookupKeyCAResultBase, ParsersByCultureCAResult, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval, lookupKeyFeature,
+    parsersByCultureFeature, propertyNameFeature, valueHostFeature, conditionFeature, validatorFeature,
     parserServiceFeature,
-    parserServiceClassRetrievalFeature
+    parserFoundFeature
 } from "../../../src/Interfaces/ConfigAnalysisService";
 import { IValidationServices, ServiceName } from "../../../src/Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../../src/Interfaces/ValueHost";
@@ -144,34 +144,34 @@ export function sampleValueByLookupKey(services: IValidationServices, key: strin
         return dti.sampleValue();
     return undefined;
 }
-export function checkValueHostConfigResultsInArray(results: Array<ValueHostConfigResults>,
+export function checkValueHostConfigResultsInArray(results: Array<ValueHostConfigCAResult>,
     index: number,
-    expectedValueHostName: string): ValueHostConfigResults | undefined {
+    expectedValueHostName: string): ValueHostConfigCAResult | undefined {
     let configIssue = results[index];
     expect(configIssue).toBeDefined();
     checkValueHostConfigResults(configIssue, expectedValueHostName);
     return configIssue;
 }
-export function checkValueHostConfigResults(result: ValueHostConfigResults | undefined,
+export function checkValueHostConfigResults(result: ValueHostConfigCAResult | undefined,
     expectedValueHostName: string) : void {
     expect(result).toBeDefined();
     expect(result!.feature).toBe(valueHostFeature);
     expect(result!.valueHostName).toBe(expectedValueHostName);
     expect(result!.config).toBeDefined();
 }
-export function checkConfigPropertyResultsFromArray(results: Array<ConfigPropertyResult | ConfigErrorResult>,
+export function checkPropertyCAResultsFromArray(results: Array<PropertyCAResult | ErrorCAResult>,
     index: number, expectedPropertyName: string,
     expectedPartialMessage: string | undefined,
-    expectedSeverity: CAIssueSeverity | undefined): ConfigPropertyResult {
-    let issue = results[index] as ConfigPropertyResult;
+    expectedSeverity: CAIssueSeverity | undefined): PropertyCAResult {
+    let issue = results[index] as PropertyCAResult;
     expect(issue).toBeDefined();
-    checkConfigPropertyResults(issue, expectedPropertyName, expectedPartialMessage, expectedSeverity);
+    checkPropertyCAResults(issue, expectedPropertyName, expectedPartialMessage, expectedSeverity);
     return issue;
 }
-export function checkConfigPropertyResults(result: ConfigPropertyResult | undefined,
+export function checkPropertyCAResults(result: PropertyCAResult | undefined,
     expectedPropertyName: string,
     expectedPartialMessage: string | undefined,
-    expectedSeverity: CAIssueSeverity | undefined): ConfigPropertyResult {
+    expectedSeverity: CAIssueSeverity | undefined): PropertyCAResult {
 
     expect(result).toBeDefined();
     expect(result!.propertyName).toContain(expectedPropertyName);
@@ -234,8 +234,8 @@ export function checkLookupKeyResultsForMultiClassRetrievalService(lookupKeyResu
 
     expect(serviceInfo).toBeDefined();
     expect(serviceInfo!.feature).toBe(serviceName);   
-    expect(serviceInfo!.requests).toBeDefined();
-    expect(serviceInfo!.requests).toHaveLength(expectedRequestCount);
+    expect(serviceInfo!.results).toBeDefined();
+    expect(serviceInfo!.results).toHaveLength(expectedRequestCount);
 
     return serviceInfo;
 }        
@@ -247,33 +247,33 @@ export function checkServiceInfoForCultureSpecificParserRetrieval(serviceInfo: S
     expectedInstanceType: any): void {
     expect(serviceInfo.feature).toBe(parserServiceFeature);
     let mcr = serviceInfo as MultiClassRetrieval;
-    let request = mcr.requests[indexIntoRequests] as ParserForCultureClassRetrieval;
+    let request = mcr.results[indexIntoRequests] as ParsersByCultureCAResult;
     expect(request).toBeDefined();
-    expect(request.feature).toBe(parserForCultureFeature);
+    expect(request.feature).toBe(parsersByCultureFeature);
     expect(request.cultureId).toBe(expectedCultureId);
-    let match = request.matches[indexIntoMatches];
-    expect(match).toBeDefined();
-    expect(match.feature).toBe(parserServiceClassRetrievalFeature);
-    expect(match.classFound).toBe(expectedClassFound);
-    expect(match.instance).toBeInstanceOf(expectedInstanceType);
+    let parserResult = request.parserResults[indexIntoMatches];
+    expect(parserResult).toBeDefined();
+    expect(parserResult.feature).toBe(parserFoundFeature);
+    expect(parserResult.classFound).toBe(expectedClassFound);
+    expect(parserResult.instance).toBeInstanceOf(expectedInstanceType);
 }
 
-export function checkLocalizedPropertyResultFromArray(pi: Array<ConfigPropertyResult | ConfigErrorResult>,
+export function checkLocalizedPropertyResultFromArray(pi: Array<PropertyCAResult | ErrorCAResult>,
     index: number,
     propertyNamePrefix: string,
     cultureTextCount: number,
     cultureId: string,
     actualCultureId: string,
     expectedCultureText: string | undefined,
-    hasFallback: boolean | undefined): LocalizedPropertyResult {
-    let result = pi[index] as LocalizedPropertyResult;
+    hasFallback: boolean | undefined): LocalizedPropertyCAResult {
+    let result = pi[index] as LocalizedPropertyCAResult;
     expect(result).toBeDefined();
     checkLocalizedPropertyResult(result, propertyNamePrefix, cultureTextCount,
         cultureId, actualCultureId, expectedCultureText, hasFallback);
     return result;
 }
 
-export function checkLocalizedPropertyResult(pi: LocalizedPropertyResult,
+export function checkLocalizedPropertyResult(pi: LocalizedPropertyCAResult,
     propertyNamePrefix: string,
     cultureTextSize: number,
     cultureId: string,
@@ -317,7 +317,7 @@ export function checkCultureSpecificClassRetrievalFoundInService(
     expectedClassName: string,
     expectedInstanceType: any,  // expected instance type to check actual with instanceof
     ): void {
-    let request = serviceInfo!.requests.find(r => (r as CultureSpecificClassRetrieval).requestedCultureId === cultureId) as CultureSpecificClassRetrieval;
+    let request = serviceInfo!.results.find(r => (r as CultureSpecificClassRetrieval).requestedCultureId === cultureId) as CultureSpecificClassRetrieval;
     expect(request).toBeDefined();
     expect(request!.feature).toBe(expectedRequestFeature);
     expect(request!.requestedCultureId).toBe(cultureId);
@@ -332,7 +332,7 @@ export function checkCultureSpecificClassRetrievalNotFoundInService(
     expectedRequestFeature: string,
     expectedCultureId: string): void {
     let request: CultureSpecificClassRetrieval | undefined
-        = serviceInfo!.requests.find(r => (r as CultureSpecificClassRetrieval).requestedCultureId === expectedCultureId) as CultureSpecificClassRetrieval;
+        = serviceInfo!.results.find(r => (r as CultureSpecificClassRetrieval).requestedCultureId === expectedCultureId) as CultureSpecificClassRetrieval;
     expect(request).toBeDefined();
     expect(request!.feature).toBe(expectedRequestFeature);
     expect(request!.requestedCultureId).toBe(expectedCultureId);
@@ -343,7 +343,7 @@ export function checkCultureSpecificClassRetrievalNotFoundInService(
     expect(request!.instance).toBeUndefined();
 }   
 
-export function checkSyntaxError(propertyResult: ConfigPropertyResult,
+export function checkSyntaxError(propertyResult: PropertyCAResult,
     expectedPropertyName: string): void {
 
     expect(propertyResult.feature).toBe(propertyNameFeature);

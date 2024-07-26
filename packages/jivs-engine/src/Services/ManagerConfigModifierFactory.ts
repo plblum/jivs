@@ -1,6 +1,6 @@
 /**
  * Factory to create the ManagerConfigModifier.
- * @module ValueHost/Types/ManagerConfigModifierFactory
+ * @module ValueHosts/Types/ManagerConfigModifierFactory
  */
 
 import { IManagerConfigModifierFactory } from "../Interfaces/ManagerConfigModifierFactory";

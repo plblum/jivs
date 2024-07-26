@@ -4,7 +4,7 @@
  */
 
 import { CalcValueHostConfig } from "../../Interfaces/CalcValueHost";
-import { CAIssueSeverity, IAnalysisResultsHelper, ValueHostConfigResults, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, IAnalysisResultsHelper, ValueHostConfigCAResult, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
 import { InputValueHostConfig } from "../../Interfaces/InputValueHost";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -25,7 +25,7 @@ import { ConfigPropertyAnalyzerBase } from "./ConfigPropertyAnalyzerBase";
  * and the user doesn't need additional instructions.
  */
 export abstract class ValueHostConfigPropertyAnalyzerBase extends
-    ConfigPropertyAnalyzerBase<ValueHostConfig, ValueHostConfigResults> {
+    ConfigPropertyAnalyzerBase<ValueHostConfig, ValueHostConfigCAResult> {
 
 }
 
@@ -37,11 +37,11 @@ export class ValueHostTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyz
     /**
      * Analyzes the valueHostType property in the ValueHostConfig.
      * @param config - The ValueHostConfig object.
-     * @param results - The ValueHostConfigResults object.
+     * @param results - The ValueHostConfigCAResult object.
      * @param valueHostConfig - The ValueHostConfig object or null.
      * @param helper - The IAnalysisResultsHelper object.
      */
-    public analyze(config: ValueHostConfig, results: ValueHostConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+    public analyze(config: ValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
         try {
             helper.services.valueHostFactory.ensureRegistered(config);  // this will throw if there is an error in the config
         } catch (e) {
@@ -64,11 +64,11 @@ export class ValueHostNamePropertyAnalyzer extends ValueHostConfigPropertyAnalyz
     /**
      * Analyzes the valueHostName property of a ValueHostConfig.
      * @param config - The ValueHostConfig object to analyze.
-     * @param results - The ValueHostConfigResults object to store the analysis results.
+     * @param results - The ValueHostConfigCAResult object to store the analysis results.
      * @param valueHostConfig - The ValueHostConfig object being analyzed, or null if not available.
      * @param helper - The IAnalysisResultsHelper object to assist with analysis results.
      */
-    public analyze(config: ValueHostConfig, results: ValueHostConfigResults,
+    public analyze(config: ValueHostConfig, results: ValueHostConfigCAResult,
         valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
         function addIssue(message: string): void {
             results.properties.push({
@@ -94,7 +94,7 @@ export class ValueHostNamePropertyAnalyzer extends ValueHostConfigPropertyAnalyz
  * It checks for a valid LookupKey.
  */
 export class DataTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBase {
-    public analyze(config: ValueHostConfig, results: ValueHostConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+    public analyze(config: ValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
 
         if (config.dataType)
             helper.checkLookupKeyProperty('dataType', config.dataType, null,
@@ -118,7 +118,7 @@ export class DataTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBas
  * Results include a list of all cultures and the results of TextLocalizerService.
  */
 export class LabelPropertiesAnalyzer extends ValueHostConfigPropertyAnalyzerBase {
-    public analyze(config: ValueHostConfig, results: ValueHostConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+    public analyze(config: ValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
         helper.checkLocalization('label', config.labell10n, config.label, results.properties);
     }
 }
@@ -137,7 +137,7 @@ export class ParserLookupKeyPropertyAnalyzer extends ValueHostConfigPropertyAnal
      * @param valueHostConfig - The value host configuration object.
      * @param helper - The analysis result helper.
      */
-    public analyze(config: InputValueHostConfig, results: ValueHostConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+    public analyze(config: InputValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
         if (config.parserLookupKey !== undefined)
             helper.checkLookupKeyProperty('parserLookupKey', config.parserLookupKey,
                 ServiceName.parser, config, results.properties,
@@ -152,11 +152,11 @@ export class CalcFnPropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBase 
     /**
      * Analyzes the calcFn property in the ValueHostConfig object.
      * @param config - The CalcValueHostConfig object to analyze.
-     * @param results - The ValueHostConfigResults object to store the analysis results.
+     * @param results - The ValueHostConfigCAResult object to store the analysis results.
      * @param valueHostConfig - The ValueHostConfig object being analyzed.
      * @param helper - The IAnalysisResultsHelper object to assist with analysis results.
      */
-    public analyze(config: CalcValueHostConfig, results: ValueHostConfigResults, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
+    public analyze(config: CalcValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {
 
         if (config.calcFn) {
             if (typeof config.calcFn !== 'function') {

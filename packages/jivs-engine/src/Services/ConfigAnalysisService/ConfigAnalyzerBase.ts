@@ -4,7 +4,7 @@
  */
 
 import {
-    ConfigErrorResult, CAIssueSeverity, ConfigResults,
+    ErrorCAResult, CAIssueSeverity, ConfigObjectCAResultsBase,
     IConfigAnalyzer, IConfigPropertyAnalyzer,
     errorFeature
 } from "../../Interfaces/ConfigAnalysisService";
@@ -17,7 +17,7 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
 /**
  * Base class for analyzing a Config object, creating a ConfigResults object.
  */
-export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigResults<TConfig>,
+export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigObjectCAResultsBase<TConfig>,
     TServices extends IValueHostsServices>
     implements IConfigAnalyzer<TConfig, TResults, TServices> {
     constructor(helper: AnalysisResultsHelper<TServices>,
@@ -89,7 +89,7 @@ export abstract class ConfigAnalyzerBase<TConfig, TResults extends ConfigResults
             }
             catch (e) {
                 let error = ensureError(e);
-                results.properties.push(<ConfigErrorResult>{
+                results.properties.push(<ErrorCAResult>{
                     feature: errorFeature,
                     severity: CAIssueSeverity.error,
                     message: error.message,

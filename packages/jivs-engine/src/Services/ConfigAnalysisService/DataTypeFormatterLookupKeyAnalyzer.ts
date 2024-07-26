@@ -2,7 +2,7 @@
  * Support the DataTypeFormatterService and its IDataTypeFormatter objects.
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
-import { ServiceWithLookupKeyCAResultBase, FormatterForCultureClassRetrieval, FormatterServiceClassRetrieval, formatterServiceFeature, formatterForCultureFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceWithLookupKeyCAResultBase, FormattersByCultureCAResult, FormatterServiceCAResult, formatterServiceFeature, formattersByCultureFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeFormatter } from "../../Interfaces/DataTypeFormatters";
 import { IValidationServices, ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -20,21 +20,21 @@ import { MultipleClassesPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses"
  * by LookupKeyFallbackService so the caller to try that lookup key next.
  * 
  * The results are:
- * - Creates the FormatterServiceClassRetrieval with the key and feature = 'formatter'.
- * - Runs the same process for each CultureID in results.cultureIds.
- *   Each will add FormatterForCultureClassRetrieval to FormatterServiceClassRetrieval.requests,
+ * - Creates the FormatterServiceCAResult with the key and feature = 'formatter'.
+ * - Runs the same process for each CultureId in IConfigAnalysisResults.cultureIds.
+ *   Each will add FormattersByCultureCAResult to FormatterServiceCAResult.requestResults,
  *   reporting all of its info, which may include an error message.
  * - If it finds a matching formatter in the DataTypeFormatterService, 
- *   FormatterForCultureClassRetrieval will have these properties set:
+ *   FormattersByCultureCAResult will have these properties set:
  *   classFound, instance, requestedCultureId, actualCultureId.
- * - If the formatter is not found, FormatterForCultureClassRetrieval
+ * - If the formatter is not found, FormattersByCultureCAResult
  *   will have these properties set: message, error, requestedCultureId.
   *   ```ts
- *   {  // FormatterServiceClassRetrieval
+ *   {  // FormatterServiceCAResult
  *      feature: formatterServiceFormatter,
- *      requests: [ // FormatterForCultureClassRetrieval objects
+ *      results: [ // FormattersByCultureCAResult objects
  *      {
- *          feature: formatterForCultureFeature,
+ *          feature: formattersByCultureFeature,
  *          requestedCultureId: 'en-US',
  *     // when found
  *          classFound: 'MyFormatter',
@@ -59,9 +59,9 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
 
     public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
 
-        let info: FormatterServiceClassRetrieval = {
+        let info: FormatterServiceCAResult = {
             feature: formatterServiceFeature,
-            requests: []
+            results: []
         };
         let lookupKey = key ?? container.dataType;
         if (lookupKey) {
@@ -69,7 +69,7 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
             this.results.cultureIds.forEach(cultureId => {
                 try {
                     let analysis = this.analyzeForCulture(lookupKey, cultureId);
-                    info.requests.push(analysis);
+                    info.results.push(analysis);
                     if (analysis.classFound)
                         info.tryFallback = false;
                 }
@@ -78,13 +78,13 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
                     // istanbul ignore next
                     info.tryFallback = false;
                     // istanbul ignore next
-                    let errorInfo: FormatterForCultureClassRetrieval = {
-                        feature: formatterForCultureFeature,
+                    let errorInfo: FormattersByCultureCAResult = {
+                        feature: formattersByCultureFeature,
                         requestedCultureId: cultureId,
                         notFound: true
                     }
 // istanbul ignore next
-                    info.requests.push(errorInfo);
+                    info.results.push(errorInfo);
 // istanbul ignore next                    
                     this.errorThrown(errorInfo, ensureError(e));
                 }
@@ -106,7 +106,7 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
      *   until it finds a match or has run out of fallbacks.
      * - If it has none after that point, tries the LookupKeyFallbackService
      *   to get a new lookupKey that is supposed to be compatible with the original.
-     *   Instead of trying to find with that key, it returns FormatterForCultureClassRetrieval
+     *   Instead of trying to find with that key, it returns FormattersByCultureCAResult
      *   with a message about using another lookupKey, and the caller should try 
      *   to handle the new lookupKey.
      * @param lookupKey - The key to find a formatter for. This may not be the actual lookupKey 
@@ -114,15 +114,15 @@ export class DataTypeFormatterLookupKeyAnalyzer extends MultipleClassesPerLookup
      * @param startingCultureId - The first culture to try.
      * @returns 
      */
-    public analyzeForCulture(lookupKey: string, startingCultureId: string): FormatterForCultureClassRetrieval {
-        let info: FormatterForCultureClassRetrieval = {
-            feature: formatterForCultureFeature,
+    public analyzeForCulture(lookupKey: string, startingCultureId: string): FormattersByCultureCAResult {
+        let info: FormattersByCultureCAResult = {
+            feature: formattersByCultureFeature,
             requestedCultureId: startingCultureId
         };
         this.analyzeForCultureRecursive(info, lookupKey, startingCultureId);
         return info;
     }
-    protected analyzeForCultureRecursive(info: FormatterForCultureClassRetrieval,
+    protected analyzeForCultureRecursive(info: FormattersByCultureCAResult,
         lookupKey: string, startingCultureId: string): void {
 
         let cultureId: string | null = startingCultureId;

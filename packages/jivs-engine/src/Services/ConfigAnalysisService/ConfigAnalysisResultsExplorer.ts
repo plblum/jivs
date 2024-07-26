@@ -10,15 +10,15 @@ import {
     CAResultBase,
     ICAExplorerBase,
     LookupKeyCAResult,
-    ParserForCultureClassRetrieval,
+    ParsersByCultureCAResult,
     OneClassRetrieval,
     MultiClassRetrieval,
-    ConfigPropertyResult,
-    LocalizedPropertyResult,
-    ConfigErrorResult,
-    ValueHostConfigResults,
-    ValidatorConfigResults,
-    ConditionConfigResults,
+    PropertyCAResult,
+    LocalizedPropertyCAResult,
+    ErrorCAResult,
+    ValueHostConfigCAResult,
+    ValidatorConfigCAResult,
+    ConditionConfigCAResult,
     ExplorerCreatorHandler,
     lookupKeyFeature,
     dataTypeFeature,
@@ -33,10 +33,10 @@ import {
     valueHostFeature,
     conditionFeature,
     validatorFeature,
-    IdentifierServiceClassRetrieval,
-    ConverterServiceClassRetrieval,
-    ComparerServiceClassRetrieval,
-    FormatterServiceClassRetrieval
+    IdentifierServiceCAResult,
+    ConverterServiceCAResult,
+    ComparerServiceCAResult,
+    FormatterServiceCAResult
 } from "../../Interfaces/ConfigAnalysisService";
 import { IValueHostsServices } from "../../Interfaces/ValueHostsServices";
 import { CodingError, assertNotNull } from "../../Utilities/ErrorHandling";
@@ -327,7 +327,7 @@ class DataTypeLookupKeyServiceInfoExplorer extends CAExplorerBase<ServiceWithLoo
  * For exploring ParserClassRetrieval objects. Their identifier is null
  * and their feature is ServiceName.parser.
  */
-class ParserLookupKeyServiceInfoExplorer extends CAExplorerBase<ParserForCultureClassRetrieval>
+class ParserLookupKeyServiceInfoExplorer extends CAExplorerBase<ParsersByCultureCAResult>
 {
     public feature(): string {
         return parserServiceFeature;
@@ -341,15 +341,15 @@ class ParserLookupKeyServiceInfoExplorer extends CAExplorerBase<ParserForCulture
     }
 
     public children(): Array<CAResultBase> {
-        return this.result.matches ?? [];
+        return this.result.parserResults ?? [];
     }
 }
 
 /**
- * For exploring ComparerServiceClassRetrieval objects associated with ServiceName.comparer.
+ * For exploring ComparerServiceCAResult objects associated with ServiceName.comparer.
  * Their identifier is null and their feature is ServiceName.comparer.
  */
-class ComparerLookupKeyServiceInfoExplorer extends CAExplorerBase<ComparerServiceClassRetrieval>
+class ComparerLookupKeyServiceInfoExplorer extends CAExplorerBase<ComparerServiceCAResult>
 {
     public feature(): string {
         return comparerServiceFeature;
@@ -369,10 +369,10 @@ class ComparerLookupKeyServiceInfoExplorer extends CAExplorerBase<ComparerServic
 }
 
 /**
- * For exploring ConverterServiceClassRetrieval objects associated with ServiceName.converter.
+ * For exploring ConverterServiceCAResult objects associated with ServiceName.converter.
  * Their identifier is null and their feature is ServiceName.converter.
  */
-class ConverterLookupKeyServiceInfoExplorer extends CAExplorerBase<ConverterServiceClassRetrieval>
+class ConverterLookupKeyServiceInfoExplorer extends CAExplorerBase<ConverterServiceCAResult>
 {
     public feature(): string {
         return converterServiceFeature;
@@ -395,7 +395,7 @@ class ConverterLookupKeyServiceInfoExplorer extends CAExplorerBase<ConverterServ
  * For exploring MultiClassRetrieval objects associated with ServiceName.formatter.
  * Their identifier is null and their feature is ServiceName.formatter.
  */
-class FormatterLookupKeyServiceInfoExplorer extends CAExplorerBase<FormatterServiceClassRetrieval>
+class FormatterLookupKeyServiceInfoExplorer extends CAExplorerBase<FormatterServiceCAResult>
 {
     public feature(): string {
         return formatterServiceFeature;
@@ -410,15 +410,15 @@ class FormatterLookupKeyServiceInfoExplorer extends CAExplorerBase<FormatterServ
     }
 
     public children(): Array<CAResultBase> {
-        return (this.result.requests as Array<CAResultBase>) ?? [];
+        return (this.result.results as Array<CAResultBase>) ?? [];
     }
 }   
 
 /**
- * For exploring IdentifierServiceClassRetrieval objects associated with ServiceName.identifier.
+ * For exploring IdentifierServiceCAResult objects associated with ServiceName.identifier.
  * Their identifier is null and their feature is ServiceName.identifier.
  */
-class IdentifierLookupKeyServiceInfoExplorer extends CAExplorerBase<IdentifierServiceClassRetrieval>
+class IdentifierLookupKeyServiceInfoExplorer extends CAExplorerBase<IdentifierServiceCAResult>
 {
     public feature(): string {
         return identifierServiceFeature;
@@ -438,10 +438,10 @@ class IdentifierLookupKeyServiceInfoExplorer extends CAExplorerBase<IdentifierSe
 }
 
 /**
- * For exploring ConfigPropertyResult objects. Their identifier is the propertyName property
+ * For exploring PropertyCAResult objects. Their identifier is the propertyName property
  * and their feature is 'Property'.
  */
-class PropertyResultExplorer extends CAExplorerBase<ConfigPropertyResult>
+class PropertyResultExplorer extends CAExplorerBase<PropertyCAResult>
 {
     public feature(): string {
         return propertyNameFeature;
@@ -461,10 +461,10 @@ class PropertyResultExplorer extends CAExplorerBase<ConfigPropertyResult>
 }
 
 /**
- * For exploring LocalizedPropertyResult objects. Their identifier is the l10nPropertyName property
+ * For exploring LocalizedPropertyCAResult objects. Their identifier is the l10nPropertyName property
  * and their feature is 'l10nProperties'.
  */
-class LocalizedPropertyResultExplorer extends CAExplorerBase<LocalizedPropertyResult>
+class LocalizedPropertyResultExplorer extends CAExplorerBase<LocalizedPropertyCAResult>
 {
     public feature(): string {
         return l10nPropertiesFeature;
@@ -492,10 +492,10 @@ class LocalizedPropertyResultExplorer extends CAExplorerBase<LocalizedPropertyRe
 }
 
 /**
- * For exploring ConfigErrorResult objects. Their identifier is null
+ * For exploring ErrorCAResult objects. Their identifier is null
  * and their feature is 'Error'.
  */
-class ErrorResultExplorer extends CAExplorerBase<ConfigErrorResult>
+class ErrorResultExplorer extends CAExplorerBase<ErrorCAResult>
 {
     public feature(): string {
         return errorFeature;
@@ -515,11 +515,11 @@ class ErrorResultExplorer extends CAExplorerBase<ConfigErrorResult>
 }
 
 /**
- * For exploring ValueHostConfigResults objects. Their identifier is the valueHostName property
+ * For exploring ValueHostConfigCAResult objects. Their identifier is the valueHostName property
  * and their feature is 'ValueHost'.
  * They contain several types of children: from properties, validators, and enablerCondition.
  */
-class ValueHostConfigResultsExplorer extends CAExplorerBase<ValueHostConfigResults>
+class ValueHostConfigResultsExplorer extends CAExplorerBase<ValueHostConfigCAResult>
 {
     public feature(): string {
         return valueHostFeature;
@@ -536,20 +536,20 @@ class ValueHostConfigResultsExplorer extends CAExplorerBase<ValueHostConfigResul
         let children: Array<CAResultBase> = [];
         if (this.result.properties)
             children = children.concat(this.result.properties);
-        if (this.result.validators)
-            children = children.concat(this.result.validators);
-        if (this.result.enablerCondition)
-            children.push(this.result.enablerCondition);
+        if (this.result.validatorResults)
+            children = children.concat(this.result.validatorResults);
+        if (this.result.enablerConditionResult)
+            children.push(this.result.enablerConditionResult);
         return children;
     }
 }
 
 /**
- * For exploring ValidatorConfigResults objects. Their identifier is the errorCode property
+ * For exploring ValidatorConfigCAResult objects. Their identifier is the errorCode property
  * and their feature is 'Validator'.
  * They contain several types of children: from properties and condition.
  */
-class ValidatorConfigResultsExplorer extends CAExplorerBase<ValidatorConfigResults>
+class ValidatorConfigResultsExplorer extends CAExplorerBase<ValidatorConfigCAResult>
 {
     public feature(): string {
         return validatorFeature;
@@ -568,18 +568,18 @@ class ValidatorConfigResultsExplorer extends CAExplorerBase<ValidatorConfigResul
         if (this.result.properties)
             children = children.concat(this.result.properties);
 
-        if (this.result.condition)
-            children.push(this.result.condition);
+        if (this.result.conditionResult)
+            children.push(this.result.conditionResult);
         return children;
 
     }
 }
 
 /**
- * For exploring ConditionConfigResults objects. Their identifier is the conditionType property
+ * For exploring ConditionConfigCAResult objects. Their identifier is the conditionType property
  * and their feature is 'Condition'.
  */
-class ConditionConfigResultsExplorer extends CAExplorerBase<ConditionConfigResults>
+class ConditionConfigResultsExplorer extends CAExplorerBase<ConditionConfigCAResult>
 {
     public feature(): string {
         return conditionFeature;
@@ -619,17 +619,17 @@ export class ConfigAnalysisResultsExplorerFactory implements CAExplorerFactory
     protected populate(): void {
         this.register(lookupKeyFeature, (result) => new LookupKeyResultExplorer(result as LookupKeyCAResult));
         this.register(dataTypeFeature, (result) => new DataTypeLookupKeyServiceInfoExplorer(result as ServiceWithLookupKeyCAResultBase));
-        this.register(parserServiceFeature, (result) => new ParserLookupKeyServiceInfoExplorer(result as ParserForCultureClassRetrieval));
-        this.register(comparerServiceFeature, (result) => new ComparerLookupKeyServiceInfoExplorer(result as ComparerServiceClassRetrieval));
-        this.register(converterServiceFeature, (result) => new ConverterLookupKeyServiceInfoExplorer(result as ConverterServiceClassRetrieval));
-        this.register(formatterServiceFeature, (result) => new FormatterLookupKeyServiceInfoExplorer(result as FormatterServiceClassRetrieval));
-        this.register(identifierServiceFeature, (result) => new IdentifierLookupKeyServiceInfoExplorer(result as IdentifierServiceClassRetrieval));
-        this.register(propertyNameFeature, (result) => new PropertyResultExplorer(result as ConfigPropertyResult));
-        this.register(l10nPropertiesFeature, (result) => new LocalizedPropertyResultExplorer(result as LocalizedPropertyResult));
-        this.register(errorFeature, (result) => new ErrorResultExplorer(result as ConfigErrorResult));
-        this.register(valueHostFeature, (result) => new ValueHostConfigResultsExplorer(result as ValueHostConfigResults));
-        this.register(validatorFeature, (result) => new ValidatorConfigResultsExplorer(result as ValidatorConfigResults));
-        this.register(conditionFeature, (result) => new ConditionConfigResultsExplorer(result as ConditionConfigResults));
+        this.register(parserServiceFeature, (result) => new ParserLookupKeyServiceInfoExplorer(result as ParsersByCultureCAResult));
+        this.register(comparerServiceFeature, (result) => new ComparerLookupKeyServiceInfoExplorer(result as ComparerServiceCAResult));
+        this.register(converterServiceFeature, (result) => new ConverterLookupKeyServiceInfoExplorer(result as ConverterServiceCAResult));
+        this.register(formatterServiceFeature, (result) => new FormatterLookupKeyServiceInfoExplorer(result as FormatterServiceCAResult));
+        this.register(identifierServiceFeature, (result) => new IdentifierLookupKeyServiceInfoExplorer(result as IdentifierServiceCAResult));
+        this.register(propertyNameFeature, (result) => new PropertyResultExplorer(result as PropertyCAResult));
+        this.register(l10nPropertiesFeature, (result) => new LocalizedPropertyResultExplorer(result as LocalizedPropertyCAResult));
+        this.register(errorFeature, (result) => new ErrorResultExplorer(result as ErrorCAResult));
+        this.register(valueHostFeature, (result) => new ValueHostConfigResultsExplorer(result as ValueHostConfigCAResult));
+        this.register(validatorFeature, (result) => new ValidatorConfigResultsExplorer(result as ValidatorConfigCAResult));
+        this.register(conditionFeature, (result) => new ConditionConfigResultsExplorer(result as ConditionConfigCAResult));
     }
     /**
      * Create the appropriate ConfigResultsExplorer object for the ConfigResults object based on the feature.

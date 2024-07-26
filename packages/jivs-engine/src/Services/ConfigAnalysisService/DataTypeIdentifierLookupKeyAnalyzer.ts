@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { ServiceWithLookupKeyCAResultBase, IdentifierServiceClassRetrieval, identifierServiceFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ServiceWithLookupKeyCAResultBase, IdentifierServiceCAResult, identifierServiceFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IDataTypeIdentifier } from "../../Interfaces/DataTypeIdentifier";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -24,11 +24,11 @@ import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
  * to report an error. It has been coded to support the error case anyway.
  * 
  * Expected results:
- * - Creates an IdentifierServiceClassRetrieval for feature='identifier'.
+ * - Creates an IdentifierServiceCAResult for feature='identifier'.
  * 
  * When found:
  * ```ts
- * {  // IdentifierServiceClassRetrieval
+ * {  // IdentifierServiceCAResult
  *      feature: identifierServiceFeature,
  *      classFound: 'MyIdentifier',
  *      instance: identifierInstance,
@@ -36,7 +36,7 @@ import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
  * ```
  * When not found:
  * ```ts
- * {  // IdentifierServiceClassRetrieval
+ * {  // IdentifierServiceCAResult
  *      feature: identifierServiceFeature,
  *      severity: 'error',
  *      message: 'error message',
@@ -54,7 +54,7 @@ export class DataTypeIdentifierLookupKeyAnalyzer extends OneClassPerLookupKeyAna
     }
 
     public analyze(key: string, container: ValueHostConfig): ServiceWithLookupKeyCAResultBase {
-        let info: IdentifierServiceClassRetrieval = {
+        let info: IdentifierServiceCAResult = {
             feature: identifierServiceFeature
         };
 

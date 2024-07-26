@@ -3,7 +3,7 @@
  * @module Services/ConcreteClasses/ConfigAnalysisService
  */
 
-import { CAIssueSeverity, ConfigPropertyResult, IAnalysisResultsHelper, ValidatorConfigResults, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
+import { CAIssueSeverity, PropertyCAResult, IAnalysisResultsHelper, ValidatorConfigCAResult, propertyNameFeature } from "../../Interfaces/ConfigAnalysisService";
 import { IValidationServices } from "../../Interfaces/ValidationServices";
 import { ValidatorConfig } from "../../Interfaces/Validator";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -22,7 +22,7 @@ import { ConfigPropertyAnalyzerBase } from "./ConfigPropertyAnalyzerBase";
  * and the user doesn't need additional instructions.
  */
 export abstract class ValidatorConfigPropertyAnalyzerBase extends
-    ConfigPropertyAnalyzerBase<ValidatorConfig, ValidatorConfigResults> {
+    ConfigPropertyAnalyzerBase<ValidatorConfig, ValidatorConfigCAResult> {
 
 }
 
@@ -35,7 +35,7 @@ export abstract class ValidatorConfigPropertyAnalyzerBase extends
  * the TextLocalizerService and all cultures registered.
  */
 export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigPropertyAnalyzerBase {
-    public analyze(config: ValidatorConfig, results: ValidatorConfigResults, valueHostConfig: ValueHostConfig,
+    public analyze(config: ValidatorConfig, results: ValidatorConfigCAResult, valueHostConfig: ValueHostConfig,
         helper: IAnalysisResultsHelper<IValidationServices>): void {
         this.checkMessagePropertiesForTokens(config, results, valueHostConfig, helper);
         this.reviewErrorMessageLocalizations(config, results, helper);
@@ -49,11 +49,11 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
      * is added to the DataTypeFormatterLookupKeyAnalyzer.
      * If the token is not valid, an error is added to the validatorProperties array.
      * If there are no tokens, nothing is added.
-    * @param vhcResults - The ValidatorConfigResults object to add the results to.
+    * @param vhcResults - The ValidatorConfigCAResult object to add the results to.
     * @param vhc - The ValueHostConfig object to use for the DataTypeFormatterLookupKeyAnalyzer.
      */
     protected checkMessagePropertiesForTokens(config: ValidatorConfig,
-        vhcResults: ValidatorConfigResults, vhc: ValueHostConfig,
+        vhcResults: ValidatorConfigCAResult, vhc: ValueHostConfig,
         helper: IAnalysisResultsHelper<IValidationServices>): void {
 
         let propResults = vhcResults.properties;
@@ -75,16 +75,16 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
     }
 
     /**
-     * Reviews the error message localizations for a given ValidatorConfigResults object.
+     * Reviews the error message localizations for a given ValidatorConfigCAResult object.
      * It checks the errorMessagel10n and summaryMessagel10n properties for localization on
-     * all cultures, adding the results to the properties array in a LocalizedPropertyResult object.
+     * all cultures, adding the results to the properties array in a LocalizedPropertyCAResult object.
      * That result will host any errors found, such as lacking data in the TextLocalizerService.
      * If the errorMessage or summaryMessage is a function, it is ignored.
-     * @param vhcResults - The ValidatorConfigResults object containing the validator 
+     * @param vhcResults - The ValidatorConfigCAResult object containing the validator 
      * configuration and property results.
      */
     protected reviewErrorMessageLocalizations(config: ValidatorConfig,
-        vhcResults: ValidatorConfigResults,
+        vhcResults: ValidatorConfigCAResult,
         helper: IAnalysisResultsHelper<IValidationServices>): void {
         function checkForOneProperty(propertyName: string, l10nValue: string | null | undefined,
             fallbackValue: any
@@ -117,9 +117,9 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
  * Confirm that conditionConfig is not also assigned, or its an error.
  */
 export class ConditionCreatorConfigPropertyAnalyzer extends ValidatorConfigPropertyAnalyzerBase {
-    public analyze(config: ValidatorConfig, results: ValidatorConfigResults, valueHostConfig: ValueHostConfig,
+    public analyze(config: ValidatorConfig, results: ValidatorConfigCAResult, valueHostConfig: ValueHostConfig,
         helper: IAnalysisResultsHelper<IValidationServices>): void {
-        let propResult: ConfigPropertyResult = {
+        let propResult: PropertyCAResult = {
             feature: propertyNameFeature,
             propertyName: 'conditionCreator',
             severity: undefined!,

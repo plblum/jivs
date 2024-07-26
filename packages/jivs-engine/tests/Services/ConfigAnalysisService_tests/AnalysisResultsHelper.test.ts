@@ -1,9 +1,9 @@
 import { DataTypeIdentifierLookupKeyAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeIdentifierLookupKeyAnalyzer';
 import { DataTypeConverterLookupKeyAnalyzer } from '../../../src/Services/ConfigAnalysisService/DataTypeConverterLookupKeyAnalyzer';
 import {
-    AnalysisArgs, ConfigErrorResult, ConfigPropertyResult, FormatterServiceClassRetrieval, MultiClassRetrieval, ValidatorConfigResults,
+    AnalysisArgs, ErrorCAResult, PropertyCAResult, FormatterServiceCAResult, MultiClassRetrieval, ValidatorConfigCAResult,
     converterServiceFeature,
-    formatterForCultureFeature,
+    formattersByCultureFeature,
     formatterServiceFeature,
     identifierServiceFeature,
     lookupKeyFeature,
@@ -21,7 +21,7 @@ import {
     createServices,
     checkLookupKeyResultsForNoService,
     checkLookupKeyIssue,
-    checkConfigPropertyResultsFromArray,
+    checkPropertyCAResultsFromArray,
     checkLookupKeyResultForService
 } from './support';
 import { CultureService } from '../../../src/Services/CultureService';
@@ -76,7 +76,7 @@ describe('AnalysisResultsHelper', () => {
         }
         public publicify_checkMessageTokens(message: string | null | undefined | ((validator: IValidator) => string),
             vc: ValidatorConfig, vhc: ValueHostConfig,
-            propertyName: string, validatorProperties: Array<ConfigPropertyResult>): void
+            propertyName: string, validatorProperties: Array<PropertyCAResult>): void
         {
             super.checkMessageTokens(message, vc, vhc, propertyName, validatorProperties);
         }
@@ -416,7 +416,7 @@ describe('AnalysisResultsHelper', () => {
             return testItem;
         };
         // lookupKey is null is no change to properties array nor results.lookupKeyResults
-        test('should not add a ConfigPropertyResult nor results.lookupKeyResults when lookupKey is null', () => {
+        test('should not add a PropertyCAResult nor results.lookupKeyResults when lookupKey is null', () => {
             const valueHostConfig: ValueHostConfig = {
                 name: 'testValueHost',
                 valueHostType: ValueHostType.Static,
@@ -424,7 +424,7 @@ describe('AnalysisResultsHelper', () => {
 
             let testItem = setupForTheseTests();
 
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.checkLookupKeyProperty('PropertyName', null,
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
@@ -434,7 +434,7 @@ describe('AnalysisResultsHelper', () => {
             expect(testItem.results.lookupKeysIssues).toHaveLength(0);
         }); 
         // lookupKey is empty string no change to properties array nor results.lookupKeyResults
-        test('should not add a ConfigPropertyResult nor results.lookupKeyResults when lookupKey is an empty string', () => {
+        test('should not add a PropertyCAResult nor results.lookupKeyResults when lookupKey is an empty string', () => {
             const valueHostConfig: ValueHostConfig = {
                 name: 'testValueHost',
                 valueHostType: ValueHostType.Static,
@@ -442,7 +442,7 @@ describe('AnalysisResultsHelper', () => {
 
             let testItem = setupForTheseTests();
 
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.checkLookupKeyProperty('PropertyName', '',
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
@@ -452,7 +452,7 @@ describe('AnalysisResultsHelper', () => {
             expect(testItem.results.lookupKeysIssues).toHaveLength(0);
         });
         // same but lookup key is " " so it is trimmed to an empty string
-        test('should not add a ConfigPropertyResult nor results.lookupKeyResults when lookupKey is an empty string with whitespace', () => {
+        test('should not add a PropertyCAResult nor results.lookupKeyResults when lookupKey is an empty string with whitespace', () => {
             const valueHostConfig: ValueHostConfig = {
                 name: 'testValueHost',
                 valueHostType: ValueHostType.Static,
@@ -460,7 +460,7 @@ describe('AnalysisResultsHelper', () => {
 
             let testItem = setupForTheseTests();
 
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.checkLookupKeyProperty('PropertyName', ' ',
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
@@ -471,7 +471,7 @@ describe('AnalysisResultsHelper', () => {
         });
         // lookupKey has surrounding whitespace like " Number " so it is otherwise a valid lookup key
         // means it will return a Value is not an exact match message in properties.
-        test('should add a ConfigPropertyResult with an error when lookupKey has surrounding whitespace. Should also add lookupKeyIssue with lookupKey trimmed', () => {
+        test('should add a PropertyCAResult with an error when lookupKey has surrounding whitespace. Should also add lookupKeyIssue with lookupKey trimmed', () => {
             const valueHostConfig: ValueHostConfig = {
                 name: 'testValueHost',
                 valueHostType: ValueHostType.Static,
@@ -479,19 +479,19 @@ describe('AnalysisResultsHelper', () => {
 
             let testItem = setupForTheseTests();
 
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.checkLookupKeyProperty('PropertyName', ' Number ',
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
             )
-            checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
+            checkPropertyCAResultsFromArray(properties, 0, 'PropertyName',
                 'Value is not an exact match to the expected value of "Number". Fix it.', CAIssueSeverity.error);
 
             checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter);
             expect(testItem.results.lookupKeysIssues).toHaveLength(0);
         });
         // same but use lowercase "number"
-        test('should add a ConfigPropertyResult when lookupKey is lowercase "number"', () => {
+        test('should add a PropertyCAResult when lookupKey is lowercase "number"', () => {
             const valueHostConfig: ValueHostConfig = {
                 name: 'testValueHost',
                 valueHostType: ValueHostType.Static,
@@ -499,19 +499,19 @@ describe('AnalysisResultsHelper', () => {
 
             let testItem = setupForTheseTests();
 
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.checkLookupKeyProperty('PropertyName', 'number',
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
             );
-            checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
+            checkPropertyCAResultsFromArray(properties, 0, 'PropertyName',
                 'Value is not an exact match to the expected value of "Number". Fix it.', CAIssueSeverity.error);
 
             checkLookupKeyIssue(testItem.results, 0, 'number', 'case insensitive match');            
         });
         // lookupKey is custom but it is for a data Type LookupKey, so no service
         // gets a message about the custom lookup key with advice to fix it.
-        test('should add a ConfigPropertyResult when lookupKey is custom and ServiceName=null', () => {
+        test('should add a PropertyCAResult when lookupKey is custom and ServiceName=null', () => {
             const valueHostConfig: ValueHostConfig = {
                 name: 'testValueHost',
                 valueHostType: ValueHostType.Static,
@@ -519,11 +519,11 @@ describe('AnalysisResultsHelper', () => {
 
             let testItem = setupForTheseTests();
 
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.checkLookupKeyProperty('PropertyName', 'custom',
                 null, valueHostConfig, properties);
-            checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
+            checkPropertyCAResultsFromArray(properties, 0, 'PropertyName',
                 'Lookup key "custom" is unknown.', CAIssueSeverity.info);
 
             checkLookupKeyResultsForNoService(testItem.results.lookupKeyResults, 'custom', ServiceName.formatter);
@@ -545,9 +545,9 @@ describe('AnalysisResultsHelper', () => {
                 
             }
             // test cases:
-            // 1. lookupKey is the same as the identifier's dataTypeLookupKey does not add a ConfigPropertyResult
+            // 1. lookupKey is the same as the identifier's dataTypeLookupKey does not add a PropertyCAResult
             //    but does add a LookupKeyCAResult with the identifier service
-            // 2. case insensitive match to the identifier's dataTypeLookupKey adds a ConfigPropertyResult
+            // 2. case insensitive match to the identifier's dataTypeLookupKey adds a PropertyCAResult
             //   with "Value is not an exact match" error message.
             
             test('should add a LookupKeyCAResult with the identifier service when lookupKey matches the identifier dataTypeLookupKey', () => {
@@ -559,7 +559,7 @@ describe('AnalysisResultsHelper', () => {
                 let testItem = setupForTheseTests();
                 testItem.services.dataTypeIdentifierService.register(new TestClassIdentifier());
 
-                let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+                let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
                 testItem.checkLookupKeyProperty('PropertyName', testLookupKey,
                     null, valueHostConfig, properties);
@@ -571,7 +571,7 @@ describe('AnalysisResultsHelper', () => {
         });
         describe('Not Found cases using formatter', () => {
             // same with serviceName supplied reports error "Not found"
-            test('should add a ConfigPropertyResult when lookupKey is custom and ServiceName supplied', () => {
+            test('should add a PropertyCAResult when lookupKey is custom and ServiceName supplied', () => {
                 const valueHostConfig: ValueHostConfig = {
                     name: 'testValueHost',
                     valueHostType: ValueHostType.Static,
@@ -579,12 +579,12 @@ describe('AnalysisResultsHelper', () => {
 
                 let testItem = setupForTheseTests();
 
-                let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+                let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
                 testItem.checkLookupKeyProperty('PropertyName', 'custom',
                     ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
                 );
-                checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
+                checkPropertyCAResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register a DataTypeFormatter to dataTypeFormatterService.', CAIssueSeverity.error);
                 checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'custom', ServiceName.formatter);
                 checkLookupKeyIssue(testItem.results, 0, 'custom', 'not already known');
@@ -593,19 +593,19 @@ describe('AnalysisResultsHelper', () => {
             // lookupKey is Number and has been registered through registerLookupKey as just a DataType lookupKey.
             // It has no other services. We call checkLookupKeyProperty with 
             // with the Formatter service and get the same not found error.
-            test('should add a ConfigPropertyResult when lookupKey is known but not registered to the service', () => {
+            test('should add a PropertyCAResult when lookupKey is known but not registered to the service', () => {
                 const valueHostConfig: ValueHostConfig = {
                     name: 'testValueHost',
                     valueHostType: ValueHostType.Static,
                 };
 
                 let testItem = setupForTheseTests();
-                let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+                let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
                 testItem.checkLookupKeyProperty('PropertyName', LookupKey.Number,
                     ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
                 );
-                checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
+                checkPropertyCAResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register a DataTypeFormatter to dataTypeFormatterService.', CAIssueSeverity.error);
                 checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
@@ -613,7 +613,7 @@ describe('AnalysisResultsHelper', () => {
 
             // similar with the lookup key is "Custom" and has a LookupKeyFallbackService mapping it to LookupKey.Number
             // will generate a warning with `Lookup key "${lookupKey}" does not have a ${className} registered but it will also try the Lookup Key "${fallbackLookupKey}".`
-            test('with a custom lookup key that has a LookupKeyFallbackService to Number and no DataTypeFormatter for the custom look up key, should add a ConfigPropertyResult with a warning', () => {
+            test('with a custom lookup key that has a LookupKeyFallbackService to Number and no DataTypeFormatter for the custom look up key, should add a PropertyCAResult with a warning', () => {
                 const valueHostConfig: ValueHostConfig = {
                     name: 'testValueHost',
                     valueHostType: ValueHostType.Static,
@@ -621,19 +621,19 @@ describe('AnalysisResultsHelper', () => {
 
                 let testItem = setupForTheseTests();
                 testItem.publicify_services.lookupKeyFallbackService.register('Custom', LookupKey.Number);
-                let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+                let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
                 testItem.checkLookupKeyProperty('PropertyName', 'Custom',
                     ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
                 );
-                checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
+                checkPropertyCAResultsFromArray(properties, 0, 'PropertyName',
                     'Lookup key "Custom" does not have a DataTypeFormatter registered but it will also try the Lookup Key "Number".', CAIssueSeverity.warning);
                 checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
         });
         describe('Not Found cases using converter', () => {
-            test('should add a ConfigPropertyResult when lookupKey is custom and ServiceName supplied', () => {
+            test('should add a PropertyCAResult when lookupKey is custom and ServiceName supplied', () => {
                 const valueHostConfig: ValueHostConfig = {
                     name: 'testValueHost',
                     valueHostType: ValueHostType.Static,
@@ -642,12 +642,12 @@ describe('AnalysisResultsHelper', () => {
 
                 let testItem = setupForTheseTests();
 
-                let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+                let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
                 testItem.checkLookupKeyProperty('PropertyName', 'custom',
                     ServiceName.converter, valueHostConfig, properties, 'DataTypeConverter', 'dataTypeConverterService'
                 );
-                checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
+                checkPropertyCAResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register a DataTypeConverter to dataTypeConverterService.', CAIssueSeverity.error);
                 checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'custom', ServiceName.converter);
                 checkLookupKeyIssue(testItem.results, 0, 'custom', 'not already known');
@@ -656,7 +656,7 @@ describe('AnalysisResultsHelper', () => {
             // lookupKey is Number and has been registered through registerLookupKey as just a DataType lookupKey.
             // It has no other services. We call checkLookupKeyProperty with 
             // with the Converter service and get the same not found error.
-            test('should add a ConfigPropertyResult when lookupKey is known but not registered to the service', () => {
+            test('should add a PropertyCAResult when lookupKey is known but not registered to the service', () => {
                 const valueHostConfig: ValueHostConfig = {
                     name: 'testValueHost',
                     valueHostType: ValueHostType.Static,
@@ -664,12 +664,12 @@ describe('AnalysisResultsHelper', () => {
                 };
 
                 let testItem = setupForTheseTests();
-                let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+                let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
                 testItem.checkLookupKeyProperty('PropertyName', LookupKey.Number,
                     ServiceName.converter, valueHostConfig, properties, 'DataTypeConverter', 'dataTypeConverterService'
                 );
-                checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
+                checkPropertyCAResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register a DataTypeConverter to dataTypeConverterService.', CAIssueSeverity.error);
                 checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.converter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
@@ -677,7 +677,7 @@ describe('AnalysisResultsHelper', () => {
             // For Converter, when custom, it does not use the LookupKeyFallbackService.
             // Its up to the user to supply the correct lookup key.
             // So in this test, the lookupKeyFallbackService is setup but effectively ignored.
-            test('with a Custom lookup key that has a LookupKeyFallbackService to Number and no DataTypeConverter for the custom look up key, should add a ConfigPropertyResult with a Not Found error', () => {
+            test('with a Custom lookup key that has a LookupKeyFallbackService to Number and no DataTypeConverter for the custom look up key, should add a PropertyCAResult with a Not Found error', () => {
                 const valueHostConfig: ValueHostConfig = {
                     name: 'testValueHost',
                     valueHostType: ValueHostType.Static,
@@ -686,12 +686,12 @@ describe('AnalysisResultsHelper', () => {
 
                 let testItem = setupForTheseTests();
                 testItem.publicify_services.lookupKeyFallbackService.register('Custom', LookupKey.Number);
-                let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+                let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
                 testItem.checkLookupKeyProperty('PropertyName', 'Custom',
                     ServiceName.converter, valueHostConfig, properties, 'DataTypeConverter', 'dataTypeConverterService'
                 );
-                checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
+                checkPropertyCAResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register', CAIssueSeverity.error);
                 checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.converter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
@@ -731,104 +731,104 @@ describe('AnalysisResultsHelper', () => {
             return services;
         }
 
-        test('3 cultures, all with messages in TextLocalizerService creates 1 LocalizedPropertyResult with its CultureText property containing an object mapping all 3 cultures to their text', () => {
+        test('3 cultures, all with messages in TextLocalizerService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures to their text', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let configPropertyResults: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkLocalization('PropName', 'l10nKeyAllCultures',
                 'fallbackText',
-                configPropertyResults);
+                propertyCAResults);
 
-            expect(configPropertyResults).toHaveLength(1);
+            expect(propertyCAResults).toHaveLength(1);
 
-            let lct = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'en', 'en',
+            let lct = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'en', 'en',
                 'This is a test message', undefined);
-            lct = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'fr', 'fr',
+            lct = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'fr', 'fr',
                 'Ceci est un message de test', undefined);
-            lct = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'es', 'es',
+            lct = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'es', 'es',
                 'Este es un mensaje de prueba', undefined);
 
         });        
         // same 3 cultures, but using l10nKey_en. Still get 3 entries 
         // in cultureText but missing cultures get a warning severity with error message containing "localization not declared"
-        test('3 cultures, only "en" has text in TextLocalizerService creates 1 LocalizedPropertyResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are warning messages', () => {
+        test('3 cultures, only "en" has text in TextLocalizerService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are warning messages', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let configPropertyResults: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkLocalization('PropName', 'l10nKey_en',
                 'fallbackText',
-                configPropertyResults);
+                propertyCAResults);
 
-            expect(configPropertyResults).toHaveLength(1);
+            expect(propertyCAResults).toHaveLength(1);
 
-            let lct1 = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'en', 'en',
+            let lct1 = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'en', 'en',
                 'This is a test message', undefined);
             
-            let lct2 = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'fr', 'fr',
+            let lct2 = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'fr', 'fr',
                 undefined, true);
-            let lct3 = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'es', 'es',
+            let lct3 = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'es', 'es',
                 undefined, true);
         });
         // same as above but fallback parameter is null, meaning missing cultures get an error severity with a message containing "Not text will be used"
-        test('3 cultures, only "en" has text in TextLocalizerService creates 1 LocalizedPropertyResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are error messages', () => {
+        test('3 cultures, only "en" has text in TextLocalizerService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are error messages', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let configPropertyResults: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkLocalization('PropName', 'l10nKey_en',
                 null,
-                configPropertyResults);
+                propertyCAResults);
 
-            expect(configPropertyResults).toHaveLength(1);
+            expect(propertyCAResults).toHaveLength(1);
 
-            let lct1 = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'en', 'en',
+            let lct1 = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'en', 'en',
                 'This is a test message', undefined);
-            let lct2 = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'fr', 'fr',
+            let lct2 = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'fr', 'fr',
                 undefined, false);
-            let lct3 = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'es', 'es',
+            let lct3 = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'es', 'es',
                 undefined, false);
             
         });
 
         // using l10nKey_frAndDefault, all 3 cultures get a message, but en and es show the '*' culture text
         
-        test('3 cultures, only "fr" has text in TextLocalizerService creates 1 LocalizedPropertyResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are warning messages', () => {
+        test('3 cultures, only "fr" has text in TextLocalizerService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are warning messages', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let configPropertyResults: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkLocalization('PropName', 'l10nKey_frAndDefault',
                 'fallbackText',
-                configPropertyResults);
+                propertyCAResults);
 
-            expect(configPropertyResults).toHaveLength(1);
+            expect(propertyCAResults).toHaveLength(1);
 
-            let lct1 = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'en', '*',
+            let lct1 = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'en', '*',
                 'This is the default test message', undefined);
-            let lct2 = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'fr', 'fr',
+            let lct2 = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'fr', 'fr',
                 'Ceci est un message de test', undefined);
-            let lct3 = checkLocalizedPropertyResultFromArray(configPropertyResults, 0, 'PropName', 3, 'es', '*',
+            let lct3 = checkLocalizedPropertyResultFromArray(propertyCAResults, 0, 'PropName', 3, 'es', '*',
                 'This is the default test message', undefined);
         });
         // null l10nvalue parameter makes no changes
         test('With null passed as the localization Key (l10nKey) parameter, no changes are made to the properties array.', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let configPropertyResults: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkLocalization('PropName', null,
                 'fallbackText',
-                configPropertyResults);
+                propertyCAResults);
 
-            expect(configPropertyResults).toHaveLength(0);
+            expect(propertyCAResults).toHaveLength(0);
         });
         // same with empty string l10nvalue parameter
         test('With an empty string passed as the localization Key (l10nKey) parameter, no changes are made to the properties array.', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let configPropertyResults: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkLocalization('PropName', '',
                 'fallbackText',
-                configPropertyResults);
+                propertyCAResults);
 
-            expect(configPropertyResults).toHaveLength(0);
+            expect(propertyCAResults).toHaveLength(0);
         });
     });
     describe('validateToken function', () => {
@@ -899,7 +899,7 @@ describe('AnalysisResultsHelper', () => {
         function executeFunction(testItem: Publicify_AnalysisResultsHelper<IValidationServices>,
             message: string | null | undefined | ((validator: IValidator) => string),
             expectedLookupKeyResultsCount: number,
-            expectedPropertiesCount: number): Array<ConfigPropertyResult | ConfigErrorResult> {
+            expectedPropertiesCount: number): Array<PropertyCAResult | ErrorCAResult> {
             let vc: ValidatorConfig = {
                 errorMessage: message, 
                 conditionConfig: { conditionType: 'Test' }
@@ -908,7 +908,7 @@ describe('AnalysisResultsHelper', () => {
                 name: 'testValueHost', dataType: LookupKey.Number,
                 validatorConfigs: [vc]
              };
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkMessageTokens(message, vc, vhc, 'PropertyName', properties);
             expect(testItem.publicify_results.lookupKeyResults).toHaveLength(expectedLookupKeyResultsCount);
             expect(properties).toHaveLength(expectedPropertiesCount);
@@ -958,7 +958,7 @@ describe('AnalysisResultsHelper', () => {
             let testItem = setupTestItem(services, true);
             let message = '{Token:LookupKey';
             let valConfigProps = executeFunction(testItem, message, 0, 1);
-            let prop = valConfigProps[0] as ConfigPropertyResult;
+            let prop = valConfigProps[0] as PropertyCAResult;
             expect(prop).toBeDefined();
             checkSyntaxError(prop, 'PropertyName');
         });
@@ -969,7 +969,7 @@ describe('AnalysisResultsHelper', () => {
             let testItem = setupTestItem(services, true);
             let message = '{ Token:LookupKey}';
             let valConfigProps = executeFunction(testItem, message, 0, 1);
-            let prop = valConfigProps[0] as ConfigPropertyResult;
+            let prop = valConfigProps[0] as PropertyCAResult;
             expect(prop).toBeDefined();
             checkSyntaxError(prop, 'PropertyName');
         });
@@ -985,8 +985,8 @@ describe('AnalysisResultsHelper', () => {
             // checkCultureRequestContainsClassName(serviceInfo,
             //     'NumberFormatter', NumberFormatter, 'en', 'en');
             let lkResult = checkLookupKeyResults(testItem.results.lookupKeyResults, LookupKey.Number);
-            let mcr = checkLookupKeyResultsForMultiClassRetrievalService(lkResult, ServiceName.formatter, 1) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalFoundInService(mcr, formatterForCultureFeature,
+            let mcr = checkLookupKeyResultsForMultiClassRetrievalService(lkResult, ServiceName.formatter, 1) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalFoundInService(mcr, formattersByCultureFeature,
                 'en', 'en', 'NumberFormatter', NumberFormatter);
         });
         // same as above with 2 cultures, en and en-US that fallsback to en
@@ -1006,9 +1006,9 @@ describe('AnalysisResultsHelper', () => {
             // checkCultureRequestContainsClassName(serviceInfo,
             //     'NumberFormatter', NumberFormatter, 'en-US', 'en-US');
             let lkResult = checkLookupKeyResults(testItem.results.lookupKeyResults, LookupKey.Number);
-            let mcr = checkLookupKeyResultsForMultiClassRetrievalService(lkResult, ServiceName.formatter, 2) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalFoundInService(mcr, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
-            checkCultureSpecificClassRetrievalFoundInService(mcr, formatterForCultureFeature, 'en-US', 'en-US', 'NumberFormatter', NumberFormatter);
+            let mcr = checkLookupKeyResultsForMultiClassRetrievalService(lkResult, ServiceName.formatter, 2) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalFoundInService(mcr, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(mcr, formattersByCultureFeature, 'en-US', 'en-US', 'NumberFormatter', NumberFormatter);
         });
 
 
@@ -1029,10 +1029,10 @@ describe('AnalysisResultsHelper', () => {
             // let numberSI = checkServiceInfo(numberLKI, true, 1);
             // checkCultureRequestContainsClassName(numberSI,
             //     'NumberFormatter', NumberFormatter, 'en', 'en');
-            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalNotFoundInService(customSI, formatterForCultureFeature, 'en');
-            let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalFoundInService(numberSI, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalNotFoundInService(customSI, formattersByCultureFeature, 'en');
+            let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalFoundInService(numberSI, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
 
         });
         // same but we actually have a Formatter for "custom"
@@ -1056,8 +1056,8 @@ describe('AnalysisResultsHelper', () => {
             let message = '{Token:Custom}';
             executeFunction(testItem, message, 1, 0);
 
-            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
         });
 
         // with 2 cultures, en and en-US with fallback to en, our customFormatter 
@@ -1087,9 +1087,9 @@ describe('AnalysisResultsHelper', () => {
             let message = '{Token:Custom}';
             executeFunction(testItem, message, 1, 0);
 
-            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en-US', 'en', 'CustomFormatter', CustomFormatter);   
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en-US', 'en', 'CustomFormatter', CustomFormatter);   
         });
 
         // message has two different tokens with different lookupkeys and one token without. It has 1 culture. Results should have two requests found
@@ -1113,10 +1113,10 @@ describe('AnalysisResultsHelper', () => {
             let message = 'A {Token:Custom} B {Token2:Number} C';
             executeFunction(testItem, message, 2, 0);
 
-            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
-            let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalFoundInService(numberSI, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
+            let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalFoundInService(numberSI, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
 
         });
 
@@ -1143,13 +1143,13 @@ describe('AnalysisResultsHelper', () => {
             let message = 'A {Token:Custom} B {Token2:Number} C';
             executeFunction(testItem, message, 2, 0);
 
-            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
-            checkCultureSpecificClassRetrievalNotFoundInService(customSI, formatterForCultureFeature, 'fr');
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalFoundInService(customSI, formattersByCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
+            checkCultureSpecificClassRetrievalNotFoundInService(customSI, formattersByCultureFeature, 'fr');
             // NumberFormatter supports all cultures so it should be found for both
-            let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceClassRetrieval;
-            checkCultureSpecificClassRetrievalFoundInService(numberSI, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
-            checkCultureSpecificClassRetrievalFoundInService(numberSI, formatterForCultureFeature, 'fr', 'fr', 'NumberFormatter', NumberFormatter);
+            let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceCAResult;
+            checkCultureSpecificClassRetrievalFoundInService(numberSI, formattersByCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
+            checkCultureSpecificClassRetrievalFoundInService(numberSI, formattersByCultureFeature, 'fr', 'fr', 'NumberFormatter', NumberFormatter);
         });
 
     });    
@@ -1173,41 +1173,41 @@ describe('AnalysisResultsHelper', () => {
         }
         test('name is undefined makes no changes to properties', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValueHostNameExists(undefined, 'PropertyName', properties);
             expect(properties).toHaveLength(0);
         });
 
         test('name is null makes no changes to properties', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValueHostNameExists(null, 'PropertyName', properties);
             expect(properties).toHaveLength(0);
         });
 
         test('name is empty string makes no changes to properties', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValueHostNameExists('', 'PropertyName', properties);
             expect(properties).toHaveLength(0);
         });
         test('name that is only whitespace is makes no changes to properties', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValueHostNameExists('   ', 'PropertyName', properties);
             expect(properties).toHaveLength(0);
         });
         test('name that is not a string adds error "Must be a string"', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValueHostNameExists(123, 'PropertyName', properties);
             expect(properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 'PropertyName', 'Must be a string', CAIssueSeverity.error);
         });
         test('name that is an exact match to a value host name in the valueHostConfigs array makes no changes to properties', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.results.valueHostNames = ['testValueHost'];
             testItem.checkValueHostNameExists('testValueHost', 'PropertyName', properties);
@@ -1215,41 +1215,41 @@ describe('AnalysisResultsHelper', () => {
         });
         test('With empty valueHostConfigs array, valid name syntax will always report "ValueHostName does not exist"', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.checkValueHostNameExists('testValueHost', 'PropertyName', properties);
             expect(properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 'PropertyName', 'ValueHostName does not exist', CAIssueSeverity.error);
         });
         test('name that is a case insensitive match to a value host name in the valueHostConfigs array makes error "Change to "${name}"', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.results.valueHostNames = ['testValueHost'];
             testItem.checkValueHostNameExists('testvaluehost', 'PropertyName', properties);
             expect(properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 'PropertyName', 'Change to "testValueHost"', CAIssueSeverity.error);
         });
         test('name that has surrounding whitespace adds error "Remove whitespace"', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.results.valueHostNames = ['testValueHost'];
             testItem.checkValueHostNameExists('  testValueHost  ', 'PropertyName', properties);
             expect(properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 'PropertyName', 'Remove whitespace', CAIssueSeverity.error);
         });
         test('With non-empty valueHostConfigs array, valid name syntax that is not found in the array will always report "ValueHostName does not exist"', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
 
             testItem.results.valueHostNames = ['testValueHost'];
             testItem.checkValueHostNameExists('anotherValueHost', 'PropertyName', properties);
             expect(properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 'PropertyName', 'ValueHostName does not exist', CAIssueSeverity.error);
         });
 
@@ -1296,14 +1296,14 @@ describe('AnalysisResultsHelper', () => {
         
         test('value is undefined, no changes to properties', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents(undefined, 'PropertyName', null, null, properties);
             expect(properties).toHaveLength(0);
         });
 
         test('value is null, no changes to properties', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents(null, 'PropertyName', null, null, properties);
             expect(properties).toHaveLength(0);
 
@@ -1311,14 +1311,14 @@ describe('AnalysisResultsHelper', () => {
         // value is empty string, no changes to properties
         test('value is empty string, no changes to properties', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents('', 'PropertyName', null, null, properties);
             expect(properties).toHaveLength(0);
         });
         // value is whitespace string, no changes to properties
         test('value is whitespace string, no changes to properties', () => {
             let testItem = setupForTheseTests();
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents('   ', 'PropertyName', null, null, properties);
             expect(properties).toHaveLength(0);
         });
@@ -1326,54 +1326,54 @@ describe('AnalysisResultsHelper', () => {
 
         test('number value is assigned and valueLookupKey=null and conversionLookupKey = null, no changes to properties', () => {
             let testItem = setupForTheseTests();    // NumberDataTypeIdentifier registered
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents(123, 'PropertyName', null, null, properties);
             expect(properties).toHaveLength(0);
         });
 
         test('numeric string value is assigned and valueLookupKey=null and conversionLookupKey = LookupKey.Number, conversion succeeds using NumericStringToNumberConverter', () => {
             let testItem = setupForTheseTests();    // NumberDataTypeIdentifier and NumericStringToNumberConverter registered
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents('123', 'PropertyName', null, LookupKey.Number, properties);
             expect(properties).toHaveLength(0);
         });
         test('numeric string value is assigned and valueLookupKey=null and conversionLookupKey = LookupKey.Boolean, conversion fails due to lack of converter', () => {
             let testItem = setupForTheseTests();    // NumberDataTypeIdentifier registered
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents('123', 'PropertyName', null, LookupKey.Boolean, properties);
             expect(properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 'PropertyName', 'Value cannot be converted to Lookup Key "Boolean"', CAIssueSeverity.error);
         });
         test('number value is assigned and valueLookupKey=LookupKey.Number and conversionLookupKey = null, no changes to properties', () => {
             let testItem = setupForTheseTests();    // NumberDataTypeIdentifier registered
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents(123, 'PropertyName', LookupKey.Number, null, properties);
             expect(properties).toHaveLength(0);
         });
         test('number value is assigned and valueLookupKey=LookupKey.Number and conversionLookupKey = LookupKey.Number, no changes to properties', () => {
             let testItem = setupForTheseTests();    // NumberDataTypeIdentifier registered
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents(123, 'PropertyName', LookupKey.Number, LookupKey.Number, properties);
             expect(properties).toHaveLength(0);
         });
         test('numeric string value is assigned and valueLookupKey=LookupKey.String and conversionLookupKey = LookupKey.Number, conversion succeeds using NumericStringToNumberConverter', () => {
             let testItem = setupForTheseTests();    // NumberDataTypeIdentifier and NumericStringToNumberConverter registered
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents('123', 'PropertyName', LookupKey.String, LookupKey.Number, properties);
             expect(properties).toHaveLength(0);
         });
         test('numeric string value is assigned and valueLookupKey=LookupKey.String and conversionLookupKey = LookupKey.Boolean, conversion fails due to lack of converter', () => {
             let testItem = setupForTheseTests();    // NumberDataTypeIdentifier registered
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents('123', 'PropertyName', LookupKey.String, LookupKey.Boolean, properties);
             expect(properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 'PropertyName', 'Value cannot be converted to Lookup Key "Boolean"', CAIssueSeverity.error);
         });
         test('string value is assigned and valueLookupKey=null and conversionLookupKey = null, no changes to properties', () => {
             let testItem = setupForTheseTests();    // StringDataTypeIdentifier registered
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents('123', 'PropertyName', null, null, properties);
             expect(properties).toHaveLength(0);
         });
@@ -1382,10 +1382,10 @@ describe('AnalysisResultsHelper', () => {
         test('source data type is a custom object without datatype identifier, no changes to properties', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents({ value: 123 }, 'PropertyName', null, null, properties);
             expect(properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 'PropertyName', 'Value could not be validated', CAIssueSeverity.info);
         });
         // same but with conversionLookupKey=Number. Since there is no DataTypeConverter,
@@ -1393,10 +1393,10 @@ describe('AnalysisResultsHelper', () => {
         test('source data type is a custom object without datatype identifier, conversionLookupKey=Number, no changes to properties', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents({ value: 123 }, 'PropertyName', null, LookupKey.Number,properties);
             expect(properties).toHaveLength(1);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 'PropertyName', 'Value cannot be converted to Lookup Key "Number"',
                 CAIssueSeverity.error);
         });
@@ -1405,7 +1405,7 @@ describe('AnalysisResultsHelper', () => {
         test('source data type is a custom object without datatype identifier, valueLookupKey=Custom, no changes to properties', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkValuePropertyContents({ value: 123 }, 'PropertyName', 'Custom', null, properties);
             expect(properties).toHaveLength(0);
         });
@@ -1417,9 +1417,9 @@ describe('AnalysisResultsHelper', () => {
 
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkIsNotUndefined(value, propertyName, properties, CAIssueSeverity.error);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 propertyName, 'Value must be defined.', CAIssueSeverity.error);
         
         });
@@ -1430,9 +1430,9 @@ describe('AnalysisResultsHelper', () => {
 
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkIsNotUndefined(value, propertyName, properties, CAIssueSeverity.warning);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 propertyName, 'Value must be defined.', CAIssueSeverity.warning);
         
         });
@@ -1440,7 +1440,7 @@ describe('AnalysisResultsHelper', () => {
         test('should not add an error message when the value is not undefined', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             const propertyName = 'testProperty';
             const value = 'testValue';
             testItem.checkIsNotUndefined(value, propertyName, properties);
@@ -1455,9 +1455,9 @@ describe('AnalysisResultsHelper', () => {
 
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkIsNotNull(value, propertyName, properties, CAIssueSeverity.error);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 propertyName, 'Value must not be null.', CAIssueSeverity.error);
         
         });
@@ -1468,9 +1468,9 @@ describe('AnalysisResultsHelper', () => {
 
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkIsNotNull(value, propertyName, properties, CAIssueSeverity.warning);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 propertyName, 'Value should not be null.', CAIssueSeverity.warning);
         
         });
@@ -1478,7 +1478,7 @@ describe('AnalysisResultsHelper', () => {
         test('should not add an error message when the value is not null', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             const propertyName = 'testProperty';
             const value = 'testValue';
             testItem.checkIsNotNull(value, propertyName, properties);
@@ -1493,9 +1493,9 @@ describe('AnalysisResultsHelper', () => {
 
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkIsNotEmptyString(value, propertyName, properties, CAIssueSeverity.error);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 propertyName, 'Value must not be empty string.', CAIssueSeverity.error);
         
         });
@@ -1506,9 +1506,9 @@ describe('AnalysisResultsHelper', () => {
 
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             testItem.checkIsNotEmptyString(value, propertyName, properties, CAIssueSeverity.warning);
-            checkConfigPropertyResultsFromArray(properties, 0,
+            checkPropertyCAResultsFromArray(properties, 0,
                 propertyName, 'Value should not be empty string.', CAIssueSeverity.warning);
         
         });
@@ -1516,7 +1516,7 @@ describe('AnalysisResultsHelper', () => {
         test('checkIsNotEmptyString should not add an error message when the value is not an empty string', () => {
             let services = createServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
-            let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
+            let properties: Array<PropertyCAResult | ErrorCAResult> = [];
             const propertyName = 'testProperty';
             const value = 'testValue';
 
