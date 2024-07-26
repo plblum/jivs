@@ -106,7 +106,7 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
     public collectWithConfigs(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>> {
         let matches: Array<CAPathedResult<any>> = [];
         let preppedCriteria = this.prepCriteria(criteria);
-        this.results.configIssues.forEach((configResults) => {
+        this.results.valueHostResults.forEach((configResults) => {
             const explorer = this.factory.create(configResults);
             explorer.collect(preppedCriteria, matches, [], this.factory);
         });
@@ -171,7 +171,7 @@ export abstract class CAExplorerBase<T extends ConfigAnalysisResultBase> impleme
 
     /**
      * Gets the result of the configuration analysis, which is an object structure
-     * with data from Configuration objects in configIssues,
+     * with data from Configuration objects in valueHostResults,
      * and data from Lookup Keys and their associated services in lookupKeysInfo.
      * @returns The result of the configuration analysis.
      */

@@ -154,7 +154,7 @@ export interface IConfigAnalysisResults {
      * A list of all issues found in the ValueHostConfig objects, such as missing properties,
      * and their ValidatorConfigs and ConditionConfigs.
      */
-    configIssues: Array<ValueHostConfigResults>;
+    valueHostResults: Array<ValueHostConfigResults>;
 }
 
 /**
@@ -292,7 +292,7 @@ export interface IConfigAnalysisOutputService {
 export interface ICAExplorerBase<T extends ConfigAnalysisResultBase> {
     /**
      * Gets the result of the configuration analysis, which is an object structure
-     * with data from Configuration objects in configIssues,
+     * with data from Configuration objects in valueHostResults,
      * and data from Lookup Keys and their associated services in lookupKeysInfo.
      * @returns The result of the configuration analysis.
      */
@@ -344,7 +344,7 @@ export interface ICAExplorerBase<T extends ConfigAnalysisResultBase> {
 }
 
 // /**
-//  * Classes that implement will be created for each object found in IConfigAnalysisResults.configIssues.,
+//  * Classes that implement will be created for each object found in IConfigAnalysisResults.valueHostResults.,
 //  * based on the feature property. The ConfigAnalysisResultsExplorer is a factory of these.
 //  */
 // export interface ICAConfigResultsExplorer<T extends ConfigResults<TConfig>, TConfig>  extends ICAExplorerBase<T>

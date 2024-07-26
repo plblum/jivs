@@ -38,7 +38,7 @@ export function createConfigAnalysisResults(valueHostNames: Array<string>): ICon
         lookupKeysInfo: [],
         lookupKeysIssues: [],
         conditionsInfo: [],
-        configIssues: []
+        valueHostResults: []
     };
 
     return results;

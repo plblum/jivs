@@ -396,7 +396,7 @@ describe('ValueHostConfigAnalyzer', () => {
         });
     });
     describe('Various ValueHostConfigs', () => {
-        // test with name='testValueHost' and dataType=LookupKey.Number. results.configIssues has one entry. No issues are reported
+        // test with name='testValueHost' and dataType=LookupKey.Number. results.valueHostResults has one entry. No issues are reported
         test('when dataType assigned, should add its lookupKey to the results.lookupKeysInfo', () => {
             const testValueHostConfig: ValueHostConfig = {
                 valueHostType: ValueHostType.Static,

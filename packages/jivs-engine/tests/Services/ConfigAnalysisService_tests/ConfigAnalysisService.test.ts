@@ -142,7 +142,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 valueHostNames: ['testValueHost1', 'testValueHost2'],
                 lookupKeysInfo: [],
                 lookupKeysIssues: [],
-                configIssues: []
+                valueHostResults: []
             });
         });
         // same with 0 valueHostConfigs
@@ -161,7 +161,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 valueHostNames: [],
                 lookupKeysInfo: [],
                 lookupKeysIssues: [],
-                configIssues: []
+                valueHostResults: []
             });
         });
     });
@@ -375,13 +375,13 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(results.valueHostNames).toHaveLength(0);
             expect(results.lookupKeysInfo).toHaveLength(0);
             expect(results.lookupKeysIssues).toHaveLength(0);
-            expect(results.configIssues).toHaveLength(0);
+            expect(results.valueHostResults).toHaveLength(0);
             expect(testItem.publicify_helper).toBeDefined();
             expect(testItem.publicify_getServices()).toBe(services);
         });
         // just one valueHostConfig with a dataType of LookupKey.Number
         // should create a lookup key info entry for LookupKey.Number
-        test('With one valueHostConfig with a dataType of LookupKey.Number and just the DataTypePropertyAnalyzer, there should be a lookup key info entry for LookupKey.Number and one entry in configIssues', () => {
+        test('With one valueHostConfig with a dataType of LookupKey.Number and just the DataTypePropertyAnalyzer, there should be a lookup key info entry for LookupKey.Number and one entry in valueHostResults', () => {
             let services = createServices();
             let valueHostManagerConfig: ValueHostsManagerConfig = {
                 services: services,
@@ -410,8 +410,8 @@ describe('ConfigAnalysisServiceBase class', () => {
                 }
             ]);
             expect(results.lookupKeysIssues).toHaveLength(0);
-            expect(results.configIssues).toHaveLength(1);
-            expect(results.configIssues[0]).toEqual({
+            expect(results.valueHostResults).toHaveLength(1);
+            expect(results.valueHostResults[0]).toEqual({
                 feature: valueHostFeature,
                 valueHostName: 'testValueHost1',
                 properties: [],
@@ -445,7 +445,7 @@ describe('ConfigAnalysisServiceBase class', () => {
         // use a ManagerConfigBuilder as the source of configuration and parameter to analyze()
         // It should be configured with a single valueHostConfig with a dataType of LookupKey.Number
         // effectively matching an earlier test
-        test('With a ManagerConfigBuilder as the source of configuration, there should be a lookup key info entry for LookupKey.Number and one entry in configIssues', () => {
+        test('With a ManagerConfigBuilder as the source of configuration, there should be a lookup key info entry for LookupKey.Number and one entry in valueHostResults', () => {
             let services = createServices();
             let builder = new ValueHostsManagerConfigBuilder(services);
             builder.static('testValueHost1', LookupKey.Number);
@@ -472,8 +472,8 @@ describe('ConfigAnalysisServiceBase class', () => {
                 }
             ]);
             expect(results.lookupKeysIssues).toHaveLength(0);
-            expect(results.configIssues).toHaveLength(1);
-            expect(results.configIssues[0]).toEqual({
+            expect(results.valueHostResults).toHaveLength(1);
+            expect(results.valueHostResults[0]).toEqual({
                 feature: valueHostFeature,
                 valueHostName: 'testValueHost1',
                 properties: [],
@@ -556,7 +556,7 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
     //
     // 2nd has a dataType of LookupKey.String
 
-    test('With a complex configuration, there should be a lookup key info entry for LookupKey.Number and LookupKey.String and 2 entries in configIssues', () => {
+    test('With a complex configuration, there should be a lookup key info entry for LookupKey.Number and LookupKey.String and 2 entries in valueHostResults', () => {
         let services = createServices();
         registerAllConditions(services.conditionFactory);
         let builder = new ValueHostsManagerConfigBuilder(services);
@@ -581,9 +581,9 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
         checkLookupKeyInfo(results.lookupKeysInfo, LookupKey.String);
         checkLookupKeysInfoForService(results.lookupKeysInfo, LookupKey.Number, ServiceName.identifier);
         checkLookupKeysInfoForService(results.lookupKeysInfo, LookupKey.String, ServiceName.identifier);
-        expect(results.configIssues).toHaveLength(2);
-        let vhcConfigResults1 = results.configIssues[0] as ValueHostConfigResults;
-        let vhcConfigResults2 = results.configIssues[1] as ValueHostConfigResults;
+        expect(results.valueHostResults).toHaveLength(2);
+        let vhcConfigResults1 = results.valueHostResults[0] as ValueHostConfigResults;
+        let vhcConfigResults2 = results.valueHostResults[1] as ValueHostConfigResults;
         expect(vhcConfigResults1).toBeDefined();
         expect(vhcConfigResults2).toBeDefined();
         expect(vhcConfigResults1.valueHostName).toEqual('testValueHost1');
@@ -683,7 +683,7 @@ describe('ValidationManagerConfigAnalysisService', () => {
     // we'll use IValidationServices and ValidationManagerConfigBuilder.
     // Our helper must have registered the DataTypeParserLookupKeyAnalyzer added.
     // Write that test.
-    test('With a complex configuration, there should be a lookup key info entry for LookupKey.Number and LookupKey.String and 2 entries in configIssues', () => {
+    test('With a complex configuration, there should be a lookup key info entry for LookupKey.Number and LookupKey.String and 2 entries in valueHostResults', () => {
         let services = createServices();
         registerAllConditions(services.conditionFactory);
         services.dataTypeParserService.register(new NumberParser(['en'], {
@@ -739,9 +739,9 @@ describe('ValidationManagerConfigAnalysisService', () => {
         checkLookupKeysInfoForService(results.lookupKeysInfo, LookupKey.String, ServiceName.identifier);
         checkLookupKeyInfoForNoService(results.lookupKeysInfo, LookupKey.String, ServiceName.parser);
 
-        expect(results.configIssues).toHaveLength(2);
-        let vhcConfigResults1 = results.configIssues[0] as ValueHostConfigResults;
-        let vhcConfigResults2 = results.configIssues[1] as ValueHostConfigResults;
+        expect(results.valueHostResults).toHaveLength(2);
+        let vhcConfigResults1 = results.valueHostResults[0] as ValueHostConfigResults;
+        let vhcConfigResults2 = results.valueHostResults[1] as ValueHostConfigResults;
         expect(vhcConfigResults1).toBeDefined();
         expect(vhcConfigResults2).toBeDefined();
         // focus on the first ValueHostConfig.

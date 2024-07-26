@@ -74,8 +74,8 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
         
         // Analyze the config and populate the results object
         config.valueHostConfigs.forEach(vhConfig => {
-            let result = analysisArgs.valueHostConfigAnalyzer!.analyze(vhConfig, null, results.configIssues);
-            results.configIssues.push(result);
+            let result = analysisArgs.valueHostConfigAnalyzer!.analyze(vhConfig, null, results.valueHostResults);
+            results.valueHostResults.push(result);
         });
 
         this.gatherDataTypeIdentifierLookupKeys(helper);
@@ -95,7 +95,7 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
             valueHostNames: [],
             lookupKeysInfo: [],
             lookupKeysIssues: [],
-            configIssues: []
+            valueHostResults: []
         };
 
         results.cultureIds = this.services.cultureService.availableCultures();
