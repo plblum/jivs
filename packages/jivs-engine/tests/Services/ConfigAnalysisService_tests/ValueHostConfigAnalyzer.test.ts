@@ -5,7 +5,7 @@ import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisServi
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
 import {
     createServices,
-    checkConfigPropertyResultsFromArray, checkLocalizedPropertyResultFromArray, checkLookupKeysInfoForService, checkServiceInfoForCultureSpecificParserRetrieval, setupHelper
+    checkConfigPropertyResultsFromArray, checkLocalizedPropertyResultFromArray, checkLookupKeyResultsForService, checkServiceInfoForCultureSpecificParserRetrieval, setupHelper
 } from './support';
 
 import { ValueHostConfig } from '../../../src/Interfaces/ValueHost';
@@ -329,9 +329,9 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.enablerCondition!.conditionType).toBe(ConditionType.RequireText);
         });
         // using EqualToValueConditionConfig, it will need to setup a comparer.
-        // The LookupKeyInfo for service comparer should be setup without error
+        // The LookupKeyResult for service comparer should be setup without error
         // when dataType=String.
-        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyInfo for String identifies the comparer service', () => {
+        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyResult for String identifies the comparer service', () => {
             const testConfig: ValueHostConfig = {
                 name: 'Test', 
                 dataType: LookupKey.String,
@@ -351,19 +351,19 @@ describe('ValueHostConfigAnalyzer', () => {
             helper.analysisArgs.conditionConfigAnalyzer = new ConditionConfigAnalyzer(helper, cpa);
             helper.analysisArgs.comparerAnalyzer = new DataTypeComparerAnalyzer(helper);
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [
-                new DataTypePropertyAnalyzer()  // ensures dataType is setup in LookupKeysInfo
+                new DataTypePropertyAnalyzer()  // ensures dataType is setup in lookupKeyResults
             ];
             const testItem = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
             let results = testItem.analyze(testConfig, null, []);
             expect(results.enablerCondition).toBeDefined();
             expect(results.enablerCondition!.feature).toBe(conditionFeature);
             expect(results.enablerCondition!.conditionType).toBe(ConditionType.EqualToValue);
-            checkLookupKeysInfoForService(helper.results.lookupKeysInfo, LookupKey.String, ServiceName.comparer);
+            checkLookupKeyResultsForService(helper.results.lookupKeyResults, LookupKey.String, ServiceName.comparer);
         });
         // similar but now the comparer fails to be setup and adds a warning message
         // to the results.enablerCondition object.
         // It fails because the LookupKey is "Custom" which is unknown
-        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyInfo for Custom identifies the comparer service', () => {
+        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerCondition setup and LookupKeyResult for Custom identifies the comparer service', () => {
             const testConfig: ValueHostConfig = {
                 name: 'Test', 
                 dataType: 'Custom',
@@ -383,21 +383,21 @@ describe('ValueHostConfigAnalyzer', () => {
             helper.analysisArgs.conditionConfigAnalyzer = new ConditionConfigAnalyzer(helper, cpa);
             helper.analysisArgs.comparerAnalyzer = new DataTypeComparerAnalyzer(helper);
             let propertyAnalyzers: Array<IValueHostConfigPropertyAnalyzer> = [
-                new DataTypePropertyAnalyzer()  // ensures dataType is setup in LookupKeysInfo
+                new DataTypePropertyAnalyzer()  // ensures dataType is setup in lookupKeyResults
             ];
             const testItem = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
             let results = testItem.analyze(testConfig, null, []);
             expect(results.enablerCondition).toBeDefined();
             expect(results.enablerCondition!.feature).toBe(conditionFeature);
             expect(results.enablerCondition!.conditionType).toBe(ConditionType.EqualToValue);
-            checkLookupKeysInfoForService(helper.results.lookupKeysInfo, 'Custom', ServiceName.comparer);
+            checkLookupKeyResultsForService(helper.results.lookupKeyResults, 'Custom', ServiceName.comparer);
             expect(results.enablerCondition!.severity).toBe(CAIssueSeverity.warning);
             expect(results.enablerCondition!.message).toContain('No sample value found');
         });
     });
     describe('Various ValueHostConfigs', () => {
         // test with name='testValueHost' and dataType=LookupKey.Number. results.valueHostResults has one entry. No issues are reported
-        test('when dataType assigned, should add its lookupKey to the results.lookupKeysInfo', () => {
+        test('when dataType assigned, should add its lookupKey to the results.lookupKeyResults', () => {
             const testValueHostConfig: ValueHostConfig = {
                 valueHostType: ValueHostType.Static,
                 name: 'testValueHost',
@@ -410,7 +410,7 @@ describe('ValueHostConfigAnalyzer', () => {
 
             expect(results.properties).toHaveLength(0);
             expect(results.config).toBe(testValueHostConfig);
-            expect(helper.results.lookupKeysInfo).toEqual([
+            expect(helper.results.lookupKeyResults).toEqual([
                 {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
@@ -453,8 +453,8 @@ describe('ValueHostConfigAnalyzer', () => {
             const analyzer = new ValueHostConfigAnalyzer(helper, propertyAnalyzers);
             let results = analyzer.analyze(testValueHostConfig, null, []);
             expect(results.properties).toHaveLength(0);
-            // get lookupKeyInfo for Number from helper
-            let serviceInfo = checkLookupKeysInfoForService(helper.results.lookupKeysInfo,
+            // get lookupKeyResult for Number from helper
+            let serviceInfo = checkLookupKeyResultsForService(helper.results.lookupKeyResults,
                 LookupKey.Number, ServiceName.parser);
             checkServiceInfoForCultureSpecificParserRetrieval(serviceInfo, 0, 0, 'en', 'NumberParser', NumberParser);
 

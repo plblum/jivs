@@ -5,7 +5,7 @@
 
 import { LookupKey } from "../../DataTypes/LookupKeys";
 import {
-    IConfigAnalysisResults, LookupKeyInfo, ILookupKeyAnalyzer, ConfigPropertyResult,
+    IConfigAnalysisResults, LookupKeyResult, ILookupKeyAnalyzer, ConfigPropertyResult,
     CAIssueSeverity,
     LocalizedPropertyResult,
     LocalizedTextResult, AnalysisArgs,
@@ -85,8 +85,8 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         return this.analysisArgs.sampleValues.getSampleValue(lookupKey, valueHostConfig);
     }
     /**
-     * Tries to add a lookup key and adds the associated service as a LookupKeyInfo object
-     * into results.lookupKeysInfo.
+     * Tries to add a lookup key and adds the associated service as a LookupKeyResult object
+     * into results.lookupKeyResults.
      * Validates the lookup key string.
      * Uses LookupKeyAnalyzers to analyze service specific lookup keys against
      * their factories, services, and business rules.
@@ -95,7 +95,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
      * @param serviceName - The name of the service associated with the lookup key.
      * If null, it means registering just the dataType, which uses ServiceName.identifier.
      * @param valueHostConfig - The configuration for the value host.
-     * @returns The lookup key added to the LookupKeyInfo object.
+     * @returns The lookup key added to the LookupKeyResult object.
      * This value may have been updated from the original lookupKey, if the original
      * needed trimming or a case sensitive match.
      */
@@ -107,18 +107,18 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
 
         lookupKey = this.checkForRealLookupKeyName(lookupKey);  // lookupKey is not trimmed here as we want to capture mismatches
         
-        let lk = this.results.lookupKeysInfo.find(lk => lk.lookupKey === lookupKey);
+        let lk = this.results.lookupKeyResults.find(lk => lk.lookupKey === lookupKey);
         if (!lk) {
             // try a case insensitive match, and use the first one found, even if its not the same case as the user intended
-            lk = this.results.lookupKeysInfo.find(lk => lk.lookupKey.toLowerCase() === lookupKey.toLowerCase());
+            lk = this.results.lookupKeyResults.find(lk => lk.lookupKey.toLowerCase() === lookupKey.toLowerCase());
             if (!lk) {
-                lk = <LookupKeyInfo>{
+                lk = <LookupKeyResult>{
                     feature: lookupKeyFeature,
                     lookupKey: lookupKey,
                     usedAsDataType: serviceName === null || serviceName === ServiceName.identifier,
                     services: []
                 };
-                this.results.lookupKeysInfo.push(lk);
+                this.results.lookupKeyResults.push(lk);
             }
         };
         if (serviceName) {
@@ -189,14 +189,14 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     }
 /**
  * For any property that can hold a lookup key, check if the lookup key is valid.
- * It also uses registerLookupKey to add the lookup key to the LookupKeyInfo object if needed.
+ * It also uses registerLookupKey to add the lookup key to the LookupKeyResult object if needed.
  * Cases:
  * - LookupKey is untrimmed empty string, null or undefined. Ignore. No results.
  * - LookupKey syntax is problematic like whitespace. Report an error and continue checking
  *   using the result from checkForRealLookupKeyName. Report the correct lookup key name
  *   if it was fixed.
- * - LookupKey is found in LookupKeyInfo. Continue checking.
- * - LookupKey is not found in LookupKeyInfo. Error. "Not found. Please add to [servicename]."
+ * - LookupKey is found in LookupKeyResult. Continue checking.
+ * - LookupKey is not found in LookupKeyResult. Error. "Not found. Please add to [servicename]."
  * - With a service name, Error. "Not found. Please add to [servicename]."
  * - LookupKey is not found and not registered in DataTypeIdentifierService or even the LookupKey enum,
  *   reports an info message. "Lookup key "[lookupKey]" is unknown."
@@ -244,7 +244,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
         }
         let notFound = false;
         // expect this find() to always return a match due to the earlier call to registerLookupKey
-        let lk = this.results.lookupKeysInfo.find(lk => lk.lookupKey === lookupKey)!;
+        let lk = this.results.lookupKeyResults.find(lk => lk.lookupKey === lookupKey)!;
         if (serviceName) {
         // expect this find() to always return a match due to the earlier call to registerLookupKey
             let serviceInfo = lk.services.find(si => si.feature === serviceName)!;

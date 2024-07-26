@@ -15,7 +15,7 @@ import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisServi
 import { ConfigAnalysisServiceBase, ValidationManagerConfigAnalysisService, ValueHostsManagerConfigAnalysisService } from "../../../src/Services/ConfigAnalysisService/ConfigAnalysisService";
 import { SampleValues } from "../../../src/Services/ConfigAnalysisService/SampleValues";
 import { ValueHostConfigAnalyzer } from "../../../src/Services/ConfigAnalysisService/ValueHostConfigAnalyzer";
-import { MockAnalyzer, checkLookupKeyInfo, checkLookupKeyInfoForNoService, checkLookupKeysInfoForService, createServices } from "./support";
+import { MockAnalyzer, checkLookupKeyResults, checkLookupKeyResultsForNoService, checkLookupKeyResultsForService, createServices } from "./support";
 import { DataTypePropertyAnalyzer, ParserLookupKeyPropertyAnalyzer, ValueHostConfigPropertyAnalyzerBase, ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from "../../../src/Services/ConfigAnalysisService/ValueHostConfigPropertyAnalyzerClasses";
 import { ValidatorConfig } from "../../../src/Interfaces/Validator";
 import { ValueHostsManagerConfigBuilder } from "../../../src/ValueHosts/ValueHostsManagerConfigBuilder";
@@ -140,7 +140,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(results).toEqual(<IConfigAnalysisResults>{
                 cultureIds: ['en', 'fr'],
                 valueHostNames: ['testValueHost1', 'testValueHost2'],
-                lookupKeysInfo: [],
+                lookupKeyResults: [],
                 lookupKeysIssues: [],
                 valueHostResults: []
             });
@@ -159,7 +159,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(results).toEqual(<IConfigAnalysisResults>{
                 cultureIds: ['en', 'fr'],
                 valueHostNames: [],
-                lookupKeysInfo: [],
+                lookupKeyResults: [],
                 lookupKeysIssues: [],
                 valueHostResults: []
             });
@@ -234,7 +234,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             let setup = setupForTheseTests([null, null]);
 
             setup.testItem.publicify_gatherDataTypeIdentifierLookupKeys(setup.helper);
-            expect(setup.results.lookupKeysInfo).toHaveLength(0);
+            expect(setup.results.lookupKeyResults).toHaveLength(0);
 
         });
         // add LookupKey.Number as comparer means there is also an entry for ServiceName.identifier on LookupKey.Number
@@ -243,7 +243,7 @@ describe('ConfigAnalysisServiceBase class', () => {
 
             setup.helper.registerLookupKey(LookupKey.Number, ServiceName.converter, { name: 'testValueHost' });
             setup.testItem.publicify_gatherDataTypeIdentifierLookupKeys(setup.helper);
-            expect(setup.results.lookupKeysInfo).toEqual([
+            expect(setup.results.lookupKeyResults).toEqual([
                 {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
@@ -271,7 +271,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             let setup = setupForTheseTests([null, null]);
             setup.services.dataTypeIdentifierService.register(new TestDataTypeIdentifier());
             setup.testItem.publicify_gatherDataTypeIdentifierLookupKeys(setup.helper);
-            expect(setup.results.lookupKeysInfo).toEqual([
+            expect(setup.results.lookupKeyResults).toEqual([
                 {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
@@ -373,7 +373,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             let results = analysisOutput!.results!;
             expect(results.cultureIds).toEqual(['en']);
             expect(results.valueHostNames).toHaveLength(0);
-            expect(results.lookupKeysInfo).toHaveLength(0);
+            expect(results.lookupKeyResults).toHaveLength(0);
             expect(results.lookupKeysIssues).toHaveLength(0);
             expect(results.valueHostResults).toHaveLength(0);
             expect(testItem.publicify_helper).toBeDefined();
@@ -399,7 +399,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             let results = analysisOutput!.results!;
             expect(results.cultureIds).toEqual(['en']);
             expect(results.valueHostNames).toEqual(['testValueHost1']);
-            expect(results.lookupKeysInfo).toEqual([
+            expect(results.lookupKeyResults).toEqual([
                 {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
@@ -461,7 +461,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             let results = analysisOutput!.results!;
             expect(results.cultureIds).toEqual(['en']);
             expect(results.valueHostNames).toEqual(['testValueHost1']);
-            expect(results.lookupKeysInfo).toEqual([
+            expect(results.lookupKeyResults).toEqual([
                 {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
@@ -576,11 +576,11 @@ describe('ValueHostsManagerConfigAnalysisService', () => {
         let results = analysisOutput!.results!;
         expect(results.cultureIds).toEqual(['en']);
         expect(results.valueHostNames).toEqual(['testValueHost1', 'testValueHost2']);
-        expect(results.lookupKeysInfo).toHaveLength(2);
-        checkLookupKeyInfo(results.lookupKeysInfo, LookupKey.Number);
-        checkLookupKeyInfo(results.lookupKeysInfo, LookupKey.String);
-        checkLookupKeysInfoForService(results.lookupKeysInfo, LookupKey.Number, ServiceName.identifier);
-        checkLookupKeysInfoForService(results.lookupKeysInfo, LookupKey.String, ServiceName.identifier);
+        expect(results.lookupKeyResults).toHaveLength(2);
+        checkLookupKeyResults(results.lookupKeyResults, LookupKey.Number);
+        checkLookupKeyResults(results.lookupKeyResults, LookupKey.String);
+        checkLookupKeyResultsForService(results.lookupKeyResults, LookupKey.Number, ServiceName.identifier);
+        checkLookupKeyResultsForService(results.lookupKeyResults, LookupKey.String, ServiceName.identifier);
         expect(results.valueHostResults).toHaveLength(2);
         let vhcConfigResults1 = results.valueHostResults[0] as ValueHostConfigResults;
         let vhcConfigResults2 = results.valueHostResults[1] as ValueHostConfigResults;
@@ -727,17 +727,17 @@ describe('ValidationManagerConfigAnalysisService', () => {
         let results = analysisOutput!.results!;
         expect(results.cultureIds).toEqual(['en']);
         expect(results.valueHostNames).toEqual(['testValueHost1', 'testValueHost2']);
-        expect(results.lookupKeysInfo).toHaveLength(2);
-        checkLookupKeyInfo(results.lookupKeysInfo, LookupKey.Number);
-        checkLookupKeyInfo(results.lookupKeysInfo, LookupKey.String);
-        checkLookupKeysInfoForService(results.lookupKeysInfo, LookupKey.Number,
+        expect(results.lookupKeyResults).toHaveLength(2);
+        checkLookupKeyResults(results.lookupKeyResults, LookupKey.Number);
+        checkLookupKeyResults(results.lookupKeyResults, LookupKey.String);
+        checkLookupKeyResultsForService(results.lookupKeyResults, LookupKey.Number,
             ServiceName.converter);
-        checkLookupKeysInfoForService(results.lookupKeysInfo, LookupKey.Number,
+        checkLookupKeyResultsForService(results.lookupKeyResults, LookupKey.Number,
             ServiceName.parser);
-        checkLookupKeysInfoForService(results.lookupKeysInfo, LookupKey.Number, ServiceName.identifier);
-        checkLookupKeyInfoForNoService(results.lookupKeysInfo, LookupKey.String, ServiceName.converter);
-        checkLookupKeysInfoForService(results.lookupKeysInfo, LookupKey.String, ServiceName.identifier);
-        checkLookupKeyInfoForNoService(results.lookupKeysInfo, LookupKey.String, ServiceName.parser);
+        checkLookupKeyResultsForService(results.lookupKeyResults, LookupKey.Number, ServiceName.identifier);
+        checkLookupKeyResultsForNoService(results.lookupKeyResults, LookupKey.String, ServiceName.converter);
+        checkLookupKeyResultsForService(results.lookupKeyResults, LookupKey.String, ServiceName.identifier);
+        checkLookupKeyResultsForNoService(results.lookupKeyResults, LookupKey.String, ServiceName.parser);
 
         expect(results.valueHostResults).toHaveLength(2);
         let vhcConfigResults1 = results.valueHostResults[0] as ValueHostConfigResults;

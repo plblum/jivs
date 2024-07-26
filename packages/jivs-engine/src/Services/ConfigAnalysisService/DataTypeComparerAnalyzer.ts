@@ -6,7 +6,7 @@
 import { ConditionType } from "../../Conditions/ConditionTypes";
 import { defaultComparer } from "../../DataTypes/DataTypeComparers";
 import { ConditionCategory, ConditionConfig } from "../../Interfaces/Conditions";
-import { ComparerServiceClassRetrieval, CAIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyInfo, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
+import { ComparerServiceClassRetrieval, CAIssueSeverity, IConfigAnalyzer, IConfigPropertyAnalyzer, IDataTypeComparerAnalyzer, LookupKeyResult, OneClassRetrieval, comparerServiceFeature } from "../../Interfaces/ConfigAnalysisService";
 import { ComparersResult } from "../../Interfaces/DataTypeComparerService";
 import { ServiceName } from "../../Interfaces/ValidationServices";
 import { ValueHostConfig } from "../../Interfaces/ValueHost";
@@ -21,7 +21,7 @@ import { AnalysisResultsHelper } from "./AnalysisResultsHelper";
  * Instead, each DataTypeComparer evaluates two data values and determines if it supports
  * them.
  *
- * Our task is to take all LookupKeys registered in Results.LookupKeysInfo
+ * Our task is to take all LookupKeys registered in Results.lookupKeyResults
  * and report on the viability of comparison.
  * 
  * All of that happens in the ConfigAnalysisService.checkForComparers function.
@@ -87,7 +87,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
      * for the need of a comparer. If so, try to determine the data type lookup key 
      * from ValueHostConfig.dataType and ConditionConfig.conversionLookupKey/secondConversionLookupKey.
      * We'll work with those that have such a lookup key. Using the SampleValue class, we'll get
-     * sample values to try to find a comparer. Whatever teh results, they'll be added to the LookupKeysInfo.services
+     * sample values to try to find a comparer. Whatever teh results, they'll be added to the lookupKeyResults.services
      * as a ServiceName.comparer. Future calls with the same lookup key will not need to re-analyze.
      * 
      * When there is an issue, its typically a warning or info, not an error. 'error' is reserved for 
@@ -95,7 +95,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
      * 
      * @param conditionConfig 
      * @returns When null, no reason to evaluate for the comparer. Otherwise, the same
-     * ComparerServiceClassRetrieval object that was added to the LookupKeysInfo.services array.
+     * ComparerServiceClassRetrieval object that was added to the lookupKeyResults.services array.
      */
     public checkConditionConfig(conditionConfig: ConditionConfig, valueHostConfig: ValueHostConfig):
         ComparerServiceClassRetrieval | null {
@@ -109,19 +109,19 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
         if (!this.conditionUsesComparer(conditionConfig))
             return null;
 
-        let lookupKeysInfo = this.helper.results.lookupKeysInfo;        
+        let lookupKeyResults = this.helper.results.lookupKeyResults;        
 
         lookupKey = this.helper.checkForRealLookupKeyName(lookupKey, true);
-        let lookupKeyInfo = lookupKeysInfo.find(lki => lki.lookupKey === lookupKey);
-        if (!lookupKeyInfo)
+        let lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey);
+        if (!lookupKeyResult)
         {
             lookupKey = this.helper.registerLookupKey(lookupKey, null, valueHostConfig);
             // istanbul ignore next // defensive. We should always find the lookup key.
             if (!lookupKey)
                 return null;
-            lookupKeyInfo = lookupKeysInfo.find(lki => lki.lookupKey === lookupKey)!;
+            lookupKeyResult = lookupKeyResults.find(lki => lki.lookupKey === lookupKey)!;
         }
-        let serviceInfo = lookupKeyInfo.services.find(si => si.feature === ServiceName.comparer) as ComparerServiceClassRetrieval;
+        let serviceInfo = lookupKeyResult.services.find(si => si.feature === ServiceName.comparer) as ComparerServiceClassRetrieval;
         // if we have already found a comparer, we don't need to do anything.
         if (serviceInfo)
             return serviceInfo;
@@ -129,7 +129,7 @@ export class DataTypeComparerAnalyzer<TServices extends IValueHostsServices>
             feature: comparerServiceFeature
         };
         // we'll add the remaining fields in the remaining code
-        lookupKeyInfo.services.push(results);
+        lookupKeyResult.services.push(results);
 
         // we need to find a comparer. We'll use the sample values to try to find one.
         // The compare() function needs two values. We'll pass it the same value twice.

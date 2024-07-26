@@ -1,6 +1,6 @@
 import {
     IConfigAnalysisResults, ConfigAnalysisServiceOptions, AnalysisArgs, IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer, ValueHostConfigResults, CAIssueSeverity,
-    ConfigPropertyResult, ConfigErrorResult, LocalizedPropertyResult, LookupKeyIssue, LookupKeyInfo, MultiClassRetrieval, LookupKeyServiceInfoBase, ParserForCultureClassRetrieval, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval, lookupKeyFeature,
+    ConfigPropertyResult, ConfigErrorResult, LocalizedPropertyResult, LookupKeyIssue, LookupKeyResult, MultiClassRetrieval, LookupKeyServiceInfoBase, ParserForCultureClassRetrieval, IssueForCAResultBase, ILookupKeyAnalyzer, CultureSpecificClassRetrieval, lookupKeyFeature,
     parserForCultureFeature, propertyNameFeature, valueHostFeature, conditionFeature, validatorFeature,
     parserServiceFeature,
     parserServiceClassRetrievalFeature
@@ -35,7 +35,7 @@ export function createConfigAnalysisResults(valueHostNames: Array<string>): ICon
     let results = <IConfigAnalysisResults>{
         cultureIds: ['en'],
         valueHostNames: valueHostNames,
-        lookupKeysInfo: [],
+        lookupKeyResults: [],
         lookupKeysIssues: [],
         conditionsInfo: [],
         valueHostResults: []
@@ -192,45 +192,45 @@ export function checkLookupKeyIssue(allResults: IConfigAnalysisResults,
     expect(issue.message).toContain(expectedPartialMessage);
     return issue;
 }
-export function checkLookupKeyInfo(lookupKeysInfo: Array<LookupKeyInfo>,
-    expectedLookupKey: string): LookupKeyInfo {
+export function checkLookupKeyResults(lookupKeyResults: Array<LookupKeyResult>,
+    expectedLookupKey: string): LookupKeyResult {
 
-    let lkInfo = lookupKeysInfo.find(lk => lk.lookupKey === expectedLookupKey);
-    expect(lkInfo).toBeDefined();
-    expect(lkInfo!.feature).toBe(lookupKeyFeature);
+    let lkResult = lookupKeyResults.find(lk => lk.lookupKey === expectedLookupKey);
+    expect(lkResult).toBeDefined();
+    expect(lkResult!.feature).toBe(lookupKeyFeature);
 
-    return lkInfo!;
+    return lkResult!;
 }
-// function to take LookupKeyInfo and determine if a ServiceName is present and if it has any messages
-export function checkLookupKeysInfoForService(lookupKeysInfo: Array<LookupKeyInfo>,
+// function to take LookupKeyResult and determine if a ServiceName is present and if it has any messages
+export function checkLookupKeyResultsForService(lookupKeyResults: Array<LookupKeyResult>,
     lookupKey: string, serviceName: ServiceName): LookupKeyServiceInfoBase {
 
-    let lkInfo = checkLookupKeyInfo(lookupKeysInfo, lookupKey);
+    let lkResult = checkLookupKeyResults(lookupKeyResults, lookupKey);
 
-    return checkLookupKeyInfoForService(lkInfo, serviceName);
+    return checkLookupKeyResultForService(lkResult, serviceName);
 }
-export function checkLookupKeyInfoForService(lkInfo: LookupKeyInfo,
+export function checkLookupKeyResultForService(lkResult: LookupKeyResult,
     serviceName: ServiceName): LookupKeyServiceInfoBase {
 
-    let serviceInfo = lkInfo!.services.find(si => si.feature === serviceName);
+    let serviceInfo = lkResult!.services.find(si => si.feature === serviceName);
     expect(serviceInfo).toBeDefined();
     expect(serviceInfo!.feature).toBe(serviceName);
     return serviceInfo!;
 }
-export function checkLookupKeyInfoForNoService(lookupKeysInfo: Array<LookupKeyInfo>,
+export function checkLookupKeyResultsForNoService(lookupKeyResults: Array<LookupKeyResult>,
     lookupKey: string, serviceName: ServiceName): void {
 
-    let lkInfo = checkLookupKeyInfo(lookupKeysInfo, lookupKey);
+    let lkResult = checkLookupKeyResults(lookupKeyResults, lookupKey);
 
-    let serviceInfo = lkInfo!.services.find(si => si.feature === serviceName);
+    let serviceInfo = lkResult!.services.find(si => si.feature === serviceName);
     expect(serviceInfo).toBeUndefined();
 }
 
-export function checkLookupKeyInfoForMultiClassRetrievalService(lookupKeyInfo: LookupKeyInfo,
+export function checkLookupKeyResultsForMultiClassRetrievalService(lookupKeyResult: LookupKeyResult,
     serviceName: ServiceName,
     expectedRequestCount: number = 0): MultiClassRetrieval {
 
-    let serviceInfo = lookupKeyInfo.services.find(si => si.feature === serviceName) as MultiClassRetrieval;
+    let serviceInfo = lookupKeyResult.services.find(si => si.feature === serviceName) as MultiClassRetrieval;
 
     expect(serviceInfo).toBeDefined();
     expect(serviceInfo!.feature).toBe(serviceName);   

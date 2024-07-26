@@ -28,7 +28,7 @@ import {
     FluentPropertyParameters
 } from "../../src/ValueHosts/Fluent";
 import { CombineUsingCondition, ManagerConfigBuilderBase, deleteConditionReplacedSymbol, hasConditionBeenReplaced } from "../../src/ValueHosts/ManagerConfigBuilderBase";
-import { checkLookupKeysInfoForService } from "../Services/ConfigAnalysisService_tests/support";
+import { checkLookupKeyResultsForService } from "../Services/ConfigAnalysisService_tests/support";
 import { CapturingLogger } from "../TestSupport/CapturingLogger";
 import { MockValidationServices } from "../TestSupport/mocks";
 
@@ -411,7 +411,7 @@ describe('analyze()', () => {
         let result = testItem.analyze(options);
         expect(result).toBeDefined();
         expect(result.results).toBeDefined();
-        let si = checkLookupKeysInfoForService(result.results.lookupKeysInfo,
+        let si = checkLookupKeyResultsForService(result.results.lookupKeyResults,
             LookupKey.Number, ServiceName.comparer) as ComparerServiceClassRetrieval;
         expect(si).toBeDefined();
         expect(si.severity).toBeUndefined();    // because we resolved the comparer
@@ -439,7 +439,7 @@ describe('analyze()', () => {
         let result = testItem.analyze(options);
         expect(result).toBeDefined();
         expect(result.results).toBeDefined();
-        let si = checkLookupKeysInfoForService(result.results.lookupKeysInfo,
+        let si = checkLookupKeyResultsForService(result.results.lookupKeyResults,
             'CustomKey', ServiceName.comparer) as ComparerServiceClassRetrieval;
         expect(si).toBeDefined();
         expect(si.severity).toBe(CAIssueSeverity.warning); 

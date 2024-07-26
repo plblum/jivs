@@ -71,7 +71,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
         //   User passes the expected partial message, severity, result expected from checkConditionConfig
         // - It returns the Helper object.
         // - Setup to fully support the NumberHosterComparer and NumberHosterIdentifier.
-        // - A LookupKeyInfo alreaedy exists for expectedLookupKey. It may have the service for
+        // - A LookupKeyResult alreaedy exists for expectedLookupKey. It may have the service for
         //  comparer already defined based on existingService flag.
         function checkConditionConfig(conditionConfig: ConditionConfig,
             valueHostConfig: ValueHostConfig,
@@ -91,8 +91,8 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             let actualLookupKey = helper.registerLookupKey(expectedLookupKey, null, valueHostConfig);
             if (existingServiceInfo)// prior line created LKI without the service
             { // now we'll emulate the LookupKeyServiceInfoBase having the comparer service
-                let lkInfo = helper.results.lookupKeysInfo.find(lk => lk.lookupKey === actualLookupKey);
-                lkInfo!.services.push(existingServiceInfo);
+                let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
+                lkResult!.services.push(existingServiceInfo);
             }
             let analyzer = new DataTypeComparerAnalyzer(helper);
             return analyzer.checkConditionConfig(conditionConfig, valueHostConfig);
@@ -291,7 +291,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 executeTest(ConditionType.EqualTo, LookupKey.Boolean, 'conversionLookupKey', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.EqualTo, LookupKey.Boolean, 'secondConversionLookupKey', 'BooleanDataTypeComparer');
             });
-            describe('Multiple calls for the same LookupKey only updates LookupKeyInfo on the first call. Second call always returns true with no further changes', () => {
+            describe('Multiple calls for the same LookupKey only updates LookupKeyResult on the first call. Second call always returns true with no further changes', () => {
 
                 test('A prior call for LookupKey + comparer is setup and has classFound="evidence". This call should make no further changes and return true', () => {
                     const expectedLookupKey = LookupKey.Number;
@@ -363,11 +363,11 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 let actualLookupKey = helper.registerLookupKey(expectedLookupKey, null, valueHostConfig);
                 if (existingService)// prior line created LKI without the service
                 { // now we'll emulate the LookupKeyServiceInfoBase having the comparer service
-                    let lkInfo = helper.results.lookupKeysInfo.find(lk => lk.lookupKey === actualLookupKey);
+                    let lkResult = helper.results.lookupKeyResults.find(lk => lk.lookupKey === actualLookupKey);
                     let serviceInfo: ComparerServiceClassRetrieval = {
                         feature: ServiceName.comparer,
                     };
-                    lkInfo!.services.push(serviceInfo);
+                    lkResult!.services.push(serviceInfo);
                 }
                 let analyzer = new DataTypeComparerAnalyzer(helper);
                 return analyzer.checkConditionConfig(conditionConfig, valueHostConfig);

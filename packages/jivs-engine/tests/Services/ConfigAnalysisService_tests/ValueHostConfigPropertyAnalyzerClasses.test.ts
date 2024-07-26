@@ -10,7 +10,7 @@ import {
     checkValueHostConfigResults,
     checkConfigPropertyResultsFromArray, checkLookupKeyIssue, checkLocalizedPropertyResult, createServices,
     setupHelper,
-    checkLookupKeysInfoForService,
+    checkLookupKeyResultsForService,
     checkServiceInfoForCultureSpecificParserRetrieval
 } from "./support";
 import { CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer, ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from "../../../src/Services/ConfigAnalysisService/ValueHostConfigPropertyAnalyzerClasses";
@@ -536,8 +536,8 @@ describe('ParserLookupKeyPropertyAnalyzer class', () => {
         testItem.analyze(testValueHostConfig, setup.results, testValueHostConfig, setup.helper);
         expect(setup.results.properties).toHaveLength(0); // no ConfigPropertyResult added
 
-        let serviceInfo = checkLookupKeysInfoForService(
-            setup.helper.results.lookupKeysInfo, LookupKey.Number, ServiceName.parser);
+        let serviceInfo = checkLookupKeyResultsForService(
+            setup.helper.results.lookupKeyResults, LookupKey.Number, ServiceName.parser);
         
         checkServiceInfoForCultureSpecificParserRetrieval(serviceInfo, 0, 0, 'en', 'NumberParser', NumberParser);
     });

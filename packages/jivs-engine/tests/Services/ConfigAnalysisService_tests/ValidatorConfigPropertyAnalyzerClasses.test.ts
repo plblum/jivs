@@ -7,7 +7,7 @@ import { ValidatorsValueHostBaseConfig } from "../../../src/Interfaces/Validator
 import { AnalysisResultsHelper } from "../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper";
 import { DataTypeFormatterLookupKeyAnalyzer } from "../../../src/Services/ConfigAnalysisService/DataTypeFormatterLookupKeyAnalyzer";
 import { DataTypeFormatterService } from "../../../src/Services/DataTypeFormatterService";
-import { checkConfigPropertyResultsFromArray, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, checkLocalizedPropertyResultFromArray, checkLookupKeyInfo, checkLookupKeyInfoForMultiClassRetrievalService, checkSyntaxError, createServices, setupHelper } from "./support";
+import { checkConfigPropertyResultsFromArray, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, checkLocalizedPropertyResultFromArray, checkLookupKeyResults, checkLookupKeyResultsForMultiClassRetrievalService, checkSyntaxError, createServices, setupHelper } from "./support";
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from "../../../src/Services/ConfigAnalysisService/ValidatorConfigPropertyAnalyzerClasses";
 
 function createServicesForTheseTests(addCultures: Array<string> = ['en']): IValidationServices {
@@ -64,25 +64,25 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
     describe('errorMessage property', () => {
         describe('tokens in errorMessage', () => {
             // errorMessage is a string with no tokens
-            test('should not add any lookupKeysInfo when errorMessage is a string with no tokens', () => {
+            test('should not add any lookupKeyResults when errorMessage is a string with no tokens', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { errorMessage: 'This is a test message' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(0);
             });
 
             // errorMessage is a string with a single token
-            test('should add a lookupKeysInfo when errorMessage is a string with a single token', () => {
+            test('should add a lookupKeyResults when errorMessage is a string with a single token', () => {
                 let services = createServicesForTheseTests();
                 services.dataTypeFormatterService.register(new NumberFormatter(null));
 
                 let results = executeFunction(services, { errorMessage: '{Token:Number}' });
                 expect(results.vcResults.properties).toHaveLength(0);
-                expect(results.argResults.lookupKeysInfo).toHaveLength(1);
-                let lkinfo = checkLookupKeyInfo(results.argResults.lookupKeysInfo, LookupKey.Number);
-                let serviceInfo = checkLookupKeyInfoForMultiClassRetrievalService(
-                    lkinfo, ServiceName.formatter, 1);
+                expect(results.argResults.lookupKeyResults).toHaveLength(1);
+                let lkResult = checkLookupKeyResults(results.argResults.lookupKeyResults, LookupKey.Number);
+                let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
+                    lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
                     serviceInfo, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
                 
@@ -94,10 +94,10 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
 
                 let results = executeFunction(services, { errorMessage: '{Token:Custom}' });
                 expect(results.vcResults.properties).toHaveLength(0);
-                expect(results.argResults.lookupKeysInfo).toHaveLength(1);
-                let lkinfo = checkLookupKeyInfo(results.argResults.lookupKeysInfo, 'Custom');
-                let serviceInfo = checkLookupKeyInfoForMultiClassRetrievalService(
-                    lkinfo, ServiceName.formatter, 1);
+                expect(results.argResults.lookupKeyResults).toHaveLength(1);
+                let lkResult = checkLookupKeyResults(results.argResults.lookupKeyResults, 'Custom');
+                let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
+                    lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
                     serviceInfo, formatterForCultureFeature, 'en');
             });
@@ -106,7 +106,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { errorMessage: '{Token:LookupKey' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(1);
                 let prop = results.vcResults.properties[0] as ConfigPropertyResult;
                 checkSyntaxError(prop, 'errorMessage');
@@ -140,26 +140,26 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
         describe('tokens in summaryMessage', () => {
 
             // summaryMessage is a string with no tokens
-            test('should not add any lookupKeysInfo when summaryMessage is a string with no tokens', () => {
+            test('should not add any lookupKeyResults when summaryMessage is a string with no tokens', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { summaryMessage: 'This is a test message' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(0);
 
             });
 
             // summaryMessage is a string with a single token
-            test('should add a lookupKeysInfo when summaryMessage is a string with a single token', () => {
+            test('should add a lookupKeyResults when summaryMessage is a string with a single token', () => {
                 let services = createServicesForTheseTests();
                 services.dataTypeFormatterService.register(new NumberFormatter(null));
 
                 let results = executeFunction(services, { summaryMessage: '{Token:Number}' });
                 expect(results.vcResults.properties).toHaveLength(0);
-                expect(results.argResults.lookupKeysInfo).toHaveLength(1);
-                let lkinfo = checkLookupKeyInfo(results.argResults.lookupKeysInfo, LookupKey.Number);
-                let serviceInfo = checkLookupKeyInfoForMultiClassRetrievalService(
-                    lkinfo, ServiceName.formatter, 1);
+                expect(results.argResults.lookupKeyResults).toHaveLength(1);
+                let lkResult = checkLookupKeyResults(results.argResults.lookupKeyResults, LookupKey.Number);
+                let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
+                    lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
                     serviceInfo, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
 
@@ -170,10 +170,10 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
 
                 let results = executeFunction(services, { summaryMessage: '{Token:Custom}' });
                 expect(results.vcResults.properties).toHaveLength(0);
-                expect(results.argResults.lookupKeysInfo).toHaveLength(1);
-                let lkinfo = checkLookupKeyInfo(results.argResults.lookupKeysInfo, 'Custom');
-                let serviceInfo = checkLookupKeyInfoForMultiClassRetrievalService(
-                    lkinfo, ServiceName.formatter, 1);
+                expect(results.argResults.lookupKeyResults).toHaveLength(1);
+                let lkResult = checkLookupKeyResults(results.argResults.lookupKeyResults, 'Custom');
+                let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
+                    lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
                     serviceInfo, formatterForCultureFeature, 'en');
             });
@@ -181,7 +181,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let services = createServicesForTheseTests();
    
                 let results = executeFunction(services, { summaryMessage: '{Token:LookupKey' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(1);
                 let prop = results.vcResults.properties[0] as ConfigPropertyResult;
                 checkSyntaxError(prop, 'summaryMessage');
@@ -195,13 +195,13 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             // these will have only one culture, 'en', as we've tested culture support elsewhere
             // TextLocalizerService will have supporting messages reflecting the number of and type of tokens desired.
             // errorMessagel10n is a string with no tokens
-            test('should not add any lookupKeysInfo when errorMessagel10n is a string with no tokens.', () => {
+            test('should not add any lookupKeyResults when errorMessagel10n is a string with no tokens.', () => {
                 let services = createServicesForTheseTests();
                 services.textLocalizerService.register('l10nKey',
                     { en: 'This is a test message' });
 
                 let results = executeFunction(services, { errorMessagel10n: 'l10nKey' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(1);
 
                 checkLocalizedPropertyResultFromArray(
@@ -210,29 +210,29 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             });
             // same with the errorMessage property also defined to different text
             // demonstrates that this code doesn't look at errorMessage
-            test('should not add any lookupKeysInfo when errorMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
+            test('should not add any lookupKeyResults when errorMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
                 let services = createServicesForTheseTests();
                 services.textLocalizerService.register('l10nKey',
                     { en: 'This is a test message' });
 
                 let results = executeFunction(services, { errorMessage: 'Some other text', errorMessagel10n: 'l10nKey' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(1);
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'errorMessage', 1, 'en', 'en', 'This is a test message', undefined);
             
             });
             // with null
-            test('should not add any lookupKeysInfo when errorMessagel10n is null', () => {
+            test('should not add any lookupKeyResults when errorMessagel10n is null', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { errorMessagel10n: null });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(0);
 
             });
             // with a valid token
-            test('should add a lookupKeysInfo when errorMessagel10n is a string with a single token', () => {
+            test('should add a lookupKeyResults when errorMessagel10n is a string with a single token', () => {
                 let services = createServicesForTheseTests();
                 services.dataTypeFormatterService.register(new NumberFormatter(null));
                 services.textLocalizerService.register('l10nKey',
@@ -240,10 +240,10 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
 
                 let results = executeFunction(services, { errorMessagel10n: 'l10nKey' });
                 expect(results.vcResults.properties).toHaveLength(1);
-                expect(results.argResults.lookupKeysInfo).toHaveLength(1);
-                let lkinfo = checkLookupKeyInfo(results.argResults.lookupKeysInfo, LookupKey.Number);
-                let serviceInfo = checkLookupKeyInfoForMultiClassRetrievalService(
-                    lkinfo, ServiceName.formatter, 1);
+                expect(results.argResults.lookupKeyResults).toHaveLength(1);
+                let lkResult = checkLookupKeyResults(results.argResults.lookupKeyResults, LookupKey.Number);
+                let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
+                    lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
                     serviceInfo, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
                 checkLocalizedPropertyResultFromArray(
@@ -259,10 +259,10 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
 
                 let results = executeFunction(services, { errorMessagel10n: 'l10nKey' });
                 expect(results.vcResults.properties).toHaveLength(1);
-                expect(results.argResults.lookupKeysInfo).toHaveLength(1);
-                let lkinfo = checkLookupKeyInfo(results.argResults.lookupKeysInfo, 'Custom');
-                let serviceInfo = checkLookupKeyInfoForMultiClassRetrievalService(
-                    lkinfo, ServiceName.formatter, 1);
+                expect(results.argResults.lookupKeyResults).toHaveLength(1);
+                let lkResult = checkLookupKeyResults(results.argResults.lookupKeyResults, 'Custom');
+                let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
+                    lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
                     serviceInfo, formatterForCultureFeature, 'en');
                 checkLocalizedPropertyResultFromArray(
@@ -275,7 +275,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                     { en: '{Token:Bad' });
 
                 let results = executeFunction(services, { errorMessagel10n: 'l10nKey' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(2);
                 let prop = results.vcResults.properties[0] as ConfigPropertyResult;
                 checkSyntaxError(prop, 'errorMessagel10n');
@@ -292,40 +292,40 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             // these will have only one culture, 'en', as we've tested culture support elsewhere
             // TextLocalizerService will have supporting messages reflecting the number of and type of tokens desired.
             // summaryMessagel10n is a string with no tokens
-            test('should not add any lookupKeysInfo when summaryMessagel10n is a string with no tokens.', () => {
+            test('should not add any lookupKeyResults when summaryMessagel10n is a string with no tokens.', () => {
                 let services = createServicesForTheseTests();
                 services.textLocalizerService.register('l10nKey',
                     { en: 'This is a test message' });
 
                 let results = executeFunction(services, { summaryMessagel10n: 'l10nKey' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(1);
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'summaryMessage', 1, 'en', 'en', 'This is a test message', undefined);                
             });
             // same with the errorMessage property also defined to different text
             // demonstrates that this code doesn't look at errorMessage
-            test('should not add any lookupKeysInfo when summaryMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
+            test('should not add any lookupKeyResults when summaryMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
                 let services = createServicesForTheseTests();
                 services.textLocalizerService.register('l10nKey',
                     { en: 'This is a test message' });
 
                 let results = executeFunction(services, { summaryMessage: 'Some other text', summaryMessagel10n: 'l10nKey' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(1);
                 checkLocalizedPropertyResultFromArray(
                     results.vcResults.properties, 0, 'summaryMessage', 1, 'en', 'en', 'This is a test message', undefined);                   
             });
             // with null
-            test('should not add any lookupKeysInfo when summaryMessagel10n is null', () => {
+            test('should not add any lookupKeyResults when summaryMessagel10n is null', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { summaryMessagel10n: null });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(0);
             });
             // with a valid token
-            test('should add a lookupKeysInfo when summaryMessagel10n is a string with a single token', () => {
+            test('should add a lookupKeyResults when summaryMessagel10n is a string with a single token', () => {
                 let services = createServicesForTheseTests();
                 services.dataTypeFormatterService.register(new NumberFormatter(null));
                 services.textLocalizerService.register('l10nKey',
@@ -333,10 +333,10 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
  
                 let results = executeFunction(services, { summaryMessagel10n: 'l10nKey' });
                 expect(results.vcResults.properties).toHaveLength(1);
-                expect(results.argResults.lookupKeysInfo).toHaveLength(1);
-                let lkinfo = checkLookupKeyInfo(results.argResults.lookupKeysInfo, LookupKey.Number);
-                let serviceInfo = checkLookupKeyInfoForMultiClassRetrievalService(
-                    lkinfo, ServiceName.formatter, 1);
+                expect(results.argResults.lookupKeyResults).toHaveLength(1);
+                let lkResult = checkLookupKeyResults(results.argResults.lookupKeyResults, LookupKey.Number);
+                let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
+                    lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalFoundInService(
                     serviceInfo, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
                 checkLocalizedPropertyResultFromArray(
@@ -350,10 +350,10 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
 
                 let results = executeFunction(services, { summaryMessagel10n: 'l10nKey' });
                 expect(results.vcResults.properties).toHaveLength(1);
-                expect(results.argResults.lookupKeysInfo).toHaveLength(1);
-                let lkinfo = checkLookupKeyInfo(results.argResults.lookupKeysInfo, 'Custom');
-                let serviceInfo = checkLookupKeyInfoForMultiClassRetrievalService(
-                    lkinfo, ServiceName.formatter, 1);
+                expect(results.argResults.lookupKeyResults).toHaveLength(1);
+                let lkResult = checkLookupKeyResults(results.argResults.lookupKeyResults, 'Custom');
+                let serviceInfo = checkLookupKeyResultsForMultiClassRetrievalService(
+                    lkResult, ServiceName.formatter, 1);
                 checkCultureSpecificClassRetrievalNotFoundInService(
                     serviceInfo, formatterForCultureFeature, 'en');
                 checkLocalizedPropertyResultFromArray(
@@ -365,7 +365,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                     { en: '{Token:Bad' });
 
                 let results = executeFunction(services, { summaryMessagel10n: 'l10nKey' });
-                expect(results.argResults.lookupKeysInfo).toHaveLength(0);
+                expect(results.argResults.lookupKeyResults).toHaveLength(0);
                 expect(results.vcResults.properties).toHaveLength(2);
                 let prop = results.vcResults.properties[0] as ConfigPropertyResult;
                 checkSyntaxError(prop, 'summaryMessagel10n');

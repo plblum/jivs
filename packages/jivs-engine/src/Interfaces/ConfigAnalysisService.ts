@@ -115,7 +115,7 @@ export interface AnalysisArgs<TServices extends IValueHostsServices> {
 
     /**
      * Analyzer for identifying if a ConditionConfig needs a comparer.
-     * It sets up LookupKeyInfo.services for the ServiceName.comparer.
+     * It sets up LookupKeyResult.services for the ServiceName.comparer.
      */
     comparerAnalyzer?: IDataTypeComparerAnalyzer;
 }
@@ -142,7 +142,7 @@ export interface IConfigAnalysisResults {
      * Identifies the Class that was successfully identified in a service's registry
      * or reports an error if not found.
      */
-    lookupKeysInfo: Array<LookupKeyInfo>;
+    lookupKeyResults: Array<LookupKeyResult>;
 
     /**
      * A list of all lookup keys used that were not found in the services,
@@ -176,8 +176,8 @@ export interface IConfigAnalysisResultsExplorer {
     countConfigResults(criteria: IConfigAnalysisSearchCriteria | null): number;
 
     /**
-     * Return a count of the number of LookupKeyInfo objects and all children
-     * found in the LookupKeysInfo array matching the criteria.
+     * Return a count of the number of LookupKeyResult objects and all children
+     * found in the lookupKeyResults array matching the criteria.
      * @param criteria 
      */
     countLookupKeyResults(criteria: IConfigAnalysisSearchCriteria | null): number;
@@ -190,7 +190,7 @@ export interface IConfigAnalysisResultsExplorer {
     collectWithConfigs(criteria: IConfigAnalysisSearchCriteria | null, factory: CAExplorerFactory): Array<CAPathedResult<any>>;
 
     /**
-     * Return a list of all LookupKeyInfo objects found in the LookupKeysInfo array,
+     * Return a list of all LookupKeyResult objects found in the lookupKeyResults array,
      * wrapped in a CAPathedResult object.
      */
     collectWithLookupKeys(criteria: IConfigAnalysisSearchCriteria | null, factory: CAExplorerFactory): Array<CAPathedResult<any>>;
@@ -230,7 +230,7 @@ export interface IConfigAnalysisSearchCriteria {
 //#region identities for specific ConfigAnalysisResult objects based on their feature property.    
     /**
      * Match to any lookupKey listed or all lookupKeys if undefined.
-     * Only applies to LookupKeyInfo objects.
+     * Only applies to LookupKeyResult objects.
      * Case insensitive match.
      */
     lookupKeys?: Array<string>;
@@ -293,7 +293,7 @@ export interface ICAExplorerBase<T extends CAResultBase> {
     /**
      * Gets the result of the configuration analysis, which is an object structure
      * with data from Configuration objects in valueHostResults,
-     * and data from Lookup Keys and their associated services in lookupKeysInfo.
+     * and data from Lookup Keys and their associated services in lookupKeyResults.
      * @returns The result of the configuration analysis.
      */
     result: T;
@@ -469,7 +469,7 @@ export interface ILookupKeyAnalyzer {
      * @param key 
      * @param valueHostConfig
      * @returns A new LookupKeyServiceInfo object with the results of the analysis.
-     * Add it to the LookupKeyInfo.services array.
+     * Add it to the LookupKeyResult.services array.
      */
     analyze(key: string, valueHostConfig: ValueHostConfig | null): LookupKeyServiceInfoBase;
 }
@@ -487,7 +487,7 @@ export interface IDataTypeComparerAnalyzer {
      * for the need of a comparer. If so, try to determine the data type lookup key 
      * from ValueHostConfig.dataType and ConditionConfig.conversionLookupKey/secondConversionLookupKey.
      * We'll work with those that have such a lookup key. Using the SampleValue class, we'll get
-     * sample values to try to find a comparer. Whatever teh results, they'll be added to the LookupKeysInfo.services
+     * sample values to try to find a comparer. Whatever teh results, they'll be added to the lookupKeyResults.services
      * as a ServiceName.comparer. Future calls with the same lookup key will not need to re-analyze.
      * 
      * When there is an issue, its typically a warning or info, not an error. 'error' is reserved for 
@@ -495,7 +495,7 @@ export interface IDataTypeComparerAnalyzer {
      * 
      * @param conditionConfig 
      * @returns When null, no reason to evaluate for the comparer. Otherwise, the same
-     * OneClassRetrieval object that was added to the LookupKeysInfo.services array.
+     * OneClassRetrieval object that was added to the lookupKeyResults.services array.
      */
     checkConditionConfig(conditionConfig: ConditionConfig, valueHostConfig: ValueHostConfig): OneClassRetrieval | null;
 }
@@ -531,6 +531,10 @@ export enum CAIssueSeverity {
     error = 'error'
 }
 
+/**
+ * Tracking additional issues on a specific LookupKey.
+ * On ConfigAnalysisResults.lookupKeysIssues.
+ */
 export interface LookupKeyIssue extends IssueForCAResultBase, CAResultBase {
     lookupKey: string;
 }
@@ -542,7 +546,7 @@ export const lookupKeyFeature = 'LookupKey';
  * Invalid lookup keys are reported in ConfigAnalysisResults.lookupKeysIssues
  * and with the PropertyInfo object specifically supplying the invalid key.
  */
-export interface LookupKeyInfo extends CAResultBase {
+export interface LookupKeyResult extends CAResultBase {
     feature: 'LookupKey';   // use lookupKeyFeature const
     lookupKey: string;
     /**
@@ -911,8 +915,8 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
     getSampleValue(lookupKey: string, valueHostConfig: ValueHostConfig): any;
 
     /**
-     * Tries to add a lookup key and adds the associated service as a LookupKeyInfo object
-     * into results.lookupKeysInfo.
+     * Tries to add a lookup key and adds the associated service as a LookupKeyResult object
+     * into results.lookupKeyResults.
      * Validates the lookup key string.
      * Uses LookupKeyAnalyzers to analyze service specific lookup keys against
      * their factories, services, and business rules.
@@ -920,7 +924,7 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
      * @param lookupKey - The lookup key to add.
      * @param serviceName - The name of the service associated with the lookup key.
      * @param valueHostConfig - The configuration for the value host.
-     * @returns The lookup key added to the LookupKeyInfo object.
+     * @returns The lookup key added to the LookupKeyResult object.
      * This value may have been updated from the original lookupKey, if the original
      * needed trimming or a case sensitive match.
      * If there was no lookup key, returns null.
@@ -929,14 +933,14 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
 
 /**
  * For any property that can hold a lookup key, check if the lookup key is valid.
- * It also uses registerLookupKey to add the lookup key to the LookupKeyInfo object if needed.
+ * It also uses registerLookupKey to add the lookup key to the LookupKeyResult object if needed.
  * Cases:
  * - LookupKey is untrimmed empty string, null or undefined. Ignore. No results.
  * - LookupKey syntax is problematic like whitespace. Report an error and continue checking
  *   using the result from checkForRealLookupKeyName. Report the correct lookup key name
  *   if it was fixed.
- * - LookupKey is found in LookupKeyInfo. Continue checking.
- * - LookupKey is not found in LookupKeyInfo. Error. "Not found. Please add to [servicename]."
+ * - LookupKey is found in LookupKeyResult. Continue checking.
+ * - LookupKey is not found in LookupKeyResult. Error. "Not found. Please add to [servicename]."
  * - With a service name, Error. "Not found. Please add to [servicename]."
  * 
  * All errors are added into the ConfigPropertyResult object that is added to the properties parameter.

@@ -17,7 +17,7 @@ import { OneClassPerLookupKeyAnalyzer } from "./LookupKeyAnalyzerClasses";
  * Instead, the data value supplied to its supportsValue() function 
  * will determine if it can SUPPLY a lookup key.
  * Our task is to take all registered DataTypeIdentifiers and add them
- * to the LookupKeyInfo.services specific to their data type.
+ * to the LookupKeyResult.services specific to their data type.
  * All of that happens in the ConfigAnalysisService.gatherDataTypeIdentifierLookupKeys function.
  * When that calls tryAdd, it will use this to create the LookupKeyServiceInfo.
  * As a result, this will never be called for a missing lookupKey and need

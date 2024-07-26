@@ -9,7 +9,7 @@ import {
     CAExplorerFactory,
     CAResultBase,
     ICAExplorerBase,
-    LookupKeyInfo,
+    LookupKeyResult,
     ParserForCultureClassRetrieval,
     OneClassRetrieval,
     MultiClassRetrieval,
@@ -90,8 +90,8 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
         return this.collectWithConfigs(preppedCriteria).length;
     }
     /**
-     * Return a count of the number of LookupKeyInfo objects and all children
-     * found in the LookupKeysInfo array matching the criteria.
+     * Return a count of the number of LookupKeyResult objects and all children
+     * found in the lookupKeyResults array matching the criteria.
      * @param criteria 
      */
     public countLookupKeyResults(criteria: IConfigAnalysisSearchCriteria | null): number {
@@ -113,14 +113,14 @@ export class ConfigAnalysisResultsExplorer<TServices extends IValueHostsServices
         return matches;
     }
     /**
-     * Return a list of all LookupKeyInfo objects found in the LookupKeysInfo array,
+     * Return a list of all LookupKeyResult objects found in the lookupKeyResults array,
      * wrapped in a CAPathedResult object.
      */
     public collectWithLookupKeys(criteria: IConfigAnalysisSearchCriteria | null): Array<CAPathedResult<any>> {
         let matches: Array<CAPathedResult<any>> = [];
         let preppedCriteria = this.prepCriteria(criteria);
-        this.results.lookupKeysInfo.forEach((lookupKeyInfo) => {
-            const explorer = this.factory.create(lookupKeyInfo);
+        this.results.lookupKeyResults.forEach((lookupKeyResult) => {
+            const explorer = this.factory.create(lookupKeyResult);
             explorer.collect(preppedCriteria, matches, [], this.factory);
         });
         return matches;
@@ -172,7 +172,7 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
     /**
      * Gets the result of the configuration analysis, which is an object structure
      * with data from Configuration objects in valueHostResults,
-     * and data from Lookup Keys and their associated services in lookupKeysInfo.
+     * and data from Lookup Keys and their associated services in lookupKeyResults.
      * @returns The result of the configuration analysis.
      */
     public get result(): T
@@ -278,10 +278,10 @@ export abstract class CAExplorerBase<T extends CAResultBase> implements ICAExplo
 }
 
 /**
- * For exploring LookupKeyInfo objects. Their identifier is the lookupKey property
+ * For exploring LookupKeyResult objects. Their identifier is the lookupKey property
  * and their feature is 'LookupKey'.
  */
-class LookupKeyInfoExplorer extends CAExplorerBase<LookupKeyInfo>
+class LookupKeyResultExplorer extends CAExplorerBase<LookupKeyResult>
 {
     public feature(): string {
         return lookupKeyFeature;
@@ -617,7 +617,7 @@ export class ConfigAnalysisResultsExplorerFactory implements CAExplorerFactory
         this.populate();
     }
     protected populate(): void {
-        this.register(lookupKeyFeature, (result) => new LookupKeyInfoExplorer(result as LookupKeyInfo));
+        this.register(lookupKeyFeature, (result) => new LookupKeyResultExplorer(result as LookupKeyResult));
         this.register(dataTypeFeature, (result) => new DataTypeLookupKeyServiceInfoExplorer(result as LookupKeyServiceInfoBase));
         this.register(parserServiceFeature, (result) => new ParserLookupKeyServiceInfoExplorer(result as ParserForCultureClassRetrieval));
         this.register(comparerServiceFeature, (result) => new ComparerLookupKeyServiceInfoExplorer(result as ComparerServiceClassRetrieval));

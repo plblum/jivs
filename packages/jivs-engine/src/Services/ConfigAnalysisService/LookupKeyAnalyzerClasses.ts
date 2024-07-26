@@ -43,7 +43,7 @@ export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValueHosts
      * @param key 
      * @param valueHostConfig
      * @returns A new LookupKeyServiceInfo object with the results of the analysis.
-     * Add it to the LookupKeyInfo.services array.
+     * Add it to the LookupKeyResult.services array.
      */
     public abstract analyze(key: string, valueHostConfig: ValueHostConfig | null): LookupKeyServiceInfoBase;
 
@@ -70,7 +70,7 @@ export abstract class LookupKeyAnalyzerBase<TData, TServices extends IValueHosts
 
 /**
  * For services that have a single object to report on per key.
- * Adds OneClassRetrieval to LookupKeyInfo.services.
+ * Adds OneClassRetrieval to LookupKeyResult.services.
  */
 export abstract class OneClassPerLookupKeyAnalyzer<TData, TServices extends IValueHostsServices>
     extends LookupKeyAnalyzerBase<TData, TServices> 
@@ -81,7 +81,7 @@ export abstract class OneClassPerLookupKeyAnalyzer<TData, TServices extends IVal
 /**
  * For services that may have multiple objects to report on per key,
  * such as on for each cultureId.
- * Adds MultiClassRetrieval to LookupKeyInfo.services.
+ * Adds MultiClassRetrieval to LookupKeyResult.services.
  */
 export abstract class MultipleClassesPerLookupKeyAnalyzer<TData, TServices extends IValueHostsServices> extends
     LookupKeyAnalyzerBase<TData, TServices> {

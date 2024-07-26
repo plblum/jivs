@@ -93,7 +93,7 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
         let results: IConfigAnalysisResults = {
             cultureIds: [],
             valueHostNames: [],
-            lookupKeysInfo: [],
+            lookupKeyResults: [],
             lookupKeysIssues: [],
             valueHostResults: []
         };
@@ -152,16 +152,16 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
      * Instead, the data value supplied to its supportsValue() function 
      * will determine if it can SUPPLY a lookup key.
      * Our task is to take all registered DataTypeIdentifiers and add them
-     * to the LookupKeyInfo.services specific to their data type.
+     * to the LookupKeyResult.services specific to their data type.
      * This is run after all ValueHostConfigs have been analyzed.
-     * We'll only add the lookup key if it is not already in the LookupKeyInfo.
+     * We'll only add the lookup key if it is not already in the LookupKeyResult.
      * Note that the DataTypeIdentifierLookupKeyAnalyzer is still used to populate
-     * the LookupKeyInfo.services object.
+     * the LookupKeyResult.services object.
      */
     protected gatherDataTypeIdentifierLookupKeys(helper: IAnalysisResultsHelper<TServices>): void {
 
         // We don't want to add built-in identifiers unless they are already
-        // added into the LookupKeyInfo.services. In that case, we are just
+        // added into the LookupKeyResult.services. In that case, we are just
         // calling them out.
         // All user defined identifiers will be added because they are 
         // rare, and if supplied, they probably are intended to be used.
@@ -169,7 +169,7 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
 
         for (let idt of this.services.dataTypeIdentifierService.getAll()) {
             if (!builtInIdentifiers.includes(idt.dataTypeLookupKey) ||
-                helper.results.lookupKeysInfo.find(lk => lk.lookupKey === idt.dataTypeLookupKey))
+                helper.results.lookupKeyResults.find(lk => lk.lookupKey === idt.dataTypeLookupKey))
                 helper.registerLookupKey(idt.dataTypeLookupKey, ServiceName.identifier, null);   // uses DataTypeIdentifierLookupKeyAnalyzer
         }
     }    

@@ -11,18 +11,18 @@ import {
 } from '../../../src/Interfaces/ConfigAnalysisService';
 import { AnalysisResultsHelper } from '../../../src/Services/ConfigAnalysisService/AnalysisResultsHelper';
 import { IValueHostsServices } from '../../../src/Interfaces/ValueHostsServices';
-import { CAIssueSeverity, IConfigAnalysisResults, LookupKeyInfo, LookupKeyServiceInfoBase } from '../../../src/Interfaces/ConfigAnalysisService';
+import { CAIssueSeverity, IConfigAnalysisResults, LookupKeyResult, LookupKeyServiceInfoBase } from '../../../src/Interfaces/ConfigAnalysisService';
 import { createValidationServicesForTesting } from '../../TestSupport/createValidationServices';
 import {
     MockAnalyzer, MockAnalyzerWithFallback, checkLocalizedPropertyResultFromArray,
     createAnalysisArgs, checkCultureSpecificClassRetrievalFoundInService,
-    checkCultureSpecificClassRetrievalNotFoundInService, checkLookupKeyInfo,
-    checkLookupKeyInfoForMultiClassRetrievalService, checkLookupKeyInfoForService, checkSyntaxError,
+    checkCultureSpecificClassRetrievalNotFoundInService, checkLookupKeyResults,
+    checkLookupKeyResultsForMultiClassRetrievalService, checkLookupKeyResultsForService, checkSyntaxError,
     createServices,
-    checkLookupKeyInfoForNoService,
+    checkLookupKeyResultsForNoService,
     checkLookupKeyIssue,
     checkConfigPropertyResultsFromArray,
-    checkLookupKeysInfoForService
+    checkLookupKeyResultForService
 } from './support';
 import { CultureService } from '../../../src/Services/CultureService';
 import { IValidationServices, ServiceName } from '../../../src/Interfaces/ValidationServices';
@@ -134,8 +134,8 @@ describe('AnalysisResultsHelper', () => {
 
 
         describe('Using LookupKey without a service name - useAsDataType is true', () => {
-            test('should add a custom lookup key to results.LookupKeysInfo', () => {
-                const expectedResult: LookupKeyInfo = {
+            test('should add a custom lookup key to results.lookupKeyResults', () => {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
@@ -144,13 +144,13 @@ describe('AnalysisResultsHelper', () => {
                 let testItem = setupForTheseTests();
                 testItem.registerLookupKey('testKey', null, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
                 expect(testItem.publicify_results.lookupKeysIssues).toHaveLength(1);
                 checkLookupKeyIssue(testItem.publicify_results, 0, 'testKey', 'not already known');
             });
 
-            test('should add the LookupKey.Number to results.LookupKeysInfo', () => {
-                const expectedResult: LookupKeyInfo = {
+            test('should add the LookupKey.Number to results.lookupKeyResults', () => {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: true,
@@ -159,12 +159,12 @@ describe('AnalysisResultsHelper', () => {
                 let testItem = setupForTheseTests();
                 testItem.registerLookupKey(LookupKey.Number, null, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
                 expect(testItem.publicify_results.lookupKeysIssues).toHaveLength(0);
             });
             // same but with 'testKey' added to LookupKeyFallbackservice to map to LookupKey.Number 
-            test('should add a custom lookup key registered in LookupKeyFallbackService to LookupKey.Number to results.LookupKeysInfo', () => {
-                const expectedResult: LookupKeyInfo = {
+            test('should add a custom lookup key registered in LookupKeyFallbackService to LookupKey.Number to results.lookupKeyResults', () => {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
@@ -174,15 +174,15 @@ describe('AnalysisResultsHelper', () => {
                 testItem.publicify_services.lookupKeyFallbackService.register('testKey', LookupKey.Number);
                 testItem.registerLookupKey('testKey', null, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
                 expect(testItem.publicify_results.lookupKeysIssues).toHaveLength(0);
             });            
         });
 
         describe('Using LookupKey with a service name', () => {
 // unless the service is identifier, useAsDataType is false
-            test('should add an custom lookup key to results.LookupKeysInfo and report \"not already known\" in LookupKeyIssues', () => {
-                const expectedResult: LookupKeyInfo = {
+            test('should add an custom lookup key to results.lookupKeyResults and report \"not already known\" in LookupKeyIssues', () => {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -193,7 +193,7 @@ describe('AnalysisResultsHelper', () => {
                 let testItem = setupForTheseTests();
                 testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
                 expect(testItem.publicify_results.lookupKeysIssues).toHaveLength(1);
                 expect(testItem.publicify_results.lookupKeysIssues[0].message).toContain('Lookup key "testKey" not already known.');
 
@@ -204,14 +204,14 @@ describe('AnalysisResultsHelper', () => {
                 let testItem = setupForTheseTests();
                 testItem.registerLookupKey(null, ServiceName.formatter, { name: 'testValueHost' });
                 testItem.registerLookupKey(undefined, ServiceName.formatter, { name: 'testValueHost' });
-                expect(testItem.publicify_results.lookupKeysInfo).toHaveLength(0);
+                expect(testItem.publicify_results.lookupKeyResults).toHaveLength(0);
             });
 
             test('should not add a lookup key if the key is an empty string', () => {
                 let testItem = setupForTheseTests();
                 testItem.registerLookupKey('', ServiceName.formatter, { name: 'testValueHost' });
                 testItem.registerLookupKey('  ', ServiceName.formatter, { name: 'testValueHost' });
-                expect(testItem.publicify_results.lookupKeysInfo).toHaveLength(0);
+                expect(testItem.publicify_results.lookupKeyResults).toHaveLength(0);
             });
 
 
@@ -221,8 +221,8 @@ describe('AnalysisResultsHelper', () => {
                 expect(() => testItem.registerLookupKey('testKey', ServiceName.logger, { name: 'testValueHost' })).toThrow('No analyzer found');
             });
             // add both formatter and converter with the same lookup key creates two entries
-            test('should add two services to the same lookup key into LookupKeyInfo.services array', () => {
-                const expectedResult: LookupKeyInfo = {
+            test('should add two services to the same lookup key into LookupKeyResult.services array', () => {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -235,11 +235,11 @@ describe('AnalysisResultsHelper', () => {
                 testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
                 testItem.registerLookupKey('testKey', ServiceName.converter, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
             // same as before but with case insensitive differences between lookup keys
             test('should add two services with case insensitive differences between lookup keys', () => {
-                const expectedResult: LookupKeyInfo = {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -252,11 +252,11 @@ describe('AnalysisResultsHelper', () => {
                 testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
                 testItem.registerLookupKey('TESTKEY', ServiceName.converter, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
             // same as before but with surrounding whitespace on second lookup key
             test('should add two services with lead/trail whitespace differences between the lookup keys', () => {
-                const expectedResult: LookupKeyInfo = {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -269,11 +269,11 @@ describe('AnalysisResultsHelper', () => {
                 testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
                 testItem.registerLookupKey(' testKey ', ServiceName.converter, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
             // add the same service twice, with different messages results in the first message registered. No changes based on the second
-            test('should add 1 LookupKeyInfo.service entry with two calls using the same service name', () => {
-                const expectedResult: LookupKeyInfo = {
+            test('should add 1 LookupKeyResult.service entry with two calls using the same service name', () => {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -285,11 +285,11 @@ describe('AnalysisResultsHelper', () => {
                 testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
                 testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
             // the tryFallback feature is used when the lookup key is rejected by the analyzer and LookupKeyFallbackService is used to map the key to LookupKey.Number has its fallback.
-            test('should generate two service entries into LookupKeyInfo.services array when adding a custom lookup key registered in LookupKeyFallbackService as the key its mapped to when the analyzer cannot find the custom key', () => {
-                const expectedResult: LookupKeyInfo = {
+            test('should generate two service entries into LookupKeyResult.services array when adding a custom lookup key registered in LookupKeyFallbackService as the key its mapped to when the analyzer cannot find the custom key', () => {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: false,
@@ -297,7 +297,7 @@ describe('AnalysisResultsHelper', () => {
                         { feature: parserServiceFeature, tryFallback: true, message: 'testFallback' } as any,
                     ]
                 };
-                const expectedResult2: LookupKeyInfo = {
+                const expectedResult2: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: LookupKey.Number,
                     usedAsDataType: false,
@@ -314,12 +314,12 @@ describe('AnalysisResultsHelper', () => {
                 testItem.publicify_services.lookupKeyFallbackService.register('testKey', LookupKey.Number);
                 testItem.registerLookupKey('testKey', ServiceName.parser, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult, expectedResult2]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult, expectedResult2]);
             });
 
             // add serviceName=identifier sets usedAsDataType=true
             test('should set usedAsDataType=true when the service name is identifier', () => {
-                const expectedResult: LookupKeyInfo = {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
@@ -330,12 +330,12 @@ describe('AnalysisResultsHelper', () => {
                 let testItem = setupForTheseTests();
                 testItem.registerLookupKey('testKey', ServiceName.identifier, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
 
             // with 2 services, and the second one is identifier, usedAsDataType is true
             test('should set usedAsDataType=true when the service name is identifier and there are multiple services', () => {
-                const expectedResult: LookupKeyInfo = {
+                const expectedResult: LookupKeyResult = {
                     feature: lookupKeyFeature,
                     lookupKey: 'testKey',
                     usedAsDataType: true,
@@ -348,7 +348,7 @@ describe('AnalysisResultsHelper', () => {
                 testItem.registerLookupKey('testKey', ServiceName.formatter, { name: 'testValueHost' });
                 testItem.registerLookupKey('testKey', ServiceName.identifier, { name: 'testValueHost' });
 
-                expect(testItem.publicify_results.lookupKeysInfo).toEqual([expectedResult]);
+                expect(testItem.publicify_results.lookupKeyResults).toEqual([expectedResult]);
             });
         });
     });
@@ -415,8 +415,8 @@ describe('AnalysisResultsHelper', () => {
 
             return testItem;
         };
-        // lookupKey is null is no change to properties array nor results.lookupKeysInfo
-        test('should not add a ConfigPropertyResult nor results.lookupKeysInfo when lookupKey is null', () => {
+        // lookupKey is null is no change to properties array nor results.lookupKeyResults
+        test('should not add a ConfigPropertyResult nor results.lookupKeyResults when lookupKey is null', () => {
             const valueHostConfig: ValueHostConfig = {
                 name: 'testValueHost',
                 valueHostType: ValueHostType.Static,
@@ -430,11 +430,11 @@ describe('AnalysisResultsHelper', () => {
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
             )
             expect(properties).toHaveLength(0);
-            expect(testItem.results.lookupKeysInfo).toHaveLength(0);
+            expect(testItem.results.lookupKeyResults).toHaveLength(0);
             expect(testItem.results.lookupKeysIssues).toHaveLength(0);
         }); 
-        // lookupKey is empty string no change to properties array nor results.lookupKeysInfo
-        test('should not add a ConfigPropertyResult nor results.lookupKeysInfo when lookupKey is an empty string', () => {
+        // lookupKey is empty string no change to properties array nor results.lookupKeyResults
+        test('should not add a ConfigPropertyResult nor results.lookupKeyResults when lookupKey is an empty string', () => {
             const valueHostConfig: ValueHostConfig = {
                 name: 'testValueHost',
                 valueHostType: ValueHostType.Static,
@@ -448,11 +448,11 @@ describe('AnalysisResultsHelper', () => {
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
             );
             expect(properties).toHaveLength(0);
-            expect(testItem.results.lookupKeysInfo).toHaveLength(0);
+            expect(testItem.results.lookupKeyResults).toHaveLength(0);
             expect(testItem.results.lookupKeysIssues).toHaveLength(0);
         });
         // same but lookup key is " " so it is trimmed to an empty string
-        test('should not add a ConfigPropertyResult nor results.lookupKeysInfo when lookupKey is an empty string with whitespace', () => {
+        test('should not add a ConfigPropertyResult nor results.lookupKeyResults when lookupKey is an empty string with whitespace', () => {
             const valueHostConfig: ValueHostConfig = {
                 name: 'testValueHost',
                 valueHostType: ValueHostType.Static,
@@ -466,7 +466,7 @@ describe('AnalysisResultsHelper', () => {
                 ServiceName.formatter, valueHostConfig, properties, 'DataTypeFormatter', 'dataTypeFormatterService'
             );
             expect(properties).toHaveLength(0);
-            expect(testItem.results.lookupKeysInfo).toHaveLength(0);
+            expect(testItem.results.lookupKeyResults).toHaveLength(0);
             expect(testItem.results.lookupKeysIssues).toHaveLength(0);
         });
         // lookupKey has surrounding whitespace like " Number " so it is otherwise a valid lookup key
@@ -487,7 +487,7 @@ describe('AnalysisResultsHelper', () => {
             checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
                 'Value is not an exact match to the expected value of "Number". Fix it.', CAIssueSeverity.error);
 
-            checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, LookupKey.Number, ServiceName.formatter);
+            checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter);
             expect(testItem.results.lookupKeysIssues).toHaveLength(0);
         });
         // same but use lowercase "number"
@@ -526,7 +526,7 @@ describe('AnalysisResultsHelper', () => {
             checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
                 'Lookup key "custom" is unknown.', CAIssueSeverity.info);
 
-            checkLookupKeyInfoForNoService(testItem.results.lookupKeysInfo, 'custom', ServiceName.formatter);
+            checkLookupKeyResultsForNoService(testItem.results.lookupKeyResults, 'custom', ServiceName.formatter);
             checkLookupKeyIssue(testItem.results, 0, 'custom', 'not already known');
         });
         // I'll write this one, OK?
@@ -546,11 +546,11 @@ describe('AnalysisResultsHelper', () => {
             }
             // test cases:
             // 1. lookupKey is the same as the identifier's dataTypeLookupKey does not add a ConfigPropertyResult
-            //    but does add a LookupKeyInfo with the identifier service
+            //    but does add a LookupKeyResult with the identifier service
             // 2. case insensitive match to the identifier's dataTypeLookupKey adds a ConfigPropertyResult
             //   with "Value is not an exact match" error message.
             
-            test('should add a LookupKeyInfo with the identifier service when lookupKey matches the identifier dataTypeLookupKey', () => {
+            test('should add a LookupKeyResult with the identifier service when lookupKey matches the identifier dataTypeLookupKey', () => {
                 const valueHostConfig: ValueHostConfig = {
                     name: 'testValueHost',
                     valueHostType: ValueHostType.Static,
@@ -564,7 +564,7 @@ describe('AnalysisResultsHelper', () => {
                 testItem.checkLookupKeyProperty('PropertyName', testLookupKey,
                     null, valueHostConfig, properties);
                 expect(properties).toHaveLength(0);
-                checkLookupKeyInfoForNoService(testItem.results.lookupKeysInfo, testLookupKey, ServiceName.identifier);
+                checkLookupKeyResultsForNoService(testItem.results.lookupKeyResults, testLookupKey, ServiceName.identifier);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
             
@@ -586,7 +586,7 @@ describe('AnalysisResultsHelper', () => {
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register a DataTypeFormatter to dataTypeFormatterService.', CAIssueSeverity.error);
-                checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'custom', ServiceName.formatter);
+                checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'custom', ServiceName.formatter);
                 checkLookupKeyIssue(testItem.results, 0, 'custom', 'not already known');
             });
 
@@ -607,7 +607,7 @@ describe('AnalysisResultsHelper', () => {
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register a DataTypeFormatter to dataTypeFormatterService.', CAIssueSeverity.error);
-                checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, LookupKey.Number, ServiceName.formatter);
+                checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
 
@@ -628,7 +628,7 @@ describe('AnalysisResultsHelper', () => {
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
                     'Lookup key "Custom" does not have a DataTypeFormatter registered but it will also try the Lookup Key "Number".', CAIssueSeverity.warning);
-                checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'Custom', ServiceName.formatter);
+                checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
         });
@@ -649,7 +649,7 @@ describe('AnalysisResultsHelper', () => {
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register a DataTypeConverter to dataTypeConverterService.', CAIssueSeverity.error);
-                checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'custom', ServiceName.converter);
+                checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'custom', ServiceName.converter);
                 checkLookupKeyIssue(testItem.results, 0, 'custom', 'not already known');
             });
 
@@ -671,7 +671,7 @@ describe('AnalysisResultsHelper', () => {
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register a DataTypeConverter to dataTypeConverterService.', CAIssueSeverity.error);
-                checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, LookupKey.Number, ServiceName.converter);
+                checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.converter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
             // For Converter, when custom, it does not use the LookupKeyFallbackService.
@@ -693,7 +693,7 @@ describe('AnalysisResultsHelper', () => {
                 );
                 checkConfigPropertyResultsFromArray(properties, 0, 'PropertyName',
                     'Not found. Please register', CAIssueSeverity.error);
-                checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'Custom', ServiceName.converter);
+                checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.converter);
                 expect(testItem.results.lookupKeysIssues).toHaveLength(0);
             });
         });
@@ -898,7 +898,7 @@ describe('AnalysisResultsHelper', () => {
         }        
         function executeFunction(testItem: Publicify_AnalysisResultsHelper<IValidationServices>,
             message: string | null | undefined | ((validator: IValidator) => string),
-            expectedLookupKeyInfoCount: number,
+            expectedLookupKeyResultsCount: number,
             expectedPropertiesCount: number): Array<ConfigPropertyResult | ConfigErrorResult> {
             let vc: ValidatorConfig = {
                 errorMessage: message, 
@@ -910,12 +910,12 @@ describe('AnalysisResultsHelper', () => {
              };
             let properties: Array<ConfigPropertyResult | ConfigErrorResult> = [];
             testItem.checkMessageTokens(message, vc, vhc, 'PropertyName', properties);
-            expect(testItem.publicify_results.lookupKeysInfo).toHaveLength(expectedLookupKeyInfoCount);
+            expect(testItem.publicify_results.lookupKeyResults).toHaveLength(expectedLookupKeyResultsCount);
             expect(properties).toHaveLength(expectedPropertiesCount);
             return properties;
         }        
-        // test will a string that has no tokens results in no changes to lookupKeysInfo or lookupKeysIssues
-        test('when message is a string with no tokens result does not change lookupKeysInfo or lookupKeysIssues', () => {
+        // test will a string that has no tokens results in no changes to lookupKeyResults or lookupKeysIssues
+        test('when message is a string with no tokens result does not change lookupKeyResults or lookupKeysIssues', () => {
             let services = createServices();
             let testItem = setupTestItem(services, true);
 
@@ -923,28 +923,28 @@ describe('AnalysisResultsHelper', () => {
             executeFunction(testItem, message, 0, 0);
         });
         // null message
-        test('when message is null result does not change lookupKeysInfo or lookupKeysIssues', () => {
+        test('when message is null result does not change lookupKeyResults or lookupKeysIssues', () => {
             let services = createServices();
             let testItem = setupTestItem(services, true);
             let message = null;
             executeFunction(testItem, message, 0, 0);
         });
-        // when message is a function that returns a string with no tokens result does not change lookupKeysInfo or lookupKeysIssues
-        test('when message is a function that returns a string with no tokens result does not change lookupKeysInfo or lookupKeysIssues', () => {
+        // when message is a function that returns a string with no tokens result does not change lookupKeyResults or lookupKeysIssues
+        test('when message is a function that returns a string with no tokens result does not change lookupKeyResults or lookupKeysIssues', () => {
             let services = createServices();
             let testItem = setupTestItem(services, true);
             let message = (validator: IValidator) => 'This is a test message';
             executeFunction(testItem, message, 0, 0);
         });
-        // a single valid token of {Token1} lacks the {Token:LookupKey} format to change lookupKeysInfo, so no changes
-        test('when message is a string with a single valid token result does not change lookupKeysInfo or lookupKeysIssues', () => {
+        // a single valid token of {Token1} lacks the {Token:LookupKey} format to change lookupKeyResults, so no changes
+        test('when message is a string with a single valid token result does not change lookupKeyResults or lookupKeysIssues', () => {
             let services = createServices();
             let testItem = setupTestItem(services, true);
             let message = 'This is a test message with a token {Token1}';
             executeFunction(testItem, message, 0, 0);
         });
-        // three valid tokens of {Token1}, {Token2} and {Token3} lacks the {Token:LookupKey} format to change lookupKeysInfo, so no changes
-        test('when message is a string with two valid tokens result does not change lookupKeysInfo or lookupKeysIssues', () => {
+        // three valid tokens of {Token1}, {Token2} and {Token3} lacks the {Token:LookupKey} format to change lookupKeyResults, so no changes
+        test('when message is a string with two valid tokens result does not change lookupKeyResults or lookupKeysIssues', () => {
             let services = createServices();
             let testItem = setupTestItem(services, true);
             let message = '{Token1} This is a test message with two tokens {Token2} and {Token3}';
@@ -973,19 +973,19 @@ describe('AnalysisResultsHelper', () => {
             expect(prop).toBeDefined();
             checkSyntaxError(prop, 'PropertyName');
         });
-        // token is valid and has a real second part, the lookup key will get registered with LookupKeyInfo as a formatter service
+        // token is valid and has a real second part, the lookup key will get registered with LookupKeyResult as a formatter service
         test('Valid token with Number as lookupKey results in lookup key info being registered', () => {
             let services = createServices();
             services.dataTypeFormatterService.register(new NumberFormatter(null));
             let testItem = setupTestItem(services, true);
             let message = '{Token:Number}';
             executeFunction(testItem, message, 1, 0);
-            // let lkInfo = registerLookupKeyExists(testItem, LookupKey.Number);
-            // let serviceInfo = checkServiceInfo(lkInfo, true, 1);
+            // let lkResult = registerLookupKeyExists(testItem, LookupKey.Number);
+            // let serviceInfo = checkServiceInfo(lkResult, true, 1);
             // checkCultureRequestContainsClassName(serviceInfo,
             //     'NumberFormatter', NumberFormatter, 'en', 'en');
-            let lkInfo = checkLookupKeyInfo(testItem.results.lookupKeysInfo, LookupKey.Number);
-            let mcr = checkLookupKeyInfoForMultiClassRetrievalService(lkInfo, ServiceName.formatter, 1) as FormatterServiceClassRetrieval;
+            let lkResult = checkLookupKeyResults(testItem.results.lookupKeyResults, LookupKey.Number);
+            let mcr = checkLookupKeyResultsForMultiClassRetrievalService(lkResult, ServiceName.formatter, 1) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalFoundInService(mcr, formatterForCultureFeature,
                 'en', 'en', 'NumberFormatter', NumberFormatter);
         });
@@ -999,14 +999,14 @@ describe('AnalysisResultsHelper', () => {
             let testItem = setupTestItem(services, false);
             let message = '{Token:Number}';
             executeFunction(testItem, message, 1, 0);
-            // let lkInfo = registerLookupKeyExists(testItem, LookupKey.Number);
-            // let serviceInfo = checkServiceInfo(lkInfo, true, 2);
+            // let lkResult = registerLookupKeyExists(testItem, LookupKey.Number);
+            // let serviceInfo = checkServiceInfo(lkResult, true, 2);
             // checkCultureRequestContainsClassName(serviceInfo,
             //     'NumberFormatter', NumberFormatter, 'en', 'en');
             // checkCultureRequestContainsClassName(serviceInfo,
             //     'NumberFormatter', NumberFormatter, 'en-US', 'en-US');
-            let lkInfo = checkLookupKeyInfo(testItem.results.lookupKeysInfo, LookupKey.Number);
-            let mcr = checkLookupKeyInfoForMultiClassRetrievalService(lkInfo, ServiceName.formatter, 2) as FormatterServiceClassRetrieval;
+            let lkResult = checkLookupKeyResults(testItem.results.lookupKeyResults, LookupKey.Number);
+            let mcr = checkLookupKeyResultsForMultiClassRetrievalService(lkResult, ServiceName.formatter, 2) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalFoundInService(mcr, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
             checkCultureSpecificClassRetrievalFoundInService(mcr, formatterForCultureFeature, 'en-US', 'en-US', 'NumberFormatter', NumberFormatter);
         });
@@ -1029,9 +1029,9 @@ describe('AnalysisResultsHelper', () => {
             // let numberSI = checkServiceInfo(numberLKI, true, 1);
             // checkCultureRequestContainsClassName(numberSI,
             //     'NumberFormatter', NumberFormatter, 'en', 'en');
-            let customSI = checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalNotFoundInService(customSI, formatterForCultureFeature, 'en');
-            let numberSI = checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, LookupKey.Number, ServiceName.formatter) as FormatterServiceClassRetrieval;
+            let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalFoundInService(numberSI, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
 
         });
@@ -1056,7 +1056,7 @@ describe('AnalysisResultsHelper', () => {
             let message = '{Token:Custom}';
             executeFunction(testItem, message, 1, 0);
 
-            let customSI = checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
         });
 
@@ -1087,7 +1087,7 @@ describe('AnalysisResultsHelper', () => {
             let message = '{Token:Custom}';
             executeFunction(testItem, message, 1, 0);
 
-            let customSI = checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
             checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en-US', 'en', 'CustomFormatter', CustomFormatter);   
         });
@@ -1113,9 +1113,9 @@ describe('AnalysisResultsHelper', () => {
             let message = 'A {Token:Custom} B {Token2:Number} C';
             executeFunction(testItem, message, 2, 0);
 
-            let customSI = checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
-            let numberSI = checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, LookupKey.Number, ServiceName.formatter) as FormatterServiceClassRetrieval;
+            let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalFoundInService(numberSI, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
 
         });
@@ -1143,11 +1143,11 @@ describe('AnalysisResultsHelper', () => {
             let message = 'A {Token:Custom} B {Token2:Number} C';
             executeFunction(testItem, message, 2, 0);
 
-            let customSI = checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
+            let customSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, 'Custom', ServiceName.formatter) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalFoundInService(customSI, formatterForCultureFeature, 'en', 'en', 'CustomFormatter', CustomFormatter);
             checkCultureSpecificClassRetrievalNotFoundInService(customSI, formatterForCultureFeature, 'fr');
             // NumberFormatter supports all cultures so it should be found for both
-            let numberSI = checkLookupKeysInfoForService(testItem.results.lookupKeysInfo, LookupKey.Number, ServiceName.formatter) as FormatterServiceClassRetrieval;
+            let numberSI = checkLookupKeyResultsForService(testItem.results.lookupKeyResults, LookupKey.Number, ServiceName.formatter) as FormatterServiceClassRetrieval;
             checkCultureSpecificClassRetrievalFoundInService(numberSI, formatterForCultureFeature, 'en', 'en', 'NumberFormatter', NumberFormatter);
             checkCultureSpecificClassRetrievalFoundInService(numberSI, formatterForCultureFeature, 'fr', 'fr', 'NumberFormatter', NumberFormatter);
         });
