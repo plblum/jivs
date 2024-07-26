@@ -142,8 +142,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 valueHostNames: ['testValueHost1', 'testValueHost2'],
                 lookupKeysInfo: [],
                 lookupKeysIssues: [],
-                configIssues: [],
-                otherIssues: [],
+                configIssues: []
             });
         });
         // same with 0 valueHostConfigs
@@ -162,8 +161,7 @@ describe('ConfigAnalysisServiceBase class', () => {
                 valueHostNames: [],
                 lookupKeysInfo: [],
                 lookupKeysIssues: [],
-                configIssues: [],
-                otherIssues: [],
+                configIssues: []
             });
         });
     });
@@ -181,7 +179,7 @@ describe('ConfigAnalysisServiceBase class', () => {
             let options: ConfigAnalysisServiceOptions = {};
             let analysisArgs = testItem.publicify_createAnalysisArgs(valueHostManagerConfig, results, options);
             expect(analysisArgs).toBeDefined();
-            expect(analysisArgs.vhConfigs).toEqual(valueHostManagerConfig.valueHostConfigs);
+            expect(analysisArgs.valueHostConfigs).toEqual(valueHostManagerConfig.valueHostConfigs);
             expect(analysisArgs.results).toEqual(results);
             expect(analysisArgs.services).toBe(services);
             expect(analysisArgs.options).toBe(options);
@@ -378,7 +376,6 @@ describe('ConfigAnalysisServiceBase class', () => {
             expect(results.lookupKeysInfo).toHaveLength(0);
             expect(results.lookupKeysIssues).toHaveLength(0);
             expect(results.configIssues).toHaveLength(0);
-            expect(results.otherIssues).toHaveLength(0);
             expect(testItem.publicify_helper).toBeDefined();
             expect(testItem.publicify_getServices()).toBe(services);
         });
@@ -424,7 +421,6 @@ describe('ConfigAnalysisServiceBase class', () => {
                     valueHostType: ValueHostType.Static
                 }
             });
-            expect(results.otherIssues).toHaveLength(0);
             expect(testItem.publicify_helper).toBeDefined();
             expect(testItem.publicify_getServices()).toBe(services);
             expect(testItem.publicify_options).toEqual({});
@@ -487,7 +483,6 @@ describe('ConfigAnalysisServiceBase class', () => {
                     valueHostType: ValueHostType.Static
                 }
             });
-            expect(results.otherIssues).toHaveLength(0);
             expect(testItem.publicify_helper).toBeDefined();
             expect(testItem.publicify_getServices()).toBe(services);
             expect(testItem.publicify_options).toEqual({});
@@ -793,6 +788,5 @@ describe('ValidationManagerConfigAnalysisService', () => {
         expect(prop3.propertyName).toEqual('errorCode');
 
         expect(results.lookupKeysIssues).toHaveLength(0);
-        expect(results.otherIssues).toHaveLength(0);
     });
 });

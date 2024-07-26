@@ -64,7 +64,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
     describe('errorMessage property', () => {
         describe('tokens in errorMessage', () => {
             // errorMessage is a string with no tokens
-            test('should not add any lookupKeysInfo or otherIssues when errorMessage is a string with no tokens', () => {
+            test('should not add any lookupKeysInfo when errorMessage is a string with no tokens', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { errorMessage: 'This is a test message' });
@@ -140,7 +140,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
         describe('tokens in summaryMessage', () => {
 
             // summaryMessage is a string with no tokens
-            test('should not add any lookupKeysInfo or otherIssues when summaryMessage is a string with no tokens', () => {
+            test('should not add any lookupKeysInfo when summaryMessage is a string with no tokens', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { summaryMessage: 'This is a test message' });
@@ -195,7 +195,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             // these will have only one culture, 'en', as we've tested culture support elsewhere
             // TextLocalizerService will have supporting messages reflecting the number of and type of tokens desired.
             // errorMessagel10n is a string with no tokens
-            test('should not add any lookupKeysInfo or otherIssues when errorMessagel10n is a string with no tokens.', () => {
+            test('should not add any lookupKeysInfo when errorMessagel10n is a string with no tokens.', () => {
                 let services = createServicesForTheseTests();
                 services.textLocalizerService.register('l10nKey',
                     { en: 'This is a test message' });
@@ -210,7 +210,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             });
             // same with the errorMessage property also defined to different text
             // demonstrates that this code doesn't look at errorMessage
-            test('should not add any lookupKeysInfo or otherIssues when errorMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
+            test('should not add any lookupKeysInfo when errorMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
                 let services = createServicesForTheseTests();
                 services.textLocalizerService.register('l10nKey',
                     { en: 'This is a test message' });
@@ -223,7 +223,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             
             });
             // with null
-            test('should not add any lookupKeysInfo or otherIssues when errorMessagel10n is null', () => {
+            test('should not add any lookupKeysInfo when errorMessagel10n is null', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { errorMessagel10n: null });
@@ -292,7 +292,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             // these will have only one culture, 'en', as we've tested culture support elsewhere
             // TextLocalizerService will have supporting messages reflecting the number of and type of tokens desired.
             // summaryMessagel10n is a string with no tokens
-            test('should not add any lookupKeysInfo or otherIssues when summaryMessagel10n is a string with no tokens.', () => {
+            test('should not add any lookupKeysInfo when summaryMessagel10n is a string with no tokens.', () => {
                 let services = createServicesForTheseTests();
                 services.textLocalizerService.register('l10nKey',
                     { en: 'This is a test message' });
@@ -305,7 +305,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             });
             // same with the errorMessage property also defined to different text
             // demonstrates that this code doesn't look at errorMessage
-            test('should not add any lookupKeysInfo or otherIssues when summaryMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
+            test('should not add any lookupKeysInfo when summaryMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
                 let services = createServicesForTheseTests();
                 services.textLocalizerService.register('l10nKey',
                     { en: 'This is a test message' });
@@ -317,7 +317,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                     results.vcResults.properties, 0, 'summaryMessage', 1, 'en', 'en', 'This is a test message', undefined);                   
             });
             // with null
-            test('should not add any lookupKeysInfo or otherIssues when summaryMessagel10n is null', () => {
+            test('should not add any lookupKeysInfo when summaryMessagel10n is null', () => {
                 let services = createServicesForTheseTests();
 
                 let results = executeFunction(services, { summaryMessagel10n: null });

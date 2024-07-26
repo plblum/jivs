@@ -69,9 +69,7 @@ describe('AnalysisResultsHelper', () => {
         public publicify_addlookupKeysIssue(feature: string, lookupKey: string, severity: ConfigIssueSeverity, message: string): void {
             super.addlookupKeysIssue(feature, lookupKey, severity, message);
         }
-        public publicify_addOtherIssue(feature: string, severity: ConfigIssueSeverity, message: string): void {
-            super.addOtherIssue(feature, severity, message);
-        }
+
         public publicify_checkForRealLookupKeyName(lookupKey: string): string
         {   
             return super.checkForRealLookupKeyName(lookupKey);
@@ -130,16 +128,6 @@ describe('AnalysisResultsHelper', () => {
                 { feature: 'testFeature', lookupKey: 'testLookupKey', severity: ConfigIssueSeverity.warning, message: 'testMessage' }
             ]);
         });
-    
-        test('addOtherIssue should add a generic issue', () => {
-            let services = createServices();
-            let mockArgs = createAnalysisArgs(services, [], {});
-            let testItem = new Publicify_AnalysisResultsHelper(mockArgs);            
-            testItem.publicify_addOtherIssue('testFeature', ConfigIssueSeverity.error, 'testMessage');
-            expect(testItem.publicify_results.otherIssues).toEqual([
-                { feature: 'testFeature', severity: ConfigIssueSeverity.error, message: 'testMessage' }
-            ]);
-        });        
     });
 
     describe('registerLookupKey with test Analyzers for formatter and converter', () => {

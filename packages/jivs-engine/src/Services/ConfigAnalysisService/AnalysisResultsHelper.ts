@@ -68,9 +68,7 @@ export class AnalysisResultsHelper<TServices extends IValueHostsServices>
     public addlookupKeysIssue(feature: string, lookupKey: string, severity: ConfigIssueSeverity, message: string): void {
         this.analysisArgs.results.lookupKeysIssues.push({ feature, lookupKey: lookupKey, severity: severity, message });
     }
-    public addOtherIssue(feature: string, severity: ConfigIssueSeverity, message: string): void {
-        this.analysisArgs.results.otherIssues.push({ feature, severity: severity, message });
-    }    
+
     /**
      * Tries to get a sample value for the lookup key or valueHost.
      * If it is not found, returns undefined.

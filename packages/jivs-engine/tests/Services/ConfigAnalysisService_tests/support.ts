@@ -38,8 +38,7 @@ export function createConfigAnalysisResults(valueHostNames: Array<string>): ICon
         lookupKeysInfo: [],
         lookupKeysIssues: [],
         conditionsInfo: [],
-        configIssues: [],
-        otherIssues: []
+        configIssues: []
     };
 
     return results;
@@ -59,7 +58,7 @@ export function createAnalysisArgs(services: IValidationServices,
         options: options,
         results: createConfigAnalysisResults(valueHostConfigs.map(vh => vh.name)),
         sampleValues: new SampleValues<IValidationServices>(services, options),
-        vhConfigs: valueHostConfigs,
+        valueHostConfigs: valueHostConfigs,
         conditionConfigAnalyzer: null!
     };
     mockAnalysisArgs.results.cultureIds = services.cultureService.availableCultures();

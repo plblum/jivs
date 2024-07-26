@@ -5,7 +5,6 @@
 
 import { ManagerConfigBuilderBase } from "../ValueHosts/ManagerConfigBuilderBase";
 import { ConditionConfig } from "./Conditions";
-import { ILoggerService } from "./LoggerService";
 import { IService, IServicesAccessor } from "./Services";
 import { IValidationServices, ServiceName } from "./ValidationServices";
 import { IValidator, ValidatorConfig } from "./Validator";
@@ -88,7 +87,7 @@ export interface IConfigAnalysisService extends IService, IServicesAccessor {
  * @template TServices - The type of services provided by IValueHostsServices.
  */
 export interface AnalysisArgs<TServices extends IValueHostsServices> {
-    vhConfigs: Array<ValueHostConfig>;
+    valueHostConfigs: Array<ValueHostConfig>;
     results: IConfigAnalysisResults;
     services: TServices;
     options: ConfigAnalysisServiceOptions;
@@ -156,11 +155,6 @@ export interface IConfigAnalysisResults {
      * and their ValidatorConfigs and ConditionConfigs.
      */
     configIssues: Array<ValueHostConfigResults>;
-
-    /**
-     * Any other issues found.
-     */
-    otherIssues: Array<ConfigResultMessage>;
 }
 
 /**
@@ -489,8 +483,7 @@ export interface ILookupKeyAnalyzer {
     /**
      * Analyzes the key, creating an entry in the results describing it and reports any issues found.
      * If the object depends on cultures too, internally should use results.cultureIds.
-     * Implementation should expect to catch errors and write them to results.lookupKeysIssues
-     * or results.otherIssues.
+     * Implementation should expect to catch errors and write them to results.lookupKeysIssues.
      * @param key 
      * @param valueHostConfig
      * @returns A new LookupKeyServiceInfo object with the results of the analysis.
@@ -561,7 +554,7 @@ export enum ConfigIssueSeverity {
 /**
  * Represents a message containing the result of a configuration analysis.
  * This is a complete object, for lists of general messages like in 
- * ConfigAnalysisResults.otherIssues and ConfigAnalysisResults.lookupKeysIssues.
+ * ConfigAnalysisResults.lookupKeysIssues.
  */
 export interface ConfigResultMessage extends ConfigResultMessageBase, ConfigAnalysisResultBase
 {
@@ -924,8 +917,6 @@ export interface IAnalysisResultsHelper<TServices extends IValueHostsServices> {
     results: IConfigAnalysisResults; 
 
     addlookupKeysIssue(feature: string, lookupKey: string, severity: ConfigIssueSeverity, message: string): void;
-
-    addOtherIssue(feature: string, severity: ConfigIssueSeverity, message: string): void;
 
     /**
      * Add support for a specific service to analyze lookup keys.

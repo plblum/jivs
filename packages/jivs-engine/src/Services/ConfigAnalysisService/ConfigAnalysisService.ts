@@ -95,8 +95,7 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
             valueHostNames: [],
             lookupKeysInfo: [],
             lookupKeysIssues: [],
-            configIssues: [],
-            otherIssues: []
+            configIssues: []
         };
 
         results.cultureIds = this.services.cultureService.availableCultures();
@@ -113,7 +112,7 @@ export abstract class ConfigAnalysisServiceBase<TConfig extends ValueHostsManage
      */
     protected createAnalysisArgs(config: TConfig, results: IConfigAnalysisResults, options: ConfigAnalysisServiceOptions): AnalysisArgs<TServices> {
         let analysisArgs: AnalysisArgs<TServices> = {
-            vhConfigs: config.valueHostConfigs,
+            valueHostConfigs: config.valueHostConfigs,
             results,
             services: this.getServices(),
             options: options,
